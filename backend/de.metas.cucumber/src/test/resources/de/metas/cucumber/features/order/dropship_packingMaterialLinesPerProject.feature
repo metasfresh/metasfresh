@@ -13,21 +13,21 @@ Feature: dropship packing material lines split per project
     And metasfresh has date and time 2024-06-17T08:00:00+02:00[Europe/Berlin]
     And set project type Sales/Purchase Order to inactive
     And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps_1       |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
-      | pl_sales   | ps_1               | DE                    | EUR                 | true  |
-      | pl_purch   | ps_1               | DE                    | EUR                 | false |
+      | pl_sales   | pricingSystem      | DE                    | EUR                 | true  |
+      | pl_purch   | pricingSystem      | DE                    | EUR                 | false |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv_sales  | pl_sales       |
       | plv_purch  | pl_purch       |
     And metasfresh contains C_BPartners:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | customer   | N        | Y          | ps_1               |
-      | vendor_1   | Y        | N          | ps_1               |
-      | vendor_2   | Y        | N          | ps_1               |
+      | customer   | N        | Y          | pricingSystem      |
+      | vendor_1   | Y        | N          | pricingSystem      |
+      | vendor_2   | Y        | N          | pricingSystem      |
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
@@ -77,59 +77,59 @@ Feature: dropship packing material lines split per project
     Given set project type Sales/Purchase Order to active
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID    |
-      | so         | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
+      | salesOrder | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID | M_HU_PI_Item_Product_ID |
-      | sol_1      | so         | goods_1      | 10         | vendor_1             | goods_1_crate           |
-      | sol_2      | so         | goods_2      | 21         | vendor_2             | goods_2_crate           |
-    When the order identified by so is completed
+      | sol_goods1 | salesOrder | goods_1      | 10         | vendor_1             | goods_1_crate           |
+      | sol_goods2 | salesOrder | goods_2      | 21         | vendor_2             | goods_2_crate           |
+    When the order identified by salesOrder is completed
 
     Then the order is created:
       | Identifier | Link_Order_ID | C_BPartner_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
-      | po_1       | so            | vendor_1      | false   | POO         | CO        | true       |
-      | po_2       | so            | vendor_2      | false   | POO         | CO        | true       |
+      | po_1       | salesOrder    | vendor_1      | false   | POO         | CO        | true       |
+      | po_2       | salesOrder    | vendor_2      | false   | POO         | CO        | true       |
     And validate the created orders
       | C_Order_ID | C_Project_ID |
       | po_1       | project_1    |
       | po_2       | project_2    |
     And after not more than 60s, validate C_OrderLine:
       | C_OrderLine_ID | C_Project_ID |
-      | sol_1          | project_1    |
-      | sol_2          | project_2    |
+      | sol_goods1     | project_1    |
+      | sol_goods2     | project_2    |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_1       | sol_1          | N             |
-      | ss_2       | sol_2          | N             |
+      | ss_goods1  | sol_goods1     | N             |
+      | ss_goods2  | sol_goods2     | N             |
 
     And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | ss_1                  |
-      | ss_2                  |
+      | ss_goods1             |
+      | ss_goods2             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_1                  | shipment   |
-      | ss_2                  | shipment   |
+      | ss_goods1             | shipment   |
+      | ss_goods2             | shipment   |
     And validate the created shipment lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
-      | crate_1        | shipment   | crate        | 2           | project_1    |
-      | crate_2        | shipment   | crate        | 3           | project_2    |
+      | crate_project1 | shipment   | crate        | 2           | project_1    |
+      | crate_project2 | shipment   | crate        | 3           | project_2    |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | M_InOutLine_ID |
-      | ic_crate_1             | crate_1        |
-      | ic_crate_2             | crate_2        |
+      | ic_crate_project1      | crate_project1 |
+      | ic_crate_project2      | crate_project2 |
     And process invoice candidates together and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
-      | ic_crate_1             |
-      | ic_crate_2             |
+      | ic_crate_project1      |
+      | ic_crate_project2      |
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID | C_Invoice_Candidate_ID |
-      | invoice      | ic_crate_1             |
+      | invoice      | ic_crate_project1      |
     And validate created invoice lines
-      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
-      | il_crate_1       | invoice      | crate        | 2           | crate_1        | project_1    |
-      | il_crate_2       | invoice      | crate        | 3           | crate_2        | project_2    |
+      | C_InvoiceLine_ID  | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
+      | il_crate_project1 | invoice      | crate        | 2           | crate_project1 | project_1    |
+      | il_crate_project2 | invoice      | crate        | 3           | crate_project2 | project_2    |
 
     And set project type Sales/Purchase Order to inactive
 
@@ -145,46 +145,46 @@ Feature: dropship packing material lines split per project
       | project_2  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID    |
-      | so         | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
+      | salesOrder | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID | C_BPartner_Vendor_ID | M_HU_PI_Item_Product_ID |
-      | sol_1      | so         | goods_1      | 10         | project_1    | vendor_1             | goods_1_crate           |
-      | sol_2      | so         | goods_2      | 21         | project_2    | <vendor_of_line_2>   | <packing_of_line_2>     |
-    And the order identified by so is completed
+      | sol_goods1 | salesOrder | goods_1      | 10         | project_1    | vendor_1             | goods_1_crate           |
+      | sol_goods2 | salesOrder | goods_2      | 21         | project_2    | <vendor_of_line_2>   | <packing_of_line_2>     |
+    And the order identified by salesOrder is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_1       | sol_1          | N             |
-      | ss_2       | sol_2          | N             |
+      | ss_goods1  | sol_goods1     | N             |
+      | ss_goods2  | sol_goods2     | N             |
 
     And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | ss_1                  |
-      | ss_2                  |
+      | ss_goods1             |
+      | ss_goods2             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_1                  | shipment   |
-      | ss_2                  | shipment   |
+      | ss_goods1             | shipment   |
+      | ss_goods2             | shipment   |
     And validate the created shipment lines
-      | M_InOutLine_ID | M_InOut_ID | M_Product_ID                 | MovementQty | C_Project_ID |
-      | pm_1           | shipment   | crate                        | 2           | project_1    |
-      | pm_2           | shipment   | <packing_material_of_line_2> | 3           | project_2    |
+      | M_InOutLine_ID   | M_InOut_ID | M_Product_ID                 | MovementQty | C_Project_ID |
+      | packing_project1 | shipment   | crate                        | 2           | project_1    |
+      | packing_project2 | shipment   | <packing_material_of_line_2> | 3           | project_2    |
     And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID | M_InOutLine_ID |
-      | ic_pm_1                | pm_1           |
-      | ic_pm_2                | pm_2           |
+      | C_Invoice_Candidate_ID | M_InOutLine_ID   |
+      | ic_packing_project1    | packing_project1 |
+      | ic_packing_project2    | packing_project2 |
     And process invoice candidates together and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
-      | ic_pm_1                |
-      | ic_pm_2                |
+      | ic_packing_project1    |
+      | ic_packing_project2    |
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID | C_Invoice_Candidate_ID |
-      | invoice      | ic_pm_1                |
+      | invoice      | ic_packing_project1    |
     And validate created invoice lines
-      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID                 | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
-      | il_pm_1          | invoice      | crate                        | 2           | pm_1           | project_1    |
-      | il_pm_2          | invoice      | <packing_material_of_line_2> | 3           | pm_2           | project_2    |
+      | C_InvoiceLine_ID    | C_Invoice_ID | M_Product_ID                 | QtyInvoiced | M_InOutLine_ID   | C_Project_ID |
+      | il_packing_project1 | invoice      | crate                        | 2           | packing_project1 | project_1    |
+      | il_packing_project2 | invoice      | <packing_material_of_line_2> | 3           | packing_project2 | project_2    |
 
     Examples:
       | case                           | vendor_of_line_2 | packing_of_line_2 | packing_material_of_line_2 |
@@ -202,33 +202,33 @@ Feature: dropship packing material lines split per project
       | project_2  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID    |
-      | so         | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
+      | salesOrder | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID | C_BPartner_Vendor_ID | M_HU_PI_Item_Product_ID |
-      | sol_1      | so         | goods_1      | 10         | project_1    | vendor_1             | goods_1_crate           |
-      | sol_2      | so         | goods_2      | 21         | project_2    | vendor_2             | goods_2_crate           |
-    And the order identified by so is completed
+      | sol_goods1 | salesOrder | goods_1      | 10         | project_1    | vendor_1             | goods_1_crate           |
+      | sol_goods2 | salesOrder | goods_2      | 21         | project_2    | vendor_2             | goods_2_crate           |
+    And the order identified by salesOrder is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_1       | sol_1          | N             |
-      | ss_2       | sol_2          | N             |
+      | ss_goods1  | sol_goods1     | N             |
+      | ss_goods2  | sol_goods2     | N             |
 
     And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     # One delivery run per purchase order: two shipments, on purpose.
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | ss_1                  |
+      | ss_goods1             |
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_1                  | shipment_1 |
+      | M_ShipmentSchedule_ID | M_InOut_ID       |
+      | ss_goods1             | shipment_vendor1 |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | ss_2                  |
+      | ss_goods2             |
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_2                  | shipment_2 |
+      | M_ShipmentSchedule_ID | M_InOut_ID       |
+      | ss_goods2             | shipment_vendor2 |
 
     Then validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
-      | shipment_1 | crate        | 2           | project_1    |
-      | shipment_2 | crate        | 3           | project_2    |
+      | M_InOut_ID       | M_Product_ID | MovementQty | C_Project_ID |
+      | shipment_vendor1 | crate        | 2           | project_1    |
+      | shipment_vendor2 | crate        | 3           | project_2    |

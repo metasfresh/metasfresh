@@ -116,6 +116,8 @@ public class AD_SysConfig_StepDef
 	 * Sets a sys config to a boolean value for the current scenario only.
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
+	 * @cucumber.depends (none)
 	 * @cucumber.example
 	 * <pre>
 	 * Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'

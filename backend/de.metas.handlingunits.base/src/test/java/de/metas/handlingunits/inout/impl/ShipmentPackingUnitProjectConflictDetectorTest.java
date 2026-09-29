@@ -1,26 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Conflict;
-import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
-import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Usage;
-import de.metas.project.ProjectId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_InOut;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -42,6 +21,27 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Conflict;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Usage;
+import de.metas.project.ProjectId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_InOut;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentPackingUnitProjectConflictDetectorTest
 {
