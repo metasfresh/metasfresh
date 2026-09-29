@@ -112,10 +112,22 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.routeId(ERROR_SEND_LOG_MESSAGE)
 				.log("Route invoked")
 
-				.process(this::prepareErrorLogMessage)
-
-				.to(direct(MF_LOG_MESSAGE_ROUTE_ID));
+				// startup/timer errors carry no PInstanceId => they can't be sent to metasfresh, so log them here (besides the error file)
+				.choice()
+					.when(header(HEADER_PINSTANCE_ID).isNull())
+						.process(this::logErrorWithoutPInstanceId)
+					.otherwise()
+						.process(this::prepareErrorLogMessage)
+						.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
+				.endChoice()
+				.end();
 		//@formatter:on
+	}
+
+	private void logErrorWithoutPInstanceId(@NonNull final Exchange exchange)
+	{
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		log.error("No PInstanceId available! => cannot log error in metasfresh, logging it here instead", exception);
 	}
 
 	private void prepareErrorFile(@NonNull final Exchange exchange)
@@ -176,11 +188,6 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 	private void prepareErrorLogMessage(@NonNull final Exchange exchange)
 	{
 		final Integer pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class);
-
-		if (pInstanceId == null)
-		{
-			throw new RuntimeException("No PInstanceId available!");
-		}
 
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
