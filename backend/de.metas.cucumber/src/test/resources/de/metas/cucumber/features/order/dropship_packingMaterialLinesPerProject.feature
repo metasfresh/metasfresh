@@ -9,6 +9,7 @@ Feature: dropship packing material lines split per project
   # goods_1 is packed in crates only; goods_2 either in crates or in boxes.
   Background:
     Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2024-06-17T08:00:00+02:00[Europe/Berlin]
     And set project type Sales/Purchase Order to inactive
     And metasfresh contains M_PricingSystems
@@ -132,9 +133,9 @@ Feature: dropship packing material lines split per project
       | C_Invoice_ID | C_Invoice_Candidate_ID |
       | invoice      | ic_crate_project1      |
     And validate created invoice lines
-      | C_InvoiceLine_ID  | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
-      | il_crate_project1 | invoice      | crate        | 2           | crate_project1 | project_1    |
-      | il_crate_project2 | invoice      | crate        | 3           | crate_project2 | project_2    |
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
+      | invoice      | crate        | 2           | crate_project1 | project_1    |
+      | invoice      | crate        | 3           | crate_project2 | project_2    |
 
   # Dropship cases in which the projects are set on the sales order lines, as the purchase-to-sales
   # propagation leaves them; each Examples row is one case (vendors x packing of the second line).
@@ -182,9 +183,9 @@ Feature: dropship packing material lines split per project
       | C_Invoice_ID | C_Invoice_Candidate_ID |
       | invoice      | ic_packing_project1    |
     And validate created invoice lines
-      | C_InvoiceLine_ID    | C_Invoice_ID | M_Product_ID                 | QtyInvoiced | M_InOutLine_ID   | C_Project_ID |
-      | il_packing_project1 | invoice      | crate                        | 2           | packing_project1 | project_1    |
-      | il_packing_project2 | invoice      | <packing_material_of_line_2> | 3           | packing_project2 | project_2    |
+      | C_Invoice_ID | M_Product_ID                 | QtyInvoiced | M_InOutLine_ID   | C_Project_ID |
+      | invoice      | crate                        | 2           | packing_project1 | project_1    |
+      | invoice      | <packing_material_of_line_2> | 3           | packing_project2 | project_2    |
 
     Examples:
       | case                           | vendor_of_line_2 | packing_of_line_2 | packing_material_of_line_2 |

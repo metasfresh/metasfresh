@@ -8,6 +8,7 @@ Feature: shipment packing material lines split per project
   # One goods product packed in TUs of 10; each TU carries one piece of packing material p_pm.
   Background:
     Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh contains M_PricingSystems
@@ -87,9 +88,9 @@ Feature: shipment packing material lines split per project
       | ss_P3                 | shipment   |
     And validate the created shipment lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
-      | goods_P1       | shipment   | p_goods      | 20          | P1           |
-      | goods_P2       | shipment   | p_goods      | 30          | P2           |
-      | goods_P3       | shipment   | p_goods      | 40          | P3           |
+      |                | shipment   | p_goods      | 20          | P1           |
+      |                | shipment   | p_goods      | 30          | P2           |
+      |                | shipment   | p_goods      | 40          | P3           |
       | pm_P1          | shipment   | p_pm         | 2           | P1           |
       | pm_P2          | shipment   | p_pm         | 3           | P2           |
       | pm_P3          | shipment   | p_pm         | 4           | P3           |
@@ -114,10 +115,10 @@ Feature: shipment packing material lines split per project
       | C_Invoice_ID | C_Invoice_Candidate_ID |
       | invoice      | ic_pm_P1               |
     And validate created invoice lines
-      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
-      | il_pm_P1         | invoice      | p_pm         | 2           | pm_P1          | P1           |
-      | il_pm_P2         | invoice      | p_pm         | 3           | pm_P2          | P2           |
-      | il_pm_P3         | invoice      | p_pm         | 4           | pm_P3          | P3           |
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
+      | invoice      | p_pm         | 2           | pm_P1          | P1           |
+      | invoice      | p_pm         | 3           | pm_P2          | P2           |
+      | invoice      | p_pm         | 4           | pm_P3          | P3           |
 
   Scenario: order lines of the same project ship with one packing material line for that project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'

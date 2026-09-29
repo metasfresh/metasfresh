@@ -128,7 +128,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		_shipment = shipment;
 		// Only customer shipments are split; returns keep the project-agnostic grouping
-		final boolean isCustomerShipment = MovementType.ofCode(shipment.getMovementType()).isOutboundTransaction() && shipment.isSOTrx();
+		final boolean isCustomerShipment = MovementType.ofCode(shipment.getMovementType()).isOutboundTransaction();
 		packingMaterialsCollector.setConsiderProject(
 				isCustomerShipment
 						&& sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));
@@ -189,11 +189,18 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	public void collectPackingMaterialsAndUpdateShipmentLines()
 	{
-		final I_M_InOut inout = getM_InOut();
+		collectPackingMaterialsAndUpdateShipmentLines(retrieveShipmentLines());
+	}
 
+	private List<I_M_InOutLine> retrieveShipmentLines()
+	{
+		return inOutDAO.retrieveLines(getM_InOut(), I_M_InOutLine.class);
+	}
+
+	private void collectPackingMaterialsAndUpdateShipmentLines(@NonNull final List<I_M_InOutLine> inoutLines)
+	{
 		//
 		// Iterate shipment lines and collect packing materials for LUs and TUs
-		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		for (final I_M_InOutLine inoutLineHU : inoutLines)
 		{
 			final IHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inoutLineHU);
@@ -201,17 +208,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 	}
 
-	private void logPackingUnitProjectConflicts()
+	private void logPackingUnitProjectConflicts(@NonNull final List<I_M_InOutLine> inoutLines)
 	{
 		if (!packingMaterialsCollector.isConsiderProject())
 		{
 			return;
 		}
 
-		final I_M_InOut inout = getM_InOut();
-		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = buildPackingUnitProjectUsages(inoutLines);
-		ShipmentPackingUnitProjectConflictDetector.logWarnings(inout, ShipmentPackingUnitProjectConflictDetector.detect(usages));
+		ShipmentPackingUnitProjectConflictDetector.logWarnings(getM_InOut(), ShipmentPackingUnitProjectConflictDetector.detect(usages));
 	}
 
 	private List<ShipmentPackingUnitProjectConflictDetector.Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
@@ -305,8 +310,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 			return;
 		}
 
-		collectPackingMaterialsAndUpdateShipmentLines();
-		logPackingUnitProjectConflicts();
+		final List<I_M_InOutLine> inoutLines = retrieveShipmentLines();
+		collectPackingMaterialsAndUpdateShipmentLines(inoutLines);
+		logPackingUnitProjectConflicts(inoutLines);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
 

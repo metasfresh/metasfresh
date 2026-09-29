@@ -107,8 +107,8 @@ class HUShipmentPackingMaterialLinesBuilderTest
 		huInOutBL.createPackingMaterialLines(shipment);
 
 		assertThat(huInOutDAO.retrievePackingMaterialLines(shipment))
-				.extracting(I_M_InOutLine::getC_Project_ID)
-				.containsExactly(PROJECT_1.getRepoId()); // the one default LU is booked to the first line's project
+				.extracting(line -> ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
+				.containsExactly(PROJECT_1); // the one default LU is booked to the first line's project
 		assertThat(listAppender.list).hasSize(1);
 		assertThat(listAppender.list.get(0).getFormattedMessage()).contains("DefaultLU-PI:" + data.piLU.getM_HU_PI_ID());
 	}
