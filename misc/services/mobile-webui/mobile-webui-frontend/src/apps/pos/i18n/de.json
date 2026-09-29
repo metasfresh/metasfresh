@@ -1,7 +1,8 @@
 {
   "header": {
     "closeCashJournal": "Kasse schließen",
-    "orders": "Aufträge"
+    "orders": "Aufträge",
+    "cashWithdrawal": "Entnahme"
   },
   "openCashJournal": {
     "title": "Kasse öffnen",
@@ -30,6 +31,29 @@
     "actions": {
       "close": "Schließen",
       "cancel": "Abbrechen"
+    }
+  },
+  "cashWithdrawal": {
+    "title": "Entnahme",
+    "category": "Kategorie",
+    "amount": "Betrag",
+    "actions": {
+      "ok": "Bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "slip": {
+      "title": "Kassenentnahme",
+      "terminal": "Kasse",
+      "date": "Datum",
+      "cashier": "Kassierer",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "moneyReceived": "Geld erhalten",
+      "signature": "Unterschrift Empfänger",
+      "actions": {
+        "print": "Drucken",
+        "close": "Schließen"
+      }
     }
   },
   "selectTerminal": {

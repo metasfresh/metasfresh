@@ -94,6 +94,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -110,13 +111,17 @@ public class CreateMasterdataCommand
 	@NonNull private final JsonCreateMasterdataRequest request;
 
 	private final MasterdataContext context = new MasterdataContext();
+	/**
+	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 */
+	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
 		// Apply sysconfigs early (before any masterdata creation)
-		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+		previousSysconfigs.putAll(applySysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
@@ -174,7 +179,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
@@ -359,7 +364,12 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
 	{
-		return process(request.getPosTerminals(), this::createPOSTerminal);
+		final Map<String, JsonPOSTerminalRequest> posTerminals = request.getPosTerminals();
+		if (posTerminals != null)
+		{
+			CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(posTerminals.values());
+		}
+		return process(posTerminals, this::createPOSTerminal);
 	}
 
 	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)
@@ -370,7 +380,9 @@ public class CreateMasterdataCommand
 				.productPriceRepository(services.productPriceRepository)
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.posTerminalRepository(services.posTerminalRepository)
+				.chargeRepository(services.chargeRepository)
 				.context(context)
+				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()

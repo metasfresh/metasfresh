@@ -82,6 +82,23 @@ public class POSCashJournal
 		this.isClosed = true;
 	}
 
+	public void addCashInOut(@NonNull final Money signedAmount, @NonNull final UserId cashierId, @NonNull final String description)
+	{
+		signedAmount.assertCurrencyId(currencyId);
+
+		if (isClosed)
+		{
+			throw new AdempiereException("Already closed");
+		}
+
+		add(POSCashJournalLine.builder()
+				.type(POSCashJournalLineType.CASH_IN_OUT)
+				.amount(signedAmount) // negative = cash out
+				.cashierId(cashierId)
+				.description(description)
+				.build()); // zero amount rejected by POSCashJournalLine
+	}
+
 	private void addClosingDifference(@NonNull final Money closingDifferenceAmt, @NonNull final UserId cashierId, @Nullable final String description)
 	{
 		add(POSCashJournalLine.builder()

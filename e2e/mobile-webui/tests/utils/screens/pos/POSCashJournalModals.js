@@ -9,6 +9,9 @@ const closingModalElement = () => page.getByTestId('pos-cash-journal-closing-mod
 
 const detailRow = (detailType) =>
     page.locator(`[data-testid="pos-cash-journal-summary-detail-row"][data-detail-type="${detailType}"]`);
+// The amount cell alone: the row's text also holds the line description, which may end in digits (e.g. a category name).
+const detailAmount = (detailType) => detailRow(detailType).locator('td.amt');
+const detailDescription = (detailType) => detailRow(detailType).locator('td.description-col');
 
 export const POSCashJournalModals = {
     /** Opens the closing panel from the "close cash journal" header button. */
@@ -21,21 +24,25 @@ export const POSCashJournalModals = {
      * Asserts the closing summary. `cashPayments` is the CASH_PAYMENTS detail row - the running total
      * of cash-sale payments (`JsonCashJournalSummary.java`: `CASH_PAYMENT` lines, e.g. checkout via
      * `POSPaymentPanel.payCash`). `cashIn` / `cashOut` are the CASH_IN / CASH_OUT detail rows - manual
-     * cash-in/cash-out movements (`CASH_IN_OUT` lines), a different source than a sale. `endingBalance`
+     * cash-in/cash-out movements (`CASH_IN_OUT` lines), a different source than a sale; a cash-out is negative
+     * (e.g. `'-12,00'`) and `cashOutDescription` is its line text (a cash withdrawal's category). `endingBalance`
      * is the booked (ending) cash balance. Every value is the exact rendered display string, in the
      * spec's login language - e.g. `'5,00'` for a `de_DE` login - see {@link exactTextMatch}.
      */
-    expectSummary: async ({ cashPayments, cashIn, cashOut, endingBalance }) => await test.step(`${NAME} - Expect summary`, async () => {
+    expectSummary: async ({ cashPayments, cashIn, cashOut, cashOutDescription, endingBalance }) => await test.step(`${NAME} - Expect summary`, async () => {
         await closingModalElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
 
         if (cashPayments != null) {
-            await expect(detailRow('CASH_PAYMENTS')).toContainText(exactTextMatch(cashPayments));
+            await expect(detailAmount('CASH_PAYMENTS')).toContainText(exactTextMatch(cashPayments));
         }
         if (cashIn != null) {
-            await expect(detailRow('CASH_IN')).toContainText(exactTextMatch(cashIn));
+            await expect(detailAmount('CASH_IN')).toContainText(exactTextMatch(cashIn));
         }
         if (cashOut != null) {
-            await expect(detailRow('CASH_OUT')).toContainText(exactTextMatch(cashOut));
+            await expect(detailAmount('CASH_OUT')).toContainText(exactTextMatch(cashOut));
+        }
+        if (cashOutDescription != null) {
+            await expect(detailDescription('CASH_OUT')).toContainText(cashOutDescription);
         }
         if (endingBalance != null) {
             // Scoped to the CASH summary row - getByTestId alone would strict-mode-violate once a
