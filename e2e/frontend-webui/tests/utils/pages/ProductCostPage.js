@@ -2,18 +2,18 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, holdForCaptureIfEnabled, isUatCapture, SLOW_ACTION_TIMEOUT } from '../common';
 
-export const PRODUKTKOSTEN_WINDOW_ID = '344';
-export const PRODUKTKOSTEN_M_COST_TAB_ID = 'AD_Tab-701';
+export const PRODUCT_COST_WINDOW_ID = '344';
+export const PRODUCT_COST_M_COST_TAB_ID = 'AD_Tab-701';
 
 /**
- * Page object for the Produktkosten window 344 (product header + M_Cost tab).
+ * Page object for Product Cost (Produktkosten, window 344) — product header + M_Cost tab.
  */
-export class ProduktkostenPage {
-  /** Open the product's Produktkosten record and wait for its M_Cost grid rows. */
+export class ProductCostPage {
+  /** Open the product's Product Cost (Produktkosten, window 344) record and wait for its M_Cost grid rows. */
   static async open(productId) {
-    await test.step(`Open Produktkosten window for product ${productId}`, async () => {
+    await test.step(`Open Product Cost (Produktkosten, window 344) for product ${productId}`, async () => {
       const page = getPage();
-      await page.goto(`${FRONTEND_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}`);
+      await page.goto(`${FRONTEND_BASE_URL}/window/${PRODUCT_COST_WINDOW_ID}/${productId}`);
       await page
         .locator('.table-flex-wrapper table tbody tr')
         .first()

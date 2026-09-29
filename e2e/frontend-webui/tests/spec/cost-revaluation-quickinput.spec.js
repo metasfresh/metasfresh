@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
-import { PRODUKTKOSTEN_M_COST_TAB_ID, PRODUKTKOSTEN_WINDOW_ID } from '../utils/pages/ProduktkostenPage';
+import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID } from '../utils/pages/ProductCostPage';
 import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -62,37 +62,40 @@ async function loginAndCreateHeader(masterdata) {
   return await CostRevaluationPage.createHeader();
 }
 
-/** The moving-average (average purchase-order price) costing method: M_CostElement.CostingMethod 'A'. */
-const AVERAGE_PO_COSTING_METHOD = 'A';
+/**
+ * The moving-average (average purchase-order price) cost element of the standard setup. Selected by its name:
+ * M_CostElement.Name is master data without translations, so it is the same in every login language.
+ */
+const MOVING_AVERAGE_PO_COST_ELEMENT_NAME = 'Bestellpreis Durchschnitt';
 
 /** A fractional price on purpose: the quick-input must accept decimals, not only whole numbers. */
 const SEED_COST_PRICE = 12.35;
 
 /**
- * The product's cost records (M_Cost rows), read from the Produktkosten window's cost tab.
- * @returns {Promise<{costElementId: string, costingMethod: string, currentCostPrice: number, currentQty: number}[]>}
+ * The product's cost records (M_Cost rows), read from the Product Cost (Produktkosten, window 344) cost tab.
+ * @returns {Promise<{costElementId: string, costElementName: string, currentCostPrice: number, currentQty: number}[]>}
  */
 async function getProductCosts(page, productId) {
   const response = await page.request.get(
-    `${WEBAPI_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}/${PRODUKTKOSTEN_M_COST_TAB_ID}`
+    `${WEBAPI_BASE_URL}/window/${PRODUCT_COST_WINDOW_ID}/${productId}/${PRODUCT_COST_M_COST_TAB_ID}`
   );
   expect(response.status()).toBe(200);
   return ((await response.json()).result || []).map((row) => ({
     costElementId: row.fieldsByName.M_CostElement_ID && String(row.fieldsByName.M_CostElement_ID.value.key),
-    costingMethod: row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value && row.fieldsByName.CostingMethod.value.key,
+    costElementName: row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption,
     currentCostPrice: Number(row.fieldsByName.CurrentCostPrice.value),
     currentQty: Number(row.fieldsByName.CurrentQty && row.fieldsByName.CurrentQty.value),
   }));
 }
 
-/** The M_CostElement_ID of the given costing method, read from the default cost rows of a product that has them. */
-async function getCostElementId(page, productIdWithCosts, costingMethod) {
+/** The M_CostElement_ID of the cost element with the given name, read from the default cost rows of a product that has them. */
+async function getCostElementId(page, productIdWithCosts, costElementName) {
   const costElementIds = [
     ...new Set(
-      (await getProductCosts(page, productIdWithCosts)).filter((c) => c.costingMethod === costingMethod).map((c) => c.costElementId)
+      (await getProductCosts(page, productIdWithCosts)).filter((c) => c.costElementName === costElementName).map((c) => c.costElementId)
     ),
   ];
-  expect(costElementIds, `exactly one cost element with costing method ${costingMethod}`).toHaveLength(1);
+  expect(costElementIds, `exactly one cost element named ${costElementName}`).toHaveLength(1);
   return costElementIds[0];
 }
 
@@ -309,7 +312,7 @@ field's provisional-price hint applies (provisional until the first goods receip
     console.log(`[seed] header record ${recordId}`);
 
     // Moving-average costing: the cost element is chosen on the header while it has no lines.
-    const averagePOCostElementId = await getCostElementId(page, md.products.PHAS.id, AVERAGE_PO_COSTING_METHOD);
+    const averagePOCostElementId = await getCostElementId(page, md.products.PHAS.id, MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
     await CostRevaluationPage.selectCostElement(averagePOCostElementId);
     const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
     console.log('[seed] M_CostElement_ID=' + JSON.stringify(costElement.value));

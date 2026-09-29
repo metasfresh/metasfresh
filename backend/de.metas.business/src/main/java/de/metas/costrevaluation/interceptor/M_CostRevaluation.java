@@ -5,6 +5,7 @@ import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -16,15 +17,12 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_CostRevaluation.class)
 @Component
+@RequiredArgsConstructor
 class M_CostRevaluation
 {
 	private static final AdMessageKey MSG_DeleteLinesFirstError = AdMessageKey.of("M_CostRevaluation.DeleteLinesFirstError");
-	private final CostRevaluationService costRevaluationService;
 
-	M_CostRevaluation(@NonNull final CostRevaluationService costRevaluationService)
-	{
-		this.costRevaluationService = costRevaluationService;
-	}
+	@NonNull private final CostRevaluationService costRevaluationService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	void beforeNew(@NonNull final I_M_CostRevaluation record)

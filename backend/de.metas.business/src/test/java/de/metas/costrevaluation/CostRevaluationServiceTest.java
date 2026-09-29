@@ -480,6 +480,7 @@ public class CostRevaluationServiceTest
 			assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
 		}
 
+		/** A second call for the same product is blocked, and the first line is left untouched (additive only). */
 		@Test
 		public void throws_whenLineAlreadyExists_andLeavesFirstLineUntouched()
 		{
@@ -501,6 +502,7 @@ public class CostRevaluationServiceTest
 			assertThat(linesAfter.get(0).getNewCostPrice()).isEqualByComparingTo("20.00"); // untouched by the blocked second call
 		}
 
+		/** A product with more than one matching current-cost segment (ambiguous multi-segment product) is refused. */
 		@Test
 		public void throws_whenCurrentCostIsAmbiguous()
 		{
@@ -651,10 +653,6 @@ public class CostRevaluationServiceTest
 			assertThat(oldLine.getNewCostPrice()).isEqualByComparingTo("20.00");
 		}
 	}
-
-	/** A second call for the same product is blocked, and the first line is left untouched (additive only). */
-
-	/** A product with more than one matching current-cost segment (ambiguous multi-segment product) is refused. */
 
 	/**
 	 * Creates a draft header in the Europe/Berlin org, with the given posting date and evaluation start date

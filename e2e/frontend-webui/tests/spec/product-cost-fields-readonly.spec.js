@@ -5,10 +5,10 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
-import { PRODUKTKOSTEN_M_COST_TAB_ID, PRODUKTKOSTEN_WINDOW_ID, ProduktkostenPage } from '../utils/pages/ProduktkostenPage';
+import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID, ProductCostPage } from '../utils/pages/ProductCostPage';
 
 /**
- * Produktkosten (legacy M_Cost) window 344 — cost fields are READ-ONLY.
+ * Product Cost (Produktkosten, window 344) — legacy M_Cost cost fields are READ-ONLY.
  *
  * The migration flips AD_Field.IsReadOnly='Y' for CurrentCostPrice (11350) and FutureCostPrice (11352)
  * on the M_Cost tab (701) of window 344, so a user can no longer edit a product's cost price directly
@@ -20,6 +20,12 @@ import { PRODUKTKOSTEN_M_COST_TAB_ID, PRODUKTKOSTEN_WINDOW_ID, ProduktkostenPage
  * by cost-revaluation-quickinput.spec.js.
  */
 
+/**
+ * The Standard costing cost element of the standard setup. Selected by its name:
+ * M_CostElement.Name is master data without translations, so it is the same in every login language.
+ */
+const STANDARD_COSTING_COST_ELEMENT_NAME = 'Standard Costing';
+
 const testCases = [
   { language: 'en_US', label: 'English' },
   { language: 'de_DE', label: 'German' },
@@ -27,20 +33,21 @@ const testCases = [
 
 testCases.forEach(({ language, label }) => {
   // eslint-disable-next-line no-unused-vars
-  test(`Produktkosten window 344 CurrentCostPrice + FutureCostPrice are read-only (${label})`, async ({ page }) => {
+  test(`Product Cost window 344 CurrentCostPrice + FutureCostPrice are read-only (${label})`, async ({ page }) => {
     test.setTimeout(120000);
     allure.epic('E0226: Costing');
     allure.tag('F1500: Costing');
     allure.tag('F1500');
-    allure.story('Produktkosten cost fields locked read-only');
+    allure.story('Product Cost cost fields locked read-only');
     allure.severity('critical');
     allure.description(`
-## F1500: Costing — Produktkosten (window 344) cost fields read-only
+## F1500: Costing — Product Cost (Produktkosten, window 344) cost fields read-only
 
-A normally-created product carries its default M_Cost rows. On the Produktkosten window's M_Cost tab,
-the Current Cost Price and Future Cost Price fields must be read-only for every costing method, including Standard costing, so a user cannot edit a cost
-price directly (bypassing the audited Kosten Neubewertung path). Asserted on the language-invariant
-\`readonly\` flag the WebUI renders from, plus a UI attempt to edit Current Cost Price that is refused.
+A normally-created product carries its default M_Cost rows. On the M_Cost tab of Product Cost
+(Produktkosten, window 344), the Current Cost Price and Future Cost Price fields must be read-only for
+every costing method, including Standard costing, so a user cannot edit a cost price directly (bypassing
+the audited Kosten Neubewertung path). Asserted on the language-invariant \`readonly\` flag the WebUI
+renders from, plus a UI attempt to edit Current Cost Price that is refused.
     `);
 
     const md = await Backend.createMasterdata({
@@ -57,7 +64,7 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
 
     // The M_Cost rows of the product carry the read-only flag the WebUI renders from.
     const rowsResp = await page.request.get(
-      `${WEBAPI_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}/${PRODUKTKOSTEN_M_COST_TAB_ID}`
+      `${WEBAPI_BASE_URL}/window/${PRODUCT_COST_WINDOW_ID}/${productId}/${PRODUCT_COST_M_COST_TAB_ID}`
     );
     expect(rowsResp.status()).toBe(200);
     const rowsBody = await rowsResp.json();
@@ -69,7 +76,7 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
       const ccp = row.fieldsByName.CurrentCostPrice;
       const fcp = row.fieldsByName.FutureCostPrice;
       console.log(
-        `[readonly] CostingMethod=${JSON.stringify(row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value)}` +
+        `[readonly] costElement=${JSON.stringify(row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption)}` +
           ` CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`
       );
       // Both cost fields are read-only.
@@ -80,15 +87,16 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
     // The column's own read-only logic already locks both fields for every costing method except Standard costing,
     // so the Standard costing row is the one that proves the lockdown.
     const standardCostingRows = rows.filter(
-      (row) => row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value && row.fieldsByName.CostingMethod.value.key === 'S'
+      (row) =>
+        row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption === STANDARD_COSTING_COST_ELEMENT_NAME
     );
     expect(standardCostingRows, 'the product has a Standard costing cost row').toHaveLength(1);
     const standardCostingRowId = String(standardCostingRows[0].rowId);
 
     // UI: the user tries to edit Current Cost Price of the Standard costing row; the cell is read-only and keeps its value.
-    await ProduktkostenPage.open(productId);
-    await ProduktkostenPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
-    allure.attachment('Produktkosten window', await page.screenshot({ fullPage: true }), 'image/png');
+    await ProductCostPage.open(productId);
+    await ProductCostPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
+    allure.attachment('Product Cost (Produktkosten, window 344)', await page.screenshot({ fullPage: true }), 'image/png');
 
     console.log('[readonly] CurrentCostPrice + FutureCostPrice are read-only on window 344');
   });
