@@ -36,10 +36,9 @@ Feature: POS Invoice Settlement
       | Identifier |
       | warehouse  |
     And metasfresh contains C_BPartners:
-      | Identifier           | OPT.M_PricingSystem_ID |
-      | walkInCustomer       |                        |
-      | invoiceCustomer      | pricingSystem          |
-      | otherInvoiceCustomer | pricingSystem          |
+      | Identifier      | OPT.M_PricingSystem_ID |
+      | walkInCustomer  |                        |
+      | invoiceCustomer | pricingSystem          |
     And metasfresh contains C_POS:
       | Identifier | C_BP_BankAccount_ID | M_PricingSystem_ID | M_PriceList_ID | C_BPartner_ID  | C_BPartner_Location_ID | M_Warehouse_ID |
       | till       | cashbook            | pricingSystem      | priceList      | walkInCustomer | walkInCustomer         | warehouse      |
@@ -109,6 +108,13 @@ Feature: POS Invoice Settlement
       | creditMemoL1 | creditMemo   | product      | 1 PCE       |
     And the invoice identified by creditMemo is completed
 
+    # otherInvoiceCustomer is created here, not in the shared Background, because only this scenario uses it:
+    # its per-run-unique C_BPartner.Value is truncated to whole-second precision (the 20-char identifier leaves
+    # too few of the 40 chars for the sub-second part), so creating it once here avoids a same-second duplicate
+    # Value across scenarios that all run the Background.
+    Given metasfresh contains C_BPartners:
+      | Identifier           | OPT.M_PricingSystem_ID |
+      | otherInvoiceCustomer | pricingSystem          |
     Given metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID        | DocumentNo     | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
       | draftedInvoice | otherInvoiceCustomer | INV-NOTOFFERED | 2026-09-24   | Spot                     | true    | EUR           |
@@ -145,5 +151,39 @@ Feature: POS Invoice Settlement
     Then validate created invoices
       | C_Invoice_ID | DocStatus | IsPaid |
       | invoice2     | CO        | false  |
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC26
+  Scenario: An already fully-paid invoice is rejected at settle time, leaving no payment behind
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | paidInv    | invoiceCustomer | 2026-09-24   | Spot                     | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | paidInvL   | paidInv      | product      | 1 PCE       |
+    And the invoice identified by paidInv is completed
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID   | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payFull    | invoiceCustomer | 119.00 EUR | true      | cashbook            |
+    And the payment identified by payFull is completed
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID |
+      | paidInv      | payFull      |
+
+    # The invoice is fully paid, so the settle-time re-check (open amount <= 0) rejects it. This is distinct from
+    # TC24's search-time filter: here the cashier settles a specific invoice by id (e.g. it was paid on another
+    # till between the search and the confirmation), so only the re-read inside settleInCash can catch it.
+    When settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceSettlement.NoLongerOpen':
+      | C_Invoice_ID | CashTenderedAmount |
+      | paidInv      | 119.00             |
+
+    Then validate created invoices
+      | C_Invoice_ID | DocStatus | IsPaid |
+      | paidInv      | CO        | true   |
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |

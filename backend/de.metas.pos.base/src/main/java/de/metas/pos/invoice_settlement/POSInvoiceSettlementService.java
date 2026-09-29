@@ -1,5 +1,6 @@
 package de.metas.pos.invoice_settlement;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
@@ -143,6 +144,44 @@ public class POSInvoiceSettlementService
 		return trxManager.callInThreadInheritedTrx(() -> settleInCashInTrx(request));
 	}
 
+	/**
+	 * Rejects settling an invoice that belongs to a different org than the terminal's. {@code request.getInvoiceId()}
+	 * is client-supplied and, unlike {@link #findOpenInvoices} (which scopes its query to the terminal's org), the
+	 * settle path has no other org gate — without this check a client-supplied invoiceId from another org would be
+	 * settled using THIS terminal's cashbook/cashier, bypassing that scoping.
+	 */
+	@VisibleForTesting
+	void assertInvoiceBelongsToTerminalOrg(@NonNull final I_C_Invoice invoice, @NonNull final POSTerminal terminal)
+	{
+		final OrgId invoiceOrgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+		if (!invoiceOrgId.equals(terminal.getOrgId()))
+		{
+			throw new AdempiereException(MSG_WrongOrg)
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+					.setParameter("invoiceOrgId", invoiceOrgId)
+					.setParameter("terminalOrgId", terminal.getOrgId());
+		}
+	}
+
+	/**
+	 * Rejects settling an invoice whose currency differs from the terminal's — the cash drawer, cashbook and cash
+	 * journal all operate in the terminal's currency, so a foreign-currency invoice cannot be paid at this till.
+	 */
+	@VisibleForTesting
+	void assertInvoiceCurrencyMatchesTerminal(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final CurrencyId invoiceCurrencyId,
+			@NonNull final POSTerminal terminal)
+	{
+		if (!invoiceCurrencyId.equals(terminal.getCurrencyId()))
+		{
+			throw new AdempiereException(MSG_CurrencyMismatch)
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+					.setParameter("invoiceCurrencyId", invoiceCurrencyId)
+					.setParameter("terminalCurrencyId", terminal.getCurrencyId());
+		}
+	}
+
 	@NonNull
 	private POSInvoiceSettleResult settleInCashInTrx(@NonNull final POSInvoiceSettleRequest request)
 	{
@@ -152,17 +191,7 @@ public class POSInvoiceSettlementService
 		// in its own transaction) may be stale by the time the cashier confirms the settlement
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(request.getInvoiceId());
 
-		// request.getInvoiceId() is client-supplied and, unlike findOpenInvoices (which scopes to terminal.getOrgId()),
-		// this method has no other org gate: without this check, a client-supplied invoiceId from another org would be
-		// settled using THIS terminal's cashbook/cashier, bypassing the org scoping findOpenInvoices otherwise enforces.
-		final OrgId invoiceOrgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-		if (!invoiceOrgId.equals(terminal.getOrgId()))
-		{
-			throw new AdempiereException(MSG_WrongOrg)
-					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
-					.setParameter("invoiceOrgId", invoiceOrgId)
-					.setParameter("terminalOrgId", terminal.getOrgId());
-		}
+		assertInvoiceBelongsToTerminalOrg(invoice, terminal);
 
 		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
 		if (open.signum() <= 0)
@@ -171,13 +200,7 @@ public class POSInvoiceSettlementService
 		}
 
 		final CurrencyId invoiceCurrencyId = open.getCurrencyId();
-		if (!invoiceCurrencyId.equals(terminal.getCurrencyId()))
-		{
-			throw new AdempiereException(MSG_CurrencyMismatch)
-					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
-					.setParameter("invoiceCurrencyId", invoiceCurrencyId)
-					.setParameter("terminalCurrencyId", terminal.getCurrencyId());
-		}
+		assertInvoiceCurrencyMatchesTerminal(invoice, invoiceCurrencyId, terminal);
 
 		final BigDecimal cashTenderedAmount = request.getCashTenderedAmount();
 		if (cashTenderedAmount != null)
