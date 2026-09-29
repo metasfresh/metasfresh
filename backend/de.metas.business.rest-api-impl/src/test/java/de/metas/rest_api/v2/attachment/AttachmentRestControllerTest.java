@@ -38,6 +38,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingPropertyException;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -140,7 +141,7 @@ public class AttachmentRestControllerTest
 	@Test
 	void createAttachment_referenceWithoutOrgCode()
 	{
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Order.Table_Name);
+		final AdTableId adTableId = Services.get(IADTableDAO.class).retrieveAdTableId(I_C_Order.Table_Name);
 
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		InterfaceWrapperHelper.save(order);
@@ -148,7 +149,7 @@ public class AttachmentRestControllerTest
 		final JsonAttachmentRequest attachmentRequest = JsonAttachmentRequest.builder()
 				.attachment(createDummyAttachment())
 				.reference(JsonTableRecordReference.builder()
-						.adTableId(adTableId)
+						.adTableId(adTableId.getRepoId())
 						.recordId(JsonMetasfreshId.of(order.getC_Order_ID()))
 						.build())
 				.build();
@@ -166,7 +167,7 @@ public class AttachmentRestControllerTest
 				.create()
 				.firstOnlyNotNull(I_AD_Attachment_MultiRef.class);
 
-		assertThat(multiRef.getAD_Table_ID()).isEqualTo(adTableId);
+		assertThat(multiRef.getAD_Table_ID()).isEqualTo(adTableId.getRepoId());
 		assertThat(multiRef.getRecord_ID()).isEqualTo(order.getC_Order_ID());
 	}
 

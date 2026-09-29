@@ -235,10 +235,10 @@ public class AttachmentRestService
 	{
 		final int recordId = reference.getRecordId().getValue();
 
-		final Integer adTableId = reference.getAdTableId();
+		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(reference.getAdTableId());
 		if (adTableId != null)
 		{
-			return TableRecordReference.of(AdTableId.ofRepoId(adTableId), recordId);
+			return TableRecordReference.of(adTableId, recordId);
 		}
 
 		// JsonTableRecordReference guarantees that tableName is set whenever adTableId is not.
