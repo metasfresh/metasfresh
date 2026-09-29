@@ -149,7 +149,6 @@ completed and posted.
     });
 
     const recordId = await CostRevaluationPage.createHeader();
-    console.log(`[quick-input] header record ${recordId}`);
     const headerDate = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
     if (headerDate !== adjustmentDate) {
       await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', adjustmentDate);
@@ -165,13 +164,8 @@ completed and posted.
 
     // Exactly one line exists (assert via WebAPI, language-independent)
     const rows = await CostRevaluationPage.getLines(recordId);
-    console.log('[quick-input] line count=' + rows.length);
     expect(rows.length).toBe(1);
     const line = rows[0].fieldsByName;
-    console.log(
-      `[quick-input] CurrentCostPrice=${JSON.stringify(line.CurrentCostPrice.value)} CurrentQty=${JSON.stringify(line.CurrentQty.value)}` +
-        ` NewCostPrice=${JSON.stringify(line.NewCostPrice.value)} DeltaAmt=${JSON.stringify(line.DeltaAmt && line.DeltaAmt.value)}`
-    );
     expect(Number(line.NewCostPrice.value)).toBe(15);
     // Derived from the product's live cost: current cost 10 for the 10 on hand
     expect(Number(line.CurrentCostPrice.value)).toBe(10);
@@ -181,7 +175,6 @@ completed and posted.
 
     // Completed (CO) and posted; the value difference 10 x (15 - 10) = 50 is on the line and in the accounting facts
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
-    console.log('[quick-input] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
     const facts = await CostRevaluationPage.waitUntilPosted(recordId);
     const factAmounts = facts.map((fact) => ({
@@ -190,14 +183,12 @@ completed and posted.
       dr: Number(fact.AmtAcctDr.value),
       cr: Number(fact.AmtAcctCr.value),
     }));
-    console.log('[quick-input] accounting facts=' + JSON.stringify(factAmounts));
     expect(factAmounts.every((fact) => fact.recordId === String(recordId))).toBe(true);
     // Posted with the value difference 50: balanced, and the product asset account is debited by 50
     expect(factAmounts.reduce((sum, fact) => sum + fact.dr, 0)).toBe(50);
     expect(factAmounts.reduce((sum, fact) => sum + fact.cr, 0)).toBe(50);
     expect(factAmounts.filter((fact) => fact.account === 'P_Asset_Acct').map((fact) => fact.dr - fact.cr)).toEqual([50]);
     const completedRows = await CostRevaluationPage.getLines(recordId);
-    console.log('[quick-input] completed DeltaAmt=' + JSON.stringify(completedRows[0].fieldsByName.DeltaAmt.value));
     expect(Number(completedRows[0].fieldsByName.DeltaAmt.value)).toBe(50);
     await CostRevaluationPage.showCompletedDocument();
   });
@@ -216,7 +207,6 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
 
     const md = await createMasterdata(language);
     const recordId = await loginAndCreateHeader(md);
-    console.log(`[dates] header record ${recordId}`);
 
     // Derive the dates from the server-defaulted posting date, not from the test runner's clock.
     const initialDateAcct = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
@@ -231,7 +221,6 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
       await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct1);
       const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
       const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      console.log(`[dates] DateAcct=${JSON.stringify(dateAcct.value)} EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
       expect(String(dateAcct.value)).toContain(dateAcct1);
       expect(String(evalStart.value)).toContain(dateAcct1);
       await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toHaveValue(
@@ -243,7 +232,6 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
     await test.step(`Set Evaluation Start Date by hand to ${manualEvalStart}`, async () => {
       await CostRevaluationPage.typeHeaderDate(recordId, 'EvaluationStartDate', manualEvalStart);
       const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      console.log(`[dates] manual EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
       expect(String(evalStart.value)).toContain(manualEvalStart);
     });
 
@@ -251,7 +239,6 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
       await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct2);
       const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
       const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      console.log(`[dates] DateAcct=${JSON.stringify(dateAcct.value)} EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
       expect(String(dateAcct.value)).toContain(dateAcct2);
       expect(String(evalStart.value)).toContain(manualEvalStart);
       await CostRevaluationPage.showHeaderDates();
@@ -287,7 +274,6 @@ and it does NOT offer a non-stocked (Service) product.
       await CostRevaluationPage.expectProductNotOffered(md.products.PSVC.productCode);
     });
 
-    console.log('[picker] stocked (has-cost + costless) offered; non-stocked excluded');
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -309,13 +295,11 @@ field's provisional-price hint applies (provisional until the first goods receip
     const seedProductId = md.products.PSEED.id;
 
     const recordId = await loginAndCreateHeader(md);
-    console.log(`[seed] header record ${recordId}`);
 
     // Moving-average costing: the cost element is chosen on the header while it has no lines.
     const averagePOCostElementId = await getCostElementId(page, md.products.PHAS.id, MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
     await CostRevaluationPage.selectCostElement(averagePOCostElementId);
     const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
-    console.log('[seed] M_CostElement_ID=' + JSON.stringify(costElement.value));
     expect(String(costElement.value.key)).toBe(averagePOCostElementId);
 
     // Precondition: the product really has no cost record yet.
@@ -340,11 +324,9 @@ field's provisional-price hint applies (provisional until the first goods receip
         (e) => (e.fields || []).some((f) => f.field === 'NewCostPrice')
       );
       const expectedHint = npcElement.description;
-      console.log('[seed] layout hint = ' + JSON.stringify(expectedHint));
       expect(expectedHint && expectedHint.length).toBeGreaterThan(0);
 
       const npcLabelTitle = await CostRevaluationPage.hoverNewCostPriceHint();
-      console.log('[seed] rendered NewCostPrice label title = ' + JSON.stringify(npcLabelTitle));
       expect(npcLabelTitle).toBe(expectedHint);
     });
 
@@ -355,20 +337,14 @@ field's provisional-price hint applies (provisional until the first goods receip
 
     // Adding the line seeded the missing cost row (qty 0) and created the line with NewCostPrice = typed value.
     const rows = await CostRevaluationPage.getLines(recordId);
-    console.log(
-      '[seed] lines=' +
-        JSON.stringify(rows.map((r) => ({ NewCostPrice: r.fieldsByName.NewCostPrice.value, CurrentQty: r.fieldsByName.CurrentQty.value })))
-    );
     expect(rows.length).toBe(1);
     expect(Number(rows[0].fieldsByName.NewCostPrice.value)).toBe(SEED_COST_PRICE);
     expect(Number(rows[0].fieldsByName.CurrentQty.value)).toBe(0);
     const seededCosts = await getProductCosts(page, seedProductId);
-    console.log('[seed] cost rows after adding the line=' + JSON.stringify(seededCosts));
     expect(seededCosts.length).toBeGreaterThan(0);
 
     await CostRevaluationPage.complete();
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
-    console.log('[seed] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
 
     // End result: the product's moving-average current cost price is now the entered price.
@@ -378,7 +354,6 @@ field's provisional-price hint applies (provisional until the first goods receip
       .poll(
         async () => {
           const costsAfterComplete = await getProductCosts(page, seedProductId);
-          console.log('[seed] cost rows after Complete=' + JSON.stringify(costsAfterComplete));
           return costsAfterComplete
             .filter((c) => c.costElementId === averagePOCostElementId)
             .map((c) => c.currentCostPrice);

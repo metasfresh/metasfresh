@@ -92,7 +92,6 @@ export class CostRevaluationPage {
       // defaulted by the server; compared to it rather than to the test runner's clock, which may differ in time zone).
       const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
       const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' DateAcct=' + JSON.stringify(dateAcct.value));
       expect(dateAcct.value).toBeTruthy();
       expect(String(evalStart.value).substring(0, 10)).toBe(String(dateAcct.value).substring(0, 10));
 
@@ -419,7 +418,7 @@ export class CostRevaluationPage {
   /**
    * Try to Complete the document (status button -> Complete) and expect the server to refuse it:
    * the Complete request fails and the error notification shows the given (translated) message text.
-   * @param {string} expectedMessage a fragment of the expected error message
+   * @param {string} expectedMessage the expected error message text (or a fragment of it)
    */
   static async completeExpectingRefusal(expectedMessage) {
     const page = getPage();
@@ -450,7 +449,6 @@ export class CostRevaluationPage {
       await readMore.click();
     }
     await expect(error.locator('.notification-content')).toContainText(expectedMessage);
-    console.log('[refusal] shown error=' + JSON.stringify(await error.locator('.notification-content').innerText()));
     const unhighlight = await highlightForCaptureIfEnabled(error);
     await holdForCaptureIfEnabled(4000);
     await unhighlight();

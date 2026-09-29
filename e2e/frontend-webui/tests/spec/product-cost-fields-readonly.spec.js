@@ -69,16 +69,11 @@ renders from, plus a UI attempt to edit Current Cost Price that is refused.
     expect(rowsResp.status()).toBe(200);
     const rowsBody = await rowsResp.json();
     const rows = rowsBody.result || [];
-    console.log('[readonly] M_Cost rows=' + rows.length);
     expect(rows.length).toBeGreaterThan(0);
 
     for (const row of rows) {
       const ccp = row.fieldsByName.CurrentCostPrice;
       const fcp = row.fieldsByName.FutureCostPrice;
-      console.log(
-        `[readonly] costElement=${JSON.stringify(row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption)}` +
-          ` CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`
-      );
       // Both cost fields are read-only.
       expect(ccp.readonly).toBe(true);
       expect(fcp.readonly).toBe(true);
@@ -98,6 +93,5 @@ renders from, plus a UI attempt to edit Current Cost Price that is refused.
     await ProductCostPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
     allure.attachment('Product Cost (Produktkosten, window 344)', await page.screenshot({ fullPage: true }), 'image/png');
 
-    console.log('[readonly] CurrentCostPrice + FutureCostPrice are read-only on window 344');
   });
 });
