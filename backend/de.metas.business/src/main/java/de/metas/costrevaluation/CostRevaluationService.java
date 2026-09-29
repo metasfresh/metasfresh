@@ -142,7 +142,7 @@ public class CostRevaluationService
 			throw new AdempiereException(MSG_DocumentNotDraft);
 		}
 
-		if (costRevaluationRepository.existsActiveLineForProduct(costRevaluationId, productId))
+		if (costRevaluationRepository.hasActiveLineForProduct(costRevaluationId, productId))
 		{
 			throw new AdempiereException(MSG_LineAlreadyExistsForProduct, productBL.getProductValueAndName(productId));
 		}

@@ -38,7 +38,7 @@ function todayISO() {
 /**
  * Create the shared masterdata for this workflow:
  *  - PHAS: a stocked Item — gets default M_Cost rows on creation (has a current cost).
- *  - PSEED: a stocked Item with skipDefaultCosts — genuinely NO M_Cost row (migrated-product / seed case).
+ *  - PSEED: a stocked Item with isSkipDefaultCosts — genuinely NO M_Cost row (migrated-product / seed case).
  *  - PSVC: a Service — NOT stocked (must be filtered out of the picker).
  */
 async function createMasterdata(language) {
@@ -47,7 +47,7 @@ async function createMasterdata(language) {
       login: { user: { language, firstname: 'CostReval', lastname: 'E2E' } },
       products: {
         PHAS: { name: 'CR_HAS_COST', type: 'Item' },
-        PSEED: { name: 'CR_SEED_NOROW', type: 'Item', skipDefaultCosts: true },
+        PSEED: { name: 'CR_SEED_NOROW', type: 'Item', isSkipDefaultCosts: true },
         PSVC: { name: 'CR_SERVICE', type: 'Service' },
       },
     },

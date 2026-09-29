@@ -24,6 +24,7 @@ package de.metas.costrevaluation.interceptor;
 
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.document.engine.DocStatus;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link M_CostRevaluation#beforeNew(I_M_CostRevaluation)} and {@link M_CostRevaluation#beforeChange(I_M_CostRevaluation, ModelChangeType)}.
+ * The DateAcct -> EvaluationStartDate follow-up is a callout; see {@code de.metas.costrevaluation.callout.M_CostRevaluationTest}.
  * <p>
  * A POJO-backed record ({@code AdempiereTestHelper.get().init()} +
  * {@code InterfaceWrapperHelper.newInstance}) reports {@code isUIAction() == false}, i.e. it models a
@@ -112,65 +115,25 @@ class M_CostRevaluationTest
 		return record;
 	}
 
-	@Test
-	void beforeChange_dateAcctChanged_evaluationStartDateFollows_whenItWasEqualToOldDateAcct()
-	{
-		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
-
-		record.setDateAcct(day(2020, 2, 20));
-		interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE);
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
-	}
-
-	@Test
-	void beforeChange_dateAcctChanged_evaluationStartDateKept_whenUserHadSetItSeparately()
-	{
-		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
-
-		record.setDateAcct(day(2020, 2, 20));
-		interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE);
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
-	}
-
-	@Test
-	void beforeChange_dateAcctAndEvaluationStartDateChangedTogether_explicitEvaluationStartDateWins()
-	{
-		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
-
-		record.setDateAcct(day(2020, 2, 20));
-		record.setEvaluationStartDate(day(2020, 1, 1));
-		interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE);
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 1));
-	}
-
-	@Test
-	void beforeChange_dateAcctChanged_evaluationStartDateKept_whenDocumentIsNotDraft()
-	{
-		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Completed);
-
-		record.setDateAcct(day(2020, 2, 20));
-		interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE);
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
-	}
-
 	/**
-	 * With lines present, moving the defaulted EvaluationStartDate trips the existing "delete lines first" guard, so the user
-	 * is told instead of the revaluation window silently staying at the old date.
+	 * With lines present, the EvaluationStartDate moved by the DateAcct callout trips the "delete lines first" guard, so the user
+	 * is told instead of the lines silently staying derived for the old revaluation window.
 	 */
 	@Test
-	void beforeChange_dateAcctChanged_withActiveLines_failsWithDeleteLinesFirst()
+	void beforeChange_dateAcctChangedViaCallout_withActiveLines_failsWithDeleteLinesFirst()
 	{
 		final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
 		when(costRevaluationService.hasActiveLines(any())).thenReturn(true);
 		interceptor = new M_CostRevaluation(costRevaluationService);
 
 		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
+		final ICalloutField dateAcctField = mock(ICalloutField.class);
+		when(dateAcctField.getModelBeforeChanges(I_M_CostRevaluation.class)).thenReturn(createOld(record, I_M_CostRevaluation.class));
 
 		record.setDateAcct(day(2020, 2, 20));
+		new de.metas.costrevaluation.callout.M_CostRevaluation().onDateAcctChanged(record, dateAcctField);
+		assertThat(record.getEvaluationStartDate()).as("precondition: callout moved EvaluationStartDate").isEqualTo(day(2020, 2, 20));
+
 		assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("M_CostRevaluation.DeleteLinesFirstError");

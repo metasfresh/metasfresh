@@ -80,7 +80,7 @@ public class CreateProductCommand
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
-	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for skipDefaultCosts
+	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for isSkipDefaultCosts
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
@@ -491,13 +491,13 @@ public class CreateProductCommand
 	 */
 	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
 	{
-		if (!Boolean.TRUE.equals(request.getSkipDefaultCosts()))
+		if (!Boolean.TRUE.equals(request.getIsSkipDefaultCosts()))
 		{
 			return;
 		}
 
 		currentCostsRepository.deleteForProduct(productRecord);
-		logger.info("Deleted default M_Cost rows for product {} (skipDefaultCosts=true)", productRecord.getValue());
+		logger.info("Deleted default M_Cost rows for product {} (isSkipDefaultCosts=true)", productRecord.getValue());
 	}
 
 	private void renamePreviousEAN13ProductCodes()

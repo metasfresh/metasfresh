@@ -26,12 +26,14 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -40,6 +42,8 @@ import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.sql.Timestamp;
+import java.util.Objects;
 
 @Component
 @Callout(I_M_CostRevaluation.class)
@@ -65,6 +69,37 @@ public class M_CostRevaluation implements ITabCallout
 	public void onDocTypeChanged(@NonNull final I_M_CostRevaluation costRevaluation)
 	{
 		setDocumentNo(costRevaluation);
+	}
+
+	/**
+	 * Keeps a defaulted EvaluationStartDate (i.e. equal to the previous DateAcct, or not set at all) in step when the user changes
+	 * DateAcct on a not yet processed document, so that moving the posting date does not silently turn the revaluation retrospective.
+	 * An EvaluationStartDate that the user set on its own is left untouched.
+	 * <p>
+	 * If the document already has lines, the moved EvaluationStartDate is then rejected on save by the model interceptor's
+	 * "delete lines first" guard. That is intended: the lines were derived for the old revaluation window.
+	 */
+	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_DateAcct)
+	public void onDateAcctChanged(@NonNull final I_M_CostRevaluation costRevaluation, @NonNull final ICalloutField field)
+	{
+		final DocStatus docStatus = DocStatus.ofNullableCode(costRevaluation.getDocStatus());
+		if (docStatus != null && !docStatus.isDraftedOrInProgress())
+		{
+			return;
+		}
+
+		final Timestamp dateAcct = costRevaluation.getDateAcct();
+		if (dateAcct == null)
+		{
+			return;
+		}
+
+		final Timestamp evaluationStartDate = costRevaluation.getEvaluationStartDate();
+		final Timestamp dateAcctOld = field.getModelBeforeChanges(I_M_CostRevaluation.class).getDateAcct();
+		if (evaluationStartDate == null || Objects.equals(evaluationStartDate, dateAcctOld))
+		{
+			costRevaluation.setEvaluationStartDate(dateAcct);
+		}
 	}
 
 	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)

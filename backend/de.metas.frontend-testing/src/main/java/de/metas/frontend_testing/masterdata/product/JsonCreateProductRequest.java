@@ -76,7 +76,7 @@ public class JsonCreateProductRequest
 	 * through the interceptor — the precondition of the cost-revaluation "seed-cost" path
 	 * (a stocked product with no cost record yet). Defaults to {@code false}.
 	 */
-	@Nullable Boolean skipDefaultCosts;
+	@Nullable Boolean isSkipDefaultCosts;
 
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
