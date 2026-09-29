@@ -25,11 +25,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
-import de.metas.common.bpartner.v2.response.JsonResponseComposite;
-import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.organization.OrgId;
@@ -46,12 +42,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * Order candidates that reference a partner or location by {@code gln-} identifier resolve it among active partners and active locations only.
@@ -76,7 +69,7 @@ class MasterdataProviderGetBPartnerInfoTest
 		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		bpartnerRestController = Mockito.mock(BpartnerRestController.class);
-		mockBPartnerEndpointsForMetasfreshIdsOnly();
+		BPartnerEndpointTestMocks.mockForMetasfreshIdsOnly(bpartnerRestController);
 
 		masterdataProvider = MasterdataProvider.builder()
 				.permissionService(Mockito.mock(PermissionService.class))
@@ -149,6 +142,14 @@ class MasterdataProviderGetBPartnerInfoTest
 	}
 
 	@Test
+	void missingBPartnerIdentifier_failsWithAClearMessage()
+	{
+		assertThatThrownBy(() -> masterdataProvider.getBPartnerInfoNotNull(request(null, "1"), orgId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("bpartnerIdentifier is missing");
+	}
+
+	@Test
 	void missingLocationIdentifier_failsWithAClearMessage()
 	{
 		final BPartnerId partner = createBPartner("partner", true);
@@ -179,43 +180,6 @@ class MasterdataProviderGetBPartnerInfoTest
 				.bPartnerIdentifier(bpartnerIdentifier)
 				.bPartnerLocationIdentifier(locationIdentifier)
 				.build();
-	}
-
-	private void mockBPartnerEndpointsForMetasfreshIdsOnly()
-	{
-		Mockito.doAnswer(invocation -> {
-			final String bpartnerIdentifier = invocation.getArgument(1);
-			if (!isMetasfreshId(bpartnerIdentifier))
-			{
-				return ResponseEntity.notFound().build();
-			}
-			final JsonResponseComposite composite = JsonResponseComposite.builder()
-					.bpartner(JsonResponseBPartner.builder()
-							.metasfreshId(JsonMetasfreshId.of(Integer.parseInt(bpartnerIdentifier)))
-							.active(true).name("bp").vendor(false).customer(true).company(true)
-							.build())
-					.build();
-			return ResponseEntity.ok(composite);
-		}).when(bpartnerRestController).retrieveBPartner(any(), anyString());
-
-		Mockito.doAnswer(invocation -> {
-			final String bpartnerIdentifier = invocation.getArgument(1);
-			final String locationIdentifier = invocation.getArgument(2);
-			if (!isMetasfreshId(bpartnerIdentifier) || !isMetasfreshId(locationIdentifier))
-			{
-				return ResponseEntity.notFound().build();
-			}
-			final JsonResponseLocation location = JsonResponseLocation.builder()
-					.metasfreshId(JsonMetasfreshId.of(Integer.parseInt(locationIdentifier)))
-					.active(true)
-					.build();
-			return ResponseEntity.ok(location);
-		}).when(bpartnerRestController).retrieveBPartnerLocation(any(), anyString(), anyString());
-	}
-
-	private static boolean isMetasfreshId(final String identifier)
-	{
-		return identifier.matches("^\\d+$");
 	}
 
 	private static BPartnerId createBPartner(final String value, final boolean active)

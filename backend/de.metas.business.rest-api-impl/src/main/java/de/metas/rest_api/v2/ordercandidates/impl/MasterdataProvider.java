@@ -201,6 +201,7 @@ public final class MasterdataProvider
 			@Nullable final OrgId orgId,
 			@Nullable final String orgCode)
 	{
+		// Lombok's @NonNull on the DTO getters does not apply to requests deserialized from JSON (a missing property arrives as null), so check explicitly.
 		if (jsonBPartnerInfo.getBPartnerIdentifier() == null)
 		{
 			throw new AdempiereException("bpartnerIdentifier is missing from the bpartner block!")

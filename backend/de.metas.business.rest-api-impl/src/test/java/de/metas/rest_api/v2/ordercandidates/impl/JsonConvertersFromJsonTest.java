@@ -66,7 +66,6 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
@@ -161,7 +160,7 @@ class JsonConvertersFromJsonTest
 		final BPartnerLocationId activeLocation = createLocation(activePartner, "p-shared");
 		final HUPIItemProductId activeRow = createPiip(product, activePartner);
 
-		mockBPartnerEndpointsForMetasfreshIdsOnly();
+		BPartnerEndpointTestMocks.mockForMetasfreshIdsOnly(bpartnerRestController);
 
 		final JsonOLCandCreateRequest request = JsonOLCandCreateRequest.builder()
 				.externalLineId("line-1")
@@ -183,31 +182,6 @@ class JsonConvertersFromJsonTest
 		assertThat(result.getBpartner().getBpartnerId()).isEqualTo(activePartner);
 		assertThat(result.getBpartner().getBpartnerLocationId()).isEqualTo(activeLocation);
 		assertThat(result.getHuPIItemProductId()).isEqualTo(activeRow.getRepoId());
-	}
-
-	private void mockBPartnerEndpointsForMetasfreshIdsOnly()
-	{
-		Mockito.doAnswer(invocation -> {
-			final String bpartnerIdentifier = invocation.getArgument(1);
-			if (!bpartnerIdentifier.matches("^\\d+$"))
-			{
-				return ResponseEntity.notFound().build();
-			}
-			final JsonResponseComposite composite = JsonResponseComposite.builder()
-					.bpartner(JsonResponseBPartner.builder().metasfreshId(JsonMetasfreshId.of(Integer.parseInt(bpartnerIdentifier))).active(true).name("bp").vendor(false).customer(true).company(true).build())
-					.build();
-			return ResponseEntity.ok(composite);
-		}).when(bpartnerRestController).retrieveBPartner(any(), anyString());
-
-		Mockito.doAnswer(invocation -> {
-			final String bpartnerIdentifier = invocation.getArgument(1);
-			final String locationIdentifier = invocation.getArgument(2);
-			if (!bpartnerIdentifier.matches("^\\d+$") || !locationIdentifier.matches("^\\d+$"))
-			{
-				return ResponseEntity.notFound().build();
-			}
-			return ResponseEntity.ok(JsonResponseLocation.builder().metasfreshId(JsonMetasfreshId.of(Integer.parseInt(locationIdentifier))).active(true).build());
-		}).when(bpartnerRestController).retrieveBPartnerLocation(any(), anyString(), anyString());
 	}
 
 	private static void deactivate(final BPartnerId bpartnerId)
