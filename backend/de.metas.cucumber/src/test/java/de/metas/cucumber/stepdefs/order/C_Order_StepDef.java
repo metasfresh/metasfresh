@@ -603,6 +603,25 @@ public class C_Order_StepDef
 		StepDefUtil.assertRefusedWithMessageContaining(expectedMessagePart, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for reactivation.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be reactivated because of error code ContractCompensationGroup_ReactivateInvoiced
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be reactivated because of error code (.*)$")
+	public void order_cannot_be_reactivated_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.reactivated.name()));
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it

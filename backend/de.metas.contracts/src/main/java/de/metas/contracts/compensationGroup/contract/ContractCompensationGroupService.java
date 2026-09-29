@@ -8,6 +8,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -88,6 +89,8 @@ public class ContractCompensationGroupService
 	@NonNull private final ContractCompensationGroupRepository contractGroupRepository;
 	@NonNull private final OrderFreightCostsService orderFreightCostService;
 
+	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
+
 	/**
 	 * Removes this order's contract-created compensation group(s) (if any), then, if the order's invoice
 	 * partner has an active {@code CompensationGroup} contract whose settings list the order's document type
@@ -135,6 +138,21 @@ public class ContractCompensationGroupService
 				.createGroup(candidateSelection.getLineIds());
 
 		contractGroupRepository.setFlatrateTerm(group.getGroupId(), FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()));
+	}
+
+	/**
+	 * Refuses reactivating the given order while any compensation (discount) line of its contract-created
+	 * groups is (partially) invoiced — reactivating would otherwise leave an invoiced line unprocessed once
+	 * {@link #removeContractGroups} ungroups it, or dangling once the group's regular lines are re-grouped
+	 * differently on the next completion.
+	 */
+	public void assertNoInvoicedContractGroupLines(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		if (contractGroupRepository.hasInvoicedContractGroupLines(orderId))
+		{
+			throw new AdempiereException(MSG_ReactivateInvoiced);
+		}
 	}
 
 	/**

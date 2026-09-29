@@ -13,6 +13,7 @@ import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -76,6 +77,30 @@ public class ContractCompensationGroupRepository
 				.stream()
 				.map(orderCompensationGroupId -> OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return {@code true} if any compensation (discount) line of the given order's contract-created groups
+	 * carries a non-zero {@code QtyInvoiced} — the condition reactivation is refused for.
+	 */
+	public boolean hasInvoicedContractGroupLines(@NonNull final OrderId orderId)
+	{
+		final List<Integer> contractGroupRepoIds = retrieveContractGroupIds(orderId)
+				.stream()
+				.map(GroupId::getOrderCompensationGroupId)
+				.collect(ImmutableList.toImmutableList());
+		if (contractGroupRepoIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, contractGroupRepoIds)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyInvoiced, Operator.NOT_EQUAL, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
 	}
 
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */
