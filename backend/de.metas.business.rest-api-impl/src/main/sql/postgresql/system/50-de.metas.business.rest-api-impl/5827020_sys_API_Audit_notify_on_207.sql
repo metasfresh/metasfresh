@@ -3,7 +3,7 @@
 
 -- Ref-list value
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,544373 /*From ID Server*/,541315,TO_TIMESTAMP('2026-09-29 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Aufrufen mit Fehler oder teilweisem Fehler (207)',TO_TIMESTAMP('2026-09-29 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'ERROR_OR_207','ERROR_OR_207')
+VALUES (0,0,544373 /*From ID Server*/,541315,TO_TIMESTAMP('2026-09-29 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Aufrufen mit Fehler oder teilweisem Fehler (207)',TO_TIMESTAMP('2026-09-29 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'ERROR_OR_207','AufrufenMitFehlerOderTeilweisemFehler207')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID,Description,Name,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
