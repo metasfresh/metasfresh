@@ -4,41 +4,36 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermStatus;
-import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -64,31 +59,38 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * (Re)creates the compensation group that a {@code Type_Conditions=CompensationGroup} contract adds to an
- * order on completion (sales or purchase), and removes it again on reactivate.
+ * order on every completion attempt (sales or purchase; remove-then-recreate, so a reactivated order that is
+ * never re-completed simply keeps the group from its last completion attempt).
  * <p>
  * The order is matched to its contract by <b>invoice partner</b> ({@code Bill_BPartner_ID}), not by the
  * order partner ({@code C_BPartner_ID}) — a store (delivery address) whose invoice partner is a head office
  * is covered by the head office's contract, never by one the store itself might hold.
+ * <p>
+ * <b>Interceptor-ordering caveat:</b> this runs at {@link org.compiere.model.ModelValidator#TIMING_BEFORE_PREPARE},
+ * the same timing as the HU packing-material line builder ({@code de.metas.handlingunits.model.validator.C_Order})
+ * and the freight-cost line builder ({@code de.metas.freighcost.interceptor.C_Order}). metasfresh's model
+ * validator framework has no explicit priority/ordering mechanism for interceptors registered on the same
+ * timing ({@code @DocValidate} carries no order attribute, and {@code ModelValidationEngine.getSpringInterceptors()}
+ * simply drains {@code ApplicationContext.getBeansWithAnnotation(...)} into a {@code LinkedHashMap}, i.e.
+ * Spring bean-registration order — unspecified across modules). Consequence: candidate-line selection below
+ * only ever sees order lines that already exist and are active at the moment THIS interceptor runs.
+ * Freight-cost lines are excluded explicitly regardless of ordering ({@link OrderFreightCostsService#isFreightCostOrderLine}),
+ * so they can never end up in a base. HU packing-material lines are ordinary candidates once they exist and
+ * are active — if this interceptor happens to run before the HU builder creates them (on a given build/deployment,
+ * this order is currently observed to be safe, see {@code compensationGroupContract_salesOrder.feature}
+ * TS2), the schema's packaging base simply has no matching candidate line for that pass, and the discount
+ * line for that base is skipped (no 0.00 line — same rule as any other empty base), not created wrong.
  */
 @Service
+@RequiredArgsConstructor
 public class ContractCompensationGroupService
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-
-	private final OrderGroupRepository orderGroupRepository;
-	private final GroupTemplateRepository groupTemplateRepository;
-	private final ContractCompensationGroupSettingsRepository settingsRepository;
-
-	public ContractCompensationGroupService(
-			@NonNull final OrderGroupRepository orderGroupRepository,
-			@NonNull final GroupTemplateRepository groupTemplateRepository,
-			@NonNull final ContractCompensationGroupSettingsRepository settingsRepository)
-	{
-		this.orderGroupRepository = orderGroupRepository;
-		this.groupTemplateRepository = groupTemplateRepository;
-		this.settingsRepository = settingsRepository;
-	}
+	@NonNull private final OrderGroupRepository orderGroupRepository;
+	@NonNull private final GroupTemplateRepository groupTemplateRepository;
+	@NonNull private final ContractCompensationGroupSettingsRepository settingsRepository;
+	@NonNull private final ContractCompensationGroupTermRepository termRepository;
+	@NonNull private final ContractCompensationGroupRepository contractGroupRepository;
+	@NonNull private final OrderFreightCostsService orderFreightCostService;
 
 	/**
 	 * Removes this order's contract-created compensation group(s) (if any), then, if the order's invoice
@@ -108,14 +110,13 @@ public class ContractCompensationGroupService
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID());
 		final LocalDate orderDate = TimeUtil.asLocalDate(order.getDateOrdered());
 
-		final I_C_Flatrate_Term term = findActiveTerm(billPartnerId, orderDate, docTypeId).orElse(null);
-		if (term == null)
+		final TermMatch termMatch = findMatchingTerm(billPartnerId, orderDate, docTypeId).orElse(null);
+		if (termMatch == null)
 		{
 			return;
 		}
 
-		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(term.getC_Flatrate_Conditions().getC_CompensationGroup_ContractSettings_ID());
-		final GroupTemplate schema = groupTemplateRepository.getById(settings.getSchemaId());
+		final GroupTemplate schema = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
 
 		final CandidateSelection candidateSelection = findCandidateLines(orderId, schema);
 		if (candidateSelection.getLineIds().isEmpty())
@@ -125,15 +126,8 @@ public class ContractCompensationGroupService
 
 		// A discount line whose base matches none of the candidate lines is skipped (no 0.00 line);
 		// a discount line with no base at all always applies to the whole group.
-		final GroupTemplate schemaWithoutEmptyBases = GroupTemplate.builder()
-				.id(schema.getId())
-				.name(schema.getName())
-				.isNamePrinted(schema.isNamePrinted())
-				.isInheritPackingInstruction(schema.isInheritPackingInstruction())
-				.activityId(schema.getActivityId())
-				.productCategoryId(schema.getProductCategoryId())
-				.additive(schema.isAdditive())
-				.regularLinesToAdd(schema.getRegularLinesToAdd())
+		final GroupTemplate schemaWithoutEmptyBases = schema.toBuilder()
+				.clearCompensationLines()
 				.compensationLines(schema.getCompensationLines().stream()
 						.filter(compensationLine -> compensationLine.getAppliesToProductCategoryId() == null
 								|| candidateSelection.getMatchedBases().contains(compensationLine.getAppliesToProductCategoryId()))
@@ -144,101 +138,120 @@ public class ContractCompensationGroupService
 				.groupTemplate(schemaWithoutEmptyBases)
 				.createGroup(candidateSelection.getLineIds());
 
-		final I_C_Order_CompensationGroup groupRecord = load(group.getGroupId().getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
-		groupRecord.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
-		saveRecord(groupRecord);
+		contractGroupRepository.setFlatrateTerm(group.getGroupId(), FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()));
 	}
 
 	/**
 	 * Removes every contract-created compensation group of the given order (identified by
 	 * {@code C_Order_CompensationGroup.C_Flatrate_Term_ID} being set): deletes the group's compensation lines,
-	 * then ungroups its regular lines and deletes the (now empty) group header.
+	 * then ungroups its regular lines and deletes the (now empty) group header. When the header's regular
+	 * lines were themselves removed by the user beforehand (leaving nothing but the header once the
+	 * compensation lines above are gone), there is no rebuildable {@link Group} left — the orphaned header is
+	 * then deleted directly instead.
 	 */
 	public void removeContractGroups(@NonNull final OrderId orderId)
 	{
-		final List<Integer> contractGroupIds = queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
-				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0)
-				.create()
-				.listIds();
+		final List<Integer> contractGroupIds = contractGroupRepository.retrieveContractGroupOrderCompensationGroupIds(orderId);
 
 		for (final int orderCompensationGroupId : contractGroupIds)
 		{
-			final de.metas.order.compensationGroup.GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
+			final GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
 
-			queryBL.createQueryBuilder(I_C_OrderLine.class)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupId)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
-					.create()
-					.delete();
+			contractGroupRepository.deleteCompensationLines(orderId, orderCompensationGroupId);
 
-			final Group group = orderGroupRepository.retrieveGroup(groupId);
-			orderGroupRepository.destroyGroup(group);
+			final Group group = orderGroupRepository.retrieveGroupIfExists(groupId);
+			if (group != null)
+			{
+				orderGroupRepository.destroyGroup(group);
+			}
+			else
+			{
+				orderGroupRepository.deleteGroupById(groupId);
+			}
 		}
 	}
 
 	/**
 	 * @return the active {@code CompensationGroup} term for the given invoice partner, order date and order
 	 * document type — DocStatus completed/closed, ContractStatus not voided, {@code StartDate <= date <= EndDate},
-	 * and the term's settings list {@code docTypeId}. Never cached: overlap between contracts is prevented at
-	 * term completion, so at most one term is expected to match.
+	 * and the term's settings list {@code docTypeId}. Never cached. At most one term is expected to match
+	 * (overlap between contracts is out of this task's scope, AC9); {@link #findMatchingTerm} throws if more
+	 * than one genuinely does.
 	 */
 	public Optional<I_C_Flatrate_Term> findActiveTerm(
 			@NonNull final BPartnerId billPartnerId,
 			@NonNull final LocalDate date,
 			@NonNull final DocTypeId docTypeId)
 	{
-		final List<I_C_Flatrate_Term> candidateTerms = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP.getCode())
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(X_C_Flatrate_Term.DOCSTATUS_Completed, X_C_Flatrate_Term.DOCSTATUS_Closed))
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(date))
-				.create()
-				.list(I_C_Flatrate_Term.class);
-
-		return candidateTerms.stream()
-				.filter(term -> termAppliesToDocType(term, docTypeId))
-				.findFirst();
+		return findMatchingTerm(billPartnerId, date, docTypeId).map(TermMatch::getTerm);
 	}
 
-	private boolean termAppliesToDocType(@NonNull final I_C_Flatrate_Term term, @NonNull final DocTypeId docTypeId)
+	private Optional<TermMatch> findMatchingTerm(
+			@NonNull final BPartnerId billPartnerId,
+			@NonNull final LocalDate date,
+			@NonNull final DocTypeId docTypeId)
 	{
-		final int settingsId = term.getC_Flatrate_Conditions().getC_CompensationGroup_ContractSettings_ID();
-		if (settingsId <= 0)
+		final List<I_C_Flatrate_Term> candidateTerms = termRepository.findActiveTerms(billPartnerId, date);
+
+		final ImmutableList<TermMatch> matches = candidateTerms.stream()
+				.map(this::resolveTermMatchOrNull)
+				.filter(Objects::nonNull)
+				.filter(match -> match.getSettings().getDocTypeIds().contains(docTypeId))
+				.collect(ImmutableList.toImmutableList());
+
+		if (matches.size() > 1)
 		{
-			return false;
+			throw new AdempiereException("More than one active CompensationGroup term matches this Bill partner, date and document type")
+					.setParameter("billPartnerId", billPartnerId)
+					.setParameter("date", date)
+					.setParameter("docTypeId", docTypeId)
+					.setParameter("termIds", matches.stream().map(match -> match.getTerm().getC_Flatrate_Term_ID()).collect(ImmutableList.toImmutableList()))
+					.appendParametersToMessage();
 		}
 
-		return settingsRepository.getBySettingsId(settingsId).getDocTypeIds().contains(docTypeId);
+		return matches.stream().findFirst();
+	}
+
+	/** Resolves the term's settings (via its {@code C_Flatrate_Conditions_ID}), or {@code null} when the conditions carry no compensation-group settings. */
+	@Nullable
+	private TermMatch resolveTermMatchOrNull(@NonNull final I_C_Flatrate_Term term)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+		final ContractCompensationGroupSettingsId settingsId = settingsRepository.getSettingsIdByConditionsId(conditionsId);
+		if (settingsId == null)
+		{
+			return null;
+		}
+
+		return new TermMatch(term, settingsRepository.getBySettingsId(settingsId));
+	}
+
+	@Value
+	private static class TermMatch
+	{
+		I_C_Flatrate_Term term;
+		ContractCompensationGroupSettings settings;
 	}
 
 	/**
-	 * @return this order's candidate regular lines — not (yet) in any compensation group, and, when every one
-	 * of the schema's discount lines has an applies-to base, whose product's category (or an ancestor of it)
-	 * is one of those bases (when at least one discount line has no base, every not-yet-grouped regular line
-	 * is a candidate) — together with the subset of the schema's declared bases that at least one of those
-	 * candidate lines actually falls into. The latter is used to drop a discount line whose base matches none
-	 * of the order's lines, so it never becomes a spurious 0.00 line.
+	 * @return this order's candidate regular lines — not (yet) in any compensation group, active, not a
+	 * freight-cost line, carrying a product (a product-less charge line cannot be part of a {@link Group}) —
+	 * and, when every one of the schema's discount lines has an applies-to base, whose product's category (or
+	 * an ancestor of it) is one of those bases (when at least one discount line has no base, every eligible
+	 * line is a candidate) — together with the subset of the schema's declared bases that at least one of
+	 * those candidate lines actually falls into. The latter is used to drop a discount line whose base matches
+	 * none of the order's lines, so it never becomes a spurious 0.00 line.
 	 */
 	private CandidateSelection findCandidateLines(@NonNull final OrderId orderId, @NonNull final GroupTemplate schema)
 	{
-		// NOTE: "not (yet) grouped" is filtered in Java, not SQL — C_Order_CompensationGroup_ID is NULL (not 0)
-		// for an ungrouped line, and OrderGroupCompensationUtils.isNotInGroup(..) already coalesces that via the
-		// int getter; a SQL "<= 0" compare filter would wrongly exclude NULL rows (three-valued SQL logic).
-		final List<I_C_OrderLine> ungroupedOrderLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, false)
-				.create()
-				.list(I_C_OrderLine.class)
+		final ImmutableList<I_C_OrderLine> eligibleOrderLines = contractGroupRepository.retrieveUngroupedActiveOrderLines(orderId)
 				.stream()
 				.filter(OrderGroupCompensationUtils::isNotInGroup)
+				.filter(orderLine -> !orderFreightCostService.isFreightCostOrderLine(orderLine))
+				.filter(orderLine -> ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()) != null)
 				.collect(ImmutableList.toImmutableList());
 
-		if (ungroupedOrderLines.isEmpty())
+		if (eligibleOrderLines.isEmpty())
 		{
 			return CandidateSelection.NONE;
 		}
@@ -250,22 +263,15 @@ public class ContractCompensationGroupService
 		final boolean hasUnbasedCompensationLine = schema.getCompensationLines().stream()
 				.anyMatch(compensationLine -> compensationLine.getAppliesToProductCategoryId() == null);
 
-		final ImmutableSet<ProductId> productIds = ungroupedOrderLines.stream()
-				.map(orderLine -> ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-		final ImmutableMap<ProductId, ProductCategoryId> productCategoryIdByProductId = productDAO.retrieveProductAndCategoryIdsByProductIds(productIds)
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(ProductAndCategoryId::getProductId, ProductAndCategoryId::getProductCategoryId));
+		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestorsByProductId =
+				orderGroupRepository.retrieveProductCategoryIdAndAncestorsByProductId(eligibleOrderLines);
 
 		final ImmutableList.Builder<OrderLineId> candidateLineIds = ImmutableList.builder();
 		final ImmutableSet.Builder<ProductCategoryId> matchedBases = ImmutableSet.builder();
-		for (final I_C_OrderLine orderLine : ungroupedOrderLines)
+		for (final I_C_OrderLine orderLine : eligibleOrderLines)
 		{
-			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-			final ProductCategoryId productCategoryId = productCategoryIdByProductId.get(productId);
-			final ImmutableSet<ProductCategoryId> productCategoryIdAndAncestors = productCategoryId != null
-					? productDAO.getProductCategoryIdAndAncestors(productCategoryId)
-					: ImmutableSet.of();
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID()); // safe: filtered above
+			final ImmutableSet<ProductCategoryId> productCategoryIdAndAncestors = productCategoryIdAndAncestorsByProductId.getOrDefault(productId, ImmutableSet.of());
 
 			final ImmutableSet<ProductCategoryId> lineMatchedBases = declaredBases.stream()
 					.filter(productCategoryIdAndAncestors::contains)

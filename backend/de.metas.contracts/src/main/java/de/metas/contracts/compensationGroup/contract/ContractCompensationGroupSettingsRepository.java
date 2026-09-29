@@ -1,6 +1,8 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
@@ -9,6 +11,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -34,12 +38,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
+/**
+ * Repository Tables: C_CompensationGroup_ContractSettings, C_CompensationGroup_ContractSettings_DocType, C_Flatrate_Conditions
+ * <p>
+ * Loads a {@code C_CompensationGroup_ContractSettings} record and resolves the settings id a
+ * {@code C_Flatrate_Conditions} record points to.
+ */
 @Repository
 public class ContractCompensationGroupSettingsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ContractCompensationGroupSettings getBySettingsId(final int settingsId)
+	public ContractCompensationGroupSettings getBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		final I_C_CompensationGroup_ContractSettings settingsRecord = load(settingsId, I_C_CompensationGroup_ContractSettings.class);
 
@@ -53,7 +63,15 @@ public class ContractCompensationGroupSettingsRepository
 				.build();
 	}
 
-	private ImmutableSet<DocTypeId> retrieveDocTypeIds(final int settingsId)
+	/** @return the settings id that {@code conditionsId}'s {@code C_CompensationGroup_ContractSettings_ID} points to, or {@code null} when unset */
+	@Nullable
+	public ContractCompensationGroupSettingsId getSettingsIdByConditionsId(@NonNull final ConditionsId conditionsId)
+	{
+		final I_C_Flatrate_Conditions conditions = load(conditionsId, I_C_Flatrate_Conditions.class);
+		return ContractCompensationGroupSettingsId.ofRepoIdOrNull(conditions.getC_CompensationGroup_ContractSettings_ID());
+	}
+
+	private ImmutableSet<DocTypeId> retrieveDocTypeIds(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		return queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_DocType.class)
 				.addOnlyActiveRecordsFilter()

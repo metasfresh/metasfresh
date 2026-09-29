@@ -57,7 +57,7 @@ public class GroupTemplate
 	@NonNull ImmutableList<GroupTemplateRegularLine> regularLinesToAdd;
 	@NonNull ImmutableList<GroupTemplateCompensationLine> compensationLines;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private GroupTemplate(
 			@Nullable final GroupTemplateId id,
 			@NonNull final String name,

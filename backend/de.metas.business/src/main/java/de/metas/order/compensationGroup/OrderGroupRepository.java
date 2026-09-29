@@ -361,7 +361,7 @@ public class OrderGroupRepository implements GroupRepository
 	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
 	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
 	 */
-	private ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
 			final List<I_C_OrderLine> groupOrderLines)
 	{
 		final ImmutableSet<ProductId> productIds = groupOrderLines.stream()

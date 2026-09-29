@@ -2,6 +2,7 @@ package de.metas.contracts.compensationGroup.contract.interceptor;
 
 import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_Order;
@@ -31,23 +32,21 @@ import org.springframework.stereotype.Component;
  */
 
 /**
- * (Re)creates a contract's compensation group on sales and purchase order completion (including the
- * auto-created, auto-completed drop-ship purchase order).
+ * (Re)creates a contract's compensation group on sales order completion, and (same code path, untested by
+ * this task) on purchase order completion — including the auto-created, auto-completed drop-ship purchase
+ * order.
  * <p>
  * Runs at {@link ModelValidator#TIMING_BEFORE_PREPARE}, not before-complete: adding the lines this early lets
  * {@code MOrder.calculateTaxTotal()} (called later within the same {@code prepareIt()}) include them — the
- * only point where newly added lines get their taxes and totals computed.
+ * only point where newly added lines get their taxes and totals computed. See
+ * {@link ContractCompensationGroupService}'s class Javadoc for the resulting interceptor-ordering caveat.
  */
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order_ContractCompensationGroup
 {
-	private final ContractCompensationGroupService contractCompensationGroupService;
-
-	public C_Order_ContractCompensationGroup(@NonNull final ContractCompensationGroupService contractCompensationGroupService)
-	{
-		this.contractCompensationGroupService = contractCompensationGroupService;
-	}
+	@NonNull private final ContractCompensationGroupService contractCompensationGroupService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void beforePrepare(final I_C_Order order)
