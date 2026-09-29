@@ -22,8 +22,9 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
@@ -208,19 +209,26 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		// Deliberately NOT filtered on IsTransferPackingMaterials: a TU shared by more than one line gets
 		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered lookup would never see the other lines.
-		final ImmutableList<InOutLineId> inOutLineIds = inoutLines.stream()
-				.map(inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableMap<InOutLineId, I_M_InOutLine> inoutLinesById = Maps.uniqueIndex(inoutLines, inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()));
 		final ImmutableListMultimap<InOutLineId, I_M_HU_Assignment> assignmentsByInOutLineId = Multimaps.index(
-				huAssignmentDAO.retrieveActiveHUAssignments(TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inOutLineIds)),
+				huAssignmentDAO.retrieveActiveHUAssignments(TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLinesById.keySet())),
 				assignment -> InOutLineId.ofRepoId(assignment.getRecord_ID()));
+
+		// Default LU: one usage per manual-packing line; booked = the first manual line, which is where the pallet was added.
+		final PackingUnit defaultLU = isDefaultLUWithPackingMaterial() ? PackingUnit.ofDefaultLUPackingInstructionsId(_defaultLUPIId) : null;
 
 		final Map<HuId, InOutLineId> earliestInOutLineIdByLuHuId = new HashMap<>();
 		final List<LuOccurrence> luOccurrences = new ArrayList<>();
-		for (final I_M_InOutLine inoutLine : inoutLines)
+		for (final Map.Entry<InOutLineId, I_M_InOutLine> inoutLineEntry : inoutLinesById.entrySet())
 		{
-			final InOutLineId inOutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
+			final InOutLineId inOutLineId = inoutLineEntry.getKey();
+			final I_M_InOutLine inoutLine = inoutLineEntry.getValue();
 			final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
+
+			if (defaultLU != null && isManualPackingMaterials(inoutLine))
+			{
+				usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
+			}
 
 			for (final I_M_HU_Assignment assignment : assignmentsByInOutLineId.get(inOutLineId))
 			{
@@ -246,23 +254,6 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final boolean booked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
 			usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
 					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), booked));
-		}
-
-		// Default LU: one usage per manual-packing line; booked = the first manual line, which is where the pallet was added.
-		if (isDefaultLUWithPackingMaterial())
-		{
-			final PackingUnit defaultLU = PackingUnit.ofDefaultLUPackingInstructionsId(_defaultLUPIId);
-			for (final I_M_InOutLine inoutLine : inoutLines)
-			{
-				if (!isManualPackingMaterials(inoutLine))
-				{
-					continue;
-				}
-				final InOutLineId inOutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
-				final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
-				final boolean booked = inOutLineId.equals(_defaultLUFirstLineId);
-				usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, booked));
-			}
 		}
 
 		return usages;

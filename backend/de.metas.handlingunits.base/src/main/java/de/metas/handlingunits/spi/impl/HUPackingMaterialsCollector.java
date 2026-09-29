@@ -115,7 +115,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * {@link #requirePackingMaterialForLU(I_M_HU)} always pass a {@code null} source, so with this flag ON their key
 	 * would not match the add-key of a project-keyed candidate. Do not enable it for a collector that uses the remove path.
 	 */
-	private boolean considerProject = false;
+	private boolean isConsiderProject = false;
 
 	/**
 	 *
@@ -141,7 +141,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.candidatesSortComparator = other.candidatesSortComparator;
 		this.disabled = other.disabled;
 		this.errorIfHuIsAdded = other.errorIfHuIsAdded;
-		this.considerProject = other.considerProject;
+		this.isConsiderProject = other.isConsiderProject;
 	}
 
 	@Override
@@ -460,8 +460,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final int productId = huPackingMaterial.getM_Product_ID() <= 0 ? -1 : huPackingMaterial.getM_Product_ID();
 		final int locatorId = hu == null || hu.getM_Locator_ID() <= 0 ? -1 : hu.getM_Locator_ID();
 
-		// Without the project, the key keeps its three parts: its hash, and so the order of the candidates, stays unchanged
-		return considerProject
+		// Without the project split, the key has three parts only, so that its hash, and with it the order of the candidates, is the project-agnostic one
+		return isConsiderProject
 				? Util.mkKey(productId, locatorId, materialTrackingId, ProjectId.toRepoId(source == null ? null : source.getProjectId()))
 				: Util.mkKey(productId, locatorId, materialTrackingId);
 	}
@@ -765,12 +765,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 	public void setConsiderProject(final boolean considerProject)
 	{
-		this.considerProject = considerProject;
+		this.isConsiderProject = considerProject;
 	}
 
 	public boolean isConsiderProject()
 	{
-		return considerProject;
+		return isConsiderProject;
 	}
 
 	/**
@@ -791,7 +791,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		collectorNew.seenM_HU_IDs_ToAdd = new HashSet<>(seenM_HU_IDs_ToAdd);
 		collectorNew.seenM_HU_IDs_ToRemove = new HashSet<>(seenM_HU_IDs_ToRemove);
 
-		collectorNew.considerProject = considerProject;
+		collectorNew.isConsiderProject = isConsiderProject;
 
 		return collectorNew;
 	}

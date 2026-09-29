@@ -42,7 +42,7 @@ import java.util.Objects;
 
 /**
  * Safety-net detector for a packing unit (TU/LU HU, or the default-pallet packing instruction) that ends up
- * serving shipment lines of more than one Positions Nr. ({@code C_Project_ID}). Pure function, no persistence.
+ * serving shipment lines of more than one project ({@code C_Project_ID}). Pure function, no persistence.
  */
 public class ShipmentPackingUnitProjectConflictDetector
 {
@@ -97,7 +97,7 @@ public class ShipmentPackingUnitProjectConflictDetector
 					? String.valueOf(conflict.getBookedProjectId().getRepoId())
 					: "none";
 
-			logger.warn("Shipment {} (M_InOut_ID={}): packing unit {} is shared by more than one Positions Nr. (C_Project_ID) {}; booked to {}",
+			logger.warn("Shipment {} (M_InOut_ID={}): packing unit {} is shared by more than one project (C_Project_ID) {}; booked to {}",
 					shipment.getDocumentNo(),
 					shipment.getM_InOut_ID(),
 					conflict.getPackingUnit(),
@@ -133,7 +133,7 @@ public class ShipmentPackingUnitProjectConflictDetector
 	{
 		@NonNull PackingUnit packingUnit;
 		@Nullable ProjectId projectId;
-		boolean booked;
+		boolean isBooked;
 	}
 
 	@Value

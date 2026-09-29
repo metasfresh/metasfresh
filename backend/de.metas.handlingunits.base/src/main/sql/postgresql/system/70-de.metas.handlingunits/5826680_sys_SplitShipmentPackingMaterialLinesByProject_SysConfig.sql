@@ -22,7 +22,7 @@
 
 -- SysConfig Name: de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject
 -- SysConfig Value: N
--- When set to Y, shipment packing-material lines are split per C_Project_ID (Positions Nr.), so each packing line and its invoice candidate carry the project.
+-- When set to Y, shipment packing-material lines are split per project (C_Project_ID), so each packing line and its invoice candidate carry the project.
 -- 2026-09-28T00:00:00.000Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541858 /*From ID Server*/,'S',TO_TIMESTAMP('2026-09-28 00:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',0,'When set to Y, shipment packing-material lines are split per C_Project_ID (Positions Nr.), so each packing line and its invoice candidate carry the project.','de.metas.handlingunits','Y','de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject',TO_TIMESTAMP('2026-09-28 00:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',0,'N')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541858 /*From ID Server*/,'S',TO_TIMESTAMP('2026-09-28 00:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',0,'When set to Y, shipment packing-material lines are split per project (C_Project_ID), so each packing line and its invoice candidate carry the project.','de.metas.handlingunits','Y','de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject',TO_TIMESTAMP('2026-09-28 00:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',0,'N')
 ;
