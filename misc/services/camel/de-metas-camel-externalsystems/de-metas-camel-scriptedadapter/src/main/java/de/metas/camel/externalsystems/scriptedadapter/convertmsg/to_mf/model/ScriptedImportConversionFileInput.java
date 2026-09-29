@@ -34,14 +34,9 @@ import javax.annotation.Nullable;
  * Envelope handed to the inbound script's {@code transform()} function for a file-based import
  * (e.g. {@code LOCAL_FILE} transport): the imported file's name and its base64-encoded bytes.
  * <p>
- * The field names are a contract with the customer-authored JavaScript that parses this JSON —
- * do not rename without updating the corresponding script(s).
- * <p>
- * Deliberately carries no {@code contentType}: nothing in this codebase derives a MIME type for an
- * arbitrary polled file (the {@code LOCAL_FILE} transport is not PDF-only — see
- * {@code ScriptedImportConversionLocalFileDynamicRouteBuilder}), so guessing one (e.g. hard-coding
- * {@code application/pdf}) would be wrong for any other file type. Add it back only once there is a real
- * source for the value.
+ * The field names are a contract with the customer-authored JavaScript that parses this JSON — do not
+ * rename without updating the corresponding script(s). No {@code contentType}: an arbitrary polled file
+ * gives us no source for one, and the transport is not PDF-only.
  */
 @Builder
 @Jacksonized

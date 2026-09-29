@@ -46,12 +46,9 @@ class ScriptedImportConversionLocalArchiver
 {
 	/**
 	 * Writes {@code content}'s raw bytes to {@code directory}/{@code fileName} (creating missing parent
-	 * dirs), never decoding/re-encoding them -- byte-identical to the ORIGINAL source only as far as the
-	 * caller's own capture was (see {@code AbstractScriptedImportConversionArchivingRouteBuilder}).
-	 * <p>
-	 * Never overwrites: a name collision (e.g. a scanner reusing {@code scan001.pdf}) gets a numeric
-	 * suffix and a retried write, with {@link StandardOpenOption#CREATE_NEW} closing the check-then-write
-	 * race atomically.
+	 * dirs), never decoding/re-encoding them. Never overwrites either: a name collision (e.g. a scanner
+	 * reusing {@code scan001.pdf}) gets a numeric suffix and a retried write, with
+	 * {@link StandardOpenOption#CREATE_NEW} closing the check-then-write race atomically.
 	 *
 	 * @throws RuntimeCamelException if {@code fileName} would resolve outside {@code directory}, or the
 	 * write fails for any other reason.
@@ -70,12 +67,7 @@ class ScriptedImportConversionLocalArchiver
 		}
 	}
 
-	/**
-	 * Resolves {@code fileName} under {@code dirPath} and writes {@code content} without ever truncating an
-	 * existing file: {@link StandardOpenOption#CREATE_NEW} makes file creation itself the collision check
-	 * (no separate "does it exist" step that a second, concurrent archiver could race past), and each
-	 * collision is retried under a distinct, incrementing suffix until one succeeds.
-	 */
+	/** Writes without ever truncating an existing file; each collision is retried under a fresh suffix. */
 	private static void writeWithoutOverwriting(@NonNull final Path dirPath, @NonNull final String fileName, @NonNull final byte[] content) throws IOException
 	{
 		final Path resolved = resolveWithinDirectory(dirPath, fileName);
@@ -108,10 +100,9 @@ class ScriptedImportConversionLocalArchiver
 	}
 
 	/**
-	 * Rejects a {@code fileName} that would resolve outside {@code dirPath} (e.g. containing {@code ..} or
-	 * a path separator) instead of silently writing there. {@code fileName} may be operator-controlled (a
-	 * customer-authored {@code ImportFileNamePattern}), so this is a defensive check, not a case this
-	 * codebase's own callers are known to trigger.
+	 * Rejects a {@code fileName} that would resolve outside {@code dirPath}: the name can come from an
+	 * operator-authored {@code ImportFileNamePattern}, so {@code ..} or a separator must not silently
+	 * redirect the write.
 	 */
 	@NonNull
 	private static Path resolveWithinDirectory(@NonNull final Path dirPath, @NonNull final String fileName)

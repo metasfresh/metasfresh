@@ -67,8 +67,7 @@ public class ExternalSystemEndpoint
 	// SFTP transport fields
 	@Nullable String sftpHost;
 
-	// null when no port is configured. Boxed, like sftpPollingIntervalMs and frequency below, so that
-	// "not configured" survives the trip out of PO.get_ValueAsInt, which collapses SQL NULL onto 0.
+	// Boxed so "not configured" survives PO.get_ValueAsInt, which collapses SQL NULL onto 0.
 	@Nullable Integer sftpPort;
 
 	@Nullable String sftpUsername;
@@ -134,9 +133,7 @@ public class ExternalSystemEndpoint
 				.sasSignature(sasSignature)
 				.contentType(contentType != null ? contentType.toString() : null)
 				.sftpHost(sftpHost)
-				// boundary guard: JsonExternalSystemEndpoint.sftpPort is @JsonInclude(NON_NULL), so a 0 would go out
-				// as "sftpPort": 0 -- a wrong value on the wire and in the delivery log. Camel happens to discard a
-				// zero port and keep 22, but no consumer is obliged to.
+				// sftpPort is @JsonInclude(NON_NULL), so a 0 would go out as "sftpPort": 0 rather than be omitted.
 				.sftpPort(sftpPort != null && sftpPort > 0 ? sftpPort : null)
 				.sftpUsername(sftpUsername)
 				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)

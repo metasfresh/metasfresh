@@ -32,14 +32,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Resolves the attachment filename for an inbound (import-side) file, given an optional {@code pattern}
- * that may reference the incoming file's base name via {@code {filename}} (see {@link FilenamePatternResolver}
- * for the full placeholder syntax, e.g. {@code {timestamp}}).
- *
- * <p>A blank {@code pattern} leaves {@code incomingFileName} unchanged. Otherwise the incoming name is
- * split into base name and extension (on the last {@code '.'}; a leading dot, or no dot at all, means no
- * extension), the pattern is resolved with {@code {filename}} bound to the base name, and the source
- * extension is appended unless the resolved name already ends with it (compared case-insensitively).
+ * Resolves the attachment filename for an inbound (import-side) file: {@code pattern} is resolved with
+ * {@code {filename}} bound to the incoming file's base name (see {@link FilenamePatternResolver} for the
+ * placeholder syntax), and the source extension re-appended unless the result already ends with it. A
+ * blank {@code pattern} leaves {@code incomingFileName} unchanged.
  */
 @UtilityClass
 public class ImportFileNameResolver

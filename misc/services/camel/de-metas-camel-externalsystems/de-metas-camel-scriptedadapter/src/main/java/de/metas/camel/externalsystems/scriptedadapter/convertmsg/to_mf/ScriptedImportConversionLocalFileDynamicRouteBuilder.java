@@ -52,25 +52,17 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
  * binary files (e.g. scanned PDFs, "Packzettel") via Camel's {@code file://} component and hands each
  * one to the inbound script as a {@link ScriptedImportConversionFileInput} envelope.
  * <p>
- * Unlike the SFTP/REST transports (which carry text payloads and reuse
- * {@code captureOriginalPayloadAsUtf8Bytes}), this route's payload is BINARY. The file body is
- * therefore read as {@code byte[]} and never decoded to / re-encoded from a {@code String} — a
- * {@code convertBodyTo(String.class)} step here would corrupt the archived file: any byte sequence
- * that is not valid in the JVM's default charset gets silently altered by the decode/re-encode round
- * trip. See {@link #captureRawPayloadAndBuildEnvelope(Exchange)}.
+ * Unlike the SFTP/REST transports, this payload is BINARY: it is read as {@code byte[]} and never put
+ * through {@code convertBodyTo(String.class)}, whose decode/re-encode round trip silently alters any
+ * byte sequence invalid in the JVM's default charset.
  * <p>
  * The consumed file is removed from the input directory by the {@code file://} endpoint's
- * {@code delete=true} option (never moved/renamed there) — the archived copy lives separately, in the
- * LOCAL, transport-agnostic {@code processedDir}/{@code errorDir} (see
- * {@link AbstractScriptedImportConversionArchivingRouteBuilder}), exactly like the SFTP transport's
- * remote {@code delete=true}. See {@link #buildFileUri()} for the read-lock / poller configuration.
+ * {@code delete=true} option; the archived copy lives separately, in the LOCAL, transport-agnostic
+ * {@code processedDir}/{@code errorDir} (see {@link AbstractScriptedImportConversionArchivingRouteBuilder}).
  */
 public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
 {
-	/**
-	 * Exchange property stashing the resolved attachment/archive file name — written once in
-	 * {@link #captureRawPayloadAndBuildEnvelope(Exchange)}, read back by {@link #archiveFileName(Exchange)}.
-	 */
+	/** Resolved attachment/archive file name, written in {@link #captureRawPayloadAndBuildEnvelope(Exchange)}. */
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME = "ScriptedImportConversionLocalFile-resolvedArchiveFileName";
 
@@ -105,12 +97,9 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
-		// handled(true): the input file is consumed (deleted, via the file:// endpoint's delete=true
-		// option) regardless of whether the transform succeeds or fails — mirrors
-		// ScriptedImportConversionSftpDynamicRouteBuilder: keeps Camel's file-consumer "commit" path
-		// (which performs the delete) on the failure path too, instead of leaving the file in place to
-		// be re-polled forever. The payload itself is archived separately either way (see
-		// archiveLocallyOnError / archiveLocallyOnSuccess).
+		// handled(true) keeps Camel's file-consumer "commit" path (which performs the delete=true) on the
+		// failure path too, instead of leaving the file to be re-polled forever; the payload is archived
+		// separately either way.
 		onException(Exception.class)
 				.handled(true)
 				.process(this::archiveLocallyOnError)
@@ -138,10 +127,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 		//@formatter:on
 	}
 
-	/**
-	 * Package-visible (not {@code private}) so the route test can assert the built URI directly — a
-	 * configuration check, not a behavioural one.
-	 */
+	/** Package-visible so the route test can assert the built URI directly. */
 	@VisibleForTesting
 	@NonNull
 	String buildFileUri()
@@ -152,8 +138,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 		}
 		if (containsUriSignificantCharacter(localRootLocation))
 		{
-			// Reject rather than encode: UnsafeUriCharactersEncoder (camel-util:4.10.6) does not escape
-			// '&' or '?', so encoding would leave those two paths to the same failure open.
+			// Reject rather than encode: UnsafeUriCharactersEncoder (camel-util:4.10.6) escapes neither
+			// '&' nor '?'.
 			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION
 					+ "' must not contain any of '?', '#', '&', '%': " + localRootLocation);
 		}
@@ -162,18 +148,13 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS + "' must be a positive value!");
 		}
 
-		// readLock=changed (readLockMinAge=2000ms): guards a progressively-writing scanner over a
-		// possibly slow/flaky network drop -- an mtime-only heuristic, not a true completion signal; a
-		// writer that pauses mid-transfer longer than 2s without closing the file looks "old enough"
-		// regardless.
-		// readLockMinLength=0: a 0-byte file would otherwise never satisfy the strategy's length check,
-		// wedging the single poller thread for readLockTimeout on every poll, forever.
-		// readLockMarkerFile=false: single-consumer route keyed on a unique route id, so the marker file
-		// buys nothing and would otherwise write into the polled directory.
-		// antExclude=**/*.tmp with antFilterCaseSensitive=false: a scanner writing a temp file then
-		// renaming would otherwise have the temp file consumed mid-write -- readLock=changed only guards
-		// the progressive-write case, not this one; case-insensitive because a scanner may write an
-		// uppercase suffix (e.g. scan.PDF.TMP), which a case-sensitive exclude would miss.
+		// readLock=changed (minAge 2000ms): mtime-only heuristic against a progressively-writing scanner,
+		// not a true completion signal -- a writer pausing longer than 2s still looks "old enough".
+		// readLockMinLength=0: a 0-byte file would otherwise fail the length check and wedge the single
+		// poller thread for readLockTimeout on every poll.
+		// readLockMarkerFile=false: single-consumer route, so the marker would only litter the polled dir.
+		// antExclude=**/*.tmp (case-insensitive, e.g. scan.PDF.TMP): a scanner that writes a temp file and
+		// renames it would otherwise have it consumed mid-write -- readLock=changed does not cover that.
 		return "file://" + localRootLocation + "?delay=" + frequencyMs + "&initialDelay=0&delete=true&noop=false"
 				+ "&readLock=changed&readLockCheckInterval=1000&readLockMinAge=2000&readLockMinLength=0"
 				+ "&readLockMarkerFile=false&antExclude=**/*.tmp&antFilterCaseSensitive=false";
@@ -185,13 +166,9 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 	}
 
 	/**
-	 * Reads the polled file's body as raw {@code byte[]} — never {@code convertBodyTo(String.class)},
-	 * which would decode/re-encode the bytes and silently corrupt a binary payload (e.g. a PDF).
-	 * Captures those exact bytes as
-	 * {@link de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD}
-	 * (so the archiver round-trips the source byte-for-byte), then builds and explicitly serializes the
-	 * {@link ScriptedImportConversionFileInput} envelope the inbound script expects, setting it as the
-	 * new message body for the inherited {@link ScriptedImportConversionProcessor} step.
+	 * Reads the polled file's body as raw {@code byte[]} (see the class javadoc on why never as a
+	 * {@code String}), keeps those exact bytes for the archiver, and sets the serialized
+	 * {@link ScriptedImportConversionFileInput} envelope as the new message body.
 	 */
 	@VisibleForTesting
 	void captureRawPayloadAndBuildEnvelope(@NonNull final Exchange exchange)
@@ -202,8 +179,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 		final byte[] rawPayload = exchange.getIn().getBody(byte[].class);
 		if (rawPayload == null)
 		{
-			// A null body here (e.g. the file vanished between poll and read) must fail loudly -- not be
-			// swallowed into a silent delete-with-no-archive-copy.
+			// A null body (e.g. the file vanished between poll and read) must fail loudly, not become a
+			// silent delete with no archived copy.
 			throw new RuntimeCamelException("No body could be read for polled local file " + incomingFileName);
 		}
 
@@ -211,9 +188,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 
 		final String fileBase64 = Base64.getEncoder().encodeToString(rawPayload);
 		final String attachmentFileName = ImportFileNameResolver.resolve(importFileNamePattern, incomingFileName);
-		// Resolved once and stashed: archiveFileName() reads this back instead of re-resolving, so a
-		// {timestamp}-bearing importFileNamePattern cannot produce two different names for the attachment
-		// vs. the archived copy (which would defeat the pattern's purpose of avoiding an overwrite).
+		// Stashed rather than re-resolved in archiveFileName(), so a {timestamp}-bearing pattern cannot
+		// yield different names for the attachment and the archived copy.
 		exchange.setProperty(EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME, attachmentFileName);
 
 		final ScriptedImportConversionFileInput fileInput = ScriptedImportConversionFileInput.builder()
@@ -233,10 +209,9 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 	}
 
 	/**
-	 * The one behavioural difference from the SFTP sibling (see the base class javadoc): the resolved
-	 * {@code importFileNamePattern} name computed in {@link #captureRawPayloadAndBuildEnvelope(Exchange)}
-	 * — same name as the attachment, never re-resolved — falling back to the raw polled file name, then to
-	 * a synthesized name, for a failure early enough that the pattern was never resolved.
+	 * The resolved {@code importFileNamePattern} name — the same one the attachment carries, never
+	 * re-resolved — falling back to the polled file name, then to a synthesized one if the failure came
+	 * before the pattern was resolved.
 	 */
 	@Override
 	protected String archiveFileName(@NonNull final Exchange exchange)
