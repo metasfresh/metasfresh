@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -52,6 +53,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 
 import javax.annotation.Nullable;
@@ -72,6 +74,7 @@ public class IdentifiersResolver
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
+	@NonNull private final M_Inventory_StepDefData inventoryTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -123,6 +126,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		costRevaluationTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_M_CostRevaluation.Table_Name, id))
+				.ifPresent(result::add);
+		inventoryTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Inventory.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

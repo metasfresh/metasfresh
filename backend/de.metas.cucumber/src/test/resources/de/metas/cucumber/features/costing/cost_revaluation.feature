@@ -124,17 +124,28 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
   @Id:CostRevaluation_TC4
   Scenario: Forward-only default - a today-dated revaluation with no EvaluationStartDate restates nothing already posted
-    # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
+    # ── Consume 20 PCE at the old cost 10 CHF BEFORE the revaluation (inventory count 100 -> 80 on 2024-03-07):
+    #    posted -200 CHF on the asset account; this already-posted consumption must stay unchanged ──
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID     | M_InventoryLine_ID     | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
+      | inventoryDecrease  | inventoryDecreaseLine  | 2024-03-07   | warehouse      | product      | 100     | 80       | PCE          | hu      |
+    And Fact_Acct records balances for documents inventoryDecrease are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | -200 CHF      |
+
+    # ── Before: inventory value 800 CHF, current cost 10 CHF / 80 PCE ──
     Then expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
+      | 2024-03-07 | product      | warehouse      | 80  | 10.0000        | 800.00           |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 80 PCE     | 800 CHF      |
 
     # ── Revaluate the product's current cost from 10 to 18 CHF, WITHOUT specifying EvaluationStartDate.
-    #    DateAcct is chosen clearly AFTER the posted inventory (2024-03-05) so the forward-only default
-    #    is unambiguous — no same-day cost detail could be pulled in by an inclusive date-range boundary. ──
+    #    DateAcct is chosen clearly AFTER the posted documents (2024-03-05, 2024-03-07) so the forward-only default
+    #    is unambiguous — no same-day cost detail could be pulled in by an inclusive date-range boundary
+    #    (the same-day case is covered by its own scenario). ──
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-10 |
@@ -150,26 +161,31 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier  | DocStatus | Processed | EvaluationStartDate |
       | revaluation | CO        | true      | 2024-03-10          |
 
-    # ── After: current cost 18 CHF for the 100 PCE on hand (CumulatedAmt reflects the new price going forward) ──
+    # ── After: current cost 18 CHF for the 80 PCE on hand (CumulatedAmt reflects the new price going forward) ──
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
-    # ── Forward-only proof: the already-posted 2024-03-05 valuation stays UNCHANGED (10.0000/1000.00) — only the
-    #    forward date reflects the new price. A broken unset-guard that restated 2024-03-05 would fail this row. ──
+      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 80 PCE     | 1440 CHF     |
+    # ── Forward-only proof: the already-posted 2024-03-05 and 2024-03-07 valuations stay UNCHANGED — only the
+    #    forward date reflects the new price. A broken unset-guard that restated them would fail these rows. ──
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
-      | 2024-03-11 | product      | warehouse      | 100 | 18.0000        | 1800.00          |
+      | 2024-03-07 | product      | warehouse      | 80  | 10.0000        | 800.00           |
+      | 2024-03-11 | product      | warehouse      | 80  | 18.0000        | 1440.00          |
+    # ── The already-posted consumption keeps its posting at the old cost (not restated) ──
+    And Fact_Acct records balances for documents inventoryDecrease are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | -200 CHF      |
 
-    # ── Positive delta 100 PCE * (18 - 10) = 800 CHF booked P_Asset DR / P_CostAdjustment CR (amount-only, Qty 0) ──
+    # ── Positive delta 80 PCE * (18 - 10) = 640 CHF booked P_Asset DR / P_CostAdjustment CR (amount-only, Qty 0) ──
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
-      | P_Asset_Acct          | 800 CHF     |             | 0   | revaluation | product      |
-      | P_CostAdjustment_Acct |             | 800 CHF     | 0   | revaluation | product      |
+      | P_Asset_Acct          | 640 CHF     |             | 0   | revaluation | product      |
+      | P_CostAdjustment_Acct |             | 640 CHF     | 0   | revaluation | product      |
     And Fact_Acct records balances for documents revaluation are matching
       | AccountConceptualName | SourceBalance |
-      | P_Asset_Acct          | 800 CHF       |
-      | P_CostAdjustment_Acct | -800 CHF      |
+      | P_Asset_Acct          | 640 CHF       |
+      | P_CostAdjustment_Acct | -640 CHF      |
 
   @Id:CostRevaluation_TC5
   Scenario: Retrospective - an earlier EvaluationStartDate still restates the posted cost detail (engine behavior intact)
@@ -286,3 +302,165 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── No GL impact: qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
     And no Fact_Acct records are found for documents revaluationNoCost
+
+  @Id:CostRevaluation_TC11
+  Scenario: Same-day consumption - a revaluation posted on the day of an already-posted consumption leaves that posting unchanged
+    # ── Consume 20 PCE at the old cost 10 CHF on 2024-03-10: posted -200 CHF on the asset account ──
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
+      | inventoryDecrease | inventoryDecreaseLine | 2024-03-10   | warehouse      | product      | 100     | 80       | PCE          | hu      |
+    And Fact_Acct records balances for documents inventoryDecrease are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | -200 CHF      |
+
+    # ── Revaluate from 10 to 18 CHF with the default (forward-only) dates, on the SAME day as the consumption ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-10 |
+    And cost revaluation lines are created for revaluation
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation          | product      | 18           |
+    And the cost revaluation identified by revaluation is completed
+    And Wait until documents revaluation are posted
+
+    # ── The same-day consumption is inside the (inclusive, day-granular) evaluation window, but the revaluation books only
+    #    the remaining stock's delta 80 PCE * (18 - 10) = 640 CHF, and the consumption keeps its posting at the old cost ──
+    Then Fact_Acct records balances for documents inventoryDecrease are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | -200 CHF      |
+    And Fact_Acct records balances for documents revaluation are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 640 CHF       |
+      | P_CostAdjustment_Acct | -640 CHF      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 80 PCE     | 1440 CHF     |
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
+      | 2024-03-11 | product      | warehouse      | 80  | 18.0000        | 1440.00          |
+
+  @Id:CostRevaluation_TC12
+  Scenario: Second revaluation on the same day with the default dates is refused with an actionable message
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluation1
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation1         | product      | 15           |
+    And the cost revaluation identified by revaluation1 is completed
+    And Wait until documents revaluation1 are posted
+    And Fact_Acct records balances for documents revaluation1 are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 500 CHF       |
+      | P_CostAdjustment_Acct | -500 CHF      |
+
+    # ── Same day again: its evaluation window contains the first revaluation, which cannot be replayed ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluation2
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation2         | product      | 18           |
+    Then completing the cost revaluation identified by revaluation2 is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+    And validate M_CostRevaluation:
+      | Identifier   | DocStatus | Processed |
+      | revaluation2 | DR        | false     |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
+
+  @Id:CostRevaluation_TC13
+  Scenario: Back-dated revaluation - a posting date before a stock movement it would replay is refused, so a later revaluation cannot double-book
+    # ── Posting date 2024-03-04 is BEFORE the stock movement of 2024-03-05 that the window would replay ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
+    And cost revaluation lines are created for revaluationBackDate
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID        | NewCostPrice |
+      | revaluationBackDate  | product             | 15           |
+    Then completing the cost revaluation identified by revaluationBackDate is refused with AD_Message "M_CostRevaluation.StockMovementAfterDateAcct"
+    And validate M_CostRevaluation:
+      | Identifier          | DocStatus | Processed |
+      | revaluationBackDate | DR        | false     |
+    # ── Nothing was booked: current cost and the posted valuation are unchanged ──
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-07 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
+
+    # ── Following the message: same evaluation start, posting date ON the movement date -> accepted, +500 ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-05 |
+    And cost revaluation lines are created for revaluation1
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation1         | product      | 15           |
+    And the cost revaluation identified by revaluation1 is completed
+    And Wait until documents revaluation1 are posted
+    And Fact_Acct records balances for documents revaluation1 are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 500 CHF       |
+      | P_CostAdjustment_Acct | -500 CHF      |
+
+    # ── A second revaluation after it books only its own step 15 -> 18 (+300), not the movement again ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluation2
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation2         | product      | 18           |
+    And the cost revaluation identified by revaluation2 is completed
+    And Wait until documents revaluation2 are posted
+    Then Fact_Acct records balances for documents revaluation2 are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 300 CHF       |
+      | P_CostAdjustment_Acct | -300 CHF      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-07 | product      | warehouse      | 100 | 18.0000        | 1800.00          |
+
+  @Id:CostRevaluation_TC14
+  Scenario: Two revaluations on consecutive days with the default dates each book only their own step
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluation1
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation1         | product      | 15           |
+    And the cost revaluation identified by revaluation1 is completed
+    And Wait until documents revaluation1 are posted
+
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-07          | 2024-03-07 |
+    And cost revaluation lines are created for revaluation2
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation2         | product      | 18           |
+    And the cost revaluation identified by revaluation2 is completed
+    And Wait until documents revaluation2 are posted
+
+    Then Fact_Acct records balances for documents revaluation1 are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 500 CHF       |
+      | P_CostAdjustment_Acct | -500 CHF      |
+    And Fact_Acct records balances for documents revaluation2 are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 300 CHF       |
+      | P_CostAdjustment_Acct | -300 CHF      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 100 PCE    | 1800 CHF     |

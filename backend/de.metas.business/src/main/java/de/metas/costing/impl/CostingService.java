@@ -40,8 +40,13 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -52,6 +57,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -87,7 +95,11 @@ public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
+	private static final AdMessageKey MSG_StockMovementAfterDateAcct = AdMessageKey.of("M_CostRevaluation.StockMovementAfterDateAcct");
+
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final CostingMethodHandlerUtils utils;
 	private final ICostDetailService costDetailsService;
@@ -507,6 +519,7 @@ public class CostingService implements ICostingService
 								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 								.build())
 				.collect(ImmutableList.toImmutableList());
+		assertNoStockMovementPostedAfterDateAcct(costDetails, request.getDateAcct(), costSegmentAndElement.getProductId());
 
 		//
 		// Restore current costs at the time before evaluation date
@@ -551,5 +564,38 @@ public class CostingService implements ICostingService
 
 		//
 		return result.build();
+	}
+
+	/**
+	 * Refuses to replay a cost-changing stock movement that is posted on a day after the revaluation's posting date.
+	 * <p>
+	 * The replay books that movement's restatement on the revaluation's (earlier) posting date, i.e. before the movement itself,
+	 * while the movement's own cost detail keeps its original amount; a later revaluation replaying the same movement would then
+	 * restate it again from that original amount, booking the difference twice.
+	 * <p>
+	 * Cost details of other revaluations are left to {@link CostingMethodHandler#recalculateCostDetailAmountAndUpdateCurrentCost},
+	 * which refuses them with its own, more specific message.
+	 */
+	private void assertNoStockMovementPostedAfterDateAcct(
+			@NonNull final List<CostDetail> costDetails,
+			@NonNull final InstantAndOrgId dateAcct,
+			@NonNull final ProductId productId)
+	{
+		final ZoneId timeZone = orgDAO.getTimeZone(dateAcct.getOrgId());
+		final LocalDate revaluationDate = dateAcct.toZonedDateTime(timeZone).toLocalDate();
+
+		costDetails.stream()
+				.filter(CostDetail::isChangingCosts)
+				.filter(costDetail -> !costDetail.getDocumentRef().isCostRevaluationLine())
+				.map(costDetail -> costDetail.getDateAcct().atZone(timeZone).toLocalDate())
+				.filter(movementDate -> movementDate.isAfter(revaluationDate))
+				.max(Comparator.naturalOrder())
+				.ifPresent(latestMovementDate -> {
+					throw new AdempiereException(
+							MSG_StockMovementAfterDateAcct,
+							productBL.getProductValueAndName(productId),
+							TranslatableStrings.date(latestMovementDate),
+							TranslatableStrings.date(revaluationDate));
+				});
 	}
 }

@@ -37,6 +37,8 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -45,12 +47,14 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Step definitions for the {@code M_CostRevaluation} ("Kosten Neubewertung") document:
@@ -249,6 +254,57 @@ public class M_CostRevaluation_StepDef
 		documentBL.processEx(header, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		InterfaceWrapperHelper.refresh(header);
 		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	/**
+	 * Tries to complete the given {@code M_CostRevaluation} document and expects the completion to be refused with the given
+	 * AD_Message. Asserts the message KEY carried by the exception, and that the key has a real (translated) text in German and
+	 * English, i.e. the user is not shown the raw key. The header is refreshed afterwards, so its state can be validated.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And completing the cost revaluation identified by revaluation2 is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+	 * </pre>
+	 */
+	@And("^completing the cost revaluation identified by (.*) is refused with AD_Message \"(.*)\"$")
+	public void completeExpectingRefusal(@NonNull final String identifier, @NonNull final String adMessageKey)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+
+		final Throwable thrown = catchThrowable(() -> documentBL.processEx(header, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+		assertThat(thrown).as("Completing %s must be refused", identifier).isNotNull();
+
+		final ITranslatableString message = extractMessageWithKey(thrown, expectedMessageKey);
+		assertThat(message)
+				.as("Refusal of %s must carry AD_Message %s, but got: %s", identifier, adMessageKey, thrown)
+				.isNotNull();
+		for (final String adLanguage : new String[] { "de_DE", "en_US" })
+		{
+			assertThat(message.translate(adLanguage))
+					.as("AD_Message %s must be translated for %s (the user must not see the raw key)", adMessageKey, adLanguage)
+					.isNotBlank()
+					.doesNotContain(adMessageKey);
+		}
+
+		InterfaceWrapperHelper.refresh(header);
+		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	@Nullable
+	private static ITranslatableString extractMessageWithKey(@NonNull final Throwable thrown, @NonNull final AdMessageKey expectedMessageKey)
+	{
+		for (Throwable t = thrown; t != null; t = t.getCause())
+		{
+			final ITranslatableString message = AdempiereException.extractMessageTrl(t);
+			if (message.getAdMessageKey().filter(expectedMessageKey::equals).isPresent())
+			{
+				return message;
+			}
+		}
+		return null;
 	}
 
 	/**

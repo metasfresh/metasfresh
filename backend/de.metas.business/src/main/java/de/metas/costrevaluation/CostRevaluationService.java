@@ -257,6 +257,7 @@ public class CostRevaluationService
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
 				.evaluationStartDate(costRevaluation.getEvaluationStartDate())
+				.dateAcct(costRevaluation.getDateAcct())
 				.newCostPrice(line.getNewCostPrice())
 				.build());
 

@@ -16,7 +16,11 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -280,7 +284,11 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		if (costDetail.getDocumentRef().isCostRevaluationLine())
 		{
-			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported)
+			// Tell the user which product and which already posted revaluation is in the way, so they can choose a later evaluation start date.
+			throw new AdempiereException(
+					MSG_RevaluatingAnotherRevaluationIsNotSupported,
+					Services.get(IProductBL.class).getProductValueAndName(costDetail.getProductId()),
+					TranslatableStrings.date(costDetail.getDateAcct().atZone(Services.get(IOrgDAO.class).getTimeZone(costDetail.getOrgId())).toLocalDate()))
 					.setParameter("costDetail", costDetail);
 		}
 
