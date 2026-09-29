@@ -151,13 +151,23 @@ completed and posted.
 
     await CostRevaluationPage.complete();
 
-    // Completed (CO) and posted (Y); the value difference 10 x (15 - 10) = 50 is on the line
+    // Completed (CO) and posted; the value difference 10 x (15 - 10) = 50 is on the line and in the accounting facts
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
     console.log('[quick-input] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
-    const posted = await CostRevaluationPage.waitUntilPosted(recordId);
-    console.log('[quick-input] Posted=' + JSON.stringify(posted.value));
-    expect(posted.value.key).toBe('Y');
+    const facts = await CostRevaluationPage.waitUntilPosted(recordId);
+    const factAmounts = facts.map((fact) => ({
+      recordId: String(fact.Record_ID.value),
+      account: fact.AccountConceptualName && fact.AccountConceptualName.value,
+      dr: Number(fact.AmtAcctDr.value),
+      cr: Number(fact.AmtAcctCr.value),
+    }));
+    console.log('[quick-input] accounting facts=' + JSON.stringify(factAmounts));
+    expect(factAmounts.every((fact) => fact.recordId === String(recordId))).toBe(true);
+    // Posted with the value difference 50: balanced, and the product asset account is debited by 50
+    expect(factAmounts.reduce((sum, fact) => sum + fact.dr, 0)).toBe(50);
+    expect(factAmounts.reduce((sum, fact) => sum + fact.cr, 0)).toBe(50);
+    expect(factAmounts.filter((fact) => fact.account === 'P_Asset_Acct').map((fact) => fact.dr - fact.cr)).toEqual([50]);
     const completedRows = (
       await (
         await page.request.get(`${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`)

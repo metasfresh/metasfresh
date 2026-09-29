@@ -8,7 +8,7 @@ import {
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../common';
-import { getFieldData } from '../WebAPIValidation';
+import { getAccountingFacts, getFieldData } from '../WebAPIValidation';
 
 export const COST_REVAL_WINDOW_ID = '541568';
 export const COST_REVAL_LINE_TAB_ID = 'AD_Tab-546465';
@@ -282,19 +282,19 @@ export class CostRevaluationPage {
   }
 
   /**
-   * Wait until the completed document is posted (Posted = Y) and return the Posted field.
+   * Wait until the completed document is posted and return its accounting facts (Fact_Acct rows' fieldsByName).
+   * Read through the document's "Accounting facts" reference, so it does not depend on the window showing a Posted field.
    * @param {string} recordId the header record id
    */
   static async waitUntilPosted(recordId) {
-    let posted;
     for (let i = 0; i < 30; i++) {
-      posted = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'Posted');
-      if (posted.value && posted.value.key === 'Y') {
-        return posted;
+      const facts = await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId);
+      if (facts.length > 0) {
+        return facts;
       }
       await getPage().waitForTimeout(1000);
     }
-    throw new Error(`Cost revaluation ${recordId} was not posted within 30s; Posted=${JSON.stringify(posted && posted.value)}`);
+    throw new Error(`Cost revaluation ${recordId} was not posted within 30s (no accounting facts)`);
   }
 
   /** Type the New cost price into the open quick-input and submit the line (Enter). */
@@ -359,17 +359,15 @@ export class CostRevaluationPage {
       return;
     }
     await page.evaluate(() => window.scrollTo(0, 0));
-    // Reload so the header shows the posting status the server has set after Complete.
+    // Reload so the header shows the document status the server has set after Complete.
     await page.reload();
     const statusButton = page.getByTestId('status-button');
     await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await page.waitForTimeout(1000);
     const unhighlightStatus = await highlightForCaptureIfEnabled(statusButton);
-    const unhighlightPosted = await highlightForCaptureIfEnabled(page.locator('.form-field-Posted').first());
     const unhighlightLines = await highlightForCaptureIfEnabled(page.locator('.table-flex-wrapper-row, .table-flex-wrapper').first());
     await holdForCaptureIfEnabled(4000);
     await unhighlightStatus();
-    await unhighlightPosted();
     await unhighlightLines();
   }
 }
