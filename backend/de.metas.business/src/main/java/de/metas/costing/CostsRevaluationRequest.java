@@ -14,7 +14,7 @@ public class CostsRevaluationRequest
 	@NonNull CostSegmentAndElement costSegmentAndElement;
 	@NonNull Instant evaluationStartDate;
 	/**
-	 * The revaluation's posting date.
+	 * The revaluation's posting date; its organization gives the time zone of the days named in the refusal messages.
 	 */
 	@NonNull InstantAndOrgId dateAcct;
 	@NonNull CostAmount newCostPrice;

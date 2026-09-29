@@ -22,6 +22,7 @@ package de.metas.product;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -64,6 +65,9 @@ public interface IProductBL extends ISingletonService
 	boolean isPurchaseSalesEnforcementEnabled(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
 	I_M_Product getById(ProductId productId);
+
+	/** @return the IDs of the client's stocked products */
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull ClientId clientId);
 
 	I_M_Product getByIdInTrx(ProductId productId);
 

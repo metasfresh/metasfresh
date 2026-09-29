@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailId;
+import de.metas.costing.CostDetailRestatement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -14,6 +15,7 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.ICompletedCostRevaluationsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
@@ -58,7 +60,7 @@ import java.util.stream.Stream;
  * Repository Cluster: CostRevaluationRepository
  */
 @Repository
-public class CostRevaluationRepository
+public class CostRevaluationRepository implements ICompletedCostRevaluationsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -387,10 +389,7 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
-	/**
-	 * @return per given cost detail, its restatement by the most recent (latest posting date, then latest ID) completed cost revaluation;
-	 * cost details no completed revaluation restated are not in the map.
-	 */
+	@Override
 	@NonNull
 	public ImmutableMap<CostDetailId, CostDetailRestatement> getLatestCompletedRestatementsByCostDetailIds(@NonNull final Collection<CostDetailId> costDetailIds)
 	{
@@ -449,34 +448,28 @@ public class CostRevaluationRepository
 				.build();
 	}
 
-	/**
-	 * @return the earliest-posted completed cost revaluation with a line for the given cost segment and element whose posting date is on or after {@code date}
-	 */
+	@Override
 	@NonNull
-	public Optional<CostRevaluation> getFirstCompletedWithDateAcctOnOrAfter(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final Instant date)
+	public Optional<Instant> getFirstCompletedDateAcctOnOrAfter(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final Instant date)
 	{
 		return queryCompletedRevaluationsOf(costSegmentAndElement)
 				.addCompareFilter(I_M_CostRevaluation.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(date))
 				.orderBy(I_M_CostRevaluation.COLUMNNAME_DateAcct)
-				.orderBy(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID)
 				.create()
 				.firstOptional(I_M_CostRevaluation.class)
-				.map(CostRevaluationRepository::fromRecord);
+				.map(record -> record.getDateAcct().toInstant());
 	}
 
-	/**
-	 * @return the earliest-posted completed cost revaluation with a line for the given cost segment and element whose accounting is not done yet
-	 */
+	@Override
 	@NonNull
-	public Optional<CostRevaluation> getFirstCompletedNotPosted(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	public Optional<Instant> getFirstCompletedNotPostedDateAcct(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return queryCompletedRevaluationsOf(costSegmentAndElement)
 				.addEqualsFilter(I_M_CostRevaluation.COLUMNNAME_Posted, false)
 				.orderBy(I_M_CostRevaluation.COLUMNNAME_DateAcct)
-				.orderBy(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID)
 				.create()
 				.firstOptional(I_M_CostRevaluation.class)
-				.map(CostRevaluationRepository::fromRecord);
+				.map(record -> record.getDateAcct().toInstant());
 	}
 
 	private IQueryBuilder<I_M_CostRevaluation> queryCompletedRevaluations()

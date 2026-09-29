@@ -1,7 +1,5 @@
-package de.metas.costrevaluation;
+package de.metas.costing;
 
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

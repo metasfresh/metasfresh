@@ -17,6 +17,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailId;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostDetailRestatement;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -33,6 +34,7 @@ import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICompletedCostRevaluationsRepository;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
@@ -41,8 +43,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.costrevaluation.CostDetailRestatement;
-import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
@@ -108,7 +108,7 @@ public class CostingService implements ICostingService
 	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final CostRevaluationRepository costRevaluationRepo;
+	private final ICompletedCostRevaluationsRepository completedCostRevaluationsRepo;
 
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
@@ -117,14 +117,14 @@ public class CostingService implements ICostingService
 			@NonNull final ICostDetailService costDetailsService,
 			@NonNull final ICostElementRepository costElementsRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final CostRevaluationRepository costRevaluationRepo,
+			@NonNull final ICompletedCostRevaluationsRepository completedCostRevaluationsRepo,
 			@NonNull final List<CostingMethodHandler> costingMethodHandlers)
 	{
 		this.utils = utils;
 		this.costDetailsService = costDetailsService;
 		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
-		this.costRevaluationRepo = costRevaluationRepo;
+		this.completedCostRevaluationsRepo = completedCostRevaluationsRepo;
 
 		this.costingMethodHandlers = costingMethodHandlers
 				.stream()
@@ -517,6 +517,11 @@ public class CostingService implements ICostingService
 		final CostAmount newCostPrice = request.getNewCostPrice();
 
 		//
+		// Lock the current cost first: a concurrent completion of another revaluation of this segment waits here until it is committed,
+		// so the checks below see it
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
+
+		//
 		// Fetch cost details for our cost segment, starting from evaluation start date
 		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
 						CostDetailQuery.builderFrom(costSegmentAndElement)
@@ -529,13 +534,12 @@ public class CostingService implements ICostingService
 
 		//
 		// Cost details already restated by an earlier completed revaluation are replayed from that restatement
-		final ImmutableMap<CostDetailId, CostDetailRestatement> restatements = costRevaluationRepo.getLatestCompletedRestatementsByCostDetailIds(
+		final ImmutableMap<CostDetailId, CostDetailRestatement> restatements = completedCostRevaluationsRepo.getLatestCompletedRestatementsByCostDetailIds(
 				costDetails.stream().map(CostDetail::getId).collect(ImmutableSet.toImmutableSet()));
 
 		//
 		// Restore current costs at the time before evaluation date
 		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 		if (!costDetails.isEmpty())
 		{
 			final CostDetail firstCostDetail = costDetails.get(0);
@@ -606,8 +610,7 @@ public class CostingService implements ICostingService
 		final ProductId productId = costSegmentAndElement.getProductId();
 		final ZoneId timeZone = orgDAO.getTimeZone(revaluationOrgId);
 
-		final Instant laterRevaluationDate = costRevaluationRepo.getFirstCompletedWithDateAcctOnOrAfter(costSegmentAndElement, evaluationStartDate)
-				.map(laterRevaluation -> laterRevaluation.getDateAcct().toInstant())
+		final Instant laterRevaluationDate = completedCostRevaluationsRepo.getFirstCompletedDateAcctOnOrAfter(costSegmentAndElement, evaluationStartDate)
 				// a revaluation cost detail in the window whose document is not found as completed above (e.g. data from before the document check)
 				.orElseGet(() -> costDetails.stream()
 						.filter(CostDetail::isChangingCosts)
@@ -621,9 +624,9 @@ public class CostingService implements ICostingService
 					.setParameter("costSegmentAndElement", costSegmentAndElement);
 		}
 
-		costRevaluationRepo.getFirstCompletedNotPosted(costSegmentAndElement).ifPresent(notPostedRevaluation -> {
-			throw new AdempiereException(MSG_EarlierRevaluationNotPosted, productBL.getProductValueAndName(productId), toLocalDate(notPostedRevaluation.getDateAcct().toInstant(), timeZone))
-					.setParameter("costRevaluationId", notPostedRevaluation.getCostRevaluationId());
+		completedCostRevaluationsRepo.getFirstCompletedNotPostedDateAcct(costSegmentAndElement).ifPresent(notPostedRevaluationDate -> {
+			throw new AdempiereException(MSG_EarlierRevaluationNotPosted, productBL.getProductValueAndName(productId), toLocalDate(notPostedRevaluationDate, timeZone))
+					.setParameter("costSegmentAndElement", costSegmentAndElement);
 		});
 	}
 

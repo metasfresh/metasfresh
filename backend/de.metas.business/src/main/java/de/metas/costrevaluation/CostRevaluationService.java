@@ -18,7 +18,6 @@ import de.metas.costing.impl.CostingService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -45,7 +44,6 @@ public class CostRevaluationService
 	private final CostRevaluationRepository costRevaluationRepository;
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final CostingService costingService;
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -81,7 +79,7 @@ public class CostRevaluationService
 
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
-		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
+		final ImmutableSet<ProductId> productIds = productBL.retrieveStockedProductIds(clientId);
 		if (productIds.isEmpty())
 		{
 			throw new AdempiereException("No stocked products found");
@@ -157,7 +155,7 @@ public class CostRevaluationService
 			// Seed-cost path: a stocked product may genuinely have no M_Cost row yet (e.g. migrated/legacy product).
 			// Materialize the missing row(s) at quantity 0 by reusing the same creator the product interceptor uses at
 			// product creation (idempotent: only missing rows are created), then re-resolve.
-			currentCostsRepo.createDefaultProductCosts(productDAO.getById(productId));
+			currentCostsRepo.createDefaultProductCosts(productBL.getById(productId));
 			currentCost = resolveCurrentCost(costRevaluation, productId, orgId)
 					.orElseThrow(() -> new AdempiereException(MSG_NoCurrentCostForProduct, productBL.getProductValueAndName(productId)));
 		}
