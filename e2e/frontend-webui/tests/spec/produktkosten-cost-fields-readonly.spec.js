@@ -38,7 +38,7 @@ testCases.forEach(({ language, label }) => {
 ## F1500: Costing — Produktkosten (window 344) cost fields read-only
 
 A normally-created product carries its default M_Cost rows. On the Produktkosten window's M_Cost tab,
-the Current Cost Price and Future Cost Price fields must be read-only so a user cannot edit a cost
+the Current Cost Price and Future Cost Price fields must be read-only for every costing method, including Standard costing, so a user cannot edit a cost
 price directly (bypassing the audited Kosten Neubewertung path). Asserted on the language-invariant
 \`readonly\` flag the WebUI renders from, plus a UI attempt to edit Current Cost Price that is refused.
     `);
@@ -68,15 +68,26 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
     for (const row of rows) {
       const ccp = row.fieldsByName.CurrentCostPrice;
       const fcp = row.fieldsByName.FutureCostPrice;
-      console.log(`[readonly] CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`);
+      console.log(
+        `[readonly] CostingMethod=${JSON.stringify(row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value)}` +
+          ` CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`
+      );
       // Both cost fields are read-only.
       expect(ccp.readonly).toBe(true);
       expect(fcp.readonly).toBe(true);
     }
 
-    // UI: the user tries to edit Current Cost Price in the M_Cost grid; the cell is read-only and keeps its value.
+    // The column's own read-only logic already locks both fields for every costing method except Standard costing,
+    // so the Standard costing row is the one that proves the lockdown.
+    const standardCostingRows = rows.filter(
+      (row) => row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value && row.fieldsByName.CostingMethod.value.key === 'S'
+    );
+    expect(standardCostingRows, 'the product has a Standard costing cost row').toHaveLength(1);
+    const standardCostingRowId = String(standardCostingRows[0].rowId);
+
+    // UI: the user tries to edit Current Cost Price of the Standard costing row; the cell is read-only and keeps its value.
     await ProduktkostenPage.open(productId);
-    await ProduktkostenPage.attemptEditCurrentCostPrice('999');
+    await ProduktkostenPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
     allure.attachment('Produktkosten window', await page.screenshot({ fullPage: true }), 'image/png');
 
     console.log('[readonly] CurrentCostPrice + FutureCostPrice are read-only on window 344');

@@ -21,20 +21,21 @@ export class ProduktkostenPage {
     });
   }
 
-  /** @returns {import('@playwright/test').Locator} the given column's cell of the first M_Cost grid row */
-  static firstRowCell(columnName) {
-    return getPage().locator(`.table-flex-wrapper table tbody tr`).first().locator(`td[data-cy="cell-${columnName}"]`);
+  /** @returns {import('@playwright/test').Locator} the given column's cell of the M_Cost grid row with the given row id */
+  static rowCell(rowId, columnName) {
+    return getPage().getByTestId(`table-row-${rowId}`).locator(`td[data-cy="cell-${columnName}"]`);
   }
 
   /**
-   * Try to edit the Current Cost Price cell of the first M_Cost row the way a user would:
+   * Try to edit the Current Cost Price cell of an M_Cost row the way a user would:
    * double-click the cell and type a new value. The cell is rendered read-only, so no editor opens.
+   * @param {string} rowId the M_Cost row's id
    * @returns {Promise<string>} the cell text after the attempt
    */
-  static async attemptEditCurrentCostPrice(value) {
+  static async attemptEditCurrentCostPrice(rowId, value) {
     return await test.step(`Try to edit Current Cost Price (type ${value}) -> refused, cell is read-only`, async () => {
       const page = getPage();
-      const cell = this.firstRowCell('CurrentCostPrice');
+      const cell = this.rowCell(rowId, 'CurrentCostPrice');
       await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await cell.scrollIntoViewIfNeeded();
       const before = (await cell.innerText()).trim();

@@ -136,10 +136,13 @@ export class CostRevaluationPage {
     await input.pressSequentially(text);
     await input.press('Tab');
     await saved;
-    await page.waitForTimeout(500);
     // Tab moves the focus into the next date field, which opens its calendar over the line tab; close it.
-    // Unconditional: the calendar opens asynchronously after the focus move, so checking for it first races.
+    // The calendar opens asynchronously after the focus move, so wait for it (bounded) before closing it.
     // The focused field was only just entered and holds no edit, so Escape discards nothing.
+    await page
+      .locator('.rdtOpen')
+      .waitFor({ state: 'attached', timeout: 2000 })
+      .catch(() => {});
     await page.keyboard.press('Escape');
     await page.locator('.rdtOpen').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     await holdForCaptureIfEnabled(1500);
@@ -167,8 +170,19 @@ export class CostRevaluationPage {
       await toggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const container = page.locator('.quick-input-container');
       await container.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      const addNewButton = page.locator('.filter-panel-buttons button.btn-distance:not(.close-batch-entry)');
-      await expect(addNewButton, 'The line tab must not offer "Add new" (lines are added by quick-input only)').toHaveCount(0);
+
+      // "Add new" is hidden while the batch entry is open in every tab, so check it with the batch entry closed:
+      // the tab's buttons are rendered (the batch entry toggle), but "Add new" is not.
+      await toggle.click();
+      await container.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(toggle).toBeVisible();
+      await expect(
+        page.getByTestId('add-new-record'),
+        'The line tab must not offer "Add new" (lines are added by quick-input only)'
+      ).toHaveCount(0);
+      await toggle.click();
+      await container.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
       if (isUatCapture()) {
         // Keep the entry row clear of the caption band at the bottom of the recording.
         await container.evaluate((el) => el.scrollIntoView({ block: 'center' }));
@@ -191,7 +205,7 @@ export class CostRevaluationPage {
     await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await productInput.click();
     await productInput.fill('');
-    await page.waitForTimeout(300);
+    await expect(productInput).toHaveValue('');
     const searched = page.waitForResponse(
       (r) => r.url().includes(`/M_Product_ID/typeahead?query=${encodeURIComponent(code)}`),
       { timeout: SLOW_ACTION_TIMEOUT }
@@ -269,17 +283,17 @@ export class CostRevaluationPage {
   }
 
   /**
-   * Choose the header's Cost Element (Kostenart) by its name and wait for the save.
+   * Choose the header's Cost Element (Kostenart) by its M_CostElement_ID and wait for the save.
    * Only allowed while the document has no lines.
    */
-  static async selectCostElement(costElementName) {
-    await test.step(`Select Kostenart (cost element) ${costElementName}`, async () => {
+  static async selectCostElement(costElementId) {
+    await test.step(`Select Kostenart (cost element) ${costElementId}`, async () => {
       const page = getPage();
       const field = page.locator('.form-field-M_CostElement_ID').first();
       await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const unhighlight = await highlightForCaptureIfEnabled(field);
       await field.locator('.input-dropdown').first().click();
-      const option = page.locator('.input-dropdown-list [data-testid^="option-"]').filter({ hasText: costElementName }).first();
+      const option = page.locator('.input-dropdown-list').getByTestId(`option-${costElementId}`);
       await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const saved = page.waitForResponse(
         (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
@@ -299,26 +313,27 @@ export class CostRevaluationPage {
    * @param {string} recordId the header record id
    */
   static async waitUntilPosted(recordId) {
-    for (let i = 0; i < 30; i++) {
-      const facts = await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId);
-      if (facts.length > 0) {
-        return facts;
-      }
-      await getPage().waitForTimeout(1000);
-    }
-    throw new Error(`Cost revaluation ${recordId} was not posted within 30s (no accounting facts)`);
+    let facts = [];
+    await expect
+      .poll(
+        async () => {
+          facts = await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId);
+          return facts.length;
+        },
+        { message: `Cost revaluation ${recordId} is posted (has accounting facts)`, timeout: 30000 }
+      )
+      .toBeGreaterThan(0);
+    return facts;
   }
 
   /**
-   * Expect the document to stay without accounting facts for a while after Complete (a document with no value
-   * difference books none). This cannot tell "posted without facts" from "not posted yet" beyond the wait.
+   * Expect the posted document to have no accounting facts (a document with no value difference books none).
+   * A document that is not posted yet has no facts either, so the caller must first wait for a result of the posting
+   * itself (e.g. the current cost price the posting sets) before calling this.
    * @param {string} recordId the header record id
    */
   static async expectNoAccountingFacts(recordId) {
-    for (let i = 0; i < 10; i++) {
-      expect(await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId)).toEqual([]);
-      await getPage().waitForTimeout(1000);
-    }
+    expect(await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId)).toEqual([]);
   }
 
   /** Type the New cost price into the open quick-input (does not submit). */
@@ -412,7 +427,7 @@ export class CostRevaluationPage {
     await page.reload();
     const statusButton = page.getByTestId('status-button');
     await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
     const unhighlightStatus = await highlightForCaptureIfEnabled(statusButton);
     const unhighlightLines = await highlightForCaptureIfEnabled(page.locator('.table-flex-wrapper-row, .table-flex-wrapper').first());
     await holdForCaptureIfEnabled(4000);

@@ -62,18 +62,15 @@ async function loginAndCreateHeader(masterdata) {
   return await CostRevaluationPage.createHeader();
 }
 
-/**
- * The moving-average (average purchase-order price) cost element of the standard setup. Selected by its name:
- * M_CostElement.Name is master data without translations, so it is the same in every login language.
- */
-const MOVING_AVERAGE_PO_COST_ELEMENT_NAME = 'Bestellpreis Durchschnitt';
+/** The moving-average (average purchase-order price) costing method: M_CostElement.CostingMethod 'A'. */
+const AVERAGE_PO_COSTING_METHOD = 'A';
 
 /** A fractional price on purpose: the quick-input must accept decimals, not only whole numbers. */
 const SEED_COST_PRICE = 12.35;
 
 /**
  * The product's cost records (M_Cost rows), read from the Produktkosten window's cost tab.
- * @returns {Promise<{costElement: string, currentCostPrice: number, currentQty: number}[]>}
+ * @returns {Promise<{costElementId: string, costingMethod: string, currentCostPrice: number, currentQty: number}[]>}
  */
 async function getProductCosts(page, productId) {
   const response = await page.request.get(
@@ -81,10 +78,22 @@ async function getProductCosts(page, productId) {
   );
   expect(response.status()).toBe(200);
   return ((await response.json()).result || []).map((row) => ({
-    costElement: row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption,
+    costElementId: row.fieldsByName.M_CostElement_ID && String(row.fieldsByName.M_CostElement_ID.value.key),
+    costingMethod: row.fieldsByName.CostingMethod && row.fieldsByName.CostingMethod.value && row.fieldsByName.CostingMethod.value.key,
     currentCostPrice: Number(row.fieldsByName.CurrentCostPrice.value),
     currentQty: Number(row.fieldsByName.CurrentQty && row.fieldsByName.CurrentQty.value),
   }));
+}
+
+/** The M_CostElement_ID of the given costing method, read from the default cost rows of a product that has them. */
+async function getCostElementId(page, productIdWithCosts, costingMethod) {
+  const costElementIds = [
+    ...new Set(
+      (await getProductCosts(page, productIdWithCosts)).filter((c) => c.costingMethod === costingMethod).map((c) => c.costElementId)
+    ),
+  ];
+  expect(costElementIds, `exactly one cost element with costing method ${costingMethod}`).toHaveLength(1);
+  return costElementIds[0];
 }
 
 function allureTags(story) {
@@ -300,10 +309,11 @@ field's provisional-price hint applies (provisional until the first goods receip
     console.log(`[seed] header record ${recordId}`);
 
     // Moving-average costing: the cost element is chosen on the header while it has no lines.
-    await CostRevaluationPage.selectCostElement(MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
+    const averagePOCostElementId = await getCostElementId(page, md.products.PHAS.id, AVERAGE_PO_COSTING_METHOD);
+    await CostRevaluationPage.selectCostElement(averagePOCostElementId);
     const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
     console.log('[seed] M_CostElement_ID=' + JSON.stringify(costElement.value));
-    expect(costElement.value.caption).toBe(MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
+    expect(String(costElement.value.key)).toBe(averagePOCostElementId);
 
     // Precondition: the product really has no cost record yet.
     expect(await getProductCosts(page, seedProductId)).toEqual([]);
@@ -359,14 +369,23 @@ field's provisional-price hint applies (provisional until the first goods receip
     expect(docStatus.value.key).toBe('CO');
 
     // End result: the product's moving-average current cost price is now the entered price.
-    const costsAfterComplete = await getProductCosts(page, seedProductId);
-    console.log('[seed] cost rows after Complete=' + JSON.stringify(costsAfterComplete));
-    const movingAverageCost = costsAfterComplete.filter((c) => c.costElement === MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
-    expect(movingAverageCost.map((c) => c.currentCostPrice)).toEqual([SEED_COST_PRICE]);
+    // Posting the document sets it (in the same transaction as the document's accounting facts), so once it shows,
+    // the document is posted.
+    await expect
+      .poll(
+        async () => {
+          const costsAfterComplete = await getProductCosts(page, seedProductId);
+          console.log('[seed] cost rows after Complete=' + JSON.stringify(costsAfterComplete));
+          return costsAfterComplete
+            .filter((c) => c.costElementId === averagePOCostElementId)
+            .map((c) => c.currentCostPrice);
+        },
+        { message: 'the posted document sets the moving-average current cost price', timeout: 30000 }
+      )
+      .toEqual([SEED_COST_PRICE]);
 
-    // Nothing on hand, so no value difference: the document books no accounting facts.
-    // NOTE: an unposted document has no facts either; the per-product test above is the positive control that the
-    // same read returns the facts once a revaluation of this window is posted.
+    // Nothing on hand, so no value difference: the posted document booked no accounting facts.
+    // The per-product test above is the positive control that the same read returns the facts of a posted revaluation.
     await CostRevaluationPage.expectNoAccountingFacts(recordId);
     await CostRevaluationPage.showCompletedDocument();
   });
