@@ -15,7 +15,9 @@ import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.impl.CostingService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -33,11 +35,19 @@ import java.util.Optional;
 @Service
 public class CostRevaluationService
 {
+	static final AdMessageKey MSG_LineAlreadyExistsForProduct = AdMessageKey.of("M_CostRevaluation.LineAlreadyExistsForProduct");
+	static final AdMessageKey MSG_NoCurrentCostForProduct = AdMessageKey.of("M_CostRevaluation.NoCurrentCostForProduct");
+	static final AdMessageKey MSG_OrgRequiredForOrgCostingLevel = AdMessageKey.of("M_CostRevaluation.OrgRequiredForOrgCostingLevel");
+	static final AdMessageKey MSG_AmbiguousCurrentCost = AdMessageKey.of("M_CostRevaluation.AmbiguousCurrentCost");
+	static final AdMessageKey MSG_NewCostPriceNegative = AdMessageKey.of("M_CostRevaluation.NewCostPriceNegative");
+	static final AdMessageKey MSG_DocumentNotDraft = AdMessageKey.of("M_CostRevaluation.DocumentNotDraft");
+
 	private final CostRevaluationRepository costRevaluationRepository;
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final CostingService costingService;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
@@ -110,7 +120,8 @@ public class CostRevaluationService
 	 * <p>
 	 * Additive only: never touches any other line of the revaluation.
 	 *
-	 * @throws AdempiereException if a line already exists for {@code productId} (duplicate guard), if the product still has
+	 * @throws AdempiereException if {@code newCostPrice} is negative, if the revaluation is not drafted / in progress,
+	 * if an active line already exists for {@code productId} (duplicate guard), if the product still has
 	 * no current cost after seeding (unsupported costing setup), or if it has more than one (ambiguous multi-segment product).
 	 * @return the id of the newly created line.
 	 */
@@ -120,12 +131,21 @@ public class CostRevaluationService
 			@NonNull final ProductId productId,
 			@NonNull final BigDecimal newCostPrice)
 	{
-		if (costRevaluationRepository.existsLineForProduct(costRevaluationId, productId))
+		if (newCostPrice.signum() < 0)
 		{
-			throw new AdempiereException("A cost revaluation line already exists for product " + productId + " on " + costRevaluationId);
+			throw new AdempiereException(MSG_NewCostPriceNegative);
 		}
 
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		if (!costRevaluation.getDocStatus().isDraftedOrInProgress())
+		{
+			throw new AdempiereException(MSG_DocumentNotDraft);
+		}
+
+		if (costRevaluationRepository.existsActiveLineForProduct(costRevaluationId, productId))
+		{
+			throw new AdempiereException(MSG_LineAlreadyExistsForProduct, productBL.getProductValueAndName(productId));
+		}
 
 		// The caller owns the costing-level decision: filter the current-cost lookup by the header org only when the
 		// product is costed at organization level; otherwise (client / batch-lot level) don't filter by org.
@@ -139,7 +159,7 @@ public class CostRevaluationService
 			// product creation (idempotent: only missing rows are created), then re-resolve.
 			currentCostsRepo.createDefaultProductCosts(productDAO.getById(productId));
 			currentCost = resolveCurrentCost(costRevaluation, productId, orgId)
-					.orElseThrow(() -> new AdempiereException("No current cost found for product " + productId));
+					.orElseThrow(() -> new AdempiereException(MSG_NoCurrentCostForProduct, productBL.getProductValueAndName(productId)));
 		}
 
 		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
@@ -166,7 +186,7 @@ public class CostRevaluationService
 		final OrgId orgId = costRevaluation.getOrgId();
 		if (orgId.isAny())
 		{
-			throw new AdempiereException("Regular organization expected when costing level is Organization, but " + costRevaluation.getCostRevaluationId() + " has no organization (product " + productId + ")");
+			throw new AdempiereException(MSG_OrgRequiredForOrgCostingLevel, productBL.getProductValueAndName(productId));
 		}
 		return orgId;
 	}
@@ -194,7 +214,7 @@ public class CostRevaluationService
 
 		if (currentCosts.size() > 1)
 		{
-			throw new AdempiereException("Ambiguous current cost for product " + productId + ": found " + currentCosts.size() + " matching cost segments");
+			throw new AdempiereException(MSG_AmbiguousCurrentCost, productBL.getProductValueAndName(productId), currentCosts.size());
 		}
 
 		return currentCosts.isEmpty() ? Optional.empty() : Optional.of(currentCosts.get(0));

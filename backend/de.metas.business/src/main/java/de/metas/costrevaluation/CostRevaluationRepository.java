@@ -119,7 +119,7 @@ public class CostRevaluationRepository
 	/**
 	 * Creates a new, non-destructive {@link I_M_CostRevaluationLine} for the given {@link CurrentCost}, defaulting
 	 * {@code NewCostPrice} to the current cost's own price (the bulk {@link #createLinesForCurrentCosts} path).
-	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
+	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsActiveLineForProduct(CostRevaluationId, ProductId)} first.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(
@@ -133,7 +133,7 @@ public class CostRevaluationRepository
 	 * Like {@link #createLineForCurrentCost(CostRevaluationId, CurrentCost)} but sets {@code NewCostPrice} to the
 	 * given {@code newCostPrice} instead of defaulting it to the current cost's own price (the single-product manual
 	 * entry path: the operator types the new price).
-	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
+	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsActiveLineForProduct(CostRevaluationId, ProductId)} first.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(
@@ -156,11 +156,15 @@ public class CostRevaluationRepository
 		return extractCostRevaluationLineId(record);
 	}
 
-	public boolean existsLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
+	/**
+	 * Deactivated lines are ignored, like everywhere else on this document (completion only processes active lines).
+	 */
+	public boolean existsActiveLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
 	{
 		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
 				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
 				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
 				.anyMatch();
 	}
 
