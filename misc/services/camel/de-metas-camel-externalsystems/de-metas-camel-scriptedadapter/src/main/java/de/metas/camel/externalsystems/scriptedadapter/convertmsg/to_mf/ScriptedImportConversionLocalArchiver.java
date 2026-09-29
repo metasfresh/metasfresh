@@ -67,7 +67,11 @@ class ScriptedImportConversionLocalArchiver
 		}
 	}
 
-	/** Writes without ever truncating an existing file; each collision is retried under a fresh suffix. */
+	/**
+	 * Writes without ever truncating an existing file; each collision is retried under a fresh suffix.
+	 * CREATE_NEW makes creation itself the collision check -- an exists()-then-write pair would let a
+	 * concurrent archiver slip between the two.
+	 */
 	private static void writeWithoutOverwriting(@NonNull final Path dirPath, @NonNull final String fileName, @NonNull final byte[] content) throws IOException
 	{
 		final Path resolved = resolveWithinDirectory(dirPath, fileName);

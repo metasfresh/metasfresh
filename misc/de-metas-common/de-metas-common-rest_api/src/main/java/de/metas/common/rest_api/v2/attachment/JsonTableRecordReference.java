@@ -71,6 +71,13 @@ public class JsonTableRecordReference
 					+ " tableName=" + tableName + ", adTableId=" + adTableId);
 		}
 
+		// A non-positive adTableId would otherwise reach AdTableId.ofRepoIdOrNull, come back null, and be
+		// reported as a missing tableName -- naming the field the caller did not send.
+		if (hasAdTableId && adTableId <= 0)
+		{
+			throw Check.mkEx("adTableId must be greater than zero; adTableId=" + adTableId);
+		}
+
 		this.tableName = hasTableName ? tableName : null;
 		this.adTableId = adTableId;
 		this.recordId = recordId;
