@@ -553,9 +553,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull final I_M_HU_PI huPI, @Nullable final BPartnerId bpartnerId)
+	public ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull final HuPackingInstructionsId huPIId, @Nullable final BPartnerId bpartnerId)
 	{
-		return retrievePIItems(huPI, bpartnerId)
+		return retrievePIItems(getPackingInstructionById(huPIId), bpartnerId)
 				.stream()
 				.map(piItem -> HuPackingMaterialId.ofRepoIdOrNull(piItem.getM_HU_PackingMaterial_ID()))
 				.filter(Objects::nonNull)

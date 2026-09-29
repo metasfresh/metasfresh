@@ -5,8 +5,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Conflict;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
 import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Usage;
-import de.metas.inout.InOutLineId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.project.ProjectId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_InOut;
@@ -43,9 +45,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ShipmentPackingUnitProjectConflictDetectorTest
 {
-	private static final InOutLineId LINE_1 = InOutLineId.ofRepoId(1000001);
-	private static final InOutLineId LINE_2 = InOutLineId.ofRepoId(1000002);
-	private static final InOutLineId LINE_3 = InOutLineId.ofRepoId(1000003);
+	private static final PackingUnit HU_1 = PackingUnit.ofHuId(HuId.ofRepoId(1));
+	private static final PackingUnit DEFAULT_LU = PackingUnit.ofDefaultLUPackingInstructionsId(HuPackingInstructionsId.ofRepoId(1000006));
 
 	private static final ProjectId PROJECT_1 = ProjectId.ofRepoId(2000001);
 	private static final ProjectId PROJECT_2 = ProjectId.ofRepoId(2000002);
@@ -81,14 +82,14 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void huSharedByTwoProjects_conflictAndWarning()
 	{
-		final Usage usage1 = new Usage("HU:1", LINE_1, PROJECT_1, true);
-		final Usage usage2 = new Usage("HU:1", LINE_2, PROJECT_2, false);
+		final Usage usage1 = new Usage(HU_1, PROJECT_1, true);
+		final Usage usage2 = new Usage(HU_1, PROJECT_2, false);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2));
 
 		assertThat(conflicts).hasSize(1);
 		final Conflict conflict = conflicts.get(0);
-		assertThat(conflict.getUnitKey()).isEqualTo("HU:1");
+		assertThat(conflict.getPackingUnit()).isEqualTo(HU_1);
 		assertThat(conflict.getProjectIds()).containsExactlyInAnyOrder(PROJECT_1, PROJECT_2);
 		assertThat(conflict.getBookedProjectId()).isEqualTo(PROJECT_1);
 
@@ -108,8 +109,8 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void huOnTwoLinesOfSameProject_noConflict()
 	{
-		final Usage usage1 = new Usage("HU:1", LINE_1, PROJECT_1, false);
-		final Usage usage2 = new Usage("HU:1", LINE_2, PROJECT_1, false);
+		final Usage usage1 = new Usage(HU_1, PROJECT_1, false);
+		final Usage usage2 = new Usage(HU_1, PROJECT_1, false);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2));
 
@@ -124,14 +125,14 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void defaultPallet_sharedByTwoProjects_conflictAndWarning()
 	{
-		final Usage usage1 = new Usage("DefaultLU-PI:1000006", LINE_1, PROJECT_1, true);
-		final Usage usage2 = new Usage("DefaultLU-PI:1000006", LINE_2, PROJECT_2, false);
+		final Usage usage1 = new Usage(DEFAULT_LU, PROJECT_1, true);
+		final Usage usage2 = new Usage(DEFAULT_LU, PROJECT_2, false);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2));
 
 		assertThat(conflicts).hasSize(1);
 		final Conflict conflict = conflicts.get(0);
-		assertThat(conflict.getUnitKey()).isEqualTo("DefaultLU-PI:1000006");
+		assertThat(conflict.getPackingUnit()).isEqualTo(DEFAULT_LU);
 		assertThat(conflict.getProjectIds()).containsExactlyInAnyOrder(PROJECT_1, PROJECT_2);
 		assertThat(conflict.getBookedProjectId()).isEqualTo(PROJECT_1);
 
@@ -148,8 +149,8 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void defaultPallet_oneLineWithNoProject_noConflict()
 	{
-		final Usage usage1 = new Usage("DefaultLU-PI:1000006", LINE_1, PROJECT_1, false);
-		final Usage usage2 = new Usage("DefaultLU-PI:1000006", LINE_2, null, false);
+		final Usage usage1 = new Usage(DEFAULT_LU, PROJECT_1, false);
+		final Usage usage2 = new Usage(DEFAULT_LU, null, false);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2));
 
@@ -164,8 +165,8 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void huFirstLineNotBooked_secondLineBooked_bookedIsSecondProject()
 	{
-		final Usage usage1 = new Usage("HU:1", LINE_1, PROJECT_1, false);
-		final Usage usage2 = new Usage("HU:1", LINE_2, PROJECT_2, true);
+		final Usage usage1 = new Usage(HU_1, PROJECT_1, false);
+		final Usage usage2 = new Usage(HU_1, PROJECT_2, true);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2));
 
@@ -184,9 +185,9 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	@Test
 	void defaultPallet_bookedManualLineHasNoProject_bookedIsNone()
 	{
-		final Usage usage1 = new Usage("DefaultLU-PI:1000006", LINE_1, null, true);
-		final Usage usage2 = new Usage("DefaultLU-PI:1000006", LINE_2, PROJECT_1, false);
-		final Usage usage3 = new Usage("DefaultLU-PI:1000006", LINE_3, PROJECT_2, false);
+		final Usage usage1 = new Usage(DEFAULT_LU, null, true);
+		final Usage usage2 = new Usage(DEFAULT_LU, PROJECT_1, false);
+		final Usage usage3 = new Usage(DEFAULT_LU, PROJECT_2, false);
 
 		final ImmutableList<Conflict> conflicts = ShipmentPackingUnitProjectConflictDetector.detect(ImmutableList.of(usage1, usage2, usage3));
 

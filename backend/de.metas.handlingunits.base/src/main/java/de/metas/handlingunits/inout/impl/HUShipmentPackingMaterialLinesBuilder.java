@@ -29,12 +29,14 @@ import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -106,10 +108,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private boolean _manualLUCollected;
 
 	/**
-	 * The default-LU packing instruction added for this shipment (at most once, see {@link #collectHUs(IHUPackingMaterialCollectorSource)})
-	 * and the first manual-packing line it was added for. Read only by the packing-unit/project conflict detection; does not affect booking.
+	 * The default-LU packing instruction added for this shipment, and the first manual-packing line it was added for.
 	 */
-	@Nullable private I_M_HU_PI _defaultLUPI;
+	@Nullable private HuPackingInstructionsId _defaultLUPIId;
 	@Nullable private InOutLineId _defaultLUFirstLineId;
 
 	/* package */ HUShipmentPackingMaterialLinesBuilder()
@@ -194,9 +195,6 @@ public class HUShipmentPackingMaterialLinesBuilder
 			collectHUs(inOutLineSource);
 		}
 
-		// Safety-net detection only, run once every line's C_Project_ID is known.
-		// Never changes booking: it only logs a WARN when a packing unit (HU-assignment or default-LU origin) ends up
-		// serving shipment lines of more than one Positions Nr.
 		if (packingMaterialsCollector.isConsiderProject())
 		{
 			final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = buildPackingUnitProjectUsages(inoutLines);
@@ -204,20 +202,12 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 	}
 
-	/**
-	 * Builds the {@link ShipmentPackingUnitProjectConflictDetector.Usage} list for this shipment's lines, from both origins a packing unit
-	 * can come from: an {@code M_HU_Assignment} (TU or LU) and the default-LU packing instruction. Read-only; does not change booking.
-	 */
 	private List<ShipmentPackingUnitProjectConflictDetector.Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
 	{
 		final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = new ArrayList<>();
 
-		//
-		// (a) HU-assignment origin: all active TU/LU M_HU_Assignment rows of each line, in line order.
-		// Deliberately NO IsTransferPackingMaterials filter: a TU shared by more than one line gets
-		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered query could never
-		// see the second line and the conflict would go undetected.
-		// One batched query for all lines, then grouped by Record_ID (= M_InOutLine_ID).
+		// Deliberately NOT filtered on IsTransferPackingMaterials: a TU shared by more than one line gets
+		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered lookup would never see the other lines.
 		final ImmutableList<InOutLineId> inOutLineIds = inoutLines.stream()
 				.map(inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()))
 				.collect(ImmutableList.toImmutableList());
@@ -239,13 +229,12 @@ public class HUShipmentPackingMaterialLinesBuilder
 				{
 					// TU: booked = the row with IsTransferPackingMaterials='Y' (set only on the first assignment).
 					usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
-							"HU:" + tuHuId.getRepoId(), inOutLineId, projectId, assignment.isTransferPackingMaterials()));
+							PackingUnit.ofHuId(tuHuId), projectId, assignment.isTransferPackingMaterials()));
 				}
 				final HuId luHuId = HuId.ofRepoIdOrNull(assignment.getM_LU_HU_ID());
 				if (luHuId != null)
 				{
-					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU;
-					// resolved once every line is known, below.
+					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU
 					earliestInOutLineIdByLuHuId.merge(luHuId, inOutLineId, (id1, id2) -> id1.getRepoId() <= id2.getRepoId() ? id1 : id2);
 					luOccurrences.add(new LuOccurrence(luHuId, inOutLineId, projectId));
 				}
@@ -255,16 +244,13 @@ public class HUShipmentPackingMaterialLinesBuilder
 		{
 			final boolean booked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
 			usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
-					"HU:" + luOccurrence.getLuHuId().getRepoId(), luOccurrence.getInOutLineId(), luOccurrence.getProjectId(), booked));
+					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), booked));
 		}
 
-		//
-		// (b) default-LU origin: only if the default-LU PI was added AND has a PM item with a packing material
-		// (the same check HUPackingMaterialsCollector.addM_HU_PI does before adding a candidate for it).
-		// One usage per manual-packing line; booked = the first manual line, which is where the pallet was actually added.
+		// Default LU: one usage per manual-packing line; booked = the first manual line, which is where the pallet was added.
 		if (isDefaultLUWithPackingMaterial())
 		{
-			final String defaultLuUnitKey = "DefaultLU-PI:" + _defaultLUPI.getM_HU_PI_ID();
+			final PackingUnit defaultLU = PackingUnit.ofDefaultLUPackingInstructionsId(_defaultLUPIId);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
 				if (!isManualPackingMaterials(inoutLine))
@@ -274,7 +260,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 				final InOutLineId inOutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
 				final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
 				final boolean booked = inOutLineId.equals(_defaultLUFirstLineId);
-				usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLuUnitKey, inOutLineId, projectId, booked));
+				usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, booked));
 			}
 		}
 
@@ -284,11 +270,11 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private boolean isDefaultLUWithPackingMaterial()
 	{
 		final BPartnerId bpartnerId = null;
-		return _defaultLUPI != null && !handlingUnitsDAO.retrievePackingMaterialIds(_defaultLUPI, bpartnerId).isEmpty();
+		return _defaultLUPIId != null && !handlingUnitsDAO.retrievePackingMaterialIds(_defaultLUPIId, bpartnerId).isEmpty();
 	}
 
 	/**
-	 * One line's occurrence of an LU {@code M_HU_Assignment} row, kept until the earliest-line-per-LU pass (above) can decide {@code booked}.
+	 * One line's occurrence of an LU {@code M_HU_Assignment} row; {@code booked} is decided once all lines are known.
 	 */
 	@Value
 	private static class LuOccurrence
@@ -439,7 +425,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			if (luPI != null)
 			{
 				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLineSource);
-				_defaultLUPI = luPI;
+				_defaultLUPIId = HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID());
 				_defaultLUFirstLineId = InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID());
 			}
 

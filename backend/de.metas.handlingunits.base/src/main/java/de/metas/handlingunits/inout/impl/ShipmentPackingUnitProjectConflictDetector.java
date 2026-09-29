@@ -24,7 +24,8 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.inout.InOutLineId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
@@ -53,16 +54,16 @@ public class ShipmentPackingUnitProjectConflictDetector
 
 	public static ImmutableList<Conflict> detect(@NonNull final List<Usage> usagesInLineOrder)
 	{
-		final Map<String, List<Usage>> usagesByUnitKey = new LinkedHashMap<>();
+		final Map<PackingUnit, List<Usage>> usagesByPackingUnit = new LinkedHashMap<>();
 		for (final Usage usage : usagesInLineOrder)
 		{
-			usagesByUnitKey.computeIfAbsent(usage.getUnitKey(), key -> new ArrayList<>()).add(usage);
+			usagesByPackingUnit.computeIfAbsent(usage.getPackingUnit(), key -> new ArrayList<>()).add(usage);
 		}
 
 		final ImmutableList.Builder<Conflict> conflicts = ImmutableList.builder();
-		for (final Map.Entry<String, List<Usage>> entry : usagesByUnitKey.entrySet())
+		for (final Map.Entry<PackingUnit, List<Usage>> entry : usagesByPackingUnit.entrySet())
 		{
-			final String unitKey = entry.getKey();
+			final PackingUnit packingUnit = entry.getKey();
 			final List<Usage> usages = entry.getValue();
 
 			final ImmutableSet<ProjectId> projectIds = usages.stream()
@@ -82,7 +83,7 @@ public class ShipmentPackingUnitProjectConflictDetector
 					.map(Usage::getProjectId)
 					.orElse(null);
 
-			conflicts.add(new Conflict(unitKey, projectIds, bookedProjectId));
+			conflicts.add(new Conflict(packingUnit, projectIds, bookedProjectId));
 		}
 
 		return conflicts.build();
@@ -92,24 +93,45 @@ public class ShipmentPackingUnitProjectConflictDetector
 	{
 		for (final Conflict conflict : conflicts)
 		{
-			final Object bookedProjectRepoId = conflict.getBookedProjectId() != null
-					? conflict.getBookedProjectId().getRepoId()
+			final String bookedProject = conflict.getBookedProjectId() != null
+					? String.valueOf(conflict.getBookedProjectId().getRepoId())
 					: "none";
 
 			logger.warn("Shipment {} (M_InOut_ID={}): packing unit {} is shared by more than one Positions Nr. (C_Project_ID) {}; booked to {}",
 					shipment.getDocumentNo(),
 					shipment.getM_InOut_ID(),
-					conflict.getUnitKey(),
+					conflict.getPackingUnit(),
 					conflict.getProjectIds(),
-					bookedProjectRepoId);
+					bookedProject);
+		}
+	}
+
+	/**
+	 * A physical packing unit: either an HU, or the default-LU packing instruction.
+	 */
+	@Value
+	public static class PackingUnit
+	{
+		@Nullable HuId huId;
+		@Nullable HuPackingInstructionsId defaultLUPackingInstructionsId;
+
+		public static PackingUnit ofHuId(@NonNull final HuId huId) {return new PackingUnit(huId, null);}
+
+		public static PackingUnit ofDefaultLUPackingInstructionsId(@NonNull final HuPackingInstructionsId packingInstructionsId) {return new PackingUnit(null, packingInstructionsId);}
+
+		@Override
+		public String toString()
+		{
+			return huId != null
+					? "HU:" + huId.getRepoId()
+					: "DefaultLU-PI:" + HuPackingInstructionsId.toRepoId(defaultLUPackingInstructionsId);
 		}
 	}
 
 	@Value
 	public static class Usage
 	{
-		@NonNull String unitKey;
-		@NonNull InOutLineId inOutLineId;
+		@NonNull PackingUnit packingUnit;
 		@Nullable ProjectId projectId;
 		boolean booked;
 	}
@@ -117,7 +139,7 @@ public class ShipmentPackingUnitProjectConflictDetector
 	@Value
 	public static class Conflict
 	{
-		@NonNull String unitKey;
+		@NonNull PackingUnit packingUnit;
 		@NonNull ImmutableSet<ProjectId> projectIds;
 		@Nullable ProjectId bookedProjectId;
 	}

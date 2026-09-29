@@ -204,7 +204,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * @return the packing materials referenced by the given packing instructions' PI items; empty if none
 	 */
-	ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull I_M_HU_PI huPI, @Nullable BPartnerId bpartnerId);
+	ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull HuPackingInstructionsId huPIId, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.

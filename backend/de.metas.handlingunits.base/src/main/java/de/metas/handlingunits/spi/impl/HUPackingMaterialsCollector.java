@@ -111,8 +111,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * also keys on the in-scope source's {@code C_Project_ID}, so packing material collected for different projects
 	 * lands in different candidates instead of being merged into one.
 	 * <p>
-	 * Default {@code false}: the project is not part of the key.
-	 * <p>
 	 * <b>The remove path is not project-aware:</b> {@link #requirePackingMaterialForTU(I_M_HU)} /
 	 * {@link #requirePackingMaterialForLU(I_M_HU)} always pass a {@code null} source, so with this flag ON their key
 	 * would not match the add-key of a project-keyed candidate. Do not enable it for a collector that uses the remove path.
@@ -462,7 +460,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final int productId = huPackingMaterial.getM_Product_ID();
 		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
 
-		// When !considerProject, every candidate gets the same -1, so the project never distinguishes candidates.
 		final int projectId = considerProject ? ProjectId.toRepoId(source == null ? null : source.getProjectId()) : -1;
 		return Util.mkKey(
 				productId <= 0 ? -1 : productId,
@@ -768,17 +765,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
 	}
 
-	/**
-	 * See {@link #considerProject}.
-	 */
 	public void setConsiderProject(final boolean considerProject)
 	{
 		this.considerProject = considerProject;
 	}
 
-	/**
-	 * See {@link #considerProject}.
-	 */
 	public boolean isConsiderProject()
 	{
 		return considerProject;
