@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -598,12 +599,12 @@ public class C_Order_StepDef
 				.map(bpartnerTable::getId)
 				.orElse(null);
 
-		final I_C_Order purchaseOrder = orderDAO.getByLinkOrderId(linkedOrderId)
+		final List<I_C_Order> purchaseOrders = orderDAO.getByLinkOrderId(linkedOrderId)
 				.stream()
 				.filter(order -> bpartnerId == null || order.getC_BPartner_ID() == bpartnerId.getRepoId())
-				.findFirst()
-				.orElse(null);
-		assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
+				.collect(ImmutableList.toImmutableList());
+		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
+		final I_C_Order purchaseOrder = purchaseOrders.get(0);
 		assertThat(purchaseOrder.isSOTrx()).isEqualTo(row.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
 
 		final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
