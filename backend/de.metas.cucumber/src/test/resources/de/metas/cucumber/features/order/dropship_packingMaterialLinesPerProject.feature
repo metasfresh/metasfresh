@@ -23,11 +23,14 @@ Feature: dropship packing material lines split per project
       | Identifier | M_PriceList_ID |
       | plv_sales  | pl_sales       |
       | plv_purch  | pl_purch       |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier         | Name                    | DiscountType | ValidFrom  |
+      | vendorDiscountPlan | dropship_packing_vendor | F            | 2024-01-01 |
     And metasfresh contains C_BPartners:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | customer   | N        | Y          | pricingSystem      |
-      | vendor_1   | Y        | N          | pricingSystem      |
-      | vendor_2   | Y        | N          | pricingSystem      |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
+      | customer   | N        | Y          | pricingSystem      |                      |
+      | vendor_1   | Y        | N          | pricingSystem      | vendorDiscountPlan   |
+      | vendor_2   | Y        | N          | pricingSystem      |                      |
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
@@ -37,6 +40,12 @@ Feature: dropship packing material lines split per project
       | goods_2    |
       | crate      |
       | box        |
+    # Completing a dropship sales order needs a vendor on every line, the packing material lines included:
+    # vendor_1 is the current vendor of the packing material.
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID |
+      | vendor_1      | crate        |
+      | vendor_1      | box          |
     # The purchase orders get packing material lines too, so both price lists need the packing material.
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
