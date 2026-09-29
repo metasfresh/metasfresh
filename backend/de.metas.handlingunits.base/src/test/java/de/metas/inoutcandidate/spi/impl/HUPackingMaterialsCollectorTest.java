@@ -15,6 +15,7 @@ import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -142,7 +143,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * Flag OFF: sources of two projects give one candidate without project.
+	 * Flag OFF: sources of two projects give one candidate without project, keyed by product, locator and material tracking only.
 	 */
 	@Test
 	public void considerProject_off_twoSourcesDifferentProjects_yieldsOneCandidateWithNullProject()
@@ -157,6 +158,10 @@ public class HUPackingMaterialsCollectorTest
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP1);
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP2);
 		child.mergeBackToParentAndClear();
+
+		final HUPackingMaterialDocumentLineCandidate candidate = parent.getKey2candidates().values().iterator().next();
+		assertThat(parent.getKey2candidates().keySet())
+				.containsExactly(Util.mkKey(candidate.getProductId().getRepoId(), -1, -1));
 
 		final List<HUPackingMaterialDocumentLineCandidate> candidates = parent.getAndClearCandidates();
 

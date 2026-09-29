@@ -116,6 +116,26 @@ public class C_InvoiceLine_StepDef
 				.forEach(this::create_C_InvoiceLine);
 	}
 
+	/**
+	 * Finds one line of the given invoice per row and validates it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_InvoiceLine_ID</b> — (optional) alias to store the found line under, in C_InvoiceLine_StepDefData<br>
+	 * <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice<br>
+	 * <b>M_Product_ID</b> — (required, identifier-ref or id) filter and assertion: the line's product<br>
+	 * <b>QtyInvoiced</b> — (required) filter and assertion: the line's invoiced quantity<br>
+	 * <b>M_InOutLine_ID</b> — (optional, identifier-ref) filter: the line's shipment line<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref or id) expected project; {@code null} expects no project<br>
+	 * further optional assertion columns: QtyEntered, QtyEnteredInBPartnerUOM, C_UOM_BPartner_ID.X12DE355, C_UOM_ID.X12DE355,
+	 * Processed, PriceEntered, PriceActual, LineNetAmt, Discount, C_Tax_ID, C_TaxCategory_ID, Line, TaxAmtInfo, Price_UOM_ID.X12DE355,
+	 * IsManualPrice, QtyInvoicedInPriceUOM, C_Activity_ID.Identifier, Description, QtyMatched, ExternalIds
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, M_InOutLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate created invoice lines
+	 *   | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
+	 *   | packing_line     | invoice      | crate        | 2           | shipment_line  | project_1    |
+	 * </pre>
+	 */
 	@And("validate created invoice lines")
 	public void validate_created_invoice_lines(@NonNull final DataTable table)
 	{

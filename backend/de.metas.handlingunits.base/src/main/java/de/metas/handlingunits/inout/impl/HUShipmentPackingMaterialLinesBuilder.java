@@ -251,9 +251,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 		for (final LuOccurrence luOccurrence : luOccurrences)
 		{
-			final boolean booked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
+			final boolean isBooked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
 			usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
-					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), booked));
+					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), isBooked));
 		}
 
 		return usages;

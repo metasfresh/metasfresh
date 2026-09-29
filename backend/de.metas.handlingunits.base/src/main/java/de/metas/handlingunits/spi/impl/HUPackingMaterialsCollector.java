@@ -763,9 +763,9 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
 	}
 
-	public void setConsiderProject(final boolean considerProject)
+	public void setConsiderProject(final boolean isConsiderProject)
 	{
-		this.isConsiderProject = considerProject;
+		this.isConsiderProject = isConsiderProject;
 	}
 
 	public boolean isConsiderProject()

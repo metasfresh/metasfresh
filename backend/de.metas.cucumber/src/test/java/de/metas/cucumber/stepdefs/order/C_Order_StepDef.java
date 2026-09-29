@@ -69,6 +69,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -177,6 +178,7 @@ public class C_Order_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -591,17 +593,16 @@ public class C_Order_StepDef
 		final StepDefDataIdentifier linkedOrderIdentifier = row.getAsIdentifier(COLUMNNAME_Link_Order_ID);
 		final OrderId linkedOrderId = linkedOrderIdentifier.lookupNotNullIdIn(orderTable);
 
-		final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
-				.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
-
 		// Optional disambiguation by vendor, for multi-vendor SOs whose POs share the same Link_Order_ID
-		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+		final BPartnerId bpartnerId = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
 				.map(bpartnerTable::getId)
-				.ifPresent(bpartnerId -> poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId));
+				.orElse(null);
 
-		final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
+		final I_C_Order purchaseOrder = orderDAO.getByLinkOrderId(linkedOrderId)
+				.stream()
+				.filter(order -> bpartnerId == null || order.getC_BPartner_ID() == bpartnerId.getRepoId())
+				.findFirst()
+				.orElse(null);
 		assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
 		assertThat(purchaseOrder.isSOTrx()).isEqualTo(row.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
 

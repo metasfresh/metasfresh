@@ -100,6 +100,27 @@ public class M_InOut_Line_StepDef
 	private final M_AttributeSetInstance_StepDefData asiTable;
 	private final C_Project_StepDefData projectTable;
 
+	/**
+	 * Finds one line of the given shipment or material receipt per row and validates it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) the shipment or material receipt<br>
+	 * <b>M_Product_ID</b> — (optional, identifier-ref or id) filter: the line's product<br>
+	 * <b>C_OrderLine_ID</b> — (optional, identifier-ref) filter: the line's order line<br>
+	 * <b>QualityDiscountPercent</b> — (optional) filter: the line's quality discount<br>
+	 * <b>MovementQty</b> — (optional) filter and assertion: the line's movement quantity<br>
+	 * <b>M_InOutLine_ID</b> — (optional) alias to store the found line under, in M_InOutLine_StepDefData<br>
+	 * <b>M_AttributeSetInstance_ID</b> — (optional) alias to store the line's attribute set instance under<br>
+	 * <b>Processed</b> — (optional) expected processed flag<br>
+	 * <b>ExternalId</b> — (optional) expected external id<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref) expected project; {@code null} expects no project<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate the created shipment lines
+	 *   | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
+	 *   | packing_line   | shipment   | crate        | 2           | project_1    |
+	 * </pre>
+	 */
 	@And("^validate the created (shipment|material receipt) lines$")
 	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
