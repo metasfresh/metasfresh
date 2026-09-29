@@ -41,11 +41,15 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_SEND_LOG_MESSAGE;
+import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_WRITE_TO_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ErrorReportBuilderTest extends CamelTestSupport
 {
 	private final static String MOCK_LOG_MESSAGE = "mock:logMessage";
+	private final static String MOCK_ERROR_FILE = "mock:errorFile";
 	private final static String JSON_LOG_MESSAGE_REQUEST = "0_LogMessageRequest.json";
 
 	@Override
@@ -116,6 +120,85 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithoutPInstanceId_isWrittenToFile_andSkipsLogMessage() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint fileMock = getMockEndpoint(MOCK_ERROR_FILE);
+		fileMock.expectedMessageCount(1);
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(0);
+
+		final Exchange exchange = newErrorExchange(null);
+
+		template.send("direct:" + MF_ERROR_ROUTE_ID, exchange);
+
+		assertThat(exchange.getException()).isNull();
+		assertThat(fileMock.getReceivedExchanges().get(0).getIn().getBody(String.class)).contains("startup failure");
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void logMessageLegHandlesMissingPInstanceIdWithoutThrowing() throws Exception
+	{
+		this.prepareRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(0);
+
+		final Exchange exchange = newErrorExchange(null);
+
+		template.send("direct:" + ERROR_SEND_LOG_MESSAGE, exchange);
+
+		assertThat(exchange.getException()).isNull();
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithPInstanceId_isSentAsLogMessage() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint fileMock = getMockEndpoint(MOCK_ERROR_FILE);
+		fileMock.expectedMessageCount(1);
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(1);
+
+		final Exchange exchange = newErrorExchange(1);
+
+		template.send("direct:" + MF_ERROR_ROUTE_ID, exchange);
+
+		assertMockEndpointsSatisfied();
+	}
+
+	private Exchange newErrorExchange(final Integer pInstanceId)
+	{
+		final Exchange exchange = new DefaultExchange(context);
+		exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new RuntimeException("startup failure"));
+		if (pInstanceId != null)
+		{
+			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, pInstanceId);
+		}
+		return exchange;
+	}
+
+	private void prepareErrorFileRouteForTesting() throws Exception
+	{
+		AdviceWith.adviceWith(context, ERROR_WRITE_TO_FILE,
+							  advice -> advice.interceptSendToEndpoint("file:*")
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_ERROR_FILE));
 	}
 
 	private void prepareRouteForTesting() throws Exception
