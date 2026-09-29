@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.http.MediaType;
@@ -73,6 +74,21 @@ public class ExternalSystemEndpointRepository
 		return endpointRecords.stream()
 				.map(ExternalSystemEndpointRepository::fromRecord)
 				.collect(ImmutableMap.toImmutableMap(ExternalSystemEndpoint::getId, Function.identity()));
+	}
+
+	/**
+	 * Writes the given values onto the record, a {@code null} value taking the column's value away.
+	 * Goes through {@link InterfaceWrapperHelper#setValue}, since no typed setter can be selected from an
+	 * {@code Object} -- and a typed setter cannot express "clear it" and "put the column default back" alike.
+	 * <p>
+	 * Does NOT save: the caller is a {@code TYPE_BEFORE_CHANGE} handler, and the save it runs inside stores
+	 * these values.
+	 */
+	public void setColumnValues(
+			@NonNull final I_ExternalSystem_Endpoint endpoint,
+			@NonNull final List<ColumnValue> values)
+	{
+		values.forEach(columnValue -> InterfaceWrapperHelper.setValue(endpoint, columnValue.getColumnName(), columnValue.getValue()));
 	}
 
 	@NonNull
@@ -156,5 +172,14 @@ public class ExternalSystemEndpointRepository
 			return null;
 		}
 		return SftpAuthType.ofCode(code);
+	}
+
+	/** One column of {@code ExternalSystem_Endpoint} and the value to write into it; {@code null} clears it. */
+	@Value(staticConstructor = "of")
+	public static class ColumnValue
+	{
+		@NonNull String columnName;
+
+		@Nullable Object value;
 	}
 }

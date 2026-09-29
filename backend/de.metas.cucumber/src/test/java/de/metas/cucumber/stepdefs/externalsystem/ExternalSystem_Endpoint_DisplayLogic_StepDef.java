@@ -26,7 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalsystem.endpoint.interceptor.ExternalSystem_Endpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointService;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -49,10 +50,10 @@ import java.util.TreeSet;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Holds the two kinds of dictionary copy inside {@link ExternalSystem_Endpoint} against the live
+ * Holds the two kinds of dictionary copy inside {@link ExternalSystemEndpointService} against the live
  * application dictionary.
  * <p>
- * The interceptor decides which endpoint fields a new transport/authentication configuration hides by
+ * The service decides which endpoint fields a new transport/authentication configuration hides by
  * evaluating a <b>verbatim string copy</b> of each field's {@code AD_Field.DisplayLogic}, and puts each
  * hidden field back to a <b>verbatim copy</b> of its column's {@code AD_Column.DefaultValue}. A copy cannot
  * see the dictionary, so nothing in that module's plain-JUnit tests notices when a migration script changes
@@ -75,16 +76,23 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	/** Only the two dictionary-copy getters are read here; neither touches the repository. */
+	@NonNull
+	private static ExternalSystemEndpointService newEndpointService()
+	{
+		return new ExternalSystemEndpointService(new ExternalSystemEndpointRepository());
+	}
+
 	/**
 	 * Reports every disagreement between the two sides in one failure, each naming the column and both
 	 * strings.
 	 *
-	 * @see ExternalSystem_Endpoint#getDisplayLogicByColumnName()
+	 * @see ExternalSystemEndpointService#getDisplayLogicByColumnName()
 	 */
 	@Then("the ExternalSystem_Endpoint interceptor's display logic is exactly the window's")
 	public void interceptorDisplayLogicIsExactlyTheWindows()
 	{
-		final ImmutableMap<String, String> copiedIntoCode = new ExternalSystem_Endpoint().getDisplayLogicByColumnName();
+		final ImmutableMap<String, String> copiedIntoCode = newEndpointService().getDisplayLogicByColumnName();
 		final WindowFields windowFields = retrieveEndpointWindowFields();
 
 		final List<String> problems = new ArrayList<>();
@@ -103,14 +111,14 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 	 * Reports every disagreement between the copied defaults and {@code AD_Column.DefaultValue} in one
 	 * failure, each naming the column and both values.
 	 *
-	 * @see ExternalSystem_Endpoint#getColumnDefaultByColumnName()
+	 * @see ExternalSystemEndpointService#getColumnDefaultByColumnName()
 	 */
 	@Then("the ExternalSystem_Endpoint interceptor's column defaults are exactly the dictionary's")
 	public void interceptorColumnDefaultsAreExactlyTheDictionarys()
 	{
-		final ExternalSystem_Endpoint interceptor = new ExternalSystem_Endpoint();
-		final ImmutableSet<String> hideableColumnNames = interceptor.getDisplayLogicByColumnName().keySet();
-		final ImmutableMap<String, Object> copiedIntoCode = interceptor.getColumnDefaultByColumnName();
+		final ExternalSystemEndpointService endpointService = newEndpointService();
+		final ImmutableSet<String> hideableColumnNames = endpointService.getDisplayLogicByColumnName().keySet();
+		final ImmutableMap<String, Object> copiedIntoCode = endpointService.getColumnDefaultByColumnName();
 		final ImmutableMap<String, String> inTheDictionary = retrieveEndpointColumnDefaultValues();
 
 		final List<String> problems = new ArrayList<>();
@@ -212,13 +220,13 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 			+ "The " + I_ExternalSystem_Endpoint.Table_Name + " interceptor and the dictionary it copied its defaults\n"
 			+ "from disagree.\n"
 			+ "  dictionary : AD_Column.DefaultValue, as the migration scripts left it in the database\n"
-			+ "  code       : the verbatim copies in " + ExternalSystem_Endpoint.class.getName() + "#createHideableColumns()\n"
+			+ "  code       : the verbatim copies in " + ExternalSystemEndpointService.class.getName() + "#createHideableColumns()\n"
 			+ "One of the two is stale. Which one tells you what to fix -- each finding below says how to tell.";
 
 	private static final String HEADER = ""
 			+ "The " + I_ExternalSystem_Endpoint.Table_Name + " interceptor and the window it was copied from disagree.\n"
 			+ "  window : AD_Field.DisplayLogic, as the migration scripts left it in the database\n"
-			+ "  code   : the verbatim copies in " + ExternalSystem_Endpoint.class.getName() + "#createHideableColumns()\n"
+			+ "  code   : the verbatim copies in " + ExternalSystemEndpointService.class.getName() + "#createHideableColumns()\n"
 			+ "One of the two is stale. Which one tells you what to fix -- each finding below says how to tell.";
 
 	private static List<String> describeConditionsThatDiffer(
