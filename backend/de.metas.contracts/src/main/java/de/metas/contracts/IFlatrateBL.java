@@ -202,6 +202,17 @@ public interface IFlatrateBL extends ISingletonService
 	void ensureOneContractOfGivenType(I_C_Flatrate_Term term,TypeConditions targetConditions);
 
 	/**
+	 * Refuses completion when another active {@code CompensationGroup}-type term of the same invoice partner
+	 * (and org) overlaps this term's period and shares at least one order document type with it (via each
+	 * term's {@code C_CompensationGroup_ContractSettings}) — a quit (cancelled) or past-dated term still
+	 * counts up to its end date; draft and voided terms never block. A term whose conditions carry no
+	 * compensation-group settings is skipped (nothing to overlap on).
+	 *
+	 * @throws AdempiereException naming the conflicting term, when found
+	 */
+	void assertNoOverlappingCompensationGroupTerm(I_C_Flatrate_Term term);
+
+	/**
 	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
 	 */
 	boolean existsTermForOrderLine(I_C_OrderLine ol);

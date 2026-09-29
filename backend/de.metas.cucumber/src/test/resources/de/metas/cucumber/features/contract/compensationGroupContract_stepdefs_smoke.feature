@@ -76,7 +76,7 @@ Feature: Compensation group contract fixtures — smoke coverage
     Given metasfresh contains C_Flatrate_Terms:
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | compGroupTermNext | compGroupConditions                 | contractBP                  | 2026-11-01 | 2027-01-31 | DR            | false         |
-    Then the C_Flatrate_Term identified by compGroupTermNext cannot be completed because of error code de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm
+    Then the C_Flatrate_Term identified by compGroupTermNext cannot be completed because of error code ContractCompGroup_OverlappingTerm
 
   # ##############################################################################################
   # Cancel a completed term; order-level compensation-group wiring

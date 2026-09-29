@@ -68,6 +68,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -76,6 +77,7 @@ import java.util.Set;
 
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
+import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Closed;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
@@ -1016,6 +1018,31 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId.getRepoId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public List<I_C_Flatrate_Term> retrieveCompensationGroupTermsOverlapping(
+			@NonNull final BPartnerId billPartnerId,
+			@NonNull final OrgId orgId,
+			@NonNull final LocalDate start,
+			@NonNull final LocalDate end,
+			@NonNull final FlatrateTermId excludeTermId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, excludeTermId)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DOCSTATUS_Completed, DOCSTATUS_Closed))
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, CONTRACTSTATUS_Voided)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(end))
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(start))
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.endOrderBy()
 				.create()
 				.list(I_C_Flatrate_Term.class);
 	}

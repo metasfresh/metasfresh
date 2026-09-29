@@ -24,6 +24,8 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerContactId;
@@ -42,6 +44,7 @@ import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
@@ -50,6 +53,8 @@ import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsId;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
@@ -69,6 +74,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -118,6 +124,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -179,6 +186,8 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
+
+	private static final AdMessageKey MSG_CompensationGroup_OverlappingTerm = AdMessageKey.of("ContractCompensationGroup_OverlappingTerm");
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -2055,6 +2064,55 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("bpartnerId", billPartnerId)
 				.setParameter("orgId", term.getAD_Org_ID())
 				.setParameter("existingContractIds", existingContractsOfTargetType);
+	}
+
+	@Override
+	public void assertNoOverlappingCompensationGroupTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (term.getEndDate() == null)
+		{
+			return; // not ready yet
+		}
+
+		final ContractCompensationGroupSettingsRepository settingsRepository = SpringContextHolder.instance.getBean(ContractCompensationGroupSettingsRepository.class);
+
+		final ImmutableSet<DocTypeId> docTypeIds = getCompensationGroupDocTypeIds(term, settingsRepository);
+		if (docTypeIds.isEmpty())
+		{
+			return; // no doc types to overlap on
+		}
+
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+		final LocalDate startDate = TimeUtil.asLocalDate(term.getStartDate());
+		final LocalDate endDate = TimeUtil.asLocalDate(term.getEndDate());
+		final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+
+		final List<I_C_Flatrate_Term> overlappingTerms = flatrateDAO.retrieveCompensationGroupTermsOverlapping(billPartnerId, orgId, startDate, endDate, termId);
+
+		for (final I_C_Flatrate_Term overlappingTerm : overlappingTerms)
+		{
+			final ImmutableSet<DocTypeId> overlappingDocTypeIds = getCompensationGroupDocTypeIds(overlappingTerm, settingsRepository);
+			if (!Sets.intersection(docTypeIds, overlappingDocTypeIds).isEmpty())
+			{
+				throw new AdempiereException(MSG_CompensationGroup_OverlappingTerm, overlappingTerm.getDocumentNo());
+			}
+		}
+	}
+
+	/** @return the compensation-group settings' document type ids the given term's conditions carry, or an empty set when the conditions carry no compensation-group settings. */
+	private ImmutableSet<DocTypeId> getCompensationGroupDocTypeIds(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final ContractCompensationGroupSettingsRepository settingsRepository)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+		final ContractCompensationGroupSettingsId settingsId = settingsRepository.getSettingsIdByConditionsId(conditionsId);
+		if (settingsId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return settingsRepository.getBySettingsId(settingsId).getDocTypeIds();
 	}
 
 	@Override
