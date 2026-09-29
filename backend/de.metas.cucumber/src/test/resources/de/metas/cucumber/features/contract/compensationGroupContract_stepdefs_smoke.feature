@@ -57,7 +57,10 @@ Feature: Compensation group contract fixtures — smoke coverage
       | compGroupConditions | CompGroup conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | compGroupSettings                                      |
 
   # ##############################################################################################
-  # Complete a duration-0 term, then prove overlap protection rejects a second overlapping term
+  # Complete a duration-0 term, then prove overlap protection rejects a second overlapping term.
+  # CompensationGroup is exempt from the generic, product-keyed overlap check (it has its own
+  # invoice-partner- and document-type-scoped check), so this rejection can only come from that
+  # dedicated check — the asserted error code is unambiguous.
   # ##############################################################################################
 
   @from:cucumber

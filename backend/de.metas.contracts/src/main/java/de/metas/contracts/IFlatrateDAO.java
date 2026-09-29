@@ -251,17 +251,4 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
-
-	/**
-	 * @return every other {@code CompensationGroup}-type term of {@code billPartnerId} and {@code orgId} whose
-	 * {@code DocStatus} is completed/closed, whose {@code ContractStatus} is not voided, and whose
-	 * {@code [StartDate, EndDate]} period (inclusive) overlaps {@code [start, end]} — excluding
-	 * {@code excludeTermId}. Never cached.
-	 */
-	List<I_C_Flatrate_Term> retrieveCompensationGroupTermsOverlapping(
-			BPartnerId billPartnerId,
-			OrgId orgId,
-			LocalDate start,
-			LocalDate end,
-			FlatrateTermId excludeTermId);
 }

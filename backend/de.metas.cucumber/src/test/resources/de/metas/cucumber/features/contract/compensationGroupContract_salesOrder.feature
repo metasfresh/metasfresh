@@ -66,8 +66,8 @@ Feature: Contract-triggered compensation group on sales-order completion
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | mainSettings                                        | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier     | Name            | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | mainConditions | Main conditions | CompensationGroup | contractProduct                       | zeroDurTrans                             | mainSettings                                            |
+      | Identifier     | Name            | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | mainConditions | Main conditions | CompensationGroup | zeroDurTrans                            | mainSettings                                           |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | mainTerm   | mainConditions                       | headOfficeBP                 | 2026-06-15 | 2026-12-31 | DR            | false         |
@@ -162,7 +162,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And no C_Order_CompensationGroup exists for order "orderDocTypeMissing"
 
   # ##############################################################################################
-  # Review Focus: order date exactly on Start/End date (inclusive) and EndDate+1 -> none
+  # Order date exactly on Start/End date (inclusive) and EndDate+1 -> none
   # ##############################################################################################
 
   @from:cucumber
@@ -198,7 +198,7 @@ Feature: Contract-triggered compensation group on sales-order completion
       | ol_discountEnd              | orderEnd               | discountProduct          | 1          | true                         | -30   |
 
   # ##############################################################################################
-  # Review Focus: a schema line's base with no matching lines is skipped (no 0.00 line);
+  # A schema line's base with no matching lines is skipped (no 0.00 line);
   # an order entirely out of every base gets no group and completes normally
   # ##############################################################################################
 
@@ -266,7 +266,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And the order identified by orderNoInBaseLines has 1 order lines
 
   # ##############################################################################################
-  # Review Focus: discount product not on the price list -> refused with the existing pricing error
+  # A discount product not on the price list -> refused with the existing pricing error
   # ##############################################################################################
 
   @from:cucumber
@@ -313,7 +313,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     Then the order identified by orderRf3 cannot be completed because the error message contains discountProductNoPricing
 
   # ##############################################################################################
-  # Review Focus: order partner != invoice partner, each with its own contract -> only the
+  # Order partner != invoice partner, each with its own contract -> only the
   # invoice partner's contract applies
   # ##############################################################################################
 
@@ -367,7 +367,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And the order identified by order15 has 2 order lines
 
   # ##############################################################################################
-  # TS1: real-world drop-ship case (sales side only) — Netto sample lines, 3.00% Bonus Ware on
+  # Real-world drop-ship case (sales side only) — Netto sample lines, 3.00% Bonus Ware on
   # goods only, Pfand excluded; the group carries the term
   # ##############################################################################################
 
@@ -413,7 +413,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And the order identified by orderTS1 has 6 order lines
 
   # ##############################################################################################
-  # TS2: goods + packaging bonus, each on its own base — a genuine HU packing-material order line
+  # Goods + packaging bonus, each on its own base — a genuine HU packing-material order line
   # (IsPackagingMaterial=true), auto-created by de.metas.handlingunits' own BEFORE_PREPARE
   # interceptor, is the "Verpackung" base; Pfand is in neither base
   # ##############################################################################################
@@ -500,7 +500,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And the order identified by orderTS2 has 5 order lines
 
   # ##############################################################################################
-  # TS3: additive vs. compounding compensation lines on the same base (3.15% + 0.25% on 1 000)
+  # Additive vs. compounding compensation lines on the same base (3.15% + 0.25% on 1 000)
   # ##############################################################################################
 
   @from:cucumber

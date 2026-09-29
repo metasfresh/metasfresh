@@ -53,8 +53,9 @@ import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
-import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsId;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettings;
 import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupTermRepository;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
@@ -205,6 +206,9 @@ public class FlatrateBL implements IFlatrateBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	private final SpringContextHolder.Lazy<ContractCompensationGroupSettingsRepository> compensationGroupSettingsRepository = SpringContextHolder.lazyBean(ContractCompensationGroupSettingsRepository.class);
+	private final SpringContextHolder.Lazy<ContractCompensationGroupTermRepository> compensationGroupTermRepository = SpringContextHolder.lazyBean(ContractCompensationGroupTermRepository.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -1819,9 +1823,14 @@ public class FlatrateBL implements IFlatrateBL
 
 		// These contract types do not match "other" ICs such as ICs that trigger a commission, or IC that belong to a vendor's empty package (pallette/TU).
 		// Therefore they can overlap without causing us any problems.
+		// CompensationGroup terms carry no product by design; their own doc-type- and invoice-partner-scoped
+		// overlap check (assertNoOverlappingCompensationGroupTerm) is this type's sole overlap authority, so
+		// a term that happens to carry a product (e.g. set via REST/DB) is never wrongly rejected against a
+		// sister term of a disjoint document type by this generic, product-keyed check.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
+				|| TypeConditions.COMPENSATION_GROUP.getCode().equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
@@ -2074,45 +2083,36 @@ public class FlatrateBL implements IFlatrateBL
 			return; // not ready yet
 		}
 
-		final ContractCompensationGroupSettingsRepository settingsRepository = SpringContextHolder.instance.getBean(ContractCompensationGroupSettingsRepository.class);
-
-		final ImmutableSet<DocTypeId> docTypeIds = getCompensationGroupDocTypeIds(term, settingsRepository);
+		final ImmutableSet<DocTypeId> docTypeIds = getCompensationGroupDocTypeIds(term);
 		if (docTypeIds.isEmpty())
 		{
 			return; // no doc types to overlap on
 		}
 
 		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
-		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 		final LocalDate startDate = TimeUtil.asLocalDate(term.getStartDate());
 		final LocalDate endDate = TimeUtil.asLocalDate(term.getEndDate());
 		final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 
-		final List<I_C_Flatrate_Term> overlappingTerms = flatrateDAO.retrieveCompensationGroupTermsOverlapping(billPartnerId, orgId, startDate, endDate, termId);
+		final List<I_C_Flatrate_Term> overlappingTerms = compensationGroupTermRepository.get().findActiveTermsOverlapping(billPartnerId, startDate, endDate, termId);
 
 		for (final I_C_Flatrate_Term overlappingTerm : overlappingTerms)
 		{
-			final ImmutableSet<DocTypeId> overlappingDocTypeIds = getCompensationGroupDocTypeIds(overlappingTerm, settingsRepository);
+			final ImmutableSet<DocTypeId> overlappingDocTypeIds = getCompensationGroupDocTypeIds(overlappingTerm);
 			if (!Sets.intersection(docTypeIds, overlappingDocTypeIds).isEmpty())
 			{
-				throw new AdempiereException(MSG_CompensationGroup_OverlappingTerm, overlappingTerm.getDocumentNo());
+				throw new AdempiereException(MSG_CompensationGroup_OverlappingTerm, overlappingTerm.getDocumentNo())
+						.markAsUserValidationError();
 			}
 		}
 	}
 
 	/** @return the compensation-group settings' document type ids the given term's conditions carry, or an empty set when the conditions carry no compensation-group settings. */
-	private ImmutableSet<DocTypeId> getCompensationGroupDocTypeIds(
-			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final ContractCompensationGroupSettingsRepository settingsRepository)
+	private ImmutableSet<DocTypeId> getCompensationGroupDocTypeIds(@NonNull final I_C_Flatrate_Term term)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ContractCompensationGroupSettingsId settingsId = settingsRepository.getSettingsIdByConditionsId(conditionsId);
-		if (settingsId == null)
-		{
-			return ImmutableSet.of();
-		}
-
-		return settingsRepository.getBySettingsId(settingsId).getDocTypeIds();
+		final ContractCompensationGroupSettings settings = compensationGroupSettingsRepository.get().getByConditionsId(conditionsId);
+		return settings != null ? settings.getDocTypeIds() : ImmutableSet.of();
 	}
 
 	@Override

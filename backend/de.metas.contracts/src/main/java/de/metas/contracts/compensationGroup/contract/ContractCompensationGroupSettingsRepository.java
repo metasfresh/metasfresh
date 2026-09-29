@@ -75,6 +75,18 @@ public class ContractCompensationGroupSettingsRepository
 		return ContractCompensationGroupSettingsId.ofRepoIdOrNull(conditions.getC_CompensationGroup_ContractSettings_ID());
 	}
 
+	/**
+	 * @return the compensation-group settings {@code conditionsId} points to, or {@code null} when the conditions
+	 * carry no compensation-group settings. The single resolution path from a term's/order's conditions to its
+	 * settings — combines {@link #getSettingsIdByConditionsId} and {@link #getBySettingsId}.
+	 */
+	@Nullable
+	public ContractCompensationGroupSettings getByConditionsId(@NonNull final ConditionsId conditionsId)
+	{
+		final ContractCompensationGroupSettingsId settingsId = getSettingsIdByConditionsId(conditionsId);
+		return settingsId != null ? getBySettingsId(settingsId) : null;
+	}
+
 	private ImmutableSet<DocTypeId> retrieveDocTypeIds(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		return queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_DocType.class)

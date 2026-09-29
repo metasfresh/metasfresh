@@ -2,6 +2,7 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -9,6 +10,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -59,12 +61,7 @@ public class ContractCompensationGroupTermRepository
 	 */
 	public List<I_C_Flatrate_Term> findActiveTerms(@NonNull final BPartnerId billPartnerId, @NonNull final LocalDate date)
 	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Completed, DocStatus.Closed))
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided)
+		return activeTermsQueryBuilder(billPartnerId)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(date))
 				.orderBy()
@@ -72,5 +69,40 @@ public class ContractCompensationGroupTermRepository
 				.endOrderBy()
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	/**
+	 * @return every OTHER active {@code CompensationGroup}-type term of {@code billPartnerId} — same active-term
+	 * predicate as {@link #findActiveTerms} (DocStatus completed/closed, ContractStatus not voided) — whose
+	 * {@code [StartDate, EndDate]} period (inclusive) overlaps {@code [start, end]}, excluding
+	 * {@code excludeTermId}. Not scoped by org — a compensation-group contract matches "the same invoice
+	 * partner", the same scope {@link #findActiveTerms} uses for order matching. Never cached.
+	 */
+	public List<I_C_Flatrate_Term> findActiveTermsOverlapping(
+			@NonNull final BPartnerId billPartnerId,
+			@NonNull final LocalDate start,
+			@NonNull final LocalDate end,
+			@NonNull final FlatrateTermId excludeTermId)
+	{
+		return activeTermsQueryBuilder(billPartnerId)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, excludeTermId)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(end))
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(start))
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.endOrderBy()
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	/** The active-term predicate shared by {@link #findActiveTerms} and {@link #findActiveTermsOverlapping}: active, {@code billPartnerId}, {@code CompensationGroup} type, DocStatus completed/closed, ContractStatus not voided. */
+	private IQueryBuilder<I_C_Flatrate_Term> activeTermsQueryBuilder(@NonNull final BPartnerId billPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Completed, DocStatus.Closed))
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided);
 	}
 }

@@ -70,7 +70,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     And the C_Flatrate_Term identified by mainTerm is completed
 
   # ##############################################################################################
-  # TS5: reactivate removes the contract-created group; completing again rebuilds it on the new base
+  # Reactivate removes the contract-created group; completing again rebuilds it on the new base
   # ##############################################################################################
 
   @from:cucumber
@@ -143,7 +143,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | ic_ts5Discount2                   | -60             |
 
   # ##############################################################################################
-  # TS5 variant: reactivation is refused while a contract discount line is already invoiced
+  # Reactivation is refused while a contract discount line is already invoiced
   # ##############################################################################################
 
   @from:cucumber
@@ -191,7 +191,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     And the order identified by orderInvoiced cannot be reactivated because of error code ContractCompGroup_ReactivateInvoiced
 
   # ##############################################################################################
-  # TS5 variant: reactivation is refused while a contract discount line is only PARTLY invoiced
+  # Reactivation is refused while a contract discount line is only PARTLY invoiced
   # ##############################################################################################
 
   @from:cucumber

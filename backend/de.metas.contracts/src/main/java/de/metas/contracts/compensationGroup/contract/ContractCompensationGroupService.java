@@ -218,13 +218,13 @@ public class ContractCompensationGroupService
 	private TermMatch resolveTermMatchOrNull(@NonNull final I_C_Flatrate_Term term)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ContractCompensationGroupSettingsId settingsId = settingsRepository.getSettingsIdByConditionsId(conditionsId);
-		if (settingsId == null)
+		final ContractCompensationGroupSettings settings = settingsRepository.getByConditionsId(conditionsId);
+		if (settings == null)
 		{
 			return null;
 		}
 
-		return new TermMatch(term, settingsRepository.getBySettingsId(settingsId));
+		return new TermMatch(term, settings);
 	}
 
 	@Value
