@@ -441,11 +441,9 @@ public class M_InOut_StepDef
 				I_M_ShipmentSchedule.class);
 
 		final StepDefDataIdentifier shipmentIdentifier = row.getAsIdentifier(COLUMNNAME_M_InOut_ID);
-		final Optional<String> docStatus = row.getAsOptionalString(I_M_InOut.COLUMNNAME_DocStatus);
+		final String docStatus = row.getAsOptionalString(I_M_InOut.COLUMNNAME_DocStatus).orElse(null);
 
-		final Optional<String> alreadyCreatedShipmentIdentifiers = row.getAsOptionalString("OPT.IgnoreCreated" + "." + COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Set<InOutLineId> alreadyCreatedShipmentLines = alreadyCreatedShipmentIdentifiers
+		final Set<InOutLineId> alreadyCreatedShipmentLines = row.getAsOptionalString("OPT.IgnoreCreated" + "." + COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER)
 				.map(StepDefUtil::extractIdentifiers)
 				.map(this::getShipmentLinesForShipmentIdentifiers)
 				.orElseGet(ImmutableSet::of);
@@ -494,7 +492,10 @@ public class M_InOut_StepDef
 					.createQueryBuilder(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter();
 
-			docStatus.map(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
+			if (docStatus != null)
+			{
+				shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, docStatus);
+			}
 
 			final I_M_InOut shipment = shipmentQueryBuilder
 					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds.iterator().next().getRepoId())
