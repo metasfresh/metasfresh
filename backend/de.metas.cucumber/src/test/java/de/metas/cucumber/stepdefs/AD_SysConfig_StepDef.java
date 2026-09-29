@@ -31,6 +31,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -47,6 +48,7 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_SysConfig_StepDef
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
@@ -168,7 +170,19 @@ public class AD_SysConfig_StepDef
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
+	private void deleteSystemSysConfig(@NonNull final String sysConfigName)
+	{
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM)
+				.create()
+				.delete();
+	}
+
 	/**
+	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
+	 * <p>
 	 * Remembers the value a sysconfig had before this scenario first changed it; {@code containsKey}, because {@code null} (no prior value) is a value too.
 	 */
 	private void rememberPriorValue(@NonNull final String sysConfigName)
@@ -196,7 +210,7 @@ public class AD_SysConfig_StepDef
 			final String priorValue = entry.getValue();
 			if (priorValue == null)
 			{
-				sysConfigBL.deleteValue(sysConfigName, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				deleteSystemSysConfig(sysConfigName);
 			}
 			else
 			{

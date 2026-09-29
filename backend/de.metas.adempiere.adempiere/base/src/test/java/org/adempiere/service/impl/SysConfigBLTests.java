@@ -79,29 +79,4 @@ public class SysConfigBLTests
 			assertThat(value).isEqualTo("valueStr");
 		}
 	}
-
-	@Nested
-	class deleteValue
-	{
-		@Test
-		void deletedValue_fallsBackToDefault()
-		{
-			sysConfigBL.setValue("name", "valueStr", ClientId.SYSTEM, OrgId.ANY);
-
-			sysConfigBL.deleteValue("name", ClientId.SYSTEM, OrgId.ANY);
-
-			assertThat(sysConfigBL.getValue("name", "default")).isEqualTo("default");
-		}
-
-		@Test
-		void onlyTheGivenClientAndOrgIsDeleted()
-		{
-			sysConfigBL.setValue("name", "systemValue", ClientId.SYSTEM, OrgId.ANY);
-			sysConfigBL.setValue("name", "clientValue", ClientId.ofRepoId(1), OrgId.ANY);
-
-			sysConfigBL.deleteValue("name", ClientId.ofRepoId(1), OrgId.ANY);
-
-			assertThat(sysConfigBL.getValue("name", ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(1), OrgId.ANY))).isEqualTo("systemValue");
-		}
-	}
 }

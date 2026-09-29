@@ -220,15 +220,6 @@ public class SysConfigBL implements ISysConfigBL
 		sysConfigDAO.setValue(name, value, ClientAndOrgId.ofClientAndOrg(clientId, orgId));
 	}
 
-	@Override
-	public void deleteValue(
-			@NonNull final String name,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
-	{
-		sysConfigDAO.deleteValue(name, ClientAndOrgId.ofClientAndOrg(clientId, orgId));
-	}
-
 	private Set<String> getNamesForPrefix(final String prefix, final ClientAndOrgId clientAndOrgId)
 	{
 		return ImmutableSet.<String>builder()
