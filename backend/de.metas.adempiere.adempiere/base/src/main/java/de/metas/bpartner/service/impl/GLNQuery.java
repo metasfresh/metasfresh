@@ -52,4 +52,7 @@ public class GLNQuery
 
 	@Default
 	boolean outOfTrx = true;
+
+	@Default
+	boolean onlyActive = false;
 }
