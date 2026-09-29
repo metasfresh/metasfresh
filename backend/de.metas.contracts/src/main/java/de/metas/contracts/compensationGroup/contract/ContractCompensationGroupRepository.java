@@ -8,7 +8,9 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
@@ -114,6 +116,28 @@ public class ContractCompensationGroupRepository
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.delete();
+	}
+
+	/**
+	 * @return a filter matching {@code C_OrderLine}s that ARE contract-created compensation (discount) lines —
+	 * {@code IsGroupCompensationLine=Y} whose group carries a {@code C_Flatrate_Term_ID}. {@link
+	 * ContractCompensationGroupOrderLineFilter} negates this to keep such lines from being copied onto a
+	 * purchase order (by {@code C_Order_CreatePOFromSOs} or the auto-created dropship PO) — the PO's own
+	 * completion builds its own group from whatever contract matches the PO's own bill partner (the vendor).
+	 */
+	public IQueryFilter<I_C_OrderLine> createContractCompensationLineMatcher()
+	{
+		final IQuery<I_C_Order_CompensationGroup> contractGroupsQuery = queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0)
+				.create();
+
+		return queryBL.createCompositeQueryFilter(I_C_OrderLine.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+				.addInSubQueryFilter(
+						I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID,
+						I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID,
+						contractGroupsQuery);
 	}
 
 	/**

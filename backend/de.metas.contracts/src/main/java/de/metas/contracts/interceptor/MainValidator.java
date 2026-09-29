@@ -26,6 +26,8 @@ import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
 import de.metas.contracts.callorder.CallOrderContractService;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupOrderLineFilter;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupRepository;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleCallOrderVetoer;
@@ -49,6 +51,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -77,6 +80,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
 	private final CallOrderContractService callOrderContractService;
 	private final GLCategoryRepository glCategoryRepository;
+	private final ContractCompensationGroupRepository contractCompensationGroupRepository;
 
 	@Deprecated
 	public MainValidator()
@@ -87,7 +91,8 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
 				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
 				SpringContextHolder.instance.getBean(CallOrderContractService.class),
-				GLCategoryRepository.get());
+				GLCategoryRepository.get(),
+				SpringContextHolder.instance.getBean(ContractCompensationGroupRepository.class));
 	}
 
 	public MainValidator(
@@ -96,7 +101,8 @@ public class MainValidator extends AbstractModuleInterceptor
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
 			@NonNull final CallOrderContractService callOrderContractService,
-			@NonNull final GLCategoryRepository glCategoryRepository)
+			@NonNull final GLCategoryRepository glCategoryRepository,
+			@NonNull final ContractCompensationGroupRepository contractCompensationGroupRepository)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
@@ -104,6 +110,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
 		this.callOrderContractService = callOrderContractService;
 		this.glCategoryRepository = glCategoryRepository;
+		this.contractCompensationGroupRepository = contractCompensationGroupRepository;
 	}
 
 	@Override
@@ -160,6 +167,11 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
+
+		// a sales order's contract-created compensation (discount) lines must not be copied onto its
+		// auto-created purchase order — the PO builds its own group from its own matching contract
+		Services.get(IC_Order_CreatePOFromSOsDAO.class)
+				.addAdditionalOrderLinesFilter(new ContractCompensationGroupOrderLineFilter(contractCompensationGroupRepository));
 	}
 
 	/**

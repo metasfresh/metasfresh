@@ -41,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -61,7 +62,9 @@ import java.util.stream.Collectors;
  *     vendor lookup via {@link VendorProductInfoService#getDefaultVendorProductInfo} and
  *     <em>populates</em> the line's {@code C_BPartner_Vendor_ID} when the lookup succeeds.
  *     Throws an {@link AdempiereException} listing offending line numbers if any line still has no vendor
- *     after the auto-fill attempt.</li>
+ *     after the auto-fill attempt. A contract-created compensation (discount) line is skipped entirely —
+ *     it needs no vendor of its own and is kept off the PO by {@code ContractCompensationGroupOrderLineFilter}
+ *     in {@code de.metas.contracts}.</li>
  * <li>AFTER_COMPLETE: triggers dropship PO creation for the sales order via
  *     {@link DropshipPOFromSOService}.</li>
  * </ul>
@@ -101,6 +104,13 @@ public class C_Order_DropshipPO
 		final List<Integer> offendingLineNumbers = new ArrayList<>();
 		for (final de.metas.interfaces.I_C_OrderLine line : lines)
 		{
+			if (isContractCompensationLine(line))
+			{
+				// a contract-created discount line needs no vendor of its own and must not be copied to the
+				// PO (ContractCompensationGroupOrderLineFilter excludes it there); the PO's own completion
+				// builds its own group from whatever contract matches the PO's own bill partner (the vendor).
+				continue;
+			}
 			final BPartnerId vendorId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_Vendor_ID());
 			if (vendorId != null)
 			{
@@ -155,6 +165,22 @@ public class C_Order_DropshipPO
 	}
 
 	// -------
+
+	/**
+	 * @return {@code true} if {@code line} is a compensation (discount) line whose group header carries a
+	 * {@code C_Flatrate_Term_ID} — i.e. it was created by a contract (see {@code C_Order_ContractCompensationGroup}
+	 * in {@code de.metas.contracts}, not referenced here to keep this module free of a contracts dependency).
+	 * Such a line needs no vendor of its own.
+	 */
+	private boolean isContractCompensationLine(@NonNull final de.metas.interfaces.I_C_OrderLine line)
+	{
+		if (!line.isGroupCompensationLine())
+		{
+			return false;
+		}
+		final I_C_Order_CompensationGroup group = line.getC_Order_CompensationGroup();
+		return group != null && group.getC_Flatrate_Term_ID() > 0;
+	}
 
 	private boolean isDropshipWarehouseOrder(@NonNull final I_C_Order order)
 	{
