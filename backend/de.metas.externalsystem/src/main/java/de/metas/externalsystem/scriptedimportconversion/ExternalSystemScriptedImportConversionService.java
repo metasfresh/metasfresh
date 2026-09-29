@@ -160,7 +160,7 @@ public class ExternalSystemScriptedImportConversionService
 		}
 
 		// Add SFTP endpoint parameters if endpoint uses SFTP transport
-		if (endpoint.getTransportType() == TransportType.SFTP)
+		if (endpoint.getTransportType().isSftp())
 		{
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
 			if (endpoint.getSftpPort() != null)
@@ -188,7 +188,7 @@ public class ExternalSystemScriptedImportConversionService
 		}
 
 		// Add LOCAL_FILE endpoint parameters if endpoint uses LOCAL_FILE transport
-		if (endpoint.getTransportType() == TransportType.LOCAL_FILE)
+		if (endpoint.getTransportType().isLocalFile())
 		{
 			if (endpoint.getLocalRootLocation() != null)
 			{

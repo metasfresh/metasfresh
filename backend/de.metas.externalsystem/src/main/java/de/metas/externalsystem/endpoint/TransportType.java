@@ -45,4 +45,10 @@ public enum TransportType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isHttp() {return HTTP.equals(this);}
+
+	public boolean isSftp() {return SFTP.equals(this);}
+
+	public boolean isLocalFile() {return LOCAL_FILE.equals(this);}
 }
