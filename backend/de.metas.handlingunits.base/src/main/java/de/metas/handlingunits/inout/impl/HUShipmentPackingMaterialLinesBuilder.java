@@ -241,9 +241,14 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_InOutLine inoutLine = inoutLineEntry.getValue();
 			final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
 
-			if (defaultLU != null && isManualPackingMaterials(inoutLine))
+			if (isManualPackingMaterials(inoutLine))
 			{
-				usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
+				// A manual-packing line books its packing from the overrides and the default LU; the packing of its HUs is not booked
+				if (defaultLU != null)
+				{
+					usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
+				}
+				continue;
 			}
 
 			for (final I_M_HU_Assignment assignment : assignmentsByInOutLineId.get(inOutLineId))

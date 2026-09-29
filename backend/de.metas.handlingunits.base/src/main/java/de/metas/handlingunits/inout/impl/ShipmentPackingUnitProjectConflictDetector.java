@@ -28,6 +28,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
@@ -110,6 +112,7 @@ public class ShipmentPackingUnitProjectConflictDetector
 	 * A physical packing unit: either an HU, or the default-LU packing instruction.
 	 */
 	@Value
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class PackingUnit
 	{
 		@Nullable HuId huId;

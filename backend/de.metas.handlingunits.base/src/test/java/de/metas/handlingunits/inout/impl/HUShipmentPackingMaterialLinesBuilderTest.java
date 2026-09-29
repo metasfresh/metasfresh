@@ -27,8 +27,12 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
@@ -44,6 +48,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +66,8 @@ class HUShipmentPackingMaterialLinesBuilderTest
 	private LUTUProducerDestinationTestSupport data;
 	private IHUInOutBL huInOutBL;
 	private IHUInOutDAO huInOutDAO;
+	private IInOutDAO inOutDAO;
+	private IHandlingUnitsDAO handlingUnitsDAO;
 	private Logger logbackLogger;
 	private ListAppender<ILoggingEvent> listAppender;
 
@@ -70,6 +77,8 @@ class HUShipmentPackingMaterialLinesBuilderTest
 		data = new LUTUProducerDestinationTestSupport();
 		huInOutBL = Services.get(IHUInOutBL.class);
 		huInOutDAO = Services.get(IHUInOutDAO.class);
+		inOutDAO = Services.get(IInOutDAO.class);
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		data.piLU.setIsDefaultLU(true);
 		saveRecord(data.piLU);
 
@@ -114,6 +123,25 @@ class HUShipmentPackingMaterialLinesBuilderTest
 	}
 
 	@Test
+	void createPackingMaterialLines_tuOfManualPackingLines_notReportedAsConflict()
+	{
+		final I_M_InOut shipment = createInOutWithTwoProjectLines(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
+		final I_M_HU tu = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("10"));
+		boolean isFirstLine = true;
+		for (final I_M_InOutLine line : inOutDAO.retrieveLines(shipment, I_M_InOutLine.class))
+		{
+			assignTU(line, tu, isFirstLine);
+			isFirstLine = false;
+		}
+
+		huInOutBL.createPackingMaterialLines(shipment);
+
+		// the manual-packing lines book the default LU only; their TU's packing material is not booked, so it cannot conflict
+		assertThat(listAppender.list).hasSize(1);
+		assertThat(listAppender.list.get(0).getFormattedMessage()).contains("DefaultLU-PI:" + data.piLU.getM_HU_PI_ID());
+	}
+
+	@Test
 	void recreatePackingMaterialLines_customerReturn_notSplitByProject()
 	{
 		final I_M_InOut customerReturn = createInOutWithTwoProjectLines(X_M_InOut.MOVEMENTTYPE_CustomerReturns);
@@ -143,6 +171,17 @@ class HUShipmentPackingMaterialLinesBuilderTest
 		createManualPackingLine(inout, PROJECT_1);
 		createManualPackingLine(inout, PROJECT_2);
 		return inout;
+	}
+
+	private static void assignTU(@NonNull final I_M_InOutLine line, @NonNull final I_M_HU tu, final boolean isTransferPackingMaterials)
+	{
+		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
+		assignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
+		assignment.setRecord_ID(line.getM_InOutLine_ID());
+		assignment.setM_HU_ID(tu.getM_HU_ID());
+		assignment.setM_TU_HU_ID(tu.getM_HU_ID());
+		assignment.setIsTransferPackingMaterials(isTransferPackingMaterials);
+		saveRecord(assignment);
 	}
 
 	private void createManualPackingLine(@NonNull final I_M_InOut inout, @NonNull final ProjectId projectId)
