@@ -98,7 +98,8 @@ public class SftpDeliveryProcessor implements Processor
 			throw new RuntimeCamelException("SFTP auth type is not configured in endpoint parameters!");
 		}
 
-		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext, exchange.getProperty(ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_FAN_OUT_INDEX, Integer.class));
+		final Integer fanOutIndex = exchange.getProperty(ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_FAN_OUT_INDEX, Integer.class);
+		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext, fanOutIndex);
 		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, filenameVariables);
 
 		final String body = msgFromMfContext.getScriptReturnValue();

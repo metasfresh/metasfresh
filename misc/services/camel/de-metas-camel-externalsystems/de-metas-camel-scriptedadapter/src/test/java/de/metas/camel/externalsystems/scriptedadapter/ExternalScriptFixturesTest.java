@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -56,10 +57,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * <b>Normalisation rule</b> (the one and only; a Jest test may mirror it): line endings ({@code \r\n}, {@code \r}) are
  * normalised to {@code \n} in both texts, and the texts are compared line by line (same line count required).
- * Wherever an expected line contains the token {@code <<ANY>>}, that token matches any run of characters (possibly
- * empty), up to the next literal character of the expected line. Implementation: the expected line is escaped as a
- * regex literal, the escaped {@code <<ANY>>} is replaced by {@code .*?}, and the actual line must match it entirely.
- * Lines without the token must be equal.
+ * A line without the token {@code <<ANY>>} must be equal. For an expected line containing the token, the line is split
+ * at each {@code <<ANY>>}, each literal segment is regex-quoted, the segments are joined with {@code .*?}, and the
+ * actual line must match that regex entirely ({@code Pattern.matches}: full-line, backtracking, no DOTALL, so
+ * {@code <<ANY>>} matches any run of characters, possibly empty, within a single line).
  */
 class ExternalScriptFixturesTest
 {
@@ -79,18 +80,18 @@ class ExternalScriptFixturesTest
 		final List<FixtureCase> cases = new ArrayList<>();
 		try (final Stream<Path> scripts = Files.list(dir))
 		{
-			for (final Path scriptFile : (Iterable<Path>)scripts.filter(p -> p.getFileName().toString().endsWith(".js")).sorted()::iterator)
+			for (final Path scriptFile : (Iterable<Path>)scripts.filter(file -> file.getFileName().toString().endsWith(".js")).sorted()::iterator)
 			{
 				final String fileName = scriptFile.getFileName().toString();
 				final String scriptName = fileName.substring(0, fileName.length() - ".js".length());
 				final Path caseDir = dir.resolve(scriptName);
 				if (!Files.isDirectory(caseDir))
 				{
-					continue;
+					throw new IllegalStateException("No case dir " + caseDir + " for " + scriptFile);
 				}
 				try (final Stream<Path> inputs = Files.list(caseDir))
 				{
-					for (final Path inputFile : (Iterable<Path>)inputs.filter(p -> p.getFileName().toString().contains(".input.")).sorted()::iterator)
+					for (final Path inputFile : (Iterable<Path>)inputs.filter(file -> file.getFileName().toString().contains(".input.")).sorted()::iterator)
 					{
 						final String inputName = inputFile.getFileName().toString();
 						final String caseName = inputName.substring(0, inputName.indexOf(".input."));
@@ -107,10 +108,15 @@ class ExternalScriptFixturesTest
 	{
 		try (final Stream<Path> files = Files.list(caseDir))
 		{
-			return files
-					.filter(p -> p.getFileName().toString().startsWith(caseName + ".expected."))
-					.findFirst()
-					.orElseThrow(() -> new IllegalStateException("No " + caseName + ".expected.* file in " + caseDir));
+			final List<Path> matches = files
+					.filter(file -> file.getFileName().toString().startsWith(caseName + ".expected."))
+					.sorted()
+					.toList();
+			if (matches.size() != 1)
+			{
+				throw new IllegalStateException("Expected exactly one " + caseName + ".expected.* file in " + caseDir + " but found " + matches);
+			}
+			return matches.get(0);
 		}
 	}
 
@@ -121,7 +127,9 @@ class ExternalScriptFixturesTest
 		{
 			return Paths.get(override).toAbsolutePath();
 		}
-		return Paths.get(ExternalScriptFixturesTest.class.getClassLoader().getResource(SAMPLE_DIR_RESOURCE).toURI());
+		return Paths.get(Objects.requireNonNull(
+				ExternalScriptFixturesTest.class.getClassLoader().getResource(SAMPLE_DIR_RESOURCE),
+				"sample fixtures dir not on classpath").toURI());
 	}
 
 	@ParameterizedTest(name = "{0}")
@@ -134,14 +142,14 @@ class ExternalScriptFixturesTest
 
 		final String actual = new JavaScriptExecutorService().executeScript(fixture.scriptName(), script, input);
 
-		assertThat(matchesExpected(expected, actual))
+		assertThat(isMatchingExpected(expected, actual))
 				.as("script %s, case %s%n--- expected (%s):%n%s%n--- actual:%n%s",
 						fixture.scriptName(), fixture.caseName(), fixture.expectedFile().getFileName(), expected, actual)
 				.isTrue();
 	}
 
 	/** See the normalisation rule in the class Javadoc. */
-	static boolean matchesExpected(final String expected, final String actual)
+	static boolean isMatchingExpected(final String expected, final String actual)
 	{
 		final String[] expectedLines = normalizeLineEndings(expected).split("\n", -1);
 		final String[] actualLines = normalizeLineEndings(actual).split("\n", -1);
@@ -153,7 +161,7 @@ class ExternalScriptFixturesTest
 		{
 			if (expectedLines[i].contains(ANY_TOKEN))
 			{
-				// Pattern.quote wraps in \Q..\E, so the token sits inside a quoted block: close it around the wildcard
+				// split at the token, quote each literal segment, join with the lazy wildcard
 				final String[] parts = expectedLines[i].split(Pattern.quote(ANY_TOKEN), -1);
 				final StringBuilder sb = new StringBuilder();
 				for (int p = 0; p < parts.length; p++)
@@ -185,11 +193,11 @@ class ExternalScriptFixturesTest
 	@Test
 	void anyToken_matchesRunOfCharactersWithinLineOnly()
 	{
-		assertThat(matchesExpected("a<<ANY>>c\nx\n", "abbbc\r\nx\n")).isTrue();
-		assertThat(matchesExpected("a<<ANY>>c", "ac")).isTrue();
-		assertThat(matchesExpected("a<<ANY>>c", "abd")).isFalse();
-		assertThat(matchesExpected("a<<ANY>>", "a\nb")).isFalse(); // does not span lines
-		assertThat(matchesExpected("a.c", "abc")).isFalse(); // everything else is literal
-		assertThat(matchesExpected("a\nb", "a")).isFalse();
+		assertThat(isMatchingExpected("a<<ANY>>c\nx\n", "abbbc\r\nx\n")).isTrue();
+		assertThat(isMatchingExpected("a<<ANY>>c", "ac")).isTrue();
+		assertThat(isMatchingExpected("a<<ANY>>c", "abd")).isFalse();
+		assertThat(isMatchingExpected("a<<ANY>>", "a\nb")).isFalse(); // does not span lines
+		assertThat(isMatchingExpected("a.c", "abc")).isFalse(); // everything else is literal
+		assertThat(isMatchingExpected("a\nb", "a")).isFalse();
 	}
 }
