@@ -114,8 +114,8 @@ public class FlatrateBL_createTerm_EndDate_Test extends AbstractFlatrateTermTest
 	 * Note on scope: these tests exercise {@code createTerm} only up to the (draft) save, not
 	 * completion. Completing a term needs the additional setup {@link AbstractFlatrateTermTest}
 	 * keeps private to its own {@code createFlatrateTerm} helper (an order + order line, a tax
-	 * category, price and quantity) - Cucumber TS8 exercises the duration-0 path through a full
-	 * save-and-complete flow instead.
+	 * category, price and quantity) — the duration-0 path through a full save-and-complete flow is
+	 * covered by a cucumber scenario instead.
 	 */
 	@Nested
 	class CreateTerm

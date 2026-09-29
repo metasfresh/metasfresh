@@ -418,10 +418,6 @@ public class OrderGroupRepositoryTest
 		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
 	}
 
-	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Test 9 — the no-base (manual/no-schema-line) case must keep working exactly as before (AC16):
-	// createPartialGroupFromCompensationLine recomputes against the stored net amount unfiltered.
-	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void createPartialGroupFromCompensationLine_noBase_recomputesAgainstStoredNetAmt()
 	{

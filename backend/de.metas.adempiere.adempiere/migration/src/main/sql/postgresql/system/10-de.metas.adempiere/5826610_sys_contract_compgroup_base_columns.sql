@@ -107,7 +107,7 @@ ALTER TABLE C_CompensationGroup_Schema
 
 -- ============================================================================
 -- 4) C_Order_CompensationGroup.C_Flatrate_Term_ID (AD_Table_ID=540856)
---    Search, optional, read-only (column not user-editable in this task), reuses existing element 541447
+--    Search, optional, read-only, reuses existing element 541447
 -- ============================================================================
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                        Version, EntityType, ColumnName, AD_Table_ID, AD_Element_ID, AD_Reference_ID,

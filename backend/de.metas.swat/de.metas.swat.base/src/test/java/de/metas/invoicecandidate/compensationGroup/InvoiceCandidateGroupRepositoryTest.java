@@ -261,10 +261,6 @@ class InvoiceCandidateGroupRepositoryTest
 		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
 	}
 
-	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// The no-base (manual/no-order-line-link) case must keep working exactly as before (AC16):
-	// createPartialGroupFromCompensationLine recomputes against the stored net amount unfiltered.
-	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void createPartialGroupFromCompensationLine_noBase_recomputesAgainstStoredNetAmt()
 	{

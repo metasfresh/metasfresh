@@ -44,9 +44,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Repository Tables: C_Order_CompensationGroup, C_OrderLine
  * <p>
  * Repository Cluster: ContractCompensationGroupRepository, {@link OrderGroupRepository} — both
- * write these two tables; {@link OrderGroupRepository} is the generic compensation-group repo
- * (any schema), this one only ever touches groups this task created (identified by
- * {@code C_Flatrate_Term_ID} being set).
+ * write these two tables; {@link OrderGroupRepository} is the generic compensation-group repo (any
+ * schema), this one is scoped to contract-created groups (identified by {@code C_Flatrate_Term_ID}
+ * being set), except for {@link #retrieveActiveRegularOrderLines}, which reads every regular line
+ * of the order regardless of group.
  * <p>
  * Persistence primitives for a contract-created {@code C_Order_CompensationGroup}: stamping the term it came
  * from, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.

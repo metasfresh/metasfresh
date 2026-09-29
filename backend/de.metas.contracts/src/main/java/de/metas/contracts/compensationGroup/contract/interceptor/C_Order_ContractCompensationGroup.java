@@ -32,14 +32,14 @@ import org.springframework.stereotype.Component;
  */
 
 /**
- * (Re)creates a contract's compensation group on sales order completion, and (same code path, untested by
- * this task) on purchase order completion — including the auto-created, auto-completed drop-ship purchase
- * order.
+ * (Re)creates a contract's compensation group on sales order completion, and (same code path, not covered
+ * by an automated test) on purchase order completion — including the auto-created, auto-completed
+ * drop-ship purchase order.
  * <p>
  * Runs at {@link ModelValidator#TIMING_BEFORE_PREPARE}, not before-complete: adding the lines this early lets
  * {@code MOrder.calculateTaxTotal()} (called later within the same {@code prepareIt()}) include them — the
  * only point where newly added lines get their taxes and totals computed. See
- * {@link ContractCompensationGroupService}'s class Javadoc for the resulting interceptor-ordering caveat.
+ * {@link ContractCompensationGroupService}'s class Javadoc for the resulting interceptor-order guarantee.
  */
 @Interceptor(I_C_Order.class)
 @Component

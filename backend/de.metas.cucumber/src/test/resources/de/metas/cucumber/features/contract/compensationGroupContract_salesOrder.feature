@@ -74,7 +74,7 @@ Feature: Contract-triggered compensation group on sales-order completion
     And the C_Flatrate_Term identified by mainTerm is completed
 
   # ##############################################################################################
-  # AC3 (sales side), AC5, AC8: discount only on ungrouped, in-base lines
+  # Discount only on ungrouped, in-base lines
   # ##############################################################################################
 
   @from:cucumber
@@ -109,7 +109,7 @@ Feature: Contract-triggered compensation group on sales-order completion
       | ol_pfand                  | null                                        |                                   |
 
   # ##############################################################################################
-  # AC4, AC16: no contract at all, or contract exists but the order doc type is not listed
+  # No contract at all, or contract exists but the order doc type is not listed
   # ##############################################################################################
 
   @from:cucumber
