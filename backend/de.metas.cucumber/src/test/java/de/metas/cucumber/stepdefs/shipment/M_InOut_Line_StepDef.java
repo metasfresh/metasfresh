@@ -40,6 +40,7 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMDAO;
@@ -61,7 +62,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -120,10 +120,9 @@ public class M_InOut_Line_StepDef
 		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
 		row.getAsOptionalString(I_M_InOutLine.COLUMNNAME_ExternalId).ifPresent(externalId -> softly.assertThat(inoutLine.getExternalId()).as("ExternalId").isEqualTo(externalId));
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_Project_ID)
-				.ifPresent(projectIdentifier -> {
-					final I_C_Project project = projectTable.get(projectIdentifier);
-					softly.assertThat(inoutLine.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
-				});
+				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID()))
+						.as("C_Project_ID")
+						.isEqualTo(projectIdentifier.lookupIdIn(projectTable)));
 		softly.assertAll();
 	}
 

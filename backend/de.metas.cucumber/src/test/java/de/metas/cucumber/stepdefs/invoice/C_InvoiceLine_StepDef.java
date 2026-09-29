@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
@@ -44,6 +43,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -64,7 +64,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Project;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -329,16 +328,12 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
 		}
 
-		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		if (Check.isNotBlank(projectIdentifier))
-		{
-			final Integer projectId = projectTable.getOptional(projectIdentifier)
-					.map(I_C_Project::getC_Project_ID)
-					.orElseGet(() -> Integer.parseInt(projectIdentifier));
-
-			softly.assertThat(invoiceLine.getC_Project_ID()).isEqualTo(projectId);
-		}
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()))
+						.as(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+						.isEqualTo(projectIdentifier.isNullPlaceholder()
+								? null
+								: projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class))));
 
 		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(costCenterIdentifier))
