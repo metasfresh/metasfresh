@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0240_Project_Management
-@allure.label.feature:F68020
+@allure.label.feature:F68020_C_Project_propagation_through_Purchase_Sales_flow
 @ghActions:run_on_executor2
 Feature: shipment packing material lines split per project
 ## F68020: C_Project propagation through Purchase ↔ Sales flow
@@ -55,9 +55,6 @@ Feature: shipment packing material lines split per project
       | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID |
       | huItemProduct | huPIItem        | 10  | p_goods      |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: order lines of three projects ship and invoice with one packing material line per project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And temporarily set AD_SysConfig to M_Product_Category_ID:
@@ -98,7 +95,7 @@ Feature: shipment packing material lines split per project
       | pm_P2          | shipment   | p_pm         | 3           | P2           |
       | pm_P3          | shipment   | p_pm         | 4           | P3           |
 
-    # The shipment report still prints the packing material once per product.
+    # The shipment report prints the packing material once per product.
     And the shipment report packing section of shipment in language de_DE has exactly:
       | M_Product_ID | MovementQty |
       | p_pm         | 9           |
@@ -123,9 +120,6 @@ Feature: shipment packing material lines split per project
       | il_pm_P2         | invoice      | p_pm         | 3           | pm_P2          | P2           |
       | il_pm_P3         | invoice      | p_pm         | 4           | pm_P3          | P3           |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: order lines of the same project ship with one packing material line for that project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And metasfresh contains C_Orders:
@@ -154,9 +148,6 @@ Feature: shipment packing material lines split per project
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | p_pm         | 5           | P1           |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: order lines without project ship with one packing material line without project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And metasfresh contains C_Orders:
@@ -185,9 +176,6 @@ Feature: shipment packing material lines split per project
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | p_pm         | 5           | null         |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: with the split switched off, order lines of three projects ship with one packing material line without project
     Given temporarily set sys config boolean value false for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And metasfresh contains C_Orders:
@@ -223,9 +211,6 @@ Feature: shipment packing material lines split per project
       | shipment   | p_goods      | 40          | P3           |
       | shipment   | p_pm         | 9           | null         |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: packing material lines recreated on a draft shipment are split per project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And metasfresh contains C_Orders:
@@ -257,9 +242,6 @@ Feature: shipment packing material lines split per project
       | shipment   | p_pm         | 2           | P1           |
       | shipment   | p_pm         | 3           | P2           |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: picked HUs of order lines with and without project ship with one packing material line per project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And load M_Warehouse:

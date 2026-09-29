@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0240_Project_Management
-@allure.label.feature:F68020
+@allure.label.feature:F68020_C_Project_propagation_through_Purchase_Sales_flow
 @ghActions:run_on_executor1
 Feature: dropship packing material lines split per project
 ## F68020: C_Project propagation through Purchase ↔ Sales flow
@@ -70,11 +70,9 @@ Feature: dropship packing material lines split per project
       | goods_2_crate | huPIItem_crate  | 7   | goods_2      |
       | goods_2_box   | huPIItem_box    | 7   | goods_2      |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: projects of two vendors' purchase orders reach one shipment and invoice as one packing material line each
-    Given set project type Sales/Purchase Order to active
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And set project type Sales/Purchase Order to active
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID    |
       | salesOrder | true    | customer      | 2024-06-17  | 2024-06-16T22:00:00Z | dropshipWarehouse |
@@ -101,7 +99,6 @@ Feature: dropship packing material lines split per project
       | ss_goods1  | sol_goods1     | N             |
       | ss_goods2  | sol_goods2     | N             |
 
-    And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods1             |
@@ -131,13 +128,11 @@ Feature: dropship packing material lines split per project
       | il_crate_project1 | invoice      | crate        | 2           | crate_project1 | project_1    |
       | il_crate_project2 | invoice      | crate        | 3           | crate_project2 | project_2    |
 
-  # The already correct dropship cases: the projects are set on the sales order lines, as the purchase-to-sales
+  # Dropship cases in which the projects are set on the sales order lines, as the purchase-to-sales
   # propagation leaves them; each Examples row is one case (vendors x packing of the second line).
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario Outline: projects on the order lines reach one shipment and invoice as one packing material line each - <case>
-    Given metasfresh contains C_Projects:
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains C_Projects:
       | Identifier |
       | project_1  |
       | project_2  |
@@ -154,7 +149,6 @@ Feature: dropship packing material lines split per project
       | ss_goods1  | sol_goods1     | N             |
       | ss_goods2  | sol_goods2     | N             |
 
-    And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods1             |
@@ -190,11 +184,9 @@ Feature: dropship packing material lines split per project
       | one vendor, same packing       | vendor_1         | goods_2_crate     | crate                      |
       | two vendors, different packing | vendor_2         | goods_2_box       | box                        |
 
-  @from:cucumber
-  @allure.label.epic:E0240_Project_Management
-  @allure.label.feature:F68020
   Scenario: projects on the order lines of two vendors with the same packing reach two shipments with one packing material line each
-    Given metasfresh contains C_Projects:
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains C_Projects:
       | Identifier |
       | project_1  |
       | project_2  |
@@ -211,7 +203,6 @@ Feature: dropship packing material lines split per project
       | ss_goods1  | sol_goods1     | N             |
       | ss_goods2  | sol_goods2     | N             |
 
-    And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     # One delivery run per purchase order: two shipments, on purpose.
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
