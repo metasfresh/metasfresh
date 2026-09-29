@@ -17,10 +17,13 @@ import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -88,9 +91,19 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				.detailId(detailId)
 				.allowCreateNewLogic(entityDescriptor.getAllowCreateNewLogic())
 				.allowDeleteLogic(entityDescriptor.getAllowDeleteLogic())
+				.adTableId(extractAdTableIdOrNull(entityDescriptor))
 				.build();
 		parentReadonly = null; // NOTE: don't fetch it from parentDocument because it's not needed now
 		staled = false;
+	}
+
+	@Nullable
+	private static AdTableId extractAdTableIdOrNull(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		return tableName != null
+				? TableIdsCache.instance.getTableId(tableName).orElse(null)
+				: null;
 	}
 
 	/** copy constructor */

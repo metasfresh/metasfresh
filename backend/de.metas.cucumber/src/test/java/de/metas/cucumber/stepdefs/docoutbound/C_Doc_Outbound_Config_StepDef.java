@@ -26,12 +26,17 @@ import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.document.DocBaseType;
+import de.metas.document.archive.config.DocOutboundConfigId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.report.PrintFormatId;
+import de.metas.report.PrintFormatRepository;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -39,6 +44,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Table;
 
@@ -54,6 +60,7 @@ public class C_Doc_Outbound_Config_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final PrintFormatRepository printFormatRepository = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
 
 	@NonNull private final C_Doc_Outbound_Config_StepDefData docOutboundConfigTable;
 
@@ -62,7 +69,7 @@ public class C_Doc_Outbound_Config_StepDef
 	 * {@code AD_PrintFormat_ID} from BEFORE the repoint. Restored by
 	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
 	 */
-	private final Map<Integer, Integer> priorPrintFormatIdByConfigId = new LinkedHashMap<>();
+	private final Map<DocOutboundConfigId, PrintFormatId> priorPrintFormatIdByConfigId = new LinkedHashMap<>();
 
 	@Given("metasfresh contains C_Doc_Outbound_Config:")
 	public void metasfresh_contains_C_Doc_Outbound_Config(@NonNull final DataTable dataTable)
@@ -151,41 +158,99 @@ public class C_Doc_Outbound_Config_StepDef
 
 	/**
 	 * Repoints an existing {@code C_Doc_Outbound_Config}'s {@code AD_PrintFormat_ID} -- the same field edit a
-	 * customer makes in the window to change which report a configuration prints. Resets the outbound-config
-	 * cache so the change is visible to the next resolution.
+	 * customer makes in the window to change which report a configuration prints. The configuration is found by
+	 * its table and document base type; the print format by its name.
 	 * <p>
 	 * The prior value is captured before the overwrite and restored by
 	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>C_Doc_Outbound_Config_ID</b> — (required) the existing configuration to update<br>
-	 *   <b>AD_PrintFormat_ID</b> — (required) the print format to point it at<br>
+	 *   <b>TableName</b> — (required) {@code AD_Table.TableName} of the configuration to update<br>
+	 *   <b>DocBaseType</b> — (required) {@code C_Doc_Outbound_Config.DocBaseType} of the configuration to update<br>
+	 *   <b>PrintFormat.Name</b> — (required) {@code AD_PrintFormat.Name} of the print format to point it at<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_Doc_Outbound_Config print format:
-	 *   | C_Doc_Outbound_Config_ID | AD_PrintFormat_ID |
-	 *   | 540022                   | 540097            |
+	 *   | TableName                   | DocBaseType | PrintFormat.Name                     |
+	 *   | C_Order_MFGWarehouse_Report | BKP         | C_Order_MFGWarehouse_Report_Combined |
 	 * </pre>
 	 */
 	@And("update C_Doc_Outbound_Config print format:")
 	public void update_doc_outbound_config_print_format(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final int configId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID);
-			final int printFormatId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID);
+			final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
+			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
+			assertThat(tableId).as("AD_Table not found: %s", tableName).isNotNull();
 
-			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(configId, I_C_Doc_Outbound_Config.class);
+			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, row.getAsEnum(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, DocBaseType.class))
+					.create()
+					.firstOnlyNotNull(I_C_Doc_Outbound_Config.class);
+			final DocOutboundConfigId configId = DocOutboundConfigId.ofRepoId(config.getC_Doc_Outbound_Config_ID());
+			final PrintFormatId printFormatId = printFormatRepository.getIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
 
 			// captured once per config per scenario: a second repoint in the same scenario must not overwrite
 			// the ALREADY-captured original with this scenario's own first write
-			priorPrintFormatIdByConfigId.putIfAbsent(configId, config.getAD_PrintFormat_ID());
+			priorPrintFormatIdByConfigId.putIfAbsent(configId, PrintFormatId.ofRepoId(config.getAD_PrintFormat_ID()));
 
-			config.setAD_PrintFormat_ID(printFormatId);
+			config.setAD_PrintFormat_ID(printFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
 		});
+	}
 
-		CacheMgt.get().reset(I_C_Doc_Outbound_Config.Table_Name);
+	/**
+	 * Asserts the stored state of one {@code C_Doc_Outbound_Config} per row, found by its table and document base
+	 * type -- active or not, so a retired configuration can be asserted too. A blank {@code DocBaseType} means the
+	 * generic configuration of that table, i.e. the one without a document base type. The flag columns are
+	 * optional; only the ones given are asserted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>TableName</b> — (required) {@code AD_Table.TableName} of the configuration<br>
+	 *   <b>DocBaseType</b> — (required column; blank = the generic configuration without a document base type)<br>
+	 *   <b>IsActive</b> — (required) expected {@code IsActive}<br>
+	 *   <b>IsDirectEnqueue</b> — (optional) expected flag<br>
+	 *   <b>IsDirectProcessQueueItem</b> — (optional) expected flag<br>
+	 *   <b>IsAutoSendDocument</b> — (optional) expected flag<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_Doc_Outbound_Config:
+	 *   | TableName                   | DocBaseType | IsActive | IsDirectEnqueue |
+	 *   | C_Order_MFGWarehouse_Report | BKP         | true     | true            |
+	 *   | C_Order_MFGWarehouse_Report |             | false    |                 |
+	 * </pre>
+	 */
+	@Then("validate C_Doc_Outbound_Config:")
+	public void validate_doc_outbound_config(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
+			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
+			assertThat(tableId).as("AD_Table not found: %s", tableName).isNotNull();
+
+			final DocBaseType docBaseType = row.getAsOptionalEnum(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, DocBaseType.class).orElse(null);
+
+			// no active-records filter: a retired (inactive) configuration must be assertable as well
+			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, docBaseType)
+					.create()
+					.firstOnly(I_C_Doc_Outbound_Config.class);
+			assertThat(config).as("C_Doc_Outbound_Config for TableName=%s, DocBaseType=%s", tableName, docBaseType).isNotNull();
+
+			final String description = "C_Doc_Outbound_Config_ID=" + config.getC_Doc_Outbound_Config_ID() + " (TableName=" + tableName + ", DocBaseType=" + docBaseType + ")";
+			assertThat(config.isActive()).as("IsActive of %s", description).isEqualTo(row.getAsBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsActive));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsDirectEnqueue)
+					.ifPresent(expected -> assertThat(config.isDirectEnqueue()).as("IsDirectEnqueue of %s", description).isEqualTo(expected));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsDirectProcessQueueItem)
+					.ifPresent(expected -> assertThat(config.isDirectProcessQueueItem()).as("IsDirectProcessQueueItem of %s", description).isEqualTo(expected));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsAutoSendDocument)
+					.ifPresent(expected -> assertThat(config.isAutoSendDocument()).as("IsAutoSendDocument of %s", description).isEqualTo(expected));
+		});
 	}
 
 	/**
@@ -201,14 +266,12 @@ public class C_Doc_Outbound_Config_StepDef
 			return;
 		}
 
-		for (final Map.Entry<Integer, Integer> entry : priorPrintFormatIdByConfigId.entrySet())
-		{
-			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(entry.getKey(), I_C_Doc_Outbound_Config.class);
-			config.setAD_PrintFormat_ID(entry.getValue());
+		priorPrintFormatIdByConfigId.forEach((configId, priorPrintFormatId) -> {
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(configId, I_C_Doc_Outbound_Config.class);
+			config.setAD_PrintFormat_ID(priorPrintFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
-		}
+		});
 
 		priorPrintFormatIdByConfigId.clear();
-		CacheMgt.get().reset(I_C_Doc_Outbound_Config.Table_Name);
 	}
 }

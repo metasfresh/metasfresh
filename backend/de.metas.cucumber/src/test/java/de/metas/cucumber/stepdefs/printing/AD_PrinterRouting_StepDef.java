@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.printing;
 
 import de.metas.adempiere.model.I_AD_PrinterRouting;
-import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -48,6 +47,7 @@ public class AD_PrinterRouting_StepDef
 {
 	@NonNull private final AD_PrinterRouting_StepDefData printerRoutingTable;
 	@NonNull private final C_DocType_StepDefData docTypeTable;
+	@NonNull private final AD_Printer_StepDefData printerTable;
 
 	/**
 	 * Creates one {@code AD_PrinterRouting} row per DataTable row -- the same kind of row the customer would add
@@ -59,13 +59,14 @@ public class AD_PrinterRouting_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_DocType_ID</b> — (optional, identifier-ref) the routing's document-type dimension; omitted means a
 	 *       catch-all routing (every dimension null)<br>
-	 *   <b>AD_Printer_ID</b> — (required) the (pre-existing) printer to route to<br>
-	 * @cucumber.depends StepDefData: C_DocType_StepDefData
+	 *   <b>AD_Printer_ID</b> — (required, identifier-ref) the printer to route to, created via
+	 *       "metasfresh contains AD_Printer:"<br>
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData, AD_Printer_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Given metasfresh contains AD_PrinterRouting:
 	 *   | Identifier        | C_DocType_ID      | AD_Printer_ID |
-	 *   | routingProduktion | docTypeProduktion | 1000000       |
+	 *   | routingProduktion | docTypeProduktion | printer       |
 	 * </pre>
 	 */
 	@Given("metasfresh contains AD_PrinterRouting:")
@@ -78,7 +79,7 @@ public class AD_PrinterRouting_StepDef
 	{
 		final I_AD_PrinterRouting record = InterfaceWrapperHelper.newInstance(I_AD_PrinterRouting.class);
 		record.setAD_Org_ID(StepDefConstants.ORG_ID_SYSTEM.getRepoId());
-		record.setAD_Printer_ID(row.getAsInt(I_AD_PrinterRouting.COLUMNNAME_AD_Printer_ID));
+		record.setAD_Printer_ID(row.getAsIdentifier(I_AD_PrinterRouting.COLUMNNAME_AD_Printer_ID).lookupNotNullIdIn(printerTable).getRepoId());
 
 		row.getAsOptionalIdentifier(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
@@ -90,7 +91,6 @@ public class AD_PrinterRouting_StepDef
 		record.setIsActive(true);
 
 		InterfaceWrapperHelper.save(record);
-		CacheMgt.get().reset(I_AD_PrinterRouting.Table_Name);
 
 		row.getAsIdentifier().putOrReplace(printerRoutingTable, record);
 	}
@@ -116,7 +116,5 @@ public class AD_PrinterRouting_StepDef
 		{
 			InterfaceWrapperHelper.delete(routing);
 		}
-
-		CacheMgt.get().reset(I_AD_PrinterRouting.Table_Name);
 	}
 }
