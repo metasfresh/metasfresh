@@ -1,19 +1,17 @@
 -- Window fields for the LOCAL_FILE transport on ExternalSystem_Endpoint (tab 548506, window 541967).
 -- Exposes the columns added by 5826050_sys_gh26558_endpoint_localfile_columns.sql (LocalRootLocation,
--- Frequency, ImportFileNamePattern), visible only when TransportType = LOCAL_FILE. Follows the
--- per-transport UI structure already used by HTTP (group 554995, column 549281) and SFTP (group 554996,
--- column 549282): a dedicated AD_UI_Column (SeqNo=30) holding one AD_UI_ElementGroup named 'LOCAL_FILE'
--- (SeqNo=10), both new — not the existing SFTP group.
+-- Frequency, ImportFileNamePattern), visible only when TransportType = LOCAL_FILE.
 --
--- SUPERSEDED IN PART: that placement is what THIS script did, not where the group sits today.
--- 5826130_sys_gh26558_endpoint_localfile_group_into_existing_column.sql later moved the LOCAL_FILE
--- group (555778) into the section's existing first column (549281, SeqNo=20) and deactivated the
--- dedicated column (549759), because a third column narrowed the pre-existing HTTP and SFTP groups
--- enough to truncate their labels.
+-- The LOCAL_FILE element group shares the section's FIRST column (549281) with the HTTP group rather
+-- than getting a third column of its own: the WebUI divides a section's 12-unit grid evenly across its
+-- columns (frontend/src/components/window/Section.js), so a third column would take every column from
+-- col-sm-6 to col-sm-4 and truncate the pre-existing HTTP and SFTP labels (measured at a 1280px
+-- viewport: 607px -> 405px per column; "SFTP-Verzeichnispfad" -> "SFTP-Verz..."). Only one transport's
+-- group is ever displayed, since every field is DisplayLogic-gated on TransportType, so sharing a
+-- column costs nothing.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-23:
---   AD_UI_Column      549759 (new column, SeqNo=30, under section 547602 "Transport")
---   AD_UI_ElementGroup 555778 (new group "LOCAL_FILE", SeqNo=10, under column 549759)
+--   AD_UI_ElementGroup 555778 (new group "LOCAL_FILE", SeqNo=20, under existing column 549281)
 --   AD_Field           785059 (LocalRootLocation field on tab 548506)
 --   AD_Field           785060 (Frequency field on tab 548506)
 --   AD_Field           785061 (ImportFileNamePattern field on tab 548506)
@@ -22,18 +20,7 @@
 --   AD_UI_Element      654801 (ImportFileNamePattern in group 555778)
 
 -- ============================================================
--- 1. AD_UI_Column (549759): third column of section 547602 "Transport", SeqNo=30
--- ============================================================
-INSERT INTO AD_UI_Column (AD_Client_ID, AD_Org_ID, IsActive,
-    Created, CreatedBy, Updated, UpdatedBy,
-    AD_UI_Column_ID, AD_UI_Section_ID, SeqNo)
-VALUES (0, 0, 'Y',
-    TO_TIMESTAMP('2026-09-23 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    TO_TIMESTAMP('2026-09-23 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    549759 /*From ID Server*/, 547602, 30);
-
--- ============================================================
--- 2. AD_UI_ElementGroup (555778): "LOCAL_FILE", SeqNo=10, under column 549759
+-- 1. AD_UI_ElementGroup (555778): "LOCAL_FILE", SeqNo=20, in the section's existing first column
 -- ============================================================
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
@@ -41,10 +28,10 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, IsActive,
 VALUES (0, 0, 'Y',
     TO_TIMESTAMP('2026-09-23 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-23 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    555778 /*From ID Server*/, 549759, 10, NULL, 'LOCAL_FILE');
+    555778 /*From ID Server*/, 549281, 20, NULL, 'LOCAL_FILE');
 
 -- ============================================================
--- 3. AD_Field: LocalRootLocation (785059) on tab 548506
+-- 2. AD_Field: LocalRootLocation (785059) on tab 548506
 -- ============================================================
 INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
@@ -74,7 +61,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=785059;
 SELECT AD_Element_Link_Create_Missing_Field(785059);
 
 -- ============================================================
--- 4. AD_Field: Frequency (785060) on tab 548506
+-- 3. AD_Field: Frequency (785060) on tab 548506
 -- ============================================================
 INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
@@ -104,7 +91,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=785060;
 SELECT AD_Element_Link_Create_Missing_Field(785060);
 
 -- ============================================================
--- 5. AD_Field: ImportFileNamePattern (785061) on tab 548506
+-- 4. AD_Field: ImportFileNamePattern (785061) on tab 548506
 -- ============================================================
 INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
@@ -136,7 +123,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=785061;
 SELECT AD_Element_Link_Create_Missing_Field(785061);
 
 -- ============================================================
--- 6. AD_UI_Element: LocalRootLocation (654799) in group 555778, SeqNo=10
+-- 5. AD_UI_Element: LocalRootLocation (654799) in group 555778, SeqNo=10
 -- ============================================================
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID,
     AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive,
@@ -152,7 +139,7 @@ VALUES (0, 785059, 0, 548506, 555778,
     TO_TIMESTAMP('2026-09-23 11:00:40', 'YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- ============================================================
--- 7. AD_UI_Element: Frequency (654800) in group 555778, SeqNo=20
+-- 6. AD_UI_Element: Frequency (654800) in group 555778, SeqNo=20
 -- ============================================================
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID,
     AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive,
@@ -168,7 +155,7 @@ VALUES (0, 785060, 0, 548506, 555778,
     TO_TIMESTAMP('2026-09-23 11:00:50', 'YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- ============================================================
--- 8. AD_UI_Element: ImportFileNamePattern (654801) in group 555778, SeqNo=30
+-- 7. AD_UI_Element: ImportFileNamePattern (654801) in group 555778, SeqNo=30
 -- ============================================================
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID,
     AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive,
