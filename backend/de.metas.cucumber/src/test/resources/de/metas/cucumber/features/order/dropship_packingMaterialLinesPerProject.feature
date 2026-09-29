@@ -165,9 +165,9 @@ Feature: dropship packing material lines split per project
       | sol_B          | projB        |
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID |
-      | ss_A       | sol_A          |
-      | ss_B       | sol_B          |
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_A       | sol_A          | N             |
+      | ss_B       | sol_B          | N             |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | OPT.C_Project_ID.Identifier |
       | ss_A                  | projA                       |
@@ -317,9 +317,9 @@ Feature: dropship packing material lines split per project
     # Let the dropship auto-PO creation settle before the shipments are generated.
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID |
-      | ss_A       | sol_A          |
-      | ss_B       | sol_B          |
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_A       | sol_A          | N             |
+      | ss_B       | sol_B          | N             |
 
     And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
 
