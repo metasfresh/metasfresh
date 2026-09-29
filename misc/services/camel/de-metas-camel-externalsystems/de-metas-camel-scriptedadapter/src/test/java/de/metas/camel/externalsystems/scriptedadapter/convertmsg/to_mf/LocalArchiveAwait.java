@@ -24,9 +24,11 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import lombok.NonNull;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -41,7 +43,10 @@ import java.util.stream.Stream;
  * Observed on CI as {@code test (java)} failing at "Expected size: 1 but was: 0", reproduced locally under
  * CPU contention (2 of 4 runs), and measured: the file landed ~68ms after the assertion had already run.
  * <p>
- * These waits change only WHEN the directory is read, never WHAT is required of it.
+ * These waits change only WHEN a directory is read, never WHAT is required of it. The deliberate cost is
+ * in the FAILING case: a genuine regression (a file never archived, or never consumed) still fails
+ * deterministically, but reports after the timeout instead of immediately. The passing case is unaffected —
+ * an already-settled directory returns on the first poll.
  */
 final class LocalArchiveAwait
 {
@@ -56,12 +61,7 @@ final class LocalArchiveAwait
 	@NonNull
 	static Path awaitSingleFile(@NonNull final Path dir) throws InterruptedException
 	{
-		final Path found = await(dir, entries -> entries.size() == 1 ? entries.get(0) : null);
-		if (found == null)
-		{
-			throw new AssertionError("Expected exactly one file in " + dir + " within " + TIMEOUT_MS + "ms, but found: " + list(dir));
-		}
-		return found;
+		return await(dir, entries -> entries.size() == 1, "exactly one file").get(0);
 	}
 
 	/**
@@ -70,28 +70,34 @@ final class LocalArchiveAwait
 	 */
 	static void awaitEmpty(@NonNull final Path dir) throws InterruptedException
 	{
-		if (await(dir, entries -> entries.isEmpty() ? dir : null) == null)
-		{
-			throw new AssertionError("Expected " + dir + " to be empty within " + TIMEOUT_MS + "ms, but found: " + list(dir));
-		}
+		await(dir, List::isEmpty, "no files");
 	}
 
-	@SuppressWarnings("BusyWait")
-	private static Path await(@NonNull final Path dir, @NonNull final java.util.function.Function<List<Path>, Path> settled) throws InterruptedException
+	/**
+	 * Polls {@code dir} until {@code settled} accepts its contents, and returns those contents. On timeout
+	 * it reports the LAST listing the loop actually saw — re-listing the directory for the message could
+	 * show a state that never failed the check, which would mislead whoever debugs the next failure.
+	 */
+	@NonNull
+	private static List<Path> await(
+			@NonNull final Path dir,
+			@NonNull final Predicate<List<Path>> settled,
+			@NonNull final String expectation) throws InterruptedException
 	{
 		final long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+		List<Path> lastSeen;
 		do
 		{
-			final Path result = settled.apply(list(dir));
-			if (result != null)
+			lastSeen = list(dir);
+			if (settled.test(lastSeen))
 			{
-				return result;
+				return lastSeen;
 			}
 			Thread.sleep(POLL_INTERVAL_MS);
 		}
 		while (System.currentTimeMillis() < deadline);
 
-		return null;
+		throw new AssertionError("Expected " + expectation + " in " + dir + " within " + TIMEOUT_MS + "ms, but found: " + lastSeen);
 	}
 
 	@NonNull
@@ -101,7 +107,7 @@ final class LocalArchiveAwait
 		{
 			return entries.toList();
 		}
-		catch (final java.io.IOException e)
+		catch (final IOException e)
 		{
 			throw new AssertionError("Failed to list " + dir, e);
 		}
