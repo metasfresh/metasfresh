@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -32,8 +33,10 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -42,7 +45,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
@@ -50,7 +52,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,7 +61,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -79,7 +79,7 @@ public class PackingMaterialShipmentLines_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 
@@ -99,48 +99,31 @@ public class PackingMaterialShipmentLines_StepDef
 			@NonNull final String scheduleIdentifiersCSV,
 			@NonNull final String shipmentIdentifierString) throws InterruptedException
 	{
-		final Set<Integer> shipmentScheduleIds = StepDefDataIdentifier.ofCommaSeparatedString(scheduleIdentifiersCSV)
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = StepDefDataIdentifier.ofCommaSeparatedString(scheduleIdentifiersCSV)
 				.stream()
 				.map(shipmentScheduleTable::getId)
-				.map(ShipmentScheduleId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final StepDefDataIdentifier shipmentIdentifier = StepDefDataIdentifier.ofString(shipmentIdentifierString);
 
 		final Supplier<Boolean> isShippedInExactlyOneInOut = () -> {
 
-			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = queryBL
-					.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
-					.addNotNull(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID)
-					.create()
-					.list(I_M_ShipmentSchedule_QtyPicked.class);
-
-			if (qtyPickedRecords.isEmpty())
+			final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> qtyPickedRecordsByScheduleId =
+					shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(shipmentScheduleIds);
+			if (!qtyPickedRecordsByScheduleId.keySet().containsAll(shipmentScheduleIds))
 			{
 				return false;
 			}
 
-			final Set<Integer> linkedScheduleIds = qtyPickedRecords.stream()
-					.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
-					.collect(ImmutableSet.toImmutableSet());
-			if (!linkedScheduleIds.containsAll(shipmentScheduleIds))
-			{
-				return false;
-			}
-
-			final Set<Integer> inOutLineIds = qtyPickedRecords.stream()
-					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
-					.collect(ImmutableSet.toImmutableSet());
-
-			final Set<Integer> inOutIds = queryBL
-					.createQueryBuilder(I_M_InOutLine.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
-					.create()
+			final ImmutableSet<InOutLineId> inOutLineIds = qtyPickedRecordsByScheduleId.values()
 					.stream()
-					.map(I_M_InOutLine::getM_InOut_ID)
+					.map(qtyPickedRecord -> InOutLineId.ofRepoId(qtyPickedRecord.getM_InOutLine_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+
+			final ImmutableSet<InOutId> inOutIds = inOutDAO.retrieveInOutByLineIds(inOutLineIds)
+					.values()
+					.stream()
+					.map(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()))
 					.collect(ImmutableSet.toImmutableSet());
 
 			if (inOutIds.size() > 1)
@@ -154,7 +137,7 @@ public class PackingMaterialShipmentLines_StepDef
 				return false;
 			}
 
-			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inOutIds.iterator().next()));
+			final I_M_InOut inOut = inOutDAO.getById(inOutIds.iterator().next());
 			inoutTable.putOrReplace(shipmentIdentifier, inOut);
 			return true;
 		};
@@ -215,7 +198,7 @@ public class PackingMaterialShipmentLines_StepDef
 
 		final de.metas.handlingunits.model.I_M_InOutLine matchedLine = remainingActualLines.stream()
 				.filter(line -> line.getM_Product_ID() == expectedProductId.getRepoId())
-				.filter(line -> projectMatches(line.getC_Project_ID(), expectedProjectId))
+				.filter(line -> ProjectId.equals(ProjectId.ofRepoIdOrNull(line.getC_Project_ID()), expectedProjectId))
 				.filter(line -> line.getMovementQty().compareTo(expectedQty) == 0)
 				.findFirst()
 				.orElseGet(() -> {
@@ -229,13 +212,6 @@ public class PackingMaterialShipmentLines_StepDef
 
 		remainingActualLines.remove(matchedLine);
 		inoutLineTable.putOrReplace(lineIdentifier, matchedLine);
-	}
-
-	private static boolean projectMatches(final int actualProjectRepoId, @Nullable final ProjectId expectedProjectId)
-	{
-		return expectedProjectId == null
-				? actualProjectRepoId <= 0
-				: actualProjectRepoId == expectedProjectId.getRepoId();
 	}
 
 	private static String formatActualLines(@NonNull final List<de.metas.handlingunits.model.I_M_InOutLine> actualLines)
@@ -282,7 +258,7 @@ public class PackingMaterialShipmentLines_StepDef
 	{
 		final I_M_InOut shipment = inoutTable.get(StepDefDataIdentifier.ofString(shipmentIdentifierString));
 
-		final List<Map<String, Object>> allRows = queryShipmentReportPackingSection(shipment.getM_InOut_ID(), adLanguage);
+		final List<Map<String, Object>> allRows = queryShipmentReportPackingSection(InOutId.ofRepoId(shipment.getM_InOut_ID()), adLanguage);
 		final List<Map<String, Object>> remainingRows = new ArrayList<>(allRows);
 
 		DataTableRows.of(dataTable).forEach(row -> matchAndConsumeReportRows(shipmentIdentifierString, row, remainingRows, allRows));
@@ -345,14 +321,14 @@ public class PackingMaterialShipmentLines_StepDef
 	 * Filters {@code IsPrintWhenPackingMaterial='Y'} to mirror the real report's own query
 	 * ({@code report_details_hu.jrxml}'s {@code queryString}), so this step asserts exactly what the printed report shows.
 	 */
-	private List<Map<String, Object>> queryShipmentReportPackingSection(final int inOutId, @NonNull final String adLanguage) throws SQLException
+	private List<Map<String, Object>> queryShipmentReportPackingSection(@NonNull final InOutId inOutId, @NonNull final String adLanguage) throws SQLException
 	{
 		final List<Map<String, Object>> rows = new ArrayList<>();
 		final String sql = "SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(?, ?) WHERE IsPrintWhenPackingMaterial='Y'";
 
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
-			pstmt.setInt(1, inOutId);
+			pstmt.setInt(1, inOutId.getRepoId());
 			pstmt.setString(2, adLanguage);
 
 			try (final ResultSet rs = pstmt.executeQuery())

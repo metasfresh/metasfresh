@@ -144,14 +144,13 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * (b) flag OFF, same two sources as (a) &rarr; exactly 1 candidate with a null project — i.e. **byte-identical**
-	 * to today's (pre-flag) behaviour. Pins the "OFF = today" invariant.
+	 * (b) flag OFF, same two sources as (a) &rarr; exactly 1 candidate with a null project, i.e. the project is not part of the key.
 	 */
 	@Test
 	public void considerProject_off_twoSourcesDifferentProjects_yieldsOneCandidateWithNullProject()
 	{
 		final HUPackingMaterialsCollector parent = new HUPackingMaterialsCollector(data.helper.createMutableHUContext());
-		// considerProject left at its default (false) on purpose: the key must stay exactly today's.
+		// considerProject deliberately left at its default (false).
 
 		final HUPackingMaterialsCollector child = parent.splitNew();
 		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 1, PROJECT_P1);

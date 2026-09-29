@@ -5,8 +5,7 @@
 Feature: dropship packing material lines split per project
 ## F68020: C_Project propagation through Purchase ↔ Sales flow
 
-  # Background copied verbatim from dropship_warehouse.feature:11-89 (do NOT edit that file — copy
-  # only), plus the packing data every dropship scenario in this feature uses.
+  # Background = the one of dropship_warehouse.feature, plus the packing data every dropship scenario in this feature uses.
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -129,7 +128,7 @@ Feature: dropship packing material lines split per project
   @from:cucumber
   @allure.label.epic:E0240_Project_Management
   @allure.label.feature:F68020
-  Scenario: dropship SO with two vendors' auto-created purchase orders ships in one shipment with one packing material line per project (2c)
+  Scenario: dropship SO with two vendors' auto-created purchase orders ships in one shipment with one packing material line per project
     Given set project type Sales/Purchase Order to active
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
@@ -144,7 +143,7 @@ Feature: dropship packing material lines split per project
       | sol_B                     | hupip_B                     |
     When the order identified by so_2c is completed
 
-    # Two POs created, one per vendor — the dropship-warehouse auto-PO mechanism (SPIKE-2c.md verdict a).
+    # Two POs created, one per vendor, by the dropship-warehouse auto-PO mechanism.
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | OPT.C_BPartner_ID | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | po_A           | so_2c                    | vendor_dw         | false   | POO         | CO            | true           |
@@ -222,7 +221,7 @@ Feature: dropship packing material lines split per project
   @from:cucumber
   @allure.label.epic:E0240_Project_Management
   @allure.label.feature:F68020
-  Scenario Outline: dropship SO with Positions Nr. set directly on the order lines ships in one shipment with one packing material line per project (<case>)
+  Scenario Outline: dropship SO with Positions Nr. set directly on the order lines ships in one shipment with one packing material line per project (<variant>)
     # Project type stays inactive (Background default): the auto-created purchase order(s) get no
     # project of their own, so nothing can overwrite the Positions Nr. set directly below.
     Given metasfresh contains C_Projects:
@@ -284,10 +283,10 @@ Feature: dropship packing material lines split per project
       | il_pm_P2         | invoice_direct | <pm_B>       | 3           | pm_line_P2     | P2                          |
 
     Examples:
-      | case | vendor_B    | pip_B    | pm_B  |
-      | 2a   | vendor_dw   | hupip_B2 | p_pm2 |
-      | 2b   | vendor_dw   | hupip_B  | p_pm  |
-      | 2e   | vendor_dw_2 | hupip_B2 | p_pm2 |
+      | variant                                         | vendor_B    | pip_B    | pm_B  |
+      | same vendor, different packing material         | vendor_dw   | hupip_B2 | p_pm2 |
+      | same vendor, same packing material              | vendor_dw   | hupip_B  | p_pm  |
+      | different vendors, different packing material   | vendor_dw_2 | hupip_B2 | p_pm2 |
 
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -298,10 +297,10 @@ Feature: dropship packing material lines split per project
   @from:cucumber
   @allure.label.epic:E0240_Project_Management
   @allure.label.feature:F68020
-  Scenario: dropship SO with Positions Nr. set directly on the order lines ships in two shipments, one packing material line per project each (2d)
-    # Same setup as case 2b, except the two order lines go to two different vendors: two purchase
-    # orders, same packing instruction. Project type stays inactive; the Positions Nr. is set
-    # directly on the order lines, as case 2c's PO-to-SO propagation would leave them.
+  Scenario: dropship SO with Positions Nr. set directly on the order lines ships in two shipments, one packing material line per project each
+    # Same packing instruction for both order lines, but two different vendors: two purchase orders.
+    # Project type stays inactive; the Positions Nr. is set directly on the order lines, as the
+    # PO-to-SO project propagation would leave them.
     Given metasfresh contains C_Projects:
       | Identifier |
       | P1         |
