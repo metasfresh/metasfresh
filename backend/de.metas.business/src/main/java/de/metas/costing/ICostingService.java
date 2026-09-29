@@ -47,5 +47,11 @@ public interface ICostingService
 			CostSegment costSegment,
 			CostingMethod costingMethod);
 
+	/**
+	 * Replays the cost segment's cost details from the evaluation start date with the new cost price.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if the evaluation window contains another cost revaluation,
+	 *                                                     or a stock movement posted on a day after the revaluation's posting date
+	 */
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

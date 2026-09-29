@@ -55,6 +55,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -351,303 +352,309 @@ public class CostRevaluationServiceTest
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * The segment {@code createLineForProduct} derives for a single-segment product is the SAME one the bulk
-	 * {@link CostRevaluationService#createLines} would derive for it, and {@code NewCostPrice} is the TYPED value
-	 * (not the live current cost, which the bulk path uses as its default).
-	 */
-	@Test
-	public void createLineForProduct_derivesSameSegmentAsBulk_andUsesTypedNewCostPrice()
+	@Nested
+	class CreateLineForProduct
 	{
-		final ProductId productId = createProduct("product");
-		seedCurrentCost(productId, "12.50", "100");
+		/**
+		 * The segment {@code createLineForProduct} derives for a single-segment product is the SAME one the bulk
+		 * {@link CostRevaluationService#createLines} would derive for it, and {@code NewCostPrice} is the TYPED value
+		 * (not the live current cost, which the bulk path uses as its default).
+		 */
+		@Test
+		public void derivesSameSegmentAsBulk_andUsesTypedNewCostPrice()
+		{
+			final ProductId productId = createProduct("product");
+			seedCurrentCost(productId, "12.50", "100");
 
-		final CostRevaluationId costRevaluationId = createHeader();
+			final CostRevaluationId costRevaluationId = createHeader();
 
-		// Bulk path first — capture the segment it derives for this exact product.
-		costRevaluationService.createLines(costRevaluationId);
-		final List<I_M_CostRevaluationLine> bulkLines = getLineRecords(costRevaluationId);
-		assertThat(bulkLines).hasSize(1);
-		final I_M_CostRevaluationLine bulkLine = bulkLines.get(0);
-		assertThat(bulkLine.getNewCostPrice()).isEqualByComparingTo("12.50"); // bulk default: NewCostPrice = live cost
+			// Bulk path first — capture the segment it derives for this exact product.
+			costRevaluationService.createLines(costRevaluationId);
+			final List<I_M_CostRevaluationLine> bulkLines = getLineRecords(costRevaluationId);
+			assertThat(bulkLines).hasSize(1);
+			final I_M_CostRevaluationLine bulkLine = bulkLines.get(0);
+			assertThat(bulkLine.getNewCostPrice()).isEqualByComparingTo("12.50"); // bulk default: NewCostPrice = live cost
 
-		costRevaluationService.deleteLinesAndDetailsByRevaluationId(costRevaluationId);
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
+			costRevaluationService.deleteLinesAndDetailsByRevaluationId(costRevaluationId);
+			assertThat(getLineRecords(costRevaluationId)).isEmpty();
 
-		// Single-product path — must derive the identical segment, but with the TYPED NewCostPrice.
-		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
-		final List<I_M_CostRevaluationLine> singleLines = getLineRecords(costRevaluationId);
-		assertThat(singleLines).hasSize(1);
-		final I_M_CostRevaluationLine singleLine = singleLines.get(0);
+			// Single-product path — must derive the identical segment, but with the TYPED NewCostPrice.
+			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+			final List<I_M_CostRevaluationLine> singleLines = getLineRecords(costRevaluationId);
+			assertThat(singleLines).hasSize(1);
+			final I_M_CostRevaluationLine singleLine = singleLines.get(0);
 
-		assertThat(createdLineId.getRepoId()).isEqualTo(singleLine.getM_CostRevaluationLine_ID());
-		assertThat(createdLineId.getCostRevaluationId()).isEqualTo(costRevaluationId);
+			assertThat(createdLineId.getRepoId()).isEqualTo(singleLine.getM_CostRevaluationLine_ID());
+			assertThat(createdLineId.getCostRevaluationId()).isEqualTo(costRevaluationId);
 
-		assertThat(singleLine.getCostingLevel()).isEqualTo(bulkLine.getCostingLevel());
-		assertThat(singleLine.getC_AcctSchema_ID()).isEqualTo(bulkLine.getC_AcctSchema_ID());
-		assertThat(singleLine.getM_CostType_ID()).isEqualTo(bulkLine.getM_CostType_ID());
-		assertThat(singleLine.getAD_Org_ID()).isEqualTo(bulkLine.getAD_Org_ID());
-		assertThat(singleLine.getM_AttributeSetInstance_ID()).isEqualTo(bulkLine.getM_AttributeSetInstance_ID());
-		assertThat(singleLine.getM_CostElement_ID()).isEqualTo(bulkLine.getM_CostElement_ID());
-		assertThat(singleLine.getM_Product_ID()).isEqualTo(productId.getRepoId());
+			assertThat(singleLine.getCostingLevel()).isEqualTo(bulkLine.getCostingLevel());
+			assertThat(singleLine.getC_AcctSchema_ID()).isEqualTo(bulkLine.getC_AcctSchema_ID());
+			assertThat(singleLine.getM_CostType_ID()).isEqualTo(bulkLine.getM_CostType_ID());
+			assertThat(singleLine.getAD_Org_ID()).isEqualTo(bulkLine.getAD_Org_ID());
+			assertThat(singleLine.getM_AttributeSetInstance_ID()).isEqualTo(bulkLine.getM_AttributeSetInstance_ID());
+			assertThat(singleLine.getM_CostElement_ID()).isEqualTo(bulkLine.getM_CostElement_ID());
+			assertThat(singleLine.getM_Product_ID()).isEqualTo(productId.getRepoId());
 
-		assertThat(singleLine.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // live cost, unchanged
-		assertThat(singleLine.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
-	}
+			assertThat(singleLine.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // live cost, unchanged
+			assertThat(singleLine.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
+		}
 
-	/**
-	 * A stocked product with no {@code M_Cost} row is seeded at quantity 0 (reusing the product interceptor's
-	 * {@code createDefaultProductCosts}), then a line is created at that seeded segment with {@code CurrentQty=0},
-	 * {@code CurrentCostPrice=0} and {@code NewCostPrice} = the typed value.
-	 */
-	@Test
-	public void createLineForProduct_seedsCostAtZeroQty_whenNoCurrentCostRow()
-	{
-		final ProductId productId = createProduct("productWithoutCost");
-		final CostRevaluationId costRevaluationId = createHeader();
+		/**
+		 * A stocked product with no {@code M_Cost} row is seeded at quantity 0 (reusing the product interceptor's
+		 * {@code createDefaultProductCosts}), then a line is created at that seeded segment with {@code CurrentQty=0},
+		 * {@code CurrentCostPrice=0} and {@code NewCostPrice} = the typed value.
+		 */
+		@Test
+		public void seedsCostAtZeroQty_whenNoCurrentCostRow()
+		{
+			final ProductId productId = createProduct("productWithoutCost");
+			final CostRevaluationId costRevaluationId = createHeader();
 
-		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
+			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
 
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(1);
-		final I_M_CostRevaluationLine line = lines.get(0);
-		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
-		assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
-		assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
-		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
-		assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
-	}
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			final I_M_CostRevaluationLine line = lines.get(0);
+			assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+			assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
+			assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
+			assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
+		}
 
-	/**
-	 * Multi-acct-schema seed fan-out (characterization test — pins the DELIBERATE broad behavior; passes on current code).
-	 * <p>
-	 * When the client has TWO {@code C_AcctSchema} and a stocked product has NO {@code M_Cost} row, the seed-cost path
-	 * reuses {@code createDefaultProductCosts}, which materializes a zero-qty {@code M_Cost} row for EVERY client acct
-	 * schema (not only the revaluation's own schema A). This is intended: it reuses the standard product-creation creator
-	 * (reuse the existing creator instead of a bespoke writer) and the extra schema-B row is zero-cost/zero-qty = harmless.
-	 * <p>
-	 * Non-vacuousness / seed-path proof: the product starts with ZERO {@code M_Cost} rows (asserted), so the two rows
-	 * present afterwards can only have been created by the seed path; removing the seed block in
-	 * {@link CostRevaluationService#createLineForProduct} makes this test fail (the re-resolve stays empty → "No current
-	 * cost found"). The revaluation line is created for schema A only, at the seeded zero values.
-	 */
-	@Test
-	public void createLineForProduct_seedFansOutOverAllClientAcctSchemas_butLineIsForHeaderSchemaOnly()
-	{
-		// schema A is the primary (from beforeEach); add a second client acct schema B
-		final AcctSchemaId acctSchemaId_B = createAcctSchemaRecord("Test AcctSchema B");
+		/**
+		 * Multi-acct-schema seed fan-out (characterization test — pins the DELIBERATE broad behavior; passes on current code).
+		 * <p>
+		 * When the client has TWO {@code C_AcctSchema} and a stocked product has NO {@code M_Cost} row, the seed-cost path
+		 * reuses {@code createDefaultProductCosts}, which materializes a zero-qty {@code M_Cost} row for EVERY client acct
+		 * schema (not only the revaluation's own schema A). This is intended: it reuses the standard product-creation creator
+		 * (reuse the existing creator instead of a bespoke writer) and the extra schema-B row is zero-cost/zero-qty = harmless.
+		 * <p>
+		 * Non-vacuousness / seed-path proof: the product starts with ZERO {@code M_Cost} rows (asserted), so the two rows
+		 * present afterwards can only have been created by the seed path; removing the seed block in
+		 * {@link CostRevaluationService#createLineForProduct} makes this test fail (the re-resolve stays empty → "No current
+		 * cost found"). The revaluation line is created for schema A only, at the seeded zero values.
+		 */
+		@Test
+		public void seedFansOutOverAllClientAcctSchemas_butLineIsForHeaderSchemaOnly()
+		{
+			// schema A is the primary (from beforeEach); add a second client acct schema B
+			final AcctSchemaId acctSchemaId_B = createAcctSchemaRecord("Test AcctSchema B");
 
-		final ProductId productId = createProduct("productWithoutCost_twoSchemas");
-		// product-category-acct for schema B too (schema A was wired by createProduct), so the seed's per-schema
-		// costing-level lookup resolves without hitting the DB-only insert_Accounting fallback in the in-memory harness.
-		createProductCategoryAcct(productId, acctSchemaId_B);
+			final ProductId productId = createProduct("productWithoutCost_twoSchemas");
+			// product-category-acct for schema B too (schema A was wired by createProduct), so the seed's per-schema
+			// costing-level lookup resolves without hitting the DB-only insert_Accounting fallback in the in-memory harness.
+			createProductCategoryAcct(productId, acctSchemaId_B);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		// Precondition proving the seed path is what creates the rows below: the product has NO cost rows yet.
-		assertThat(queryBL.createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.count())
-				.isZero();
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			// Precondition proving the seed path is what creates the rows below: the product has NO cost rows yet.
+			assertThat(queryBL.createQueryBuilder(I_M_Cost.class)
+					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.count())
+					.isZero();
 
-		final CostRevaluationId costRevaluationId = createHeader(); // header references schema A
+			final CostRevaluationId costRevaluationId = createHeader(); // header references schema A
 
-		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
+			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
 
-		// The seed fanned out over BOTH client acct schemas: one zero-qty M_Cost row per schema.
-		final List<I_M_Cost> costRows = queryBL.createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.list(I_M_Cost.class);
-		assertThat(costRows).hasSize(2);
-		assertThat(costRows).extracting(I_M_Cost::getC_AcctSchema_ID)
-				.containsExactlyInAnyOrder(acctSchemaId.getRepoId(), acctSchemaId_B.getRepoId());
-		assertThat(costRows).allSatisfy(costRow -> assertThat(costRow.getCurrentQty()).isEqualByComparingTo("0"));
+			// The seed fanned out over BOTH client acct schemas: one zero-qty M_Cost row per schema.
+			final List<I_M_Cost> costRows = queryBL.createQueryBuilder(I_M_Cost.class)
+					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.list(I_M_Cost.class);
+			assertThat(costRows).hasSize(2);
+			assertThat(costRows).extracting(I_M_Cost::getC_AcctSchema_ID)
+					.containsExactlyInAnyOrder(acctSchemaId.getRepoId(), acctSchemaId_B.getRepoId());
+			assertThat(costRows).allSatisfy(costRow -> assertThat(costRow.getCurrentQty()).isEqualByComparingTo("0"));
 
-		// ...but exactly ONE revaluation line was created, for the header's schema A segment, at the seeded zero values.
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(1);
-		final I_M_CostRevaluationLine line = lines.get(0);
-		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
-		assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
-		assertThat(line.getC_AcctSchema_ID()).isEqualTo(acctSchemaId.getRepoId()); // header schema A, NOT schema B
-		assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
-		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
-		assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
+			// ...but exactly ONE revaluation line was created, for the header's schema A segment, at the seeded zero values.
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			final I_M_CostRevaluationLine line = lines.get(0);
+			assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+			assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
+			assertThat(line.getC_AcctSchema_ID()).isEqualTo(acctSchemaId.getRepoId()); // header schema A, NOT schema B
+			assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
+			assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
+		}
+
+		@Test
+		public void throws_whenLineAlreadyExists_andLeavesFirstLineUntouched()
+		{
+			final ProductId productId = createProduct("product");
+			seedCurrentCost(productId, "12.50", "100");
+			final CostRevaluationId costRevaluationId = createHeader();
+
+			final CostRevaluationLineId firstLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+			final I_M_CostRevaluationLine firstLine = getLineRecords(costRevaluationId).get(0);
+			assertThat(firstLineId.getRepoId()).isEqualTo(firstLine.getM_CostRevaluationLine_ID());
+
+			assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("99.00")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationService.MSG_LineAlreadyExistsForProduct.toAD_Message());
+
+			final List<I_M_CostRevaluationLine> linesAfter = getLineRecords(costRevaluationId);
+			assertThat(linesAfter).hasSize(1);
+			assertThat(linesAfter.get(0).getM_CostRevaluationLine_ID()).isEqualTo(firstLine.getM_CostRevaluationLine_ID());
+			assertThat(linesAfter.get(0).getNewCostPrice()).isEqualByComparingTo("20.00"); // untouched by the blocked second call
+		}
+
+		@Test
+		public void throws_whenCurrentCostIsAmbiguous()
+		{
+			final ProductId productId = createProduct("productWithTwoSegments");
+			seedCurrentCost(productId, costTypeId, "12.50", "100");
+			seedCurrentCost(productId, otherCostTypeId, "9.00", "50");
+
+			final CostRevaluationId costRevaluationId = createHeader();
+
+			assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationService.MSG_AmbiguousCurrentCost.toAD_Message());
+
+			assertThat(getLineRecords(costRevaluationId)).isEmpty();
+		}
+
+		/**
+		 * Organization-level costing coverage: the caller resolves the costing level via
+		 * {@link IProductCostingBL#getCostingLevel} and, because it is {@link CostingLevel#Organization}, filters the
+		 * current-cost lookup by the header document's org — so the org-level {@code M_Cost} row of the header org is
+		 * resolved and the co-existing org-level row of a DIFFERENT org is excluded by the query's org filter.
+		 * <p>
+		 * This exercises the {@code Organization}-costing-level branch of {@code createLineForProduct} that no other test
+		 * covers (all the others are client-level). It is not a red-first test for the org-param refactor itself: that
+		 * refactor is behavior-preserving (the previous {@code isMatching(headerOrg)} Java post-filter and the new
+		 * query-level org filter resolve the identical row on every representable data configuration — a client-level
+		 * ({@link OrgId#ANY}) row cannot co-exist under an org-level product because {@code CurrentCostsLoader} derives the
+		 * segment's costing level from the product config and rejects an ANY-org row at org level). The existing
+		 * seed / ambiguous / duplicate tests are the safety net that pins the preserved behavior through the new Optional API.
+		 */
+		@Test
+		public void orgLevelCosting_resolvesByHeaderOrg_excludingOtherOrg()
+		{
+			final OrgId headerOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelHeaderOrg", ZONE_ID);
+			final OrgId otherOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelOtherOrg", ZONE_ID);
+
+			final ProductId productId = createProduct("productOrgLevel");
+			setProductCostingLevel(productId, CostingLevel.Organization);
+
+			// Two org-level current costs for the same product/segment, one per org — only the header org's must be resolved.
+			seedCurrentCost(productId, costTypeId, CostingLevel.Organization, headerOrgId, "12.50", "100");
+			seedCurrentCost(productId, costTypeId, CostingLevel.Organization, otherOrgId, "99.00", "50");
+
+			final CostRevaluationId costRevaluationId = createHeader(headerOrgId);
+
+			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			final I_M_CostRevaluationLine line = lines.get(0);
+			assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+			assertThat(line.getAD_Org_ID()).isEqualTo(headerOrgId.getRepoId()); // the header org's org-level segment
+			assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // header org's row, NOT the other org's 99.00
+			assertThat(line.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
+		}
+
+		/**
+		 * Organization-level costing requires a regular header org: with the header on {@link OrgId#ANY} there is no org to
+		 * match the product's org-level cost by, so the call fails fast, before resolving or seeding any {@code M_Cost} row.
+		 */
+		@Test
+		public void orgLevelCosting_throws_whenHeaderOrgIsAny()
+		{
+			final ProductId productId = createProduct("productOrgLevel_headerOrgAny");
+			setProductCostingLevel(productId, CostingLevel.Organization);
+
+			final CostRevaluationId costRevaluationId = createHeader(OrgId.ANY);
+
+			assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationService.MSG_OrgRequiredForOrgCostingLevel.toAD_Message());
+
+			assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_Cost.class)
+					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.count())
+					.isZero(); // nothing seeded
+			assertThat(getLineRecords(costRevaluationId)).isEmpty();
+		}
+
+		@Test
+		public void throws_whenNewCostPriceIsNegative()
+		{
+			final ProductId productId = createProduct("product_negativePrice");
+			seedCurrentCost(productId, "12.50", "100");
+			final CostRevaluationId costRevaluationId = createHeader();
+
+			assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("-0.01")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationService.MSG_NewCostPriceNegative.toAD_Message());
+
+			assertThat(getLineRecords(costRevaluationId)).isEmpty();
+		}
+
+		@Test
+		public void acceptsZeroNewCostPrice()
+		{
+			final ProductId productId = createProduct("product_zeroPrice");
+			seedCurrentCost(productId, "12.50", "100");
+			final CostRevaluationId costRevaluationId = createHeader();
+
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, BigDecimal.ZERO);
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getNewCostPrice()).isEqualByComparingTo("0");
+		}
+
+		@Test
+		public void throws_whenHeaderIsNotDraft()
+		{
+			final ProductId productId = createProduct("product_completedHeader");
+			seedCurrentCost(productId, "12.50", "100");
+			final CostRevaluationId costRevaluationId = createHeader(OrgId.ANY, DocStatus.Completed);
+
+			assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationService.MSG_DocumentNotDraft.toAD_Message());
+
+			assertThat(getLineRecords(costRevaluationId)).isEmpty();
+		}
+
+		/**
+		 * A deactivated line is treated as removed (completion and {@code hasActiveLines} ignore it), so it must not block
+		 * re-adding the same product; the deactivated line is left as it is.
+		 */
+		@Test
+		public void allowsReAdding_whenExistingLineIsDeactivated()
+		{
+			final ProductId productId = createProduct("product_deactivatedLine");
+			seedCurrentCost(productId, "12.50", "100");
+			final CostRevaluationId costRevaluationId = createHeader();
+
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+			final I_M_CostRevaluationLine deactivatedLine = getLineRecords(costRevaluationId).get(0);
+			deactivatedLine.setIsActive(false);
+			saveRecord(deactivatedLine);
+
+			final CostRevaluationLineId newLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("30.00"));
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(2);
+			final I_M_CostRevaluationLine newLine = lines.stream().filter(line -> line.getM_CostRevaluationLine_ID() == newLineId.getRepoId()).findFirst().get();
+			assertThat(newLine.isActive()).isTrue();
+			assertThat(newLine.getNewCostPrice()).isEqualByComparingTo("30.00");
+			final I_M_CostRevaluationLine oldLine = lines.stream().filter(line -> line.getM_CostRevaluationLine_ID() == deactivatedLine.getM_CostRevaluationLine_ID()).findFirst().get();
+			assertThat(oldLine.isActive()).isFalse();
+			assertThat(oldLine.getNewCostPrice()).isEqualByComparingTo("20.00");
+		}
 	}
 
 	/** A second call for the same product is blocked, and the first line is left untouched (additive only). */
-	@Test
-	public void createLineForProduct_throws_whenLineAlreadyExists_andLeavesFirstLineUntouched()
-	{
-		final ProductId productId = createProduct("product");
-		seedCurrentCost(productId, "12.50", "100");
-		final CostRevaluationId costRevaluationId = createHeader();
-
-		final CostRevaluationLineId firstLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
-		final I_M_CostRevaluationLine firstLine = getLineRecords(costRevaluationId).get(0);
-		assertThat(firstLineId.getRepoId()).isEqualTo(firstLine.getM_CostRevaluationLine_ID());
-
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("99.00")))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(CostRevaluationService.MSG_LineAlreadyExistsForProduct.toAD_Message());
-
-		final List<I_M_CostRevaluationLine> linesAfter = getLineRecords(costRevaluationId);
-		assertThat(linesAfter).hasSize(1);
-		assertThat(linesAfter.get(0).getM_CostRevaluationLine_ID()).isEqualTo(firstLine.getM_CostRevaluationLine_ID());
-		assertThat(linesAfter.get(0).getNewCostPrice()).isEqualByComparingTo("20.00"); // untouched by the blocked second call
-	}
 
 	/** A product with more than one matching current-cost segment (ambiguous multi-segment product) is refused. */
-	@Test
-	public void createLineForProduct_throws_whenCurrentCostIsAmbiguous()
-	{
-		final ProductId productId = createProduct("productWithTwoSegments");
-		seedCurrentCost(productId, costTypeId, "12.50", "100");
-		seedCurrentCost(productId, otherCostTypeId, "9.00", "50");
-
-		final CostRevaluationId costRevaluationId = createHeader();
-
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(CostRevaluationService.MSG_AmbiguousCurrentCost.toAD_Message());
-
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
-	}
-
-	/**
-	 * Organization-level costing coverage: the caller resolves the costing level via
-	 * {@link IProductCostingBL#getCostingLevel} and, because it is {@link CostingLevel#Organization}, filters the
-	 * current-cost lookup by the header document's org — so the org-level {@code M_Cost} row of the header org is
-	 * resolved and the co-existing org-level row of a DIFFERENT org is excluded by the query's org filter.
-	 * <p>
-	 * This exercises the {@code Organization}-costing-level branch of {@code createLineForProduct} that no other test
-	 * covers (all the others are client-level). It is not a red-first test for the org-param refactor itself: that
-	 * refactor is behavior-preserving (the previous {@code isMatching(headerOrg)} Java post-filter and the new
-	 * query-level org filter resolve the identical row on every representable data configuration — a client-level
-	 * ({@link OrgId#ANY}) row cannot co-exist under an org-level product because {@code CurrentCostsLoader} derives the
-	 * segment's costing level from the product config and rejects an ANY-org row at org level). The existing
-	 * seed / ambiguous / duplicate tests are the safety net that pins the preserved behavior through the new Optional API.
-	 */
-	@Test
-	public void createLineForProduct_orgLevelCosting_resolvesByHeaderOrg_excludingOtherOrg()
-	{
-		final OrgId headerOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelHeaderOrg", ZONE_ID);
-		final OrgId otherOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelOtherOrg", ZONE_ID);
-
-		final ProductId productId = createProduct("productOrgLevel");
-		setProductCostingLevel(productId, CostingLevel.Organization);
-
-		// Two org-level current costs for the same product/segment, one per org — only the header org's must be resolved.
-		seedCurrentCost(productId, costTypeId, CostingLevel.Organization, headerOrgId, "12.50", "100");
-		seedCurrentCost(productId, costTypeId, CostingLevel.Organization, otherOrgId, "99.00", "50");
-
-		final CostRevaluationId costRevaluationId = createHeader(headerOrgId);
-
-		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
-
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(1);
-		final I_M_CostRevaluationLine line = lines.get(0);
-		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
-		assertThat(line.getAD_Org_ID()).isEqualTo(headerOrgId.getRepoId()); // the header org's org-level segment
-		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // header org's row, NOT the other org's 99.00
-		assertThat(line.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
-	}
-
-	/**
-	 * Organization-level costing requires a regular header org: with the header on {@link OrgId#ANY} there is no org to
-	 * match the product's org-level cost by, so the call fails fast, before resolving or seeding any {@code M_Cost} row.
-	 */
-	@Test
-	public void createLineForProduct_orgLevelCosting_throws_whenHeaderOrgIsAny()
-	{
-		final ProductId productId = createProduct("productOrgLevel_headerOrgAny");
-		setProductCostingLevel(productId, CostingLevel.Organization);
-
-		final CostRevaluationId costRevaluationId = createHeader(OrgId.ANY);
-
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(CostRevaluationService.MSG_OrgRequiredForOrgCostingLevel.toAD_Message());
-
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.count())
-				.isZero(); // nothing seeded
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
-	}
-
-	@Test
-	public void createLineForProduct_throws_whenNewCostPriceIsNegative()
-	{
-		final ProductId productId = createProduct("product_negativePrice");
-		seedCurrentCost(productId, "12.50", "100");
-		final CostRevaluationId costRevaluationId = createHeader();
-
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("-0.01")))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(CostRevaluationService.MSG_NewCostPriceNegative.toAD_Message());
-
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
-	}
-
-	@Test
-	public void createLineForProduct_acceptsZeroNewCostPrice()
-	{
-		final ProductId productId = createProduct("product_zeroPrice");
-		seedCurrentCost(productId, "12.50", "100");
-		final CostRevaluationId costRevaluationId = createHeader();
-
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, BigDecimal.ZERO);
-
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(1);
-		assertThat(lines.get(0).getNewCostPrice()).isEqualByComparingTo("0");
-	}
-
-	@Test
-	public void createLineForProduct_throws_whenHeaderIsNotDraft()
-	{
-		final ProductId productId = createProduct("product_completedHeader");
-		seedCurrentCost(productId, "12.50", "100");
-		final CostRevaluationId costRevaluationId = createHeader(OrgId.ANY, DocStatus.Completed);
-
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(CostRevaluationService.MSG_DocumentNotDraft.toAD_Message());
-
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
-	}
-
-	/**
-	 * A deactivated line is treated as removed (completion and {@code hasActiveLines} ignore it), so it must not block
-	 * re-adding the same product; the deactivated line is left as it is.
-	 */
-	@Test
-	public void createLineForProduct_allowsReAdding_whenExistingLineIsDeactivated()
-	{
-		final ProductId productId = createProduct("product_deactivatedLine");
-		seedCurrentCost(productId, "12.50", "100");
-		final CostRevaluationId costRevaluationId = createHeader();
-
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
-		final I_M_CostRevaluationLine deactivatedLine = getLineRecords(costRevaluationId).get(0);
-		deactivatedLine.setIsActive(false);
-		saveRecord(deactivatedLine);
-
-		final CostRevaluationLineId newLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("30.00"));
-
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(2);
-		final I_M_CostRevaluationLine newLine = lines.stream().filter(line -> line.getM_CostRevaluationLine_ID() == newLineId.getRepoId()).findFirst().get();
-		assertThat(newLine.isActive()).isTrue();
-		assertThat(newLine.getNewCostPrice()).isEqualByComparingTo("30.00");
-		final I_M_CostRevaluationLine oldLine = lines.stream().filter(line -> line.getM_CostRevaluationLine_ID() == deactivatedLine.getM_CostRevaluationLine_ID()).findFirst().get();
-		assertThat(oldLine.isActive()).isFalse();
-		assertThat(oldLine.getNewCostPrice()).isEqualByComparingTo("20.00");
-	}
 
 	/**
 	 * Creates a draft header in the Europe/Berlin org, with the given posting date and evaluation start date
@@ -707,70 +714,103 @@ public class CostRevaluationServiceTest
 		saveRecord(record);
 	}
 
-	/**
-	 * A revaluation posted on 03-04 whose evaluation window reaches a stock movement posted on 03-05 would book that
-	 * movement's restatement on 03-04, before the stock existed, and a later revaluation replaying the same movement
-	 * would then restate it again from its original amount (double booking). It must be refused, naming what to do.
-	 */
-	@Test
-	public void createDetails_throws_whenAReplayedStockMovementIsPostedAfterTheRevaluationDateAcct()
+	@Nested
+	class CreateDetails
 	{
-		costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-		final ProductId productId = createProduct("product_movementAfterDateAcct");
-		seedCurrentCost(productId, "10", "100");
-		createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1001, null);
+		/**
+		 * A revaluation posted on 03-04 whose evaluation window reaches a stock movement posted on 03-05 would book that
+		 * movement's restatement on 03-04, before the stock existed, and a later revaluation replaying the same movement
+		 * would then restate it again from its original amount (double booking). It must be refused, naming what to do.
+		 */
+		@Test
+		public void throws_whenAReplayedStockMovementIsPostedAfterTheRevaluationDateAcct()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_movementAfterDateAcct");
+			seedCurrentCost(productId, "10", "100");
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1001, null);
 
-		final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
-		assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("M_CostRevaluation.StockMovementAfterDateAcct");
+			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("M_CostRevaluation.StockMovementAfterDateAcct");
+		}
+
+		/**
+		 * Only the posting DAY counts: a stock movement posted later on the revaluation's own posting day (time of day
+		 * after the day's start) is replayed normally.
+		 */
+		@Test
+		public void replaysAStockMovementPostedLaterOnTheRevaluationPostingDay()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_movementSameDay");
+			seedCurrentCost(productId, "10", "100");
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T10:30:00"), 1002, null);
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			InterfaceWrapperHelper.refresh(lines.get(0));
+			assertThat(lines.get(0).getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10), the movement replayed at 15
+		}
+
+		/**
+		 * A later-dated earlier REVALUATION inside the window keeps its own, more specific refusal (it is not a stock
+		 * movement, so the posting-date advice would not help).
+		 */
+		@Test
+		public void throws_revaluatingAnotherRevaluation_evenWhenItIsPostedAfterTheRevaluationDateAcct()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_revaluationAfterDateAcct");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId earlierRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId earlierLineId = costRevaluationService.createLineForProduct(earlierRevaluationId, productId, new BigDecimal("12"));
+			createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), -1, earlierLineId);
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+
+			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
+		}
+
+		/**
+		 * The refusal names the day of the other revaluation in the time zone of this revaluation's organization,
+		 * the same basis the posting-date check uses (not the time zone of the other cost detail's organization).
+		 */
+		@Test
+		public void revaluatingAnotherRevaluation_namesItsDayInTheRevaluationOrgTimeZone()
+		{
+			// the revaluations' org is in Pacific/Auckland (UTC+13 in March); the cost details are org-less
+			orgId = AdempiereTestHelper.createOrgWithTimeZone(ZoneId.of("Pacific/Auckland"));
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_revaluationDayInOrgTimeZone");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId earlierRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId earlierLineId = costRevaluationService.createLineForProduct(earlierRevaluationId, productId, new BigDecimal("12"));
+			// 13:00 on 03-05 in Europe/Berlin is 01:00 on 03-06 in Pacific/Auckland
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T13:00:00"), -1, earlierLineId);
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+
+			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
+					.hasMessageContaining("06.03.2024")
+					.hasMessageNotContaining("05.03.2024");
+		}
 	}
 
-	/**
-	 * Only the posting DAY counts: a stock movement posted later on the revaluation's own posting day (time of day
-	 * after the day's start) is replayed normally.
-	 */
-	@Test
-	public void createDetails_replaysAStockMovementPostedLaterOnTheRevaluationPostingDay()
-	{
-		costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-		final ProductId productId = createProduct("product_movementSameDay");
-		seedCurrentCost(productId, "10", "100");
-		createCostDetail(productId, LocalDateTime.parse("2024-03-05T10:30:00"), 1002, null);
-
-		final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
-
-		costRevaluationService.createDetails(costRevaluationId);
-
-		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-		assertThat(lines).hasSize(1);
-		InterfaceWrapperHelper.refresh(lines.get(0));
-		assertThat(lines.get(0).getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10), the movement replayed at 15
-	}
-
-	/**
-	 * A later-dated earlier REVALUATION inside the window keeps its own, more specific refusal (it is not a stock
-	 * movement, so the posting-date advice would not help).
-	 */
-	@Test
-	public void createDetails_throws_revaluatingAnotherRevaluation_evenWhenItIsPostedAfterTheRevaluationDateAcct()
-	{
-		costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-		final ProductId productId = createProduct("product_revaluationAfterDateAcct");
-		seedCurrentCost(productId, "10", "100");
-
-		final CostRevaluationId earlierRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
-		final CostRevaluationLineId earlierLineId = costRevaluationService.createLineForProduct(earlierRevaluationId, productId, new BigDecimal("12"));
-		createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), -1, earlierLineId);
-
-		final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
-
-		assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
-	}
 }

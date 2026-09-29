@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_CostRevaluation;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
@@ -68,36 +69,40 @@ class M_CostRevaluationTest
 		interceptor = new M_CostRevaluation(mock(CostRevaluationService.class));
 	}
 
-	@Test
-	void beforeNew_nonUiPath_dateAcctOmitted_isNotSilentlyDefaultedToToday()
+	@Nested
+	class BeforeNew
 	{
-		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
-		// DateAcct deliberately left unset; a POJO record => isUIAction() == false (non-UI path)
-		assertThat(record.getDateAcct()).as("precondition: DateAcct unset").isNull();
+		@Test
+		void nonUiPath_dateAcctOmitted_isNotSilentlyDefaultedToToday()
+		{
+			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+			// DateAcct deliberately left unset; a POJO record => isUIAction() == false (non-UI path)
+			assertThat(record.getDateAcct()).as("precondition: DateAcct unset").isNull();
 
-		interceptor.beforeNew(record);
+			interceptor.beforeNew(record);
 
-		// A backdated REST/import/OLCand caller that omits DateAcct must NOT get a silent "today"
-		// default — DateAcct stays null so the mandatory-column save fails loud.
-		assertThat(record.getDateAcct())
-				.as("non-UI path must not fabricate a posting date")
-				.isNull();
-	}
+			// A backdated REST/import/OLCand caller that omits DateAcct must NOT get a silent "today"
+			// default — DateAcct stays null so the mandatory-column save fails loud.
+			assertThat(record.getDateAcct())
+					.as("non-UI path must not fabricate a posting date")
+					.isNull();
+		}
 
-	@Test
-	void beforeNew_evaluationStartDate_defaultsToDateAcct_onAllPaths()
-	{
-		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
-		final Timestamp dateAcct = Timestamp.valueOf(LocalDate.of(2020, 1, 15).atStartOfDay());
-		record.setDateAcct(dateAcct);
-		// EvaluationStartDate deliberately left unset
+		@Test
+		void evaluationStartDate_defaultsToDateAcct_onAllPaths()
+		{
+			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+			final Timestamp dateAcct = Timestamp.valueOf(LocalDate.of(2020, 1, 15).atStartOfDay());
+			record.setDateAcct(dateAcct);
+			// EvaluationStartDate deliberately left unset
 
-		interceptor.beforeNew(record);
+			interceptor.beforeNew(record);
 
-		// Forward-only default is a data-integrity invariant on every write path (no isUIAction guard):
-		// it derives from the caller-supplied DateAcct, never from wall-clock — so it is unaffected by
-		// the DateAcct guard and still fires on the non-UI path.
-		assertThat(record.getEvaluationStartDate()).isEqualTo(dateAcct);
+			// Forward-only default is a data-integrity invariant on every write path (no isUIAction guard):
+			// it derives from the caller-supplied DateAcct, never from wall-clock — so it is unaffected by
+			// the DateAcct guard and still fires on the non-UI path.
+			assertThat(record.getEvaluationStartDate()).isEqualTo(dateAcct);
+		}
 	}
 
 	private static Timestamp day(final int year, final int month, final int dayOfMonth)

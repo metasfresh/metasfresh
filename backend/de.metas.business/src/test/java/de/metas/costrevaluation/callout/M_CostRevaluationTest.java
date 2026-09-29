@@ -27,6 +27,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_CostRevaluation;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -79,81 +80,86 @@ class M_CostRevaluationTest
 		return calloutField;
 	}
 
-	@Test
-	void dateAcctChanged_evaluationStartDateFollows_whenItWasEqualToOldDateAcct()
+	@Nested
+	class DateAcctChanged
 	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), DocStatus.Drafted);
+		@Test
+		void evaluationStartDateFollows_whenItWasEqualToOldDateAcct()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), DocStatus.Drafted);
 
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
 
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
+		}
+
+		@Test
+		void evaluationStartDateFollows_whenItIsNull()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), null, DocStatus.Drafted);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), null, DocStatus.Drafted);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
+		}
+
+		@Test
+		void onNewRecordWithoutDocStatus_evaluationStartDateFollows()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), null);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), null);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
+		}
+
+		@Test
+		void evaluationStartDateKept_whenUserHadSetItSeparately()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2019, 12, 1), DocStatus.Drafted);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
+		}
+
+		@Test
+		void afterUserChangedEvaluationStartDateInSameEdit_explicitEvaluationStartDateWins()
+		{
+			// the user first picked an explicit EvaluationStartDate (not yet saved), then changed DateAcct
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 1), DocStatus.Drafted);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 1));
+		}
+
+		@Test
+		void evaluationStartDateKept_whenDocumentIsNotDraft()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Completed);
+			final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), DocStatus.Completed);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
+		}
+
+		@Test
+		void cleared_evaluationStartDateKept()
+		{
+			final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
+			final I_M_CostRevaluation record = record(null, day(2020, 1, 15), DocStatus.Drafted);
+
+			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
+		}
 	}
 
-	@Test
-	void dateAcctChanged_evaluationStartDateFollows_whenItIsNull()
-	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), null, DocStatus.Drafted);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), null, DocStatus.Drafted);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
-	}
-
-	@Test
-	void dateAcctChanged_onNewRecordWithoutDocStatus_evaluationStartDateFollows()
-	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), null);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), null);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 2, 20));
-	}
-
-	@Test
-	void dateAcctChanged_evaluationStartDateKept_whenUserHadSetItSeparately()
-	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2019, 12, 1), DocStatus.Drafted);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
-	}
-
-	@Test
-	void dateAcctChanged_afterUserChangedEvaluationStartDateInSameEdit_explicitEvaluationStartDateWins()
-	{
-		// the user first picked an explicit EvaluationStartDate (not yet saved), then changed DateAcct
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 1), DocStatus.Drafted);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 1));
-	}
-
-	@Test
-	void dateAcctChanged_evaluationStartDateKept_whenDocumentIsNotDraft()
-	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Completed);
-		final I_M_CostRevaluation record = record(day(2020, 2, 20), day(2020, 1, 15), DocStatus.Completed);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
-	}
-
-	@Test
-	void dateAcctCleared_evaluationStartDateKept()
-	{
-		final I_M_CostRevaluation recordBeforeChanges = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
-		final I_M_CostRevaluation record = record(null, day(2020, 1, 15), DocStatus.Drafted);
-
-		callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
-
-		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
-	}
 }

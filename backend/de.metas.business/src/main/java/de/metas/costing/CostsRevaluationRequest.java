@@ -14,8 +14,7 @@ public class CostsRevaluationRequest
 	@NonNull CostSegmentAndElement costSegmentAndElement;
 	@NonNull Instant evaluationStartDate;
 	/**
-	 * The revaluation's posting date. The revaluation refuses to replay any cost-changing stock movement posted on a later day,
-	 * because it would book that movement's restatement before the movement itself.
+	 * The revaluation's posting date.
 	 */
 	@NonNull InstantAndOrgId dateAcct;
 	@NonNull CostAmount newCostPrice;

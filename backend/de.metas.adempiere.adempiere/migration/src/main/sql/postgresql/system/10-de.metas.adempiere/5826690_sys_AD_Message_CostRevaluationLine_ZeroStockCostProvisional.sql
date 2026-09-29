@@ -3,7 +3,7 @@
 
 -- 1. the message (base text = German)
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545864 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Bei einem Produkt ohne Lagerbestand ist der eingegebene Kostenpreis vorläufig: Der erste Wareneingang berechnet den gleitenden Durchschnittspreis neu und überschreibt diesen Wert.','I',TO_TIMESTAMP('2026-09-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'M_CostRevaluationLine_ZeroStockCostProvisional');
+VALUES (0,545864 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Der erste Wareneingang berechnet den gleitenden Durchschnittspreis neu und überschreibt diesen Wert.','I',TO_TIMESTAMP('2026-09-28 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'M_CostRevaluationLine_ZeroStockCostProvisional');
 
 -- 2. seed AD_Message_Trl for ALL active system languages with the base (DE) text, IsTranslated='N'
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)

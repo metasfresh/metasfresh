@@ -3,11 +3,11 @@ package org.compiere.acct;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import lombok.NonNull;
@@ -49,24 +49,29 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 		{
 			// Only the revaluation's own cost element is revalued: without an explicit cost element, the request would be
 			// exploded to every material cost element of the client and each of them would get the new cost price.
-			// A revaluation of a cost element which is not the accounting schema's costing method changes that cost only, with no GL impact.
-			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
-									.clientId(costSegmentAndElement.getClientId())
-									.orgId(costSegmentAndElement.getOrgId())
-									.productId(costSegmentAndElement.getProductId())
-									.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
-									.costElement(services.getCostElementById(costSegmentAndElement.getCostElementId()))
-									.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
-									.qty(costRevaluationLine.getCurrentQty().toZero())
-									.amt(costRevaluationLine.getDeltaAmountToBook())
-									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
-									.date(getDateAcctAsInstant())
-									.build())
-					.getAmtAndQtyToPost(CostAmountType.MAIN, as)
-					.map(CostAmountAndQty::getAmt)
-					.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
+			final CostElement costElement = services.getCostElementById(costSegmentAndElement.getCostElementId());
+			final CostDetailCreateResultsList costDetailResults = services.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
+							.clientId(costSegmentAndElement.getClientId())
+							.orgId(costSegmentAndElement.getOrgId())
+							.productId(costSegmentAndElement.getProductId())
+							.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
+							.costElement(costElement)
+							.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
+							.qty(costRevaluationLine.getCurrentQty().toZero())
+							.amt(costRevaluationLine.getDeltaAmountToBook())
+							.explicitCostPrice(costRevaluationLine.getNewCostPrice())
+							.date(getDateAcctAsInstant())
+							.build());
+
+			// A revaluation of a cost element which is not posted by the accounting schema changes that cost only, with no GL impact.
+			if (!costElement.isAccountable(as.getCosting()))
+			{
+				return CostAmount.zero(as.getCurrencyId());
+			}
+
+			return costDetailResults.getMainAmountToPost(as);
 		}
 	}
 

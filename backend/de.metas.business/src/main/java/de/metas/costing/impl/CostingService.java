@@ -96,6 +96,7 @@ public class CostingService implements ICostingService
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
 	private static final AdMessageKey MSG_StockMovementAfterDateAcct = AdMessageKey.of("M_CostRevaluation.StockMovementAfterDateAcct");
+	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
 
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -519,7 +520,7 @@ public class CostingService implements ICostingService
 								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 								.build())
 				.collect(ImmutableList.toImmutableList());
-		assertNoStockMovementPostedAfterDateAcct(costDetails, request.getDateAcct(), costSegmentAndElement.getProductId());
+		assertCostDetailsCanBeReplayed(costDetails, request.getDateAcct(), costSegmentAndElement.getProductId());
 
 		//
 		// Restore current costs at the time before evaluation date
@@ -567,35 +568,40 @@ public class CostingService implements ICostingService
 	}
 
 	/**
-	 * Refuses to replay a cost-changing stock movement that is posted on a day after the revaluation's posting date.
-	 * <p>
-	 * The replay books that movement's restatement on the revaluation's (earlier) posting date, i.e. before the movement itself,
-	 * while the movement's own cost detail keeps its original amount; a later revaluation replaying the same movement would then
-	 * restate it again from that original amount, booking the difference twice.
-	 * <p>
-	 * Cost details of other revaluations are left to {@link CostingMethodHandler#recalculateCostDetailAmountAndUpdateCurrentCost},
-	 * which refuses them with its own, more specific message.
+	 * Refuses a revaluation whose evaluation window contains another cost revaluation, or a cost-changing stock movement
+	 * posted on a day after the revaluation's posting date. Days are those of the revaluation organization's time zone.
 	 */
-	private void assertNoStockMovementPostedAfterDateAcct(
+	private void assertCostDetailsCanBeReplayed(
 			@NonNull final List<CostDetail> costDetails,
 			@NonNull final InstantAndOrgId dateAcct,
 			@NonNull final ProductId productId)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(dateAcct.getOrgId());
-		final LocalDate revaluationDate = dateAcct.toZonedDateTime(timeZone).toLocalDate();
 
-		costDetails.stream()
+		final CostDetail otherRevaluationCostDetail = costDetails.stream()
 				.filter(CostDetail::isChangingCosts)
-				.filter(costDetail -> !costDetail.getDocumentRef().isCostRevaluationLine())
+				.filter(costDetail -> costDetail.getDocumentRef().isCostRevaluationLine())
+				.findFirst()
+				.orElse(null);
+		if (otherRevaluationCostDetail != null)
+		{
+			final LocalDate otherRevaluationDate = otherRevaluationCostDetail.getDateAcct().atZone(timeZone).toLocalDate();
+			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported, productBL.getProductValueAndName(productId), TranslatableStrings.date(otherRevaluationDate))
+					.setParameter("costDetail", otherRevaluationCostDetail);
+		}
+
+		// Replaying a movement posted after the revaluation would book its restatement before the movement itself, while the
+		// movement's own cost detail keeps its original amount: a later revaluation replaying the same movement would restate it
+		// again from that original amount and book the difference twice.
+		final LocalDate revaluationDate = dateAcct.toZonedDateTime(timeZone).toLocalDate();
+		final LocalDate latestMovementDate = costDetails.stream()
+				.filter(CostDetail::isChangingCosts)
 				.map(costDetail -> costDetail.getDateAcct().atZone(timeZone).toLocalDate())
-				.filter(movementDate -> movementDate.isAfter(revaluationDate))
 				.max(Comparator.naturalOrder())
-				.ifPresent(latestMovementDate -> {
-					throw new AdempiereException(
-							MSG_StockMovementAfterDateAcct,
-							productBL.getProductValueAndName(productId),
-							TranslatableStrings.date(latestMovementDate),
-							TranslatableStrings.date(revaluationDate));
-				});
+				.orElse(null);
+		if (latestMovementDate != null && latestMovementDate.isAfter(revaluationDate))
+		{
+			throw new AdempiereException(MSG_StockMovementAfterDateAcct, productBL.getProductValueAndName(productId), TranslatableStrings.date(latestMovementDate), TranslatableStrings.date(revaluationDate));
+		}
 	}
 }
