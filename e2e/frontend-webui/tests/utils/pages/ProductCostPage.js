@@ -49,7 +49,8 @@ export class ProductCostPage {
 
       await cell.dblclick();
       await page.keyboard.type(String(value));
-      await page.waitForTimeout(500);
+      // let any request the typing might trigger settle before checking nothing changed
+      await page.waitForLoadState('networkidle');
 
       // Rendered read-only, and no editable input was opened in the cell.
       await expect(cell).toHaveClass(/cell-disabled/);

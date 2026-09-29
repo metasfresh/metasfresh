@@ -16,13 +16,18 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -280,7 +285,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		if (costDetail.getDocumentRef().isCostRevaluationLine())
 		{
-			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported)
+			// normally refused before, by the costing service's check; kept as the last line of defence, with the message's parameters
+			final LocalDate otherRevaluationDate = costDetail.getDateAcct().atZone(Services.get(IOrgDAO.class).getTimeZone(costDetail.getOrgId())).toLocalDate();
+			throw new AdempiereException(
+					MSG_RevaluatingAnotherRevaluationIsNotSupported,
+					Services.get(IProductBL.class).getProductValueAndName(costDetail.getProductId()),
+					TranslatableStrings.date(otherRevaluationDate))
 					.setParameter("costDetail", costDetail);
 		}
 
