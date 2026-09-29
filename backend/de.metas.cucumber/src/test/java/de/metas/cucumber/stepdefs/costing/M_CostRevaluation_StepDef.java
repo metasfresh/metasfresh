@@ -243,11 +243,6 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
-	 * Completes the given {@code M_CostRevaluation} document (DocAction Complete).
-	 *
-	 * @see IDocumentBL#processEx
-	 */
-	/**
 	 * Evaluates the draft {@code M_CostRevaluation}, as the "Run" action does: creates the details of its not yet evaluated lines.
 	 *
 	 * @cucumber.stepdef
@@ -264,6 +259,11 @@ public class M_CostRevaluation_StepDef
 		costRevaluationService.createDetails(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()));
 	}
 
+	/**
+	 * Completes the given {@code M_CostRevaluation} document (DocAction Complete).
+	 *
+	 * @see IDocumentBL#processEx
+	 */
 	@And("^the cost revaluation identified by (.*) is completed$")
 	public void complete(@NonNull final String identifier)
 	{
