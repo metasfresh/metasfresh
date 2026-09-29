@@ -51,7 +51,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
-import de.metas.material.MovementType;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,6 +62,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -128,7 +128,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		_shipment = shipment;
 		// Only customer shipments are split; returns keep the project-agnostic grouping
-		final boolean isCustomerShipment = MovementType.ofCode(shipment.getMovementType()).isOutboundTransaction();
+		final boolean isCustomerShipment = X_M_InOut.MOVEMENTTYPE_CustomerShipment.equals(shipment.getMovementType());
 		packingMaterialsCollector.setConsiderProject(
 				isCustomerShipment
 						&& sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));

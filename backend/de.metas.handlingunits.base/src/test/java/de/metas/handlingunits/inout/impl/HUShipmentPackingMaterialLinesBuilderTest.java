@@ -152,6 +152,17 @@ class HUShipmentPackingMaterialLinesBuilderTest
 		assertThat(listAppender.list).isEmpty();
 	}
 
+	@Test
+	void recreatePackingMaterialLines_vendorReturn_notSplitByProject()
+	{
+		final I_M_InOut vendorReturn = createInOutWithTwoProjectLines(X_M_InOut.MOVEMENTTYPE_VendorReturns);
+
+		huInOutBL.recreatePackingMaterialLines(vendorReturn);
+
+		// the project split, and with it the conflict check, is off for every document other than a customer shipment
+		assertThat(listAppender.list).isEmpty();
+	}
+
 	private I_M_InOut createInOutWithTwoProjectLines(@NonNull final String movementType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);

@@ -29,6 +29,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -41,23 +42,18 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final AD_User_StepDefData userTable;
-	private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 
 	/**
 	 * Prior values ({@code null} = none) of the sysconfigs this scenario changed temporarily; restored after the scenario.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
-
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable, @NonNull final M_Product_Category_StepDefData productCategoryTable)
-	{
-		this.userTable = userTable;
-		this.productCategoryTable = productCategoryTable;
-	}
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)

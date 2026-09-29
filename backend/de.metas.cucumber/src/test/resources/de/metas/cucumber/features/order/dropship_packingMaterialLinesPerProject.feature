@@ -136,6 +136,7 @@ Feature: dropship packing material lines split per project
       | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Project_ID |
       | invoice      | crate        | 2           | crate_project1 | project_1    |
       | invoice      | crate        | 3           | crate_project2 | project_2    |
+    And set project type Sales/Purchase Order to inactive
 
   # Dropship cases in which the projects are set on the sales order lines, as the purchase-to-sales
   # propagation leaves them; each Examples row is one case (vendors x packing of the second line).
