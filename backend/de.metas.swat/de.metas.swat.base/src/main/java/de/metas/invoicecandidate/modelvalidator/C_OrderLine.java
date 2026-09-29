@@ -16,7 +16,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -65,15 +64,8 @@ public class C_OrderLine
 	}
 
 	/**
-	 * Keeps a not-yet-processed invoice candidate's (denormalized) {@code C_Order_CompensationGroup_ID} in sync
-	 * with its order line whenever the line joins or leaves a compensation group. {@code C_OrderLine_Handler}
-	 * only copies the group onto the candidate once, at candidate creation — nothing else re-derives it
-	 * afterwards, so an order line that changes group membership after its candidate already exists (e.g. a
-	 * contract-created group destroyed on reactivation and rebuilt on the next completion) is left with a
-	 * stale reference: pointing at an already-destroyed group (an immediate FK violation the moment that
-     * group's header row is deleted), or missing from the rebuilt group's percent-discount base (a silently
-	 * wrong invoice amount, once the FK case is avoided). A processed candidate is left alone — its group
-	 * membership is history, not a live reference to keep current.
+	 * Keeps not-processed invoice candidates' {@code C_Order_CompensationGroup_ID} in sync with the order
+	 * line; processed candidates are left as-is.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
@@ -87,14 +79,9 @@ public class C_OrderLine
 				.filter(ic -> ic.getC_Order_CompensationGroup_ID() != orderCompensationGroupId)
 				.forEach(ic -> {
 					ic.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
-					InterfaceWrapperHelper.saveRecord(ic);
+					invoiceCandDAO.save(ic);
 
-					// Setting the group column alone does not re-trigger the group's percent-discount
-					// recompute -- that cascade is wired to a *different* column (NetAmtToInvoice /
-					// GroupCompensationPercentage, see C_Invoice_Candidate#handleCompensantionGroupRelatedChanges),
-					// which this candidate's own value may not actually change. Invoke the same handler this
-					// line's own NetAmtToInvoice-change would have invoked, so the group's compensation lines
-					// still get invalidated (and thus recomputed) against the now-current regular-line set.
+					// group change alone does not trigger the group recompute
 					groupChangesHandler.onInvoiceCandidateChanged(ic);
 				});
 	}

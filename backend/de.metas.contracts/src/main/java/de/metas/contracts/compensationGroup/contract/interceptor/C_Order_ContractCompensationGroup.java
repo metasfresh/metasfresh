@@ -1,12 +1,13 @@
 package de.metas.contracts.compensationGroup.contract.interceptor;
 
 import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupService;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -50,6 +51,7 @@ import org.springframework.stereotype.Component;
 public class C_Order_ContractCompensationGroup
 {
 	@NonNull private final ContractCompensationGroupService contractCompensationGroupService;
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void beforePrepare(final I_C_Order order)
@@ -80,7 +82,7 @@ public class C_Order_ContractCompensationGroup
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void afterReactivate(final I_C_Order order)
 	{
-		InterfaceWrapperHelper.saveRecord(order);
+		orderDAO.save(order);
 		contractCompensationGroupService.removeContractGroups(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 }

@@ -39,10 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Verifies {@link C_OrderLine#syncInvoiceCandidateGroupReference} — the fix for a defect where an order
- * line's not-yet-processed invoice candidate kept a stale {@code C_Order_CompensationGroup_ID} because
- * {@code C_OrderLine_Handler#setGroupCompensationData} only ever copies it once, at invoice-candidate
- * creation (task 10 re-review finding N1).
+ * Verifies {@link C_OrderLine#syncInvoiceCandidateGroupReference}.
  */
 class C_OrderLine_Test
 {
