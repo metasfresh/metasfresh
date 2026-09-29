@@ -34,12 +34,19 @@ Feature: dropship packing material lines split per project
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
+    And metasfresh contains M_Product_Categories:
+      | Identifier  |
+      | pm_category |
     And metasfresh contains M_Products:
-      | Identifier |
-      | goods_1    |
-      | goods_2    |
-      | crate      |
-      | box        |
+      | Identifier | M_Product_Category_ID |
+      | goods_1    |                       |
+      | goods_2    |                       |
+      | crate      | pm_category           |
+      | box        | pm_category           |
+    # The shipment report prints the products of this category in its packing section.
+    And temporarily set AD_SysConfig to M_Product_Category_ID:
+      | Name                             | M_Product_Category_ID |
+      | PackingMaterialProductCategoryID | pm_category           |
     # Completing a dropship sales order needs a vendor on every line, the packing material lines included:
     # vendor_1 is the current vendor of the packing material.
     And metasfresh contains C_BPartner_Product
@@ -121,10 +128,17 @@ Feature: dropship packing material lines split per project
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | crate_project1 | shipment   | crate        | 2           | project_1    |
       | crate_project2 | shipment   | crate        | 3           | project_2    |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 5           |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | M_InOutLine_ID |
       | ic_crate_project1      | crate_project1 |
       | ic_crate_project2      | crate_project2 |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | C_Project_ID |
+      | ic_crate_project1      | project_1    |
+      | ic_crate_project2      | project_2    |
     And process invoice candidates together and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
       | ic_crate_project1      |
@@ -172,6 +186,11 @@ Feature: dropship packing material lines split per project
       | M_InOutLine_ID   | M_InOut_ID | M_Product_ID                 | MovementQty | C_Project_ID |
       | packing_project1 | shipment   | crate                        | 2           | project_1    |
       | packing_project2 | shipment   | <packing_material_of_line_2> | 3           | project_2    |
+    # One report row per product: crate 5 when both lines use crates.
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID                 | MovementQty |
+      | crate                        | 2           |
+      | <packing_material_of_line_2> | 3           |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | M_InOutLine_ID   |
       | ic_packing_project1    | packing_project1 |
@@ -231,3 +250,9 @@ Feature: dropship packing material lines split per project
       | M_InOut_ID       | M_Product_ID | MovementQty | C_Project_ID |
       | shipment_vendor1 | crate        | 2           | project_1    |
       | shipment_vendor2 | crate        | 3           | project_2    |
+    And the shipment report packing section of shipment_vendor1 in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 2           |
+    And the shipment report packing section of shipment_vendor2 in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 3           |

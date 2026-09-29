@@ -106,6 +106,11 @@ public interface ISysConfigBL extends ISingletonService
 	void setValue(String name, String value, ClientId clientId, OrgId orgId);
 
 	/**
+	 * Deletes the value of the given name for exactly the given client and org, so that a value of a less specific client/org, or the caller's default, applies again.
+	 */
+	void deleteValue(@NonNull String name, @NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	/**
 	 * Returns a mapping (name -> value) that includes all AD_SysConfig records whose <code>Name</code> has the given <code>prefix</code>.
 	 */
 	Map<String, String> getValuesForPrefix(String prefix, int adClientId, int adOrgId);

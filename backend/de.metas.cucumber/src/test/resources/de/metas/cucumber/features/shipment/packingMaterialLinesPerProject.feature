@@ -54,12 +54,13 @@ Feature: shipment packing material lines split per project
     And metasfresh contains M_HU_PI_Item_Product:
       | Identifier  | M_HU_PI_Item_ID | Qty | M_Product_ID |
       | goods_crate | huPIItem_crate  | 10  | goods        |
-
-  Scenario: order lines of three projects ship and invoice with one packing material line per project
-    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    # The shipment report prints the products of this category in its packing section.
     And temporarily set AD_SysConfig to M_Product_Category_ID:
       | Name                             | M_Product_Category_ID |
       | PackingMaterialProductCategoryID | pm_category           |
+
+  Scenario: order lines of three projects ship and invoice with one packing material line per project
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | salesOrder | true    | customer      | 2021-04-17  |
@@ -106,6 +107,11 @@ Feature: shipment packing material lines split per project
       | ic_crate_P1            | crate_P1       |
       | ic_crate_P2            | crate_P2       |
       | ic_crate_P3            | crate_P3       |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | C_Project_ID |
+      | ic_crate_P1            | P1           |
+      | ic_crate_P2            | P2           |
+      | ic_crate_P3            | P3           |
     And process invoice candidates together and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
       | ic_crate_P1            |
@@ -147,6 +153,9 @@ Feature: shipment packing material lines split per project
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | crate        | 5           | P1           |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 5           |
 
   Scenario: order lines without project ship with one packing material line without project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
@@ -175,6 +184,9 @@ Feature: shipment packing material lines split per project
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | crate        | 5           | null         |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 5           |
 
   Scenario: with the split switched off, order lines of three projects ship with one packing material line without project
     Given temporarily set sys config boolean value false for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
@@ -210,6 +222,9 @@ Feature: shipment packing material lines split per project
       | shipment   | goods        | 30          | P2           |
       | shipment   | goods        | 40          | P3           |
       | shipment   | crate        | 9           | null         |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 9           |
 
   Scenario: packing material lines recreated on a draft shipment are split per project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
@@ -241,6 +256,9 @@ Feature: shipment packing material lines split per project
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | crate        | 2           | P1           |
       | shipment   | crate        | 3           | P2           |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 5           |
 
   Scenario: picked HUs of order lines with and without project ship with one packing material line per project
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
@@ -294,3 +312,6 @@ Feature: shipment packing material lines split per project
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | crate        | 1           | null         |
       | shipment   | crate        | 2           | P1           |
+    And the shipment report packing section of shipment in language de_DE has exactly:
+      | M_Product_ID | MovementQty |
+      | crate        | 3           |

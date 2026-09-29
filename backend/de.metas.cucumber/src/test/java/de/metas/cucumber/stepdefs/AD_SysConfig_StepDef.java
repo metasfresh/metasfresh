@@ -79,7 +79,7 @@ public class AD_SysConfig_StepDef
 						.setParameter("type:", sysconfigType);
 		}
 
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
+		resetSysConfigCache();
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -109,7 +109,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Sets a sys config to a boolean value for the current scenario; its prior value is restored after the scenario (a sys config that had no row before keeps the new value).
+	 * Sets a sys config to a boolean value ({@code true} or {@code false}) for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
@@ -122,16 +122,17 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config boolean value {word} for sys config {string}")
 	public void temporarily_set_sys_config_boolean_value(@NonNull final String valueStr, @NonNull final String sysConfigName)
 	{
+		if (!"true".equals(valueStr) && !"false".equals(valueStr))
+		{
+			throw new AdempiereException("Expected true or false but got: " + valueStr);
+		}
+
 		rememberPriorValue(sysConfigName);
-
-		final boolean booleanValue = Boolean.parseBoolean(valueStr);
-		sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-
-		resetSysConfigCache();
+		enable_sys_config("boolean", valueStr, sysConfigName);
 	}
 
 	/**
-	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}; its prior value is restored after the scenario (a sys config that had no row before keeps the new value).
+	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -179,7 +180,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is left as set, since there is no delete.
+	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is deleted again.
 	 */
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
@@ -195,10 +196,12 @@ public class AD_SysConfig_StepDef
 			final String priorValue = entry.getValue();
 			if (priorValue == null)
 			{
-				continue;
+				sysConfigBL.deleteValue(sysConfigName, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 			}
-
-			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			else
+			{
+				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			}
 		}
 
 		priorValueBySysConfigName.clear();

@@ -128,7 +128,9 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -1267,12 +1269,13 @@ public class M_InOut_StepDef
 	/**
 	 * Asserts the rows of the shipment report's packing section, i.e. of the DB function
 	 * {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(M_InOut_ID, AD_Language)}, filtered like the report
-	 * ({@code IsPrintWhenPackingMaterial='Y'}). The rows must be exactly the given ones, order-independent.
+	 * ({@code IsPrintWhenPackingMaterial='Y'}). The report prints one row per product, so the given rows of the same product
+	 * are summed first; the report rows must then be exactly those, order-independent.
 	 * Plain SQL, because there is no model class for the function's result type.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns <b>M_Product_ID</b> — (required, identifier-ref) expected packing-material product<br>
-	 * <b>MovementQty</b> — (required) expected quantity of that product's row<br>
+	 * <b>MovementQty</b> — (required) expected quantity; the quantities of rows with the same product are summed<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData
 	 * @cucumber.example <pre>
 	 * And the shipment report packing section of shipment_1 in language de_DE has exactly:
@@ -1293,11 +1296,14 @@ public class M_InOut_StepDef
 				ImmutableList.of(shipment.getM_InOut_ID(), adLanguage),
 				rs -> toReportRowString(rs.getString("name"), rs.getBigDecimal("movementqty")));
 
-		final ImmutableList<String> expectedRows = DataTableRows.of(dataTable)
+		final Map<String, BigDecimal> expectedQtyByProductName = new LinkedHashMap<>();
+		DataTableRows.of(dataTable).forEach(row -> expectedQtyByProductName.merge(
+				row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable).getName(),
+				row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty),
+				BigDecimal::add));
+		final ImmutableList<String> expectedRows = expectedQtyByProductName.entrySet()
 				.stream()
-				.map(row -> toReportRowString(
-						row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable).getName(),
-						row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)))
+				.map(entry -> toReportRowString(entry.getKey(), entry.getValue()))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(actualRows).as("packing section of the shipment report of " + shipmentIdentifier).containsExactlyInAnyOrderElementsOf(expectedRows);

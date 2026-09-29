@@ -50,4 +50,9 @@ public interface ISysConfigDAO extends ISingletonService
 	void setValue(@NonNull final String name, final boolean value, @NonNull final ClientAndOrgId clientAndOrgId);
 
 	void setValue(@NonNull final String name, final int value, @NonNull final ClientAndOrgId clientAndOrgId);
+
+	/**
+	 * Deletes the {@code AD_SysConfig} record of the given name for exactly the given client and org, if there is one.
+	 */
+	void deleteValue(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
 }

@@ -96,6 +96,19 @@ public class SysConfigDAO implements ISysConfigDAO
 	}
 
 	@Override
+	public void deleteValue(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final int deletedCount = queryBL
+				.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
+				.create()
+				.delete();
+		logger.info("Deleted SysConfig `{}` (Client/Org: {}, records: {})", name, clientAndOrgId, deletedCount);
+	}
+
+	@Override
 	public void setValue(final @NonNull String name, final int value, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
 		setValue(name, String.valueOf(value), clientAndOrgId);
