@@ -12,13 +12,6 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00[Europe/Berlin]
     And documents are accounted immediately
-    And metasfresh contains M_Products:
-      | Identifier | X12DE355 |
-      | product    | PCE      |
-      | product2   | PCE      |
-    And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID |
-      | warehouse      |
     And load C_AcctSchema:
       | C_AcctSchema_ID | Name                  |
       | acctSchema      | metas fresh UN/34 CHF |
@@ -26,9 +19,19 @@ Feature: Cost Revaluation / Kosten Neubewertung
     # material cost element accordingly. Under MAI the on-hand cost is still seeded from the physical inventory's
     # CostPrice at qty 0->N (first cost event), so every current-cost / valuation / delta figure matches MovingAverageInvoice.
     # Costing level = Client (code 'C'), pinned explicitly so the scenarios don't depend on the schema's preset level.
+    # Pinned BEFORE any product is created: creating a product seeds its default M_Cost rows at the costing level in
+    # effect at that moment, so a product created under a preset Organization level would keep org-level rows next to
+    # the client-level rows its stock later creates (two cost segments -> two revaluation lines per product).
     And update C_AcctSchema:
       | C_AcctSchema_ID | CostingMethod | CostingLevel |
       | acctSchema      | M             | C            |
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | product    | PCE      |
+      | product2   | PCE      |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
     # ── Starting stock: product = 100 PCE @ 10 CHF; product2 = 50 PCE @ 20 CHF (the "noise" product) ──
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
