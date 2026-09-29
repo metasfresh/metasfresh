@@ -92,6 +92,7 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=new_dawn_hotfix
               - base=purple_mandolin_hotfix
               - base=music_violin_hotfix
               - base=catfish_takeover_hotfix
@@ -134,6 +135,7 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=new_dawn_release
               - base=purple_mandolin_release
               - base=music_violin_release
               - base=catfish_takeover_release
