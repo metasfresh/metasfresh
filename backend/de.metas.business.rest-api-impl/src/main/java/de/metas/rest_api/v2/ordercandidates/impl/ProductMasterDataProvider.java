@@ -1,6 +1,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -20,6 +21,7 @@ import lombok.With;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -81,6 +83,12 @@ public final class ProductMasterDataProvider
 		 */
 		@Nullable
 		ZonedDateTime date;
+
+		/**
+		 * The ordering partner; scopes the GTIN to that partner's {@code M_HU_PI_Item_Product} rows.
+		 */
+		@Nullable
+		BPartnerId bpartnerId;
 	}
 
 	@Value
@@ -104,6 +112,7 @@ public final class ProductMasterDataProvider
 			.<ProductCacheKey, ProductInfo>builder()
 			.cacheName(this.getClass().getSimpleName() + "-productInfoCache")
 			.tableName(I_M_Product.Table_Name)
+			.additionalTableNameToResetFor(I_M_HU_PI_Item_Product.Table_Name)
 			.build();
 
 	public ProductInfo getProductInfo(
@@ -118,8 +127,17 @@ public final class ProductMasterDataProvider
 			@NonNull final OrgId orgId,
 			@Nullable final ZonedDateTime date)
 	{
+		return getProductInfo(productExternalIdentifier, orgId, date, null);
+	}
+
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productExternalIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
 		return productInfoCache.getOrLoadNonNull(
-				new ProductCacheKey(orgId, productExternalIdentifier, date),
+				new ProductCacheKey(orgId, productExternalIdentifier, date, bpartnerId),
 				this::getProductInfo0);
 	}
 
@@ -128,7 +146,7 @@ public final class ProductMasterDataProvider
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
 
 		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
-				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), key.getDate())
+				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), key.getDate(), key.getBpartnerId())
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier.getRawValue())

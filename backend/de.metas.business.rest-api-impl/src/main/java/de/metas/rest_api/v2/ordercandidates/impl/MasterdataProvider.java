@@ -225,6 +225,15 @@ public final class MasterdataProvider
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date);
 	}
 
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date, bpartnerId);
+	}
+
 	@Nullable
 	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{
