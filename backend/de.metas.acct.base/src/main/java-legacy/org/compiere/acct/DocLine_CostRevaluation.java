@@ -3,9 +3,11 @@ package org.compiere.acct;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import lombok.NonNull;
@@ -45,6 +47,9 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 		}
 		else
 		{
+			// Only the revaluation's own cost element is revalued: without an explicit cost element, the request would be
+			// exploded to every material cost element of the client and each of them would get the new cost price.
+			// A revaluation of a cost element which is not the accounting schema's costing method changes that cost only, with no GL impact.
 			return services.createCostDetail(
 							CostDetailCreateRequest.builder()
 									.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
@@ -52,13 +57,16 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 									.orgId(costSegmentAndElement.getOrgId())
 									.productId(costSegmentAndElement.getProductId())
 									.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
+									.costElement(services.getCostElementById(costSegmentAndElement.getCostElementId()))
 									.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
 									.qty(costRevaluationLine.getCurrentQty().toZero())
 									.amt(costRevaluationLine.getDeltaAmountToBook())
 									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 									.date(getDateAcctAsInstant())
 									.build())
-					.getMainAmountToPost(as);
+					.getAmtAndQtyToPost(CostAmountType.MAIN, as)
+					.map(CostAmountAndQty::getAmt)
+					.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
 		}
 	}
 

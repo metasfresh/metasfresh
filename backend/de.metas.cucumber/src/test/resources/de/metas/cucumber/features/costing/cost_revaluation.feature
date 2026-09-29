@@ -464,3 +464,81 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
+
+  @Id:CostRevaluation_TC15
+  Scenario: Only the revaluation's cost element is revalued - the product's cost for another costing method keeps its value
+    And cost elements for material costing methods AveragePO are active
+    And metasfresh contains M_Products:
+      | Identifier         | X12DE355 |
+      | productTwoElements | PCE      |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID       | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID    |
+      | inventoryTwoElems | inventoryTwoElemsLine | 2024-03-05   | warehouse      | productTwoElements | 0       | 100      | PCE          | 10        | huTwoElems |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID       | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | productTwoElements | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
+      | acctSchema      | productTwoElements | AveragePO            | 10.0000 CHF      | 100 PCE    |
+
+    # ── Revalue the Moving Average Invoice cost only ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And quick-input cost revaluation line:
+      | M_CostRevaluation_ID | M_Product_ID       | NewCostPrice |
+      | revaluation          | productTwoElements | 15           |
+    And the cost revaluation identified by revaluation is completed
+    And Wait until documents revaluation are posted
+
+    Then validate current costs
+      | C_AcctSchema_ID | M_Product_ID       | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | productTwoElements | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    |
+      | acctSchema      | productTwoElements | AveragePO            | 10.0000 CHF      | 100 PCE    |
+
+  @Id:CostRevaluation_TC16
+  Scenario: Seed-cost revaluation sets only the revaluation's cost element - the other seeded cost rows keep their default
+    And cost elements for material costing methods AveragePO are active
+    And metasfresh contains M_Products:
+      | Identifier         | X12DE355 |
+      | productSeedTwoElem | PCE      |
+    And remove current costs
+      | M_Product_ID       |
+      | productSeedTwoElem |
+
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06 |
+    And quick-input cost revaluation line:
+      | M_CostRevaluation_ID | M_Product_ID       | NewCostPrice |
+      | revaluation          | productSeedTwoElem | 12.35        |
+    And the cost revaluation identified by revaluation is completed
+    And Wait until documents revaluation are posted
+
+    Then validate current costs
+      | C_AcctSchema_ID | M_Product_ID       | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | productSeedTwoElem | MovingAverageInvoice | 12.3500 CHF      | 0 PCE      |
+      | acctSchema      | productSeedTwoElem | AveragePO            | 0 CHF            | 0 PCE      |
+
+  @Id:CostRevaluation_TC17
+  Scenario: Revaluing a cost element that is not the accounting schema's costing method changes only that cost, with no GL impact
+    And cost elements for material costing methods AveragePO are active
+    And metasfresh contains M_Products:
+      | Identifier       | X12DE355 |
+      | productStatistic | PCE      |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID   | M_InventoryLine_ID   | MovementDate | M_Warehouse_ID | M_Product_ID     | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID   |
+      | inventoryStatist | inventoryStatistLine | 2024-03-05   | warehouse      | productStatistic | 0       | 100      | PCE          | 10        | huStatist |
+
+    # ── Revalue the AveragePO cost; the accounting schema values stock with Moving Average Invoice ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | AveragePO        | 2024-03-06          | 2024-03-06 |
+    And quick-input cost revaluation line:
+      | M_CostRevaluation_ID | M_Product_ID     | NewCostPrice |
+      | revaluation          | productStatistic | 15           |
+    And the cost revaluation identified by revaluation is completed
+
+    Then no Fact_Acct records are found for documents revaluation
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | productStatistic | AveragePO            | 15.0000 CHF      | 100 PCE    |
+      | acctSchema      | productStatistic | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
