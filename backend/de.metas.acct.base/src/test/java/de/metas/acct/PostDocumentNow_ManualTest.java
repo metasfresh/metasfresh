@@ -35,6 +35,7 @@ import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CostingService;
+import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.costing.methods.AverageInvoiceCostingMethodHandler;
 import de.metas.costing.methods.AveragePOCostingMethodHandler;
@@ -178,6 +179,7 @@ public class PostDocumentNow_ManualTest
 				costDetailsService,
 				costElementRepo,
 				currentCostsRepo,
+				new CostRevaluationRepository(),
 				ImmutableList.of(
 						new AveragePOCostingMethodHandler(
 								costingMethodHandlerUtils,

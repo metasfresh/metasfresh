@@ -9,6 +9,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
   Background:
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # TC19 switches accounting off for a moment; switched back on here so a failed TC19 cannot leak into another scenario
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00[Europe/Berlin]
     And documents are accounted immediately
@@ -531,7 +533,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
   @Id:CostRevaluation_TC18
   Scenario: Year-start revaluation - back-dated before several months of stock movements restates them, and a later revaluation starting after it books only its own step
     # ── Movements after the Background stock (100 PCE @ 10): consume 20 on 03-10, receive 50 @ 10 on 04-15 ──
-    And metasfresh contains single line completed inventories
+    Given metasfresh contains single line completed inventories
       | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
       | inventoryDecrease | inventoryDecreaseLine | 2024-03-10   | warehouse      | product      | 100     | 80       | PCE          | hu      |
     And metasfresh contains single line completed inventories
@@ -584,7 +586,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
   @Id:CostRevaluation_TC19
   Scenario: A later revaluation that is completed but not yet posted still blocks back-dating before it
     # ── Complete a revaluation on 03-10 while accounting is off, so it has no posting (and no cost detail) yet ──
-    And set sys config boolean value false for sys config org.adempiere.acct.Enabled
+    Given set sys config boolean value false for sys config org.adempiere.acct.Enabled
     When metasfresh contains M_CostRevaluation:
       | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |

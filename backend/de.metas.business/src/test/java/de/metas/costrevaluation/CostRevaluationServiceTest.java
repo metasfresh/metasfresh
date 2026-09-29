@@ -146,6 +146,7 @@ public class CostRevaluationServiceTest
 				costDetailsService,
 				costElementRepo,
 				currentCostsRepo,
+				costRevaluationRepository,
 				ImmutableList.of(new AverageInvoiceCostingMethodHandler(handlerUtils)));
 
 		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService);
@@ -882,8 +883,9 @@ public class CostRevaluationServiceTest
 			final ProductId productId = createProduct("product_latestRestatement");
 			seedCurrentCost(productId, "17", "100");
 			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1005, null);
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-03"), DocStatus.Completed, "1500", "15");
+			// the later-dated restatement is created first, so the lower ID does not decide
 			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1700", "17");
+			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-03"), DocStatus.Completed, "1500", "15");
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));

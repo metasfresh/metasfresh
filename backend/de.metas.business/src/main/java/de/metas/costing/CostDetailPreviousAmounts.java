@@ -63,6 +63,16 @@ public class CostDetailPreviousAmounts
 		this.cumulatedQty = cumulatedQty;
 	}
 
+	public CostDetailPreviousAmounts withOwnCostPrice(@NonNull final CostAmount ownCostPrice)
+	{
+		return builder()
+				.costPrice(costPrice.withOwnCostPrice(ownCostPrice))
+				.qty(qty)
+				.cumulatedAmt(cumulatedAmt)
+				.cumulatedQty(cumulatedQty)
+				.build();
+	}
+
 	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
 	{
 		return builder()

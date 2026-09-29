@@ -1,6 +1,7 @@
 package de.metas.costrevaluation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
@@ -26,7 +27,10 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.IQuery;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,9 +40,16 @@ import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.model.I_M_CostRevaluation_Detail;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -375,4 +386,117 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
+
+	/**
+	 * @return per given cost detail, its restatement by the most recent (latest posting date, then latest ID) completed cost revaluation;
+	 * cost details no completed revaluation restated are not in the map.
+	 */
+	@NonNull
+	public ImmutableMap<CostDetailId, CostDetailRestatement> getLatestCompletedRestatementsByCostDetailIds(@NonNull final Collection<CostDetailId> costDetailIds)
+	{
+		if (costDetailIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_M_CostRevaluation_Detail> restatementRecords = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostDetail_ID, costDetailIds)
+				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_RevaluationType, CostRevaluationDetailType.CostDetailAdjustment.getCode())
+				.addInSubQueryFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID, queryCompletedRevaluations().create())
+				.create()
+				.list();
+		if (restatementRecords.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSet<CostRevaluationId> revaluationIds = restatementRecords.stream()
+				.map(record -> CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<CostRevaluationId, Instant> dateAcctByRevaluationId = queryBL.createQueryBuilder(I_M_CostRevaluation.class)
+				.addInArrayFilter(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID, revaluationIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()),
+						record -> record.getDateAcct().toInstant()));
+		final Comparator<I_M_CostRevaluation_Detail> byRevaluationRecency = Comparator
+				.<I_M_CostRevaluation_Detail, Instant>comparing(record -> dateAcctByRevaluationId.get(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID())))
+				.thenComparing(I_M_CostRevaluation_Detail::getM_CostRevaluation_ID);
+
+		return restatementRecords.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> CostDetailId.ofRepoId(record.getM_CostDetail_ID()),
+						Function.identity(),
+						BinaryOperator.maxBy(byRevaluationRecency)))
+				.entrySet()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> toCostDetailRestatement(entry.getValue())));
+	}
+
+	private static CostDetailRestatement toCostDetailRestatement(@NonNull final I_M_CostRevaluation_Detail record)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+		return CostDetailRestatement.builder()
+				.costDetailId(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))
+				.newAmount(CostAmount.of(record.getNewAmt(), currencyId))
+				.newCostPrice(CostAmount.of(record.getNewCostPrice(), currencyId))
+				.build();
+	}
+
+	/**
+	 * @return the earliest-posted completed cost revaluation with a line for the given cost segment and element whose posting date is on or after {@code date}
+	 */
+	@NonNull
+	public Optional<CostRevaluation> getFirstCompletedWithDateAcctOnOrAfter(@NonNull final CostSegmentAndElement costSegmentAndElement, @NonNull final Instant date)
+	{
+		return queryCompletedRevaluationsOf(costSegmentAndElement)
+				.addCompareFilter(I_M_CostRevaluation.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Timestamp.from(date))
+				.orderBy(I_M_CostRevaluation.COLUMNNAME_DateAcct)
+				.orderBy(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID)
+				.create()
+				.firstOptional(I_M_CostRevaluation.class)
+				.map(CostRevaluationRepository::fromRecord);
+	}
+
+	/**
+	 * @return the earliest-posted completed cost revaluation with a line for the given cost segment and element whose accounting is not done yet
+	 */
+	@NonNull
+	public Optional<CostRevaluation> getFirstCompletedNotPosted(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		return queryCompletedRevaluationsOf(costSegmentAndElement)
+				.addEqualsFilter(I_M_CostRevaluation.COLUMNNAME_Posted, false)
+				.orderBy(I_M_CostRevaluation.COLUMNNAME_DateAcct)
+				.orderBy(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID)
+				.create()
+				.firstOptional(I_M_CostRevaluation.class)
+				.map(CostRevaluationRepository::fromRecord);
+	}
+
+	private IQueryBuilder<I_M_CostRevaluation> queryCompletedRevaluations()
+	{
+		return queryBL.createQueryBuilder(I_M_CostRevaluation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_CostRevaluation.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
+	}
+
+	private IQueryBuilder<I_M_CostRevaluation> queryCompletedRevaluationsOf(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		final IQuery<I_M_CostRevaluationLine> linesOfSegment = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_CostingLevel, costSegmentAndElement.getCostingLevel().getCode())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_C_AcctSchema_ID, costSegmentAndElement.getAcctSchemaId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostType_ID, costSegmentAndElement.getCostTypeId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_AD_Client_ID, costSegmentAndElement.getClientId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_AD_Org_ID, costSegmentAndElement.getOrgId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, costSegmentAndElement.getProductId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_AttributeSetInstance_ID, costSegmentAndElement.getAttributeSetInstanceId())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostElement_ID, costSegmentAndElement.getCostElementId())
+				.create();
+
+		return queryCompletedRevaluations()
+				.addInSubQueryFilter(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID, I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, linesOfSegment);
+	}
 }
