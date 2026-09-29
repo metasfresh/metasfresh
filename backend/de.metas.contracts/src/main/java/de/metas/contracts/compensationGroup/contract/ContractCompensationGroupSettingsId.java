@@ -1,5 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,6 +36,7 @@ public class ContractCompensationGroupSettingsId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static ContractCompensationGroupSettingsId ofRepoId(final int repoId)
 	{
 		return new ContractCompensationGroupSettingsId(repoId);
@@ -51,6 +54,7 @@ public class ContractCompensationGroupSettingsId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
