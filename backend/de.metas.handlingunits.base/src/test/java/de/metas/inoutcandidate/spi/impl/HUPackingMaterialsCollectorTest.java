@@ -9,8 +9,11 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
+import de.metas.inout.InOutLineId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,12 +117,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * Packing lines per project
-	 * <p>
-	 * (a) flag ON, two sources with different projects (P1, P2) &rarr; the parent ends up with 2 candidates,
-	 * each carrying its own single project. Goes parent &rarr; {@link HUPackingMaterialsCollector#splitNew()} &rarr;
-	 * {@link HUPackingMaterialsCollector#addM_HU_PI} &rarr; {@link HUPackingMaterialsCollector#mergeBackToParentAndClear()},
-	 * proving the {@code considerProject} flag survives {@code splitNew()}/merge.
+	 * Flag ON, set on the parent and carried through splitNew()/merge: sources of two projects give one candidate per project.
 	 */
 	@Test
 	public void considerProject_on_twoSourcesDifferentProjects_yieldsTwoCandidatesEachWithItsProject()
@@ -128,8 +126,8 @@ public class HUPackingMaterialsCollectorTest
 		parent.setConsiderProject(true);
 
 		final HUPackingMaterialsCollector child = parent.splitNew();
-		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 1, PROJECT_P1);
-		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId.getRepoId(), 2, PROJECT_P2);
+		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(1), PROJECT_P1);
+		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(2), PROJECT_P2);
 
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP1);
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP2);
@@ -144,7 +142,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * (b) flag OFF, same two sources as (a) &rarr; exactly 1 candidate with a null project, i.e. the project is not part of the key.
+	 * Flag OFF: sources of two projects give one candidate without project.
 	 */
 	@Test
 	public void considerProject_off_twoSourcesDifferentProjects_yieldsOneCandidateWithNullProject()
@@ -153,8 +151,8 @@ public class HUPackingMaterialsCollectorTest
 		// considerProject deliberately left at its default (false).
 
 		final HUPackingMaterialsCollector child = parent.splitNew();
-		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 1, PROJECT_P1);
-		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId.getRepoId(), 2, PROJECT_P2);
+		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(1), PROJECT_P1);
+		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(2), PROJECT_P2);
 
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP1);
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP2);
@@ -167,7 +165,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * (c) flag ON, one source with no project and one source with P1 &rarr; 2 candidates (null, P1).
+	 * Flag ON: a source without project and one with a project give two candidates.
 	 */
 	@Test
 	public void considerProject_on_oneSourceNoProjectOneSourceWithProject_yieldsTwoCandidates()
@@ -176,8 +174,8 @@ public class HUPackingMaterialsCollectorTest
 		parent.setConsiderProject(true);
 
 		final HUPackingMaterialsCollector child = parent.splitNew();
-		final IHUPackingMaterialCollectorSource sourceNoProject = createSource(data.helper.pTomatoProductId.getRepoId(), 1, null);
-		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 2, PROJECT_P1);
+		final IHUPackingMaterialCollectorSource sourceNoProject = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(1), null);
+		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(2), PROJECT_P1);
 
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceNoProject);
 		child.addM_HU_PI(data.piTU_IFCO, 1, sourceP1);
@@ -192,22 +190,8 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * (d) flag ON, based on {@link #test_AggregatedHU()}: two <b>distinct</b> aggregated HUs (a single one would be
-	 * skipped the second time by the seen-set), collected from two sources with different projects. Their "included"
-	 * packing material (only reached when {@code isCollectAggregatedHUs} is set) must ALSO be split per project, and
-	 * give 2 candidates.
-	 * <p>
-	 * {@code LUTUProducerDestination} (the plain test producer used here and by {@link #test_AggregatedHU()}) never
-	 * wires the built HU's {@code M_HU_PI_Item_Product_ID} (unlike the production {@code HUBuilder}, which sets it
-	 * from the LU/TU configuration) &mdash; only the real order/receipt producers do, via
-	 * {@code LUTUConfigurationFactory}. The "included packing material" lookup is reached only when
-	 * {@code IHandlingUnitsBL.extractPIItemProductOrNull(hu)} is non-null, so the test stamps it directly on each
-	 * built aggregated HU, mirroring what the production {@code HUBuilder} does.
-	 * <p>
-	 * The second packing-material PI-item is added to {@code piTU_IFCO}'s PI version <b>after</b> both aggregated HUs
-	 * were already built, so it is never materialized as a real {@code M_HU_Item} on either built HU and can only be
-	 * reached through the "included packing material" lookup ({@code retrievePackingMaterials}) &mdash; isolating that
-	 * lookup from the main per-HU packing-material lookup.
+	 * Flag ON: the included packing material of two distinct aggregated HUs of two projects is split per project too.
+	 * The extra packing-material PI item is added after the HUs were built, so it is reachable only via the included-packing-material lookup.
 	 */
 	@Test
 	public void considerProject_on_aggregatedHU_includedPackingMaterial_twoDistinctAggregatedHUs_yieldsTwoCandidates()
@@ -223,16 +207,17 @@ public class HUPackingMaterialsCollectorTest
 		collector.setConsiderProject(true);
 		collector.setisCollectAggregatedHUs(true);
 
-		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 1, PROJECT_P1);
-		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId.getRepoId(), 2, PROJECT_P2);
+		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(1), PROJECT_P1);
+		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(2), PROJECT_P2);
 
 		collector.releasePackingMaterialForHURecursively(luHU1, sourceP1);
 		collector.releasePackingMaterialForHURecursively(luHU2, sourceP2);
 
 		final List<HUPackingMaterialDocumentLineCandidate> candidates = collector.getAndClearCandidates();
 
+		final ProductId bagProductId = ProductId.ofRepoId(data.helper.pmBag.getM_Product_ID());
 		final List<HUPackingMaterialDocumentLineCandidate> includedPackingMaterialCandidates = candidates.stream()
-				.filter(candidate -> candidate.getM_Product().getM_Product_ID() == data.helper.pmBag.getM_Product_ID())
+				.filter(candidate -> ProductId.equals(candidate.getProductId(), bagProductId))
 				.collect(Collectors.toList());
 
 		assertThat(includedPackingMaterialCandidates).hasSize(2);
@@ -242,10 +227,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * (e) flag ON, the same TU HU released through two child collectors of two sources (P1, then P2) &rarr; its
-	 * packing material must be counted <b>once</b>, not twice, so it must appear in exactly one candidate. This
-	 * mirrors the builder's real split-per-line/merge-back sequence: split, process, merge, THEN split again —
-	 * only then does the second child's seen-set snapshot already contain the first child's HU.
+	 * Flag ON: the same TU released through two consecutive child collectors (split, merge, split again) is counted once.
 	 */
 	@Test
 	public void considerProject_on_sameTUReleasedThroughTwoChildCollectors_countedOnce()
@@ -255,8 +237,8 @@ public class HUPackingMaterialsCollectorTest
 		final HUPackingMaterialsCollector parent = new HUPackingMaterialsCollector(data.helper.createMutableHUContext());
 		parent.setConsiderProject(true);
 
-		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId.getRepoId(), 1, PROJECT_P1);
-		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId.getRepoId(), 2, PROJECT_P2);
+		final IHUPackingMaterialCollectorSource sourceP1 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(1), PROJECT_P1);
+		final IHUPackingMaterialCollectorSource sourceP2 = createSource(data.helper.pTomatoProductId, InOutLineId.ofRepoId(2), PROJECT_P2);
 
 		final HUPackingMaterialsCollector child1 = parent.splitNew();
 		child1.releasePackingMaterialForTU(tuHU, sourceP1);
@@ -273,10 +255,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * Stamps the aggregated HU included in {@code luHU} with the {@code M_HU_PI_Item_Product_ID} of the TU config
-	 * used to build it, mirroring what the production {@code HUBuilder} does (which the plain
-	 * {@code LUTUProducerDestination} test producer does not wire up). Needed to reach the "included packing
-	 * material" lookup (see test method's Javadoc).
+	 * {@code LUTUProducerDestination} does not set the aggregated HU's {@code M_HU_PI_Item_Product_ID}, which the included-packing-material lookup needs.
 	 */
 	private void stampMaterialItemProductOnAggregatedHU(final I_M_HU luHU)
 	{
@@ -288,15 +267,12 @@ public class HUPackingMaterialsCollectorTest
 		InterfaceWrapperHelper.save(aggregatedHU);
 	}
 
-	private IHUPackingMaterialCollectorSource createSource(final int productId, final int recordId, @Nullable final ProjectId projectId)
+	private IHUPackingMaterialCollectorSource createSource(@NonNull final ProductId productId, @NonNull final InOutLineId inOutLineId, @Nullable final ProjectId projectId)
 	{
 		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		inoutLine.setM_InOutLine_ID(recordId);
-		inoutLine.setM_Product_ID(productId);
-		if (projectId != null)
-		{
-			inoutLine.setC_Project_ID(projectId.getRepoId());
-		}
+		inoutLine.setM_InOutLine_ID(inOutLineId.getRepoId());
+		inoutLine.setM_Product_ID(productId.getRepoId());
+		inoutLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		return InOutLineHUPackingMaterialCollectorSource.of(inoutLine);
 	}
 

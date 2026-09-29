@@ -73,6 +73,9 @@ import static org.assertj.core.api.Assertions.fail;
 @RequiredArgsConstructor
 public class PackingMaterialShipmentLines_StepDef
 {
+	private static final String COLUMN_Identifier = "Identifier";
+	private static final String COLUMN_RowCount = "RowCount";
+
 	private final M_InOut_StepDefData inoutTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
@@ -191,13 +194,13 @@ public class PackingMaterialShipmentLines_StepDef
 			@NonNull final DataTableRow row,
 			@NonNull final List<de.metas.handlingunits.model.I_M_InOutLine> remainingActualLines)
 	{
-		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier("Identifier");
-		final ProductId expectedProductId = productTable.getId(row.getAsIdentifier("M_Product_ID"));
-		final ProjectId expectedProjectId = projectTable.getIdOfNullable(row.getAsIdentifier("C_Project_ID"));
-		final BigDecimal expectedQty = row.getAsBigDecimal("MovementQty");
+		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(COLUMN_Identifier);
+		final ProductId expectedProductId = productTable.getId(row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID));
+		final ProjectId expectedProjectId = projectTable.getIdOfNullable(row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_C_Project_ID));
+		final BigDecimal expectedQty = row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty);
 
 		final de.metas.handlingunits.model.I_M_InOutLine matchedLine = remainingActualLines.stream()
-				.filter(line -> line.getM_Product_ID() == expectedProductId.getRepoId())
+				.filter(line -> ProductId.equals(ProductId.ofRepoId(line.getM_Product_ID()), expectedProductId))
 				.filter(line -> ProjectId.equals(ProjectId.ofRepoIdOrNull(line.getC_Project_ID()), expectedProjectId))
 				.filter(line -> line.getMovementQty().compareTo(expectedQty) == 0)
 				.findFirst()
@@ -229,14 +232,8 @@ public class PackingMaterialShipmentLines_StepDef
 	}
 
 	/**
-	 * Asserts the packing-material section of the shipment report — the {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(M_InOut_ID, AD_Language)}
-	 * DB function, which the shipment's Jasper report calls to render its packing-material lines — groups the shipment's per-{@code C_Project_ID}-split
-	 * packing-material {@code M_InOutLine}s back down to one summed row per product (the function groups by product name/UOM/description, not by project),
-	 * regardless of how many project-scoped lines {@code HUShipmentPackingMaterialLinesBuilder} split the shipment into.
-	 * <p>
-	 * Queries the DB function directly via JDBC (no Java model class exists for its result type). On a mismatch this step fails, printing every
-	 * actual row the function returned. <b>If the DB function does not exist (e.g. dropped/renamed), the underlying {@link SQLException} propagates
-	 * and this step FAILS — it never skips or passes silently.</b>
+	 * Asserts the rows of the shipment report's packing section, i.e. of the DB function
+	 * {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(M_InOut_ID, AD_Language)}, per product.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -276,11 +273,11 @@ public class PackingMaterialShipmentLines_StepDef
 			@NonNull final List<Map<String, Object>> remainingRows,
 			@NonNull final List<Map<String, Object>> allRows)
 	{
-		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier("M_Product_ID");
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final String expectedProductName = product.getName();
-		final BigDecimal expectedQty = row.getAsBigDecimal("MovementQty");
-		final int expectedRowCount = row.getAsInt("RowCount");
+		final BigDecimal expectedQty = row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty);
+		final int expectedRowCount = row.getAsInt(COLUMN_RowCount);
 
 		final List<Map<String, Object>> matchedRows = new ArrayList<>();
 		final Iterator<Map<String, Object>> remainingRowsIterator = remainingRows.iterator();
@@ -314,12 +311,7 @@ public class PackingMaterialShipmentLines_StepDef
 	}
 
 	/**
-	 * Raw JDBC call — no Java model class exists for {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU}'s result type.
-	 * A missing/renamed DB function surfaces as a {@link SQLException} thrown from {@code executeQuery()}, which this method does NOT catch,
-	 * so the calling step fails instead of silently returning no rows.
-	 * <p>
-	 * Filters {@code IsPrintWhenPackingMaterial='Y'} to mirror the real report's own query
-	 * ({@code report_details_hu.jrxml}'s {@code queryString}), so this step asserts exactly what the printed report shows.
+	 * Raw JDBC, since there is no model class for the function's result type; filters like the report's own query ({@code IsPrintWhenPackingMaterial='Y'}).
 	 */
 	private List<Map<String, Object>> queryShipmentReportPackingSection(@NonNull final InOutId inOutId, @NonNull final String adLanguage) throws SQLException
 	{

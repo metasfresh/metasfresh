@@ -50,10 +50,7 @@ public class AD_SysConfig_StepDef
 	private final M_Product_Category_StepDefData productCategoryTable;
 
 	/**
-	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_boolean_value} or
-	 * {@link #temporarily_set_sysConfig_to_product_category}, mapped to their value from BEFORE the overwrite
-	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
-	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
+	 * Prior values ({@code null} = none) of the sysconfigs this scenario changed temporarily; restored after the scenario.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
@@ -116,10 +113,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Sets a sys config to a scenario-local boolean value, capturing its PRIOR value (via
-	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
-	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
-	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
+	 * Sets a sys config to a boolean value for the current scenario only.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -139,14 +133,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Temporarily points an AD_SysConfig at an {@code M_Product_Category}'s repo id — e.g. a client's own
-	 * "packing material category" sysconfig — for the scenario's duration; the scenario CREATES its own category
-	 * (via {@code metasfresh contains M_Product_Categories:}) rather than depending on a pre-seeded one, so the
-	 * scenario is self-contained (never a customer-specific master-data literal — see
-	 * {@code backend/de.metas.cucumber/CLAUDE.md} rule 16). The sysconfig's PRIOR value is captured and restored by
-	 * {@link #restoreRepointedSysConfigsAfterScenario()} — same mechanism as
-	 * {@link #temporarily_set_sys_config_boolean_value} — so this never leaves a changed SYSTEM sysconfig for a
-	 * sibling feature sharing the executor's DB.
+	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario only.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -175,14 +162,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Guaranteed-execution cleanup for {@link #temporarily_set_sys_config_boolean_value} -- an {@code @After} hook rather than a trailing Gherkin
-	 * step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
-	 * restore. A no-op for every scenario that never called the step.
-	 * <p>
-	 * If the sysconfig had no prior value (a fresh key, {@code null}), there is nothing to restore it TO --
-	 * {@link ISysConfigBL} exposes no delete, so this scenario's own written value is left in place. That
-	 * matches every other sysconfig write in this class (none of which restore either) and does not create a
-	 * new failure mode: the next run still overwrites it with ITS OWN value before reading it.
+	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is left as set, since there is no delete.
 	 */
 	@After
 	public void restoreRepointedSysConfigsAfterScenario()
