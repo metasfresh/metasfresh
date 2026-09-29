@@ -15,14 +15,13 @@ import { getFieldData, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIVal
  * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation) per-product quick-input E2E suite.
  *
  * Desktop WebUI, window 541568. Proves the manual cost-adjustment quick-input:
- *  - TC1 [AC1/AC2] quick-input a per-product line for a product that has a current cost, Run + Complete.
- *  - TC-picker [D5] the quick-input product picker offers stocked/eligible products (incl. a stocked
- *    product with no cost record) and NOT non-stocked products.
- *  - TC-seed [AC15/AC16/AC17/AC18] seed a stocked product that has NO cost record, Run + Complete,
- *    with the provisional-price hint shown on the New cost price field.
+ *  - quick-input a per-product line for a product that has a current cost, Run + Complete.
+ *  - the quick-input product picker offers stocked/eligible products (incl. a stocked product with no
+ *    cost record) and NOT non-stocked products.
+ *  - seed a stocked product that has NO cost record, Run + Complete, with the provisional-price hint
+ *    shown on the New cost price field.
  *
- * Costing must mirror the customer's real config: the accounting schema is set to CLIENT-level costing
- * on the local stack before the run (documented in the delivering session).
+ * Expects the accounting schema to use CLIENT-level costing.
  */
 
 const COST_REVAL_WINDOW_ID = '541568';
@@ -55,7 +54,7 @@ async function createMasterdata(language) {
   });
 }
 
-/** Login → open a NEW Kosten Neubewertung header. AC6: the mandatory Evaluation Start Date
+/** Login → open a NEW Kosten Neubewertung header. The mandatory Evaluation Start Date
  *  AUTO-DEFAULTS to the posting date (today), so the header is saveable WITHOUT the user typing it. */
 async function loginAndCreateHeader(page, masterdata) {
   await LoginPage.goto();
@@ -64,7 +63,7 @@ async function loginAndCreateHeader(page, masterdata) {
 
   return await test.step('Create Kosten Neubewertung header (EvaluationStartDate auto-defaults to the posting date)', async () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/new`);
-    // AC6: the header auto-defaults Accounting Schema, Cost Element, Accounting Date AND — the fix under
+    // The header auto-defaults Accounting Schema, Cost Element, Accounting Date AND — the fix under
     // test — the mandatory Evaluation Start Date, which must arrive PRE-FILLED with today's posting date
     // so the WebUI mandatory-field check passes and the header commits with NO manual date entry.
     // (Before the AD_Column default, EvaluationStartDate rendered empty because its forward-only default
@@ -72,7 +71,7 @@ async function loginAndCreateHeader(page, masterdata) {
     // reported allowCreateNew=false / "ParentDocumentNew" until the user typed the date by hand.)
     const dateInput = page.locator('.form-field-EvaluationStartDate input').first();
     await dateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    // The field must auto-fill (no click, no fill) — this is the AC6 assertion at the UI layer.
+    // The field must auto-fill (no click, no fill) — asserted at the UI layer.
     await expect(dateInput).not.toHaveValue('', { timeout: SLOW_ACTION_TIMEOUT });
 
     // The freshly-created document acquires its numeric record id in the URL (auto-saved: every
@@ -87,7 +86,7 @@ async function loginAndCreateHeader(page, masterdata) {
     );
     const recordId = page.url().split('/').pop();
 
-    // AC6 at the data layer (language-independent): the auto-filled value IS today's posting date.
+    // At the data layer (language-independent): the auto-filled value IS today's posting date.
     const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
     console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' expected ' + todayISO());
     expect(String(evalStart.value)).toContain(todayISO());
@@ -207,34 +206,34 @@ test('Quick-input manual cost adjustment for a product with a current cost (Engl
 
 Creates a Kosten Neubewertung header, adds ONE line via the per-product quick-input for a product
 that has a current cost, runs the revaluation and completes the document.
-Proves AC1 (quick-input offers Product + New cost price) and AC2 (line created with the derived
-segment; document completes).
+Verifies the quick-input offers Product + New cost price, the line is created with the derived
+segment and the document completes.
   `);
 
   const md = await createMasterdata('en_US');
   const productCode = md.products.PHAS.productCode;
 
   const recordId = await loginAndCreateHeader(page, md);
-  console.log(`[TC1] header record ${recordId}`);
+  console.log(`[quick-input] header record ${recordId}`);
 
   await openQuickInput(page);
 
-  // AC1: quick-input offers exactly Product + New cost price
+  // Quick-input offers exactly Product + New cost price
   await expect(page.locator('.quick-input-container .form-field-M_Product_ID')).toBeVisible();
   await expect(page.locator('.quick-input-container .form-field-NewCostPrice')).toBeVisible();
 
   await addQuickInputLine(page, productCode, '15');
 
-  // AC2: exactly one line exists with NewCostPrice = typed value (assert via WebAPI, language-independent)
+  // Exactly one line exists with NewCostPrice = typed value (assert via WebAPI, language-independent)
   const lineRows = await page.request.get(
     `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}`
   );
   const lineBody = await lineRows.json();
   const rows = lineBody.result || [];
-  console.log('[TC1] line count=' + rows.length);
+  console.log('[quick-input] line count=' + rows.length);
   expect(rows.length).toBe(1);
   const newCostVal = rows[0].fieldsByName.NewCostPrice.value;
-  console.log('[TC1] NewCostPrice=' + JSON.stringify(newCostVal));
+  console.log('[quick-input] NewCostPrice=' + JSON.stringify(newCostVal));
   expect(Number(newCostVal)).toBe(15);
   // CurrentCostPrice derived from the product's live M_Cost (present, may be 0 for a fresh cost row)
   expect(rows[0].fieldsByName.CurrentCostPrice).toBeDefined();
@@ -243,16 +242,16 @@ segment; document completes).
 
   // Assert the document reached Completed (CO)
   const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
-  console.log('[TC1] DocStatus=' + JSON.stringify(docStatus.value));
+  console.log('[quick-input] DocStatus=' + JSON.stringify(docStatus.value));
   expect(docStatus.value.key).toBe('CO');
 });
 
 // eslint-disable-next-line no-unused-vars
-test('Quick-input picker offers stocked/eligible products incl. costless, excludes non-stocked [D5] (English)', async ({ page }) => {
+test('Quick-input picker offers stocked/eligible products incl. costless, excludes non-stocked (English)', async ({ page }) => {
   test.setTimeout(180000);
   allureTags('Quick-input: product picker is stocked/eligible-filtered');
   allure.description(`
-## F1500: Costing — quick-input product picker filter (D5)
+## F1500: Costing — quick-input product picker filter
 
 The quick-input product picker is filtered to stocked/eligible items (AD_Reference 171). It offers:
  - a stocked product that has a current cost,
@@ -279,7 +278,7 @@ and it does NOT offer a non-stocked (Service) product.
     await expect(serviceOpts.filter({ hasText: md.products.PSVC.productCode })).toHaveCount(0);
   });
 
-  console.log('[TC-picker] stocked (has-cost + costless) offered; non-stocked excluded');
+  console.log('[picker] stocked (has-cost + costless) offered; non-stocked excluded');
 });
 
 // eslint-disable-next-line no-unused-vars
@@ -292,15 +291,14 @@ test('Seed-cost path: stocked product with no cost record, with provisional hint
 Picks a STOCKED product that has NO M_Cost row, quick-inputs a New cost price, and completes.
 The Complete DocAction seeds the cost row at qty 0 with the entered price (no GL posting) and the
 document completes. The New cost price field surfaces the provisional-price hint (moving-average:
-provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), AC17 (hint), AC18
-(mandatory desktop Playwright of the picker path).
+provisional until the first goods receipt).
   `);
 
   const md = await createMasterdata('en_US');
   const seedProductCode = md.products.PSEED.productCode;
 
   const recordId = await loginAndCreateHeader(page, md);
-  console.log(`[TC-seed] header record ${recordId}`);
+  console.log(`[seed] header record ${recordId}`);
 
   await openQuickInput(page);
 
@@ -311,7 +309,7 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
     await page.waitForTimeout(1500);
   });
 
-  // AC17: the provisional-price hint is shown on the New cost price field (label title).
+  // The provisional-price hint is shown on the New cost price field (label title).
   // Language-independent: compare the rendered title to the field's description from the quick-input layout.
   await test.step('Verify provisional-price hint on New cost price field', async () => {
     const qiLayout = await (
@@ -323,13 +321,13 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
       (e) => (e.fields || []).some((f) => f.field === 'NewCostPrice')
     );
     const expectedHint = npcElement.description;
-    console.log('[TC-seed] layout hint = ' + JSON.stringify(expectedHint));
+    console.log('[seed] layout hint = ' + JSON.stringify(expectedHint));
     expect(expectedHint && expectedHint.length).toBeGreaterThan(0);
 
     const npcLabelTitle = await page
       .locator('.quick-input-container .form-field-NewCostPrice label')
       .getAttribute('title');
-    console.log('[TC-seed] rendered NewCostPrice label title = ' + JSON.stringify(npcLabelTitle));
+    console.log('[seed] rendered NewCostPrice label title = ' + JSON.stringify(npcLabelTitle));
     expect(npcLabelTitle).toBe(expectedHint);
   });
 
@@ -343,7 +341,7 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
     await page.keyboard.press('Enter');
   });
 
-  // AC15: one seed line created with NewCostPrice = typed value (poll for the slower seed round-trip).
+  // One seed line created with NewCostPrice = typed value (poll for the slower seed round-trip).
   let rows = [];
   for (let i = 0; i < 12; i++) {
     await page.waitForTimeout(1000);
@@ -355,13 +353,13 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
     rows = lineRows.result || [];
     if (rows.length >= 1) break;
   }
-  console.log('[TC-seed] line count=' + rows.length);
+  console.log('[seed] line count=' + rows.length);
   expect(rows.length).toBe(1);
   expect(Number(rows[0].fieldsByName.NewCostPrice.value)).toBe(20);
 
-  // AC16: completes cleanly (Complete seeds the cost row at qty 0 and posts zero delta).
+  // Completes cleanly (Complete seeds the cost row at qty 0 and posts zero delta).
   await completeDocument(page);
   const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
-  console.log('[TC-seed] DocStatus=' + JSON.stringify(docStatus.value));
+  console.log('[seed] DocStatus=' + JSON.stringify(docStatus.value));
   expect(docStatus.value.key).toBe('CO');
 });

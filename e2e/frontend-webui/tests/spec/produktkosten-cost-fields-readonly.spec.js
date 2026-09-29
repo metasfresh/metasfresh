@@ -8,15 +8,15 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
- * Produktkosten (legacy M_Cost) window 344 — cost fields are READ-ONLY [AC10/AC11].
+ * Produktkosten (legacy M_Cost) window 344 — cost fields are READ-ONLY.
  *
  * The migration flips AD_Field.IsReadOnly='Y' for CurrentCostPrice (11350) and FutureCostPrice (11352)
  * on the M_Cost tab (701) of window 344, so a user can no longer edit a product's cost price directly
  * and bypass the audited Kosten Neubewertung path. This is a GLOBAL CORE change (all customers).
  *
- * AC10 is asserted on the language-invariant `readonly` flag that the WebUI reads to render the fields
- * read-only (both in the grid and in single-row). AC11 (the audited Kosten Neubewertung document remains
- * the working path to change a cost price) is covered by cost-revaluation-quickinput.spec.js.
+ * Asserted on the language-invariant `readonly` flag that the WebUI reads to render the fields read-only
+ * (both in the grid and in single-row). That the audited Kosten Neubewertung document remains the working
+ * path to change a cost price is covered by cost-revaluation-quickinput.spec.js.
  */
 
 const PRODUKTKOSTEN_WINDOW_ID = '344';
@@ -31,7 +31,7 @@ test('Produktkosten window 344 CurrentCostPrice + FutureCostPrice are read-only 
   allure.story('Produktkosten cost fields locked read-only');
   allure.severity('critical');
   allure.description(`
-## F1500: Costing — Produktkosten (window 344) cost fields read-only [AC10]
+## F1500: Costing — Produktkosten (window 344) cost fields read-only
 
 A normally-created product carries its default M_Cost rows. On the Produktkosten window's M_Cost tab,
 the Current Cost Price and Future Cost Price fields must be read-only so a user cannot edit a cost
@@ -58,14 +58,14 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
   expect(rowsResp.status()).toBe(200);
   const rowsBody = await rowsResp.json();
   const rows = rowsBody.result || [];
-  console.log('[TC7] M_Cost rows=' + rows.length);
+  console.log('[readonly] M_Cost rows=' + rows.length);
   expect(rows.length).toBeGreaterThan(0);
 
   for (const row of rows) {
     const ccp = row.fieldsByName.CurrentCostPrice;
     const fcp = row.fieldsByName.FutureCostPrice;
-    console.log(`[TC7] CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`);
-    // AC10: both cost fields are read-only.
+    console.log(`[readonly] CurrentCostPrice.readonly=${ccp && ccp.readonly} FutureCostPrice.readonly=${fcp && fcp.readonly}`);
+    // Both cost fields are read-only.
     expect(ccp.readonly).toBe(true);
     expect(fcp.readonly).toBe(true);
   }
@@ -80,5 +80,5 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
     .catch(() => {});
   allure.attachment('Produktkosten window', await page.screenshot({ fullPage: true }), 'image/png');
 
-  console.log('[TC7] CurrentCostPrice + FutureCostPrice are read-only on window 344');
+  console.log('[readonly] CurrentCostPrice + FutureCostPrice are read-only on window 344');
 });
