@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -89,6 +90,9 @@ public class C_AcctSchema_StepDef
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
 
 		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> acctSchema.setCostingMethod(costingMethod.getCode()));
+		row.getAsOptionalString(I_C_AcctSchema.COLUMNNAME_CostingLevel)
+				.map(CostingLevel::ofCode)
+				.ifPresent(costingLevel -> acctSchema.setCostingLevel(costingLevel.getCode()));
 
 		row.getAsOptionalString("C_Currency_ID")
 				.map(CurrencyCode::ofThreeLetterCode)

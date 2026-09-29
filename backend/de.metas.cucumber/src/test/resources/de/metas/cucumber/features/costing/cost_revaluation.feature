@@ -25,9 +25,10 @@ Feature: Cost Revaluation / Kosten Neubewertung
     # Costing method = MAI (Moving Average Invoice, code 'M'). All scenarios below use the MovingAverageInvoice
     # material cost element accordingly. Under MAI the on-hand cost is still seeded from the physical inventory's
     # CostPrice at qty 0->N (first cost event), so every current-cost / valuation / delta figure matches MovingAverageInvoice.
+    # Costing level = Client (code 'C'), pinned explicitly so the scenarios don't depend on the schema's preset level.
     And update C_AcctSchema:
-      | C_AcctSchema_ID | CostingMethod |
-      | acctSchema      | M             |
+      | C_AcctSchema_ID | CostingMethod | CostingLevel |
+      | acctSchema      | M             | C            |
     # ── Starting stock: product = 100 PCE @ 10 CHF; product2 = 50 PCE @ 20 CHF (the "noise" product) ──
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
@@ -201,7 +202,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     #    (15.0000 / CumulatedAmt 1500, asserted by the "validate current costs" step above). Already-posted
     #    accounting is NOT backdated: the correction posts forward-dated at DateAcct 2024-03-06, and the
     #    inventory valuation report is Fact_Acct as-of-date (DateAcct <= p_DateAcct), so the already-posted
-    #    2024-03-05 valuation stays UNCHANGED at 10.0000/1000.00 (the same row TC4 asserts) — correct accounting. ──
+    #    2024-03-05 valuation stays UNCHANGED at 10.0000/1000.00 (the same row the forward-only-default scenario asserts) — correct accounting. ──
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
