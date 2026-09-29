@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as os from 'node:os';
 
+const isUatCapture = !!process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0';
+const UAT_CAPTURE_SIZE = { width: 1920, height: 1080 };
+
 export default defineConfig({
   testDir: './tests',
   workers: 1, // Sequential execution for test data isolation
@@ -73,10 +76,10 @@ export default defineConfig({
   use: {
     baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
     trace: 'on',
-    // An evidence-capture run (UAT_CAPTURE=1) records at 1280x720, the viewport the 'Desktop Chrome' project below
-    // actually runs with (its device descriptor overrides the viewport set here), so on-screen text stays legible;
-    // normal and CI runs keep the default (downscaled) video size.
-    video: process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0' ? { mode: 'on', size: { width: 1280, height: 720 } } : 'on',
+    // An evidence-capture run (UAT_CAPTURE=1) records the full 1920x1080 window (see the 'Desktop Chrome' project
+    // below, whose device descriptor would otherwise shrink the viewport to 1280x720), so grid headers and labels
+    // are not truncated; normal and CI runs keep the default (downscaled) video size.
+    video: isUatCapture ? { mode: 'on', size: UAT_CAPTURE_SIZE } : 'on',
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },
     // Record all network traffic to HAR files
@@ -88,6 +91,7 @@ export default defineConfig({
       name: 'Desktop Chrome',
       use: {
         ...devices['Desktop Chrome'],
+        ...(isUatCapture ? { viewport: UAT_CAPTURE_SIZE } : {}),
         launchOptions: {
           args: [
             '--no-sandbox', // Avoids sandboxing issues inside Docker

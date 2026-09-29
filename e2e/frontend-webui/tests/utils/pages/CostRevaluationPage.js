@@ -137,6 +137,9 @@ export class CostRevaluationPage {
     await input.press('Tab');
     await saved;
     await page.waitForTimeout(500);
+    // Tab moves the focus into the next date field, which opens its calendar over the line tab; close it.
+    await page.keyboard.press('Escape');
+    await page.locator('.rdtOpen').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await holdForCaptureIfEnabled(1500);
     await unhighlight();
   }
@@ -233,9 +236,9 @@ export class CostRevaluationPage {
   }
 
   /**
-   * Hover the New cost price label and return its rendered hint (the label's `title`).
-   * The browser paints a `title` tooltip as a native OS widget, which a page recording never contains;
-   * in a capture run only, the very same `title` text is therefore drawn next to the label while hovered.
+   * Hover the New cost price label and return its hint (the label's `title`, i.e. the field help).
+   * The browser paints a `title` tooltip as a native OS widget that a page recording never contains, so a
+   * recording shows only the hovered (outlined) label; the hint text itself is reported from this value.
    */
   static async hoverNewCostPriceHint() {
     const page = getPage();
@@ -244,32 +247,53 @@ export class CostRevaluationPage {
     await label.hover();
     const title = await label.getAttribute('title');
 
-    if (isUatCapture()) {
-      await label.evaluate((el) => {
-        const r = el.getBoundingClientRect();
-        const tip = document.createElement('div');
-        tip.id = 'uat-capture-title-tooltip';
-        tip.textContent = el.getAttribute('title');
-        Object.assign(tip.style, {
-          position: 'fixed',
-          left: `${Math.max(8, r.left)}px`,
-          top: `${r.bottom + 6}px`,
-          maxWidth: '520px',
-          padding: '8px 10px',
-          background: '#ffffe1',
-          color: '#000',
-          border: '1px solid #767676',
-          boxShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-          font: '15px sans-serif',
-          zIndex: 100000,
-          whiteSpace: 'normal',
-        });
-        document.body.appendChild(tip);
-      });
-      await holdForCaptureIfEnabled(4000);
-      await page.evaluate(() => document.getElementById('uat-capture-title-tooltip')?.remove());
-    }
+    const unhighlight = await highlightForCaptureIfEnabled(page.locator('.quick-input-container .form-field-NewCostPrice'));
+    await holdForCaptureIfEnabled(4000);
+    await unhighlight();
     return title;
+  }
+
+  /**
+   * Choose the header's Cost Element (Kostenart) by its name and wait for the save.
+   * Only allowed while the document has no lines.
+   */
+  static async selectCostElement(costElementName) {
+    await test.step(`Select Kostenart (cost element) ${costElementName}`, async () => {
+      const page = getPage();
+      const field = page.locator('.form-field-M_CostElement_ID').first();
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const unhighlight = await highlightForCaptureIfEnabled(field);
+      await field.locator('.input-dropdown').first().click();
+      const option = page.locator('.input-dropdown-list [data-testid^="option-"]').filter({ hasText: costElementName }).first();
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const saved = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      saved.catch(() => {});
+      await option.click();
+      await saved;
+      await page.waitForTimeout(500);
+      await holdForCaptureIfEnabled(2000);
+      await unhighlight();
+    });
+  }
+
+  /**
+   * Wait until the completed document is posted (Posted = Y) and return the Posted field.
+   * @param {string} recordId the header record id
+   */
+  static async waitUntilPosted(recordId) {
+    let posted;
+    for (let i = 0; i < 30; i++) {
+      posted = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'Posted');
+      const key = posted.value && (posted.value.key || posted.value);
+      if (key === 'Y' || key === true) {
+        break;
+      }
+      await getPage().waitForTimeout(1000);
+    }
+    return posted;
   }
 
   /** Type the New cost price into the open quick-input and submit the line (Enter). */
@@ -334,8 +358,17 @@ export class CostRevaluationPage {
       return;
     }
     await page.evaluate(() => window.scrollTo(0, 0));
-    const unhighlight = await highlightForCaptureIfEnabled(page.getByTestId('status-button'));
-    await holdForCaptureIfEnabled(3000);
-    await unhighlight();
+    // Reload so the header shows the posting status the server has set after Complete.
+    await page.reload();
+    const statusButton = page.getByTestId('status-button');
+    await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await page.waitForTimeout(1000);
+    const unhighlightStatus = await highlightForCaptureIfEnabled(statusButton);
+    const unhighlightPosted = await highlightForCaptureIfEnabled(page.locator('.form-field-Posted').first());
+    const unhighlightLines = await highlightForCaptureIfEnabled(page.locator('.table-flex-wrapper-row, .table-flex-wrapper').first());
+    await holdForCaptureIfEnabled(4000);
+    await unhighlightStatus();
+    await unhighlightPosted();
+    await unhighlightLines();
   }
 }

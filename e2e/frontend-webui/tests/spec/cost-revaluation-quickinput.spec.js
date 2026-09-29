@@ -11,7 +11,7 @@ import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
  * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation) per-product quick-input E2E suite.
  *
  * Desktop WebUI, window 541568. Proves the manual cost-adjustment quick-input:
- *  - quick-input a per-product line for a product that has a current cost, Run + Complete.
+ *  - quick-input a per-product line for a stocked product that has a current cost, Complete (posts the value difference).
  *  - the quick-input product picker offers stocked/eligible products (incl. a stocked product with no
  *    cost record) and NOT non-stocked products.
  *  - seed a stocked product that has NO cost record, Run + Complete, with the provisional-price hint
@@ -39,6 +39,20 @@ async function createMasterdata(language) {
   });
 }
 
+/**
+ * Masterdata for the per-product adjustment: PSTK, a stocked Item with 10 on hand in a warehouse.
+ */
+async function createStockedMasterdata(language) {
+  return await Backend.createMasterdata({
+    request: {
+      login: { user: { language, firstname: 'CostReval', lastname: 'E2E' } },
+      warehouses: { WH: {} },
+      products: { PSTK: { name: 'CR_STOCKED', type: 'Item' } },
+      handlingUnits: { HU1: { product: 'PSTK', warehouse: 'WH', qty: 10 } },
+    },
+  });
+}
+
 /** Login, then open a NEW Kosten Neubewertung header (EvaluationStartDate auto-defaults). */
 async function loginAndCreateHeader(masterdata) {
   await LoginPage.goto();
@@ -46,6 +60,9 @@ async function loginAndCreateHeader(masterdata) {
   await DashboardPage.expectVisible();
   return await CostRevaluationPage.createHeader();
 }
+
+/** The moving-average (average purchase-order price) cost element of the standard setup. */
+const MOVING_AVERAGE_PO_COST_ELEMENT_NAME = 'Bestellpreis Durchschnitt';
 
 function allureTags(story) {
   allure.epic('E0226: Costing');
@@ -64,23 +81,44 @@ const testCases = [
 
 testCases.forEach(({ language, label }) => {
   // eslint-disable-next-line no-unused-vars
-  test(`Quick-input manual cost adjustment for a product with a current cost (${label})`, async ({ page }) => {
-    test.setTimeout(180000);
+  test(`Quick-input manual cost adjustment for a stocked product with a current cost (${label})`, async ({ page }) => {
+    test.setTimeout(240000);
     allureTags('Quick-input: per-product cost adjustment (Run + Complete)');
     allure.description(`
 ## F1500: Costing — manual per-product cost adjustment (Kosten Neubewertung)
 
-Creates a Kosten Neubewertung header, adds ONE line via the per-product quick-input for a product
-that has a current cost, runs the revaluation and completes the document.
-Verifies the quick-input offers Product + New cost price, the line is created with the derived
-segment and the document completes.
+A stocked product (10 on hand) is first given a current cost price of 10 with one Kosten Neubewertung.
+A second Kosten Neubewertung then adds ONE line via the per-product quick-input with New cost price 15
+and is completed. Verifies the quick-input offers Product + New cost price, the line shows the current
+cost 10, the quantity on hand 10 and the value difference 10 x (15 - 10) = 50, and the document is
+completed and posted.
     `);
 
-    const md = await createMasterdata(language);
-    const productCode = md.products.PHAS.productCode;
+    const md = await createStockedMasterdata(language);
+    const productCode = md.products.PSTK.productCode;
 
-    const recordId = await loginAndCreateHeader(md);
+    // The adjustment is posted the day after the setup: its revaluation window starts at its own Accounting Date,
+    // so the stock received and the setup revaluation of the previous day are not replayed again.
+    let adjustmentDate = null;
+    await test.step('Setup: stock of 10 with a current cost price of 10 (first Kosten Neubewertung)', async () => {
+      const setupRecordId = await loginAndCreateHeader(md);
+      const serverDate = String((await getFieldData(COST_REVAL_WINDOW_ID, setupRecordId, 'DateAcct')).value).substring(0, 10);
+      const nextDay = new Date(`${serverDate}T00:00:00Z`);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+      adjustmentDate = nextDay.toISOString().substring(0, 10);
+      await CostRevaluationPage.openQuickInput();
+      await CostRevaluationPage.addLine(productCode, '10');
+      await CostRevaluationPage.complete();
+      const setupDocStatus = await getFieldData(COST_REVAL_WINDOW_ID, setupRecordId, 'DocStatus');
+      expect(setupDocStatus.value.key).toBe('CO');
+    });
+
+    const recordId = await CostRevaluationPage.createHeader();
     console.log(`[quick-input] header record ${recordId}`);
+    const headerDate = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
+    if (headerDate !== adjustmentDate) {
+      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', adjustmentDate);
+    }
 
     await CostRevaluationPage.openQuickInput();
 
@@ -90,7 +128,7 @@ segment and the document completes.
 
     await CostRevaluationPage.addLine(productCode, '15');
 
-    // Exactly one line exists with NewCostPrice = typed value (assert via WebAPI, language-independent)
+    // Exactly one line exists (assert via WebAPI, language-independent)
     const lineRows = await page.request.get(
       `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`
     );
@@ -98,18 +136,32 @@ segment and the document completes.
     const rows = lineBody.result || [];
     console.log('[quick-input] line count=' + rows.length);
     expect(rows.length).toBe(1);
-    const newCostVal = rows[0].fieldsByName.NewCostPrice.value;
-    console.log('[quick-input] NewCostPrice=' + JSON.stringify(newCostVal));
-    expect(Number(newCostVal)).toBe(15);
-    // CurrentCostPrice derived from the product's live M_Cost (present, may be 0 for a fresh cost row)
-    expect(rows[0].fieldsByName.CurrentCostPrice).toBeDefined();
+    const line = rows[0].fieldsByName;
+    console.log(
+      `[quick-input] CurrentCostPrice=${JSON.stringify(line.CurrentCostPrice.value)} CurrentQty=${JSON.stringify(line.CurrentQty.value)}` +
+        ` NewCostPrice=${JSON.stringify(line.NewCostPrice.value)} DeltaAmt=${JSON.stringify(line.DeltaAmt && line.DeltaAmt.value)}`
+    );
+    expect(Number(line.NewCostPrice.value)).toBe(15);
+    // Derived from the product's live cost: current cost 10 for the 10 on hand
+    expect(Number(line.CurrentCostPrice.value)).toBe(10);
+    expect(Number(line.CurrentQty.value)).toBe(10);
 
     await CostRevaluationPage.complete();
 
-    // Assert the document reached Completed (CO)
+    // Completed (CO) and posted (Y); the value difference 10 x (15 - 10) = 50 is on the line
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
     console.log('[quick-input] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
+    const posted = await CostRevaluationPage.waitUntilPosted(recordId);
+    console.log('[quick-input] Posted=' + JSON.stringify(posted.value));
+    expect(posted.value.key).toBe('Y');
+    const completedRows = (
+      await (
+        await page.request.get(`${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`)
+      ).json()
+    ).result;
+    console.log('[quick-input] completed DeltaAmt=' + JSON.stringify(completedRows[0].fieldsByName.DeltaAmt.value));
+    expect(Number(completedRows[0].fieldsByName.DeltaAmt.value)).toBe(50);
     await CostRevaluationPage.showCompletedDocument();
   });
 
@@ -210,8 +262,8 @@ and it does NOT offer a non-stocked (Service) product.
 
 Picks a STOCKED product that has NO M_Cost row, quick-inputs a New cost price, and completes.
 The Complete DocAction seeds the cost row at qty 0 with the entered price (no GL posting) and the
-document completes. The New cost price field surfaces the provisional-price hint (moving-average:
-provisional until the first goods receipt).
+document completes. The header uses the moving-average cost element (Bestellpreis Durchschnitt), under
+which the New cost price field's provisional-price hint applies (provisional until the first goods receipt).
     `);
 
     const md = await createMasterdata(language);
@@ -219,6 +271,12 @@ provisional until the first goods receipt).
 
     const recordId = await loginAndCreateHeader(md);
     console.log(`[seed] header record ${recordId}`);
+
+    // Moving-average costing: the cost element is chosen on the header while it has no lines.
+    await CostRevaluationPage.selectCostElement(MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
+    const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
+    console.log('[seed] M_CostElement_ID=' + JSON.stringify(costElement.value));
+    expect(costElement.value.caption).toBe(MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
 
     await CostRevaluationPage.openQuickInput();
 
