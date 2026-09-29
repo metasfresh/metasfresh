@@ -2,6 +2,7 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -95,6 +96,7 @@ public class ContractCompensationGroupRepository
 		}
 
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, contractGroupRepoIds)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
@@ -113,6 +115,28 @@ public class ContractCompensationGroupRepository
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.delete();
+	}
+
+	/**
+	 * Clears the (denormalized) {@code C_Order_CompensationGroup_ID} that
+	 * {@code de.metas.order.invoicecandidate.C_OrderLine_Handler} copies onto a regular line's invoice
+	 * candidate whenever one is created for it — otherwise {@link OrderGroupRepository#destroyGroup} deleting
+	 * the (now empty) group header hits FK {@code cordercompensationgroup_cinvoi}, because that not-yet-invoiced
+	 * candidate still references the about-to-be-deleted group. Safe unconditionally: the caller only reaches
+	 * here once the group's compensation lines are already gone (deleted by {@link #deleteCompensationLines},
+	 * whose own {@code C_OrderLine} deletion already took each of THEIR invoice candidates down via the
+	 * standard before-delete cleanup) — only the regular lines' candidates can still be referencing it.
+	 */
+	public void clearInvoiceCandidateGroupReferences(@NonNull final GroupId groupId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+				.create()
+				.list(I_C_Invoice_Candidate.class)
+				.forEach(invoiceCandidate -> {
+					invoiceCandidate.setC_Order_CompensationGroup_ID(-1);
+					saveRecord(invoiceCandidate);
+				});
 	}
 
 	/**

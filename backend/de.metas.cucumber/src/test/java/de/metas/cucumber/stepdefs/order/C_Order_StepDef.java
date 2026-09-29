@@ -521,6 +521,17 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
+
+				// Force a fresh load for this identifier: orderTable's StepDefData caches the model per
+				// identifier (a fresh TableRecordReference still keeps its own SoftReference once loaded), so
+				// without this, a later doc action on the same identifier reuses THIS SAME MOrder instance —
+				// unlike a real WebUI/REST request, which always loads a fresh PO per doc action
+				// (DocumentInterfaceWrapperHelper.getPO). That matters because MOrder.completeIt0() only
+				// re-runs prepareIt() (and so TIMING_BEFORE_PREPARE) when its private m_justPrepared flag is
+				// still false; reactivation never resets that flag, so re-completing the SAME cached instance
+				// after reactivation silently skips prepareIt() — a cucumber-harness-only gap a genuinely
+				// fresh instance (as production always has) does not have.
+				orderTable.putOrReplace(orderIdentifier, order);
 				break;
 			case completed:
 				completeOrder(order);

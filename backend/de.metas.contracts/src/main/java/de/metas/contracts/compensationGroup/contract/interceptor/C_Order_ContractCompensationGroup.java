@@ -39,19 +39,10 @@ import org.springframework.stereotype.Component;
  * drop-ship purchase order. Removes the group again on reactivation, refusing the reactivation while a
  * discount line is already invoiced.
  * <p>
- * Runs at {@link ModelValidator#TIMING_BEFORE_PREPARE}, primarily: adding the lines this early lets
+ * Runs at {@link ModelValidator#TIMING_BEFORE_PREPARE}, not before-complete: adding the lines this early lets
  * {@code MOrder.calculateTaxTotal()} (called later within the same {@code prepareIt()}) include them — the
  * only point where newly added lines get their taxes and totals computed. See
  * {@link ContractCompensationGroupService}'s class Javadoc for the resulting interceptor-order guarantee.
- * <p>
- * Also runs at {@link ModelValidator#TIMING_BEFORE_COMPLETE}: re-completing an order that was reactivated
- * (without going back through Draft) skips {@code prepareIt()} — {@code MOrder.completeIt0()} only re-runs it
- * when its {@code m_justPrepared} flag is still {@code false}, which a reactivated, previously-completed order
- * (backed by the same cached model instance within one transaction) does not satisfy — while
- * {@code TIMING_BEFORE_COMPLETE} always fires. Re-running the (idempotent, remove-then-recreate)
- * {@link ContractCompensationGroupService#recreateContractGroups} here as well closes that gap; on a normal
- * first completion it is a harmless no-op re-derivation of the same group {@code TIMING_BEFORE_PREPARE}
- * already built from the same, unchanged candidate lines.
  */
 @Interceptor(I_C_Order.class)
 @Component
@@ -60,8 +51,8 @@ public class C_Order_ContractCompensationGroup
 {
 	@NonNull private final ContractCompensationGroupService contractCompensationGroupService;
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE, ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void recreateGroups(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
+	public void beforePrepare(final I_C_Order order)
 	{
 		contractCompensationGroupService.recreateContractGroups(order);
 	}

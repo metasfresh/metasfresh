@@ -20,7 +20,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | Identifier      | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
       | contractProduct |                                      | false         |
       | goodsProduct    | goodsCategory                        | true          |
-      | discountProduct | goodsCategory                        | false         |
+      | discountProduct | goodsCategory                        | true          |
 
     And metasfresh contains M_PricingSystems
       | Identifier |
@@ -88,10 +88,9 @@ Feature: Contract-triggered compensation group on sales-order reactivation
 
     And the order identified by orderTS5 is completed
 
-    # A discount line was added (goods + discount = 2); its price is not asserted by identifier here — doing
-    # so would register it in the order-line lookup table, and the row is about to be deleted below, which
-    # would break the lookup table for every order line added afterward. TC10 already covers the discount
-    # amount computation; this scenario's own point is the reactivate/recreate lifecycle, asserted below.
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_ts5Discount            | orderTS5              | discountProduct         | 1          | true                        | -30   | mainTerm                          |
     And the order identified by orderTS5 has 2 order lines
 
     And the order identified by orderTS5 is reactivated
@@ -156,4 +155,51 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invInvoicedDiscount     | ic_invoicedDiscount               |
 
-    And the order identified by orderInvoiced cannot be reactivated because of error code ContractCompensationGroup_ReactivateInvoiced
+    And the order identified by orderInvoiced cannot be reactivated because of error code ContractCompGroup_ReactivateInvoiced
+
+  # ##############################################################################################
+  # TS5 variant: reactivation is refused while a contract discount line is only PARTLY invoiced
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32353_TC22
+  Scenario: Reactivating a sales order is refused while its contract discount line is only partly invoiced
+    Given metasfresh contains C_Orders:
+      | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderPartlyInvoiced | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier             | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_partlyInvoicedGoods | orderPartlyInvoiced   | goodsProduct            | 1          |
+
+    And the order identified by orderPartlyInvoiced is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_partlyInvoicedDiscount | orderPartlyInvoiced   | discountProduct         | 1          | true                        | -30   | mainTerm                          |
+
+    # same "invoiced together" constraint as the previous scenario (InvoiceCandEnqueuer_IncompleteGroupsFound);
+    # unlike it, only HALF of the discount line's quantity is invoiced (QtyToInvoice_Override), so its
+    # QtyInvoiced ends up non-zero but below QtyOrdered — a partial, not a full, invoice.
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID            | C_Invoice_Candidate_ID    |
+      | ol_partlyInvoicedGoods    | ic_partlyInvoicedGoods    |
+      | ol_partlyInvoicedDiscount | ic_partlyInvoicedDiscount |
+
+    And update invoice candidates
+      | C_Invoice_Candidate_ID    | OPT.InvoiceRule_Override | OPT.QtyToInvoice_Override |
+      | ic_partlyInvoicedGoods    | I                        |                           |
+      | ic_partlyInvoicedDiscount | I                        | 0.5                       |
+
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_partlyInvoicedGoods            |                 |
+      | ic_partlyInvoicedDiscount         | 0.5             |
+
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier   | C_Invoice_Candidate_ID.Identifier |
+      | invPartlyInvoicedDiscount | ic_partlyInvoicedDiscount         |
+
+    And the order identified by orderPartlyInvoiced cannot be reactivated because of error code ContractCompGroup_ReactivateInvoiced
