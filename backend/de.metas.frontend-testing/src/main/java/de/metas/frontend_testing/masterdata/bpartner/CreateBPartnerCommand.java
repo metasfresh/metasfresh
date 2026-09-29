@@ -142,7 +142,8 @@ public class CreateBPartnerCommand
 		}
 		if (request.getInvoiceRule() != null)
 		{
-			bpartner.setInvoiceRule(InvoiceRule.toCodeOrNull(request.getInvoiceRule()));
+			// validate the request's code maps to a real InvoiceRule, then store the normalized code
+			bpartner.setInvoiceRule(InvoiceRule.ofCode(request.getInvoiceRule()).getCode());
 		}
 
 		// Set pricing system based on vendor/customer flags
