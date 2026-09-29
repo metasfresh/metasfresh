@@ -131,34 +131,31 @@ public class CostRevaluationService
 		// product is costed at organization level; otherwise (client / batch-lot level) don't filter by org.
 		final OrgId orgId = getOrgIdToMatch(costRevaluation, productId);
 
-		Optional<CurrentCost> currentCost = resolveCurrentCost(costRevaluation, productId, orgId);
-
-		if (!currentCost.isPresent())
+		CurrentCost currentCost = resolveCurrentCost(costRevaluation, productId, orgId).orElse(null);
+		if (currentCost == null)
 		{
 			// Seed-cost path: a stocked product may genuinely have no M_Cost row yet (e.g. migrated/legacy product).
 			// Materialize the missing row(s) at quantity 0 by reusing the same creator the product interceptor uses at
 			// product creation (idempotent: only missing rows are created), then re-resolve.
 			currentCostsRepo.createDefaultProductCosts(productDAO.getById(productId));
-			currentCost = resolveCurrentCost(costRevaluation, productId, orgId);
+			currentCost = resolveCurrentCost(costRevaluation, productId, orgId)
+					.orElseThrow(() -> new AdempiereException("No current cost found for product " + productId));
 		}
 
-		final CurrentCost currentCostEffective = currentCost.orElseThrow(
-				() -> new AdempiereException("No current cost found for product " + productId));
-
-		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCostEffective.getCurrencyId());
-		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCostEffective, newCostAmount);
+		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
+		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
 	}
 
 	/**
-	 * The org to match the product's current cost by, decided from the product's costing level (the same source the
-	 * bulk path and {@code CurrentCostsLoader} use, {@link IProductCostingBL#getCostingLevel}): the header document's
+	 * The org to match the product's current cost by, decided from the product's costing level (the same source
+	 * {@code CurrentCostsLoader} uses, {@link IProductCostingBL#getCostingLevel}): the header document's
 	 * org when the product is costed at {@link CostingLevel#Organization}, {@code null} (no org filter) otherwise.
 	 */
 	@Nullable
 	private OrgId getOrgIdToMatch(@NonNull final CostRevaluation costRevaluation, @NonNull final ProductId productId)
 	{
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, costRevaluation.getAcctSchemaId());
-		return CostingLevel.Organization.equals(costingLevel) ? costRevaluation.getOrgId() : null;
+		return costingLevel.isOrg() ? costRevaluation.getOrgId() : null;
 	}
 
 	/**
