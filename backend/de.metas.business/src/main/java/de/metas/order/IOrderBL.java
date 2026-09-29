@@ -69,6 +69,11 @@ public interface IOrderBL extends ISingletonService
 	I_C_Order getById(OrderId orderId);
 
 	/**
+	 * @return the active orders whose {@code Link_Order_ID} is the given order (e.g. the purchase orders created from a sales order), ordered by id
+	 */
+	List<I_C_Order> getByLinkOrderId(@NonNull OrderId linkOrderId);
+
+	/**
 	 * Sets price list if there is a price list for the given order's location and pricing system.
 	 * <p>
 	 * ! If {@link I_C_Order#COLUMNNAME_C_BPartner_Location_Value_ID} is set, its country takes precendence over the country of {@link I_C_Order#COLUMNNAME_C_BPartner_Location_ID}.

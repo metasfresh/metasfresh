@@ -23,30 +23,40 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_Product_Category;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class AD_SysConfig_StepDef
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final AD_User_StepDefData userTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
-	{
-		this.userTable = userTable;
-	}
+	/**
+	 * Prior values ({@code null} = none) of the sysconfigs this scenario changed temporarily; restored after the scenario.
+	 */
+	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
@@ -71,7 +81,7 @@ public class AD_SysConfig_StepDef
 						.setParameter("type:", sysconfigType);
 		}
 
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
+		resetSysConfigCache();
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -98,5 +108,117 @@ public class AD_SysConfig_StepDef
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+	}
+
+	/**
+	 * Sets a sys config to a boolean value ({@code true} or {@code false}) for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
+	 * @cucumber.depends (none)
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+	 * </pre>
+	 */
+	@And("temporarily set sys config boolean value {word} for sys config {string}")
+	public void temporarily_set_sys_config_boolean_value(@NonNull final String valueStr, @NonNull final String sysConfigName)
+	{
+		if (!"true".equals(valueStr) && !"false".equals(valueStr))
+		{
+			throw new AdempiereException("Expected true or false but got: " + valueStr);
+		}
+
+		rememberPriorValue(sysConfigName);
+		enable_sys_config("boolean", valueStr, sysConfigName);
+	}
+
+	/**
+	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name to point<br>
+	 *   <b>M_Product_Category_ID</b> — (required, identifier-ref) the product category whose repo id becomes the sysconfig's value<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData
+	 * @cucumber.example <pre>
+	 * Given temporarily set AD_SysConfig to M_Product_Category_ID:
+	 *   | Name                             | M_Product_Category_ID |
+	 *   | PackingMaterialProductCategoryID | pm_category           |
+	 * </pre>
+	 */
+	@And("temporarily set AD_SysConfig to M_Product_Category_ID:")
+	public void temporarily_set_sysConfig_to_product_category(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String sysConfigName = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final ProductCategoryId productCategoryId = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+					.lookupNotNullIdIn(productCategoryTable);
+
+			rememberPriorValue(sysConfigName);
+			setSysConfigIntValue(sysConfigName, productCategoryId.getRepoId());
+
+			resetSysConfigCache();
+		});
+	}
+
+	/**
+	 * Setting a value also fires a cache invalidation event, but that event may not be processed before the next step runs.
+	 */
+	private static void resetSysConfigCache()
+	{
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	private void deleteSystemSysConfig(@NonNull final String sysConfigName)
+	{
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM)
+				.create()
+				.delete();
+	}
+
+	/**
+	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
+	 * <p>
+	 * Remembers the value a sysconfig had before this scenario first changed it; {@code containsKey}, because {@code null} (no prior value) is a value too.
+	 */
+	private void rememberPriorValue(@NonNull final String sysConfigName)
+	{
+		if (!priorValueBySysConfigName.containsKey(sysConfigName))
+		{
+			priorValueBySysConfigName.put(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+		}
+	}
+
+	/**
+	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is deleted again.
+	 */
+	@After
+	public void restoreTemporarySysConfigsAfterScenario()
+	{
+		if (priorValueBySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		{
+			final String sysConfigName = entry.getKey();
+			final String priorValue = entry.getValue();
+			if (priorValue == null)
+			{
+				deleteSystemSysConfig(sysConfigName);
+			}
+			else
+			{
+				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			}
+		}
+
+		priorValueBySysConfigName.clear();
+		resetSysConfigCache();
 	}
 }

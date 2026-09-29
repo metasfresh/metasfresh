@@ -347,6 +347,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.stream();
 	}
 
+	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkOrderId)
+				.orderBy(I_C_Order.COLUMNNAME_C_Order_ID)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
 		return Services.get(IQueryBL.class)
