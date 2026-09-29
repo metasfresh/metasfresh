@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -148,11 +149,11 @@ public class AD_SysConfig_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String sysConfigName = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
-			final I_M_Product_Category productCategory = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
-					.lookupNotNullIn(productCategoryTable);
+			final ProductCategoryId productCategoryId = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+					.lookupNotNullIdIn(productCategoryTable);
 
 			rememberPriorValue(sysConfigName);
-			setSysConfigIntValue(sysConfigName, productCategory.getM_Product_Category_ID());
+			setSysConfigIntValue(sysConfigName, productCategoryId.getRepoId());
 
 			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 		});

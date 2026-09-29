@@ -31,6 +31,7 @@ import de.metas.project.ProjectId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
@@ -44,15 +45,13 @@ import java.util.Objects;
 
 /**
  * Safety-net detector for a packing unit (TU/LU HU, or the default-pallet packing instruction) that ends up
- * serving shipment lines of more than one project ({@code C_Project_ID}). Pure function, no persistence.
+ * serving shipment lines of more than one project ({@code C_Project_ID}). {@link #detect(List)} is a pure function;
+ * {@link #logWarnings(I_M_InOut, List)} only writes WARN log entries. Nothing is persisted.
  */
+@UtilityClass
 public class ShipmentPackingUnitProjectConflictDetector
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentPackingUnitProjectConflictDetector.class);
-
-	private ShipmentPackingUnitProjectConflictDetector()
-	{
-	}
 
 	public static ImmutableList<Conflict> detect(@NonNull final List<Usage> usagesInLineOrder)
 	{
