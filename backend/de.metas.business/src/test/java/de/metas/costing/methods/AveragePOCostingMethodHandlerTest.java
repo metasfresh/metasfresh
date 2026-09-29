@@ -8,6 +8,7 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateRequest.CostDetailCreateRequestBuilder;
 import de.metas.costing.CostDetailCreateResult;
@@ -26,6 +27,8 @@ import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.costrevaluation.CostRevaluationId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -69,6 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -277,6 +281,44 @@ public class AveragePOCostingMethodHandlerTest
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.build();
+	}
+
+	/**
+	 * Last line of defence (normally refused earlier by the costing service): the refusal names the product and the
+	 * other revaluation's day in its organization's time zone.
+	 */
+	@Test
+	public void recalculate_refusesACostRevaluationCostDetail_namingProductAndDate()
+	{
+		handler.createOrUpdateCost(costDetailCreateRequest()
+				.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+				.amt(CostAmount.of(100, euroCurrencyId))
+				.qty(Quantity.of(10, eachUOM))
+				.build());
+		final CurrentCost currentCost = getCurrentCost(orgId1);
+
+		final CostDetail revaluationCostDetail = CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(orgId1)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(costElement.getId())
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of(0, euroCurrencyId))
+				.qty(Quantity.of(0, eachUOM))
+				.changingCosts(true)
+				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(CostRevaluationId.ofRepoId(1), 1)))
+				// 23:30 UTC on 03-05 is 00:30 on 03-06 in Europe/Berlin
+				.dateAcct(Instant.parse("2024-03-05T23:30:00Z"))
+				.build();
+
+		final String productValue = InterfaceWrapperHelper.load(productId.getRepoId(), I_M_Product.class).getValue();
+		assertThatThrownBy(() -> handler.recalculateCostDetailAmountAndUpdateCurrentCost(revaluationCostDetail, currentCost))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
+				.hasMessageContaining(productValue)
+				.hasMessageContaining("06.03.2024");
 	}
 
 	@Test

@@ -25,9 +25,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -54,6 +54,8 @@ import java.time.LocalDate;
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
 	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	protected final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
@@ -286,10 +288,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		if (costDetail.getDocumentRef().isCostRevaluationLine())
 		{
 			// normally refused before, by the costing service's check; kept as the last line of defence, with the message's parameters
-			final LocalDate otherRevaluationDate = costDetail.getDateAcct().atZone(Services.get(IOrgDAO.class).getTimeZone(costDetail.getOrgId())).toLocalDate();
+			final LocalDate otherRevaluationDate = costDetail.getDateAcct().atZone(orgDAO.getTimeZone(costDetail.getOrgId())).toLocalDate();
 			throw new AdempiereException(
 					MSG_RevaluatingAnotherRevaluationIsNotSupported,
-					Services.get(IProductBL.class).getProductValueAndName(costDetail.getProductId()),
+					productBL.getProductValueAndName(costDetail.getProductId()),
 					TranslatableStrings.date(otherRevaluationDate))
 					.setParameter("costDetail", costDetail);
 		}

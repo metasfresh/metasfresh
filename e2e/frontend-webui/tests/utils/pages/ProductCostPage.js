@@ -47,10 +47,26 @@ export class ProductCostPage {
         });
       }
 
-      await cell.dblclick();
-      await page.keyboard.type(String(value));
-      // let any request the typing might trigger settle before checking nothing changed
-      await page.waitForLoadState('networkidle');
+      // Record write requests from the attempt on, so a save triggered by the typing is caught, not only a visible change.
+      const writeRequests = [];
+      const onRequest = (request) => {
+        if (['PATCH', 'POST', 'PUT'].includes(request.method())) writeRequests.push(`${request.method()} ${request.url()}`);
+      };
+      page.on('request', onRequest);
+      try {
+        await cell.dblclick();
+        await page.keyboard.type(String(value));
+
+        // Bounded settle window: for 1s the cell must never open an editable input.
+        const settleUntil = Date.now() + 1000;
+        while (Date.now() < settleUntil) {
+          expect(await cell.locator('input:not([disabled]):not([readonly])').count()).toBe(0);
+          await page.waitForTimeout(100);
+        }
+      } finally {
+        page.off('request', onRequest);
+      }
+      expect(writeRequests, 'no write request fired by the edit attempt').toEqual([]);
 
       // Rendered read-only, and no editable input was opened in the cell.
       await expect(cell).toHaveClass(/cell-disabled/);
