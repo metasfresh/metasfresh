@@ -73,8 +73,9 @@ export default defineConfig({
   use: {
     baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
     trace: 'on',
-    // An evidence-capture run (UAT_CAPTURE=1) records at the 'Desktop Chrome' viewport size (1280x720) so on-screen
-    // text stays legible; normal and CI runs keep the default (downscaled) video size.
+    // An evidence-capture run (UAT_CAPTURE=1) records at 1280x720, the viewport the 'Desktop Chrome' project below
+    // actually runs with (its device descriptor overrides the viewport set here), so on-screen text stays legible;
+    // normal and CI runs keep the default (downscaled) video size.
     video: process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0' ? { mode: 'on', size: { width: 1280, height: 720 } } : 'on',
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },

@@ -13,14 +13,6 @@ import { getFieldData } from '../WebAPIValidation';
 export const COST_REVAL_WINDOW_ID = '541568';
 export const COST_REVAL_LINE_TAB_ID = 'AD_Tab-546465';
 
-/** Today's date as an ISO yyyy-MM-dd string (language-independent; matches the WebAPI date value). */
-export const todayISO = () => {
-  const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${mm}-${dd}`;
-};
-
 /**
  * Render isoDate (yyyy-MM-dd) in the display format of a date field whose current text is `shown` while its
  * stored value is currentIsoDate. Supports the day/month/year orders of the tested languages (en_US, de_DE);
@@ -96,10 +88,13 @@ export class CostRevaluationPage {
       );
       const recordId = page.url().split('/').pop();
 
-      // At the data layer (language-independent): the auto-filled value IS today's posting date.
+      // At the data layer (language-independent): the auto-filled value IS the header's posting date (DateAcct,
+      // defaulted by the server; compared to it rather than to the test runner's clock, which may differ in time zone).
+      const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
       const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' expected ' + todayISO());
-      expect(String(evalStart.value)).toContain(todayISO());
+      console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' DateAcct=' + JSON.stringify(dateAcct.value));
+      expect(dateAcct.value).toBeTruthy();
+      expect(String(evalStart.value).substring(0, 10)).toBe(String(dateAcct.value).substring(0, 10));
 
       const unhighlight = await highlightForCaptureIfEnabled(page.locator('.form-field-EvaluationStartDate').first());
       await holdForCaptureIfEnabled(2500);

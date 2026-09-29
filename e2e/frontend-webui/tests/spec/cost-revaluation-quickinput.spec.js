@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage, todayISO } from '../utils/pages/CostRevaluationPage';
+import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
 import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -129,8 +129,9 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
     const recordId = await loginAndCreateHeader(md);
     console.log(`[dates] header record ${recordId}`);
 
-    const today = todayISO();
-    const [y, m, d] = today.split('-');
+    // Derive the dates from the server-defaulted posting date, not from the test runner's clock.
+    const initialDateAcct = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
+    const [y, m, d] = initialDateAcct.split('-');
     // Stay inside the current month (open period); any day that differs from today.
     const otherDay = (day) => `${y}-${m}-${String(day).padStart(2, '0')}`;
     const dateAcct1 = otherDay(Number(d) === 15 ? 14 : 15);
