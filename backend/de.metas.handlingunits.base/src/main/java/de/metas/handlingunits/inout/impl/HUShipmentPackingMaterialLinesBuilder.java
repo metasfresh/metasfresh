@@ -87,14 +87,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private static final String SYSCONFIG_SplitShipmentPackingMaterialLinesByProject = "de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject";
 
 	// Services
-	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	@NonNull private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	@NonNull private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	@NonNull private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	@NonNull private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final transient IDocLineSortDAO docLineSortDAO = Services.get(IDocLineSortDAO.class);
 
 	private boolean configurable = true;
 	private I_M_InOut _shipment;
@@ -323,7 +324,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		//
 		// Sets M_Product_ID sort comparator to use
-		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
+		final Comparator<Integer> candidatesSortComparator = docLineSortDAO.findDocLineSort()
 				.setContext(ctx)
 				.setC_BPartner_ID(inout.getC_BPartner_ID())
 				.setC_DocType(load(inout.getC_DocType_ID(), I_C_DocType.class))
@@ -361,7 +362,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 				.getM_HU_PI_Version();
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(sourceIol.getM_InOut().getC_BPartner_ID());
-		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class)
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO
 				.retrievePackingMaterial(huPiVersion, bpartnerId);
 		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
 		{

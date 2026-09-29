@@ -163,7 +163,7 @@ public class M_InOut_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
-	private final M_Product_StepDefData productTable;
+	@NonNull private final M_Product_StepDefData productTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);

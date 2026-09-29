@@ -52,6 +52,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Two manual-packing lines of different projects share the default LU, which is a packing-unit project conflict when the split is on.
@@ -153,13 +154,15 @@ class HUShipmentPackingMaterialLinesBuilderTest
 	}
 
 	@Test
-	void recreatePackingMaterialLines_vendorReturn_notSplitByProject()
+	void recreatePackingMaterialLines_vendorReturn_rejected()
 	{
 		final I_M_InOut vendorReturn = createInOutWithTwoProjectLines(X_M_InOut.MOVEMENTTYPE_VendorReturns);
+		vendorReturn.setIsSOTrx(false); // as a real vendor return
+		saveRecord(vendorReturn);
 
-		huInOutBL.recreatePackingMaterialLines(vendorReturn);
-
-		// the project split, and with it the conflict check, is off for every document other than a customer shipment
+		// the packing lines of a purchase-side document are never built here, so nothing can be split per project
+		assertThatThrownBy(() -> huInOutBL.recreatePackingMaterialLines(vendorReturn))
+				.hasMessageContaining("shall be a shipment");
 		assertThat(listAppender.list).isEmpty();
 	}
 

@@ -71,7 +71,6 @@ public class ShipmentPackingUnitProjectConflictDetector
 			final ImmutableSet<ProjectId> projectIds = usages.stream()
 					.map(Usage::getProjectId)
 					.filter(Objects::nonNull)
-					.distinct()
 					.collect(ImmutableSet.toImmutableSet());
 
 			if (projectIds.size() <= 1)

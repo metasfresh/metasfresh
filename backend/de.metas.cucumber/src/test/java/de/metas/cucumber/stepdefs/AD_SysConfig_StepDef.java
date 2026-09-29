@@ -45,7 +45,7 @@ import static org.assertj.core.api.Assertions.*;
 @RequiredArgsConstructor
 public class AD_SysConfig_StepDef
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
