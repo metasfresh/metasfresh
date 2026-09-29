@@ -3,6 +3,7 @@ package de.metas.security;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.SeqNo;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -51,4 +52,14 @@ public interface IRoleDAO extends ISingletonService
 	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
 
 	void deleteUserRolesByUserId(final UserId userId);
+
+	/**
+	 * Creates a client+org-level {@code AD_Role} bound to a single org.
+	 *
+	 * @param name the final {@code AD_Role.Name}; the caller is responsible for its uniqueness.
+	 */
+	RoleId createRole(String name);
+
+	/** Includes {@code includedRoleId} into {@code roleId}, i.e. creates one {@code AD_Role_Included} row. */
+	void createRoleInclusion(RoleId roleId, RoleId includedRoleId, SeqNo seqNo);
 }

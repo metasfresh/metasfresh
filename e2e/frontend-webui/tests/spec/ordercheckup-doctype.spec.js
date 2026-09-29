@@ -9,13 +9,21 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Bestellkontrolle window ("Order Checkup") — gh32265: surface the resolved C_DocType, read-only,
- * beside the pre-existing DocumentType ("Belegart") ref-list field.
+ * IN PLACE OF the legacy DocumentType ("Belegart") ref-list field.
  * AD_Window_ID = 540274, single tab AD_Tab_ID = 540703 (table C_Order_MFGWarehouse_Report).
  *
- * Migration 5825570 adds, purely additively (no DDL, no behaviour change):
- *   * AD_Field 785045 + AD_UI_Element 654787 for C_Order_MFGWarehouse_Report.C_DocType_ID,
- *     IsReadOnly='Y', into the SAME primary AD_UI_ElementGroup (540617) as DocumentType and
- *     directly after it (AD_UI_Element SeqNo 5 -> 6). Grid deliberately left off.
+ * Migration 5825570 added AD_Field 785045 + AD_UI_Element 654787 for
+ * C_Order_MFGWarehouse_Report.C_DocType_ID, IsReadOnly='Y', into the primary AD_UI_ElementGroup
+ * (540617), right where DocumentType sat (AD_UI_Element SeqNo 6, DocumentType 5).
+ *
+ * Migrations 5826400 + 5826420 then — per the human decision of 2026-09-25 "hide DocumentType
+ * everywhere, C_DocType_ID takes its grid + filter slots" — change that contract:
+ *   * DocumentType (AD_UI_Element 545492, AD_Column 552750) is hidden in the single view, the grid
+ *     and the filters;
+ *   * C_DocType_ID (AD_UI_Element 654787, AD_Column 593637) becomes the FIRST grid column
+ *     (SeqNoGrid 10) and a filter (SelectionColumnSeqNo 20);
+ *   * AD_Val_Rule 540802 restricts the C_DocType_ID lookup — the filter lookup included — to the
+ *     Bestellkontrolle doctypes, DocBaseType BKP / BKB.
  *
  * ---------------------------------------------------------------------------------------------------
  * TEST-LAYER RATIONALE (metasfresh-test-integrity)
@@ -27,8 +35,11 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * as the product does (see "HOW THE RECORDS UNDER TEST COME INTO EXISTENCE" below). What it proves,
  * all through language-invariant identifiers, run in en_US + de_DE:
  *
- *   (A) window layout — C_DocType_ID sits in the SAME element group as DocumentType and DIRECTLY
- *       after it, i.e. "beside the existing Belegart field".                              [AC1]
+ *   (A) window layout — DocumentType is ABSENT from the single view, the grid and the filters;
+ *       C_DocType_ID stays in the single view's primary element group (the one holding C_Order_ID),
+ *       is the FIRST grid column, and is offered as a filter whose lookup offers exactly the
+ *       Bestellkontrolle doctypes (one BKP, one BKB, nothing else). Pinned both on the layout / lookup
+ *       payloads and on the rendered grid header and filter dropdown.                     [AC1]
  *   (B) record data — the record carries the RIGHT doctype: its C_DocType_ID.value.key resolves to a
  *       C_DocType whose (language-invariant, ref-list) DocBaseType is the one OrderCheckupBuilder
  *       maps this row's DocumentType kind to — Warehouse('WH') -> BKP, Plant('PL') -> BKB — checked
@@ -179,28 +190,61 @@ function groupFieldNames(group) {
   return names;
 }
 
+/**
+ * Flatten a view layout's filter descriptors (which may nest via `includedFilters`) to
+ * { filterId, parameterName } pairs.
+ */
+function flattenFilterParameters(filters) {
+  const result = [];
+  for (const filter of filters) {
+    for (const param of filter.parameters || []) {
+      result.push({ filterId: filter.filterId, parameterName: param.parameterName });
+    }
+    result.push(...flattenFilterParameters(filter.includedFilters || []));
+  }
+  return result;
+}
+
 /** Unwrap the single-document GET payload, which may be an array or a {documents:[…]} envelope. */
 function singleDocumentOf(body) {
   return Array.isArray(body) ? body[0] : (body.documents || [body])[0];
 }
 
+/** Read a C_DocType's language-invariant DocBaseType code through the C_DocType window. */
+async function docBaseTypeOf(page, docTypeKey) {
+  const docTypeResp = await page.request.get(`${WEBAPI_BASE_URL}/window/${DOCTYPE_WINDOW_ID}/${docTypeKey}`);
+  expect(docTypeResp.ok(), `C_DocType ${docTypeKey} must be readable`).toBe(true);
+  const docTypeDoc = singleDocumentOf(await docTypeResp.json());
+  const docBaseTypeField = (docTypeDoc.fieldsByName || {})['DocBaseType'];
+  return (
+    docBaseTypeField &&
+    docBaseTypeField.value &&
+    (docBaseTypeField.value.key !== undefined ? docBaseTypeField.value.key : docBaseTypeField.value)
+  );
+}
+
 test.describe('Bestellkontrolle window — resolved document type surfaced read-only', () => {
   testCases.forEach(({ language, label }) => {
-    test(`C_DocType_ID is present, populated and read-only beside Belegart on window 540274 (${label})`, async ({
+    test(`C_DocType_ID is present, populated and read-only in place of Belegart on window 540274 (${label})`, async ({
       page,
     }) => {
       allure.epic('E0159: Manufacturing Planning');
       allure.tag('F8005: Order Checkup');
       allure.tag('F8005'); // Standalone tag for code-only filtering
       allure.story(
-        'Bestellkontrolle — the resolved C_DocType is shown read-only directly after the DocumentType field, and matches the doctype the row kind maps to'
+        'Bestellkontrolle — DocumentType is hidden everywhere; the resolved C_DocType is shown read-only, is the first grid column and a filter restricted to the Bestellkontrolle doctypes, and matches the doctype the row kind maps to'
       );
       allure.severity('normal');
       allure.description(`
 ## Bestellkontrolle (AD_Window ${BESTELLKONTROLLE_WINDOW_ID}) — resolved document type, read-only
 
-gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_DocType_ID:
-- in the **same element group** as DocumentType and **directly after it** (window layout),
+gh32265. Verifies that migrations 5825570 / 5826400 / 5826420 surface C_Order_MFGWarehouse_Report.C_DocType_ID
+in place of the legacy DocumentType field:
+- **DocumentType is absent** from the single view, the grid and the filters,
+- C_DocType_ID stays in the **primary element group** of the single view (with C_Order_ID),
+- C_DocType_ID is the **first grid column**,
+- C_DocType_ID is **offered as a filter**, whose lookup offers **exactly** the two Bestellkontrolle
+  doctypes (DocBaseType BKP and BKB) and nothing else,
 - carrying the **right doctype** — DocBaseType BKP for Warehouse rows, BKB for Plant rows,
 - **not editable** — read-only on the record payload the form renders from. This is document-level
   (the row is Processed, which makes every field on this tab read-only), so AD_Field.IsReadOnly='Y' is
@@ -324,43 +368,126 @@ Language under test: ${language}.
         );
       });
 
-      // 3. (A) Window layout: C_DocType_ID is in the SAME element group as DocumentType, directly
-      //    after it. Without this, a later migration could move the field to another group or push
-      //    it to SeqNo 100 and every "present + populated + read-only" assertion would stay green.
-      await test.step('Layout: C_DocType_ID sits directly after DocumentType in the same group', async () => {
+      // 3. (A) Window layout — single view: DocumentType is gone, C_DocType_ID keeps its place in the
+      //    primary element group. Without this, a later migration could re-show DocumentType or move
+      //    C_DocType_ID out of the group and every "present + populated + read-only" assertion would
+      //    stay green.
+      await test.step('Layout: DocumentType is absent from the single view; C_DocType_ID stays in the primary group', async () => {
         const response = await page.request.get(
           `${WEBAPI_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}/layout`
         );
         expect(response.ok(), 'window layout must load').toBe(true);
         const layout = await response.json();
 
+        const allNames = [];
         let hostGroupNames = null;
         for (const section of layout.sections || []) {
           for (const column of section.columns || []) {
             for (const group of column.elementGroups || []) {
               const names = groupFieldNames(group);
+              allNames.push(...names);
               if (names.includes('C_DocType_ID')) hostGroupNames = names;
             }
           }
         }
 
         expect(
+          allNames,
+          'DocumentType must NOT be part of the Bestellkontrolle single-view layout (hidden by 5826400)'
+        ).not.toContain('DocumentType');
+        expect(
           hostGroupNames,
           'C_DocType_ID must be part of an element group of the Bestellkontrolle layout'
         ).toBeTruthy();
-        const docTypeIdx = hostGroupNames.indexOf('C_DocType_ID');
-        const documentTypeIdx = hostGroupNames.indexOf('DocumentType');
+        // The primary group is identified by its anchor field, the order — language-invariant.
         expect(
-          documentTypeIdx,
-          'DocumentType must be in the SAME element group as C_DocType_ID'
-        ).toBeGreaterThan(-1);
+          hostGroupNames,
+          'C_DocType_ID must stay in the primary element group, the one holding C_Order_ID'
+        ).toContain('C_Order_ID');
         expect(
-          docTypeIdx,
-          'C_DocType_ID must sit DIRECTLY after DocumentType in that group'
-        ).toBe(documentTypeIdx + 1);
-        console.log(
-          `[PASS] layout group holds [... ${hostGroupNames.slice(documentTypeIdx, docTypeIdx + 1).join(', ')} ...]`
+          hostGroupNames.indexOf('C_DocType_ID'),
+          'C_DocType_ID must keep the top slot DocumentType used to hold, directly before C_Order_ID'
+        ).toBe(hostGroupNames.indexOf('C_Order_ID') - 1);
+        console.log(`[PASS] single-view primary group holds [${hostGroupNames.join(', ')}]; no DocumentType`);
+      });
+
+      // 3b. (A) Grid + filters layout: DocumentType is in neither; C_DocType_ID is the FIRST grid column
+      //     and offered as a filter.
+      let docTypeFilterId;
+      let filterDocTypeKeys;
+      await test.step('Layout: C_DocType_ID is the first grid column and a filter; DocumentType is in neither', async () => {
+        const response = await page.request.get(
+          `${WEBAPI_BASE_URL}/documentView/${BESTELLKONTROLLE_WINDOW_ID}/layout?viewType=grid`
         );
+        expect(response.ok(), 'grid view layout must load').toBe(true);
+        const viewLayout = await response.json();
+
+        const gridColumns = (viewLayout.elements || []).map((el) =>
+          (el.fields || []).map((f) => f.field).filter(Boolean)
+        );
+        expect(gridColumns.length, 'the grid must have columns').toBeGreaterThan(0);
+        expect(
+          gridColumns[0],
+          'C_DocType_ID must be the FIRST grid column (SeqNoGrid 10, 5826400)'
+        ).toEqual(['C_DocType_ID']);
+        expect(
+          gridColumns.flat(),
+          'DocumentType must NOT be a grid column (hidden by 5826400)'
+        ).not.toContain('DocumentType');
+
+        const filterParams = flattenFilterParameters(viewLayout.filters || []);
+        const filterParamNames = filterParams.map(({ parameterName }) => parameterName);
+        expect(
+          filterParamNames,
+          'DocumentType must NOT be offered as a filter (hidden by 5826400)'
+        ).not.toContain('DocumentType');
+        const docTypeFilter = filterParams.find(({ parameterName }) => parameterName === 'C_DocType_ID');
+        expect(docTypeFilter, 'C_DocType_ID must be offered as a filter (5826400)').toBeTruthy();
+        docTypeFilterId = docTypeFilter.filterId;
+        console.log(
+          `[PASS] grid columns [${gridColumns.flat().join(', ')}]; filter params [${filterParamNames.join(', ')}] ` +
+            `(C_DocType_ID in filter "${docTypeFilterId}")`
+        );
+      });
+
+      // 3c. (A) The C_DocType_ID filter lookup offers exactly the two Bestellkontrolle doctypes — one of
+      //     DocBaseType BKP, one of BKB, nothing else (AD_Val_Rule 540802, 5826420). Identity is checked
+      //     via the language-invariant DocBaseType of every offered key, never via its caption.
+      await test.step('Filter lookup: C_DocType_ID offers exactly the BKP and BKB doctypes', async () => {
+        const createViewResp = await page.request.post(
+          `${WEBAPI_BASE_URL}/documentView/${BESTELLKONTROLLE_WINDOW_ID}`,
+          {
+            data: { documentType: String(BESTELLKONTROLLE_WINDOW_ID), viewType: 'grid', filters: [] },
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+        expect(createViewResp.ok(), 'the Bestellkontrolle view must be creatable').toBe(true);
+        const viewId = (await createViewResp.json()).viewId;
+        expect(viewId).toBeTruthy();
+
+        const dropdownResp = await page.request.post(
+          `${WEBAPI_BASE_URL}/documentView/${BESTELLKONTROLLE_WINDOW_ID}/${viewId}/filter/${docTypeFilterId}/field/C_DocType_ID/dropdown`,
+          { data: { context: {} }, headers: { 'Content-Type': 'application/json' } }
+        );
+        expect(dropdownResp.ok(), 'the C_DocType_ID filter dropdown must load').toBe(true);
+        const dropdown = await dropdownResp.json();
+        // The endpoint swallows exceptions into an `error` item with an empty value list, which would
+        // otherwise read as "no doctypes offered".
+        expect(dropdown.error, `the filter dropdown must not fail: ${JSON.stringify(dropdown.error)}`).toBeFalsy();
+        expect(dropdown.hasMoreResults, 'the filter dropdown must not be truncated').not.toBe(true);
+
+        const offeredKeys = (dropdown.values || []).map((v) => v.key);
+        const offeredDocBaseTypes = [];
+        for (const key of offeredKeys) {
+          offeredDocBaseTypes.push(await docBaseTypeOf(page, key));
+        }
+        expect(
+          offeredDocBaseTypes.sort(),
+          `the C_DocType_ID filter must offer exactly the two Bestellkontrolle doctypes (one BKB, one BKP) and ` +
+            `nothing else — offered keys [${offeredKeys.join(', ')}]`
+        ).toEqual(['BKB', 'BKP']);
+        filterDocTypeKeys = offeredKeys;
+        console.log(`[PASS] C_DocType_ID filter offers keys [${offeredKeys.join(', ')}] = DocBaseTypes BKB, BKP`);
       });
 
       // 4. Resolve the rows generated in step 2 through the window's OWN view/grid endpoint (the WebUI's
@@ -529,18 +656,7 @@ Language under test: ${language}.
           const docTypeKey = field.value && field.value.key;
           expect(docTypeKey, 'C_DocType_ID must carry a resolved doctype id').toBeTruthy();
 
-          const docTypeResp = await page.request.get(
-            `${WEBAPI_BASE_URL}/window/${DOCTYPE_WINDOW_ID}/${docTypeKey}`
-          );
-          expect(docTypeResp.ok(), `C_DocType ${docTypeKey} must be readable`).toBe(true);
-          const docTypeDoc = singleDocumentOf(await docTypeResp.json());
-          const docBaseTypeField = (docTypeDoc.fieldsByName || {})['DocBaseType'];
-          const docBaseType =
-            docBaseTypeField &&
-            docBaseTypeField.value &&
-            (docBaseTypeField.value.key !== undefined
-              ? docBaseTypeField.value.key
-              : docBaseTypeField.value);
+          const docBaseType = await docBaseTypeOf(page, docTypeKey);
           expect(
             docBaseType,
             `the doctype on a "${kind}" record must be the one OrderCheckupBuilder maps that kind to`
@@ -603,6 +719,65 @@ Language under test: ${language}.
         allure.attachment(
           'Bestellkontrolle window - C_DocType_ID read-only field',
           screenshot,
+          'image/png'
+        );
+      });
+
+      // 7. (A) UI — grid + filter panel as the user sees them: C_DocType_ID is the first rendered grid
+      //    column and DocumentType is not rendered; the filter panel offers C_DocType_ID (not
+      //    DocumentType), and its dropdown lists exactly the two doctypes step 3c proved to be the BKP
+      //    and BKB ones. All via language-invariant data-testids (TableHeader.js `column-<ColumnName>`,
+      //    FiltersItem.js `filter-<filterId>`, SelectionDropdown.js `option-<key>`).
+      await test.step('UI: grid starts with C_DocType_ID; its filter dropdown offers exactly the BKP + BKB doctypes', async () => {
+        await page.goto(`${FRONTEND_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}`, {
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        });
+        await page
+          .locator('.document-list-wrapper')
+          .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        const columnHeaders = page.locator('th[data-testid^="column-"]');
+        await expect(columnHeaders.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(
+          columnHeaders.first(),
+          'the first rendered grid column must be C_DocType_ID'
+        ).toHaveAttribute('data-testid', 'column-C_DocType_ID');
+        await expect(
+          page.locator('th[data-testid="column-DocumentType"]'),
+          'DocumentType must not be rendered as a grid column'
+        ).toHaveCount(0);
+
+        // The standard AD filter ("default") is not a frequent one: it sits behind the "not frequent"
+        // filters toggle (FiltersIncluded.js). On this window it is always ACTIVE on open — the
+        // IsActive=Y FilterDefaultValue (see step 4) — so the toggle opens its panel directly
+        // instead of the filter menu. The panel carries `filter-<filterId>` (FiltersItem.js).
+        await page.locator('.filters-not-frequent .toggle-filters').click();
+        const filterPanel = page.locator(`.filter-widget:has(.filter-${docTypeFilterId})`).first();
+        await filterPanel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(
+          filterPanel.locator('.form-field-DocumentType'),
+          'DocumentType must not be offered in the filter panel'
+        ).toHaveCount(0);
+        const docTypeFilterField = filterPanel.locator(DOCTYPE_FORM_WRAPPER).first();
+        await expect(docTypeFilterField, 'the filter panel must offer C_DocType_ID').toBeVisible({
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+
+        await docTypeFilterField.locator('input').first().click();
+        const options = page.locator('.input-dropdown-list-option[data-testid^="option-"]');
+        await expect(options.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const renderedKeys = (await options.evaluateAll((els) => els.map((el) => el.dataset.testid)))
+          .map((testId) => testId.replace(/^option-/, ''))
+          .filter((key) => key !== '' && key !== 'null' && key !== 'undefined');
+        expect(
+          renderedKeys.sort(),
+          'the C_DocType_ID filter dropdown must list exactly the BKP + BKB doctypes the lookup returned'
+        ).toEqual(filterDocTypeKeys.map(String).sort());
+        console.log(`[PASS] grid starts with C_DocType_ID; filter dropdown lists [${renderedKeys.join(', ')}]`);
+
+        allure.attachment(
+          'Bestellkontrolle grid - C_DocType_ID filter dropdown',
+          await page.screenshot(),
           'image/png'
         );
       });
