@@ -569,3 +569,10 @@ Feature: Contract-triggered compensation group on sales-order completion
       | ol_ts3AdditiveDiscount2   | orderTS3Additive      | ts3DiscountProduct2     | 1          | true                        | 0.25                            | -2.50  |
       | ol_ts3CompoundDiscount1   | orderTS3Compound      | discountProduct         | 1          | true                        | 3.15                            | -31.50 |
       | ol_ts3CompoundDiscount2   | orderTS3Compound      | ts3DiscountProduct2     | 1          | true                        | 0.25                            | -2.42  |
+
+  @Id:S32353_TC19
+  Scenario: The compensation-group interceptor is registered between HU's packing-material builder and freight
+    Then the C_Order model interceptors are registered in this order:
+      | de.metas.handlingunits.model.validator.C_Order                                              |
+      | de.metas.contracts.compensationGroup.contract.interceptor.C_Order_ContractCompensationGroup |
+      | de.metas.freighcost.interceptor.C_Order                                                     |

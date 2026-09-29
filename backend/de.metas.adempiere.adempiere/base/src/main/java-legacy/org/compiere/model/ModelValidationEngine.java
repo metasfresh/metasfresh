@@ -1056,6 +1056,19 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}	// removeDocValidate
 
+	/** @return the globally-registered DocValidate listeners of {@code tableName}, in registration/invocation order (read-only; for tests and diagnostics). */
+	public List<String> getGlobalDocValidateListenerDescriptions(@NonNull final String tableName)
+	{
+		final ArrayList<ModelValidator> listeners = m_docValidateListeners.get(getPropertyName(tableName));
+		if (listeners == null)
+		{
+			return ImmutableList.of();
+		}
+		return listeners.stream()
+				.map(Object::toString)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	/**
 	 * Fire Document Validation. Call docValidate method of added validators
 	 *

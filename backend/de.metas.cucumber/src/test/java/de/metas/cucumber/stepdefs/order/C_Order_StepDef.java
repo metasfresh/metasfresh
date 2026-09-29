@@ -112,6 +112,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -1432,5 +1433,49 @@ public class C_Order_StepDef
 
 			restTestContext.setEndpointPath(endpointPath);
 		}
+	}
+
+	/**
+	 * Asserts the relative registration order of the {@code C_Order} model interceptors listed in the
+	 * given rows, using {@link ModelValidationEngine#getGlobalDocValidateListenerDescriptions}. Each row
+	 * is a substring expected to identify exactly one registered interceptor (e.g. a fully-qualified or
+	 * unique-suffix class name); row N must appear before row N+1 in the actual registration order.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then the C_Order model interceptors are registered in this order:
+	 *   | de.metas.handlingunits.model.validator.C_Order                        |
+	 *   | de.metas.contracts.compensationGroup.contract.interceptor.C_Order_ContractCompensationGroup |
+	 *   | de.metas.freighcost.interceptor.C_Order                               |
+	 * </pre>
+	 */
+	@Then("the C_Order model interceptors are registered in this order:")
+	public void the_C_Order_model_interceptors_are_registered_in_this_order(@NonNull final DataTable dataTable)
+	{
+		final List<String> expectedInOrder = dataTable.asList(String.class);
+
+		final List<String> actual = ModelValidationEngine.get().getGlobalDocValidateListenerDescriptions(I_C_Order.Table_Name);
+
+		int searchFromIndex = 0;
+		for (final String expected : expectedInOrder)
+		{
+			final int foundAtIndex = indexOfContaining(actual, expected, searchFromIndex);
+			assertThat(foundAtIndex)
+					.as("no C_Order model interceptor matching '%s' registered at or after index %s; actual registration order: %s", expected, searchFromIndex, actual)
+					.isGreaterThanOrEqualTo(0);
+			searchFromIndex = foundAtIndex + 1;
+		}
+	}
+
+	private static int indexOfContaining(@NonNull final List<String> list, @NonNull final String fragment, final int fromIndex)
+	{
+		for (int i = fromIndex; i < list.size(); i++)
+		{
+			if (list.get(i).contains(fragment))
+			{
+				return i;
+			}
+		}
+		return -1;
 	}
 }
