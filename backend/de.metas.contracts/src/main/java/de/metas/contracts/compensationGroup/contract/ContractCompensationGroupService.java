@@ -75,7 +75,7 @@ import java.util.Optional;
  * Keep {@code SeqNo} above 500; never register via {@code de.metas.contracts.interceptor.MainValidator}
  * ({@code SeqNo = 0}). Deactivating the {@code AD_ModelValidator} row (or its entity type) disables this
  * interceptor entirely. Pinned by {@code compensationGroupContract_salesOrder.feature} {@code
- * @Id:S32353_TC17}: if the HU ordering ever broke, TS2's packaging discount line would silently
+ * @Id:S32353_TC17}: if the HU ordering ever broke, the packaging discount line would silently
  * disappear.
  */
 @Service

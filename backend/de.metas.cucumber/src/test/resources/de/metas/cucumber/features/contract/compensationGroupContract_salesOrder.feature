@@ -375,7 +375,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32353_TC16
-  Scenario: TS1 - the real-world Netto sample lines produce the exact contracted bonus amount
+  Scenario: The real-world Netto sample lines produce the exact contracted bonus amount
     Given metasfresh contains M_Products:
       | Identifier | OPT.M_Product_Category_ID.Identifier |
       | elstar1    | goodsCategory                        |
@@ -422,7 +422,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32353_TC17
-  Scenario: TS2 - goods and packaging bonuses are each computed on their own base
+  Scenario: Goods and packaging bonuses are each computed on their own base
     Given metasfresh contains M_Product_Category:
       | Identifier           | Name       | Value               |
       | ts2PackagingCategory | Verpackung | VerpackungS32353TS2 |
@@ -507,7 +507,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32353_TC18
-  Scenario: TS3 - additive computes every discount line on the full base; non-additive compounds
+  Scenario: Additive computes every discount line on the full base; non-additive compounds
     Given metasfresh contains M_Products:
       | Identifier          | OPT.M_Product_Category_ID.Identifier |
       | ts3DiscountProduct2 | goodsCategory                        |
