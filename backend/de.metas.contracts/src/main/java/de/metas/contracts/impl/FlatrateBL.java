@@ -1653,9 +1653,12 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" is neither customer nor vendor;");
 			dontCreateTerm = true;
 		}
+		final boolean isCompensationGroup = TypeConditions.COMPENSATION_GROUP.getCode().equals(conditions.getType_Conditions());
 		if (productAndCategoryId == null)
 		{
-			if (!flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
+			// CompensationGroup terms rely on the dated overlap check (assertNoOverlappingCompensationGroupTerm)
+			// instead of this undated, one-term-per-partner-and-conditions check.
+			if (!isCompensationGroup && !flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
