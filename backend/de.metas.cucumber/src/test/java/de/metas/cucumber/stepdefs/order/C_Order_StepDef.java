@@ -607,7 +607,7 @@ public class C_Order_StepDef
 		final I_C_Order purchaseOrder = purchaseOrders.get(0);
 		assertThat(purchaseOrder.isSOTrx()).isEqualTo(row.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
 
-		final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
+		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(purchaseOrder.getC_DocTypeTarget_ID()));
 		assertThat(docType.getDocBaseType()).isEqualTo(row.getAsString(COLUMNNAME_DocBaseType));
 		assertThat(docType.getDocSubType()).isEqualTo(row.getAsOptionalString(COLUMNNAME_DocSubType).map(DataTableUtil::nullToken2Null).orElse(null));
 
@@ -618,9 +618,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 				.map(bpartnerTable::getId)
-				.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
+				.ifPresent(dropShipId -> assertThat(BPartnerId.ofRepoIdOrNull(purchaseOrder.getDropShip_BPartner_ID()))
 						.as("DropShip_BPartner_ID")
-						.isEqualTo(dropShipId.getRepoId()));
+						.isEqualTo(dropShipId));
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 	}
