@@ -31,6 +31,7 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
+import lombok.NonNull;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.support.DefaultExchange;
@@ -141,13 +142,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(Base64.getDecoder().decode(envelope.getFileBase64())).isEqualTo(pdfBytes);
 
 		// archived to the processed dir, byte-identical to the source
-		final List<Path> archivedFiles;
-		try (var files = Files.list(localProcessedDir))
-		{
-			archivedFiles = files.toList();
-		}
-		assertThat(archivedFiles).hasSize(1);
-		assertThat(Files.readAllBytes(archivedFiles.get(0))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(awaitSingleArchivedFile(localProcessedDir))).isEqualTo(pdfBytes);
 
 		// gone from the input directory
 		try (var remaining = Files.list(localInputDir))
@@ -203,13 +198,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(bodyCaptor.getValue()).isInstanceOf(CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRequestType());
 
 		// archived to the processed dir -- the dispatched item counts as a success
-		final List<Path> archivedFiles;
-		try (var files = Files.list(localProcessedDir))
-		{
-			archivedFiles = files.toList();
-		}
-		assertThat(archivedFiles).hasSize(1);
-		assertThat(Files.readAllBytes(archivedFiles.get(0))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(awaitSingleArchivedFile(localProcessedDir))).isEqualTo(pdfBytes);
 
 		try (var errorFiles = Files.list(localErrorDir))
 		{
@@ -358,13 +347,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(notify.matches(10, TimeUnit.SECONDS)).isTrue();
 
 		// archived to the error dir, byte-identical to the source
-		final List<Path> errorFiles;
-		try (var files = Files.list(localErrorDir))
-		{
-			errorFiles = files.toList();
-		}
-		assertThat(errorFiles).hasSize(1);
-		assertThat(Files.readAllBytes(errorFiles.get(0))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(awaitSingleArchivedFile(localErrorDir))).isEqualTo(pdfBytes);
 
 		// never filed as a (false) success under processed
 		try (var processedFiles = Files.list(localProcessedDir))
@@ -412,4 +395,39 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 				.isInstanceOf(RuntimeCamelException.class)
 				.hasMessageContaining("scan003.pdf");
 	}
+
+	/**
+	 * Waits for exactly one file to appear in {@code dir} and returns it.
+	 * <p>
+	 * {@link NotifyBuilder#whenDone(int)} fires when the exchange is done, which does NOT guarantee the
+	 * archiver's write is already visible to a subsequent {@link Files#list(Path)} — on a loaded machine
+	 * the assertion can run first and see an empty directory, while the file lands milliseconds later.
+	 * Reproduced locally under CPU contention (~2 in 4 runs) after the same failure on CI; waiting for the
+	 * file removes the race without weakening what is asserted — it is still exactly one file, with
+	 * byte-identical content.
+	 */
+	@NonNull
+	private static Path awaitSingleArchivedFile(@NonNull final Path dir) throws Exception
+	{
+		final long deadline = System.currentTimeMillis() + 10_000;
+		do
+		{
+			try (var files = Files.list(dir))
+			{
+				final List<Path> found = files.toList();
+				if (found.size() == 1)
+				{
+					return found.get(0);
+				}
+			}
+			Thread.sleep(50);
+		}
+		while (System.currentTimeMillis() < deadline);
+
+		try (var files = Files.list(dir))
+		{
+			throw new AssertionError("Expected exactly one archived file in " + dir + " within 10s, but found: " + files.toList());
+		}
+	}
+
 }
