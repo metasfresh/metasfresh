@@ -88,8 +88,8 @@ services:
       retries: 30
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
-      # Async_InitDelayMillis=1000: e2e stacks start on a fresh DB and the tests need the async queue processors right after the app is healthy (default delay is 60s+)
-      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet -Dde.metas.async.Async_InitDelayMillis=1000"
+      # e2e stacks start on a fresh DB: start the async queue processors 10s after init instead of the SysConfig value (60000 ms; code default 3 min), so tests that create sales orders right after the app is healthy don't time out
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet -Dde.metas.async.Async_InitDelayMillis=10000"
       - PropertyFile=/opt/metasfresh/metasfresh.properties
       - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
       - "SPRING_RABBITMQ_HOST=rabbitmq"
