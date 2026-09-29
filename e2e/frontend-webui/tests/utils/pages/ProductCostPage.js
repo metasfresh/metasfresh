@@ -56,7 +56,6 @@ export class ProductCostPage {
       await expect(cell.locator('input:not([disabled]):not([readonly])')).toHaveCount(0);
       const after = (await cell.innerText()).trim();
       expect(after).toBe(before);
-      console.log(`[readonly] CurrentCostPrice cell before=${JSON.stringify(before)} after=${JSON.stringify(after)}`);
 
       await holdForCaptureIfEnabled(3000);
       await page.keyboard.press('Escape');

@@ -92,6 +92,5 @@ renders from, plus a UI attempt to edit Current Cost Price that is refused.
     await ProductCostPage.open(productId);
     await ProductCostPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
     allure.attachment('Product Cost (Produktkosten, window 344)', await page.screenshot({ fullPage: true }), 'image/png');
-
   });
 });

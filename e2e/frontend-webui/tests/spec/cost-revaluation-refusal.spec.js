@@ -163,9 +163,10 @@ stays not posted. A later Kosten Neubewertung of the same product (starting the 
 with the translated message naming the product and the unposted one's date, and stays Drafted.
     `);
 
-    const md = await createStockedMasterdata(language, 'CR_NOT_POSTED', { [ACCT_ENABLED_SYSCONFIG]: 'N' });
-    const previousAcctEnabled = (md.previousSysconfigs && md.previousSysconfigs[ACCT_ENABLED_SYSCONFIG]) || 'Y';
+    // Accounting is on by default; it is switched back on in finally even if creating the masterdata fails halfway,
+    // so a failure here cannot leave accounting off for the next specs of the shard (or for a retry).
     try {
+      const md = await createStockedMasterdata(language, 'CR_NOT_POSTED', { [ACCT_ENABLED_SYSCONFIG]: 'N' });
       const productCode = md.products.PSTK.productCode;
       await login(md);
 
@@ -193,7 +194,11 @@ with the translated message naming the product and the unposted one's date, and 
 
       expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus')).value.key).toBe('DR');
     } finally {
-      await Backend.createMasterdata({ request: { sysconfigs: { [ACCT_ENABLED_SYSCONFIG]: previousAcctEnabled } } });
+      try {
+        await Backend.createMasterdata({ request: { sysconfigs: { [ACCT_ENABLED_SYSCONFIG]: 'Y' } } });
+      } catch (error) {
+        console.error(`Could not switch ${ACCT_ENABLED_SYSCONFIG} back on`, error); // must not hide the test's own failure
+      }
     }
   });
 
