@@ -1896,7 +1896,7 @@ jobs:
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
       - name: collect infra logs and stop stack
-        if: always() # also when the shard was cancelled/timed out, so infra.log and the db image are still produced
+        if: always() # also when the shard was cancelled/timed out: keeps infra.log and tears the stack down (the db image is only pushed on the non-cancelled path)
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -1936,7 +1936,7 @@ jobs:
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v6
-        if: always() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
+        if: always() # always: also on failure/cancel, so the report + infra.log are available for diagnosis
         with:
           name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
@@ -1992,7 +1992,7 @@ jobs:
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
       - name: collect infra logs and stop stack
-        if: always() # also when the shard was cancelled/timed out, so infra.log and the db image are still produced
+        if: always() # also when the shard was cancelled/timed out: keeps infra.log and tears the stack down (the db image is only pushed on the non-cancelled path)
         working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
