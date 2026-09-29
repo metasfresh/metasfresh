@@ -137,7 +137,7 @@ class ProductMasterDataProviderTest
 
 		// when — pre-switch: date before NEW's ValidFrom → only OLD is valid
 		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 
 		// then — OLD row (Qty=9)
 		assertThat(infoBeforeSwitch.getProductId()).isEqualTo(productId);
@@ -147,7 +147,7 @@ class ProductMasterDataProviderTest
 
 		// when — on/after switch: date on NEW's ValidFrom → both valid, pick latest ValidFrom → NEW wins
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 
 		// then — NEW row (Qty=6)
 		assertThat(infoAfterSwitch.getProductId()).isEqualTo(productId);
@@ -197,13 +197,13 @@ class ProductMasterDataProviderTest
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
 
 		// Call beforeSwitch FIRST — populates cache for (identifier, orgId, beforeSwitch)
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 		assertThat(infoBeforeSwitch.getHupiItemProductId())
 				.as("first call (beforeSwitch): cache miss → resolve → OLD row")
 				.isEqualTo(oldRowId);
 
 		// Call afterSwitch SECOND — must NOT return the cached beforeSwitch result
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 		assertThat(infoAfterSwitch.getHupiItemProductId())
 				.as("second call (afterSwitch): different date → separate cache entry → NEW row (if date is part of key)")
 				.isEqualTo(newRowId);

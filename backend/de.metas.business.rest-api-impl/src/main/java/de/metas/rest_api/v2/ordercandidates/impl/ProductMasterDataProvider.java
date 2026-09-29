@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -21,7 +22,6 @@ import lombok.With;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -119,15 +119,7 @@ public final class ProductMasterDataProvider
 			@NonNull final ExternalIdentifier productExternalIdentifier,
 			@NonNull final OrgId orgId)
 	{
-		return getProductInfo(productExternalIdentifier, orgId, null);
-	}
-
-	public ProductInfo getProductInfo(
-			@NonNull final ExternalIdentifier productExternalIdentifier,
-			@NonNull final OrgId orgId,
-			@Nullable final ZonedDateTime date)
-	{
-		return getProductInfo(productExternalIdentifier, orgId, date, null);
+		return getProductInfo(productExternalIdentifier, orgId, null, null);
 	}
 
 	public ProductInfo getProductInfo(
