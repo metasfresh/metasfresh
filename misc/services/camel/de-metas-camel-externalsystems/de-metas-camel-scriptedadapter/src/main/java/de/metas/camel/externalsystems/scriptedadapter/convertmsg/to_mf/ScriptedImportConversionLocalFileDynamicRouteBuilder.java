@@ -187,15 +187,15 @@ public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends Abstra
 		exchange.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, rawPayload);
 
 		final String fileBase64 = Base64.getEncoder().encodeToString(rawPayload);
-		final String attachmentFileName = ImportFileNameResolver.resolve(importFileNamePattern, incomingFileName);
+		final String fileNameOverride = ImportFileNameResolver.resolve(importFileNamePattern, incomingFileName);
 		// Stashed rather than re-resolved in archiveFileName(), so a {timestamp}-bearing pattern cannot
 		// yield different names for the attachment and the archived copy.
-		exchange.setProperty(EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME, attachmentFileName);
+		exchange.setProperty(EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME, fileNameOverride);
 
 		final ScriptedImportConversionFileInput fileInput = ScriptedImportConversionFileInput.builder()
 				.fileName(incomingFileName)
 				.fileBase64(fileBase64)
-				.attachmentFileName(attachmentFileName)
+				.fileNameOverride(fileNameOverride)
 				.build();
 
 		try

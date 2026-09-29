@@ -48,7 +48,7 @@ import static org.mockito.ArgumentMatchers.eq;
 /**
  * Coverage for a non-null {@code importFileNamePattern} end to end: a real {@code file://} consumer, a
  * real {@code {timestamp}}-bearing pattern, asserting the resolved name is used for BOTH the envelope's
- * {@code attachmentFileName} AND the file actually written into {@code processedDir}.
+ * {@code fileNameOverride} AND the file actually written into {@code processedDir}.
  * <p>
  * The archived copy must carry the same resolved name as the attachment -- otherwise a scanner that
  * reuses a file name (e.g. re-scanning into {@code scan001.pdf} every time) would silently overwrite an
@@ -118,8 +118,8 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 				.readValue(requestCaptor.getValue(), ScriptedImportConversionFileInput.class);
 
 		// the pattern was actually applied -- not silently bypassed: if resolution were skipped,
-		// attachmentFileName would equal the raw incoming name instead of matching the pattern.
-		assertThat(envelope.getAttachmentFileName()).matches("Packzettel_scan001_\\d{8}_\\d{6}\\.pdf");
+		// fileNameOverride would equal the raw incoming name instead of matching the pattern.
+		assertThat(envelope.getFileNameOverride()).matches("Packzettel_scan001_\\d{8}_\\d{6}\\.pdf");
 
 		final Path archivedFile = LocalArchiveAwait.awaitSingleFile(localProcessedDir);
 		assertThat(Files.readAllBytes(archivedFile)).isEqualTo(pdfBytes);
@@ -127,7 +127,7 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 		// the archived copy's name must be the SAME resolved name as the attachment -- computed once,
 		// not re-resolved independently for the archive (which could yield a different {timestamp}) and
 		// not left as the raw scanner file name.
-		assertThat(archivedFile.getFileName().toString()).isEqualTo(envelope.getAttachmentFileName());
+		assertThat(archivedFile.getFileName().toString()).isEqualTo(envelope.getFileNameOverride());
 	}
 
 	/**

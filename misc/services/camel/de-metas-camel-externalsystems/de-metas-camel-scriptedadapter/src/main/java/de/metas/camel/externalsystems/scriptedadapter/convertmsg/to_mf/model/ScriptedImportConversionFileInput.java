@@ -51,5 +51,5 @@ public class ScriptedImportConversionFileInput
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String attachmentFileName;
+	String fileNameOverride;
 }
