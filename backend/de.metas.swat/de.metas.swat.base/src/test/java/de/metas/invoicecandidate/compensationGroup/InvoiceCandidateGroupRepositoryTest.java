@@ -185,6 +185,159 @@ class InvoiceCandidateGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Regression for the batched applies-to-category lookup (retrieveAppliesToProductCategoryIdsByInvoiceCandidateId):
+	// two compensation lines in the SAME group, whose schema lines point to DIFFERENT applies-to
+	// categories, must each resolve their OWN category and recompute against their OWN base -- a
+	// wrong-key composition bug (e.g. attributing every candidate to the first order line's category)
+	// would silently cross-attribute them instead.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void twoCompensationLines_resolveDistinctAppliesToCategories()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		// two distinct bases
+		final I_M_Product_Category goodsCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(goodsCategory);
+		final ProductCategoryId goodsCategoryId = ProductCategoryId.ofRepoId(goodsCategory.getM_Product_Category_ID());
+
+		final I_M_Product_Category packagingCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(packagingCategory);
+		final ProductCategoryId packagingCategoryId = ProductCategoryId.ofRepoId(packagingCategory.getM_Product_Category_ID());
+
+		final I_M_Product goodsProduct = newInstance(I_M_Product.class);
+		goodsProduct.setC_UOM_ID(uomId.getRepoId());
+		goodsProduct.setM_Product_Category_ID(goodsCategoryId.getRepoId());
+		saveRecord(goodsProduct);
+
+		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
+		packagingProduct.setC_UOM_ID(uomId.getRepoId());
+		packagingProduct.setM_Product_Category_ID(packagingCategoryId.getRepoId());
+		saveRecord(packagingProduct);
+
+		final I_M_Product discountProductGoods = newInstance(I_M_Product.class);
+		discountProductGoods.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProductGoods);
+
+		final I_M_Product discountProductPackaging = newInstance(I_M_Product.class);
+		discountProductPackaging.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProductPackaging);
+
+		// one additive schema with TWO schema lines, one per base category
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setIsAdditive(true);
+		saveRecord(schema);
+
+		final I_C_CompensationGroup_SchemaLine schemaLineGoods = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLineGoods.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLineGoods.setM_Product_Category_ID(goodsCategoryId.getRepoId());
+		schemaLineGoods.setM_Product_ID(discountProductGoods.getM_Product_ID());
+		saveRecord(schemaLineGoods);
+
+		final I_C_CompensationGroup_SchemaLine schemaLinePackaging = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLinePackaging.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLinePackaging.setM_Product_Category_ID(packagingCategoryId.getRepoId());
+		schemaLinePackaging.setM_Product_ID(discountProductPackaging.getM_Product_ID());
+		saveRecord(schemaLinePackaging);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// two "commercial" order lines, each linked to its own schema line
+		final I_C_OrderLine compensationOrderLineGoods = newInstance(I_C_OrderLine.class);
+		compensationOrderLineGoods.setC_Order_ID(order.getC_Order_ID());
+		compensationOrderLineGoods.setM_Product_ID(discountProductGoods.getM_Product_ID());
+		compensationOrderLineGoods.setC_UOM_ID(uomId.getRepoId());
+		compensationOrderLineGoods.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationOrderLineGoods.setIsGroupCompensationLine(true);
+		compensationOrderLineGoods.setC_CompensationGroup_SchemaLine_ID(schemaLineGoods.getC_CompensationGroup_SchemaLine_ID());
+		saveRecord(compensationOrderLineGoods);
+
+		final I_C_OrderLine compensationOrderLinePackaging = newInstance(I_C_OrderLine.class);
+		compensationOrderLinePackaging.setC_Order_ID(order.getC_Order_ID());
+		compensationOrderLinePackaging.setM_Product_ID(discountProductPackaging.getM_Product_ID());
+		compensationOrderLinePackaging.setC_UOM_ID(uomId.getRepoId());
+		compensationOrderLinePackaging.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationOrderLinePackaging.setIsGroupCompensationLine(true);
+		compensationOrderLinePackaging.setC_CompensationGroup_SchemaLine_ID(schemaLinePackaging.getC_CompensationGroup_SchemaLine_ID());
+		saveRecord(compensationOrderLinePackaging);
+
+		// regular ICs: goods (net 1000, inside the goods base) and packaging (net 200, inside the packaging base)
+		final I_C_Invoice_Candidate goodsIc = newInstance(I_C_Invoice_Candidate.class);
+		goodsIc.setC_Order_ID(order.getC_Order_ID());
+		goodsIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		goodsIc.setM_Product_ID(goodsProduct.getM_Product_ID());
+		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
+		saveRecord(goodsIc);
+
+		final I_C_Invoice_Candidate packagingIc = newInstance(I_C_Invoice_Candidate.class);
+		packagingIc.setC_Order_ID(order.getC_Order_ID());
+		packagingIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		packagingIc.setM_Product_ID(packagingProduct.getM_Product_ID());
+		packagingIc.setNetAmtToInvoice(new BigDecimal("200"));
+		saveRecord(packagingIc);
+
+		// discount IC #1: 3%, linked to the goods compensation order line
+		final I_C_Invoice_Candidate discountIcGoods = newInstance(I_C_Invoice_Candidate.class);
+		discountIcGoods.setC_Order_ID(order.getC_Order_ID());
+		discountIcGoods.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		discountIcGoods.setC_OrderLine_ID(compensationOrderLineGoods.getC_OrderLine_ID());
+		discountIcGoods.setM_Product_ID(discountProductGoods.getM_Product_ID());
+		discountIcGoods.setIsGroupCompensationLine(true);
+		discountIcGoods.setC_UOM_ID(uomId.getRepoId());
+		discountIcGoods.setPrice_UOM_ID(uomId.getRepoId());
+		discountIcGoods.setQtyToInvoice(BigDecimal.ONE);
+		discountIcGoods.setPriceEntered(BigDecimal.ZERO);
+		discountIcGoods.setLineNetAmt(BigDecimal.ZERO);
+		discountIcGoods.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIcGoods.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIcGoods.setGroupCompensationPercentage(new BigDecimal("3"));
+		saveRecord(discountIcGoods);
+
+		// discount IC #2: 10%, linked to the packaging compensation order line
+		final I_C_Invoice_Candidate discountIcPackaging = newInstance(I_C_Invoice_Candidate.class);
+		discountIcPackaging.setC_Order_ID(order.getC_Order_ID());
+		discountIcPackaging.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		discountIcPackaging.setC_OrderLine_ID(compensationOrderLinePackaging.getC_OrderLine_ID());
+		discountIcPackaging.setM_Product_ID(discountProductPackaging.getM_Product_ID());
+		discountIcPackaging.setIsGroupCompensationLine(true);
+		discountIcPackaging.setC_UOM_ID(uomId.getRepoId());
+		discountIcPackaging.setPrice_UOM_ID(uomId.getRepoId());
+		discountIcPackaging.setQtyToInvoice(BigDecimal.ONE);
+		discountIcPackaging.setPriceEntered(BigDecimal.ZERO);
+		discountIcPackaging.setLineNetAmt(BigDecimal.ZERO);
+		discountIcPackaging.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIcPackaging.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIcPackaging.setGroupCompensationPercentage(BigDecimal.TEN);
+		saveRecord(discountIcPackaging);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
+
+		// exercise: this goes through retrieveAppliesToProductCategoryIdsByInvoiceCandidateId's batched
+		// two-query composition for BOTH discount lines at once
+		final Group group = repo.retrieveGroup(groupId);
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).hasSize(2);
+
+		final GroupCompensationLine recomputedGoods = group.getCompensationLineById(repo.extractLineId(discountIcGoods));
+		assertThat(recomputedGoods.getAppliesToProductCategoryId()).isEqualTo(goodsCategoryId);
+		assertThat(recomputedGoods.getBaseAmt()).isEqualByComparingTo("1000");
+		assertThat(recomputedGoods.getPrice()).isEqualByComparingTo("-30.00");
+
+		final GroupCompensationLine recomputedPackaging = group.getCompensationLineById(repo.extractLineId(discountIcPackaging));
+		assertThat(recomputedPackaging.getAppliesToProductCategoryId()).isEqualTo(packagingCategoryId);
+		assertThat(recomputedPackaging.getBaseAmt()).isEqualByComparingTo("200");
+		assertThat(recomputedPackaging.getPrice()).isEqualByComparingTo("-20.00");
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
 	// Regression: createPartialGroupFromCompensationLine (the manual-percentage-edit path,
 	// C_Invoice_Candidate.onGroupCompensationPercentageChanged) must recompute a BASED discount
 	// invoice candidate against its stored base amount, not zero. Before the fix, the synthetic

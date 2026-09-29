@@ -293,7 +293,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		}
 
 		final ImmutableMap<Integer, ProductCategoryId> productCategoryIdBySchemaLineId = queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
-				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
+				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
 				.create()
 				.stream()
 				.filter(schemaLine -> ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()) != null)
