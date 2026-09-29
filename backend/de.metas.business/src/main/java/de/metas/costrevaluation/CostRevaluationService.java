@@ -147,15 +147,28 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * The org to match the product's current cost by, decided from the product's costing level (the same source
-	 * {@code CurrentCostsLoader} uses, {@link IProductCostingBL#getCostingLevel}): the header document's
-	 * org when the product is costed at {@link CostingLevel#Organization}, {@code null} (no org filter) otherwise.
+	 * The org to match the product's current cost by, decided from the product's costing level (the same costing level
+	 * {@code CurrentCostsLoader} uses, {@link IProductCostingBL#getCostingLevel}; the bulk path reaches the same result via
+	 * {@link de.metas.costing.CostSegment#isMatching}): the header document's org when the product is costed at
+	 * {@link CostingLevel#Organization}, {@code null} (no org filter) otherwise.
+	 *
+	 * @throws AdempiereException if the product is costed at organization level but the header org is {@link OrgId#ANY}.
 	 */
 	@Nullable
 	private OrgId getOrgIdToMatch(@NonNull final CostRevaluation costRevaluation, @NonNull final ProductId productId)
 	{
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, costRevaluation.getAcctSchemaId());
-		return costingLevel.isOrg() ? costRevaluation.getOrgId() : null;
+		if (!costingLevel.isOrg())
+		{
+			return null;
+		}
+
+		final OrgId orgId = costRevaluation.getOrgId();
+		if (orgId.isAny())
+		{
+			throw new AdempiereException("Regular organization expected when costing level is Organization, but " + costRevaluation.getCostRevaluationId() + " has no organization (product " + productId + ")");
+		}
+		return orgId;
 	}
 
 	/**

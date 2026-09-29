@@ -540,4 +540,28 @@ public class CostRevaluationServiceTest
 		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // header org's row, NOT the other org's 99.00
 		assertThat(line.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
 	}
+
+	/**
+	 * Organization-level costing requires a regular header org: with the header on {@link OrgId#ANY} there is no org to
+	 * match the product's org-level cost by, so the call fails fast, before resolving or seeding any {@code M_Cost} row.
+	 */
+	@Test
+	public void createLineForProduct_orgLevelCosting_throws_whenHeaderOrgIsAny()
+	{
+		final ProductId productId = createProduct("productOrgLevel_headerOrgAny");
+		setProductCostingLevel(productId, CostingLevel.Organization);
+
+		final CostRevaluationId costRevaluationId = createHeader(OrgId.ANY);
+
+		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Regular organization expected");
+
+		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_Cost.class)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.count())
+				.isZero(); // nothing seeded
+		assertThat(getLineRecords(costRevaluationId)).isEmpty();
+	}
 }
