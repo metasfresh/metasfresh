@@ -74,6 +74,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -520,5 +521,36 @@ public class TaxDAO implements ITaxDAO
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Client_ID, clientId)
 				.create()
 				.firstIdOnlyOptional(TaxId::ofRepoIdOrNull);
+	}
+
+	@Override
+	@NonNull
+	public TaxCategoryId createTaxCategory(@NonNull final CreateTaxCategoryRequest request)
+	{
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategory.setInternalName(request.getInternalName());
+		taxCategory.setName(request.getName());
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+
+		return TaxCategoryId.ofRepoId(taxCategory.getC_TaxCategory_ID());
+	}
+
+	@Override
+	@NonNull
+	public TaxId createTax(@NonNull final CreateTaxRequest request)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		tax.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		tax.setName(request.getName());
+		tax.setRate(request.getRate().toBigDecimal());
+		tax.setIsDocumentLevel(request.isDocumentLevel());
+		tax.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
+		tax.setC_Country_ID(request.getCountryId().getRepoId());
+		tax.setTo_Country_ID(request.getCountryId().getRepoId());
+		tax.setTypeOfDestCountry(request.getTypeOfDestCountry().getCode());
+		tax.setSOPOType(request.getSopoType().getCode());
+		InterfaceWrapperHelper.saveRecord(tax);
+
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 }

@@ -40,7 +40,11 @@ const Header = () => {
       </div>
       <div className="center">
         {posTerminal?.cashJournalOpen && (
-          <div className="pos-header-button" onClick={onCloseJournalClicked}>
+          <div
+            className="pos-header-button"
+            data-testid="pos-close-cash-journal-button"
+            onClick={onCloseJournalClicked}
+          >
             <span className="text">{_('closeCashJournal')}</span>
           </div>
         )}
