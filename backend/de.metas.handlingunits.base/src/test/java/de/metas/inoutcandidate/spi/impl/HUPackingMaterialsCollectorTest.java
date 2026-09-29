@@ -119,7 +119,7 @@ public class HUPackingMaterialsCollectorTest
 	 * (a) flag ON, two sources with different projects (P1, P2) &rarr; the parent ends up with 2 candidates,
 	 * each carrying its own single project. Goes parent &rarr; {@link HUPackingMaterialsCollector#splitNew()} &rarr;
 	 * {@link HUPackingMaterialsCollector#addM_HU_PI} &rarr; {@link HUPackingMaterialsCollector#mergeBackToParentAndClear()},
-	 * proving the flag survives {@code splitNew()} (Review Focus 4).
+	 * proving the {@code considerProject} flag survives {@code splitNew()}/merge.
 	 */
 	@Test
 	public void considerProject_on_twoSourcesDifferentProjects_yieldsTwoCandidatesEachWithItsProject()
@@ -194,22 +194,21 @@ public class HUPackingMaterialsCollectorTest
 
 	/**
 	 * (d) flag ON, based on {@link #test_AggregatedHU()}: two <b>distinct</b> aggregated HUs (a single one would be
-	 * skipped the second time by the seen-set, {@code HUPackingMaterialsCollector.java:227}), collected from two
-	 * sources with different projects. Their "included" packing material (only reached when
-	 * {@code isCollectAggregatedHUs} is set, key site {@code HUPackingMaterialsCollector.java:273}, Review Focus 3)
-	 * must ALSO be split per project, and give 2 candidates.
+	 * skipped the second time by the seen-set), collected from two sources with different projects. Their "included"
+	 * packing material (only reached when {@code isCollectAggregatedHUs} is set) must ALSO be split per project, and
+	 * give 2 candidates.
 	 * <p>
 	 * {@code LUTUProducerDestination} (the plain test producer used here and by {@link #test_AggregatedHU()}) never
 	 * wires the built HU's {@code M_HU_PI_Item_Product_ID} (unlike the production {@code HUBuilder}, which sets it
-	 * from the LU/TU configuration at {@code HUBuilder.java:437-438}) &mdash; only the real order/receipt producers
-	 * do, via {@code LUTUConfigurationFactory}. Key site {@code :273} is reached only when
+	 * from the LU/TU configuration) &mdash; only the real order/receipt producers do, via
+	 * {@code LUTUConfigurationFactory}. The "included packing material" lookup is reached only when
 	 * {@code IHandlingUnitsBL.extractPIItemProductOrNull(hu)} is non-null, so the test stamps it directly on each
-	 * built aggregated HU, mirroring what {@code HUBuilder.java:438} does in production.
+	 * built aggregated HU, mirroring what the production {@code HUBuilder} does.
 	 * <p>
 	 * The second packing-material PI-item is added to {@code piTU_IFCO}'s PI version <b>after</b> both aggregated HUs
 	 * were already built, so it is never materialized as a real {@code M_HU_Item} on either built HU and can only be
-	 * reached through the "included packing material" lookup ({@code retrievePackingMaterials}) — isolating key site
-	 * {@code :273} from the main key site {@code :258}.
+	 * reached through the "included packing material" lookup ({@code retrievePackingMaterials}) &mdash; isolating that
+	 * lookup from the main per-HU packing-material lookup.
 	 */
 	@Test
 	public void considerProject_on_aggregatedHU_includedPackingMaterial_twoDistinctAggregatedHUs_yieldsTwoCandidates()
@@ -245,10 +244,9 @@ public class HUPackingMaterialsCollectorTest
 
 	/**
 	 * (e) flag ON, the same TU HU released through two child collectors of two sources (P1, then P2) &rarr; its
-	 * packing material must be counted <b>once</b>, not twice (seen-set: {@code HUPackingMaterialsCollector.java:227},
-	 * {@code :767}, {@code :835}; REQUIREMENTS AC-9 "appears once"). This mirrors the builder's real
-	 * split-per-line/merge-back sequence: split, process, merge, THEN split again — only then does the second
-	 * child's seen-set snapshot already contain the first child's HU.
+	 * packing material must be counted <b>once</b>, not twice, so it must appear in exactly one candidate. This
+	 * mirrors the builder's real split-per-line/merge-back sequence: split, process, merge, THEN split again —
+	 * only then does the second child's seen-set snapshot already contain the first child's HU.
 	 */
 	@Test
 	public void considerProject_on_sameTUReleasedThroughTwoChildCollectors_countedOnce()
@@ -277,9 +275,9 @@ public class HUPackingMaterialsCollectorTest
 
 	/**
 	 * Stamps the aggregated HU included in {@code luHU} with the {@code M_HU_PI_Item_Product_ID} of the TU config
-	 * used to build it, mirroring what the production {@code HUBuilder} does at {@code HUBuilder.java:437-438}
-	 * (which the plain {@code LUTUProducerDestination} test producer does not wire up). Needed to reach
-	 * {@code HUPackingMaterialsCollector.java:273} (see test method's Javadoc).
+	 * used to build it, mirroring what the production {@code HUBuilder} does (which the plain
+	 * {@code LUTUProducerDestination} test producer does not wire up). Needed to reach the "included packing
+	 * material" lookup (see test method's Javadoc).
 	 */
 	private void stampMaterialItemProductOnAggregatedHU(final I_M_HU luHU)
 	{

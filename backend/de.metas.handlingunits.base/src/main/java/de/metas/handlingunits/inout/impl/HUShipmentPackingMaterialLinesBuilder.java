@@ -197,7 +197,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			collectHUs(inOutLineSource);
 		}
 
-		// task 29508: safety-net detection only (D8/D19); runs after the loop, when every line's C_Project_ID is known.
+		// task 29508: safety-net detection only; runs after the loop, when every line's C_Project_ID is known.
 		// Never changes booking: it only logs a WARN when a packing unit (HU-assignment or default-LU origin) ends up
 		// serving shipment lines of more than one Positions Nr.
 		if (packingMaterialsCollector.isConsiderProject())
@@ -209,7 +209,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 	/**
 	 * Builds the {@link ShipmentPackingUnitProjectConflictDetector.Usage} list for this shipment's lines, from both origins a packing unit
-	 * can come from (D19): an {@code M_HU_Assignment} (TU or LU) and the default-LU packing instruction. Read-only; does not change booking.
+	 * can come from: an {@code M_HU_Assignment} (TU or LU) and the default-LU packing instruction. Read-only; does not change booking.
 	 */
 	private List<ShipmentPackingUnitProjectConflictDetector.Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
 	{
@@ -217,9 +217,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		//
 		// (a) HU-assignment origin: all active TU/LU M_HU_Assignment rows of each line, in line order.
-		// Deliberately NO IsTransferPackingMaterials filter (D8-corr, review B1): a TU shared by more than one line
-		// gets IsTransferPackingMaterials='Y' on only its first assignment (ShipmentLineBuilder.java:588), so a filtered
-		// query could never see the second line and the conflict would go undetected.
+		// Deliberately NO IsTransferPackingMaterials filter: a TU shared by more than one line gets
+		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered query could never
+		// see the second line and the conflict would go undetected.
 		// One batched query for ALL lines (never one query per line; java-general.md §32 "No SQL N+1 queries"),
 		// then grouped by Record_ID (=M_InOutLine_ID, since every assignment here belongs to an I_M_InOutLine).
 		final ImmutableListMultimap<Integer, I_M_HU_Assignment> assignmentsByInOutLineId;
@@ -252,14 +252,14 @@ public class HUShipmentPackingMaterialLinesBuilder
 			{
 				if (assignment.getM_TU_HU_ID() > 0)
 				{
-					// TU: booked = the row with IsTransferPackingMaterials='Y' (set only on the first assignment; HUPackingMaterialsCollector.java:537,:572).
+					// TU: booked = the row with IsTransferPackingMaterials='Y' (set only on the first assignment).
 					usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
 							"HU:" + assignment.getM_TU_HU_ID(), inOutLineId, projectId, assignment.isTransferPackingMaterials()));
 				}
 				if (assignment.getM_LU_HU_ID() > 0)
 				{
-					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU
-					// (addLUIfNotAlreadyAssignedElsewhere, HUPackingMaterialsCollector.java:597-615); resolved once every line is known, below.
+					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU;
+					// resolved once every line is known, below.
 					final int luHuId = assignment.getM_LU_HU_ID();
 					earliestInOutLineIdByLuHuId.merge(luHuId, inOutLineId.getRepoId(), Math::min);
 					luOccurrences.add(new LuOccurrence(luHuId, inOutLineId, projectId));
@@ -274,9 +274,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 
 		//
-		// (b) default-LU origin (D19): only if the default-LU PI was added AND has a PM item with a packing material
-		// (the same check HUPackingMaterialsCollector.addM_HU_PI does at :413-419). One usage per manual-packing line;
-		// booked = the first manual line, which is where the pallet was actually added.
+		// (b) default-LU origin: only if the default-LU PI was added AND has a PM item with a packing material
+		// (the same check HUPackingMaterialsCollector.addM_HU_PI does before adding a candidate for it).
+		// One usage per manual-packing line; booked = the first manual line, which is where the pallet was actually added.
 		if (_defaultLUPI != null && defaultLUHasPackingMaterial(_defaultLUPI))
 		{
 			final String defaultLuUnitKey = "DefaultLU-PI:" + _defaultLUPI.getM_HU_PI_ID();

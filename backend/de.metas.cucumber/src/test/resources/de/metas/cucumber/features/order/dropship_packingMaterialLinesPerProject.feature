@@ -259,7 +259,7 @@ Feature: dropship packing material lines split per project
       | pm_line_P2 | <pm_B>       | P2           | 3           |
 
     # The packing shipment lines each carry their own Positions Nr., and the packing invoice
-    # inherits it (AC-5).
+    # candidate inherits it.
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.M_InOutLine_ID.Identifier |
       | ic_pm_P1                          | null                      | pm_line_P1                    |
