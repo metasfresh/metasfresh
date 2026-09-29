@@ -138,8 +138,10 @@ export class CostRevaluationPage {
     await saved;
     await page.waitForTimeout(500);
     // Tab moves the focus into the next date field, which opens its calendar over the line tab; close it.
+    // Unconditional: the calendar opens asynchronously after the focus move, so checking for it first races.
+    // The focused field was only just entered and holds no edit, so Escape discards nothing.
     await page.keyboard.press('Escape');
-    await page.locator('.rdtOpen').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.locator('.rdtOpen').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     await holdForCaptureIfEnabled(1500);
     await unhighlight();
   }
@@ -287,13 +289,12 @@ export class CostRevaluationPage {
     let posted;
     for (let i = 0; i < 30; i++) {
       posted = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'Posted');
-      const key = posted.value && (posted.value.key || posted.value);
-      if (key === 'Y' || key === true) {
-        break;
+      if (posted.value && posted.value.key === 'Y') {
+        return posted;
       }
       await getPage().waitForTimeout(1000);
     }
-    return posted;
+    throw new Error(`Cost revaluation ${recordId} was not posted within 30s; Posted=${JSON.stringify(posted && posted.value)}`);
   }
 
   /** Type the New cost price into the open quick-input and submit the line (Enter). */

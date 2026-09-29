@@ -61,7 +61,10 @@ async function loginAndCreateHeader(masterdata) {
   return await CostRevaluationPage.createHeader();
 }
 
-/** The moving-average (average purchase-order price) cost element of the standard setup. */
+/**
+ * The moving-average (average purchase-order price) cost element of the standard setup. Selected by its name:
+ * M_CostElement.Name is master data without translations, so it is the same in every login language.
+ */
 const MOVING_AVERAGE_PO_COST_ELEMENT_NAME = 'Bestellpreis Durchschnitt';
 
 function allureTags(story) {
