@@ -80,7 +80,8 @@ final class LocalArchiveAwait
 
 	/**
 	 * Waits for {@code dir} to become empty — the polled file is deleted by Camel's own file-consumer
-	 * commit, which is ordered against the exchange's completion the same way the archiver's write is.
+	 * commit. See the class javadoc: that commit's ordering was not reproduced as racy here, and this
+	 * wait is precautionary.
 	 */
 	static void awaitEmpty(@NonNull final Path dir) throws InterruptedException
 	{
