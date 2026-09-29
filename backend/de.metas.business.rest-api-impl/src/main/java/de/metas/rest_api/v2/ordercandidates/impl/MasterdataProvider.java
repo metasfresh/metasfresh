@@ -201,6 +201,18 @@ public final class MasterdataProvider
 			@Nullable final OrgId orgId,
 			@Nullable final String orgCode)
 	{
+		if (jsonBPartnerInfo.getBPartnerIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		if (jsonBPartnerInfo.getBPartnerLocationIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerLocationIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerIdentifier());
 		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerLocationIdentifier());
 		final boolean bpartnerIsGLN = ExternalIdentifier.Type.GLN.equals(bpartnerIdentifier.getType());

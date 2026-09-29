@@ -149,6 +149,16 @@ class MasterdataProviderGetBPartnerInfoTest
 	}
 
 	@Test
+	void missingLocationIdentifier_failsWithAClearMessage()
+	{
+		final BPartnerId partner = createBPartner("partner", true);
+
+		assertThatThrownBy(() -> masterdataProvider.getBPartnerInfoNotNull(request(String.valueOf(partner.getRepoId()), null), orgId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("bpartnerLocationIdentifier is missing");
+	}
+
+	@Test
 	void nonGlnIdentifiers_arePassedOnUnchanged()
 	{
 		final BPartnerId partner = createBPartner("partner", true);

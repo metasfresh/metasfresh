@@ -15,6 +15,7 @@ import de.metas.audit.apirequest.response.ApiResponseAuditRepository;
 import de.metas.audit.data.service.CompositeDataAuditService;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.web.audit.dto.ApiResponse;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserGroupId;
@@ -144,5 +145,17 @@ class ApiAuditServiceTest
 		final List<UserNotificationRequest> sent = notify(NotificationTriggerType.ALWAYS, ApiCallOutcome.ofHttpStatus(207));
 		assertThat(sent).hasSize(1);
 		assertThat(sent.get(0).getContentADMessage().toAD_Message()).isEqualTo("de.metas.util.web.audit.invocation_partially_failed");
+	}
+
+	@Test
+	void auditResponse_with207_onErrorOr207Config_notifiesWithPartialMessage()
+	{
+		final ApiResponse response = ApiResponse.builder().statusCode(207).build();
+
+		apiAuditService.auditResponse(config(NotificationTriggerType.ERROR_OR_PARTIAL_ERROR), response, requestAudit());
+
+		final ArgumentCaptor<UserNotificationRequest> captor = ArgumentCaptor.forClass(UserNotificationRequest.class);
+		Mockito.verify(notificationBL, Mockito.times(1)).send(captor.capture());
+		assertThat(captor.getValue().getContentADMessage().toAD_Message()).isEqualTo("de.metas.util.web.audit.invocation_partially_failed");
 	}
 }

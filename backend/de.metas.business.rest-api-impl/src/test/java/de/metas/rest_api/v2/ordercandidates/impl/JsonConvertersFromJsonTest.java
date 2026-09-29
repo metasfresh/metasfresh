@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.order.impl.DocTypeService;
+import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.promotioncode.PromotionCodeRepository;
@@ -50,6 +52,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -63,6 +66,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
@@ -133,6 +137,94 @@ class JsonConvertersFromJsonTest
 				.as("partner A").isEqualTo(rowA.getRepoId());
 		assertThat(jsonConverters.fromJson(request(partnerB), masterdataProvider).getHuPIItemProductId())
 				.as("partner B").isEqualTo(rowB.getRepoId());
+	}
+
+	/**
+	 * Real entry path with {@code gln-} identifiers: the GLN is shared by an inactive and an active partner (each with its own packing instruction for the same GTIN).
+	 * The REST endpoints only understand metasfresh ids, so the candidate can only get the active partner via the active-only GLN resolution.
+	 */
+	@Test
+	void fromJson_glnSharedByInactiveAndActivePartner_usesActivePartnerAndItsPackingInstruction()
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("feta-200g");
+		product.setIsActive(true);
+		product.setC_UOM_ID(createUomId());
+		InterfaceWrapperHelper.save(product);
+
+		final BPartnerId inactivePartner = createBPartner("old-partner");
+		deactivate(inactivePartner);
+		createLocation(inactivePartner, "p-shared");
+		createPiip(product, inactivePartner);
+
+		final BPartnerId activePartner = createBPartner("new-partner");
+		final BPartnerLocationId activeLocation = createLocation(activePartner, "p-shared");
+		final HUPIItemProductId activeRow = createPiip(product, activePartner);
+
+		mockBPartnerEndpointsForMetasfreshIdsOnly();
+
+		final JsonOLCandCreateRequest request = JsonOLCandCreateRequest.builder()
+				.externalLineId("line-1")
+				.externalHeaderId("header-1")
+				.externalSystemCode("EDI")
+				.dataSource("int-test-source")
+				.poReference("po-1")
+				.dateRequired(LocalDate.of(2026, 7, 5))
+				.productIdentifier("gtin-" + GTIN)
+				.qty(BigDecimal.ONE)
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bPartnerIdentifier("gln-p-shared")
+						.bPartnerLocationIdentifier("gln-p-shared")
+						.build())
+				.build();
+
+		final OLCandCreateRequest result = jsonConverters.fromJson(request, masterdataProvider);
+
+		assertThat(result.getBpartner().getBpartnerId()).isEqualTo(activePartner);
+		assertThat(result.getBpartner().getBpartnerLocationId()).isEqualTo(activeLocation);
+		assertThat(result.getHuPIItemProductId()).isEqualTo(activeRow.getRepoId());
+	}
+
+	private void mockBPartnerEndpointsForMetasfreshIdsOnly()
+	{
+		Mockito.doAnswer(invocation -> {
+			final String bpartnerIdentifier = invocation.getArgument(1);
+			if (!bpartnerIdentifier.matches("^\\d+$"))
+			{
+				return ResponseEntity.notFound().build();
+			}
+			final JsonResponseComposite composite = JsonResponseComposite.builder()
+					.bpartner(JsonResponseBPartner.builder().metasfreshId(JsonMetasfreshId.of(Integer.parseInt(bpartnerIdentifier))).active(true).name("bp").vendor(false).customer(true).company(true).build())
+					.build();
+			return ResponseEntity.ok(composite);
+		}).when(bpartnerRestController).retrieveBPartner(any(), anyString());
+
+		Mockito.doAnswer(invocation -> {
+			final String bpartnerIdentifier = invocation.getArgument(1);
+			final String locationIdentifier = invocation.getArgument(2);
+			if (!bpartnerIdentifier.matches("^\\d+$") || !locationIdentifier.matches("^\\d+$"))
+			{
+				return ResponseEntity.notFound().build();
+			}
+			return ResponseEntity.ok(JsonResponseLocation.builder().metasfreshId(JsonMetasfreshId.of(Integer.parseInt(locationIdentifier))).active(true).build());
+		}).when(bpartnerRestController).retrieveBPartnerLocation(any(), anyString(), anyString());
+	}
+
+	private static void deactivate(final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+		bpartner.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(bpartner);
+	}
+
+	private static BPartnerLocationId createLocation(final BPartnerId bpartnerId, final String glnCode)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartnerId.getRepoId());
+		location.setGLN(glnCode); // stored without the "gln-" identifier prefix
+		location.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(location);
+		return BPartnerLocationId.ofRepoId(bpartnerId, location.getC_BPartner_Location_ID());
 	}
 
 	private JsonOLCandCreateRequest request(final BPartnerId bpartnerId)
