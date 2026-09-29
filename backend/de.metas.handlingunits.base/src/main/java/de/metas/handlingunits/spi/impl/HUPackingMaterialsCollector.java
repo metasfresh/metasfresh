@@ -111,13 +111,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * also keys on the in-scope source's {@code C_Project_ID}, so packing material collected for different projects
 	 * lands in different candidates instead of being merged into one.
 	 * <p>
-	 * Default {@code false}: the key stays exactly today's (no behaviour change) unless a caller opts in.
+	 * Default {@code false}: the project is not part of the key.
 	 * <p>
-	 * <b>Shipment-only intent:</b> only {@code HUShipmentPackingMaterialLinesBuilder} is meant to set this (gated by
-	 * a sysconfig). <b>The remove path is not project-aware:</b> {@link #requirePackingMaterialForTU(I_M_HU)} /
+	 * <b>The remove path is not project-aware:</b> {@link #requirePackingMaterialForTU(I_M_HU)} /
 	 * {@link #requirePackingMaterialForLU(I_M_HU)} always pass a {@code null} source, so with this flag ON their key
-	 * would not match the add-key of a project-keyed candidate; this is safe only because the shipment builder never
-	 * calls the remove path.
+	 * would not match the add-key of a project-keyed candidate. Do not enable it for a collector that uses the remove path.
 	 */
 	private boolean considerProject = false;
 
@@ -464,11 +462,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final int productId = huPackingMaterial.getM_Product_ID();
 		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
 
-		// NOTE: when !considerProject, projectId is forced to the same -1 sentinel for every candidate in this run,
-		// i.e. the project component never distinguishes candidates; this is equivalent to (and byte-for-byte
-		// reproduces the grouping of) the pre-considerProject key, which omitted the component entirely
-		// (key2candidates is a fresh, in-memory, per-run map: it's never compared across runs, so the key's
-		// literal shape carrying an extra, constant -1 element doesn't matter -- only its partition does).
+		// When !considerProject, every candidate gets the same -1, so the project never distinguishes candidates.
 		final int projectId = considerProject ? ProjectId.toRepoId(source == null ? null : source.getProjectId()) : -1;
 		return Util.mkKey(
 				productId <= 0 ? -1 : productId,

@@ -40,6 +40,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -549,6 +550,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
 		return retrievePIItems(version, bpartnerId);
+	}
+
+	@Override
+	public ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull final I_M_HU_PI huPI, @Nullable final BPartnerId bpartnerId)
+	{
+		return retrievePIItems(huPI, bpartnerId)
+				.stream()
+				.map(piItem -> HuPackingMaterialId.ofRepoIdOrNull(piItem.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

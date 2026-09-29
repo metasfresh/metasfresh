@@ -246,6 +246,22 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
+	public List<I_M_HU_Assignment> retrieveActiveHUAssignments(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, recordRefs.getSingleTableId())
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordRefs.toIntSet())
+				.create()
+				.list();
+	}
+
+	@Override
 	public List<I_M_HU> retrieveDistinctAssignedTUsForModel(final Object model)
 	{
 		// andCollect uses IN(...) on M_TU_HU_ID, so duplicate TU IDs from sub-assignments are deduplicated naturally.

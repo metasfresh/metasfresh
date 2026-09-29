@@ -174,6 +174,11 @@ public interface IHUAssignmentDAO extends ISingletonService
 	List<I_M_HU> retrieveDistinctAssignedTUsForModel(Object model);
 
 	/**
+	 * @return all active {@code M_HU_Assignment} rows (regardless of {@code IsTransferPackingMaterials}) referencing any of the given records, which must all belong to the same table.
+	 */
+	List<I_M_HU_Assignment> retrieveActiveHUAssignments(@NonNull TableRecordReferenceSet recordRefs);
+
+	/**
 	 * Retrieves those "sub" assignments that reference the same top-level HU and data-record as the given <code>assigment</code>, but also reference a particular (sub-)component of the top-level HU
 	 *
 	 * @return included assignments
