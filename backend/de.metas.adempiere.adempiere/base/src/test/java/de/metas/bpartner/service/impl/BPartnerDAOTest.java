@@ -119,6 +119,29 @@ public class BPartnerDAOTest
 		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null)).isEqualTo(activeBPartnerId);
 	}
 
+	/**
+	 * Partner maintenance (e.g. the bpartner REST upsert/retrieve) uses the default query; it must still find a partner that only an inactive partner's location carries.
+	 */
+	@Test
+	public void retrieveBPartnerIdsBy_gln_default_stillFindsInactiveBPartner()
+	{
+		final GLN gln = GLN.ofString("gln-dao-inactive-only");
+		final BPartnerId inactiveBPartnerId = createBPartnerWithName("Inactive BPartner");
+		final I_C_BPartner inactiveBPartner = bpartnerDAO.getById(inactiveBPartnerId);
+		inactiveBPartner.setIsActive(false);
+		saveRecord(inactiveBPartner);
+		createLocationWithGLN(inactiveBPartnerId, gln);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.gln(gln)
+				.onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build();
+
+		assertThat(bpartnerDAO.retrieveBPartnerIdsBy(query)).containsExactly(inactiveBPartnerId);
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query)).contains(inactiveBPartnerId);
+	}
+
 	private void createLocationWithGLN(final BPartnerId bpartnerId, final GLN gln)
 	{
 		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
