@@ -186,18 +186,15 @@ and it does NOT offer a non-stocked (Service) product.
     await CostRevaluationPage.openQuickInput();
 
     await test.step('Picker offers a stocked product that has a current cost', async () => {
-      const hasCostOpts = await CostRevaluationPage.searchProduct(md.products.PHAS.productCode);
-      await expect(hasCostOpts.filter({ hasText: md.products.PHAS.productCode })).toHaveCount(1);
+      await CostRevaluationPage.expectProductOffered(md.products.PHAS.productCode);
     });
 
     await test.step('Picker offers a stocked product with NO cost record (costless)', async () => {
-      const costlessOpts = await CostRevaluationPage.searchProduct(md.products.PSEED.productCode);
-      await expect(costlessOpts.filter({ hasText: md.products.PSEED.productCode })).toHaveCount(1);
+      await CostRevaluationPage.expectProductOffered(md.products.PSEED.productCode);
     });
 
     await test.step('Picker excludes a non-stocked (Service) product', async () => {
-      const serviceOpts = await CostRevaluationPage.searchProduct(md.products.PSVC.productCode);
-      await expect(serviceOpts.filter({ hasText: md.products.PSVC.productCode })).toHaveCount(0);
+      await CostRevaluationPage.expectProductNotOffered(md.products.PSVC.productCode);
     });
 
     console.log('[picker] stocked (has-cost + costless) offered; non-stocked excluded');

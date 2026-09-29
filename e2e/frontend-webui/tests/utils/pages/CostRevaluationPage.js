@@ -23,7 +23,8 @@ export const todayISO = () => {
 
 /**
  * Render isoDate (yyyy-MM-dd) in the display format of a date field whose current text is `shown` while its
- * stored value is currentIsoDate. Supports the day/month/year orders in use.
+ * stored value is currentIsoDate. Supports the day/month/year orders of the tested languages (en_US, de_DE);
+ * on a day where day == month, MM/dd/yyyy and dd/MM/yyyy cannot be told apart and the first candidate wins.
  */
 const toDisplayFormat = (shown, currentIsoDate, isoDate) => {
   const [ty, tm, td] = currentIsoDate.substring(0, 10).split('-');
@@ -134,6 +135,7 @@ export class CostRevaluationPage {
       (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
       { timeout: SLOW_ACTION_TIMEOUT }
     );
+    saved.catch(() => {}); // awaited below; avoids an unhandled rejection if a step in between throws
     await input.click();
     await input.press('ControlOrMeta+a');
     await input.pressSequentially(text);
@@ -176,8 +178,8 @@ export class CostRevaluationPage {
   }
 
   /**
-   * Search the quick-input product picker for a code and return the dropdown options locator.
-   * In a capture run the settled result list (or the empty result) stays on screen for a moment.
+   * Search the quick-input product picker for a code.
+   * @returns {import('@playwright/test').Locator} the result options (the "no results" / loading header is not an option)
    */
   static async searchProduct(code) {
     const page = getPage();
@@ -193,13 +195,36 @@ export class CostRevaluationPage {
       .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
     await page.waitForTimeout(300);
-    const options = page.locator('.input-dropdown-list-option');
+    return page.locator('.input-dropdown-list [data-testid^="option-"]');
+  }
 
-    const unhighlight = await highlightForCaptureIfEnabled(page.locator('#lookup_M_Product_ID'));
+  /** Search the picker for a code and expect exactly one result option for it. */
+  static async expectProductOffered(code) {
+    const options = await this.searchProduct(code);
+    await expect(options.filter({ hasText: code })).toHaveCount(1);
+    await this.holdPickerResultForCapture();
+  }
+
+  /**
+   * Search the picker for a code and expect NO result at all: the previous search's options are gone and the
+   * finished (not loading) "no results" row is shown.
+   */
+  static async expectProductNotOffered(code) {
+    const page = getPage();
+    const options = await this.searchProduct(code);
+    await expect(options.filter({ hasText: code })).toHaveCount(0);
+    await expect(options).toHaveCount(0);
+    await expect(
+      page.locator('.input-dropdown-list .input-dropdown-list-header').filter({ hasNot: page.locator('.icon-rotate') })
+    ).toBeVisible();
+    await this.holdPickerResultForCapture();
+  }
+
+  /** In a capture run: keep the settled picker result list on screen. */
+  static async holdPickerResultForCapture() {
+    const unhighlight = await highlightForCaptureIfEnabled(getPage().locator('#lookup_M_Product_ID'));
     await holdForCaptureIfEnabled(2500);
     await unhighlight();
-
-    return options;
   }
 
   /** Pick the dropdown option of the given product code (after searchProduct). */

@@ -35,12 +35,12 @@ testCases.forEach(({ language, label }) => {
     allure.story('Produktkosten cost fields locked read-only');
     allure.severity('critical');
     allure.description(`
-  ## F1500: Costing — Produktkosten (window 344) cost fields read-only
+## F1500: Costing — Produktkosten (window 344) cost fields read-only
 
-  A normally-created product carries its default M_Cost rows. On the Produktkosten window's M_Cost tab,
-  the Current Cost Price and Future Cost Price fields must be read-only so a user cannot edit a cost
-  price directly (bypassing the audited Kosten Neubewertung path). Asserted on the language-invariant
-  \`readonly\` flag the WebUI renders from, plus a UI attempt to edit Current Cost Price that is refused.
+A normally-created product carries its default M_Cost rows. On the Produktkosten window's M_Cost tab,
+the Current Cost Price and Future Cost Price fields must be read-only so a user cannot edit a cost
+price directly (bypassing the audited Kosten Neubewertung path). Asserted on the language-invariant
+\`readonly\` flag the WebUI renders from, plus a UI attempt to edit Current Cost Price that is refused.
     `);
 
     const md = await Backend.createMasterdata({
