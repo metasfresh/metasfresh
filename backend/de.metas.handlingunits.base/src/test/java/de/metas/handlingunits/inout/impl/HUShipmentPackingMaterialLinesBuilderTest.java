@@ -55,7 +55,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Two manual-packing lines of different projects share the default LU, which is a packing-unit project conflict when the split is on.
+ * The project-split conflict check of the shipment packing-line builder, per document type and call path.
+ * The fixture: two manual-packing lines of different projects share the default LU, which is a conflict when the split is on.
  */
 class HUShipmentPackingMaterialLinesBuilderTest
 {
@@ -143,13 +144,13 @@ class HUShipmentPackingMaterialLinesBuilderTest
 	}
 
 	@Test
-	void recreatePackingMaterialLines_customerReturn_notSplitByProject()
+	void recreatePackingMaterialLines_customerReturn_noProjectConflictCheck()
 	{
 		final I_M_InOut customerReturn = createInOutWithTwoProjectLines(X_M_InOut.MOVEMENTTYPE_CustomerReturns);
 
 		huInOutBL.recreatePackingMaterialLines(customerReturn);
 
-		// the project split, and with it the conflict check, is off for returns
+		// the conflict check only runs with the split on, so an empty log proves the split is off for returns
 		assertThat(listAppender.list).isEmpty();
 	}
 

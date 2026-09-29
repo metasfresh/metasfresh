@@ -127,7 +127,7 @@ public class AD_SysConfig_StepDef
 		final boolean booleanValue = Boolean.parseBoolean(valueStr);
 		sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		resetSysConfigCache();
 	}
 
 	/**
@@ -155,8 +155,16 @@ public class AD_SysConfig_StepDef
 			rememberPriorValue(sysConfigName);
 			setSysConfigIntValue(sysConfigName, productCategoryId.getRepoId());
 
-			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+			resetSysConfigCache();
 		});
+	}
+
+	/**
+	 * Setting a value also fires a cache invalidation event, but that event may not be processed before the next step runs.
+	 */
+	private static void resetSysConfigCache()
+	{
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	/**
@@ -194,6 +202,6 @@ public class AD_SysConfig_StepDef
 		}
 
 		priorValueBySysConfigName.clear();
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		resetSysConfigCache();
 	}
 }

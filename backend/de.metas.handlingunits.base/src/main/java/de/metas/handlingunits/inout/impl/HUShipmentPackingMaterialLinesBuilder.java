@@ -38,6 +38,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Usage;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -216,13 +217,13 @@ public class HUShipmentPackingMaterialLinesBuilder
 			return;
 		}
 
-		final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = buildPackingUnitProjectUsages(inoutLines);
+		final List<Usage> usages = buildPackingUnitProjectUsages(inoutLines);
 		ShipmentPackingUnitProjectConflictDetector.logWarnings(getM_InOut(), ShipmentPackingUnitProjectConflictDetector.detect(usages));
 	}
 
-	private List<ShipmentPackingUnitProjectConflictDetector.Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
+	private List<Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
 	{
-		final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = new ArrayList<>();
+		final List<Usage> usages = new ArrayList<>();
 
 		// Deliberately NOT filtered on IsTransferPackingMaterials: a TU shared by more than one line gets
 		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered lookup would never see the other lines.
@@ -247,7 +248,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 				// A manual-packing line books its packing from the overrides and the default LU; the packing of its HUs is not booked
 				if (defaultLU != null)
 				{
-					usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
+					usages.add(new Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
 				}
 				continue;
 			}
@@ -258,7 +259,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 				if (tuHuId != null)
 				{
 					// TU: booked = the row with IsTransferPackingMaterials='Y' (set only on the first assignment).
-					usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
+					usages.add(new Usage(
 							PackingUnit.ofHuId(tuHuId), projectId, assignment.isTransferPackingMaterials()));
 				}
 				final HuId luHuId = HuId.ofRepoIdOrNull(assignment.getM_LU_HU_ID());
@@ -274,7 +275,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		for (final LuOccurrence luOccurrence : luOccurrences)
 		{
 			final boolean isBooked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
-			usages.add(new ShipmentPackingUnitProjectConflictDetector.Usage(
+			usages.add(new Usage(
 					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), isBooked));
 		}
 
