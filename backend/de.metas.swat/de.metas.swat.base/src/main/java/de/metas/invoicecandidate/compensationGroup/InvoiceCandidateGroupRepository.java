@@ -48,6 +48,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -463,6 +464,41 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.invoiceCandidate(invoiceCandidate)
 				.performDatabaseChanges(false)
 				.build();
+	}
+
+	/**
+	 * @return {@code true} if the group's {@code C_Order_CompensationGroup} header was created by a contract, i.e. carries a {@code C_Flatrate_Term_ID}
+	 */
+	public boolean isContractCreatedGroup(@NonNull final GroupId groupId)
+	{
+		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
+		return groupRecord != null && groupRecord.getC_Flatrate_Term_ID() > 0;
+	}
+
+	/**
+	 * @return {@code true} if at least one regular (non-compensation) invoice candidate of the group is not yet processed, i.e. still has goods to invoice
+	 */
+	public boolean hasNotProcessedRegularInvoiceCandidates(@NonNull final GroupId groupId)
+	{
+		return retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the first (by ID) regular invoice candidate of the group that currently has something to invoice
+	 */
+	public Optional<I_C_Invoice_Candidate> retrieveFirstRegularInvoiceCandidateToInvoice(@NonNull final GroupId groupId)
+	{
+		return Optional.ofNullable(retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, BigDecimal.ZERO)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.first(I_C_Invoice_Candidate.class));
 	}
 
 	public void invalidateCompensationInvoiceCandidatesOfGroup(final GroupId groupId)

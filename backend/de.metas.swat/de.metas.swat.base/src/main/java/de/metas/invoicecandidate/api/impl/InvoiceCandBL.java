@@ -96,6 +96,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
+import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -597,6 +598,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
 
+		// the discount candidate of a contract compensation group is repriced after each partial invoice,
+		// so its own current price does not tell what its earlier invoice lines were invoiced at
+		final boolean useInvoiceLinePrice = !ilas.isEmpty()
+				&& ContractCompensationLineInvoicing.isPercentCompensationLine(ic)
+				&& SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).isContractPercentCompensationLine(ic);
+
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
 			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
@@ -624,7 +631,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean isIlaInvoiceAnAdjInvoice = Services.get(IInvoiceBL.class)
 					.isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
 
-			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
+			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice || useInvoiceLinePrice ?
 					ila.getC_InvoiceLine().getPriceActual() :
 					ic.getPriceActual();
 

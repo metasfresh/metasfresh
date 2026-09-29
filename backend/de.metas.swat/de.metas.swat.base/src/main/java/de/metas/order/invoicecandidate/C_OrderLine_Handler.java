@@ -40,6 +40,7 @@ import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
+import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -362,6 +363,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// to the order line after IC creation also flow through.
 		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
 		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
+
+		if (ContractCompensationLineInvoicing.isPercentCompensationLine(ic))
+		{
+			SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).updateQtyOrdered(ic);
+		}
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
@@ -537,7 +543,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			priceAndTax.priceEntered(compensationLine.getPrice());
 			priceAndTax.priceActual(compensationLine.getPrice());
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
-			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE)
+			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see ContractCompensationLineInvoicing for contract groups)
 		}
 
 		return priceAndTax.build();

@@ -47,13 +47,16 @@ public class InvoiceCandidateGroupCompensationChangesHandler
 			return;
 		}
 
-		// Don't touch processed lines
-		if (invoiceCandidate.isProcessed())
+		final boolean groupCompensationLine = invoiceCandidate.isGroupCompensationLine();
+
+		// Don't touch processed lines;
+		// except for a contract group, whose discount candidate stays open until its goods are processed (see ContractCompensationLineInvoicing)
+		if (invoiceCandidate.isProcessed()
+				&& (groupCompensationLine || !groupsRepo.isContractCreatedGroup(groupsRepo.extractGroupId(invoiceCandidate))))
 		{
 			return;
 		}
 
-		final boolean groupCompensationLine = invoiceCandidate.isGroupCompensationLine();
 		final String amtType = invoiceCandidate.getGroupCompensationAmtType();
 		if (!groupCompensationLine)
 		{

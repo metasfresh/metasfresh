@@ -597,6 +597,8 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code QtyEntered} (optional)</li>
 	 *   <li>{@code QtyInvoiced} (optional)</li>
 	 *   <li>{@code NetAmtToInvoice} (optional)</li>
+	 *   <li>{@code NetAmtInvoiced} (optional) — compared by value, ignoring the scale</li>
+	 *   <li>{@code IsError} (optional)</li>
 	 *   <li>{@code C_Order_ID} (optional)</li>
 	 *   <li>{@code C_OrderLine_ID} (optional)</li>
 	 *   <li>{@code PaymentRule} (optional)</li>
@@ -691,6 +693,12 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getNetAmtToInvoice()).isEqualTo(expected));
+
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getNetAmtInvoiced()).as(I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced).isEqualByComparingTo(expected));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as(I_C_Invoice_Candidate.COLUMNNAME_IsError).isEqualTo(expected));
 
 						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 								.map(orderTable::getId)

@@ -34,6 +34,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
+import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -388,6 +389,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		invoiceCandBL.setPriceActual_Override(icRecord);
 
 		invoiceCandBL.setQtyAndDateForFreightCost(icRecord);
+
+		if (ContractCompensationLineInvoicing.isPercentCompensationLine(icRecord))
+		{
+			SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).updateQtyToInvoice(icRecord);
+		}
 
 		// setQtyAndDateForFreightCost might have changed the ICs delivery date, so we do setInvoiceScheduleAndDateToInvoice only now
 		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
