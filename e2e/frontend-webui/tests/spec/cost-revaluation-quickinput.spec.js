@@ -5,6 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
+import { PRODUKTKOSTEN_M_COST_TAB_ID, PRODUKTKOSTEN_WINDOW_ID } from '../utils/pages/ProduktkostenPage';
 import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -14,8 +15,8 @@ import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
  *  - quick-input a per-product line for a stocked product that has a current cost, Complete (posts the value difference).
  *  - the quick-input product picker offers stocked/eligible products (incl. a stocked product with no
  *    cost record) and NOT non-stocked products.
- *  - seed a stocked product that has NO cost record, Run + Complete, with the provisional-price hint
- *    shown on the New cost price field.
+ *  - seed a cost for a stocked product that has NO cost record (seeded when the line is added; Complete sets the
+ *    entered, fractional price), with the provisional-price hint shown on the New cost price field.
  *
  * Expects the accounting schema to use CLIENT-level costing.
  */
@@ -66,6 +67,25 @@ async function loginAndCreateHeader(masterdata) {
  * M_CostElement.Name is master data without translations, so it is the same in every login language.
  */
 const MOVING_AVERAGE_PO_COST_ELEMENT_NAME = 'Bestellpreis Durchschnitt';
+
+/** A fractional price on purpose: the quick-input must accept decimals, not only whole numbers. */
+const SEED_COST_PRICE = 12.35;
+
+/**
+ * The product's cost records (M_Cost rows), read from the Produktkosten window's cost tab.
+ * @returns {Promise<{costElement: string, currentCostPrice: number, currentQty: number}[]>}
+ */
+async function getProductCosts(page, productId) {
+  const response = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}/${PRODUKTKOSTEN_M_COST_TAB_ID}`
+  );
+  expect(response.status()).toBe(200);
+  return ((await response.json()).result || []).map((row) => ({
+    costElement: row.fieldsByName.M_CostElement_ID && row.fieldsByName.M_CostElement_ID.value.caption,
+    currentCostPrice: Number(row.fieldsByName.CurrentCostPrice.value),
+    currentQty: Number(row.fieldsByName.CurrentQty && row.fieldsByName.CurrentQty.value),
+  }));
+}
 
 function allureTags(story) {
   allure.epic('E0226: Costing');
@@ -132,11 +152,7 @@ completed and posted.
     await CostRevaluationPage.addLine(productCode, '15');
 
     // Exactly one line exists (assert via WebAPI, language-independent)
-    const lineRows = await page.request.get(
-      `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`
-    );
-    const lineBody = await lineRows.json();
-    const rows = lineBody.result || [];
+    const rows = await CostRevaluationPage.getLines(recordId);
     console.log('[quick-input] line count=' + rows.length);
     expect(rows.length).toBe(1);
     const line = rows[0].fieldsByName;
@@ -168,11 +184,7 @@ completed and posted.
     expect(factAmounts.reduce((sum, fact) => sum + fact.dr, 0)).toBe(50);
     expect(factAmounts.reduce((sum, fact) => sum + fact.cr, 0)).toBe(50);
     expect(factAmounts.filter((fact) => fact.account === 'P_Asset_Acct').map((fact) => fact.dr - fact.cr)).toEqual([50]);
-    const completedRows = (
-      await (
-        await page.request.get(`${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`)
-      ).json()
-    ).result;
+    const completedRows = await CostRevaluationPage.getLines(recordId);
     console.log('[quick-input] completed DeltaAmt=' + JSON.stringify(completedRows[0].fieldsByName.DeltaAmt.value));
     expect(Number(completedRows[0].fieldsByName.DeltaAmt.value)).toBe(50);
     await CostRevaluationPage.showCompletedDocument();
@@ -273,14 +285,16 @@ and it does NOT offer a non-stocked (Service) product.
     allure.description(`
 ## F1500: Costing — seed-cost path (stocked product with no cost record)
 
-Picks a STOCKED product that has NO M_Cost row, quick-inputs a New cost price, and completes.
-The Complete DocAction seeds the cost row at qty 0 with the entered price (no GL posting) and the
-document completes. The header uses the moving-average cost element (Bestellpreis Durchschnitt), under
-which the New cost price field's provisional-price hint applies (provisional until the first goods receipt).
+Picks a STOCKED product that has NO M_Cost row and quick-inputs a fractional New cost price (12.35).
+Adding the line seeds the missing cost row at qty 0; completing the document sets the product's current
+cost price to the entered price, without any accounting facts (nothing on hand, so no value difference).
+The header uses the moving-average cost element (Bestellpreis Durchschnitt), under which the New cost price
+field's provisional-price hint applies (provisional until the first goods receipt).
     `);
 
     const md = await createMasterdata(language);
     const seedProductCode = md.products.PSEED.productCode;
+    const seedProductId = md.products.PSEED.id;
 
     const recordId = await loginAndCreateHeader(md);
     console.log(`[seed] header record ${recordId}`);
@@ -290,6 +304,9 @@ which the New cost price field's provisional-price hint applies (provisional unt
     const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
     console.log('[seed] M_CostElement_ID=' + JSON.stringify(costElement.value));
     expect(costElement.value.caption).toBe(MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
+
+    // Precondition: the product really has no cost record yet.
+    expect(await getProductCosts(page, seedProductId)).toEqual([]);
 
     await CostRevaluationPage.openQuickInput();
 
@@ -318,33 +335,39 @@ which the New cost price field's provisional-price hint applies (provisional unt
       expect(npcLabelTitle).toBe(expectedHint);
     });
 
-    // Type the seed price and submit the line. The seed path materialises the missing M_Cost row
-    // server-side before creating the line, so poll for the row.
-    await test.step('Enter New cost price 20 + add the seed line', async () => {
-      await CostRevaluationPage.enterNewCostPriceAndSubmit(20);
+    // A fractional price: the quick-input must submit it as typed (not blocked by the number input's step).
+    await test.step(`Enter New cost price ${SEED_COST_PRICE} + add the seed line`, async () => {
+      await CostRevaluationPage.submitLine(SEED_COST_PRICE);
     });
 
-    // One seed line created with NewCostPrice = typed value (poll for the slower seed round-trip).
-    let rows = [];
-    for (let i = 0; i < 12; i++) {
-      await page.waitForTimeout(1000);
-      const lineRows = await (
-        await page.request.get(
-          `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`
-        )
-      ).json();
-      rows = lineRows.result || [];
-      if (rows.length >= 1) break;
-    }
-    console.log('[seed] line count=' + rows.length);
+    // Adding the line seeded the missing cost row (qty 0) and created the line with NewCostPrice = typed value.
+    const rows = await CostRevaluationPage.getLines(recordId);
+    console.log(
+      '[seed] lines=' +
+        JSON.stringify(rows.map((r) => ({ NewCostPrice: r.fieldsByName.NewCostPrice.value, CurrentQty: r.fieldsByName.CurrentQty.value })))
+    );
     expect(rows.length).toBe(1);
-    expect(Number(rows[0].fieldsByName.NewCostPrice.value)).toBe(20);
+    expect(Number(rows[0].fieldsByName.NewCostPrice.value)).toBe(SEED_COST_PRICE);
+    expect(Number(rows[0].fieldsByName.CurrentQty.value)).toBe(0);
+    const seededCosts = await getProductCosts(page, seedProductId);
+    console.log('[seed] cost rows after adding the line=' + JSON.stringify(seededCosts));
+    expect(seededCosts.length).toBeGreaterThan(0);
 
-    // Completes cleanly (Complete seeds the cost row at qty 0 and posts zero delta).
     await CostRevaluationPage.complete();
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
     console.log('[seed] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
+
+    // End result: the product's moving-average current cost price is now the entered price.
+    const costsAfterComplete = await getProductCosts(page, seedProductId);
+    console.log('[seed] cost rows after Complete=' + JSON.stringify(costsAfterComplete));
+    const movingAverageCost = costsAfterComplete.filter((c) => c.costElement === MOVING_AVERAGE_PO_COST_ELEMENT_NAME);
+    expect(movingAverageCost.map((c) => c.currentCostPrice)).toEqual([SEED_COST_PRICE]);
+
+    // Nothing on hand, so no value difference: the document books no accounting facts.
+    // NOTE: an unposted document has no facts either; the per-product test above is the positive control that the
+    // same read returns the facts once a revaluation of this window is posted.
+    await CostRevaluationPage.expectNoAccountingFacts(recordId);
     await CostRevaluationPage.showCompletedDocument();
   });
 });

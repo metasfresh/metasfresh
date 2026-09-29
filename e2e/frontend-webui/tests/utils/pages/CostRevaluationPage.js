@@ -8,7 +8,7 @@ import {
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../common';
-import { getAccountingFacts, getFieldData } from '../WebAPIValidation';
+import { getAccountingFacts, getFieldData, WEBAPI_BASE_URL } from '../WebAPIValidation';
 
 export const COST_REVAL_WINDOW_ID = '541568';
 export const COST_REVAL_LINE_TAB_ID = 'AD_Tab-546465';
@@ -188,13 +188,17 @@ export class CostRevaluationPage {
     await productInput.click();
     await productInput.fill('');
     await page.waitForTimeout(300);
+    const searched = page.waitForResponse(
+      (r) => r.url().includes(`/M_Product_ID/typeahead?query=${encodeURIComponent(code)}`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    searched.catch(() => {}); // awaited below; avoids an unhandled rejection if fill throws
     await productInput.fill(code);
-    await page.waitForTimeout(1800);
+    expect((await searched).ok()).toBe(true);
     await page
       .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
       .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
-    await page.waitForTimeout(300);
     return page.locator('.input-dropdown-list [data-testid^="option-"]');
   }
 
@@ -233,8 +237,13 @@ export class CostRevaluationPage {
     const options = await this.searchProduct(code);
     const option = options.filter({ hasText: code }).first();
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const picked = page.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && r.url().includes('/quickInput/'),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    picked.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
     await option.click();
-    await page.waitForTimeout(1500);
+    expect((await picked).ok()).toBe(true);
   }
 
   /**
@@ -275,7 +284,6 @@ export class CostRevaluationPage {
       saved.catch(() => {});
       await option.click();
       await saved;
-      await page.waitForTimeout(500);
       await holdForCaptureIfEnabled(2000);
       await unhighlight();
     });
@@ -297,33 +305,64 @@ export class CostRevaluationPage {
     throw new Error(`Cost revaluation ${recordId} was not posted within 30s (no accounting facts)`);
   }
 
-  /** Type the New cost price into the open quick-input and submit the line (Enter). */
-  static async enterNewCostPriceAndSubmit(newCostPrice) {
+  /**
+   * Expect the document to stay without accounting facts for a while after Complete (a document with no value
+   * difference books none). This cannot tell "posted without facts" from "not posted yet" beyond the wait.
+   * @param {string} recordId the header record id
+   */
+  static async expectNoAccountingFacts(recordId) {
+    for (let i = 0; i < 10; i++) {
+      expect(await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId)).toEqual([]);
+      await getPage().waitForTimeout(1000);
+    }
+  }
+
+  /** Type the New cost price into the open quick-input (does not submit). */
+  static async enterNewCostPrice(newCostPrice) {
     const page = getPage();
     const priceInput = page.locator('.form-field-NewCostPrice input');
     await priceInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await priceInput.click();
     await priceInput.fill(String(newCostPrice));
-    await page.waitForTimeout(500);
 
     // Product + entered price, both visible, before the line is submitted.
     const unhighlight = await highlightForCaptureIfEnabled(page.locator('.quick-input-container'));
     await holdForCaptureIfEnabled(2500);
     await unhighlight();
-
-    await page.keyboard.press('Enter'); // "(Press 'Enter' to add)"
   }
 
   /**
-   * Add one quick-input line: pick the product, type the New cost price, submit (Enter).
-   * newCostPrice is a whole number (the CostPrice widget's number-input rejects fractional steps on submit).
+   * Type the New cost price into the open quick-input, submit the line (Enter) and wait until the server created it
+   * (the quick-input's complete request). Fails if the submit never reaches the server.
    */
+  static async submitLine(newCostPrice) {
+    const page = getPage();
+    await this.enterNewCostPrice(newCostPrice);
+    const created = page.waitForResponse(
+      (r) => r.request().method() === 'POST' && /\/quickInput\/[^/]+\/complete/.test(r.url()),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    created.catch(() => {}); // awaited below; avoids an unhandled rejection if the key press throws
+    await page.keyboard.press('Enter'); // "(Press 'Enter' to add)"
+    const response = await created;
+    expect(response.ok()).toBe(true);
+  }
+
+  /** Add one quick-input line: pick the product, type the New cost price, submit (Enter). */
   static async addLine(productCode, newCostPrice) {
     await test.step(`Pick product ${productCode} + enter New cost price ${newCostPrice}`, async () => {
       await this.pickProduct(productCode);
-      await this.enterNewCostPriceAndSubmit(newCostPrice);
-      await getPage().waitForTimeout(2500);
+      await this.submitLine(newCostPrice);
     });
+  }
+
+  /** @returns {Promise<Object[]>} the document's lines (rows of the line tab, read via the WebAPI) */
+  static async getLines(recordId) {
+    const response = await getPage().request.get(
+      `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}`
+    );
+    expect(response.ok()).toBe(true);
+    return (await response.json()).result || [];
   }
 
   /**
@@ -334,21 +373,27 @@ export class CostRevaluationPage {
     await test.step('Complete document (runs revaluation + posts)', async () => {
       const page = getPage();
       // Close the quick-input if still open so the status button is reachable.
-      if (await page.locator('.quick-input-container').isVisible().catch(() => false)) {
+      const quickInput = page.locator('.quick-input-container');
+      if (await quickInput.isVisible().catch(() => false)) {
         await page.getByTestId('batch-entry-toggle').click();
-        await page.waitForTimeout(1000);
+        await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       }
       const statusButton = page.getByTestId('status-button');
       await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await statusButton.click();
       const completeOption = page.getByTestId('status-CO');
       await completeOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const completed = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+        { timeout: VERY_SLOW_ACTION_TIMEOUT }
+      );
+      completed.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
       await completeOption.click();
+      expect((await completed).ok()).toBe(true);
       await page
         .locator('.rotating, .indicator-pending')
         .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
         .catch(() => {});
-      await page.waitForTimeout(3000);
     });
   }
 

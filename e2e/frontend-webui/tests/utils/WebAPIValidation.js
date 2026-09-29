@@ -103,10 +103,14 @@ export async function getDocumentReferences(windowId, recordId) {
     throw new Error(`HTTP ${response.status()} reading references of window ${windowId} record ${recordId}`);
   }
 
-  return (await response.text())
+  const events = (await response.text())
     .split('\n')
     .filter((line) => line.startsWith('data:'))
-    .map((line) => JSON.parse(line.substring('data:'.length).trim()))
+    .map((line) => JSON.parse(line.substring('data:'.length).trim()));
+  if (!events.some((event) => event.type === 'COMPLETED')) {
+    throw new Error(`References stream of window ${windowId} record ${recordId} ended without its COMPLETED event`);
+  }
+  return events
     .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
     .flatMap((event) => event.partialGroup.references || []);
 }
@@ -118,7 +122,11 @@ export async function getDocumentReferences(windowId, recordId) {
  *
  * @param {string} windowId - Window ID of the posted document
  * @param {string} recordId - Record ID of the posted document
- * @returns {Promise<Object[]>} the fact rows' `fieldsByName`; empty while the document is not posted
+ * The server lists a reference only when it has at least one record, so "no Fact_Acct reference" means "no facts
+ * (yet)": an unposted document and one whose facts reference is not configured look the same here. A test that
+ * expects facts is the positive control for the latter.
+ *
+ * @returns {Promise<Object[]>} the fact rows' `fieldsByName`; empty while the document has no facts
  */
 export async function getAccountingFacts(windowId, recordId) {
   const page = getPage();
@@ -146,7 +154,13 @@ export async function getAccountingFacts(windowId, recordId) {
   if (!rowsResponse.ok()) {
     throw new Error(`HTTP ${rowsResponse.status()} reading the accounting facts of window ${windowId} record ${recordId}`);
   }
-  return ((await rowsResponse.json()).result || []).map((row) => row.fieldsByName);
+  const rows = (await rowsResponse.json()).result || [];
+  if (rows.length !== reference.documentsCount) {
+    throw new Error(
+      `Accounting facts view of window ${windowId} record ${recordId} returned ${rows.length} rows, its reference counts ${reference.documentsCount}`
+    );
+  }
+  return rows.map((row) => row.fieldsByName);
 }
 
 /**
