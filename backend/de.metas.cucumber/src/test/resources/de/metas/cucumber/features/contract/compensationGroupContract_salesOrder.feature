@@ -428,10 +428,10 @@ Feature: Contract-triggered compensation group on sales-order completion
       | ts2PackagingCategory | Verpackung | VerpackungS32353TS2 |
 
     And metasfresh contains M_Products:
-      | Identifier                  | OPT.M_Product_Category_ID.Identifier | Value                 |
-      | ts2PackingProduct           | ts2PackagingCategory                 | S32353_TS2PackingProd |
-      | ts2GoodsDiscountProduct     | goodsCategory                        |                       |
-      | ts2PackagingDiscountProduct | ts2PackagingCategory                 |                       |
+      | Identifier                  | OPT.M_Product_Category_ID.Identifier |
+      | ts2PackingProduct           | ts2PackagingCategory                 |
+      | ts2GoodsDiscountProduct     | goodsCategory                        |
+      | ts2PackagingDiscountProduct | ts2PackagingCategory                 |
 
     And metasfresh contains M_ProductPrices
       | Identifier              | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -440,14 +440,14 @@ Feature: Contract-triggered compensation group on sales-order completion
       | pp_ts2PackagingDiscount | contractPLV                       | ts2PackagingDiscountProduct | 1        | PCE               | Normal                        |
 
     And metasfresh contains M_HU_PI:
-      | Identifier | Name      |
-      | ts2HuPI    | TS2 PI TU |
+      | Identifier |
+      | ts2HuPI    |
     And metasfresh contains M_HU_PI_Version:
       | Identifier | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
       | ts2HuPIV   | ts2HuPI               | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | Identifier           | M_Product_ID.Identifier | Name                 |
-      | ts2HuPackingMaterial | ts2PackingProduct       | TS2 packing material |
+      | Identifier           | M_Product_ID.Identifier |
+      | ts2HuPackingMaterial | ts2PackingProduct       |
     And metasfresh contains M_HU_PI_Item:
       | Identifier  | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
       | ts2HuPiItem | ts2HuPIV                      | 0   | PM       | ts2HuPackingMaterial               |

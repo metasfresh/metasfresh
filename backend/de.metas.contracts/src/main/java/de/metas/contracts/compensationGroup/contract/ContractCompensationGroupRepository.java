@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
@@ -42,6 +43,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 /**
  * Repository Tables: C_Order_CompensationGroup, C_OrderLine
  * <p>
+ * Repository Cluster: ContractCompensationGroupRepository, {@link OrderGroupRepository} — both
+ * write these two tables; {@link OrderGroupRepository} is the generic compensation-group repo
+ * (any schema), this one only ever touches groups this task created (identified by
+ * {@code C_Flatrate_Term_ID} being set).
+ * <p>
  * Persistence primitives for a contract-created {@code C_Order_CompensationGroup}: stamping the term it came
  * from, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.
  */
@@ -58,29 +64,37 @@ public class ContractCompensationGroupRepository
 		saveRecord(groupRecord);
 	}
 
-	/** @return the {@code C_Order_CompensationGroup_ID}s of {@code orderId}'s contract-created groups (those with a {@code C_Flatrate_Term_ID} set) */
-	public List<Integer> retrieveContractGroupOrderCompensationGroupIds(@NonNull final OrderId orderId)
+	/** @return the {@link GroupId}s of {@code orderId}'s contract-created groups (those with a {@code C_Flatrate_Term_ID} set) */
+	public List<GroupId> retrieveContractGroupIds(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
 				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
 				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0)
 				.create()
-				.listIds();
+				.listIds()
+				.stream()
+				.map(orderCompensationGroupId -> OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */
-	public void deleteCompensationLines(@NonNull final OrderId orderId, final int orderCompensationGroupId)
+	public void deleteCompensationLines(@NonNull final GroupId groupId)
 	{
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
 		queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.delete();
 	}
 
-	/** @return this order's not-(yet-)grouped, active, non-compensation regular lines — candidates for a new group. */
-	public List<I_C_OrderLine> retrieveUngroupedActiveOrderLines(@NonNull final OrderId orderId)
+	/**
+	 * @return this order's active, non-compensation regular lines (candidates for a new group — NOT filtered
+	 * by group membership; a line already in a different group is still returned here, and the caller filters
+	 * that separately via {@code OrderGroupCompensationUtils.isNotInGroup(...)})
+	 */
+	public List<I_C_OrderLine> retrieveActiveRegularOrderLines(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()

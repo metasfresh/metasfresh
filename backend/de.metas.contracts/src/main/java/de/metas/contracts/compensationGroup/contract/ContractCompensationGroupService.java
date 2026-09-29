@@ -66,20 +66,39 @@ import java.util.Optional;
  * order partner ({@code C_BPartner_ID}) — a store (delivery address) whose invoice partner is a head office
  * is covered by the head office's contract, never by one the store itself might hold.
  * <p>
- * <b>Interceptor-ordering caveat:</b> this runs at {@link org.compiere.model.ModelValidator#TIMING_BEFORE_PREPARE},
- * the same timing as the HU packing-material line builder ({@code de.metas.handlingunits.model.validator.C_Order})
- * and the freight-cost line builder ({@code de.metas.freighcost.interceptor.C_Order}). metasfresh's model
- * validator framework has no explicit priority/ordering mechanism for interceptors registered on the same
- * timing ({@code @DocValidate} carries no order attribute, and {@code ModelValidationEngine.getSpringInterceptors()}
- * simply drains {@code ApplicationContext.getBeansWithAnnotation(...)} into a {@code LinkedHashMap}, i.e.
- * Spring bean-registration order — unspecified across modules). Consequence: candidate-line selection below
- * only ever sees order lines that already exist and are active at the moment THIS interceptor runs.
- * Freight-cost lines are excluded explicitly regardless of ordering ({@link OrderFreightCostsService#isFreightCostOrderLine}),
- * so they can never end up in a base. HU packing-material lines are ordinary candidates once they exist and
- * are active — if this interceptor happens to run before the HU builder creates them (on a given build/deployment,
- * this order is currently observed to be safe, see {@code compensationGroupContract_salesOrder.feature}
- * TS2), the schema's packaging base simply has no matching candidate line for that pass, and the discount
- * line for that base is skipped (no 0.00 line — same rule as any other empty base), not created wrong.
+ * <b>Interceptor-ordering guarantee (deliberately pinned, do not weaken):</b> this runs at
+ * {@link org.compiere.model.ModelValidator#TIMING_BEFORE_PREPARE}, the same timing as the HU
+ * packing-material line builder ({@code de.metas.handlingunits.model.validator.Main}) and the freight-cost
+ * line builder ({@code de.metas.freighcost.interceptor.C_Order}). {@code ModelValidationEngine.init()}
+ * (java-legacy {@code org.compiere.model.ModelValidationEngine}) registers interceptors in two passes: (1)
+ * every active {@code AD_ModelValidator} module activator, sorted by {@code SeqNo} then id, THEN (2) every
+ * remaining loose Spring {@code @Interceptor} bean that has no {@code AD_ModelValidator} row, in unspecified
+ * bean-registration order. HU's {@code Main} is registered with {@code AD_ModelValidator.SeqNo = 500}. This
+ * class ({@code C_Order_ContractCompensationGroup}) is ALSO registered via its own {@code AD_ModelValidator}
+ * row (migration {@code 5826810_sys_AddContractCompensationGroupOrderValidator.sql}, id 540127) with
+ * {@code SeqNo = 550} — {@code ModelValidationEngine} reuses the already Spring-managed instance for that
+ * row instead of instantiating a separate activator class, so no wrapper class was needed. Freight (and
+ * every other loose interceptor) carries no {@code AD_ModelValidator} row at all, so it is always in pass
+ * (2), always after every pass-(1) module including this one.
+ * <p>
+ * This gives a deterministic order — <b>HU (500) → this class (550) → freight and every other loose
+ * interceptor</b> — for two reasons this task's design depends on:
+ * <ul>
+ *     <li>HU packing-material order lines must already exist (and be active) when
+ *     {@link #findCandidateLines} runs, so a "Verpackung"-type schema base can match them — see TS2
+ *     ({@code compensationGroupContract_salesOrder.feature} {@code @Id:S32353_TC17}).</li>
+ *     <li>The contract bonus must already exist as an order line when freight computes the shipment
+ *     value for a {@code FlatShippingFee} tier, so the bonus counts toward it exactly like a manual
+ *     product-schema group's discount lines already do (consistent semantics, controller ruling) — the
+ *     bonus lowers the shipment value and can change the freight tier.</li>
+ * </ul>
+ * <b>Invariant — never violate this without re-deriving the above:</b> never move this class's
+ * registration into {@code de.metas.contracts.interceptor.MainValidator} ({@code AD_ModelValidator.SeqNo
+ * = 0}, which runs BEFORE HU) and never lower its {@code AD_ModelValidator.SeqNo} below 500. TS2
+ * ({@code @Id:S32353_TC17}) is the regression pin for the HU-ordering half: if HU ever ran after this
+ * class, TS2's packaging discount line (currently asserted at {@code -0.12}) would silently disappear
+ * (RF1's "no candidates → skip that discount line" rule, not a crash or a wrong amount) — that is the
+ * signal a future change broke the invariant.
  */
 @Service
 @RequiredArgsConstructor
@@ -151,13 +170,11 @@ public class ContractCompensationGroupService
 	 */
 	public void removeContractGroups(@NonNull final OrderId orderId)
 	{
-		final List<Integer> contractGroupIds = contractGroupRepository.retrieveContractGroupOrderCompensationGroupIds(orderId);
+		final List<GroupId> contractGroupIds = contractGroupRepository.retrieveContractGroupIds(orderId);
 
-		for (final int orderCompensationGroupId : contractGroupIds)
+		for (final GroupId groupId : contractGroupIds)
 		{
-			final GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
-
-			contractGroupRepository.deleteCompensationLines(orderId, orderCompensationGroupId);
+			contractGroupRepository.deleteCompensationLines(groupId);
 
 			final Group group = orderGroupRepository.retrieveGroupIfExists(groupId);
 			if (group != null)
@@ -172,20 +189,12 @@ public class ContractCompensationGroupService
 	}
 
 	/**
-	 * @return the active {@code CompensationGroup} term for the given invoice partner, order date and order
-	 * document type — DocStatus completed/closed, ContractStatus not voided, {@code StartDate <= date <= EndDate},
-	 * and the term's settings list {@code docTypeId}. Never cached. At most one term is expected to match
-	 * (overlap between contracts is out of this task's scope, AC9); {@link #findMatchingTerm} throws if more
-	 * than one genuinely does.
+	 * @return the active {@code CompensationGroup} term (bundled with its already-resolved settings) for the
+	 * given invoice partner, order date and order document type — DocStatus completed/closed, ContractStatus
+	 * not voided, {@code StartDate <= date <= EndDate}, and the term's settings list {@code docTypeId}. Never
+	 * cached. At most one term is expected to match (overlap between contracts is out of this task's scope,
+	 * AC9); throws if more than one genuinely does.
 	 */
-	public Optional<I_C_Flatrate_Term> findActiveTerm(
-			@NonNull final BPartnerId billPartnerId,
-			@NonNull final LocalDate date,
-			@NonNull final DocTypeId docTypeId)
-	{
-		return findMatchingTerm(billPartnerId, date, docTypeId).map(TermMatch::getTerm);
-	}
-
 	private Optional<TermMatch> findMatchingTerm(
 			@NonNull final BPartnerId billPartnerId,
 			@NonNull final LocalDate date,
@@ -244,7 +253,7 @@ public class ContractCompensationGroupService
 	 */
 	private CandidateSelection findCandidateLines(@NonNull final OrderId orderId, @NonNull final GroupTemplate schema)
 	{
-		final ImmutableList<I_C_OrderLine> eligibleOrderLines = contractGroupRepository.retrieveUngroupedActiveOrderLines(orderId)
+		final ImmutableList<I_C_OrderLine> eligibleOrderLines = contractGroupRepository.retrieveActiveRegularOrderLines(orderId)
 				.stream()
 				.filter(OrderGroupCompensationUtils::isNotInGroup)
 				.filter(orderLine -> !orderFreightCostService.isFreightCostOrderLine(orderLine))

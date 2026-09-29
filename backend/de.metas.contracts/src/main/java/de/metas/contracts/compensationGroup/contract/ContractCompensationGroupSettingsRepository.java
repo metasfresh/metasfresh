@@ -41,6 +41,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 /**
  * Repository Tables: C_CompensationGroup_ContractSettings, C_CompensationGroup_ContractSettings_DocType, C_Flatrate_Conditions
  * <p>
+ * Repository Cluster: sole owner of these tables within this scope (no other class declares a
+ * {@code Repository Tables:} line for them; {@code C_Flatrate_Conditions} is only read here, via
+ * its plain {@code C_CompensationGroup_ContractSettings_ID} column).
+ * <p>
  * Loads a {@code C_CompensationGroup_ContractSettings} record and resolves the settings id a
  * {@code C_Flatrate_Conditions} record points to.
  */
