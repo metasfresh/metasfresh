@@ -132,7 +132,7 @@ An Evaluation Start Date the user set by hand is NOT overwritten by a later Acco
     // Derive the dates from the server-defaulted posting date, not from the test runner's clock.
     const initialDateAcct = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
     const [y, m, d] = initialDateAcct.split('-');
-    // Stay inside the current month (open period); any day that differs from today.
+    // Stay inside the header's month (open period); days that differ from the initial Accounting Date.
     const otherDay = (day) => `${y}-${m}-${String(day).padStart(2, '0')}`;
     const dateAcct1 = otherDay(Number(d) === 15 ? 14 : 15);
     const manualEvalStart = otherDay(Number(d) === 5 ? 6 : 5);
