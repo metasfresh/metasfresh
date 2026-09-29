@@ -464,16 +464,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final int productId = huPackingMaterial.getM_Product_ID();
 		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
 
-		if (!considerProject)
-		{
-			// NOTE: keep this branch's key exactly as it was before the considerProject flag was introduced.
-			return Util.mkKey(
-					productId <= 0 ? -1 : productId,
-					locatorId <= 0 ? -1 : locatorId,
-					materialTrackingId);
-		}
-
-		final int projectId = ProjectId.toRepoId(source == null ? null : source.getProjectId());
+		// NOTE: when !considerProject, projectId is forced to the same -1 sentinel for every candidate in this run,
+		// i.e. the project component never distinguishes candidates; this is equivalent to (and byte-for-byte
+		// reproduces the grouping of) the pre-considerProject key, which omitted the component entirely
+		// (key2candidates is a fresh, in-memory, per-run map: it's never compared across runs, so the key's
+		// literal shape carrying an extra, constant -1 element doesn't matter -- only its partition does).
+		final int projectId = considerProject ? ProjectId.toRepoId(source == null ? null : source.getProjectId()) : -1;
 		return Util.mkKey(
 				productId <= 0 ? -1 : productId,
 				locatorId <= 0 ? -1 : locatorId,

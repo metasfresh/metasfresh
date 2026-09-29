@@ -79,6 +79,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 public class HUShipmentPackingMaterialLinesBuilder
 {
+	// Constants
+	private static final String SYSCONFIG_SplitShipmentPackingMaterialLinesByProject = "de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject";
+
 	// Services
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -87,7 +90,6 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private static final String SYSCONFIG_SplitShipmentPackingMaterialLinesByProject = "de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject";
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
