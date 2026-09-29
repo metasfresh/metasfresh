@@ -225,12 +225,29 @@ public class CostRevaluationService
 		costRevaluationRepository.deleteDetailsByLineId(lineId);
 	}
 
+	/**
+	 * Evaluates the lines not evaluated yet ("Run").
+	 */
 	public void createDetails(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		createDetails(costRevaluationId, false);
+	}
+
+	/**
+	 * Evaluates all lines again, also those already evaluated by "Run": used when completing, so the refusals and the deltas
+	 * reflect the state at completion (e.g. another revaluation completed since "Run").
+	 */
+	public void reevaluateAllLines(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		createDetails(costRevaluationId, true);
+	}
+
+	private void createDetails(@NonNull final CostRevaluationId costRevaluationId, final boolean includeEvaluatedLines)
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 		final ImmutableList<CostRevaluationLine> linesToRevaluate = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId)
 				.stream()
-				.filter(line -> !line.isRevaluated())
+				.filter(line -> includeEvaluatedLines || !line.isRevaluated())
 				.collect(ImmutableList.toImmutableList());
 		if (linesToRevaluate.isEmpty())
 		{
@@ -248,11 +265,6 @@ public class CostRevaluationService
 
 	private void createDetails(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
-		if (line.isRevaluated())
-		{
-			throw new AdempiereException("Line already revaluated: " + line.getId());
-		}
-
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)

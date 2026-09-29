@@ -646,3 +646,36 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 12.0000 CHF      | 100 PCE    | 1200 CHF     |
+
+  @Id:CostRevaluation_TC21
+  Scenario: A revaluation evaluated before another one was completed is re-checked when completing it
+    # ── Evaluate (Run) the back-dated revaluation while nothing is in its way yet ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
+    And cost revaluation lines are created for revaluationBackDate
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationBackDate  | product      | 12           |
+    And the cost revaluation identified by revaluationBackDate is evaluated
+
+    # ── Meanwhile a later revaluation is completed and posted ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
+    And cost revaluation lines are created for revaluationLater
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationLater     | product      | 15           |
+    And the cost revaluation identified by revaluationLater is completed
+    And Wait until documents revaluationLater are posted
+
+    # ── Completing the back-dated one now is refused: the later revaluation is in its way ──
+    Then completing the cost revaluation identified by revaluationBackDate is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+    And validate M_CostRevaluation:
+      | Identifier          | DocStatus | Processed |
+      | revaluationBackDate | DR        | false     |
+    # 100 PCE * 15 = 1500 CHF, only the later revaluation booked
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |

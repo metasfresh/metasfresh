@@ -3,6 +3,7 @@ package de.metas.costrevaluation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailId;
@@ -386,7 +387,6 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
-
 	/**
 	 * @return per given cost detail, its restatement by the most recent (latest posting date, then latest ID) completed cost revaluation;
 	 * cost details no completed revaluation restated are not in the map.
@@ -399,13 +399,17 @@ public class CostRevaluationRepository
 			return ImmutableMap.of();
 		}
 
-		final List<I_M_CostRevaluation_Detail> restatementRecords = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostDetail_ID, costDetailIds)
-				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_RevaluationType, CostRevaluationDetailType.CostDetailAdjustment.getCode())
-				.addInSubQueryFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID, queryCompletedRevaluations().create())
-				.create()
-				.list();
+		// partitioned: a back-dated revaluation can replay more cost details than a single IN list can bind
+		final List<I_M_CostRevaluation_Detail> restatementRecords = Lists.partition(ImmutableList.copyOf(costDetailIds), 1000)
+				.stream()
+				.flatMap(costDetailIdsChunk -> queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostDetail_ID, costDetailIdsChunk)
+						.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_RevaluationType, CostRevaluationDetailType.CostDetailAdjustment.getCode())
+						.addInSubQueryFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID, queryCompletedRevaluations().create())
+						.create()
+						.stream())
+				.collect(ImmutableList.toImmutableList());
 		if (restatementRecords.isEmpty())
 		{
 			return ImmutableMap.of();

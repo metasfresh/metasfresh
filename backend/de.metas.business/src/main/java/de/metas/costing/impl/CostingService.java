@@ -608,6 +608,7 @@ public class CostingService implements ICostingService
 
 		final Instant laterRevaluationDate = costRevaluationRepo.getFirstCompletedWithDateAcctOnOrAfter(costSegmentAndElement, evaluationStartDate)
 				.map(laterRevaluation -> laterRevaluation.getDateAcct().toInstant())
+				// a revaluation cost detail in the window whose document is not found as completed above (e.g. data from before the document check)
 				.orElseGet(() -> costDetails.stream()
 						.filter(CostDetail::isChangingCosts)
 						.filter(costDetail -> costDetail.getDocumentRef().isCostRevaluationLine())

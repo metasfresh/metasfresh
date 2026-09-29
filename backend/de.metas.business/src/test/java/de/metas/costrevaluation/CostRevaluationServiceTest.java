@@ -897,6 +897,24 @@ public class CostRevaluationServiceTest
 			assertThat(adjustment.getDeltaAmt()).isEqualByComparingTo("100");
 		}
 
+		@Test
+		public void usesLatestCreatedRestatement_whenPostedOnTheSameDay()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_sameDayRestatements");
+			seedCurrentCost(productId, "17", "100");
+			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1010, null);
+			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1500", "15");
+			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1700", "17");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			assertThat(getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment).getOldAmt()).isEqualByComparingTo("1700");
+		}
+
 		/**
 		 * A revaluation that is not completed has booked nothing, so its detail rows are no restatement.
 		 */
@@ -999,6 +1017,52 @@ public class CostRevaluationServiceTest
 			costRevaluationService.createDetails(costRevaluationId);
 
 			assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo("100"); // 100 x (12 - 11)
+		}
+
+		/**
+		 * Completing re-checks lines already evaluated by "Run": a revaluation completed in between is in the way.
+		 */
+		@Test
+		public void completing_throws_whenALaterRevaluationWasCompletedAfterTheLinesWereEvaluated()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_laterAfterRun");
+			seedCurrentCost(productId, "10", "100");
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1008, null);
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
+			costRevaluationService.createDetails(costRevaluationId); // "Run"
+
+			createCompletedRevaluation(productId, LocalDate.parse("2024-03-10"), true);
+
+			assertThatThrownBy(() -> costRevaluationService.reevaluateAllLines(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
+		}
+
+		/**
+		 * Completing re-evaluates lines already evaluated by "Run", so their delta reflects the state at completion.
+		 */
+		@Test
+		public void reevaluateAllLines_recomputesAlreadyEvaluatedLines()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_reevaluate");
+			seedCurrentCost(productId, "10", "100");
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1009, null);
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
+			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (12 - 10) = 200
+
+			final I_M_CostRevaluationLine line = getLineRecords(costRevaluationId).get(0);
+			line.setNewCostPrice(new BigDecimal("15"));
+			saveRecord(line);
+
+			costRevaluationService.reevaluateAllLines(costRevaluationId);
+
+			assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo("500"); // 100 x (15 - 10)
 		}
 
 		/**
