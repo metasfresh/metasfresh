@@ -3,6 +3,7 @@ package de.metas.costrevaluation.interceptor;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationService;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -13,6 +14,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Interceptor(I_M_CostRevaluation.class)
 @Component
@@ -29,21 +32,13 @@ class M_CostRevaluation
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	void beforeNew(@NonNull final I_M_CostRevaluation record)
 	{
-		// UI-path defaulting safety net (docs/coding-rules/architecture.md §3, "Callout vs interceptor"):
-		// guard with isUIAction so ONLY the WebUI path is defaulted. Prevents: a backdated REST/import/OLCand
-		// caller that omits DateAcct being silently posted with today's date (wrong accounting period) — without
-		// the guard it fails loud instead (DateAcct is mandatory, so the null save is rejected). On the WebUI
-		// path this branch is a redundant net anyway: the AD_Column default @#Date@ already populates DateAcct
-		// at document-init, before this beforeNew fires.
+		// Default only on the UI path: a non-UI caller that omits the mandatory DateAcct must fail instead of silently posting today.
 		if (record.getDateAcct() == null && InterfaceWrapperHelper.isUIAction(record))
 		{
 			record.setDateAcct(SystemTime.asDayTimestamp());
 		}
 
-		// Forward-only default: needs NO isUIAction guard (data-integrity invariant on all write paths) — it
-		// derives from the caller-supplied DateAcct, never from wall-clock, so defaulting EvaluationStartDate to
-		// the posting date is the correct forward-only behaviour on every path (a revaluation restates nothing
-		// already posted unless the user explicitly picks an earlier EvaluationStartDate).
+		// Forward-only default on all paths: revaluate from the posting date unless the user picks an earlier date.
 		if (record.getEvaluationStartDate() == null)
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
@@ -53,6 +48,11 @@ class M_CostRevaluation
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	void beforeChange(@NonNull final I_M_CostRevaluation record, @NonNull final ModelChangeType type)
 	{
+		if (type.isChange())
+		{
+			moveEvaluationStartDateAlongWithDateAcct(record);
+		}
+
 		if (type.isChange()
 				&& InterfaceWrapperHelper.isValueChanged(record,
 				I_M_CostRevaluation.COLUMNNAME_C_AcctSchema_ID,
@@ -62,6 +62,28 @@ class M_CostRevaluation
 		)
 		{
 			throw new AdempiereException(MSG_DeleteLinesFirstError);
+		}
+	}
+
+	/**
+	 * Keeps a defaulted EvaluationStartDate (i.e. equal to the previous DateAcct) in step when the user changes DateAcct on a
+	 * not yet processed document, so that moving the posting date does not silently turn the revaluation retrospective.
+	 * An EvaluationStartDate that the user set on its own is left untouched.
+	 */
+	private static void moveEvaluationStartDateAlongWithDateAcct(@NonNull final I_M_CostRevaluation record)
+	{
+		if (!DocStatus.ofNullableCodeOrUnknown(record.getDocStatus()).isDraftedOrInProgress()
+				|| !InterfaceWrapperHelper.isValueChanged(record, I_M_CostRevaluation.COLUMNNAME_DateAcct))
+		{
+			return;
+		}
+
+		final I_M_CostRevaluation recordOld = InterfaceWrapperHelper.createOld(record, I_M_CostRevaluation.class);
+		final boolean evaluationStartDateWasDefaulted = Objects.equals(recordOld.getEvaluationStartDate(), recordOld.getDateAcct());
+		final boolean evaluationStartDateChangedByUser = !Objects.equals(record.getEvaluationStartDate(), recordOld.getEvaluationStartDate());
+		if (evaluationStartDateWasDefaulted && !evaluationStartDateChangedByUser)
+		{
+			record.setEvaluationStartDate(record.getDateAcct());
 		}
 	}
 
