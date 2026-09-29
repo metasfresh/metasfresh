@@ -22,6 +22,10 @@
 
 package de.metas.camel.externalsystems.core.to_mf;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
@@ -35,6 +39,7 @@ import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -160,6 +165,32 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 
 		assertThat(exchange.getException()).isNull();
 		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithoutPInstanceId_isLoggedWithItsException() throws Exception
+	{
+		this.prepareRouteForTesting();
+
+		context.start();
+
+		final Logger logger = (Logger)LoggerFactory.getLogger(ErrorReportRouteBuilder.class);
+		final ListAppender<ILoggingEvent> appender = new ListAppender<>();
+		appender.start();
+		logger.addAppender(appender);
+		try
+		{
+			template.send("direct:" + ERROR_SEND_LOG_MESSAGE, newErrorExchange(null));
+		}
+		finally
+		{
+			logger.detachAppender(appender);
+		}
+
+		assertThat(appender.list)
+				.filteredOn(event -> event.getLevel() == Level.ERROR)
+				.singleElement()
+				.satisfies(event -> assertThat(event.getThrowableProxy().getMessage()).isEqualTo("startup failure"));
 	}
 
 	@Test
