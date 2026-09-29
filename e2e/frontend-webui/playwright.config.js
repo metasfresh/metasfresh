@@ -5,6 +5,9 @@ const isUatCapture = !!process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0
 // Capture window size, 1920x1080 unless UAT_CAPTURE_SIZE=<width>x<height> asks for a wider one (e.g. for a wide grid).
 const UAT_CAPTURE_SIZE = (() => {
   const [width, height] = (process.env.UAT_CAPTURE_SIZE || '1920x1080').split('x').map(Number);
+  if (isUatCapture && !(Number.isInteger(width) && width > 0 && Number.isInteger(height) && height > 0)) {
+    throw new Error(`UAT_CAPTURE_SIZE must be <width>x<height>, e.g. 3000x1690, but was ${process.env.UAT_CAPTURE_SIZE}`);
+  }
   return { width, height };
 })();
 
