@@ -2,7 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import * as os from 'node:os';
 
 const isUatCapture = !!process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0';
-const UAT_CAPTURE_SIZE = { width: 1920, height: 1080 };
+// Capture window size, 1920x1080 unless UAT_CAPTURE_SIZE=<width>x<height> asks for a wider one (e.g. for a wide grid).
+const UAT_CAPTURE_SIZE = (() => {
+  const [width, height] = (process.env.UAT_CAPTURE_SIZE || '1920x1080').split('x').map(Number);
+  return { width, height };
+})();
 
 export default defineConfig({
   testDir: './tests',
