@@ -234,7 +234,8 @@ public class HUShipmentPackingMaterialLinesBuilder
 				final HuId luHuId = HuId.ofRepoIdOrNull(assignment.getM_LU_HU_ID());
 				if (luHuId != null)
 				{
-					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU
+					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU.
+					// An approximation for the warning text only: the collector decides per (LU, VHU), see IHUAssignmentDAO.hasMoreLUAssigmentsForSameModelType
 					earliestInOutLineIdByLuHuId.merge(luHuId, inOutLineId, (id1, id2) -> id1.getRepoId() <= id2.getRepoId() ? id1 : id2);
 					luOccurrences.add(new LuOccurrence(luHuId, inOutLineId, projectId));
 				}

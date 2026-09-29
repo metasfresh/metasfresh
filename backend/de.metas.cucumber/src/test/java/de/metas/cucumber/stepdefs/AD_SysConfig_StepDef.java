@@ -36,7 +36,6 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_Product_Category;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -126,7 +125,7 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config boolean value {word} for sys config {string}")
 	public void temporarily_set_sys_config_boolean_value(@NonNull final String valueStr, @NonNull final String sysConfigName)
 	{
-		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+		rememberPriorValue(sysConfigName);
 
 		final boolean booleanValue = Boolean.parseBoolean(valueStr);
 		sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
@@ -156,7 +155,7 @@ public class AD_SysConfig_StepDef
 			final I_M_Product_Category productCategory = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
 					.lookupNotNullIn(productCategoryTable);
 
-			priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+			rememberPriorValue(sysConfigName);
 			setSysConfigIntValue(sysConfigName, productCategory.getM_Product_Category_ID());
 
 			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
@@ -164,10 +163,21 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
+	 * Remembers the value a sysconfig had before this scenario first changed it; {@code containsKey}, because {@code null} (no prior value) is a value too.
+	 */
+	private void rememberPriorValue(@NonNull final String sysConfigName)
+	{
+		if (!priorValueBySysConfigName.containsKey(sysConfigName))
+		{
+			priorValueBySysConfigName.put(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+		}
+	}
+
+	/**
 	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is left as set, since there is no delete.
 	 */
 	@After
-	public void restoreRepointedSysConfigsAfterScenario()
+	public void restoreTemporarySysConfigsAfterScenario()
 	{
 		if (priorValueBySysConfigName.isEmpty())
 		{
@@ -177,7 +187,7 @@ public class AD_SysConfig_StepDef
 		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
 		{
 			final String sysConfigName = entry.getKey();
-			@Nullable final String priorValue = entry.getValue();
+			final String priorValue = entry.getValue();
 			if (priorValue == null)
 			{
 				continue;
