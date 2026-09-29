@@ -129,7 +129,7 @@ completed and posted.
       const nextDay = new Date(`${serverDate}T00:00:00Z`);
       nextDay.setUTCDate(nextDay.getUTCDate() + 1);
       adjustmentDate = nextDay.toISOString().substring(0, 10);
-      await CostRevaluationPage.openQuickInput();
+      await CostRevaluationPage.expectQuickInputOpened();
       await CostRevaluationPage.addLine(productCode, '10');
       await CostRevaluationPage.complete();
       const setupDocStatus = await getFieldData(COST_REVAL_WINDOW_ID, setupRecordId, 'DocStatus');
@@ -143,7 +143,7 @@ completed and posted.
       await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', adjustmentDate);
     }
 
-    await CostRevaluationPage.openQuickInput();
+    await CostRevaluationPage.expectQuickInputOpened();
 
     // Quick-input offers exactly Product + New cost price
     await expect(CostRevaluationPage.quickInputField('M_Product_ID')).toBeVisible();
@@ -261,7 +261,7 @@ and it does NOT offer a non-stocked (Service) product.
 
     const md = await createMasterdata(language);
     await loginAndCreateHeader(md);
-    await CostRevaluationPage.openQuickInput();
+    await CostRevaluationPage.expectQuickInputOpened();
 
     await test.step('Picker offers a stocked product that has a current cost', async () => {
       await CostRevaluationPage.expectProductOffered(md.products.PHAS.productCode);
@@ -308,7 +308,7 @@ field's provisional-price hint applies (provisional until the first goods receip
     // Precondition: the product really has no cost record yet.
     expect(await getProductCosts(page, seedProductId)).toEqual([]);
 
-    await CostRevaluationPage.openQuickInput();
+    await CostRevaluationPage.expectQuickInputOpened();
 
     // Pick the costless stocked product so its NewCostPrice field renders (with the hint).
     await test.step(`Pick costless stocked product ${seedProductCode}`, async () => {

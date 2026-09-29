@@ -156,15 +156,19 @@ export class CostRevaluationPage {
     await u2();
   }
 
-  /** Open the line-tab quick-input (batch entry). */
-  static async openQuickInput() {
-    await test.step('Open per-product quick-input (batch entry)', async () => {
+  /**
+   * The line tab adds lines by quick-input only: it offers Batch entry, already opened, and no "Add new" button
+   * (whose modal would ask for a Product that is read-only on the line).
+   */
+  static async expectQuickInputOpened() {
+    await test.step('Line tab offers only the per-product quick-input (batch entry opens by itself, no "Add new")', async () => {
       const page = getPage();
       const toggle = page.getByTestId('batch-entry-toggle');
       await toggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await toggle.click();
       const container = page.locator('.quick-input-container');
       await container.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const addNewButton = page.locator('.filter-panel-buttons button.btn-distance:not(.close-batch-entry)');
+      await expect(addNewButton, 'The line tab must not offer "Add new" (lines are added by quick-input only)').toHaveCount(0);
       if (isUatCapture()) {
         // Keep the entry row clear of the caption band at the bottom of the recording.
         await container.evaluate((el) => el.scrollIntoView({ block: 'center' }));
