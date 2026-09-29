@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
+import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage, todayISO } from '../utils/pages/CostRevaluationPage';
 import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -111,6 +111,61 @@ segment and the document completes.
     console.log('[quick-input] DocStatus=' + JSON.stringify(docStatus.value));
     expect(docStatus.value.key).toBe('CO');
     await CostRevaluationPage.showCompletedDocument();
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test(`Evaluation Start Date follows the Accounting Date unless set by hand (${label})`, async ({ page }) => {
+    test.setTimeout(180000);
+    allureTags('Header: Evaluation Start Date follows the Accounting Date');
+    allure.description(`
+## F1500: Costing — Evaluation Start Date follows the Accounting Date (UI)
+
+On a new Kosten Neubewertung header the Evaluation Start Date defaults to the Accounting Date.
+Changing the Accounting Date in the UI moves a defaulted Evaluation Start Date along with it.
+An Evaluation Start Date the user set by hand is NOT overwritten by a later Accounting Date change.
+    `);
+
+    const md = await createMasterdata(language);
+    const recordId = await loginAndCreateHeader(md);
+    console.log(`[dates] header record ${recordId}`);
+
+    const today = todayISO();
+    const [y, m, d] = today.split('-');
+    // Stay inside the current month (open period); any day that differs from today.
+    const otherDay = (day) => `${y}-${m}-${String(day).padStart(2, '0')}`;
+    const dateAcct1 = otherDay(Number(d) === 15 ? 14 : 15);
+    const manualEvalStart = otherDay(Number(d) === 5 ? 6 : 5);
+    const dateAcct2 = otherDay(Number(d) === 20 ? 21 : 20);
+
+    await test.step(`Change Accounting Date to ${dateAcct1} -> Evaluation Start Date follows`, async () => {
+      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct1);
+      const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
+      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
+      console.log(`[dates] DateAcct=${JSON.stringify(dateAcct.value)} EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
+      expect(String(dateAcct.value)).toContain(dateAcct1);
+      expect(String(evalStart.value)).toContain(dateAcct1);
+      await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toHaveValue(
+        await CostRevaluationPage.headerDateInput('DateAcct').inputValue()
+      );
+      await CostRevaluationPage.showHeaderDates();
+    });
+
+    await test.step(`Set Evaluation Start Date by hand to ${manualEvalStart}`, async () => {
+      await CostRevaluationPage.typeHeaderDate(recordId, 'EvaluationStartDate', manualEvalStart);
+      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
+      console.log(`[dates] manual EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
+      expect(String(evalStart.value)).toContain(manualEvalStart);
+    });
+
+    await test.step(`Change Accounting Date to ${dateAcct2} -> hand-set Evaluation Start Date is kept`, async () => {
+      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct2);
+      const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
+      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
+      console.log(`[dates] DateAcct=${JSON.stringify(dateAcct.value)} EvaluationStartDate=${JSON.stringify(evalStart.value)}`);
+      expect(String(dateAcct.value)).toContain(dateAcct2);
+      expect(String(evalStart.value)).toContain(manualEvalStart);
+      await CostRevaluationPage.showHeaderDates();
+    });
   });
 
   // eslint-disable-next-line no-unused-vars

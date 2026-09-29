@@ -1,0 +1,321 @@
+import { expect } from '@playwright/test';
+import { test } from '../../../playwright.config';
+import {
+  FRONTEND_BASE_URL,
+  getPage,
+  holdForCaptureIfEnabled,
+  isUatCapture,
+  SLOW_ACTION_TIMEOUT,
+  VERY_SLOW_ACTION_TIMEOUT,
+} from '../common';
+import { getFieldData } from '../WebAPIValidation';
+
+export const COST_REVAL_WINDOW_ID = '541568';
+export const COST_REVAL_LINE_TAB_ID = 'AD_Tab-546465';
+
+/** Today's date as an ISO yyyy-MM-dd string (language-independent; matches the WebAPI date value). */
+export const todayISO = () => {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+};
+
+/**
+ * Render isoDate (yyyy-MM-dd) in the display format of a date field whose current text is `shown` while its
+ * stored value is currentIsoDate. Supports the day/month/year orders in use.
+ */
+const toDisplayFormat = (shown, currentIsoDate, isoDate) => {
+  const [ty, tm, td] = currentIsoDate.substring(0, 10).split('-');
+  const [y, m, d] = isoDate.split('-');
+  const candidates = [
+    { today: `${td}.${tm}.${ty}`, text: `${d}.${m}.${y}` },
+    { today: `${tm}/${td}/${ty}`, text: `${m}/${d}/${y}` },
+    { today: `${td}/${tm}/${ty}`, text: `${d}/${m}/${y}` },
+    { today: `${ty}-${tm}-${td}`, text: `${y}-${m}-${d}` },
+  ];
+  const match = candidates.find((c) => shown.trim() === c.today);
+  if (!match) {
+    throw new Error(`Cannot derive the date display format from ${JSON.stringify(shown)} (stored value ${currentIsoDate})`);
+  }
+  return match.text;
+};
+
+/**
+ * In an evidence-capture run only: outline the given element so the viewer's eye lands on it.
+ * Returns a function that removes the outline again. No-op (and no DOM change) otherwise.
+ */
+const highlightForCaptureIfEnabled = async (locator) => {
+  if (!isUatCapture()) {
+    return async () => {};
+  }
+  await locator.evaluate((el) => {
+    el.dataset.captureOutline = el.style.outline || '';
+    el.style.outline = '3px solid #e8a100';
+    el.style.outlineOffset = '2px';
+  });
+  return async () => {
+    await locator
+      .evaluate((el) => {
+        el.style.outline = el.dataset.captureOutline || '';
+        el.style.outlineOffset = '';
+      })
+      .catch(() => {});
+  };
+};
+
+/**
+ * Page object for the Kosten Neubewertung (Cost Revaluation, M_CostRevaluation) window 541568
+ * and its per-product quick-input.
+ */
+export class CostRevaluationPage {
+  /**
+   * Open a NEW header. The mandatory Evaluation Start Date auto-defaults to the posting date (today),
+   * so the header is saved without the user typing it.
+   * @returns {Promise<string>} the new record id
+   */
+  static async createHeader() {
+    return await test.step('Create Kosten Neubewertung header (EvaluationStartDate auto-defaults to the posting date)', async () => {
+      const page = getPage();
+      await page.goto(`${FRONTEND_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/new`);
+
+      // Asserted at the UI layer: the field arrives pre-filled, no click, no fill.
+      const dateInput = page.locator('.form-field-EvaluationStartDate input').first();
+      await dateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(dateInput).not.toHaveValue('', { timeout: SLOW_ACTION_TIMEOUT });
+
+      // The document acquires its numeric record id in the URL once all mandatory header fields are satisfied.
+      await page.waitForFunction(
+        () => {
+          const last = window.location.pathname.split('/').pop();
+          return last && last !== 'new' && /^\d+$/.test(last);
+        },
+        undefined,
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      const recordId = page.url().split('/').pop();
+
+      // At the data layer (language-independent): the auto-filled value IS today's posting date.
+      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
+      console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' expected ' + todayISO());
+      expect(String(evalStart.value)).toContain(todayISO());
+
+      const unhighlight = await highlightForCaptureIfEnabled(page.locator('.form-field-EvaluationStartDate').first());
+      await holdForCaptureIfEnabled(2500);
+      await unhighlight();
+
+      return recordId;
+    });
+  }
+
+  /** @returns {import('@playwright/test').Locator} the header date input of the given ColumnName */
+  static headerDateInput(columnName) {
+    return getPage().locator(`.form-field-${columnName} input[type="text"]`).first();
+  }
+
+  /**
+   * Type a date into a header date field the way a user does (select all, type, Tab) and wait for the save.
+   * The date is typed in the display format the field currently shows (derived from its shown text and its
+   * stored value), so this works for every login language.
+   * @param {string} recordId the header record id
+   * @param {string} columnName e.g. DateAcct
+   * @param {string} isoDate yyyy-MM-dd
+   */
+  static async typeHeaderDate(recordId, columnName, isoDate) {
+    const page = getPage();
+    const input = this.headerDateInput(columnName);
+    await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const shown = await input.inputValue();
+    const current = await getFieldData(COST_REVAL_WINDOW_ID, recordId, columnName);
+    const text = toDisplayFormat(shown, String(current.value), isoDate);
+
+    const unhighlight = await highlightForCaptureIfEnabled(page.locator(`.form-field-${columnName}`).first());
+    const saved = page.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await input.click();
+    await input.press('ControlOrMeta+a');
+    await input.pressSequentially(text);
+    await input.press('Tab');
+    await saved;
+    await page.waitForTimeout(500);
+    await holdForCaptureIfEnabled(1500);
+    await unhighlight();
+  }
+
+  /** In a capture run: point at both header dates so the viewer can compare them. */
+  static async showHeaderDates() {
+    const page = getPage();
+    const u1 = await highlightForCaptureIfEnabled(page.locator('.form-field-DateAcct').first());
+    const u2 = await highlightForCaptureIfEnabled(page.locator('.form-field-EvaluationStartDate').first());
+    await holdForCaptureIfEnabled(2500);
+    await u1();
+    await u2();
+  }
+
+  /** Open the line-tab quick-input (batch entry). */
+  static async openQuickInput() {
+    await test.step('Open per-product quick-input (batch entry)', async () => {
+      const page = getPage();
+      const toggle = page.getByTestId('batch-entry-toggle');
+      await toggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await toggle.click();
+      const container = page.locator('.quick-input-container');
+      await container.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      if (isUatCapture()) {
+        // Keep the entry row clear of the caption band at the bottom of the recording.
+        await container.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      }
+    });
+  }
+
+  /** @returns {import('@playwright/test').Locator} a field of the open quick-input, by ColumnName */
+  static quickInputField(columnName) {
+    return getPage().locator(`.quick-input-container .form-field-${columnName}`);
+  }
+
+  /**
+   * Search the quick-input product picker for a code and return the dropdown options locator.
+   * In a capture run the settled result list (or the empty result) stays on screen for a moment.
+   */
+  static async searchProduct(code) {
+    const page = getPage();
+    const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+    await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await productInput.click();
+    await productInput.fill('');
+    await page.waitForTimeout(300);
+    await productInput.fill(code);
+    await page.waitForTimeout(1800);
+    await page
+      .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+      .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+      .catch(() => {});
+    await page.waitForTimeout(300);
+    const options = page.locator('.input-dropdown-list-option');
+
+    const unhighlight = await highlightForCaptureIfEnabled(page.locator('#lookup_M_Product_ID'));
+    await holdForCaptureIfEnabled(2500);
+    await unhighlight();
+
+    return options;
+  }
+
+  /** Pick the dropdown option of the given product code (after searchProduct). */
+  static async pickProduct(code) {
+    const page = getPage();
+    const options = await this.searchProduct(code);
+    const option = options.filter({ hasText: code }).first();
+    await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await option.click();
+    await page.waitForTimeout(1500);
+  }
+
+  /**
+   * Hover the New cost price label and return its rendered hint (the label's `title`).
+   * The browser paints a `title` tooltip as a native OS widget, which a page recording never contains;
+   * in a capture run only, the very same `title` text is therefore drawn next to the label while hovered.
+   */
+  static async hoverNewCostPriceHint() {
+    const page = getPage();
+    const label = page.locator('.quick-input-container .form-field-NewCostPrice label');
+    await label.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await label.hover();
+    const title = await label.getAttribute('title');
+
+    if (isUatCapture()) {
+      await label.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const tip = document.createElement('div');
+        tip.id = 'uat-capture-title-tooltip';
+        tip.textContent = el.getAttribute('title');
+        Object.assign(tip.style, {
+          position: 'fixed',
+          left: `${Math.max(8, r.left)}px`,
+          top: `${r.bottom + 6}px`,
+          maxWidth: '520px',
+          padding: '8px 10px',
+          background: '#ffffe1',
+          color: '#000',
+          border: '1px solid #767676',
+          boxShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+          font: '15px sans-serif',
+          zIndex: 100000,
+          whiteSpace: 'normal',
+        });
+        document.body.appendChild(tip);
+      });
+      await holdForCaptureIfEnabled(4000);
+      await page.evaluate(() => document.getElementById('uat-capture-title-tooltip')?.remove());
+    }
+    return title;
+  }
+
+  /** Type the New cost price into the open quick-input and submit the line (Enter). */
+  static async enterNewCostPriceAndSubmit(newCostPrice) {
+    const page = getPage();
+    const priceInput = page.locator('.form-field-NewCostPrice input');
+    await priceInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await priceInput.click();
+    await priceInput.fill(String(newCostPrice));
+    await page.waitForTimeout(500);
+
+    // Product + entered price, both visible, before the line is submitted.
+    const unhighlight = await highlightForCaptureIfEnabled(page.locator('.quick-input-container'));
+    await holdForCaptureIfEnabled(2500);
+    await unhighlight();
+
+    await page.keyboard.press('Enter'); // "(Press 'Enter' to add)"
+  }
+
+  /**
+   * Add one quick-input line: pick the product, type the New cost price, submit (Enter).
+   * newCostPrice is a whole number (the CostPrice widget's number-input rejects fractional steps on submit).
+   */
+  static async addLine(productCode, newCostPrice) {
+    await test.step(`Pick product ${productCode} + enter New cost price ${newCostPrice}`, async () => {
+      await this.pickProduct(productCode);
+      await this.enterNewCostPriceAndSubmit(newCostPrice);
+      await getPage().waitForTimeout(2500);
+    });
+  }
+
+  /**
+   * Complete the document via the status button -> Complete (CO).
+   * The Complete DocAction runs the revaluation (creates the cost details) AND posts in one step.
+   */
+  static async complete() {
+    await test.step('Complete document (runs revaluation + posts)', async () => {
+      const page = getPage();
+      // Close the quick-input if still open so the status button is reachable.
+      if (await page.locator('.quick-input-container').isVisible().catch(() => false)) {
+        await page.getByTestId('batch-entry-toggle').click();
+        await page.waitForTimeout(1000);
+      }
+      const statusButton = page.getByTestId('status-button');
+      await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await statusButton.click();
+      const completeOption = page.getByTestId('status-CO');
+      await completeOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await completeOption.click();
+      await page
+        .locator('.rotating, .indicator-pending')
+        .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .catch(() => {});
+      await page.waitForTimeout(3000);
+    });
+  }
+
+  /** In a capture run: keep the completed document (status + lines) on screen. */
+  static async showCompletedDocument() {
+    const page = getPage();
+    if (!isUatCapture()) {
+      return;
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const unhighlight = await highlightForCaptureIfEnabled(page.getByTestId('status-button'));
+    await holdForCaptureIfEnabled(3000);
+    await unhighlight();
+  }
+}
