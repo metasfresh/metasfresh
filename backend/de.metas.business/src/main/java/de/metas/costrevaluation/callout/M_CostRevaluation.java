@@ -78,6 +78,10 @@ public class M_CostRevaluation implements ITabCallout
 	 * <p>
 	 * If the document already has lines, the moved EvaluationStartDate is then rejected on save by the model interceptor's
 	 * "delete lines first" guard. That is intended: the lines were derived for the old revaluation window.
+	 * <p>
+	 * "Previous DateAcct" is {@link ICalloutField#getModelBeforeChanges(Class)}, i.e. the last saved value (the WebUI refreshes it
+	 * after every save). So if DateAcct is edited more than once while the document cannot be saved yet (e.g. a new header with
+	 * mandatory fields still empty), only the first edit moves EvaluationStartDate along; the user sees the value and can adjust it.
 	 */
 	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_DateAcct)
 	public void onDateAcctChanged(@NonNull final I_M_CostRevaluation costRevaluation, @NonNull final ICalloutField field)

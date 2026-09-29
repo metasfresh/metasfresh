@@ -73,7 +73,9 @@ export default defineConfig({
   use: {
     baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
     trace: 'on',
-    video: 'on',
+    // An evidence-capture run (UAT_CAPTURE=1) records at full viewport size so on-screen text stays legible;
+    // normal and CI runs keep the default (downscaled) video size.
+    video: process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0' ? { mode: 'on', size: { width: 1920, height: 1080 } } : 'on',
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },
     // Record all network traffic to HAR files
