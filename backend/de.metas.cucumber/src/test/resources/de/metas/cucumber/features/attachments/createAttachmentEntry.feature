@@ -262,7 +262,7 @@ Feature: attachment creation using metasfresh api
 @allure.label.epic:E0280_Document_and_Email_Management
 @allure.label.feature:F00850_Sending_Mails
 @F00850
-  Scenario:  Reject a targets request with no orgCode
+  Scenario:  Reject an externalReference target with no orgCode
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '422' status code
     """
