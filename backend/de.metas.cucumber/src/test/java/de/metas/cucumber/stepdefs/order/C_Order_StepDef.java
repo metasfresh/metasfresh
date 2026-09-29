@@ -601,7 +601,7 @@ public class C_Order_StepDef
 
 		final List<I_C_Order> purchaseOrders = orderDAO.getByLinkOrderId(linkedOrderId)
 				.stream()
-				.filter(order -> bpartnerId == null || order.getC_BPartner_ID() == bpartnerId.getRepoId())
+				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
 				.collect(ImmutableList.toImmutableList());
 		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
 		final I_C_Order purchaseOrder = purchaseOrders.get(0);
