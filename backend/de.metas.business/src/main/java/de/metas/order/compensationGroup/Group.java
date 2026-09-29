@@ -210,7 +210,7 @@ public class Group
 		}
 	}
 
-	private void updateCompensationLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
+	private void updateCompensationLine(@NonNull final GroupCompensationLine compensationLine, @NonNull final BigDecimal baseAmt)
 	{
 		compensationLine.setBaseAmt(baseAmt);
 
@@ -228,7 +228,7 @@ public class Group
 		}
 	}
 
-	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
+	public void addNewCompensationLine(@NonNull final GroupCompensationLineCreateRequest request)
 	{
 		final BigDecimal price = request.getPrice();
 		final BigDecimal qtyEntered = request.getQtyEntered();
