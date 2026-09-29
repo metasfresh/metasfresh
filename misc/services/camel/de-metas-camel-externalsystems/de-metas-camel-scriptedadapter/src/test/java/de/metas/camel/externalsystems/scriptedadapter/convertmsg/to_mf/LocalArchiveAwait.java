@@ -34,11 +34,22 @@ import java.util.stream.Stream;
 /**
  * Filesystem waits for the local-file route tests.
  * <p>
- * {@code NotifyBuilder.whenDone(n)} is not a safe trigger for reading the archive directories: it is
- * satisfied by the first {@code n} exchanges Camel routes — which, for a route that splits and dispatches,
- * includes the inner {@code direct:} sub-exchange — so it can fire while the outer file exchange has not
- * yet reached its terminal archiving step. A test that lists the directory immediately afterwards is then
- * racing the archiver's write.
+ * {@code NotifyBuilder.whenDone(n)} firing is NOT evidence that the step a test wants to observe has run.
+ * At least two distinct causes produce that gap here, so do not read the first one as the general
+ * explanation:
+ * <ul>
+ *     <li>{@code whenDone(n)} counts the first {@code n} exchanges Camel routes, which for a route that
+ *     splits and dispatches includes the inner {@code direct:} sub-exchange — so the threshold can be met
+ *     before the outer file exchange reaches its terminal archiving step. This applies only where items
+ *     are actually dispatched; a run that produces no items creates no such sub-exchange.</li>
+ *     <li>The polled file's deletion is performed by Camel's own file-consumer commit — a
+ *     {@code Synchronization} ordered against {@code UnitOfWork} completion, a different mechanism
+ *     entirely from which exchange finishes first.</li>
+ * </ul>
+ * Camel's async routing engine can also hand continuation to another thread under load with neither of the
+ * above in play. The net effect is the same in every case, which is why these waits are applied uniformly
+ * rather than per-mechanism: a test that lists the directory immediately after {@code whenDone} is racing
+ * a step that has not necessarily happened yet.
  * <p>
  * Observed on CI as {@code test (java)} failing at "Expected size: 1 but was: 0", reproduced locally under
  * CPU contention (2 of 4 runs), and measured: the file landed ~68ms after the assertion had already run.
@@ -61,6 +72,8 @@ final class LocalArchiveAwait
 	@NonNull
 	static Path awaitSingleFile(@NonNull final Path dir) throws InterruptedException
 	{
+		// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
+		// predicate requires exactly one entry. Loosening it means revisiting this line.
 		return await(dir, entries -> entries.size() == 1, "exactly one file").get(0);
 	}
 
@@ -79,6 +92,7 @@ final class LocalArchiveAwait
 	 * show a state that never failed the check, which would mislead whoever debugs the next failure.
 	 */
 	@NonNull
+	@SuppressWarnings("BusyWait")
 	private static List<Path> await(
 			@NonNull final Path dir,
 			@NonNull final Predicate<List<Path>> settled,
