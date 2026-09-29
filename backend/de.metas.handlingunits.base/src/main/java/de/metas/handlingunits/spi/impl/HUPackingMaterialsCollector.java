@@ -457,15 +457,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final I_M_HU hu,
 			@Nullable final IHUPackingMaterialCollectorSource source)
 	{
-		final int productId = huPackingMaterial.getM_Product_ID();
-		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
+		final int productId = huPackingMaterial.getM_Product_ID() <= 0 ? -1 : huPackingMaterial.getM_Product_ID();
+		final int locatorId = hu == null || hu.getM_Locator_ID() <= 0 ? -1 : hu.getM_Locator_ID();
 
-		final int projectId = considerProject ? ProjectId.toRepoId(source == null ? null : source.getProjectId()) : -1;
-		return Util.mkKey(
-				productId <= 0 ? -1 : productId,
-				locatorId <= 0 ? -1 : locatorId,
-				materialTrackingId,
-				projectId);
+		// Without the project, the key keeps its three parts: its hash, and so the order of the candidates, stays unchanged
+		return considerProject
+				? Util.mkKey(productId, locatorId, materialTrackingId, ProjectId.toRepoId(source == null ? null : source.getProjectId()))
+				: Util.mkKey(productId, locatorId, materialTrackingId);
 	}
 
 	/**
