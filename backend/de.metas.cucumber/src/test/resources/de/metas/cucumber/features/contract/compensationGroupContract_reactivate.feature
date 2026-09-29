@@ -109,6 +109,39 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | ol_ts5Discount2           | orderTS5              | discountProduct         | 1          | true                        | -60   | mainTerm                          |
     And the order identified by orderTS5 has 3 order lines
 
+    # The rebuilt group's invoice candidates must include ol_ts5Goods (pre-existing before the reactivate)
+    # alongside ol_ts5Goods2 (added after it) -- not just the newly-created lines. A regular line's invoice
+    # candidate created before it is (re)grouped keeps a denormalized C_Order_CompensationGroup_ID that is
+    # only ever set once, at candidate creation; if it were never re-synced when the order line itself gets
+    # (re)grouped, the discount candidate would recompute against ol_ts5Goods2 alone (-30) instead of both
+    # regular lines (-60), even though the order line itself already shows the correct -60 above.
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID  | C_Invoice_Candidate_ID |
+      | ol_ts5Goods     | ic_ts5Goods            |
+      | ol_ts5Goods2    | ic_ts5Goods2           |
+      | ol_ts5Discount2 | ic_ts5Discount2        |
+
+    # Both goods products are stocked, so neither candidate's NetAmtToInvoice is populated without an
+    # actual delivery -- override the invoice rule to Immediate (as TC21/TC22 do) so the regular lines'
+    # base amounts become invoiceable without a shipment, then wait until the resulting recompute has
+    # landed (these candidates are already located above -- re-locating by order line would re-register
+    # the same identifiers and fail), before checking the discount candidate's amount below.
+    And update invoice candidates
+      | C_Invoice_Candidate_ID | OPT.InvoiceRule_Override |
+      | ic_ts5Goods            | I                        |
+      | ic_ts5Goods2           | I                        |
+      | ic_ts5Discount2        | I                        |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ts5Goods            |
+      | ic_ts5Goods2           |
+      | ic_ts5Discount2        |
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
+      | ic_ts5Discount2                   | -60             |
+
   # ##############################################################################################
   # TS5 variant: reactivation is refused while a contract discount line is already invoiced
   # ##############################################################################################

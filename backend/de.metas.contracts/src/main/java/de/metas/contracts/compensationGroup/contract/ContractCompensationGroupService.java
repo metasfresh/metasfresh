@@ -158,12 +158,14 @@ public class ContractCompensationGroupService
 	/**
 	 * Removes every contract-created compensation group of the given order (identified by
 	 * {@code C_Order_CompensationGroup.C_Flatrate_Term_ID} being set): deletes the group's compensation lines,
-	 * clears the (denormalized) group reference any invoice candidate of its regular lines may already carry
-	 * (see {@link ContractCompensationGroupRepository#clearInvoiceCandidateGroupReferences}), then ungroups
-	 * those regular lines and deletes the (now empty) group header. When the header's regular lines were
-	 * themselves removed by the user beforehand (leaving nothing but the header once the compensation lines
-	 * above are gone), there is no rebuildable {@link Group} left — the orphaned header is then deleted
-	 * directly instead.
+	 * then ungroups its regular lines and deletes the (now empty) group header. Ungrouping a regular line (its
+	 * {@code C_Order_CompensationGroup_ID} column changing) is itself what keeps that line's not-yet-processed
+	 * invoice candidate's (denormalized) group reference in sync — see
+	 * {@code de.metas.invoicecandidate.modelvalidator.C_OrderLine#syncInvoiceCandidateGroupReference} in
+	 * {@code de.metas.swat.base} — so the group header can always be deleted safely here, without this class
+	 * needing to know about invoice candidates at all. When the header's regular lines were themselves removed
+	 * by the user beforehand (leaving nothing but the header once the compensation lines above are gone), there
+	 * is no rebuildable {@link Group} left — the orphaned header is then deleted directly instead.
 	 */
 	public void removeContractGroups(@NonNull final OrderId orderId)
 	{
@@ -172,7 +174,6 @@ public class ContractCompensationGroupService
 		for (final GroupId groupId : contractGroupIds)
 		{
 			contractGroupRepository.deleteCompensationLines(groupId);
-			contractGroupRepository.clearInvoiceCandidateGroupReferences(groupId);
 
 			final Group group = orderGroupRepository.retrieveGroupIfExists(groupId);
 			if (group != null)
