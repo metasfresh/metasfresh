@@ -1895,9 +1895,19 @@ jobs:
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+      - name: collect infra logs and stop stack
+        if: always() # also when the shard was cancelled/timed out, so infra.log and the db image are still produced
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
+        run: |
           # Capture infrastructure logs separately for debugging
           docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
+          # guarded: a missing db container must not skip the "down" below (push-image fails visibly if no image was made)
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }} || true
           docker compose --profile mobile down
       # The merged mobile Allure report is built by the mobile_allure_report job from all shards
       - name: Upload Allure results
@@ -1926,7 +1936,7 @@ jobs:
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v6
-        if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
+        if: always() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
         with:
           name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
@@ -1981,9 +1991,19 @@ jobs:
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+      - name: collect infra logs and stop stack
+        if: always() # also when the shard was cancelled/timed out, so infra.log and the db image are still produced
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
+        run: |
           # Capture infrastructure logs separately for debugging
           docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+          # guarded: a missing db container must not skip the "down" below (push-image fails visibly if no image was made)
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }} || true
           docker compose --profile frontend down
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
@@ -2011,7 +2031,7 @@ jobs:
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v6
-        if: success() || failure()
+        if: always()
         with:
           name: playwright-frontend-report-${{ matrix.shard_label }}
           path: |
