@@ -416,6 +416,46 @@ export class CostRevaluationPage {
     });
   }
 
+  /**
+   * Try to Complete the document (status button -> Complete) and expect the server to refuse it:
+   * the Complete request fails and the error notification shows the given (translated) message text.
+   * @param {string} expectedMessage a fragment of the expected error message
+   */
+  static async completeExpectingRefusal(expectedMessage) {
+    const page = getPage();
+    const quickInput = page.locator('.quick-input-container');
+    if (await quickInput.isVisible().catch(() => false)) {
+      await page.getByTestId('batch-entry-toggle').click();
+      await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+    }
+    const statusButton = page.getByTestId('status-button');
+    await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await statusButton.click();
+    const completeOption = page.getByTestId('status-CO');
+    await completeOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const completed = page.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+      { timeout: VERY_SLOW_ACTION_TIMEOUT }
+    );
+    completed.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
+    await completeOption.click();
+    expect((await completed).ok(), 'the Complete request is refused').toBe(false);
+
+    // The error notification shows a shortened message; hovering keeps it open, "(read more)" shows the full text.
+    const error = page.locator('.notification-handler .notification-item.error').last();
+    await error.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await error.hover();
+    const readMore = error.locator('.notification-content u.pointer');
+    if (await readMore.isVisible().catch(() => false)) {
+      await readMore.click();
+    }
+    await expect(error.locator('.notification-content')).toContainText(expectedMessage);
+    console.log('[refusal] shown error=' + JSON.stringify(await error.locator('.notification-content').innerText()));
+    const unhighlight = await highlightForCaptureIfEnabled(error);
+    await holdForCaptureIfEnabled(4000);
+    await unhighlight();
+  }
+
   /** In a capture run: keep the completed document (status + lines) on screen. */
   static async showCompletedDocument() {
     const page = getPage();
