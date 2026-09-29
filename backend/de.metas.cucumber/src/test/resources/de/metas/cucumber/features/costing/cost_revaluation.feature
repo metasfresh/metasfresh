@@ -374,52 +374,37 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
 
   @Id:CostRevaluation_TC13
-  Scenario: Back-dated revaluation - a posting date before a stock movement it would replay is refused, so a later revaluation cannot double-book
-    # ── Posting date 2024-03-04 is BEFORE the stock movement of 2024-03-05 that the window would replay ──
+  Scenario: Back-dated revaluation - a posting date before a replayed stock movement is accepted, and a later revaluation replaying the same movement books only its own step
+    # ── Posting date 2024-03-04 is BEFORE the stock movement of 2024-03-05 that the window replays: accepted ──
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
     And cost revaluation lines are created for revaluationBackDate
     And update M_CostRevaluationLine:
-      | M_CostRevaluation_ID | M_Product_ID        | NewCostPrice |
-      | revaluationBackDate  | product             | 15           |
-    Then completing the cost revaluation identified by revaluationBackDate is refused with AD_Message "M_CostRevaluation.StockMovementAfterDateAcct"
-    And validate M_CostRevaluation:
-      | Identifier          | DocStatus | Processed |
-      | revaluationBackDate | DR        | false     |
-    # ── Nothing was booked: current cost and the posted valuation are unchanged ──
-    And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
-    And expect inventory valuation report
-      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
-      | 2024-03-07 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
-
-    # ── Following the message: same evaluation start, posting date ON the movement date -> accepted, +500 ──
-    When metasfresh contains M_CostRevaluation:
-      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
-      | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-05 |
-    And cost revaluation lines are created for revaluation1
-    And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
-      | revaluation1         | product      | 15           |
-    And the cost revaluation identified by revaluation1 is completed
-    And Wait until documents revaluation1 are posted
-    And Fact_Acct records balances for documents revaluation1 are matching
+      | revaluationBackDate  | product      | 15           |
+    And the cost revaluation identified by revaluationBackDate is completed
+    And Wait until documents revaluationBackDate are posted
+    # no stock before 03-05 (0 PCE) + the 03-05 inventory restated 100 PCE * (15 - 10) = 500 CHF
+    Then Fact_Acct records balances for documents revaluationBackDate are matching
       | AccountConceptualName | SourceBalance |
       | P_Asset_Acct          | 500 CHF       |
       | P_CostAdjustment_Acct | -500 CHF      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
 
-    # ── A second revaluation after it books only its own step 15 -> 18 (+300), not the movement again ──
+    # ── A later revaluation whose window replays the same 03-05 inventory (the back-dated revaluation lies before it) ──
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
-      | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+      | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-05          | 2024-03-06 |
     And cost revaluation lines are created for revaluation2
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation2         | product      | 18           |
     And the cost revaluation identified by revaluation2 is completed
     And Wait until documents revaluation2 are posted
+    # the inventory is replayed from its restated 1500 CHF, not its original 1000 CHF: 100 PCE * (18 - 15) = 300 CHF (not 800)
     Then Fact_Acct records balances for documents revaluation2 are matching
       | AccountConceptualName | SourceBalance |
       | P_Asset_Acct          | 300 CHF       |
@@ -542,3 +527,120 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | productStatistic | AveragePO            | 15.0000 CHF      | 100 PCE    |
       | acctSchema      | productStatistic | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
+
+  @Id:CostRevaluation_TC18
+  Scenario: Year-start revaluation - back-dated before several months of stock movements restates them, and a later revaluation starting after it books only its own step
+    # ── Movements after the Background stock (100 PCE @ 10): consume 20 on 03-10, receive 50 @ 10 on 04-15 ──
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
+      | inventoryDecrease | inventoryDecreaseLine | 2024-03-10   | warehouse      | product      | 100     | 80       | PCE          | hu      |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID    |
+      | inventoryIncrease | inventoryIncreaseLine | 2024-04-15   | warehouse      | product      | 80      | 130      | PCE          | 10        | huIncrease |
+
+    # ── "Year start" of this fixture: 03-06, before both movements ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier           | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationYearStart | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluationYearStart
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationYearStart | product      | 12           |
+    And the cost revaluation identified by revaluationYearStart is completed
+    And Wait until documents revaluationYearStart are posted
+    # stock before the window 100 PCE * (12 - 10) = 200; decrease -20 PCE * 2 = -40; increase 50 PCE * 2 = 100 => 260 CHF
+    Then Fact_Acct records balances for documents revaluationYearStart are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 260 CHF       |
+      | P_CostAdjustment_Acct | -260 CHF      |
+    # 130 PCE * 12 = 1560 CHF
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 12.0000 CHF      | 130 PCE    | 1560 CHF     |
+
+    # ── A later revaluation starting 03-07 (after the year-start revaluation) replays both restated movements ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-07          | 2024-05-01 |
+    And cost revaluation lines are created for revaluationLater
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationLater     | product      | 13           |
+    And the cost revaluation identified by revaluationLater is completed
+    And Wait until documents revaluationLater are posted
+    # rewound from the restated 12 (not 10): 100 PCE * (13 - 12) = 100; decrease -20 * 1 = -20; increase 50 * 1 = 50 => 130 CHF (not 390)
+    Then Fact_Acct records balances for documents revaluationLater are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 130 CHF       |
+      | P_CostAdjustment_Acct | -130 CHF      |
+    # 130 PCE * 13 = 1690 CHF
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 13.0000 CHF      | 130 PCE    | 1690 CHF     |
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-05-02 | product      | warehouse      | 130 | 13.0000        | 1690.00          |
+
+  @Id:CostRevaluation_TC19
+  Scenario: A later revaluation that is completed but not yet posted still blocks back-dating before it
+    # ── Complete a revaluation on 03-10 while accounting is off, so it has no posting (and no cost detail) yet ──
+    And set sys config boolean value false for sys config org.adempiere.acct.Enabled
+    When metasfresh contains M_CostRevaluation:
+      | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
+    And cost revaluation lines are created for revaluationLater
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationLater     | product      | 15           |
+    And the cost revaluation identified by revaluationLater is completed
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    And validate M_CostRevaluation:
+      | Identifier       | DocStatus | Posted |
+      | revaluationLater | CO        | false  |
+
+    # ── Back-dating before it is refused, naming the later revaluation's product and date ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
+    And cost revaluation lines are created for revaluationBackDate
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationBackDate  | product      | 12           |
+    Then completing the cost revaluation identified by revaluationBackDate is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+    And validate M_CostRevaluation:
+      | Identifier          | DocStatus | Processed |
+      | revaluationBackDate | DR        | false     |
+
+  @Id:CostRevaluation_TC20
+  Scenario: A posted monthly revaluation blocks a later-entered year-start correction before it
+    # ── Month-end revaluation 03-31: 100 PCE * (12 - 10) = 200 CHF ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier         | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationMonthly | acctSchema      | MovingAverageInvoice | 2024-03-31          | 2024-03-31 |
+    And cost revaluation lines are created for revaluationMonthly
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationMonthly   | product      | 12           |
+    And the cost revaluation identified by revaluationMonthly is completed
+    And Wait until documents revaluationMonthly are posted
+    And Fact_Acct records balances for documents revaluationMonthly are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | 200 CHF       |
+      | P_CostAdjustment_Acct | -200 CHF      |
+
+    # ── A year-start correction entered afterwards, starting before the monthly one, is refused ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier           | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationYearStart | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And cost revaluation lines are created for revaluationYearStart
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationYearStart | product      | 11           |
+    Then completing the cost revaluation identified by revaluationYearStart is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+    And validate M_CostRevaluation:
+      | Identifier           | DocStatus | Processed |
+      | revaluationYearStart | DR        | false     |
+    # nothing booked by the refused correction: 100 PCE * 12 = 1200 CHF
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 12.0000 CHF      | 100 PCE    | 1200 CHF     |

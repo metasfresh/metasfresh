@@ -319,8 +319,8 @@ public class M_CostRevaluation_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And validate M_CostRevaluation:
-	 *   | Identifier  | DocStatus | Processed |
-	 *   | revaluation | CO        | true      |
+	 *   | Identifier  | DocStatus | Processed | Posted |
+	 *   | revaluation | CO        | true      | true   |
 	 * </pre>
 	 */
 	@And("validate M_CostRevaluation:")
@@ -334,6 +334,8 @@ public class M_CostRevaluation_StepDef
 					.ifPresent(expected -> assertThat(header.getDocStatus()).as("DocStatus").isEqualTo(expected));
 			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Processed)
 					.ifPresent(expected -> assertThat(header.isProcessed()).as("Processed").isEqualTo(StringUtils.toBoolean(expected)));
+			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Posted)
+					.ifPresent(expected -> assertThat(header.isPosted()).as("Posted").isEqualTo(StringUtils.toBoolean(expected)));
 			row.getAsOptionalLocalDate(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
 					.ifPresent(expected -> assertThat(header.getEvaluationStartDate().toLocalDateTime().toLocalDate()).as("EvaluationStartDate").isEqualTo(expected));
 		});
