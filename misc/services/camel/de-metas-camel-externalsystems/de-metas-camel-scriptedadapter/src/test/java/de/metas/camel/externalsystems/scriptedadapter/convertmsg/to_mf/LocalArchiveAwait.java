@@ -35,8 +35,7 @@ import java.util.stream.Stream;
  * Filesystem waits for the local-file route tests.
  * <p>
  * {@code NotifyBuilder.whenDone(n)} firing is NOT evidence that the step a test wants to observe has run.
- * At least two distinct causes produce that gap here, so do not read the first one as the general
- * explanation:
+ * More than one thing can produce that gap, so do not read the first as the general explanation:
  * <ul>
  *     <li>{@code whenDone(n)} counts the first {@code n} exchanges Camel routes, which for a route that
  *     splits and dispatches includes the inner {@code direct:} sub-exchange — so the threshold can be met
@@ -44,7 +43,9 @@ import java.util.stream.Stream;
  *     are actually dispatched; a run that produces no items creates no such sub-exchange.</li>
  *     <li>The polled file's deletion is performed by Camel's own file-consumer commit — a
  *     {@code Synchronization} ordered against {@code UnitOfWork} completion, a different mechanism
- *     entirely from which exchange finishes first.</li>
+ *     entirely from which exchange finishes first. Unlike the case above, this one was NOT reproduced
+ *     here: the input-directory waits are a precaution taken because the ordering is the same class of
+ *     assumption that the archiver's write had already disproved.</li>
  * </ul>
  * Camel's async routing engine can also hand continuation to another thread under load with neither of the
  * above in play. The net effect is the same in every case, which is why these waits are applied uniformly
