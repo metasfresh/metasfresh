@@ -65,7 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * (deleted — no remote mkdir, no remote {@code .done}/{@code .error} move) and the payload archived to a
  * LOCAL processed/error folder. Finally disables the route and verifies clean shutdown.
  * <p>
- * Covers three scenarios:
+ * Covers these scenarios:
  * <ul>
  *     <li>{@link #sftpFilePolledConsumedAndArchivedLocally()} — a trivial (no-op) JavaScript transform
  *     that returns an empty array, focused on verifying the plain SFTP file lifecycle (consume by
@@ -78,6 +78,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  *     makes the same real transform throw, verifying the remote file is still consumed (deleted) and the
  *     payload archived to the LOCAL error folder instead of being silently lost, and that nothing is
  *     dispatched to the OLCand route.</li>
+ *     <li>{@link #oneRejectedItem_remainingItemStillDispatched_payloadArchivedToErrorDirNotProcessed()}
+ *     — a well-formed file whose transform emits TWO items, the first of which is rejected on dispatch,
+ *     verifying the surviving item is still dispatched and the payload is archived to the LOCAL error
+ *     folder rather than filed as processed. Distinct from the malformed-file case above: there the
+ *     transform itself throws, here the transform succeeds and an individual item is rejected.</li>
+ *     <li>{@link #endpointChanged_previousPollerTornDown_onlyNewPollerRemains()} — the endpoint of a
+ *     running poller is changed and the poller re-started, verifying the previous route is torn down so
+ *     only ONE poller remains.</li>
  * </ul>
  * The {@link ProducerTemplate} used by the routes under test is a real one (bound to this test's
  * {@link #context}), so that a dispatch to the OLCand route id ({@value ExternalSystemCamelConstants#MF_PUSH_OL_CANDIDATES_ROUTE_ID})
@@ -189,7 +197,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		Files.writeString(scriptRepoDir.resolve(SCRIPT_IDENTIFIER_OLCAND + ".js"), olCandScript, StandardCharsets.UTF_8);
 
 		// Same as olCandScript, but emits TWO OLCand items for a single input file, so a run in which
-		// only ONE item is rejected can be exercised (see partialFailure_... below).
+		// only ONE item is rejected can be exercised — see
+		// oneRejectedItem_remainingItemStillDispatched_payloadArchivedToErrorDirNotProcessed() below.
 		final String olCandTwoItemScript = "function transform(messageFromMetasfresh) {\n"
 				+ "    var order = JSON.parse(messageFromMetasfresh);\n"
 				+ "    function requestBodyFor(suffix) {\n"
