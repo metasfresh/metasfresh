@@ -173,7 +173,8 @@ with the translated message naming the product and the unposted one's date, and 
       let first = null;
       await test.step('First Kosten Neubewertung: completed, not posted (accounting is off)', async () => {
         first = await createCompletedRevaluation(productCode, '10');
-        expect((await getFieldData(COST_REVAL_WINDOW_ID, first.recordId, 'Posted')).value.key).toBe('N');
+        // Posted is not a field of every window layout (e.g. the CI database's); the refusal below names the not-posted state itself
+        expect((await getFieldData(COST_REVAL_WINDOW_ID, first.recordId, 'DocStatus')).value.key).toBe('CO');
       });
 
       const recordId = await CostRevaluationPage.createHeader();
