@@ -9,6 +9,7 @@ import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCod
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
@@ -20,6 +21,7 @@ import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
 import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
@@ -63,6 +65,14 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+
+	/**
+	 * Purpose-built roles, applied BEFORE {@code login} so a login user can reference one by identifier
+	 * ({@link de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest#getRole()}); later-created
+	 * masterdata may then be reachable through that role. See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
+	 */
+	@Nullable Map<String, JsonCreateRoleRequest> roles;
+
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
@@ -107,6 +117,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
 	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
+	@Nullable Map<String, JsonPackageRequest> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonPurchaseOrderCreateRequest> purchaseOrders;

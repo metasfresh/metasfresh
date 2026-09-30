@@ -264,6 +264,34 @@ public class EDI_Desadv_StepDef
 	}
 
 	/**
+	 * Asserts that a replication-interface-exported DESADV XML (captured earlier via
+	 * "RabbitMQ receives a EDI_Exp_Desadv") does NOT carry a given element — the absence counterpart
+	 * of {@link #validate_EDI_Exp_Desadv_elements(DataTable)}. A non-mandatory {@code EXP_FormatLine}
+	 * whose underlying value is {@code null} produces no XML element at all (not an empty one), so
+	 * this asserts genuine absence, not merely an empty value; its failure message names whether the
+	 * element was found present (with its text content) or was genuinely absent.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *   <li>{@code EDI_Exp_Desadv_ID.Identifier} (required) — the captured DESADV document.</li>
+	 *   <li>{@code TagName} (required) — XML element that MUST be absent.</li>
+	 *   <li>{@code OPT.UnderTag} (optional) — restrict the search to the first occurrence of this
+	 *       ancestor element (e.g. {@code C_BPartner_ID}); empty = search the whole document.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * Then the following EDI_Exp_Desadv XML does not carry the elements:
+	 *   | EDI_Exp_Desadv_ID.Identifier | TagName   |
+	 *   | e_d_1                        | ProductNo |
+	 * </pre>
+	 */
+	@Then("the following EDI_Exp_Desadv XML does not carry the elements:")
+	public void validate_EDI_Exp_Desadv_elements_absent(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateEDIExpDesadvElementAbsent);
+	}
+
+	/**
 	 * Polls the given {@code EDI_Desadv} records (already resolved via {@code EDI_Desadv is found:}
 	 * or {@code EDI_Desadv is enqueued for export}) until each reaches the expected
 	 * {@code EDI_ExportStatus}, then optionally asserts {@code Processed} / {@code FulfillmentPercent} /
@@ -431,6 +459,39 @@ public class EDI_Desadv_StepDef
 		{
 			assertThat(element.getTextContent()).as("<%s> value", tagName).isEqualTo(expectedValue);
 		}
+	}
+
+	private void validateEDIExpDesadvElementAbsent(@NonNull final DataTableRow row)
+	{
+		final Document ediExpDesadv = row.getAsIdentifier("EDI_Exp_Desadv_ID").lookupNotNullIn(ediExpDesadvTable);
+
+		final String tagName = row.getAsString("TagName");
+		final String underTag = row.getAsOptionalString("UnderTag").orElse(null);
+
+		final Node scope;
+		if (Check.isNotBlank(underTag))
+		{
+			final Element parent = getElement(ediExpDesadv, underTag);
+			assertThat(parent).as("the exported DESADV XML must contain element <%s>", underTag).isNotNull();
+			scope = parent;
+		}
+		else
+		{
+			scope = ediExpDesadv;
+		}
+
+		final Element element = getElement(scope, tagName);
+
+		// computed before the assertion so the failure message can say which one was actually found
+		// (genuinely absent vs present-but-empty), never merely "expected null"
+		final String actualDescription = element == null
+				? "absent, as expected"
+				: "present, with text content <" + element.getTextContent() + ">";
+
+		assertThat(element)
+				.as("the exported DESADV XML must NOT carry element <%s>%s; found: %s",
+						tagName, Check.isNotBlank(underTag) ? " under <" + underTag + ">" : "", actualDescription)
+				.isNull();
 	}
 
 	@Nullable

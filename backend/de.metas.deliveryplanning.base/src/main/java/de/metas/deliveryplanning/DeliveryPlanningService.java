@@ -47,6 +47,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
+import de.metas.inout.IInOutBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -65,7 +66,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
@@ -75,6 +75,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -90,6 +91,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
@@ -103,6 +105,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -123,6 +126,11 @@ public class DeliveryPlanningService
 
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
+
+	public static final AdMessageKey MSG_M_Delivery_Planning_CancelAllocated = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CancelAllocated");
+
+	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
+	public static final AdMessageKey MSG_M_Delivery_Planning_NotReadyForReceipt = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NotReadyForReceipt");
 
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
@@ -193,6 +201,8 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -201,7 +211,8 @@ public class DeliveryPlanningService
 
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
-	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
+	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	@NonNull private final DeliveryInstructionService deliveryInstructionService;
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final MeansOfTransportationService meansOfTransportationService;
 
@@ -237,17 +248,11 @@ public class DeliveryPlanningService
 				.orElse(false); // inactive or missing shipper → skip
 	}
 
-	private DeliveryStatusColorPalette getColorPalette()
-	{
-		return deliveryStatusColorPaletteService.get();
-	}
-
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
 		GenerateIncomingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.receiptSchedule(receiptScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -258,7 +263,6 @@ public class DeliveryPlanningService
 		GenerateOutgoingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.shipmentSchedule(shipmentScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -285,7 +289,7 @@ public class DeliveryPlanningService
 	 * Refuses to delete a planning that an ACTIVE {@code M_Delivery_Planning_Alloc} still points at -
 	 * unconditionally, regardless of who is deleting it. Asked of the allocation table rather than of
 	 * {@code ReleaseNo}, which only mirrors it; see
-	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}.
+	 * {@link DeliveryPlanningAllocRepository#hasActiveAllocation(DeliveryPlanningId)}.
 	 * <p>
 	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete through
 	 * would strand that instruction's cargo. A RETIRED allocation is the opposite case and must NOT be refused; it
@@ -293,7 +297,7 @@ public class DeliveryPlanningService
 	 */
 	public void assertNotCurrentlyAllocated(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		if (deliveryPlanningRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
+		if (deliveryPlanningAllocRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
 		}
@@ -307,7 +311,7 @@ public class DeliveryPlanningService
 	 */
 	public void deleteAllocationsFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningAllocRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
 	}
 
 	/**
@@ -331,14 +335,17 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		deliveryPlanningRepository.getInstructionIdByShippingPackageId(shippingPackageId)
+		deliveryPlanningAllocRepository.getInstructionIdByShippingPackageId(shippingPackageId)
 				.ifPresent(deliveryInstructionId -> {
-					final String documentNo = deliveryPlanningRepository.getInstructionById(deliveryInstructionId).getDocumentNo();
+					final String documentNo = deliveryInstructionService.getById(deliveryInstructionId).getDocumentNo();
 					throw new AdempiereException(TranslatableStrings.adMessage(MSG_M_ShippingPackage_Allocated, documentNo));
 				});
 	}
 
-	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)
+	private DeliveryPlanningCreateRequest createRequest(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Quantity plannedLoadedQty,
+			@NonNull final Quantity plannedDischargeQty)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
@@ -347,6 +354,22 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
+
+		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
+
+		// D22: a split-created planning is seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh
+		// one, never by copying the target's actuals - that fabricated a received quantity nothing was received
+		// against, and multiplied it across every sibling.
+		final Quantity actualLoadedQty = transportDirection.isIncomingOrDropship()
+				? plannedLoadedQty
+				: Quantity.zero(uomToUse);
+
+		// ZERO in every direction. The inbound seeding above is a PLAN feeding an ACTUAL only because the vendor's
+		// load is genuinely unreported and the plan is the sole figure that exists for it. The discharge end has no
+		// such excuse: on an outgoing planning it follows the ACTUAL LOAD (M_Delivery_Planning#settleEnds), and a
+		// freshly split planning has loaded nothing - so seeding it from the plan would state that goods were
+		// discharged which never left the building, once per sibling.
+		final Quantity actualDischargeQty = Quantity.zero(uomToUse);
 
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
@@ -361,16 +384,16 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.transportDirection(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord))
+				.transportDirection(transportDirection)
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
-				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.actualLoadedQty(actualLoadedQty)
 
 				.plannedLoadedQty(plannedLoadedQty)
-				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+				.plannedDischargeQty(plannedDischargeQty)
+				.actualDischargeQty(actualDischargeQty)
 
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))
@@ -404,54 +427,150 @@ public class DeliveryPlanningService
 
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 
-		final Quantity openQty = getOpenQty(deliveryPlanningId);
+		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): an allocated target's own
+		// planned figures are a FIXED POINT of the split, never rewritten as a side effect.
+		final boolean targetIsAllocated = deliveryPlanningAllocRepository.hasActiveAllocation(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
 
-		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
-		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+		final Quantity newPlanningLoadedQty;
+		final Quantity newPlanningLoadedQtyRemainder;
+		final Quantity newPlanningDischargeQty;
+		final Quantity newPlanningDischargeQtyRemainder;
+
+		if (targetIsAllocated)
+		{
+			// "nothing remains" still creates the requested plannings, carrying 0, rather than refusing or erroring
+			newPlanningLoadedQty = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			// the target is untouchable here, so the DOWN-rounding remainder would otherwise vanish off the order line
+			// (openQty=10 over 3 new plannings gives 3+3+3=9). Handed to the LAST planning created by the loop below.
+			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
+
+			final Quantity openDischargeQty = getPlannedDischargeQty(deliveryPlanningId, true);
+			newPlanningDischargeQty = openDischargeQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			newPlanningDischargeQtyRemainder = openDischargeQty.subtract(newPlanningDischargeQty.multiply(additionalLines));
+		}
+		else
+		{
+			final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+
+			final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+			newPlanningLoadedQty = fraction;
+
+			final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId, false);
+			final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
+			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
+			newPlanningDischargeQty = dischargeFraction;
+			// unallocated: the target itself absorbed the DOWN-rounding remainder, so nothing is left over here
+			newPlanningLoadedQtyRemainder = Quantity.zero(openQty.getUOM());
+			newPlanningDischargeQtyRemainder = Quantity.zero(openQty.getUOM());
+		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
+			// the last planning created carries the remainder (zero on the unallocated branch), so the new plannings'
+			// figures still sum to the distributed pool - both ends, not just load
+			final boolean isLastNewPlanning = i == additionalLines - 1;
+			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
+					? newPlanningLoadedQty.add(newPlanningLoadedQtyRemainder)
+					: newPlanningLoadedQty;
+			final Quantity dischargeQtyForThisPlanning = isLastNewPlanning
+					? newPlanningDischargeQty.add(newPlanningDischargeQtyRemainder)
+					: newPlanningDischargeQty;
+
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, loadedQtyForThisPlanning, dischargeQtyForThisPlanning);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
 
-	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
+	private Quantity getPlannedDischargeQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
+	{
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.DISCHARGE);
+	}
+
+	/**
+	 * The target's OWN claim is excluded from the pool too once it is allocated - committed cargo is not
+	 * distributable. Unallocated, its share is still up for redistribution and is excluded from the sum instead.
+	 */
+	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
+	{
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.LOAD);
+	}
+
+	/**
+	 * Floored at 0 HERE, not in the shared calculation: a negative pool is not distributable (D16), while the
+	 * display columns may legitimately show a negative.
+	 */
+	private Quantity resolveDistributablePool(
+			final DeliveryPlanningId deliveryPlanningId,
+			final boolean targetIsAllocated,
+			final DeliveryPlanningList.PoolEnd end)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
 
-		final Quantity qtyOrdered = Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uom);
-
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID());
 		if (orderLineId == null)
 		{
-			// the delivery planning has no order line => remaining open qty is 0
+			// the delivery planning has no order line => nothing to distribute
 			return Quantity.zero(uom);
 		}
 
-		Quantity openQty = qtyOrdered;
+		final DeliveryPlanningList orderLinePlannings = deliveryPlanningRepository.getByOrderLineId(orderLineId);
+		final DeliveryPlanningId excludePlanningId = targetIsAllocated ? null : deliveryPlanningId;
 
-		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
-				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
-				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
-				.reduce(Quantity::add)
-				.orElse(null);
-		if (plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
-		{
-			openQty = openQty.subtract(plannedLoadedQtySum);
-		}
-
-		return openQty.toZeroIfNegative();
+		return orderLinePlannings.openPlanQty(excludePlanningId, end).toZeroIfNegative();
 	}
 
-	private static Quantity extractPlannedLoadedQuantity(final I_M_Delivery_Planning deliveryPlanning)
+	public void recomputeOpenQuantitiesForOrderLine(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		final UomId uomId = UomId.ofRepoId(deliveryPlanning.getC_UOM_ID());
-		return Quantitys.of(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			// not based on any order line -> QtyTotalOpen/QtyTotalOpenPlanned have nothing to be computed from
+			return;
+		}
+		deliveryPlanningRepository.recomputeOpenQuantitiesForOrderLine(orderLineId);
+	}
+
+	/**
+	 * The generic {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach an already-open document's row
+	 * - see {@link DeliveryInstructionLineCacheInvalidation}.
+	 */
+	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryInstructionService.invalidateDeliveryInstructionLinesFor(
+				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
+	}
+
+	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
+	}
+
+	/**
+	 * This planning's OWN planned discharge quantity, NOT its receipt schedule's outstanding one: a split copies
+	 * {@code M_ReceiptSchedule_ID} onto every new planning, so reading the schedule would let the first planning
+	 * consume the whole line and starve its siblings. The bare {@code BigDecimal} is interpreted in the RECEIPT
+	 * SCHEDULE's UOM by whoever receives it.
+	 */
+	public BigDecimal getPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedDischargeQuantity();
+	}
+
+	/** The outgoing mirror of {@link #getPlannedDischargeQuantity}; same UOM caveat. */
+	public BigDecimal getPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedLoadedQuantity();
+	}
+
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
@@ -509,7 +628,7 @@ public class DeliveryPlanningService
 
 		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(deliveryInstructionRequest);
 
 		if (complete)
 		{
@@ -551,7 +670,7 @@ public class DeliveryPlanningService
 
 		return toDeliveryPlanningList(
 				deliveryPlanningRecords,
-				deliveryPlanningRepository.getAllocationsByPlanningId(
+				deliveryPlanningAllocRepository.getByDeliveryPlanningIds(
 						deliveryPlanningRecords.stream()
 								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 								.collect(ImmutableSet.toImmutableSet())));
@@ -567,7 +686,7 @@ public class DeliveryPlanningService
 	 */
 	private DeliveryPlanningList getAllocatedTo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningRepository.getAllocationsOfInstruction(deliveryInstructionId);
+		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningAllocRepository.getAllocationsOfInstruction(deliveryInstructionId);
 		if (allocations.isEmpty())
 		{
 			return DeliveryPlanningList.EMPTY;
@@ -578,7 +697,7 @@ public class DeliveryPlanningService
 				.collect(ImmutableSet.toImmutableSet());
 
 		return toDeliveryPlanningList(
-				deliveryPlanningRepository.getByIds(allocatedIds),
+				deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedIds)),
 				Multimaps.index(allocations, DeliveryPlanningAlloc::getDeliveryPlanningId));
 	}
 
@@ -598,11 +717,16 @@ public class DeliveryPlanningService
 		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
 
 		return deliveryPlanningRecords.stream()
-				.map(record -> toDeliveryPlanning(record, addresses, allocationsByPlanningId))
+				.map(record -> fromRecord(record, addresses, allocationsByPlanningId))
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	private static DeliveryPlanning toDeliveryPlanning(
+	/**
+	 * Every record-derived field comes from {@link DeliveryPlanningRepository#fromRecordBuilder} - the one
+	 * mapper - so this adds only what that method has no data for: the two locations (from the batch-loaded
+	 * addresses) and the allocations.
+	 */
+	private static DeliveryPlanning fromRecord(
 			@NonNull final I_M_Delivery_Planning record,
 			@NonNull final DeliveryPlanningAddresses addresses,
 			@NonNull final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocationsByPlanningId)
@@ -610,18 +734,9 @@ public class DeliveryPlanningService
 		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(record);
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 
-		return DeliveryPlanning.builder()
-				.id(deliveryPlanningId)
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.transportDirection(transportDirection)
-				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
-				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
-				.incotermLocation(record.getIncotermLocation())
-				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
+		return DeliveryPlanningRepository.fromRecordBuilder(record)
 				.loadingLocationId(extractShipFromLocationIdOrNull(record, transportDirection, addresses))
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
-				.etd(TimeUtil.asInstant(record.getETD()))
-				.closed(record.isClosed())
 				.allocations(allocationsByPlanningId.get(deliveryPlanningId))
 				.build();
 	}
@@ -694,7 +809,6 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean hasReceipt = transportDirection.hasReceipt();
 		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, transportDirection, addresses);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, transportDirection, addresses);
@@ -732,7 +846,7 @@ public class DeliveryPlanningService
 				.shipperId(ShipperId.ofRepoId(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.productId(productId)
-				.isToBeFetched(hasReceipt)
+				.isToBeFetched(transportDirection.isIncomingOrDropship())
 				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
@@ -755,7 +869,7 @@ public class DeliveryPlanningService
 			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		if (transportDirection.hasReceipt())
+		if (transportDirection.isIncomingOrDropship())
 		{
 			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ReceiptSchedule_ID());
 			return receiptScheduleId != null ? addresses.getReceiptScheduleLocationId(receiptScheduleId) : null;
@@ -977,6 +1091,48 @@ public class DeliveryPlanningService
 		return Optional.empty();
 	}
 
+	public DeliveryPlanningList getByIds(@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return deliveryPlanningRepository.getByIds(deliveryPlanningIds);
+	}
+
+	/**
+	 * ALL-or-nothing, like every sibling selection-shaped action: a single processed row refuses the whole
+	 * selection rather than being skipped, and the rejection names every offending row.
+	 */
+	public Optional<ITranslatableString> getReceiveRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (selectedDeliveryPlannings.anyProcessed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_Processed,
+					toIdList(selectedDeliveryPlannings.processedOnes())));
+		}
+
+		// A planning is receivable only once it sits on a COMPLETED delivery instruction - the predicate
+		// IsReadyForReceipt records, maintained by the M_Delivery_Planning_Alloc interceptor. The window shows
+		// that flag as a column, so without this the operator was told "not ready" and still offered the
+		// receive action.
+		//
+		// Unconditional, not behind the PreventReceiptIfMissingDeliveryInstructions SysConfig: delivery
+		// planning is a fresh feature with no active use, so there is no prior permissive behaviour to
+		// preserve for anybody, and a switch guarding a premise of the feature itself is dead weight. Every
+		// caller of this method deals in delivery plannings only (the receipt-disposition window, and
+		// WEBUI_M_HU_CreateReceipt_Base, which passes delivery-planning rows), so the whole surface is that
+		// same fresh feature.
+		//
+		// Read from the STORED column because these records are already loaded; the live form of the same
+		// predicate is hasCompleteDeliveryInstruction, which the single-record preconditions use.
+		if (selectedDeliveryPlannings.anyNotReadyForReceipt())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_NotReadyForReceipt,
+					toIdList(selectedDeliveryPlannings.notReadyForReceiptOnes())));
+		}
+
+		return Optional.empty();
+	}
+
 	/**
 	 * Why the given selection cannot be RE-OPENED, or empty when it can. The mirror of
 	 * {@link #getCloseRejectionReason(DeliveryPlanningList)}, for the same reason:
@@ -1014,10 +1170,10 @@ public class DeliveryPlanningService
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
-			final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.getInstructionById(deliveryInstructionId);
+			final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.getById(deliveryInstructionId);
 			if (shipperTransportationDocSubTypeGuard.isDeliveryInstruction(deliveryInstruction))
 			{
 				return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_EmptyDeliveryInstruction));
@@ -1043,7 +1199,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getReActivateRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings);
 	}
 
@@ -1063,7 +1219,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getVoidRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings);
 	}
 
@@ -1082,9 +1238,9 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(allocatedPlanningIds).stream()
-				.filter(I_M_Delivery_Planning::isClosed)
-				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(ImmutableSet.copyOf(allocatedPlanningIds)).stream()
+				.filter(DeliveryPlanning::isClosed)
+				.map(DeliveryPlanning::getId)
 				.collect(ImmutableList.toImmutableList());
 		if (closedPlanningIds.isEmpty())
 		{
@@ -1126,7 +1282,7 @@ public class DeliveryPlanningService
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.getIdsInAllocationOrder();
 
 		// the header, plus the seed planning's allocation and shipping package
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(
 				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
 
@@ -1138,7 +1294,7 @@ public class DeliveryPlanningService
 			// the seed header ALREADY resolved (generateDeliveryInstruction just built it), so the record this
 			// method holds is reused rather than reloaded to resolve the further plannings' dates against it
 			final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(deliveryInstruction, furtherAllocations);
-			deliveryPlanningRepository.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
+			deliveryInstructionService.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
 		}
 
 		if (complete)
@@ -1163,7 +1319,7 @@ public class DeliveryPlanningService
 	 */
 	private ImmutableList<DeliveryPlanningAllocCreateRequest> createAllocCreateRequests(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		return deliveryPlanningRepository.getByIds(deliveryPlanningIds)
+		return deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds))
 				.stream()
 				.map(this::createAllocCreateRequest)
 				.collect(ImmutableList.toImmutableList());
@@ -1182,18 +1338,21 @@ public class DeliveryPlanningService
 
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(productId)
-				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
-				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.batchNo(deliveryPlanningRecord.getBatch())
-				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
-				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).hasReceipt())
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(productId)
+						.uomId(UomId.ofRepoId(uomToUse.getC_UOM_ID()))
+						.batchNo(deliveryPlanningRecord.getBatch())
+						.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+						.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
+						.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isIncomingOrDropship())
+						.build())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
-				.etd(deliveryPlanningRecord.getETD())
-				.eta(deliveryPlanningRecord.getETA())
-				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.builder()
+						.etd(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))
+						.eta(TimeUtil.asInstant(deliveryPlanningRecord.getETA()))
+						.loadingTime(deliveryPlanningRecord.getLoadingTime())
+						.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+						.build())
 				.build();
 	}
 
@@ -1317,7 +1476,7 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		if (!deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
+		if (!deliveryInstructionService.getDocStatus(targetDeliveryInstructionId).isDrafted())
 		{
 			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
@@ -1396,7 +1555,7 @@ public class DeliveryPlanningService
 				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryPlanningRepository.getDeliveryInstructionDocStatuses(deliveryInstructionIds);
+		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryInstructionService.getDocStatuses(deliveryInstructionIds);
 
 		return selectedDeliveryPlannings.stream()
 				.filter(DeliveryPlanning::isAllocated)
@@ -1501,7 +1660,7 @@ public class DeliveryPlanningService
 			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
 			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
 			// unique index, since both are declared WHERE IsActive='Y'
-			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 			resetDatesFromOrderAndSchedule(deactivatedIds);
 		}
 
@@ -1509,12 +1668,12 @@ public class DeliveryPlanningService
 		// instruction's, which the sync-down would still have on these rows before the reset ran
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-		final I_M_ShipperTransportation targetInstruction = deliveryPlanningRepository.getInstructionById(targetDeliveryInstructionId);
+		final I_M_ShipperTransportation targetInstruction = deliveryInstructionService.getById(targetDeliveryInstructionId);
 		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
-		deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
+		deliveryInstructionService.createAllocations(targetInstruction, allocations, resolvedDates);
 
 		// stamped from the target: on a move the old release number named a document the cargo has left
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
 	}
 
 	/**
@@ -1542,7 +1701,7 @@ public class DeliveryPlanningService
 		// No trxManager wrapper - same reason as in addTo: the only caller,
 		// M_Delivery_Planning_RemoveFromDeliveryInstruction.doIt(), is a JavaProcess without @RunOutOfTrx and
 		// therefore already runs inside a transaction.
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 		deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 	}
@@ -1551,22 +1710,22 @@ public class DeliveryPlanningService
 	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations), resets their
 	 * dates and invalidates their invoice candidates - the same batch load
 	 * {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)} uses, but reading the affected ids from
-	 * {@link DeliveryPlanningRepository#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
+	 * {@link DeliveryInstructionService#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
 	 * query: the same pattern the other two retirement paths (remove-from and the source half of a move)
 	 * already follow - deactivate once, use what it reports it deactivated. Re-deriving the ids from
-	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
+	 * {@link DeliveryPlanningAllocRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
 	 * would come back empty, which is exactly why the invalidation below is deferred to after-commit against the
 	 * ids captured HERE rather than re-resolved inside that deferred closure.
 	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds =
-				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant()).getDeallocatedPlanningIds();
+				deliveryInstructionService.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(allocatedPlanningIds);
 
 		if (!allocatedPlanningIds.isEmpty())
 		{
-			trxManager.runAfterCommit(() -> deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+			trxManager.runAfterCommit(() -> deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedPlanningIds))
 					.forEach(this::invalidateInvoiceCandidatesFor));
 		}
 	}
@@ -1584,7 +1743,7 @@ public class DeliveryPlanningService
 	public void syncDatesToAllocatedPlannings(@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;
@@ -1599,7 +1758,7 @@ public class DeliveryPlanningService
 	 * field is still empty. Every field is guarded individually so a value the planner entered before the add
 	 * survives.
 	 * <p>
-	 * A pure function: it reads and decides, {@link DeliveryPlanningRepository#createAllocations} writes.
+	 * A pure function: it reads and decides, {@link DeliveryInstructionService#createAllocations} writes.
 	 * {@code ATD}/{@code ATA} are then derived from the FILLED {@code ETD}/{@code ETA} rather than from the
 	 * planning, so a planner-set departure propagates into the actual. {@code BLDate} belongs to the
 	 * transport-order flow and is not touched.
@@ -1610,43 +1769,44 @@ public class DeliveryPlanningService
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
 	{
-		Timestamp etd = deliveryInstructionRecord.getETD();
-		Timestamp eta = deliveryInstructionRecord.getETA();
+		Instant etd = TimeUtil.asInstant(deliveryInstructionRecord.getETD());
+		Instant eta = TimeUtil.asInstant(deliveryInstructionRecord.getETA());
 		String loadingTime = deliveryInstructionRecord.getLoadingTime();
 		String deliveryTime = deliveryInstructionRecord.getDeliveryTime();
 
 		for (final DeliveryPlanningAllocCreateRequest request : requests)
 		{
-			if (etd == null && request.getEtd() != null)
+			final DeliveryPlanningAllocCreateRequest.HeaderDateCandidate candidate = request.getHeaderDateCandidate();
+			if (etd == null && candidate.getEtd() != null)
 			{
-				etd = request.getEtd();
+				etd = candidate.getEtd();
 			}
-			if (eta == null && request.getEta() != null)
+			if (eta == null && candidate.getEta() != null)
 			{
-				eta = request.getEta();
+				eta = candidate.getEta();
 			}
-			if (Check.isBlank(loadingTime) && !Check.isBlank(request.getLoadingTime()))
+			if (Check.isBlank(loadingTime) && !Check.isBlank(candidate.getLoadingTime()))
 			{
-				loadingTime = request.getLoadingTime();
+				loadingTime = candidate.getLoadingTime();
 			}
-			if (Check.isBlank(deliveryTime) && !Check.isBlank(request.getDeliveryTime()))
+			if (Check.isBlank(deliveryTime) && !Check.isBlank(candidate.getDeliveryTime()))
 			{
-				deliveryTime = request.getDeliveryTime();
+				deliveryTime = candidate.getDeliveryTime();
 			}
 		}
 
 		return DeliveryInstructionDates.builder()
 				.etd(etd)
 				.eta(eta)
-				.atd(deriveActualIfEmpty(deliveryInstructionRecord.getATD(), etd))
-				.ata(deriveActualIfEmpty(deliveryInstructionRecord.getATA(), eta))
+				.atd(deriveActualIfEmpty(TimeUtil.asInstant(deliveryInstructionRecord.getATD()), etd))
+				.ata(deriveActualIfEmpty(TimeUtil.asInstant(deliveryInstructionRecord.getATA()), eta))
 				.loadingTime(loadingTime)
 				.deliveryTime(deliveryTime)
 				.build();
 	}
 
 	/** An unset actual (planner never confirmed one) defaults to the matching estimate; a real actual is kept. */
-	private static Timestamp deriveActualIfEmpty(@Nullable final Timestamp actual, @Nullable final Timestamp estimated)
+	private static <T> T deriveActualIfEmpty(@Nullable final T actual, @Nullable final T estimated)
 	{
 		return CoalesceUtil.coalesce(actual, estimated);
 	}
@@ -1670,7 +1830,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = deliveryPlanningRepository.getByIds(deliveryPlanningIds);
+		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds));
 
 		final ImmutableSet.Builder<OrderId> orderIds = ImmutableSet.builder();
 		final ImmutableSet.Builder<OrderLineId> orderLineIds = ImmutableSet.builder();
@@ -1739,13 +1899,13 @@ public class DeliveryPlanningService
 		}
 
 		// the Outgoing command's own fallback for an unset delivery date; the Incoming command has none
-		final Timestamp eta = deliveryDateEffective == null && !hasReceipt && orderLine != null
+		final Instant eta = TimeUtil.asInstant(deliveryDateEffective == null && !hasReceipt && orderLine != null
 				? orderLine.getDatePromised()
-				: deliveryDateEffective;
+				: deliveryDateEffective);
 
-		final Timestamp ata = orderLine != null ? CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDateEffective) : null;
+		final Instant ata = TimeUtil.asInstant(orderLine != null ? CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDateEffective) : null);
 
-		final Timestamp etd = order != null ? order.getPreparationDate() : null;
+		final Instant etd = TimeUtil.asInstant(order != null ? order.getPreparationDate() : null);
 
 		return DeliveryInstructionDates.builder()
 				.etd(etd)
@@ -1766,9 +1926,13 @@ public class DeliveryPlanningService
 	private static boolean hasReceiptOrUnknown(@NonNull final I_M_Delivery_Planning record)
 	{
 		final TransportDirection transportDirection = TransportDirection.ofNullableCode(record.getTransportDirection());
-		return transportDirection != null && transportDirection.hasReceipt();
+		return transportDirection != null && transportDirection.isIncomingOrDropship();
 	}
 
+	/**
+	 * Voids and re-creates the instruction of every selected planning. Under aggregation an instruction carries
+	 * several plannings, so this also replaces the document that UNSELECTED sibling plannings ride on.
+	 */
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
@@ -1789,9 +1953,13 @@ public class DeliveryPlanningService
 		}
 	}
 
+	/**
+	 * Voids the WHOLE instruction the given planning is linked to, not just that planning's share of it - under
+	 * aggregation the same instruction carries sibling plannings, and they lose their document along with it.
+	 */
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryPlanningRepository.retrieveForDeliveryPlanning(deliveryPlanningId);
+		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryInstructionService.retrieveForDeliveryPlanning(deliveryPlanningId);
 		while (deliveryInstructionsIterator.hasNext())
 		{
 			final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionsIterator.next();
@@ -1811,20 +1979,34 @@ public class DeliveryPlanningService
 	 * when a selected open planning SHARES its instruction with a closed one, the whole cancel aborts and nothing
 	 * is cancelled. That is the normal case under aggregation, and it is deliberate: the closed planning's cargo
 	 * would otherwise be released along with the open one's.
+	 * <p>
+	 * The allocation state is snapshotted for the WHOLE selection BEFORE any row is voided: voiding a shared
+	 * instruction deactivates its siblings' allocations too, so a per-row read would see a later sibling as
+	 * unallocated and zero its committed planned figures.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
 				.excludeDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 
+		final ImmutableList<I_M_Delivery_Planning> selectedDeliveryPlannings = ImmutableList.copyOf(
+				deliveryPlanningRepository.extractDeliveryPlannings(dpFilter));
+
+		final ImmutableList<DeliveryPlanningId> selectedDeliveryPlanningIds = selectedDeliveryPlannings.stream()
+				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		// snapshot, taken before the loop below voids anything - see the Javadoc above
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningAllocRepository
+				.getByDeliveryPlanningIds(selectedDeliveryPlanningIds)
+				.keySet();
+
 		final ImmutableList.Builder<DeliveryPlanningId> cancelledIds = ImmutableList.builder();
 		final ImmutableList.Builder<DeliveryPlanningId> skippedClosedIds = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryPlanningId> skippedAllocatedIds = ImmutableList.builder();
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
-
-		while (deliveryPlanningIterator.hasNext())
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : selectedDeliveryPlannings)
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
 			// Reached by a planning closed WHILE allocated: closing sets the flag and nothing else, so such a row
@@ -1836,18 +2018,25 @@ public class DeliveryPlanningService
 				continue;
 			}
 
+			final boolean wasAllocated = allocatedIds.contains(deliveryPlanningId);
+
 			// first void the existent delivery instructions
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
 			// re-read: the void's unlink cascade may have cleared ReleaseNo/M_ShipperTransportation_ID on this
 			// same row, and the pre-void record in hand here must not overwrite that with stale values
-			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId));
+			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId), !wasAllocated);
 			cancelledIds.add(deliveryPlanningId);
+			if (wasAllocated)
+			{
+				skippedAllocatedIds.add(deliveryPlanningId);
+			}
 		}
 
 		return DeliveryPlanningCancelResult.builder()
 				.cancelledIds(cancelledIds.build())
 				.skippedClosedIds(skippedClosedIds.build())
+				.skippedAllocatedIds(skippedAllocatedIds.build())
 				.build();
 	}
 
@@ -1866,13 +2055,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateReceiptInfoById(
-				deliveryPlanningId,
-				receiptInfo -> {
-					updater.accept(receiptInfo);
-					receiptInfo.updateReceivedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateReceiptInfoById(deliveryPlanningId, updater);
 	}
 
 	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -1890,13 +2073,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateShipmentInfoById(
-				deliveryPlanningId,
-				shipmentInfo -> {
-					updater.accept(shipmentInfo);
-					shipmentInfo.updateShippedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateShipmentInfoById(deliveryPlanningId, updater);
 	}
 
 	public <T> T getShipmentOrReceiptInfo(
@@ -1914,7 +2091,7 @@ public class DeliveryPlanningService
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+		return deliveryInstructionService.hasCompleteDeliveryInstruction(deliveryPlanningId);
 	}
 
 	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -1957,13 +2134,13 @@ public class DeliveryPlanningService
 	 */
 	public void invalidateInvoiceCandidatesFor(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;
 		}
 
-		deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+		deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedPlanningIds))
 				.forEach(this::invalidateInvoiceCandidatesFor);
 	}
 
@@ -1980,5 +2157,68 @@ public class DeliveryPlanningService
 		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
 		return MeansOfTransportationId.optionalOfRepoId(deliveryPlanning.getM_MeansOfTransportation_ID())
 				.map(meansOfTransportationService::getById);
+	}
+
+	/**
+	 * A receipt writes the discharge end only - {@code ActualLoadQty} is a placeholder for the never-reported
+	 * vendor load and must not be overwritten, {@link TransportDirection#Dropship} included. A shipment books the
+	 * same quantity onto BOTH ends: nobody else ever reports the customer's unload.
+	 * <p>
+	 * Lives here rather than in the repository because deciding which end(s) a document occupies -- and resolving
+	 * the booked quantity, which needs {@link IInOutBL} and {@link IUOMConversionBL} -- is business logic; the
+	 * repository is handed the resolved values to persist.
+	 *
+	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
+	 */
+	public void recordActualQtyOnComplete(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			final boolean isReceipt,
+			@NonNull final I_M_InOut inout)
+	{
+		final I_M_Delivery_Planning record = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final TransportDirection direction = DeliveryPlanningRepository.extractTransportDirection(record);
+		final BigDecimal bookedQty = resolveBookedQty(inout, record).toBigDecimal();
+
+		if (isReceipt)
+		{
+			deliveryPlanningRepository.recordActualQuantities(record, null, bookedQty);
+		}
+		else if (DeliveryPlanningRepository.hasOwnShipment(direction))
+		{
+			deliveryPlanningRepository.recordActualQuantities(record, bookedQty, bookedQty);
+		}
+		else
+		{
+			// a receipt owns this planning's discharge end, so a shipment writing to it here would silently overwrite
+			// the wrong end
+			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
+		}
+	}
+
+	/**
+	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID} - neither by document nor by
+	 * {@code C_OrderLine_ID}: a document can carry other schedules' lines (a consolidating shipment) and even
+	 * other PLANNINGS' lines of the very same order line (siblings of a split received together), so both wider
+	 * scopes book quantities that are not this planning's. The schedule-to-line allocation tables
+	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}) cannot be used instead - they are written after
+	 * {@code ACTION_Complete}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler, so every planning would book
+	 * zero. {@link IInOutBL#getMovementQty} rather than the raw column keeps a return's negated sign.
+	 * <p>
+	 * The product filter stays: the same header's packing-material lines carry this planning too on documents
+	 * whose lines were stamped by the backfill of the retired header column, and their quantity is not this
+	 * planning's product's.
+	 */
+	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
+	{
+		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
+		final int planningRepoId = planningRecord.getM_Delivery_Planning_ID();
+
+		return inOutBL.getLines(inout).stream()
+				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+				.filter(line -> line.getM_Delivery_Planning_ID() == planningRepoId)
+				.map(inOutBL::getMovementQty)
+				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
+				.reduce(Quantity.zero(uom), Quantity::add);
 	}
 }

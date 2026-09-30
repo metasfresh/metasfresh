@@ -152,6 +152,11 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	Set<OrderId> retrieveNotProcessedOrderIds(BPartnerId bpartnerId);
 
+	/**
+	 * @return the active orders whose {@code Link_Order_ID} is the given order (e.g. the purchase orders created from a sales order), ordered by id
+	 */
+	List<I_C_Order> getByLinkOrderId(@NonNull OrderId linkOrderId);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
 	void deleteByLineId(OrderAndLineId orderAndLineId);

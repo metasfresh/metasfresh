@@ -26,6 +26,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -102,6 +103,12 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID, packingMaterialId)
 				.create()
 				.firstOnly(I_M_HU_PackingMaterial.class);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_HU_PackingMaterial packingMaterial)
+	{
+		InterfaceWrapperHelper.save(packingMaterial);
 	}
 
 	@Nullable

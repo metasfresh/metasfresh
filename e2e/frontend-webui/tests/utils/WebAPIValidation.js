@@ -84,6 +84,77 @@ export function getViewLayoutFilterParameterNames(layout) {
 }
 
 /**
+ * Get a window's SINGLE-RECORD (detail) layout from the WebAPI.
+ *
+ * Unlike {@link getViewLayout} (the list/grid layout), this is the detail-form layout the desktop
+ * frontend renders field labels from. Elements arrive nested under
+ * `sections[].columns[].elementGroups[].elementsLine[].elements[]`; each element carries its
+ * localized `caption` (the AD_Element_Trl.Name for the SESSION's AD_Language — exactly the caption
+ * the frontend paints as the field's `label.form-control-label`) and its `fields[].field` (the
+ * language-invariant AD_Column ColumnName).
+ *
+ * @param {number|string} windowId - AD_Window_ID (e.g., 344 for Product Costs)
+ * @returns {Promise<Object>} the window layout JSON
+ */
+export async function getWindowLayout(windowId) {
+  const page = getPage();
+
+  const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/layout`,
+      { headers: { 'Content-Type': 'application/json' } },
+  );
+
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — window layout of ${windowId}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * The localized field LABEL the backend serves for a given ColumnName in a window's detail layout
+ * (see {@link getWindowLayout}) — i.e. the AD_Element_Trl.Name in the current session's AD_Language,
+ * which is exactly the caption the frontend renders. Returns `undefined` if the field is not laid out.
+ *
+ * This is the language-INDEPENDENT source of truth for a field's label: the expectation is fetched
+ * per session/language at runtime from the backend, never hardcoded per language. Use it to assert a
+ * rendered label without pinning a caption string literal (see
+ * `e2e/frontend-webui/CLAUDE.md` § "Specs MUST be language-independent").
+ *
+ * @param {Object} layout - a layout object from {@link getWindowLayout}
+ * @param {string} fieldName - AD_Column ColumnName (e.g. 'CoProductCostDistributionPercent')
+ * @returns {string|undefined} the element caption, or undefined if the field is not in the layout
+ */
+export function getFieldLabelFromLayout(layout, fieldName) {
+  let found;
+
+  const walk = (node) => {
+    if (found !== undefined || node == null) {
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (typeof node === 'object') {
+      const fields = node.fields;
+      if (
+        Array.isArray(fields) &&
+        fields.some((f) => f && f.field === fieldName) &&
+        typeof node.caption === 'string'
+      ) {
+        found = node.caption;
+        return;
+      }
+      Object.values(node).forEach(walk);
+    }
+  };
+
+  walk(layout);
+  return found;
+}
+
+/**
  * Get complete record data including validation status from WebAPI.
  *
  * @param {string} windowId - Window ID (e.g., '143' for Sales Order)

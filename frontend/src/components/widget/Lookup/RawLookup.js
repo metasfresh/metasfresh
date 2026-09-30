@@ -133,6 +133,23 @@ export class RawLookup extends Component {
       this.inputSearch.value = '';
     }
 
+    // The constructor's one-shot arming was spent on the previous document, and a new document
+    // reconciles this widget instead of remounting it. Re-arm - but only for a first field the
+    // arriving document leaves empty (`handleValueChanged()` above has already applied its
+    // value), so the caret is never pulled into a value the user entered. Not in a modal, where
+    // `dataId` is a pinstance id rather than a document, and not in a quick-input row, where the
+    // header's first field is the one that must get the focus.
+    if (
+      autoFocus &&
+      !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
+      prevProps.dataId !== this.props.dataId &&
+      !shouldBeFocused &&
+      !this.inputSearch.value
+    ) {
+      this.setState({ shouldBeFocused: true });
+    }
+
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
       this.focus();
       this.setState({ shouldBeFocused: false });

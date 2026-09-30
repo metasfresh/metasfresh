@@ -39,6 +39,7 @@ import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistMulti
 import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistRequest;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
@@ -47,6 +48,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepository;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -86,6 +88,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -108,7 +111,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class CandidateRepositoryWriteService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -117,6 +120,21 @@ public class CandidateRepositoryWriteService
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateQtyDetailsRepository candidateQtyDetailsRepository;
+	@NonNull private final AtpReconciliationDetailRepository atpReconciliationDetailRepo;
+
+	/**
+	 * Legacy 4-arg shape, kept so the many existing test call sites that construct this class directly don't all
+	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
+	 * {@link AtpReconciliationDetailRepository} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 */
+	public CandidateRepositoryWriteService(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository)
+	{
+		this(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository, new AtpReconciliationDetailRepository());
+	}
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -207,6 +225,8 @@ public class CandidateRepositoryWriteService
 		addOrReplaceTransactionDetail(candidate, syncedRecord);
 
 		addOrReplaceStockChangeDetail(candidate, syncedRecord);
+
+		addOrReplaceAtpReconciliationDetail(candidate, syncedRecord);
 
 		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, syncedRecord);
 
@@ -584,9 +604,15 @@ public class CandidateRepositoryWriteService
 				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockPInstanceId().getRepoId());
 			}
 
+			// scoped to THIS candidate as well: a M_Transaction_ID/AD_PInstance_ResetStock_ID value is not
+			// guaranteed unique across candidates (e.g. one TransactionDescriptor can fan out into several
+			// TransactionCreatedEvents - one per distinct storage-attributes-key - all sharing one
+			// M_Transaction_ID). Without this filter, a different candidate's write would silently UPDATE
+			// this candidate's existing row instead of inserting its own.
 			final I_MD_Candidate_Transaction_Detail existingDetail = //
 					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
 							.filter(transactionOrPInstanceId)
 							.create()
 							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
@@ -616,6 +642,14 @@ public class CandidateRepositoryWriteService
 	{
 		final StockChangeDetail stockChangeDetail = StockChangeDetail.castOrNull(candidate.getBusinessCaseDetail());
 		stockChangeDetailRepo.saveOrUpdate(stockChangeDetail, synchedRecord);
+	}
+
+	private void addOrReplaceAtpReconciliationDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final AtpReconciliationDetail atpReconciliationDetail = AtpReconciliationDetail.castOrNull(candidate.getBusinessCaseDetail());
+		atpReconciliationDetailRepo.saveOrUpdate(atpReconciliationDetail, synchedRecord);
 	}
 
 	private Candidate createNewCandidateWithIdsFromRecord(
@@ -833,6 +867,8 @@ public class CandidateRepositoryWriteService
 		deleteProdDetailsRecords(candidateId);
 		deletePurchaseDetailsRecords(candidateId);
 		deleteStockChangeDetailsRecords(candidateId);
+		// deliberately NOT deleting MD_ATP_Reconciliation_Backup rows here: that table is a durable audit trail
+		// (see its own migration header) and is meant to survive deletion of the candidate it describes.
 		deleteTransactionDetailsRecords(candidateId);
 		deleteQtyDetails(candidateId);
 	}

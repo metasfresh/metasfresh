@@ -29,6 +29,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
@@ -108,6 +109,11 @@ class ManufacturingRepostCostCollectorTest
 	/** {@link #MAIN_PRODUCT_CURRENT_QTY} + {@link #RECEIVED_QTY}, i.e. the current qty after exactly ONE receipt */
 	private static final String MAIN_PRODUCT_CURRENT_QTY_AFTER_ONE_RECEIPT = "105";
 
+	/** the by-product's own current cost - a STRAY non-zero value the AC15 zeroing must ignore */
+	private static final String BYPRODUCT_COST_PRICE = "15";
+	private static final String BYPRODUCT_CURRENT_QTY = "50";
+	private static final BigDecimal BYPRODUCT_RECEIVED_QTY = new BigDecimal("3");
+
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ANY;
 	private final PPOrderId orderId = PPOrderId.ofRepoId(1);
@@ -116,6 +122,7 @@ class ManufacturingRepostCostCollectorTest
 	private I_C_UOM uomEach;
 	private ProductId mainProductId;
 	private ProductId componentProductId;
+	private ProductId byProductId;
 
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
@@ -127,6 +134,7 @@ class ManufacturingRepostCostCollectorTest
 	private CostingMethodHandler handler;
 	private PPCostCollectorId issueCollectorId;
 	private PPCostCollectorId receiptCollectorId;
+	private PPCostCollectorId byProductReceiptCollectorId;
 
 	/** The three manufacturing handlers; each one has to short-circuit a repost. */
 	private enum ManufacturingHandlerUnderTest
@@ -186,6 +194,7 @@ class ManufacturingRepostCostCollectorTest
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		mainProductId = BusinessTestHelper.createProductId("main product", uomEach);
 		componentProductId = BusinessTestHelper.createProductId("component", uomEach);
+		byProductId = BusinessTestHelper.createProductId("by-product", uomEach);
 
 		// the costing level is what the cost segment is built from; the costing method is only asked for products
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
@@ -232,6 +241,25 @@ class ManufacturingRepostCostCollectorTest
 		assertThat(mainProductCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(RECEIVED_QTY);
 	}
 
+	/**
+	 * AC15: a by-product receipt is booked at ZERO cost, regardless of the by-product's own current M_Cost - the
+	 * receipt-side (leg B) counterpart to the by-product's central post-calculation zeroing in
+	 * {@code PPOrderCosts.updatePostCalculationAmountsForCostElement} (leg A). LastPO is deliberately excluded -
+	 * it is out of scope and still books a by-product at price x qty (non-zero).
+	 */
+	@ParameterizedTest
+	@EnumSource(value = ManufacturingHandlerUnderTest.class, names = { "AveragePO", "MovingAverageInvoice" })
+	void byProductReceipt_bookedAtZero_regardlessOfProductsCurrentCost(final ManufacturingHandlerUnderTest handlerUnderTest)
+	{
+		setupOrderFor(handlerUnderTest);
+
+		final CostDetailCreateRequest request = byProductReceiptRequest();
+		final CostDetailCreateResultsList result = handler.createOrUpdateCost(request);
+
+		assertThat(result.getSingleResult().getAmt().getAmt(CostAmountType.MAIN).toBigDecimal())
+				.isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
 	//
 	//
 	// fixture
@@ -250,9 +278,11 @@ class ManufacturingRepostCostCollectorTest
 
 		issueCollectorId = createCostCollector(CostCollectorType.ComponentIssue, ISSUED_QTY.negate());
 		receiptCollectorId = createCostCollector(CostCollectorType.MaterialReceipt, RECEIVED_QTY);
+		byProductReceiptCollectorId = createCostCollector(CostCollectorType.MixVariance, BYPRODUCT_RECEIVED_QTY);
 
 		saveCurrentCost(componentProductId, COMPONENT_COST_PRICE, COMPONENT_CURRENT_QTY);
 		saveCurrentCost(mainProductId, MAIN_PRODUCT_COST_PRICE, MAIN_PRODUCT_CURRENT_QTY);
+		saveCurrentCost(byProductId, BYPRODUCT_COST_PRICE, BYPRODUCT_CURRENT_QTY);
 		createOrderCosts();
 	}
 
@@ -308,9 +338,17 @@ class ManufacturingRepostCostCollectorTest
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
+		final PPOrderCost byProduct = PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.ByProduct)
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(byProductReceiptRequest()))
+				.price(costPrice("0"))
+				.accumulatedAmount(CostAmount.zero(currencyId))
+				.accumulatedQty(Quantity.zero(uomEach))
+				.build();
+
 		Services.get(IPPOrderCostBL.class).save(PPOrderCosts.builder()
 				.orderId(orderId)
-				.costs(ImmutableList.of(materialIssue, mainProduct))
+				.costs(ImmutableList.of(materialIssue, mainProduct, byProduct))
 				.build());
 	}
 
@@ -333,6 +371,12 @@ class ManufacturingRepostCostCollectorTest
 	private CostDetailCreateRequest receiptRequest()
 	{
 		return requestBuilder(mainProductId, receiptCollectorId, RECEIVED_QTY);
+	}
+
+	/** what {@code DocLine_CostCollector} hands the handler for a MixVariance by-product receipt collector: a qty, and no amount */
+	private CostDetailCreateRequest byProductReceiptRequest()
+	{
+		return requestBuilder(byProductId, byProductReceiptCollectorId, BYPRODUCT_RECEIVED_QTY);
 	}
 
 	private CostDetailCreateRequest requestBuilder(

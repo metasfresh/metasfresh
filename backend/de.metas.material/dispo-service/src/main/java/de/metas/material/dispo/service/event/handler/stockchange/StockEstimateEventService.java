@@ -33,20 +33,18 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateEventService
 {
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	public StockEstimateEventService(@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-	}
 
 	@Nullable
 	public Candidate retrieveExistingStockEstimateCandidateOrNull(@NonNull final AbstractStockEstimateEvent event)
@@ -60,6 +58,31 @@ public class StockEstimateEventService
 	{
 		final CandidatesQuery query = createPreviousStockCandidatesQuery(event);
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
+	}
+
+	/**
+	 * @return whether the chain carries a planned position (dated before the event) that isn't yet fully
+	 * realized - see {@link CandidateRepositoryRetrieval#hasUnfulfilledPlannedPositions} for what that answer may
+	 * and may not be used for. Mirrors {@code StockChangedEventHandler}'s guard against re-baselining a chain
+	 * that carries one: unlike that event, a stock estimate has no separate old/new pair to fall back to a pure
+	 * physical-movement delta, so the caller's only safe option on {@code true} is to write nothing at all.
+	 */
+	public boolean hasUnfulfilledPlannedPositions(@NonNull final AbstractStockEstimateEvent event)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor())
+				.toBuilder()
+				.timeRangeEnd(DateAndSeqNo.builder()
+									  .date(event.getDate())
+									  .operator(DateAndSeqNo.Operator.EXCLUSIVE)
+									  .build())
+				.build();
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.matchExactStorageAttributesKey(true)
+				.build();
+
+		return candidateRepositoryRetrieval.hasUnfulfilledPlannedPositions(query);
 	}
 
 	@NonNull

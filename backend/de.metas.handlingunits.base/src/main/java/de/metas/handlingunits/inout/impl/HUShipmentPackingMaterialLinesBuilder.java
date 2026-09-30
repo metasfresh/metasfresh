@@ -22,15 +22,23 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.PackingUnit;
+import de.metas.handlingunits.inout.impl.ShipmentPackingUnitProjectConflictDetector.Usage;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -42,18 +50,28 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_M_InOut;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -66,14 +84,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 public class HUShipmentPackingMaterialLinesBuilder
 {
+	// Constants
+	private static final String SYSCONFIG_SplitShipmentPackingMaterialLinesByProject = "de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject";
+
 	// Services
-	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	@NonNull private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	@NonNull private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	@NonNull private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	@NonNull private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final transient IDocLineSortDAO docLineSortDAO = Services.get(IDocLineSortDAO.class);
 
 	private boolean configurable = true;
 	private I_M_InOut _shipment;
@@ -88,6 +111,12 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	private boolean _manualLUCollected;
 
+	/**
+	 * The default-LU packing instruction added for this shipment, and the first manual-packing line it was added for.
+	 */
+	@Nullable private HuPackingInstructionsId _defaultLUPIId;
+	@Nullable private InOutLineId _defaultLUFirstLineId;
+
 	/* package */ HUShipmentPackingMaterialLinesBuilder()
 	{
 		final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a context.
@@ -100,6 +129,11 @@ public class HUShipmentPackingMaterialLinesBuilder
 		assertConfigurable();
 
 		_shipment = shipment;
+		// Only customer shipments are split; returns keep the project-agnostic grouping
+		final boolean isCustomerShipment = X_M_InOut.MOVEMENTTYPE_CustomerShipment.equals(shipment.getMovementType());
+		packingMaterialsCollector.setConsiderProject(
+				isCustomerShipment
+						&& sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));
 	}
 
 	public I_M_InOut getM_InOut()
@@ -157,16 +191,112 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	public void collectPackingMaterialsAndUpdateShipmentLines()
 	{
-		final I_M_InOut inout = getM_InOut();
+		collectPackingMaterialsAndUpdateShipmentLines(retrieveShipmentLines());
+	}
 
+	private List<I_M_InOutLine> retrieveShipmentLines()
+	{
+		return inOutDAO.retrieveLines(getM_InOut(), I_M_InOutLine.class);
+	}
+
+	private void collectPackingMaterialsAndUpdateShipmentLines(@NonNull final List<I_M_InOutLine> inoutLines)
+	{
 		//
 		// Iterate shipment lines and collect packing materials for LUs and TUs
-		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		for (final I_M_InOutLine inoutLineHU : inoutLines)
 		{
 			final IHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inoutLineHU);
 			collectHUs(inOutLineSource);
 		}
+	}
+
+	private void logPackingUnitProjectConflicts(@NonNull final List<I_M_InOutLine> inoutLines)
+	{
+		if (!packingMaterialsCollector.isConsiderProject())
+		{
+			return;
+		}
+
+		final List<Usage> usages = buildPackingUnitProjectUsages(inoutLines);
+		ShipmentPackingUnitProjectConflictDetector.logWarnings(getM_InOut(), ShipmentPackingUnitProjectConflictDetector.detect(usages));
+	}
+
+	private List<Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
+	{
+		final List<Usage> usages = new ArrayList<>();
+
+		// Deliberately NOT filtered on IsTransferPackingMaterials: a TU shared by more than one line gets
+		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered lookup would never see the other lines.
+		final ImmutableMap<InOutLineId, I_M_InOutLine> inoutLinesById = Maps.uniqueIndex(inoutLines, inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()));
+		final ImmutableListMultimap<InOutLineId, I_M_HU_Assignment> assignmentsByInOutLineId = Multimaps.index(
+				huAssignmentBL.retrieveActiveHUAssignments(TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLinesById.keySet())),
+				assignment -> InOutLineId.ofRepoId(assignment.getRecord_ID()));
+
+		// Default LU: one usage per manual-packing line; booked = the first manual line, which is where the pallet was added.
+		final PackingUnit defaultLU = isDefaultLUWithPackingMaterial() ? PackingUnit.ofDefaultLUPackingInstructionsId(_defaultLUPIId) : null;
+
+		final Map<HuId, InOutLineId> earliestInOutLineIdByLuHuId = new HashMap<>();
+		final List<LuOccurrence> luOccurrences = new ArrayList<>();
+		for (final Map.Entry<InOutLineId, I_M_InOutLine> inoutLineEntry : inoutLinesById.entrySet())
+		{
+			final InOutLineId inOutLineId = inoutLineEntry.getKey();
+			final I_M_InOutLine inoutLine = inoutLineEntry.getValue();
+			final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
+
+			if (isManualPackingMaterials(inoutLine))
+			{
+				// A manual-packing line books its packing from the overrides and the default LU; the packing of its HUs is not booked
+				if (defaultLU != null)
+				{
+					usages.add(new Usage(defaultLU, projectId, inOutLineId.equals(_defaultLUFirstLineId)));
+				}
+				continue;
+			}
+
+			for (final I_M_HU_Assignment assignment : assignmentsByInOutLineId.get(inOutLineId))
+			{
+				final HuId tuHuId = HuId.ofRepoIdOrNull(assignment.getM_TU_HU_ID());
+				if (tuHuId != null)
+				{
+					// TU: booked = the row with IsTransferPackingMaterials='Y' (set only on the first assignment).
+					usages.add(new Usage(
+							PackingUnit.ofHuId(tuHuId), projectId, assignment.isTransferPackingMaterials()));
+				}
+				final HuId luHuId = HuId.ofRepoIdOrNull(assignment.getM_LU_HU_ID());
+				if (luHuId != null)
+				{
+					// LU: booked = the assignment with the earliest Record_ID (= earliest-created line) for that LU.
+					// An approximation for the warning text only: the collector decides per (LU, VHU), see IHUAssignmentDAO.hasMoreLUAssigmentsForSameModelType
+					earliestInOutLineIdByLuHuId.merge(luHuId, inOutLineId, (id1, id2) -> id1.getRepoId() <= id2.getRepoId() ? id1 : id2);
+					luOccurrences.add(new LuOccurrence(luHuId, inOutLineId, projectId));
+				}
+			}
+		}
+		for (final LuOccurrence luOccurrence : luOccurrences)
+		{
+			final boolean isBooked = luOccurrence.getInOutLineId().equals(earliestInOutLineIdByLuHuId.get(luOccurrence.getLuHuId()));
+			usages.add(new Usage(
+					PackingUnit.ofHuId(luOccurrence.getLuHuId()), luOccurrence.getProjectId(), isBooked));
+		}
+
+		return usages;
+	}
+
+	private boolean isDefaultLUWithPackingMaterial()
+	{
+		final BPartnerId bpartnerId = null;
+		return _defaultLUPIId != null && !handlingUnitsDAO.retrievePackingMaterialIds(_defaultLUPIId, bpartnerId).isEmpty();
+	}
+
+	/**
+	 * One line's occurrence of an LU {@code M_HU_Assignment} row; {@code booked} is decided once all lines are known.
+	 */
+	@Value
+	private static class LuOccurrence
+	{
+		HuId luHuId;
+		InOutLineId inOutLineId;
+		@Nullable ProjectId projectId;
 	}
 
 	public void build()
@@ -187,13 +317,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 			return;
 		}
 
-		collectPackingMaterialsAndUpdateShipmentLines();
+		final List<I_M_InOutLine> inoutLines = retrieveShipmentLines();
+		collectPackingMaterialsAndUpdateShipmentLines(inoutLines);
+		logPackingUnitProjectConflicts(inoutLines);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
 
 		//
 		// Sets M_Product_ID sort comparator to use
-		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
+		final Comparator<Integer> candidatesSortComparator = docLineSortDAO.findDocLineSort()
 				.setContext(ctx)
 				.setC_BPartner_ID(inout.getC_BPartner_ID())
 				.setC_DocType(load(inout.getC_DocType_ID(), I_C_DocType.class))
@@ -231,7 +363,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 				.getM_HU_PI_Version();
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(sourceIol.getM_InOut().getC_BPartner_ID());
-		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class)
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO
 				.retrievePackingMaterial(huPiVersion, bpartnerId);
 		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
 		{
@@ -310,6 +442,8 @@ public class HUShipmentPackingMaterialLinesBuilder
 			if (luPI != null)
 			{
 				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLineSource);
+				_defaultLUPIId = HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID());
+				_defaultLUFirstLineId = InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID());
 			}
 
 			_manualLUCollected = true;

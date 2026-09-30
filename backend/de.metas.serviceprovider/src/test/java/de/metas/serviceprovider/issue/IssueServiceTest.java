@@ -32,7 +32,9 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,15 +54,31 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IssueServiceTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
-	private final IssueService issueService = new IssueService(issueRepository, timeBookingRepository);
+	private IssueRepository issueRepository;
+	private TimeBookingRepository timeBookingRepository;
+	private IssueService issueService;
+
+	// Enable JUnit test mode before any test-instance field initializer runs (the instance fields above call
+	// ModelCacheInvalidationService.newInstanceForUnitTesting(), which asserts unit-test-mode at construction time,
+	// before @BeforeEach). Otherwise this test only passes when an earlier test in the same surefire fork already
+	// enabled it — an order-dependent flake (reactor-order shift, registry case 129).
+	@BeforeAll
+	public static void enableUnitTestMode()
+	{
+		Adempiere.enableUnitTestMode();
+	}
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		// after init(): newInstanceForUnitTesting() asserts unit-test mode, which a field initializer would
+		// hit before @BeforeEach ran (fails whenever this class is the first one executed in the surefire fork).
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+		timeBookingRepository = new TimeBookingRepository(queryBL);
+		issueService = new IssueService(issueRepository, timeBookingRepository);
 	}
 
 	/**

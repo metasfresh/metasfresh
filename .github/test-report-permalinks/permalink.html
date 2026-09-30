@@ -34,16 +34,19 @@
     var wrap = document.createElement('div');
     var cap = document.createElement('div');
     cap.style.cssText = 'margin:4px 0 2px;font-size:90%;color:#555';
-    cap.textContent = s.tests.length < s.tagged
-      ? 'showing ' + s.tests.length + ' of ' + s.tagged + ' tagged tests:'
-      : (s.tests.length === 1 ? 'the tagged test:' : 'all ' + s.tests.length + ' tagged tests:');
+    var total = s.attributed || s.tests.length;
+    cap.textContent = s.tests.length < total
+      ? 'showing ' + s.tests.length + ' of ' + total + ' tests:'
+      : (s.tests.length === 1 ? 'the test:' : 'all ' + s.tests.length + ' tests:');
     wrap.appendChild(cap);
     var ul = document.createElement('ul');
     ul.style.cssText = 'margin:0 0 8px';
     s.tests.forEach(function (t) {
+      var href = Permalink.buildTestUrl(version, s.suite, t.uid);
+      if (!href) { return; }   // nothing to link at -> no entry, never href="null"
       var li = document.createElement('li');
       var a = document.createElement('a');
-      a.href = Permalink.buildTestUrl(version, s.suite, t.uid);
+      a.href = href;
       a.textContent = t.name || t.uid;
       li.appendChild(a);
       if (t.status) {
@@ -70,22 +73,19 @@
       : ' has tests in ' + suites.length + ' suites — pick one:'));
     msg.appendChild(h);
     var ul = document.createElement('ul');
+    // "(most)" marks the suite with the most tests CARRYING the feature -- it
+    // used to mark whichever sorted first, which ranks on the node's leaf count.
+    var most = Permalink.mostCovered(suites);
     suites.forEach(function (s, i) {
       var li = document.createElement('li');
       var a = document.createElement('a');
-      // `count` is what the node link will actually show; `tagged` is how many
-      // tests carry the F-code. They differ whenever the specs tag instead of
-      // calling allure.feature(), so say both rather than let the link look
-      // complete — and list the individual tests underneath.
-      var label = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests');
-      if (s.tagged > s.count) { label += ' shown of ' + s.tagged + ' tagged'; }
-      if (!s.uid) { label = s.suite + ' — ' + s.tagged + ' tagged, no grouping node'; }
+      var label = Permalink.suiteLabel(s);
       if (s.uid) {
         a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
-        a.textContent = label + (i === 0 && Permalink.isComplete(s) ? ' (most)' : '');
+        a.textContent = label + (s.suite === most ? ' (most)' : '');
         li.appendChild(a);
       } else {
-        li.appendChild(document.createTextNode(label));
+        li.appendChild(document.createTextNode(label + (s.suite === most ? ' (most)' : '')));
       }
       var tl = testList(version, s);
       if (tl) { li.appendChild(tl); }
@@ -98,29 +98,10 @@
     .then(function (data) {
       var entry = Permalink.lookup(data, kind, key);
       if (!entry) { notFound(); return; }
-      var suites = Permalink.suitesByCount(entry);
-      if (!suites.length) { notFound(); return; }
-      // An explicit &suite= is a deliberate choice, so it still redirects when it
-      // can — that keeps every previously-shared permalink resolving as before.
-      if (suite) {
-        var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
-        if (url) { location.replace(url); return; }
-        chooser(data.version, entry, suites.filter(function (s) { return s.suite === suite; }));
-        return;
-      }
-      // One suite whose node covers EVERY tagged test -> nothing to choose or
-      // qualify, go straight there. Redirecting when the node is partial (or
-      // absent) is what made the page look complete while showing a fraction.
-      if (suites.length === 1 && Permalink.isComplete(suites[0])) {
-        var one = Permalink.buildRedirectUrl(data.version, kind, entry, suites[0].suite);
-        if (one) { location.replace(one); return; }
-      }
-      // Specs have no tag route, so a single spec suite still redirects as before.
-      if (kind === 'spec' && suites.length === 1 && suites[0].uid) {
-        var sp = Permalink.buildRedirectUrl(data.version, kind, entry, suites[0].suite);
-        if (sp) { location.replace(sp); return; }
-      }
-      chooser(data.version, entry, suites);
+      var route = Permalink.decideRoute(data.version, kind, entry, suite);
+      if (route.action === 'notFound') { notFound(); return; }
+      if (route.action === 'redirect') { location.replace(route.url); return; }
+      chooser(data.version, entry, route.suites);
     })
     .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });
 })();

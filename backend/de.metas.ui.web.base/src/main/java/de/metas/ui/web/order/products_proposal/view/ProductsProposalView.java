@@ -173,9 +173,19 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@"));
 	}
 
+	/**
+	 * Only the rows the current filter keeps. A caller that must not lose a filtered-out row - anything
+	 * producing persistent records - wants {@link #getAllRowsIncludingFilteredOut()} instead.
+	 */
 	public List<ProductsProposalRow> getAllRows()
 	{
 		return ImmutableList.copyOf(getRows());
+	}
+
+	/** All rows, ignoring the current filter - see {@link ProductsProposalRowsData#getAllRowsIncludingFilteredOut()}. */
+	public List<ProductsProposalRow> getAllRowsIncludingFilteredOut()
+	{
+		return rowsData.getAllRowsIncludingFilteredOut();
 	}
 
 	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)

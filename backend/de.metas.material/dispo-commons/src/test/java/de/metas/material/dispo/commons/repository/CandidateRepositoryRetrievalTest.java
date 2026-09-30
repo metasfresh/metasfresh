@@ -4,19 +4,24 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -103,6 +108,88 @@ public class CandidateRepositoryRetrievalTest
 
 		final ProductionDetail productionDetail = ProductionDetail.cast(result.get(0).getBusinessCaseDetailNotNull());
 		assertThat(productionDetail.getPpOrderRef().getPpOrderId().getRepoId()).isEqualTo(23);
+	}
+
+	/**
+	 * Reproduces a real drift case: an {@code UNEXPECTED_DECREASE} row with NO
+	 * {@code MD_Candidate_Transaction_Detail} at all - something this repository's own write path never
+	 * produces (the {@link Candidate} constructor enforces the invariant at creation time), but which can
+	 * exist as legacy data. {@link #retrieveOrderedByDateAndSeqNo(CandidatesQuery)} would abort on it (via
+	 * {@link Candidate#validateNonStockCandidate()}); the tolerant variant must skip just that one row.
+	 * <p>
+	 * Calling {@link Candidate#validateNonStockCandidate()} explicitly (as the tolerant path does) fires
+	 * even under {@code Adempiere.isUnitTestMode()} - unlike the constructor's own check, which that mode
+	 * suppresses - so this test can actually exercise the failure the tolerant path is guarding against.
+	 */
+	@Test
+	public void retrieveOrderedByDateAndSeqNoTolerant_skipsCandidateFailingValidation()
+	{
+		final int productId = 5000;
+		final int warehouseId = 6000;
+
+		final I_MD_Candidate validCandidate = newInstance(I_MD_Candidate.class);
+		validCandidate.setDateProjected(SystemTime.asTimestamp());
+		validCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY);
+		validCandidate.setM_Product_ID(productId);
+		validCandidate.setM_Warehouse_ID(warehouseId);
+		save(validCandidate);
+
+		final I_MD_Candidate malformedCandidate = newInstance(I_MD_Candidate.class);
+		malformedCandidate.setDateProjected(SystemTime.asTimestamp());
+		malformedCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
+		malformedCandidate.setM_Product_ID(productId);
+		malformedCandidate.setM_Warehouse_ID(warehouseId);
+		malformedCandidate.setQty(BigDecimal.ONE);
+		malformedCandidate.setQtyFulfilled(BigDecimal.ONE);
+		save(malformedCandidate);
+		// deliberately no MD_Candidate_Transaction_Detail row for malformedCandidate
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+						.productId(productId)
+						.warehouseId(WarehouseId.ofRepoId(warehouseId))
+						.customer(BPartnerClassifier.any())
+						.build())
+				.build();
+
+		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNoTolerant(query);
+
+		assertThat(result).extracting(Candidate::getId)
+				.containsExactly(CandidateId.ofRepoId(validCandidate.getMD_Candidate_ID()));
+	}
+
+	/**
+	 * A {@code STOCK} candidate is not "drifted legacy data" - it is the most common candidate type (every
+	 * demand/supply candidate has one). The {@link Candidate} constructor already knows to skip
+	 * {@link Candidate#validateNonStockCandidate()} for it ({@code type != CandidateType.STOCK}), and the
+	 * tolerant path's explicit call must mirror that, or every {@code STOCK} row is misclassified as failing
+	 * validation, logged as drifted, and silently dropped from the result.
+	 */
+	@Test
+	public void retrieveOrderedByDateAndSeqNoTolerant_keepsStockCandidate()
+	{
+		final int productId = 5000;
+		final int warehouseId = 6000;
+
+		final I_MD_Candidate stockCandidate = newInstance(I_MD_Candidate.class);
+		stockCandidate.setDateProjected(SystemTime.asTimestamp());
+		stockCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		stockCandidate.setM_Product_ID(productId);
+		stockCandidate.setM_Warehouse_ID(warehouseId);
+		save(stockCandidate);
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+						.productId(productId)
+						.warehouseId(WarehouseId.ofRepoId(warehouseId))
+						.customer(BPartnerClassifier.any())
+						.build())
+				.build();
+
+		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNoTolerant(query);
+
+		assertThat(result).extracting(Candidate::getId)
+				.containsExactly(CandidateId.ofRepoId(stockCandidate.getMD_Candidate_ID()));
 	}
 
 	private I_MD_Candidate createCandidateRecord(@NonNull final Timestamp dateProjected)

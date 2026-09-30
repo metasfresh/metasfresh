@@ -41,6 +41,14 @@ public class JsonWarehouseRequest
 	 */
 	@Nullable Replenishment replenishment;
 
+	/**
+	 * Packing material emptied/issued in THIS warehouse is moved to {@link Empties#getToWarehouse()}: adds a line
+	 * (this warehouse -> {@code toWarehouse}, {@link Empties#getShipper()}) to the client's single empties
+	 * distribution network ({@code DD_NetworkDistribution.IsHUDestroyed}), creating that network if the client has
+	 * none. Applied after {@code shippers} and all {@code warehouses}.
+	 */
+	@Nullable Empties empties;
+
 	//
 	//
 	//
@@ -54,6 +62,15 @@ public class JsonWarehouseRequest
 	{
 		@NonNull Identifier fromWarehouse;
 		/** Mandatory on {@code DD_NetworkDistributionLine}, irrelevant to the replenishment itself. */
+		@NonNull Identifier shipper;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Empties
+	{
+		@NonNull Identifier toWarehouse;
 		@NonNull Identifier shipper;
 	}
 

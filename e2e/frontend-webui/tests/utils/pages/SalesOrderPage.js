@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
@@ -199,6 +199,12 @@ export class SalesOrderPage {
    * IMPORTANT: Parent record must be saved before calling this method.
    * Use waitForTabAllowsNew() or call selectCustomer() first which waits for save.
    *
+   * CONSTRAINT: do NOT call this twice with the same `product` on the same order. Success, and the
+   * retry's idempotency guard, are both decided by "a grid row for this product exists" - which
+   * cannot tell one call's row from another's. A second call for the same product would therefore
+   * see the first call's row and report success without adding anything. A spec that genuinely needs
+   * two lines of one product must drive batch entry itself.
+   *
    * @param {Object} params - Order line parameters
    * @param {string} params.product - Product code or name
    * @param {string|number} params.quantity - Quantity to order
@@ -220,8 +226,31 @@ export class SalesOrderPage {
 
       console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
 
+      // Matches the grid row for the product this call is adding. Used both to confirm success and -
+      // before every retry - to make the retry idempotent.
+      const productRow = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: product }) })
+          .first();
+
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
+
+        // A previous attempt may have succeeded on the server and only rendered after this method
+        // gave up waiting. Re-adding then would silently duplicate the line, so check first - with a
+        // short wait rather than an instantaneous read, because the reload that precedes this may
+        // still be settling.
+        const alreadyPresent =
+          attempt > 1 &&
+          (await productRow()
+            .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+            .then(() => true)
+            .catch(() => false));
+        if (alreadyPresent) {
+          console.log(`Order line for ${product} is present after all - not adding it again`);
+          return;
+        }
 
         // Scroll to batch entry button (may be below the fold in single-section layout)
         const batchEntryButton = page.getByTestId('batch-entry-toggle');
@@ -316,15 +345,26 @@ export class SalesOrderPage {
           await page.waitForTimeout(1000);
         }
 
-        // Verify that at least one order line was added
-        const gridRows = page.locator('table tbody tr');
-        const rowCount = await gridRows.count();
-        if (rowCount > 0) {
-          console.log(`Order line added successfully on attempt ${attempt} (${rowCount} row(s))`);
+        // Verify THIS product's line was added. `rowCount > 0` is not enough: it is already true
+        // whenever an earlier addOrderLine call added a DIFFERENT line, so a silently-failed dropdown
+        // selection on a second call would be reported as success and leave the requested product off
+        // the order - measured at ~10% of runs, where a two-line fixture ended up with one line and
+        // the downstream assertions failed far from the cause.
+        const rowCount = await page.locator('table tbody tr').count();
+        // Waited on with the SLOW timeout deliberately: a miss here costs a full reload-and-retry
+        // cycle, so being impatient is more expensive than waiting a little longer.
+        const addedProductRowPresent = await productRow()
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+          .then(() => true)
+          .catch(() => false);
+        if (addedProductRowPresent) {
+          console.log(
+            `Order line added successfully on attempt ${attempt} (${rowCount} row(s), ${product} present)`
+          );
           return;
         }
 
-        console.log(`No order lines found after attempt ${attempt}, reloading page...`);
+        console.log(`Order line for ${product} not found after attempt ${attempt}, reloading page...`);
         await page.keyboard.press('F5');
         await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
         await page.waitForTimeout(2000);

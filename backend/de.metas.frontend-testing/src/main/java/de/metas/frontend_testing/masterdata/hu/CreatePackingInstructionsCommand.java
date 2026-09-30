@@ -14,7 +14,9 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
@@ -23,11 +25,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.javaclasses.JavaClassId;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -42,6 +46,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -67,6 +72,9 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final ProductPricePackingInstructionRepository productPricePackingInstructionRepository = new ProductPricePackingInstructionRepository();
+	@NonNull private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -90,6 +98,11 @@ public class CreatePackingInstructionsCommand
 			final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
 			tuPIItemProductTestId = createPIItemProduct(tuPIItemId);
 			assignCustomAttributes(tu);
+
+			if (request.getTuPackingMaterial() != null)
+			{
+				createPIItem_PackingMaterial(tu, request.getTuPackingMaterial());
+			}
 		}
 
 		//
@@ -436,6 +449,35 @@ public class CreatePackingInstructionsCommand
 		huPiItemRecord.setItemType(HUItemType.Material.getCode());
 		saveRecord(huPiItemRecord);
 		return HuPackingInstructionsItemId.ofRepoId(huPiItemRecord.getM_HU_PI_Item_ID());
+	}
+
+	/**
+	 * Attaches packing material to the TU's PI version: an {@code M_HU_PackingMaterial} row (reused if one
+	 * already exists for the product, else created) plus a sibling {@code M_HU_PI_Item} of
+	 * {@code ItemType = PackingMaterial} on the same version. {@code HUAndItemsDAO#createHUItemNoSave} copies
+	 * {@code M_HU_PackingMaterial_ID} from a PackingMaterial-typed PI item onto the real HU's {@code M_HU_Item}
+	 * when an HU is produced from this PI — this is what makes an HU created from the TU carry packing material.
+	 */
+	private void createPIItem_PackingMaterial(final PIResult tu, @NonNull final Identifier packingMaterialProductIdentifier)
+	{
+		final ProductId productId = context.getId(packingMaterialProductIdentifier, ProductId.class);
+		final I_M_Product product = productDAO.getById(productId);
+
+		I_M_HU_PackingMaterial packingMaterialRecord = packingMaterialDAO.retrivePackingMaterialOfProduct(product);
+		if (packingMaterialRecord == null)
+		{
+			packingMaterialRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
+			packingMaterialRecord.setName(packingMaterialProductIdentifier.toUniqueString());
+			packingMaterialRecord.setM_Product_ID(productId.getRepoId());
+			packingMaterialDAO.save(packingMaterialRecord);
+		}
+
+		final I_M_HU_PI_Item packingMaterialPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
+		packingMaterialPIItemRecord.setM_HU_PI_Version_ID(tu.getPivId().getRepoId());
+		packingMaterialPIItemRecord.setItemType(HUItemType.PackingMaterial.getCode());
+		packingMaterialPIItemRecord.setM_HU_PackingMaterial_ID(packingMaterialRecord.getM_HU_PackingMaterial_ID());
+		packingMaterialPIItemRecord.setQty(BigDecimal.ONE);
+		handlingUnitsDAO.save(packingMaterialPIItemRecord);
 	}
 
 	private JsonTestId createPIItemProduct(@NonNull final HuPackingInstructionsItemId tuPIItemId)

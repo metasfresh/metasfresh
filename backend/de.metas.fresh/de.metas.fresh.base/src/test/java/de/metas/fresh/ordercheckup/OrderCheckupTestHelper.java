@@ -1,6 +1,7 @@
 package de.metas.fresh.ordercheckup;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.DocBaseType;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
@@ -12,6 +13,16 @@ import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.printing.OutputType;
+import de.metas.user.UserId;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
@@ -32,6 +43,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
@@ -76,6 +88,22 @@ public class OrderCheckupTestHelper
 		return new Masterdata(this);
 	}
 
+	/**
+	 * Creates one of the two {@code C_DocType}s that {@code OrderCheckupBuilder} resolves per report kind.
+	 * Mirrors what migration {@code 5825540_sys_gh32265_DocTypes.sql} ships at runtime: one doctype per
+	 * {@link DocBaseType}, with no {@code DocSubType} - which is what {@code DocTypeQuery.DOCSUBTYPE_NONE}
+	 * matches on. Created from the same {@code ctx} as the order, so client and org match the lookup.
+	 */
+	public I_C_DocType createDocType(@NonNull final DocBaseType docBaseType, @NonNull final String name)
+	{
+		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, ITrx.TRXNAME_None);
+		docType.setName(name);
+		docType.setDocBaseType(docBaseType.getCode());
+		docType.setDocSubType(null);
+		InterfaceWrapperHelper.save(docType);
+		return docType;
+	}
+
 	public I_AD_User createAD_User(final String name)
 	{
 		final I_AD_User user = InterfaceWrapperHelper.create(ctx, I_AD_User.class, ITrx.TRXNAME_None);
@@ -118,6 +146,30 @@ public class OrderCheckupTestHelper
 		return product;
 	}
 
+	/**
+	 * A product whose manufacturing routing has NO Betreuer ({@code AD_User_InCharge_ID}). Used to prove that
+	 * the Warehouse (Produktion) report then falls back to the plant resource's user, mirroring the Plant branch.
+	 */
+	public I_M_Product createProductWithoutRoutingUserInCharge(final String name, final I_M_Warehouse mfgWarehouse)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
+		product.setValue(name);
+		product.setName(name);
+		InterfaceWrapperHelper.save(product);
+
+		final I_AD_Workflow workflow = createManufacturingRouting((Integer)null);
+		productPlanningDAO.save(ProductPlanning.builder()
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(mfgWarehouse.getM_Warehouse_ID()))
+				.orgId(OrgId.ofRepoId(mfgWarehouse.getAD_Org_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(mfgWarehouse.getPP_Plant_ID()))
+				.isManufactured(true)
+				.workflowId(PPRoutingId.ofRepoId(workflow.getAD_Workflow_ID()))
+				.build());
+
+		return product;
+	}
+
 	public void createManufacturingProductPlanning(final I_M_Product product, final I_M_Warehouse warehouse, final I_AD_User responsibleUser)
 	{
 		final I_AD_Workflow workflow = createManufacturingRouting(responsibleUser);
@@ -134,9 +186,17 @@ public class OrderCheckupTestHelper
 
 	private I_AD_Workflow createManufacturingRouting(final I_AD_User responsibleUser)
 	{
+		return createManufacturingRouting((Integer)(responsibleUser == null ? null : responsibleUser.getAD_User_ID()));
+	}
+
+	private I_AD_Workflow createManufacturingRouting(final Integer userInChargeId)
+	{
 		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
 		workflow.setValue("wf");
-		workflow.setAD_User_InCharge_ID(responsibleUser.getAD_User_ID());
+		if (userInChargeId != null)
+		{
+			workflow.setAD_User_InCharge_ID(userInChargeId);
+		}
 		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
 		save(workflow);
 
@@ -171,7 +231,7 @@ public class OrderCheckupTestHelper
 		return orderLine;
 	}
 
-	public I_C_Order_MFGWarehouse_Report retrieveReport(final String documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
+	public I_C_Order_MFGWarehouse_Report retrieveReport(final OrderCheckupDocumentType documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
 	{
 		final Integer warehouseId = warehouse == null ? null : warehouse.getM_Warehouse_ID();
 		final Integer plantId = plant == null ? null : plant.getS_Resource_ID();
@@ -179,7 +239,7 @@ public class OrderCheckupTestHelper
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_DocumentType, documentType)
-				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_PP_Plant_ID, plantId)
 				.create()
 				.firstOnly(I_C_Order_MFGWarehouse_Report.class);
@@ -209,6 +269,64 @@ public class OrderCheckupTestHelper
 	{
 		Services.get(IOrderCheckupBL.class).generateReportsIfEligible(order);
 		enqueueToPrinting(order);
+	}
+
+	/**
+	 * Minimal printer wiring so {@code PrintJobBL.createPrintJobs} can resolve a hardware printer for a queue
+	 * item printed to {@code printUserId}: logical printer + hardware + a per-user config/matching + a
+	 * doctype-scoped routing. Enough to prove the active Produktion queue item flows through to a C_Print_Job.
+	 */
+	/** Sets the ctx logged-in user, so records created afterwards (the printing-queue item) carry it as CreatedBy - which is the user the print-routing resolution prints to. */
+	public void setLoggedInUser(final UserId userId)
+	{
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, userId.getRepoId());
+	}
+
+	public void createPrinterMatchingAndRouting(final String printerName, final int docTypeId, final UserId printUserId)
+	{
+		final I_AD_Printer printer = newInstance(I_AD_Printer.class);
+		printer.setPrinterName(printerName);
+		save(printer);
+
+		final I_AD_PrinterHW hw = newInstance(I_AD_PrinterHW.class);
+		hw.setName(printerName + "_HW");
+		hw.setOutputType(OutputType.Queue.getCode());
+		save(hw);
+
+		final I_AD_Printer_Config config = newInstance(I_AD_Printer_Config.class);
+		config.setConfigHostKey("test-host");
+		config.setAD_User_PrinterMatchingConfig_ID(printUserId.getRepoId());
+		save(config);
+
+		final I_AD_Printer_Matching matching = newInstance(I_AD_Printer_Matching.class);
+		matching.setAD_Printer_Config(config);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
+		matching.setAD_PrinterHW(hw);
+		save(matching);
+
+		final I_AD_PrinterRouting routing = newInstance(I_AD_PrinterRouting.class);
+		routing.setAD_Org_ID(0);
+		routing.setAD_Printer_ID(printer.getAD_Printer_ID());
+		if (docTypeId > 0)
+		{
+			routing.setC_DocType_ID(docTypeId);
+		}
+		routing.setRoutingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange);
+		save(routing);
+	}
+
+	/** Drains every active printing-queue item into C_Print_Jobs, mirroring the printing client. */
+	public void createAllPrintJobs(final UserId printUserId)
+	{
+		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+		final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
+		query.setFilterByProcessedQueueItems(false);
+		query.setAD_User_ID(printUserId.getRepoId());
+		for (final IPrintingQueueSource source : printingQueueBL.createPrintingQueueSources(ctx, query))
+		{
+			printJobBL.createPrintJobs(source);
+		}
 	}
 
 	public void enqueueToPrinting(final I_C_Order order)

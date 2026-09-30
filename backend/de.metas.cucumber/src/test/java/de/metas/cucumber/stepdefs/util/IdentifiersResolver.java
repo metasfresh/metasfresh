@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -82,6 +83,7 @@ public class IdentifiersResolver
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
 	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -93,6 +95,12 @@ public class IdentifiersResolver
 		}
 
 		return getTableRecordReferences(StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedIdentifiersNorm));
+	}
+
+	@NonNull
+	public TableRecordReferenceSet getTableRecordReferenceSetOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
+	{
+		return TableRecordReferenceSet.of(getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers));
 	}
 
 	@NonNull
@@ -142,6 +150,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		ppOrderTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_PP_Order.Table_Name, id))
+				.ifPresent(result::add);
+		checkupReportTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

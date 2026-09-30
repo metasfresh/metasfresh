@@ -22,6 +22,8 @@ package de.metas.pricing.rules;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.lang.SOTrx;
@@ -184,7 +186,24 @@ public class Discount implements IPricingRule
 
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		final LocalDate validFrom = TimeUtil.asLocalDate(pricingConditions.getValidFrom(), timeZone);
-		return date.isAfter(validFrom) || date.isEqual(validFrom) ;
+		final LocalDate validTo = pricingConditions.getValidTo() != null
+				? TimeUtil.asLocalDate(pricingConditions.getValidTo(), timeZone)
+				: null;
+
+		return isDateWithinValidity(date, validFrom, validTo);
+	}
+
+	@VisibleForTesting
+	static boolean isDateWithinValidity(
+			@NonNull final LocalDate date,
+			@NonNull final LocalDate validFrom,
+			@Nullable final LocalDate validTo)
+	{
+		if (date.isBefore(validFrom))
+		{
+			return false;
+		}
+		return validTo == null || !date.isAfter(validTo);
 	}
 
 	private ImmutableAttributeSet getAttributes(final IPricingContext pricingCtx)
