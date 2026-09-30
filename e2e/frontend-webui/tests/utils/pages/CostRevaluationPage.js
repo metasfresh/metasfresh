@@ -449,6 +449,8 @@ export class CostRevaluationPage {
       await readMore.click();
     }
     await expect(error.locator('.notification-content')).toContainText(expectedMessage);
+    // A business refusal is a validation message, not framed as a technical failure
+    await expect(error.locator('.notification-content')).not.toContainText('Server error');
     const unhighlight = await highlightForCaptureIfEnabled(error);
     await holdForCaptureIfEnabled(4000);
     await unhighlight();
