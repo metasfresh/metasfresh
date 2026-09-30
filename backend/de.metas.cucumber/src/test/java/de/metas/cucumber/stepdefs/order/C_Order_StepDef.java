@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -744,85 +745,70 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Asserts that purchase order(s) are created.
+	 * Finds the order linked to the given order via {@code Link_Order_ID} (e.g. a purchase order created from a sales order) and validates it.
 	 *
-	 * <p><strong>Columns:</strong>
-	 * <ul>
-	 * <li>{@code Link_Order_ID.Identifier} (required) — identifies the SO; PO is found by Link_Order_ID
-	 * <li>{@code OPT.C_BPartner_ID} (optional) — filters the matched PO by vendor (disambiguates when multiple POs share the same Link_Order_ID)
-	 * <li>{@code OPT.DocStatus} (optional) — filters the matched PO by DocStatus (used when SO is re-completed and multiple POs share Link_Order_ID with different statuses, e.g. VO for old PO, CO for new one)
-	 * <li>{@code IsSOTrx} (required) — asserts whether the PO is a sales order
-	 * </ul>
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>Identifier</b> — (optional) alias to store the found order under, in C_Order_StepDefData<br>
+	 * <b>Link_Order_ID</b> — (required, identifier-ref) the order the searched order is linked to<br>
+	 * <b>C_BPartner_ID</b> — (optional, identifier-ref) the searched order's business partner, to tell apart several linked orders<br>
+	 * <b>IsSOTrx</b> — (required) expected sales/purchase flag<br>
+	 * <b>DocBaseType</b> — (required) expected doc base type<br>
+	 * <b>DocSubType</b> — (optional) expected doc sub type; when missing, the doc type must have none<br>
+	 * <b>DocStatus</b> — (optional) expected doc status<br>
+	 * <b>IsDropShip</b> — (optional, default false) expected dropship flag<br>
+	 * <b>DropShip_BPartner_ID</b> — (optional, identifier-ref) expected dropship partner<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example <pre>
+	 * Then the order is created:
+	 *   | Identifier | Link_Order_ID | C_BPartner_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
+	 *   | po_1       | so            | vendor_1      | false   | POO         | CO        | true       |
+	 * </pre>
 	 */
 	@Then("the order is created:")
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
-			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
+		DataTableRows.of(dataTable).forEach(this::validateLinkedOrderIsCreated);
+	}
 
-			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
-					.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
+	private void validateLinkedOrderIsCreated(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier linkedOrderIdentifier = row.getAsIdentifier(COLUMNNAME_Link_Order_ID);
+		final OrderId linkedOrderId = linkedOrderIdentifier.lookupNotNullIdIn(orderTable);
 
-			// Optional disambiguation by vendor — needed for multi-vendor SOs where N POs
-			// share the same Link_Order_ID but differ by C_BPartner_ID. Backward compatible:
-			// callers that omit the column get the original firstOnly behaviour.
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID);
-			if (EmptyUtil.isNotBlank(bpartnerIdentifier))
-			{
-				final int bpartnerRepoId = bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID();
-				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
-			}
+		// Optional disambiguation by vendor, for multi-vendor SOs whose POs share the same Link_Order_ID
+		final BPartnerId bpartnerId = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.orElse(null);
 
-			// Optional disambiguation by DocStatus — needed when SO is re-completed (e.g. after
-			// reactivation) and multiple POs share the same Link_Order_ID with different DocStatus
-			// values (e.g. VO for the old PO, CO for the new one). Backward compatible: callers
-			// that omit the column get the original firstOnly behaviour (no DocStatus filter).
-			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
-			if (EmptyUtil.isNotBlank(docStatus))
-			{
-				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, docStatus);
-			}
+		// Optional disambiguation by DocStatus: needed when the SO is re-completed (e.g. after reactivation)
+		// and several POs share the same Link_Order_ID with different DocStatus values (e.g. VO for the old PO, CO for the new one)
+		final String docStatusFilter = row.getAsOptionalString(COLUMNNAME_DocStatus).orElse(null);
 
-			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
+		final List<I_C_Order> purchaseOrders = orderBL.getByLinkOrderId(linkedOrderId)
+				.stream()
+				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
+				.filter(order -> docStatusFilter == null || docStatusFilter.equals(order.getDocStatus()))
+				.collect(ImmutableList.toImmutableList());
+		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
+		final I_C_Order purchaseOrder = purchaseOrders.get(0);
+		assertThat(purchaseOrder.isSOTrx()).isEqualTo(row.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
 
-			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
-			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
-			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
+		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(purchaseOrder.getC_DocTypeTarget_ID()));
+		assertThat(docType.getDocBaseType()).isEqualTo(row.getAsString(COLUMNNAME_DocBaseType));
+		assertThat(docType.getDocSubType()).isEqualTo(row.getAsOptionalString(COLUMNNAME_DocSubType).map(DataTableUtil::nullToken2Null).orElse(null));
 
-			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
+				.ifPresent(docStatus -> assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus));
 
-			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
-			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
+		assertThat(purchaseOrder.isDropShip()).isEqualTo(row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
 
-			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
-			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		row.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(dropShipId -> assertThat(BPartnerId.ofRepoIdOrNull(purchaseOrder.getDropShip_BPartner_ID()))
+						.as("DropShip_BPartner_ID")
+						.isEqualTo(dropShipId));
 
-			if (docStatus != null)
-			{
-				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
-			}
-
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
-			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
-			// TODO: introduce DataTableRows for this whole stepdef
-			final DataTableRow singleRow = DataTableRow.singleRow(tableRow);
-			singleRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
-					.map(bpartnerTable::getId)
-					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
-							.as("DropShip_BPartner_ID")
-							.isEqualTo(dropShipId.getRepoId()));
-
-			// Optional `Identifier` column: register the looked-up PO in orderTable so subsequent
-			// steps (validate the created orders, validate C_OrderLine:, etc.) can reference it by
-			// its feature-file identifier.
-			singleRow.getAsOptionalIdentifier()
-					.ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
-		}
+		row.getAsOptionalIdentifier().ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 	}
 
 	@Then("the sales order identified by {string} is closed")

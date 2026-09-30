@@ -191,6 +191,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return orderDAO.getByLinkOrderId(linkOrderId);
+	}
+
+	@Override
 	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
 		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
