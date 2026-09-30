@@ -46,6 +46,7 @@ import org.eevolution.api.ProductBOMId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -495,6 +496,11 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setIsManualPrice(true);
 		compensationLinePO.setPriceEntered(compensationLine.getPrice());
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
+
+		// a compensation line is priced with PriceEntered == PriceActual, which is only correct if it carries no discount;
+		// IsManualDiscount also protects it from the order-line pricing recompute (see OrderLinePriceCalculator#isAllowChangingDiscount)
+		compensationLinePO.setIsManualDiscount(true);
+		compensationLinePO.setDiscount(BigDecimal.ZERO);
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
 

@@ -80,6 +80,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -241,7 +242,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
-		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
+		if (icRecord.isGroupCompensationLine())
+		{
+			// a group-compensation line is priced with PriceEntered == PriceActual (see #calculatePriceAndTax), which is only
+			// correct if it carries no quality-discount override; never look one up from the partner's pricing conditions
+			icRecord.setQualityDiscountPercent_Override(null);
+		}
+		else
+		{
+			invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
+		}
 
 		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
 		{
@@ -545,6 +555,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			final BigDecimal price = compensationLine.getPrice().subtract(invoiceCandBL.computeNetAmtInvoiced(icRecord));
 			priceAndTax.priceEntered(price);
 			priceAndTax.priceActual(price);
+			priceAndTax.discount(Percent.ZERO);
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
 			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see PercentCompensationLineInvoicing)
 		}

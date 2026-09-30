@@ -152,6 +152,8 @@ public class C_Invoice_Candidate
 			final BigDecimal openPrice = ic.getPriceActual().subtract(ic.getNetAmtInvoiced());
 			ic.setPriceEntered(openPrice);
 			ic.setPriceActual(openPrice);
+			// PriceEntered == PriceActual is only correct if the candidate carries no discount
+			ic.setDiscount(BigDecimal.ZERO);
 		}
 	}
 

@@ -381,6 +381,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 		invoiceCandidate.setPriceEntered(compensationLine.getPrice());
 		invoiceCandidate.setPriceActual(compensationLine.getPrice());
+
+		// PriceEntered == PriceActual is only correct if the candidate carries no discount
+		invoiceCandidate.setDiscount(BigDecimal.ZERO);
 	}
 
 	@Override

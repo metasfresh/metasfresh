@@ -37,6 +37,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
@@ -453,6 +454,65 @@ public class OrderGroupRepositoryTest
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
 	}
 
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 9 — a percent compensation line is priced with PriceEntered == PriceActual, which is only
+	// correct while the line carries no discount: saveGroup must reset a stale non-zero Discount to
+	// zero and protect it from the order-line pricing recompute (IsManualDiscount).
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void saveGroup_resetsStaleDiscountToZero()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// compensation line saved earlier carrying a non-zero Discount (e.g. a manual edit, or a stale
+		// value from before this invariant existed)
+		final I_C_OrderLine compensationLinePO = newInstance(I_C_OrderLine.class);
+		compensationLinePO.setC_Order_ID(order.getC_Order_ID());
+		compensationLinePO.setM_Product_ID(productId.getRepoId());
+		compensationLinePO.setC_UOM_ID(uomId.getRepoId());
+		compensationLinePO.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLinePO.setIsGroupCompensationLine(true);
+		compensationLinePO.setDiscount(new BigDecimal("15"));
+		compensationLinePO.setIsManualDiscount(false);
+		saveRecord(compensationLinePO);
+		final OrderLineId compensationLineId = OrderLineId.ofRepoId(compensationLinePO.getC_OrderLine_ID());
+
+		final GroupCompensationLine compensationLine = GroupCompensationLine.builder()
+				.repoId(compensationLineId)
+				.productId(productId)
+				.uomId(uomId)
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.PriceAndQty)
+				.qtyEntered(BigDecimal.ONE)
+				.price(BigDecimal.TEN)
+				.lineNetAmt(BigDecimal.TEN)
+				.build();
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		final Group group = Group.builder()
+				.groupId(groupId)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.soTrx(SOTrx.SALES)
+				.regularLine(GroupRegularLine.builder().lineNetAmt(new BigDecimal("100")).build())
+				.compensationLine(compensationLine)
+				.build();
+
+		final OrderLinesStorage storage = repo.createNotSaveableSingleOrderLineStorage(compensationLinePO);
+
+		repo.saveGroup(group, storage);
+
+		assertThat(compensationLinePO.getDiscount()).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(compensationLinePO.isManualDiscount()).isTrue();
+	}
+
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────
 
 	private GroupTemplateRegularLine buildTemplateLine(final boolean isWithoutCharge)
@@ -534,7 +594,7 @@ public class OrderGroupRepositoryTest
 		@Override public PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
 		@Override public void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct) { throw new UnsupportedOperationException(); }
 		@Override public I_M_PriceList_Version getPriceListVersion(de.metas.interfaces.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
-		@Override public void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
+		@Override public void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine) { /* no-op */ }
 		@Override public void updateLineNetAmtFromQty(Quantity qty, org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
 		@Override public void updateQtyReserved(de.metas.interfaces.I_C_OrderLine ol) { throw new UnsupportedOperationException(); }
 		@Override public Quantity convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }

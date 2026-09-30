@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.compensationGroup;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -453,5 +454,71 @@ class InvoiceCandidateGroupRepositoryTest
 		assertThat(recomputedLine.getAppliesToProductCategoryId()).isNull();
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// A percent compensation line is priced with PriceEntered == PriceActual, which is only correct
+	// while the candidate carries no discount: saveGroup's price update must reset a stale non-zero
+	// Discount to zero, not just leave it as inherited from an earlier state.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void saveGroup_resetsStaleDiscountToZero()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final I_M_Product_Category goodsCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(goodsCategory);
+
+		final I_M_Product goodsProduct = newInstance(I_M_Product.class);
+		goodsProduct.setC_UOM_ID(uomId.getRepoId());
+		goodsProduct.setM_Product_Category_ID(goodsCategory.getM_Product_Category_ID());
+		saveRecord(goodsProduct);
+
+		final I_M_Product discountProduct = newInstance(I_M_Product.class);
+		discountProduct.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProduct);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// regular IC providing a non-zero base for the compensation percentage
+		final I_C_Invoice_Candidate goodsIc = newInstance(I_C_Invoice_Candidate.class);
+		goodsIc.setC_Order_ID(order.getC_Order_ID());
+		goodsIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		goodsIc.setM_Product_ID(goodsProduct.getM_Product_ID());
+		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
+		saveRecord(goodsIc);
+
+		// compensation IC carrying a stale non-zero Discount (e.g. inherited from an order line before this invariant existed)
+		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
+		discountIc.setC_Order_ID(order.getC_Order_ID());
+		discountIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		discountIc.setM_Product_ID(discountProduct.getM_Product_ID());
+		discountIc.setIsGroupCompensationLine(true);
+		discountIc.setC_UOM_ID(uomId.getRepoId());
+		discountIc.setPrice_UOM_ID(uomId.getRepoId());
+		discountIc.setQtyToInvoice(BigDecimal.ONE);
+		discountIc.setPriceEntered(BigDecimal.ZERO);
+		discountIc.setLineNetAmt(BigDecimal.ZERO);
+		discountIc.setDiscount(new BigDecimal("15"));
+		discountIc.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIc.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIc.setGroupCompensationPercentage(new BigDecimal("3"));
+		saveRecord(discountIc);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
+
+		final Group group = repo.retrieveGroup(groupId);
+		group.updateAllCompensationLines();
+
+		repo.saveGroup(group);
+
+		final I_C_Invoice_Candidate reloaded = load(discountIc.getC_Invoice_Candidate_ID(), I_C_Invoice_Candidate.class);
+		assertThat(reloaded.getDiscount()).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 }
