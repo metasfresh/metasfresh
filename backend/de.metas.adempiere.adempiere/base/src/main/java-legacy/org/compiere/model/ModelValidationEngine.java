@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -1061,6 +1062,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * <p>
 	 * Serves the cucumber test that pins the order of the {@code C_Order} interceptors (compensation-group contract vs. HU packing material vs. freight).
 	 */
+	@VisibleForTesting
 	public List<String> getGlobalDocValidateListenerDescriptions(@NonNull final String tableName)
 	{
 		final ArrayList<ModelValidator> listeners = m_docValidateListeners.get(getPropertyName(tableName));
