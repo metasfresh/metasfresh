@@ -85,7 +85,6 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class C_Flatrate_Term_StepDef
 {
@@ -339,31 +338,9 @@ public class C_Flatrate_Term_StepDef
 	}
 
 	/**
-	 * Attempts to complete the given {@link I_C_Flatrate_Term} and asserts the completion is refused with an
-	 * error message containing the given fragment (e.g. a duration-0 term saved without an entered EndDate).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * And completing the C_Flatrate_Term identified by contract_1 is rejected with message containing "EndDate"
-	 * </pre>
-	 */
-	@And("completing the C_Flatrate_Term identified by {string} is rejected with message containing {string}")
-	public void completing_C_Flatrate_Term_is_rejected(@NonNull final String identifier, @NonNull final String expectedMessageFragment)
-	{
-		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
-		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
-
-		assertThatThrownBy(() -> documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
-				.as("Completing C_Flatrate_Term with identifier %s", identifier)
-				.hasMessageContaining(expectedMessageFragment);
-	}
-
-	/**
 	 * Asserts that completing the given {@link I_C_Flatrate_Term} is REFUSED, and that it is refused for the
 	 * expected reason: the thrown {@link org.adempiere.exceptions.AdempiereException} must carry the given
-	 * error code. Locale-independent (unlike {@link #completing_C_Flatrate_Term_is_rejected}, which matches a
-	 * message substring) — mirrors {@code C_Order_StepDef#order_cannot_be_completed_because_of_error_code}.
+	 * error code. Locale-independent — mirrors {@code C_Order_StepDef#order_cannot_be_completed_because_of_error_code}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

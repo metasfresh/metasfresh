@@ -102,7 +102,7 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
 
     And metasfresh contains C_Flatrate_Transition:
       | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
-      | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
+      | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027,2099            |
 
     # store / head-office split: the order's own partner is the store, but its bill location belongs
     # to the head office -- the contract is matched on the EFFECTIVE bill partner
@@ -137,10 +137,14 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
       | Identifier   | Name          | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | soConditions | SO conditions | CompensationGroup | zeroDurTrans                            | soSettings                                             |
       | poConditions | PO conditions | CompensationGroup | zeroDurTrans                            | poSettings                                             |
+    # poTerm is open-ended: the auto-created drop-ship PO's DateOrdered is stamped from the real wall clock
+    # (MOrder's defaulting constructor bypasses the simulated 2026-07-01 clock), so the purchase contract must
+    # cover whatever today's date is when the test runs. Completing a term only checks that the contract calendar
+    # has a period at its start and at its end date, hence the 2099 periods on the transition above.
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | soTerm     | soConditions                        | headOfficeBP                | 2026-06-15 | 2026-12-31 | DR            | false         |
-      | poTerm     | poConditions                        | vendorBP                    | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | poTerm     | poConditions                        | vendorBP                    | 2026-06-15 | 2099-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by soTerm is completed
     And the C_Flatrate_Term identified by poTerm is completed
 
@@ -166,32 +170,32 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
   Scenario: Drop-ship SO with its own contract exempts the discount line from the vendor check and the PO gets its own contract group
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
-      | orderTS1D  | true    | storeBP                  | storeBP                               | 2026-07-01  | 2026-06-30T22:00:00Z | headOfficeBP                    | dropshipWarehouse         |
+      | orderDropship  | true    | storeBP                  | storeBP                               | 2026-07-01  | 2026-06-30T22:00:00Z | headOfficeBP                    | dropshipWarehouse         |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
-      | ol_elstar1 | orderTS1D             | elstar1                 | 1          | vendorBP                        |
-      | ol_elstar2 | orderTS1D             | elstar2                 | 1          | vendorBP                        |
-      | ol_gala    | orderTS1D             | gala                    | 1          | vendorBP                        |
-      | ol_pfand1  | orderTS1D             | pfand1                  | 1          | vendorBP                        |
-      | ol_pfand2  | orderTS1D             | pfand2                  | 1          | vendorBP                        |
+      | ol_elstar1 | orderDropship             | elstar1                 | 1          | vendorBP                        |
+      | ol_elstar2 | orderDropship             | elstar2                 | 1          | vendorBP                        |
+      | ol_gala    | orderDropship             | gala                    | 1          | vendorBP                        |
+      | ol_pfand1  | orderDropship             | pfand1                  | 1          | vendorBP                        |
+      | ol_pfand2  | orderDropship             | pfand2                  | 1          | vendorBP                        |
 
-    And the order identified by orderTS1D is completed
+    And the order identified by orderDropship is completed
 
     # SO side: the contract group ("Bonus Ware") is built on the goods-only base -- Pfand excluded.
     # 3% of 921.60 + 672.00 + 561.60 = 64.656, rounded to -64.66
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_soDiscount             | orderTS1D             | discountProduct         | 1          | true                        | 3                               | -64.66 | soTerm                            |
-    And the order identified by orderTS1D has 6 order lines
+      | ol_soDiscount             | orderDropship             | discountProduct         | 1          | true                        | 3                               | -64.66 | soTerm                            |
+    And the order identified by orderDropship has 6 order lines
 
     # The dropship PO is auto-created and auto-completed in the same transaction as the SO
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
-      | poTS1D         | orderTS1D                | false   | POO         | CO            | true           |
+      | poDropship         | orderDropship                | false   | POO         | CO            | true           |
     And validate the created orders
       | C_Order_ID | C_BPartner_ID |
-      | poTS1D     | vendorBP      |
+      | poDropship     | vendorBP      |
 
     # PO side: its OWN contract ("Bonus Lieferant") fires on the PO's own completion, matched on the
     # PO's own bill partner (the vendor). The base mirrors the SO's (same prices on poPL), so the
@@ -199,15 +203,15 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
     # PO line for the invoicing steps below.
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_poElstar1              | poTS1D                | elstar1                 | 1          | false                       |                                 |        |                                   |
-      | ol_poElstar2              | poTS1D                | elstar2                 | 1          | false                       |                                 |        |                                   |
-      | ol_poGala                 | poTS1D                | gala                    | 1          | false                       |                                 |        |                                   |
-      | ol_poPfand1               | poTS1D                | pfand1                  | 1          | false                       |                                 |        |                                   |
-      | ol_poPfand2               | poTS1D                | pfand2                  | 1          | false                       |                                 |        |                                   |
-      | ol_poDiscount             | poTS1D                | discountProduct         | 1          | true                        | 3                               | -64.66 | poTerm                            |
+      | ol_poElstar1              | poDropship                | elstar1                 | 1          | false                       |                                 |        |                                   |
+      | ol_poElstar2              | poDropship                | elstar2                 | 1          | false                       |                                 |        |                                   |
+      | ol_poGala                 | poDropship                | gala                    | 1          | false                       |                                 |        |                                   |
+      | ol_poPfand1               | poDropship                | pfand1                  | 1          | false                       |                                 |        |                                   |
+      | ol_poPfand2               | poDropship                | pfand2                  | 1          | false                       |                                 |        |                                   |
+      | ol_poDiscount             | poDropship                | discountProduct         | 1          | true                        | 3                               | -64.66 | poTerm                            |
     # exactly 6 lines (3 goods + 2 Pfand + discount) -- NOT 7: the SO's own "Bonus Ware" line was
     # never copied here
-    And the order identified by poTS1D has 6 order lines
+    And the order identified by poDropship has 6 order lines
 
     # ##########################################################################################
     # Invoice the SO's contract group ("Bonus Ware") -- the whole order is invoiced together, as a

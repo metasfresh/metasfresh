@@ -5,9 +5,9 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { getFieldData, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
+import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
 
 /**
@@ -46,6 +46,8 @@ const TRANSITION_WINDOW_ID = 540120;
 const CONDITIONS_WINDOW_ID = 540113;
 const CONTRACT_WINDOW_ID = 540359;
 const BUSINESS_PARTNER_WINDOW_ID = 123;
+const DOCTYPE_WINDOW_ID = 135; // Belegart (C_DocType)
+const CALENDAR_WINDOW_ID = 117; // Kalenderjahr und Periode (C_Calendar)
 
 // Business-partner action "Erzeuge Vertrag" and the partner's related-document link to its terms
 const CREATE_CONTRACT_PROCESS = 'C_Flatrate_Term_Create_For_BPartners';
@@ -54,6 +56,7 @@ const BPARTNER_TO_CONTRACT_TERM_REFERENCE = 'reference-C_Flatrate_Term';
 // Tabs (AD_Tab ids)
 const SCHEMA_LINE_TAB_ID = 541042; // C_CompensationGroup_SchemaLine
 const SETTINGS_DOCTYPE_TAB_ID = 549508; // C_CompensationGroup_ContractSettings_DocType
+const CALENDAR_YEAR_TAB_ID = 129; // C_Year
 const ORDER_LINE_TAB = 'AD_Tab-187';
 
 // Ref-list keys of C_Flatrate_Conditions.Type_Conditions
@@ -61,26 +64,20 @@ const TYPE_CONDITIONS_COMPENSATION_GROUP = 'CompensationGroup';
 const TYPE_CONDITIONS_OTHER = 'Subscr';
 
 // Contract transition: duration 0, so the contract keeps the entered end date. Its contract calendar
-// must have periods covering the contract; the standard accounting calendar of the tenant does
-// (its years and periods are seeded by the yearly "add years / periods" system migrations).
-const CONTRACT_CALENDAR_ID = 1000000;
+// must have periods covering the contract; the test picks one of the offered calendars that has the
+// contract's year (see pickContractCalendarWithYear).
 const DURATION_UNIT_MONTH = 'month';
 
 // Sales-order document type: Standardauftrag (DocBaseType SOO, DocSubType SO)
-const DOCTYPE_STANDARD_ORDER_ID = 1000030;
 const DOCTYPE_STANDARD_ORDER_NAME = 'Standardauftrag';
+// DocBaseTypes of order doc types
+const ORDER_DOC_BASE_TYPES = ['SOO', 'POO'];
 
 // Doc-type search probe: "Rechnung" matches both an order doc type ("Proforma Rechnung", SOO) and
 // invoice doc types ("Ausgangsrechnung", ARI). The validation rule must offer only the former.
 const DOCTYPE_SEARCH_PROBE = 'Rechnung';
 const DOCTYPE_ORDER_MATCHING_PROBE = 'Proforma Rechnung';
 const DOCTYPE_INVOICE_MATCHING_PROBE = 'Ausgangsrechnung';
-// Names of all active order doc types (DocBaseType SOO / POO)
-const ORDER_DOCTYPE_NAMES = [
-  'Kostenvoranschlag', 'Abrufauftrag', 'Proforma Rechnung', 'Rahmenauftrag', 'Auftrag auf Kommission',
-  'Angebot', 'Vorauskasseauftrag', 'Return Material Authorization', 'Standardauftrag',
-  'Anfrage', 'Bestellvermittlung', 'Abrufbestellung', 'Rahmenbestellung', 'Bestellung', 'Lieferanten RMA',
-];
 
 // Expected German captions (de_DE), read from the AD
 const DE = {
@@ -209,6 +206,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     // 2. Kompensationsgruppen-Vertragseinstellungen (542194)
     // ------------------------------------------------------------------
     let settingsId;
+    let settingsDocTypeId;
     await test.step('2. Settings window: create settings for the schema and list the sales-order doc type', async () => {
       await openNewRecord(page, SETTINGS_WINDOW_ID);
       await expectWindowTitle(page, DE.settingsWindow);
@@ -230,12 +228,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectLabel(modal, 'C_DocType_ID', DE.settingsDocType);
 
       // The doc-type search offers only order doc types.
-      const offered = await searchLookupOptions(page, modal, 'C_DocType_ID', DOCTYPE_SEARCH_PROBE);
+      const offeredOptions = await searchLookupOptions(page, modal, 'C_DocType_ID', DOCTYPE_SEARCH_PROBE);
+      const offered = offeredOptions.map((option) => option.caption);
       console.log(`[INFO] doc types offered for "${DOCTYPE_SEARCH_PROBE}": ${offered.join(' | ')}`);
       expect(offered, 'the order doc type matching the probe is offered').toContain(DOCTYPE_ORDER_MATCHING_PROBE);
       expect(offered, 'an invoice doc type is not offered').not.toContain(DOCTYPE_INVOICE_MATCHING_PROBE);
-      for (const name of offered) {
-        expect(ORDER_DOCTYPE_NAMES, `offered doc type "${name}" must be an order doc type`).toContain(name);
+      for (const option of offeredOptions) {
+        expect(ORDER_DOC_BASE_TYPES, `offered doc type "${option.caption}" must be an order doc type`)
+          .toContain(await getDocBaseType(option.key));
       }
       await page.keyboard.press('Escape');
       await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
@@ -246,7 +246,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       const docTypes = await getTabRows(SETTINGS_WINDOW_ID, settingsId, `AD_Tab-${SETTINGS_DOCTYPE_TAB_ID}`);
       expect(docTypes, 'exactly one doc type row').toHaveLength(1);
-      expect(lookupKey(docTypes[0].fieldsByName.C_DocType_ID.value)).toBe(String(DOCTYPE_STANDARD_ORDER_ID));
+      settingsDocTypeId = lookupKey(docTypes[0].fieldsByName.C_DocType_ID.value);
+      expect(await getDocBaseType(settingsDocTypeId), 'the listed doc type is a sales order doc type').toBe('SOO');
     });
 
     // ------------------------------------------------------------------
@@ -259,7 +260,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       await fillText(page, page, 'Name', transitionName);
       transitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
-      await selectListByKey(page, page, 'C_Calendar_Contract_ID', CONTRACT_CALENDAR_ID);
+      const contractCalendarId = await pickContractCalendarWithYear(transitionId, contractStart.getFullYear());
+      await selectListByKey(page, page, 'C_Calendar_Contract_ID', contractCalendarId);
       await fillNumber(page, page, 'TermDuration', 0);
       await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
       await fillNumber(page, page, 'TermOfNotice', 0);
@@ -353,7 +355,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const orderId = await SalesOrderPage.selectCustomer(customer.bpartnerCode);
 
       expect(lookupKey((await getFieldData(SALES_ORDER_WINDOW_ID, orderId, 'C_DocTypeTarget_ID')).value))
-        .toBe(String(DOCTYPE_STANDARD_ORDER_ID));
+        .toBe(settingsDocTypeId);
       expect(lookupKey((await getFieldData(SALES_ORDER_WINDOW_ID, orderId, 'Bill_BPartner_ID')).value))
         .toBe(String(customer.id));
 
@@ -570,10 +572,40 @@ async function typeIntoLookup(page, scope, fieldName, searchText) {
   return dropdown;
 }
 
+/** @returns the options ({ key, caption }) the lookup offers for the given search text */
 async function searchLookupOptions(page, scope, fieldName, searchText) {
   const dropdown = await typeIntoLookup(page, scope, fieldName, searchText);
-  const texts = await dropdown.locator('.input-dropdown-list-option').allTextContents();
-  return texts.map((t) => t.trim()).filter((t) => t.length > 0);
+  const options = await dropdown.locator('.input-dropdown-list-option').evaluateAll((elements) =>
+    elements.map((element) => ({ testId: element.getAttribute('data-testid'), caption: (element.textContent ?? '').trim() }))
+  );
+  return options
+    .filter((option) => option.testId && option.testId.startsWith('option-') && option.caption.length > 0)
+    .map((option) => ({ key: option.testId.substring('option-'.length), caption: option.caption }));
+}
+
+async function getDocBaseType(docTypeId) {
+  return lookupKey((await getFieldData(DOCTYPE_WINDOW_ID, docTypeId, 'DocBaseType')).value);
+}
+
+/**
+ * @returns the id of a contract calendar offered on the transition that has the given fiscal year,
+ * so that the contract's periods exist without relying on a seeded calendar id
+ */
+async function pickContractCalendarWithYear(transitionId, fiscalYear) {
+  const page = getPage();
+  const response = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${TRANSITION_WINDOW_ID}/${transitionId}/field/C_Calendar_Contract_ID/dropdown`,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  expect(response.ok(), 'contract calendar dropdown').toBeTruthy();
+  const calendarIds = ((await response.json()).values ?? []).map((value) => String(value.key));
+  for (const calendarId of calendarIds) {
+    const years = await getTabRows(CALENDAR_WINDOW_ID, calendarId, `AD_Tab-${CALENDAR_YEAR_TAB_ID}`);
+    if ((years ?? []).some((year) => String(year.fieldsByName?.FiscalYear?.value) === String(fiscalYear))) {
+      return calendarId;
+    }
+  }
+  throw new Error(`No offered contract calendar has the fiscal year ${fiscalYear}; offered: ${calendarIds.join(', ')}`);
 }
 
 async function selectLookup(page, scope, fieldName, searchText, { exact = false } = {}) {
