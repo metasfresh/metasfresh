@@ -287,7 +287,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		if (costDetail.getDocumentRef().isCostRevaluationLine())
 		{
-			// normally refused before, by the costing service's check; kept as the last line of defence, with the message's parameters
 			final LocalDate otherRevaluationDate = costDetail.getDateAcct().atZone(orgDAO.getTimeZone(costDetail.getOrgId())).toLocalDate();
 			throw new AdempiereException(
 					MSG_RevaluatingAnotherRevaluationIsNotSupported,

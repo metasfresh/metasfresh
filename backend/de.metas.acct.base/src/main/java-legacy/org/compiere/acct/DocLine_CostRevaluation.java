@@ -47,8 +47,7 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 		}
 		else
 		{
-			// Only the revaluation's own cost element is revalued: without an explicit cost element, the request would be
-			// exploded to every material cost element of the client and each of them would get the new cost price.
+			// Only the revaluation's own cost element is revalued.
 			final CostElement costElement = services.getCostElementById(costSegmentAndElement.getCostElementId());
 			final CostDetailCreateResultsList costDetailResults = services.createCostDetail(
 					CostDetailCreateRequest.builder()

@@ -100,8 +100,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 
 /**
- * Covers {@link CostRevaluationService#createLineForProduct(CostRevaluationId, ProductId, BigDecimal)} — the
- * single-product manual-entry counterpart of the bulk {@link CostRevaluationService#createLines(CostRevaluationId)}.
+ * Tests {@link CostRevaluationService}.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class CostRevaluationServiceTest
@@ -175,8 +174,7 @@ public class CostRevaluationServiceTest
 	{
 		final AcctSchemaId acctSchemaId = createAcctSchemaRecord("Test AcctSchema");
 
-		// AD_ClientInfo makes this the client's primary acct schema, so the seed-cost path can resolve the client's
-		// accounting schemas via createDefaultProductCosts (mirrors production where AD_ClientInfo always exists).
+		// AD_ClientInfo makes this the client's primary acct schema
 		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
 		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
 		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
@@ -187,8 +185,7 @@ public class CostRevaluationServiceTest
 
 	/**
 	 * Creates a Client-level {@link I_C_AcctSchema} record (+ its GL and Default child records) for the METASFRESH
-	 * client, without touching AD_ClientInfo. Used both for the primary schema and for any additional schema — a
-	 * client with more than one C_AcctSchema is what exercises the seed-cost path's fan-out over ALL client schemas.
+	 * client, without touching AD_ClientInfo.
 	 */
 	private AcctSchemaId createAcctSchemaRecord(@NonNull final String name)
 	{
@@ -255,7 +252,7 @@ public class CostRevaluationServiceTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	/** Seeds a {@code M_Cost} row for {@code costElementId} (client-level, {@code OrgId.ANY}) directly, bypassing the costing engine. */
+	/** Creates a client-level ({@code OrgId.ANY}) {@code M_Cost} row for {@code costElementId}. */
 	private void seedCurrentCost(
 			@NonNull final ProductId productId,
 			@NonNull final String ownCostPrice,
@@ -359,9 +356,8 @@ public class CostRevaluationServiceTest
 	class CreateLineForProduct
 	{
 		/**
-		 * The segment {@code createLineForProduct} derives for a single-segment product is the SAME one the bulk
-		 * {@link CostRevaluationService#createLines} would derive for it, and {@code NewCostPrice} is the TYPED value
-		 * (not the live current cost, which the bulk path uses as its default).
+		 * A line added for one product gets the same cost segment as a line created for all products,
+		 * with the given {@code NewCostPrice} instead of the current cost price.
 		 */
 		@Test
 		public void derivesSameSegmentAsBulk_andUsesTypedNewCostPrice()
@@ -371,7 +367,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader();
 
-			// Bulk path first — capture the segment it derives for this exact product.
+			// all products first — capture the segment of this product's line
 			costRevaluationService.createLines(costRevaluationId);
 			final List<I_M_CostRevaluationLine> bulkLines = getLineRecords(costRevaluationId);
 			assertThat(bulkLines).hasSize(1);
@@ -381,7 +377,7 @@ public class CostRevaluationServiceTest
 			costRevaluationService.deleteLinesAndDetailsByRevaluationId(costRevaluationId);
 			assertThat(getLineRecords(costRevaluationId)).isEmpty();
 
-			// Single-product path — must derive the identical segment, but with the TYPED NewCostPrice.
+			// the single product: same segment, given NewCostPrice
 			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
 			final List<I_M_CostRevaluationLine> singleLines = getLineRecords(costRevaluationId);
 			assertThat(singleLines).hasSize(1);
@@ -403,9 +399,8 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * A stocked product with no {@code M_Cost} row is seeded at quantity 0 (reusing the product interceptor's
-		 * {@code createDefaultProductCosts}), then a line is created at that seeded segment with {@code CurrentQty=0},
-		 * {@code CurrentCostPrice=0} and {@code NewCostPrice} = the typed value.
+		 * A stocked product with no {@code M_Cost} row gets one at quantity 0, and a line with {@code CurrentQty=0},
+		 * {@code CurrentCostPrice=0} and the given {@code NewCostPrice}.
 		 */
 		@Test
 		public void seedsCostAtZeroQty_whenNoCurrentCostRow()
@@ -426,17 +421,8 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Multi-acct-schema seed fan-out (characterization test — pins the DELIBERATE broad behavior; passes on current code).
-		 * <p>
-		 * When the client has TWO {@code C_AcctSchema} and a stocked product has NO {@code M_Cost} row, the seed-cost path
-		 * reuses {@code createDefaultProductCosts}, which materializes a zero-qty {@code M_Cost} row for EVERY client acct
-		 * schema (not only the revaluation's own schema A). This is intended: it reuses the standard product-creation creator
-		 * (reuse the existing creator instead of a bespoke writer) and the extra schema-B row is zero-cost/zero-qty = harmless.
-		 * <p>
-		 * Non-vacuousness / seed-path proof: the product starts with ZERO {@code M_Cost} rows (asserted), so the two rows
-		 * present afterwards can only have been created by the seed path; removing the seed block in
-		 * {@link CostRevaluationService#createLineForProduct} makes this test fail (the re-resolve stays empty → "No current
-		 * cost found"). The revaluation line is created for schema A only, at the seeded zero values.
+		 * With two client acct schemas, a stocked product with no {@code M_Cost} row gets a zero-qty {@code M_Cost} row
+		 * for each schema, but only one revaluation line, for the revaluation's own schema.
 		 */
 		@Test
 		public void seedFansOutOverAllClientAcctSchemas_butLineIsForHeaderSchemaOnly()
@@ -445,12 +431,11 @@ public class CostRevaluationServiceTest
 			final AcctSchemaId acctSchemaId_B = createAcctSchemaRecord("Test AcctSchema B");
 
 			final ProductId productId = createProduct("productWithoutCost_twoSchemas");
-			// product-category-acct for schema B too (schema A was wired by createProduct), so the seed's per-schema
-			// costing-level lookup resolves without hitting the DB-only insert_Accounting fallback in the in-memory harness.
+			// product-category-acct for schema B too (schema A was wired by createProduct)
 			createProductCategoryAcct(productId, acctSchemaId_B);
 
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			// Precondition proving the seed path is what creates the rows below: the product has NO cost rows yet.
+			// precondition: the product has no cost rows yet
 			assertThat(queryBL.createQueryBuilder(I_M_Cost.class)
 					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
 					.create()
@@ -461,7 +446,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
 
-			// The seed fanned out over BOTH client acct schemas: one zero-qty M_Cost row per schema.
+			// one zero-qty M_Cost row per client acct schema
 			final List<I_M_Cost> costRows = queryBL.createQueryBuilder(I_M_Cost.class)
 					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
 					.create()
@@ -523,18 +508,8 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Organization-level costing coverage: the caller resolves the costing level via
-		 * {@link IProductCostingBL#getCostingLevel} and, because it is {@link CostingLevel#Organization}, filters the
-		 * current-cost lookup by the header document's org — so the org-level {@code M_Cost} row of the header org is
-		 * resolved and the co-existing org-level row of a DIFFERENT org is excluded by the query's org filter.
-		 * <p>
-		 * This exercises the {@code Organization}-costing-level branch of {@code createLineForProduct} that no other test
-		 * covers (all the others are client-level). It is not a red-first test for the org-param refactor itself: that
-		 * refactor is behavior-preserving (the previous {@code isMatching(headerOrg)} Java post-filter and the new
-		 * query-level org filter resolve the identical row on every representable data configuration — a client-level
-		 * ({@link OrgId#ANY}) row cannot co-exist under an org-level product because {@code CurrentCostsLoader} derives the
-		 * segment's costing level from the product config and rejects an ANY-org row at org level). The existing
-		 * seed / ambiguous / duplicate tests are the safety net that pins the preserved behavior through the new Optional API.
+		 * A product costed at {@link CostingLevel#Organization} is revalued at the current cost of the revaluation's org,
+		 * not at that of another org.
 		 */
 		@Test
 		public void orgLevelCosting_resolvesByHeaderOrg_excludingOtherOrg()
@@ -563,8 +538,7 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Organization-level costing requires a regular header org: with the header on {@link OrgId#ANY} there is no org to
-		 * match the product's org-level cost by, so the call fails fast, before resolving or seeding any {@code M_Cost} row.
+		 * A product costed at organization level cannot be added to a revaluation of {@link OrgId#ANY}; no {@code M_Cost} row is created.
 		 */
 		@Test
 		public void orgLevelCosting_throws_whenHeaderOrgIsAny()
@@ -629,8 +603,7 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * A deactivated line is treated as removed (completion and {@code hasActiveLines} ignore it), so it must not block
-		 * re-adding the same product; the deactivated line is left as it is.
+		 * A deactivated line does not block re-adding the same product; the deactivated line is left as it is.
 		 */
 		@Test
 		public void allowsReAdding_whenExistingLineIsDeactivated()

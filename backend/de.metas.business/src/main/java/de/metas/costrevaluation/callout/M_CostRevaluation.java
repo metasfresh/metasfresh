@@ -73,7 +73,7 @@ public class M_CostRevaluation implements ITabCallout
 
 	/**
 	 * On a UI change of DateAcct, moves a defaulted EvaluationStartDate (unset, or equal to the last saved DateAcct) along with it;
-	 * a hand-set EvaluationStartDate is kept. With lines present, the save is then refused by the model interceptor's "delete lines first" guard.
+	 * a hand-set EvaluationStartDate is kept.
 	 */
 	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_DateAcct)
 	public void onDateAcctChanged(@NonNull final I_M_CostRevaluation costRevaluation, @NonNull final ICalloutField field)

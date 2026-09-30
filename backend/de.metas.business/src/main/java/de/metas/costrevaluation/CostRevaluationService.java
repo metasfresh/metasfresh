@@ -108,15 +108,11 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Manual, single-product counterpart of {@link #createLines(CostRevaluationId)}: adds one line for {@code productId},
-	 * deriving its cost segment from the product's live {@link CurrentCost} (same derivation as the bulk path) and setting
-	 * {@code NewCostPrice} to the given {@code newCostPrice} instead of defaulting it to the live cost.
+	 * Adds one line for {@code productId}, for the cost segment of the product's current cost, with the given {@code newCostPrice}.
 	 * <p>
-	 * When the product has no {@link CurrentCost} row yet for the revaluation's costing context, the row is seeded at
-	 * quantity 0 (reusing the product interceptor's {@link ICurrentCostsRepository#createDefaultProductCosts}) and the
-	 * line proceeds through the normal path; completing it books a zero delta, so no accounting is written.
+	 * A product without a current cost yet gets one at quantity 0; completing its line books no value difference.
 	 * <p>
-	 * Additive only: never touches any other line of the revaluation.
+	 * Other lines of the revaluation are left untouched.
 	 *
 	 * @throws AdempiereException if {@code newCostPrice} is negative, if the revaluation is not drafted / in progress,
 	 * if an active line already exists for {@code productId} (duplicate guard), if the product still has
@@ -145,16 +141,12 @@ public class CostRevaluationService
 			throw new AdempiereException(MSG_LineAlreadyExistsForProduct, productBL.getProductValueAndName(productId));
 		}
 
-		// The caller owns the costing-level decision: filter the current-cost lookup by the header org only when the
-		// product is costed at organization level; otherwise (client / batch-lot level) don't filter by org.
 		final OrgId orgId = getOrgIdToMatch(costRevaluation, productId);
 
 		CurrentCost currentCost = resolveCurrentCost(costRevaluation, productId, orgId).orElse(null);
 		if (currentCost == null)
 		{
-			// Seed-cost path: a stocked product may genuinely have no M_Cost row yet (e.g. migrated/legacy product).
-			// Materialize the missing row(s) at quantity 0 by reusing the same creator the product interceptor uses at
-			// product creation (idempotent: only missing rows are created), then re-resolve.
+			// a stocked product may have no current cost yet (e.g. a migrated product)
 			currentCostsRepo.createDefaultProductCosts(productBL.getById(productId));
 			currentCost = resolveCurrentCost(costRevaluation, productId, orgId)
 					.orElseThrow(() -> new AdempiereException(MSG_NoCurrentCostForProduct, productBL.getProductValueAndName(productId)));
@@ -165,10 +157,8 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * The org to match the product's current cost by, decided from the product's costing level (the same costing level
-	 * {@code CurrentCostsLoader} uses, {@link IProductCostingBL#getCostingLevel}; the bulk path reaches the same result via
-	 * {@link de.metas.costing.CostSegment#isMatching}): the header document's org when the product is costed at
-	 * {@link CostingLevel#Organization}, {@code null} (no org filter) otherwise.
+	 * The org to match the product's current cost by: the revaluation's org when the product is costed at
+	 * {@link CostingLevel#Organization}, {@code null} (any org) otherwise.
 	 *
 	 * @throws AdempiereException if the product is costed at organization level but the header org is {@link OrgId#ANY}.
 	 */
@@ -190,8 +180,7 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Resolves the product's single current cost for the revaluation's costing context, filtering the query by
-	 * {@code orgId} (nullable — no org filter when {@code null}).
+	 * The product's single current cost for the revaluation's costing context and the given {@code orgId} ({@code null} = any org).
 	 *
 	 * @return the matching {@link CurrentCost}, or {@link Optional#empty()} when the product has none yet.
 	 * @throws AdempiereException if more than one current cost matches (ambiguous multi-segment product).
@@ -232,8 +221,7 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Evaluates all lines again, also those already evaluated by "Run": used when completing, so the refusals and the deltas
-	 * reflect the state at completion (e.g. another revaluation completed since "Run").
+	 * Evaluates all lines again, also those already evaluated, so the refusals and the value differences reflect the current state.
 	 */
 	public void reevaluateAllLines(@NonNull final CostRevaluationId costRevaluationId)
 	{

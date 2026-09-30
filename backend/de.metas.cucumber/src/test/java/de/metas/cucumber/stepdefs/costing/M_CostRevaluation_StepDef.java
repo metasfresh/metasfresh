@@ -213,9 +213,8 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
-	 * Adds one {@code M_CostRevaluationLine} via the single-product quick-input path
-	 * ({@link CostRevaluationService#createLineForProduct}) — the same call the WebUI quick-input processor makes.
-	 * For a stocked product with no {@code M_Cost} row this seeds the row at quantity 0.
+	 * Adds one {@code M_CostRevaluationLine} for the given product, as the quick-input does.
+	 * A stocked product with no {@code M_Cost} row gets one at quantity 0.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

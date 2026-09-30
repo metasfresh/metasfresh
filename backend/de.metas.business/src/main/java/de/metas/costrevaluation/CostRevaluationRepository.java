@@ -131,9 +131,8 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 	}
 
 	/**
-	 * Creates a new, non-destructive {@link I_M_CostRevaluationLine} for the given {@link CurrentCost}, defaulting
-	 * {@code NewCostPrice} to the current cost's own price (the bulk {@link #createLinesForCurrentCosts} path).
-	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #hasActiveLineForProduct(CostRevaluationId, ProductId)} first.
+	 * Creates a line for the given {@link CurrentCost}, with {@code NewCostPrice} = the current cost's own price.
+	 * Does not check for an already existing line of the product.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(
@@ -144,10 +143,8 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 	}
 
 	/**
-	 * Like {@link #createLineForCurrentCost(CostRevaluationId, CurrentCost)} but sets {@code NewCostPrice} to the
-	 * given {@code newCostPrice} instead of defaulting it to the current cost's own price (the single-product manual
-	 * entry path: the operator types the new price).
-	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #hasActiveLineForProduct(CostRevaluationId, ProductId)} first.
+	 * Creates a line for the given {@link CurrentCost}, with the given {@code newCostPrice}.
+	 * Does not check for an already existing line of the product.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(
@@ -171,7 +168,7 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 	}
 
 	/**
-	 * Deactivated lines are ignored, like everywhere else on this document (completion only processes active lines).
+	 * Deactivated lines are ignored.
 	 */
 	public boolean hasActiveLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
 	{
@@ -398,7 +395,7 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 			return ImmutableMap.of();
 		}
 
-		// partitioned: a back-dated revaluation can replay more cost details than a single IN list can bind
+		// partitioned: the cost details can exceed what a single IN list can bind
 		final List<I_M_CostRevaluation_Detail> restatementRecords = Lists.partition(ImmutableList.copyOf(costDetailIds), 1000)
 				.stream()
 				.flatMap(costDetailIdsChunk -> queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)

@@ -117,9 +117,7 @@ public class M_Cost_StepDef
 	}
 
 	/**
-	 * Removes all {@code M_Cost} rows for the given product(s), establishing the "product has no current cost record"
-	 * precondition of the seed-cost path (a migrated/legacy product created without a cost record). Reuses the same
-	 * repository deletion the {@code M_Product} interceptor performs on product deletion.
+	 * Removes all {@code M_Cost} rows of the given product(s), like a migrated product created without a cost record.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

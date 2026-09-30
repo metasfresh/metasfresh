@@ -49,13 +49,7 @@ import static org.mockito.Mockito.when;
  * Unit tests for {@link M_CostRevaluation#beforeNew(I_M_CostRevaluation)} and {@link M_CostRevaluation#beforeChange(I_M_CostRevaluation, ModelChangeType)}.
  * The DateAcct -> EvaluationStartDate follow-up is a callout; see {@code de.metas.costrevaluation.callout.M_CostRevaluationTest}.
  * <p>
- * A POJO-backed record ({@code AdempiereTestHelper.get().init()} +
- * {@code InterfaceWrapperHelper.newInstance}) reports {@code isUIAction() == false}, i.e. it models a
- * <b>non-UI</b> write path (REST / import / OLCand). The UI-action branch cannot be simulated with the
- * POJO wrapper (it always returns {@code false}); it is also dead on the real WebUI path, where the
- * AD_Column default {@code @#Date@} populates {@code DateAcct} at document-init, before {@code beforeNew}
- * fires — so the DateAcct safety-net never runs on the UI. Coverage here is therefore focused on the
- * behaviour the finding is about: non-UI callers must fail loud, not silently post "today".
+ * A POJO-backed record reports {@code isUIAction() == false}, so these tests cover the non-UI writes (REST / import).
  */
 class M_CostRevaluationTest
 {
@@ -81,8 +75,7 @@ class M_CostRevaluationTest
 
 			interceptor.beforeNew(record);
 
-			// A backdated REST/import/OLCand caller that omits DateAcct must NOT get a silent "today"
-			// default — DateAcct stays null so the mandatory-column save fails loud.
+			// a non-UI write without DateAcct must not get "today": DateAcct stays null, so the mandatory-column save fails
 			assertThat(record.getDateAcct())
 					.as("non-UI path must not fabricate a posting date")
 					.isNull();
@@ -98,9 +91,7 @@ class M_CostRevaluationTest
 
 			interceptor.beforeNew(record);
 
-			// Forward-only default is a data-integrity invariant on every write path (no isUIAction guard):
-			// it derives from the caller-supplied DateAcct, never from wall-clock — so it is unaffected by
-			// the DateAcct guard and still fires on the non-UI path.
+			// EvaluationStartDate defaults to DateAcct on every write
 			assertThat(record.getEvaluationStartDate()).isEqualTo(dateAcct);
 		}
 	}

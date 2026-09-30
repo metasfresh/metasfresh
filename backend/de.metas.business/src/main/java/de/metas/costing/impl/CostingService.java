@@ -545,7 +545,6 @@ public class CostingService implements ICostingService
 			final CostDetail firstCostDetail = costDetails.get(0);
 			final CostDetailRestatement firstCostDetailRestatement = restatements.get(firstCostDetail.getId());
 			// Prev_* is the snapshot at the time the cost detail was posted; a later restatement changed the cost price in effect before it.
-			// Only the price matters here: the replay starts from the new cost price and only the own cost price and qty feed the result.
 			currentCost.setFrom(firstCostDetailRestatement != null
 					? firstCostDetail.getPreviousAmounts().withOwnCostPrice(firstCostDetailRestatement.getNewCostPrice())
 					: firstCostDetail.getPreviousAmounts());
@@ -611,7 +610,7 @@ public class CostingService implements ICostingService
 		final ZoneId timeZone = orgDAO.getTimeZone(revaluationOrgId);
 
 		final Instant laterRevaluationDate = completedCostRevaluationsRepo.getFirstCompletedDateAcctOnOrAfter(costSegmentAndElement, evaluationStartDate)
-				// a revaluation cost detail in the window whose document is not found as completed above (e.g. data from before the document check)
+				// a revaluation cost detail in the window without a completed revaluation document
 				.orElseGet(() -> costDetails.stream()
 						.filter(CostDetail::isChangingCosts)
 						.filter(costDetail -> costDetail.getDocumentRef().isCostRevaluationLine())
