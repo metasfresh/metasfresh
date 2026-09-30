@@ -40,6 +40,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mmovement.MovementLineQuery;
@@ -47,6 +48,7 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
@@ -71,6 +73,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	@NonNull private final InventoryService inventoryService;
@@ -191,6 +194,16 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
 	{
 		return inOutDAO.retrieveLines(inOut);
+	}
+
+	public List<I_C_Order_CompensationGroup> getOrderCompensationGroups(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.create()
+				.list();
 	}
 
 	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)
