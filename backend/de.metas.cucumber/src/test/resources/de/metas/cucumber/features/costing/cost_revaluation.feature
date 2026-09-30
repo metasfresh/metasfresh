@@ -693,6 +693,9 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | revaluationLater     | product      | 15           |
     And the cost revaluation identified by revaluationLater is completed
     And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    And validate M_CostRevaluation:
+      | Identifier       | DocStatus | Posted |
+      | revaluationLater | CO        | false  |
 
     # ── Run Revaluation on a back-dated revaluation is refused and leaves no detail lines ──
     When metasfresh contains M_CostRevaluation:
