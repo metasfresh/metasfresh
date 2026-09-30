@@ -1,18 +1,28 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
+
+import java.util.List;
 
 @Builder
 class MobileConfigManufacturingCommand
 {
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 
 	@NonNull private final MasterdataContext context;
@@ -34,15 +44,116 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.receiveUnitType(ReceiveUnitType.ofCode(request.getReceiveUnitType()));
 		}
+		if (request.getIsAllowFinishedGoodsReceiveToLU() != null)
+		{
+			newConfigBuilder.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(request.getIsAllowFinishedGoodsReceiveToLU()));
+		}
+		if (request.getIsAllowFinishedGoodsReceiveToTU() != null)
+		{
+			newConfigBuilder.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(request.getIsAllowFinishedGoodsReceiveToTU()));
+		}
+		if (request.getIsSkipFinishedGoodsReceiveTargetStep() != null)
+		{
+			newConfigBuilder.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(request.getIsSkipFinishedGoodsReceiveTargetStep()));
+		}
+		if (request.getIsCaptureCatchWeightAtReceipt() != null)
+		{
+			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
+		}
+		if (request.getIsAllowReceiveWithoutPackingItem() != null)
+		{
+			newConfigBuilder.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(request.getIsAllowReceiveWithoutPackingItem()));
+		}
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			newConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			newConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
+
+		// The editable-attribute list is global-only (v1) - it does NOT live on the per-user profile row saved
+		// above (see MobileUIManufacturingConfigRepository#fromRecord, which always reads it back empty there),
+		// so it is written through its own global-config path.
+		if (request.getEditableAttributes() != null)
+		{
+			mobileManufacturingConfigRepository.saveGlobalEditableAttributeCodesInOrder(ClientId.METASFRESH, resolveEditableAttributeCodes(request.getEditableAttributes()));
+		}
+
+		// IsAllowEmptyingHUs / IsConfirmEmptyingHU are client-level only (MobileUI_MFG_Config has no
+		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig), so like
+		// the editable-attribute list they are written through the global-config path, not the per-user profile.
+		if (request.getIsAllowEmptyingHUs() != null || request.getIsConfirmEmptyingHU() != null)
+		{
+			updateGlobalEmptyingHUsConfig();
+		}
 
 		return JsonMobileConfigResponse.Manufacturing.builder()
 				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
 				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
 				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
+				.isAllowFinishedGoodsReceiveToLU(newConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
+				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
+				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
+				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isAllowReceiveWithoutPackingItem(newConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
+				.editableAttributes(getGlobalEditableAttributes())
+				.isAllowEmptyingHUs(newConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
+				.isConfirmEmptyingHU(newConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
 				.build();
+	}
+
+	private void updateGlobalEmptyingHUsConfig()
+	{
+		// getGlobalConfigOrDefault, not a local copy of the defaults: the harness must create the global record
+		// with exactly the values production falls back to.
+		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder =
+				mobileManufacturingConfigRepository.getGlobalConfigOrDefault(ClientId.METASFRESH).toBuilder();
+
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			globalConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			globalConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
+
+		mobileManufacturingConfigRepository.saveGlobalConfig(globalConfigBuilder.build(), ClientId.METASFRESH);
+	}
+
+
+	/**
+	 * Resolves each requested editable-attribute entry to a persisted {@code M_Attribute.Value}
+	 * ({@link AttributeCode}). An entry is FIRST looked up as a masterdata {@link Identifier} in the run
+	 * context (an attribute created earlier in the same request - e.g. via the {@code attributes} section -
+	 * whose unique per-run {@code Value} differs from its map-key identifier); its resolved {@link AttributeId}
+	 * is mapped back to the actual code. Only when no such identifier is registered is the entry treated as a
+	 * literal {@code AttributeCode} (backward compatibility with pre-existing/seeded codes, e.g. {@code Lot-Nummer}).
+	 */
+	@NonNull
+	private List<AttributeCode> resolveEditableAttributeCodes(@NonNull final List<AttributeCode> requestedCodes)
+	{
+		final ImmutableList.Builder<AttributeCode> resolved = ImmutableList.builder();
+		for (final AttributeCode requestedCode : requestedCodes)
+		{
+			final AttributeId attributeId = context.getOptionalId(Identifier.ofString(requestedCode.getCode()), AttributeId.class).orElse(null);
+			resolved.add(attributeId != null
+					? AttributeCode.ofString(attributeDAO.getAttributeCodeById(attributeId))
+					: requestedCode);
+		}
+		return resolved.build();
+	}
+
+	@NonNull
+	private List<AttributeCode> getGlobalEditableAttributes()
+	{
+		final MobileUIManufacturingConfig globalConfig = mobileManufacturingConfigRepository.getGlobalConfig(ClientId.METASFRESH);
+		return globalConfig != null ? globalConfig.getEditableAttributeCodesInOrder() : ImmutableList.of();
 	}
 
 }

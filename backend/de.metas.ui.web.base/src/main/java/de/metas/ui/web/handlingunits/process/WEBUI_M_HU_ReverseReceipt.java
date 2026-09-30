@@ -143,11 +143,21 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		return getView(HUEditorView.class);
 	}
 
+	/**
+	 * Resolves each referencing path BY ITS OWN TABLE rather than assuming {@code M_ReceiptSchedule}.
+	 * <p>
+	 * This editor is also reached from the receipt-disposition window, whose reverse action launches from the
+	 * view {@code RV_ReceiptDisposition_DeliveryPlanning}: {@code extractReferencingDocumentPaths} takes the
+	 * table from the launching process, so the paths arriving here name that view, not a receipt schedule.
+	 * Forcing the old hardcoded type on them failed with "Parent wrapper must use tablename
+	 * 'M_ReceiptSchedule'". The reversal itself is per receipt schedule, so only that half of the resolution is
+	 * used here - a planning does not change what gets reversed.
+	 */
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
 	{
-		return getView()
-				.getReferencingDocumentPaths().stream()
-				.map(referencingDocumentPath -> documentsCollection.getTableRecordReference(referencingDocumentPath).getModel(this, I_M_ReceiptSchedule.class))
+		return HUEditorReceiptSources.resolve(documentsCollection, this, getView().getReferencingDocumentPaths())
+				.stream()
+				.map(HUEditorReceiptSources.ReferencedReceiptSource::getReceiptSchedule)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

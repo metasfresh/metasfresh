@@ -326,4 +326,63 @@ public class ESRDataImporterCamt54V06Tests
 				.isInstanceOf(AdempiereException.class)
 				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
+
+	/**
+	 * Verifies that a file which declares the {@code camt.054.001.06} namespace itself is imported just like the
+	 * {@code camt.054.001.04} file it was derived from.
+	 * <p>
+	 * Every other fixture here is {@code .02} or {@code .04}, and {@link MultiVersionStreamReaderDelegate} rewrites
+	 * {@code .04} / {@code .05} to {@code .06} for the unmarshaller. So a dispatcher that enumerates the namespaces
+	 * it accepts — instead of routing everything non-{@code .02} to this importer — can reject a genuine
+	 * {@code .06} file without any pre-existing test noticing.
+	 */
+	@Test
+	public void testVersion06Namespace()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/camt054_v06_namespace.xml");
+		assertThat(inputStream).isNotNull();
+
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions())
+				.hasSize(10)
+				.are(trxHasNoErrors);
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
+		assertThat(importData.getCtrlQty()).as("CtrlQty").isEqualByComparingTo("10");
+	}
+
+	/**
+	 * Verifies that a creditor reference is accepted when its type is given through the structured
+	 * {@code CdtrRefInf/Tp/CdOrPrtry/Cd} element with value {@code SCOR}, rather than through the proprietary
+	 * {@code Prtry} element that every other fixture uses.
+	 * <p>
+	 * Both spellings are valid. A reference-extraction implementation that inspects {@code Prtry} alone silently
+	 * drops the reference of every transaction in a {@code SCOR} file.
+	 */
+	@Test
+	public void testScorReferenceType()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/camt054_SCOR.xml");
+		assertThat(inputStream).isNotNull();
+
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions())
+				.hasSize(10)
+				.are(trxHasNoErrors);
+
+		assertThat(importData.getTransactions())
+				.as("every transaction has its reference extracted from the Cd=SCOR element")
+				.allSatisfy(t -> assertThat(t.getEsrReferenceNumber()).isNotEmpty());
+
+		assertThat(importData.getTransactions())
+				.filteredOn(t -> ESRType.TYPE_SCOR.equals(t.getType()))
+				.as("the reference type is recognised as SCOR")
+				.hasSize(10);
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
+	}
 }

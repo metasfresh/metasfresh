@@ -11,6 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -33,10 +34,12 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -69,6 +72,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -97,6 +101,8 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	@NonNull
 	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
+
+	public IUOMConversionBL getUOMConversionBL() {return uomConversionBL;}
 
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 
@@ -210,4 +216,41 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				: Optional.empty();
 	}
 
+	/**
+	 * @return {@code true} if the HU's shape (not aggregate, a {@link HUType#TransportUnit} or
+	 * {@link HUType#VirtualPI} carrying at most one product storage) allows it to later be written off
+	 * via the "empty (auto. inventory)" reason. The client-config gate (whether emptying is offered at
+	 * all) is deliberately not applied here -- it is resolved once per request by the caller.
+	 */
+	public boolean isEmptyingEligible(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		return isEmptyingEligible(hu);
+	}
+
+	private boolean isEmptyingEligible(@NonNull final I_M_HU hu)
+	{
+		if (handlingUnitsBL.isAggregateHU(hu)) { return false; }          // orthogonal to unit type
+
+		final HUType huType = HUType.ofCodeOrNull(handlingUnitsBL.getHU_UnitType(hu));
+		if (huType == null) { return false; }                             // getHU_UnitType is @Nullable
+
+		switch (huType)
+		{
+			case TransportUnit:
+			case VirtualPI:
+				return isSingleProductStorage(hu);
+			case LoadLogistiqueUnit:
+				return false;
+		}
+
+		// No default: case above -- every current HUType is handled explicitly. A future unit type
+		// added to the enum without a matching case here fails loudly instead of silently returning false.
+		throw new AdempiereException("Unhandled HUType: " + huType);
+	}
+
+	private boolean isSingleProductStorage(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.getStorageFactory().getProductStorages(hu).size() <= 1;
+	}
 }

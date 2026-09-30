@@ -24,8 +24,10 @@ package de.metas.picking.rest_api.json;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,8 +40,8 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonTUPickingTarget
 {
-	@NonNull String id;
-	@NonNull String caption;
+	@Nullable String id;
+	@Nullable String caption;
 
 	//
 	// New TU
@@ -51,8 +53,15 @@ public class JsonTUPickingTarget
 	@Nullable HuId tuId;
 	@Nullable String tuQRCode;
 
+	/**
+	 * GRAI scan: when set (and no {@code tuPIId}/{@code tuId}), the server resolves the TU type from the scanned GRAI,
+	 * creates the TU, attaches the GRAI, and sets it as the line's existing-TU target.
+	 */
+	@Nullable ScannedCode grai;
+
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
 	{
+		final GRAI grai = target.getGrai();
 		return builder()
 				.id(target.getId())
 				.caption(target.getCaption())
@@ -60,6 +69,7 @@ public class JsonTUPickingTarget
 				.isDefault(target.isDefaultPacking())
 				.tuId(target.getTuId())
 				.tuQRCode(target.getTuQRCode() != null ? target.getTuQRCode().toGlobalQRCodeString() : null)
+				.grai(grai != null ? grai.toScannedCode() : null)
 				.build();
 	}
 

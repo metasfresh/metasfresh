@@ -41,6 +41,7 @@ public class GroupTemplateRegularLine
 	@Nullable ConditionsId contractConditionsId;
 	boolean isAllowSeparateInvoicing;
 	boolean isHideWhenPrinting;
+	boolean isWithoutCharge;
 
 	public boolean isMatching(@Nullable final ConditionsId contextContractConditionsId)
 	{

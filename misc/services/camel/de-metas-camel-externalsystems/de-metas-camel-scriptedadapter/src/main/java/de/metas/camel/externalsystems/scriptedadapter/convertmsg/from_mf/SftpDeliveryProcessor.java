@@ -28,22 +28,16 @@ import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Map;
-import java.util.Set;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 
@@ -56,7 +50,10 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
  * Supports two authentication modes:
  * <ul>
  *   <li><b>PASSWORD</b> — username + password</li>
- *   <li><b>SSH_KEY</b> — username + SSH private key (written to a temp file)</li>
+ *   <li><b>SSH_KEY</b> — username + SSH private key. The key is kept in memory: its bytes are bound in
+ *       the Camel registry and referenced via {@code &privateKey=#bean:<id>}, so it never lands on a
+ *       temp file on disk; the bean is unbound again once delivery finishes (mirrors the inbound
+ *       {@code ScriptedImportConversionSftpRouteBuilder}).</li>
  * </ul>
  */
 @Slf4j
@@ -99,7 +96,8 @@ public class SftpDeliveryProcessor implements Processor
 			throw new RuntimeCamelException("SFTP auth type is not configured in endpoint parameters!");
 		}
 
-		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, Map.of());
+		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext);
+		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, filenameVariables);
 
 		final String body = msgFromMfContext.getScriptReturnValue();
 		if (body == null)
@@ -107,43 +105,50 @@ public class SftpDeliveryProcessor implements Processor
 			throw new RuntimeCamelException("Script return value is null — nothing to deliver via SFTP!");
 		}
 
-		final String sftpUri = buildSftpUri(endpoint, port, remotePath, username, sftpAuthType, resolvedFilename);
+		// Per-delivery, stable-within-this-exchange bean id for the in-memory SSH key. buildSftpUri binds
+		// the key bytes under this id for SSH_KEY auth; the finally below unbinds it no matter how the
+		// delivery ends (no-op for password auth, where nothing was bound).
+		final String privateKeyBeanId = sshPrivateKeyBeanId(exchange.getExchangeId());
+		final String sftpUri = buildSftpUri(endpoint, port, remotePath, username, sftpAuthType, resolvedFilename, exchange.getContext(), privateKeyBeanId);
 
 		log.info("Delivering file via SFTP: host={}, port={}, path={}, filename={}", host, port, remotePath, resolvedFilename);
 
-		Path tempKeyFile = null;
 		try (final ProducerTemplate producerTemplate = exchange.getContext().createProducerTemplate())
 		{
-			if (AUTH_TYPE_SSH_KEY.equals(sftpAuthType))
-			{
-				tempKeyFile = writeSshKeyToTempFile(endpoint.getSshPrivateKey());
-			}
-
-			final String finalUri = AUTH_TYPE_SSH_KEY.equals(sftpAuthType) && tempKeyFile != null
-					? sftpUri + "&privateKeyFile=" + tempKeyFile.toAbsolutePath()
-					: sftpUri;
-
-			producerTemplate.sendBody(finalUri, body);
+			producerTemplate.sendBody(sftpUri, body);
 
 			log.info("SFTP delivery successful: {}", resolvedFilename);
 		}
 		finally
 		{
-			if (tempKeyFile != null)
-			{
-				deleteTempKeyFileSilently(tempKeyFile);
-			}
+			// Leave no key material behind: drop the in-memory private-key bean (no-op if password auth was used).
+			exchange.getContext().getRegistry().unbind(privateKeyBeanId);
 		}
 	}
 
 	@NonNull
-	private static String buildSftpUri(
+	private static Map<String, String> buildFilenameVariables(@NonNull final MsgFromMfContext context)
+	{
+		final var variables = new java.util.HashMap<String, String>();
+		if (!Check.isBlank(context.getOutboundDocumentNo()))
+		{
+			variables.put("documentno", context.getOutboundDocumentNo());
+		}
+		variables.put("table", context.getOutboundRecordTableName());
+		variables.put("recordid", context.getOutboundRecordId());
+		return variables;
+	}
+
+	@NonNull
+	String buildSftpUri(
 			@NonNull final JsonExternalSystemEndpoint endpoint,
 			final int port,
 			@NonNull final String remotePath,
 			@NonNull final String username,
 			@NonNull final String sftpAuthType,
-			@NonNull final String resolvedFilename)
+			@NonNull final String resolvedFilename,
+			@NonNull final CamelContext camelContext,
+			@NonNull final String privateKeyBeanId)
 	{
 		final var sb = new StringBuilder();
 		sb.append("sftp://").append(endpoint.getSftpHost()).append(":").append(port);
@@ -162,11 +167,16 @@ public class SftpDeliveryProcessor implements Processor
 		}
 		else if (AUTH_TYPE_SSH_KEY.equals(sftpAuthType))
 		{
-			if (Check.isBlank(endpoint.getSshPrivateKey()))
+			final String sshPrivateKey = endpoint.getSshPrivateKey();
+			if (Check.isBlank(sshPrivateKey))
 			{
 				throw new RuntimeCamelException("SFTP SSH_KEY auth selected but SSH private key is not configured!");
 			}
-			// privateKeyFile will be appended after temp file is created
+			// Keep the key in memory: bind its bytes in the Camel registry and reference them via
+			// #bean:<id>, so it never lands on a temp file on disk. process()'s finally unbinds the
+			// same id (mirrors the inbound ScriptedImportConversionSftpRouteBuilder).
+			camelContext.getRegistry().bind(privateKeyBeanId, sshPrivateKey.getBytes(StandardCharsets.UTF_8));
+			sb.append("&privateKey=#bean:").append(privateKeyBeanId);
 		}
 		else
 		{
@@ -183,26 +193,8 @@ public class SftpDeliveryProcessor implements Processor
 	}
 
 	@NonNull
-	private static Path writeSshKeyToTempFile(@NonNull final String sshPrivateKey) throws IOException
+	private static String sshPrivateKeyBeanId(@NonNull final String exchangeId)
 	{
-		final Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
-		final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(ownerOnly);
-		final Path tempFile = Files.createTempFile("sftp_key_", ".pem", attr);
-		Files.writeString(tempFile, sshPrivateKey, StandardCharsets.UTF_8);
-		log.debug("Wrote SSH private key to temp file: {}", tempFile);
-		return tempFile;
-	}
-
-	private static void deleteTempKeyFileSilently(@NonNull final Path tempKeyFile)
-	{
-		try
-		{
-			Files.deleteIfExists(tempKeyFile);
-			log.debug("Deleted temp SSH key file: {}", tempKeyFile);
-		}
-		catch (final IOException e)
-		{
-			log.warn("Failed to delete temp SSH key file: {}", tempKeyFile, e);
-		}
+		return "sftpDeliveryPrivateKey-" + exchangeId;
 	}
 }

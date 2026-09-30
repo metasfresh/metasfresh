@@ -186,6 +186,29 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete = "IsNavigateToJobsListAfterPickFromComplete";
 
 	/**
+	 * Set Print DD_Order on Complete.
+	 * If enabled, the Distribution Order document is printed automatically when a mobile distribution job is completed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintDDOrderOnComplete (boolean IsPrintDDOrderOnComplete);
+
+	/**
+	 * Get Print DD_Order on Complete.
+	 * If enabled, the Distribution Order document is printed automatically when a mobile distribution job is completed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPrintDDOrderOnComplete();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsPrintDDOrderOnComplete = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsPrintDDOrderOnComplete", null);
+	String COLUMNNAME_IsPrintDDOrderOnComplete = "IsPrintDDOrderOnComplete";
+
+	/**
 	 * Set Is Require Product Code Scan.
 	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
 	 *

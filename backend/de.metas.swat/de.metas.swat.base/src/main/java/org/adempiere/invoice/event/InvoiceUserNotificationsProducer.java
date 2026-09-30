@@ -5,6 +5,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -12,12 +13,15 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
@@ -37,9 +41,19 @@ public class InvoiceUserNotificationsProducer
 			.type(Type.DISTRIBUTED)
 			.build();
 
+	/**
+	 * Separate from {@link #EVENTBUS_TOPIC} because every subscriber of that one expects the event to reference
+	 * a C_Invoice, and a failure event references none.
+	 */
+	public static final Topic EVENTBUS_TOPIC_Error = Topic.builder()
+			.name("de.metas.invoicecandidate.UserNotifications.InvoicingErrors")
+			.type(Type.DISTRIBUTED)
+			.build();
+
 	private static final transient Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);
 
 	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InvoiceGenerated");
+	private static final AdMessageKey MSG_Event_InvoicingError = AdMessageKey.of("Event_InvoicingError");
 
 	private InvoiceUserNotificationsProducer()
 	{
@@ -89,6 +103,39 @@ public class InvoiceUserNotificationsProducer
 				.contentADMessageParam(bpName)
 				.targetAction(TargetRecordAction.of(invoiceRef))
 				.build();
+	}
+
+	public InvoiceUserNotificationsProducer notifyInvoicingError(
+			@Nullable final List<I_C_Invoice_Candidate> failedCandidates,
+			@Nullable final Throwable error,
+			@Nullable final UserId recipientUserId)
+	{
+		// Without this, a forwarded-but-empty call would notify "0 invoice candidate(s) could not be invoiced".
+		if (failedCandidates == null || failedCandidates.isEmpty())
+		{
+			return this;
+		}
+
+		try
+		{
+			// send() and not sendAfterCommit(): the invoicing transaction is rolled back on error,
+			// so an after-commit notification would never be sent.
+			Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
+					.topic(EVENTBUS_TOPIC_Error)
+					.recipientUserId(recipientUserId != null ? recipientUserId : Env.getLoggedUserId())
+					.contentADMessage(MSG_Event_InvoicingError)
+					.contentADMessageParam(failedCandidates.size())
+					// extractMessage() and not getLocalizedMessage(): the latter is null for e.g. an NPE,
+					// which would render the note as "...: null".
+					.contentADMessageParam(AdempiereException.extractMessage(error))
+					.build());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed creating invoicing-error event for {} candidate(s). Ignored.", failedCandidates.size(), ex);
+		}
+
+		return this;
 	}
 
 	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()

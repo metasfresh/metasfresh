@@ -51,6 +51,8 @@ public class StepDefConstants
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
 	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
+	/** {@code AD_Org.Value} of the standard main org ({@link #ORG_ID} = {@link OrgId#MAIN}) in the seed DB. */
+	public static final String ORG_VALUE = "001";
 	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
 	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);

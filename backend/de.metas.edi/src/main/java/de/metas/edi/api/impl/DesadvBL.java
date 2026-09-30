@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvId;
@@ -60,10 +61,12 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -81,7 +84,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -116,11 +123,13 @@ public class DesadvBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
 	@NonNull private final ProductASIDataRepository productASIDataRepository;
+	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
 
 	@VisibleForTesting
 	public static DesadvBL newInstanceForUnitTesting()
@@ -131,7 +140,8 @@ public class DesadvBL
 				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
 						EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
 						EDIBPartnerConfigService.newInstanceForUnitTesting(),
-						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)))
+						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)),
+						new EDIDesadvInOutRepository())
 		);
 	}
 
@@ -271,7 +281,12 @@ public class DesadvBL
 		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
 		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
 		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
-		newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
+		// mirror the EAN_CU handling above: fall back to the TU-level GTIN when no explicit EAN_TU
+		// is maintained, so a TU-delivered line always carries a TU product identifier
+		// (else the EANCOM mapping emits only the buyer number PIA+1+..:IN, which the recipient's guideline rejects)
+		newDesadvLine.setEAN_TU(CoalesceUtil.firstNotBlank(
+				materialItemProduct.getEAN_TU(),
+				materialItemProduct.getGTIN()));
 
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
@@ -350,57 +365,133 @@ public class DesadvBL
 	@Nullable
 	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(@NonNull final I_M_InOut inOut)
 	{
-		final I_EDI_Desadv desadv;
+		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
-		if (inOut.getC_Order_ID() > 0)
+		// Walk the inOutLines FIRST and derive the set of source DESADVs from the
+		// orderLine → desadvLine → desadv chain. This makes per-line desadv-line links
+		// the authoritative source of truth for consolidated shipments (where M_InOut.C_Order_ID
+		// may be null), and lets the C_Order_ID branch act as a pure fallback for 1-order
+		// shipments where the order completed before any desadvLine was wired up.
+		//
+		// Sequences are built lazily per DESADV so that pack sequence numbers are independent
+		// across source-order DESADVs when a shipment covers multiple orders.
+		final Map<EDIDesadvId, EDIDesadvPackService.Sequences> sequencesByDesadv = new HashMap<>();
+
+		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
+		addInOutLinesToDesadvLines(inOutLines, recipientBPartnerId, sequencesByDesadv);
+
+		// If the line walk found source DESADVs, the lowest EDI_Desadv_ID wins as the "primary"
+		// written to M_InOut.EDI_Desadv (legacy single-DESADV header link); the junction table
+		// carries the full set. If no source DESADV was found (e.g. a 1-order shipment whose
+		// order completed before any desadvLine was wired up), fall back to C_Order_ID / POReference.
+		final I_EDI_Desadv primary;
+		if (!sequencesByDesadv.isEmpty())
+		{
+			// Picking the lowest EDI_Desadv_ID is deterministic and matches the legacy single-order
+			// behaviour (where the only candidate desadv was the order's own desadv).
+			// The !isEmpty() guard above makes the orElseThrow path unreachable in practice; it is
+			// kept only to satisfy Optional's API (no Java 10 .orElseThrow() on Java 8).
+			final EDIDesadvId primaryId = sequencesByDesadv.keySet().stream()
+					.min(Comparator.comparingInt(EDIDesadvId::getRepoId))
+					.orElseThrow(() -> new AdempiereException("sequencesByDesadv unexpectedly empty"));
+			primary = desadvDAO.retrieveById(primaryId);
+		}
+		else if (inOut.getC_Order_ID() > 0)
 		{
 			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
 			if (order.getEDI_Desadv_ID() > 0)
 			{
-				desadv = order.getEDI_Desadv();
+				primary = order.getEDI_Desadv();
 			}
 			else
 			{
-				desadv = addToDesadvCreateForOrderIfNotExist(order);
+				primary = addToDesadvCreateForOrderIfNotExist(order);
 				InterfaceWrapperHelper.save(order);
+
+				// The fallback has just created the EDI_DesadvLines and wired C_OrderLine.EDI_DesadvLine_ID.
+				// The first walk skipped every line because those links did not exist yet, so the shipped
+				// quantities would stay at zero. Walk again now that the lines are there.
+				addInOutLinesToDesadvLines(inOutLines, recipientBPartnerId, sequencesByDesadv);
 			}
 		}
 		else if (Check.isNotBlank(inOut.getPOReference()))
 		{
-			desadv = desadvDAO.retrieveMatchingDesadvOrNull(buildEDIDesadvQuery(inOut));
+			primary = desadvDAO.retrieveMatchingDesadvOrNull(buildEDIDesadvQuery(inOut));
 		}
 		else
 		{
-			desadv = null;
+			primary = null;
 		}
 
-		if (desadv == null)
+		if (primary == null)
 		{
 			return null;
 		}
 
-		inOut.setEDI_Desadv(desadv);
+		inOut.setEDI_Desadv(primary);
+		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		// Eager assignDesadvToInOut for the primary covers the case where sequencesByDesadv is empty
+		// (e.g. 1-order shipment with no desadvLines): the junction row still gets written so the
+		// export view sees exactly one source DESADV. assignDesadvToInOut is idempotent, so repeating
+		// it inside the loop below for the same primary is safe.
+		ediDesadvInOutRepository.assignDesadvToInOut(
+				EDIDesadvId.ofRepoId(primary.getEDI_Desadv_ID()),
+				inOutId);
 
-		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
+		// For consolidated multi-source-order shipments, write a junction row (EDI_Desadv_M_InOut) for
+		// every distinct source DESADV that contributed lines to this M_InOut, so that the export
+		// view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per source DESADV.
+		for (final EDIDesadvId perLineDesadvId : sequencesByDesadv.keySet())
+		{
+			ediDesadvInOutRepository.assignDesadvToInOut(perLineDesadvId, inOutId);
+		}
+		return primary;
+	}
 
-		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
-
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
+	/**
+	 * Adds each of {@code inOutLines} to the {@code EDI_DesadvLine} its order line points to, and
+	 * records the DESADVs it touched in {@code sequencesByDesadv}.
+	 * <p>
+	 * Order lines are re-read by id rather than via {@code inOutLine.getC_OrderLine()} because this
+	 * runs a second time after {@link #addToDesadvCreateForOrderIfNotExist(I_C_Order)} has just
+	 * written {@code EDI_DesadvLine_ID} onto its own order-line instances.
+	 */
+	private void addInOutLinesToDesadvLines(
+			@NonNull final List<I_M_InOutLine> inOutLines,
+			@NonNull final BPartnerId recipientBPartnerId,
+			@NonNull final Map<EDIDesadvId, EDIDesadvPackService.Sequences> sequencesByDesadv)
+	{
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
 			if (inOutLine.getC_OrderLine_ID() <= 0)
 			{
 				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
-			addInOutLine(inOutLine, recipientBPartnerId, sequences);
+
+			// Resolve the DESADV for this inOutLine via its order line → desadv line → desadv header.
+			// When the order line has no EDI_DesadvLine_ID set, this line cannot contribute to any
+			// source DESADV (addInOutLine would early-return anyway), so we skip it here.
+			final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(
+					OrderLineId.ofRepoId(inOutLine.getC_OrderLine_ID()), I_C_OrderLine.class);
+			final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
+			if (desadvLineId == null)
+			{
+				continue;
+			}
+			final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
+			final EDIDesadvId lineDesadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+
+			final EDIDesadvPackService.Sequences lineSequences = sequencesByDesadv.computeIfAbsent(lineDesadvId, ediDesadvPackService::createSequences);
+
+			addInOutLine(inOutLine, recipientBPartnerId, lineSequences, desadvLineRecord);
 		}
-		return desadv;
 	}
 
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
-			@NonNull final EDIDesadvPackService.Sequences sequences)
+			@NonNull final EDIDesadvPackService.Sequences sequences,
+			@NonNull final I_EDI_DesadvLine desadvLineRecord)
 	{
 		if (inOutLineRecord.getMovementQty().signum() <= 0)
 		{
@@ -411,15 +502,9 @@ public class DesadvBL
 
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
-		final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
-		if (desadvLineId == null)
-		{
-			logger.debug("DesadvBL.addInOutLine - No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-					orderLineRecord.getC_OrderLine_ID());
-			return;
-		}
-
-		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
+		// Pre-condition (enforced by the caller): the order line has a non-null EDI_DesadvLine_ID
+		// and the passed-in desadvLineRecord is the result of desadvDAO.retrieveLineById(…).
+		// We do NOT re-fetch it here — that would double the DB round-trips on every inOut line.
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
@@ -739,6 +824,13 @@ public class DesadvBL
 		final BigDecimal qtyOrdered_Override = getQtyOrdered_Override(schedule);
 		desadvLineRecord.setQtyOrdered_Override(qtyOrdered_Override);
 		desadvDAO.save(desadvLineRecord);
+
+		// The override we just wrote can complete (or re-open) the DESADV's last open line, so the
+		// header status has to be re-derived. This is stated here rather than in any close process
+		// because every close route goes through ShipmentScheduleBL.closeShipmentSchedule and thus
+		// through this interceptor-driven method — which is also why the recompute is deferred to the
+		// end of the transaction: one close operation spanning N lines re-derives the header once.
+		recomputeDesadvStatusFromInOutsBeforeCommit(EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID()));
 	}
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
@@ -972,9 +1064,9 @@ public class DesadvBL
 	}
 
 	@NonNull
-	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull final InOutId shipmentId, @NonNull final EDIDesadvId desadvId)
 	{
-		return desadvDAO.getInOutDesadvByInOutId(shipmentId);
+		return desadvDAO.getInOutDesadvByInOutIdAndDesadvId(shipmentId, desadvId);
 	}
 
 	@NonNull
@@ -987,6 +1079,14 @@ public class DesadvBL
 	}
 
 	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_EDI_Desadv desadv)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(desadv.getDropShip_BPartner_ID(), desadv.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(desadv.getC_BPartner_ID(), desadv.getC_BPartner_Location_ID()));
+	}
+
+	@NonNull
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
 		return desadvDAO.retrieveAllInOuts(desadv);
@@ -996,6 +1096,43 @@ public class DesadvBL
 	public List<I_EDI_DesadvLine> retrieveAllDesadvLines(@NonNull final I_EDI_Desadv desadv)
 	{
 		return desadvDAO.retrieveAllDesadvLines(desadv);
+	}
+
+	/**
+	 * @return {@code true} if this line has already received everything it will ever receive, i.e.
+	 *         {@code QtyDeliveredInStockingUOM >= COALESCE(QtyOrdered_Override, QtyOrdered)}.
+	 *         This is the java equivalent of the SQL {@code IsDeliveryClosed} in
+	 *         {@code M_InOut_DesadvLine_V.sql} / {@code get_desadv_packs_json_fn.sql}.
+	 *         <p>
+	 *         Note: {@code getQtyOrdered_Override()} returns {@code ZERO} for a SQL NULL, so the
+	 *         "no override" case has to be detected with {@code InterfaceWrapperHelper.isNull} —
+	 *         otherwise every line without an override would look delivery-closed.
+	 */
+	@VisibleForTesting
+	static boolean isDesadvLineDeliveryClosed(@NonNull final I_EDI_DesadvLine desadvLineRecord)
+	{
+		final BigDecimal effectiveQtyOrdered =
+				InterfaceWrapperHelper.isNull(desadvLineRecord, I_EDI_DesadvLine.COLUMNNAME_QtyOrdered_Override)
+						? desadvLineRecord.getQtyOrdered()
+						: desadvLineRecord.getQtyOrdered_Override();
+
+		return desadvLineRecord.getQtyDeliveredInStockingUOM().compareTo(effectiveQtyOrdered) >= 0;
+	}
+
+	/**
+	 * @return {@code true} if no further {@code M_InOutLine} can arrive for this DESADV, because every
+	 *         one of its lines is delivery-closed. A DESADV without lines returns {@code false}:
+	 *         "nothing to deliver" is not the same statement as "everything delivered", and letting it
+	 *         return {@code true} would auto-close freshly created, still-empty DESADVs.
+	 */
+	private boolean areAllDesadvLinesDeliveryClosed(@NonNull final I_EDI_Desadv desadv)
+	{
+		final List<I_EDI_DesadvLine> desadvLines = desadvDAO.retrieveAllDesadvLines(desadv);
+		if (desadvLines.isEmpty())
+		{
+			return false;
+		}
+		return desadvLines.stream().allMatch(DesadvBL::isDesadvLineDeliveryClosed);
 	}
 
 	@NonNull
@@ -1016,9 +1153,40 @@ public class DesadvBL
 			return true;
 		}
 
-		final BPartnerId bPartnerId = getEffectiveDropshipPartnerId(desadv);
-		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId);
+		final BPartnerLocationId bpl = getEffectiveDropshipLocationId(desadv);
+		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bpl);
 
+	}
+
+	/**
+	 * Accumulates {@code desadvId} and re-derives the DESADV status <b>once per distinct DESADV at the end
+	 * of the current transaction</b> instead of once per call, via
+	 * {@link #recomputeDesadvStatusFromInOuts(EDIDesadvId)}.
+	 * <p>
+	 * Closing the {@code M_ShipmentSchedule}s of an order fires the interceptor once per record, and each
+	 * recompute costs three to four uncached round-trips (the header, the per-shipment routing config, the
+	 * linked-shipment junction, and all DESADV lines). An N-line order therefore paid N times over for a
+	 * verdict only the last pass can reach. Deferring costs nothing semantically: a recompute at the end of
+	 * the transaction sees the final state of every line, which is precisely what the discarded earlier
+	 * passes were trying to establish.
+	 * <p>
+	 * {@code BEFORE_COMMIT} rather than {@code AFTER_COMMIT} on purpose — the recompute <i>writes</i> the
+	 * {@code EDI_Desadv}, so it must be part of the same transaction. That keeps the new status visible to
+	 * whoever reads the DESADV once the close returns (no asynchronous window to wait on), and lets a
+	 * failure fail the close instead of being logged and dropped. With no active transaction the shared
+	 * helper runs the recompute immediately, so a single stand-alone close behaves exactly as before.
+	 */
+	public void recomputeDesadvStatusFromInOutsBeforeCommit(@NonNull final EDIDesadvId desadvId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"DesadvBL.recomputeDesadvStatusFromInOutsBeforeCommit",
+				ImmutableSet.of(desadvId),
+				this::recomputeDesadvStatusFromInOutsNow);
+	}
+
+	private void recomputeDesadvStatusFromInOutsNow(@NonNull final Collection<EDIDesadvId> desadvIds)
+	{
+		ImmutableSet.copyOf(desadvIds).forEach(this::recomputeDesadvStatusFromInOuts);
 	}
 
 	/**
@@ -1033,9 +1201,22 @@ public class DesadvBL
 	 * <ol>
 	 *   <li>Any linked InOut is Invalid → DESADV Invalid + aggregated error message</li>
 	 *   <li>Any linked InOut is Error (and none Invalid) → DESADV Error + aggregated error message</li>
-	 *   <li>All linked InOuts are Sent or DontSend AND FulfillmentPercent >= 100% → DESADV Sent, clear error message</li>
-	 *   <li>Any linked InOut is Pending, Enqueued, or SendingStarted, OR FulfillmentPercent < 100% → DESADV Pending, clear error message</li>
+	 *   <li>All linked InOuts are Sent or DontSend AND no further delivery is expected → DESADV Sent
+	 *       if at least one InOut is Sent, else DontSend; error message cleared.
+	 *       "No further delivery expected" means FulfillmentPercent &gt;= 100%, <b>or</b> every
+	 *       {@code EDI_DesadvLine} is delivery-closed
+	 *       ({@code QtyDeliveredInStockingUOM >= COALESCE(QtyOrdered_Override, QtyOrdered)}), which is
+	 *       what closing the line's {@code M_ShipmentSchedule} expresses. This is what lets an
+	 *       under-delivered DESADV reach its terminal status without running the
+	 *       {@code EDI_Desadv_Close} process.</li>
+	 *   <li>Otherwise → DESADV Pending, error message cleared</li>
 	 * </ol>
+	 * The computed status is written only when it (or the error message) actually differs from the stored
+	 * value: several linked shipments changing status within one transaction each reach this method.
+	 * <p>
+	 * Callers on the shipment-schedule close route must use
+	 * {@link #recomputeDesadvStatusFromInOutsBeforeCommit(EDIDesadvId)} instead, which collapses one close
+	 * operation's N per-line invocations into a single recompute.
 	 */
 	public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
 	{
@@ -1067,9 +1248,7 @@ public class DesadvBL
 		if (!invalidInOuts.isEmpty())
 		{
 			final String aggregatedError = buildAggregatedErrorMessage(invalidInOuts);
-			desadv.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
-			desadv.setEDIErrorMsg(aggregatedError);
-			desadvDAO.save(desadv);
+			setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Invalid, aggregatedError);
 			logger.info("DESADV {} set to Invalid due to {} invalid InOuts: {}", desadvId, invalidInOuts.size(), aggregatedError);
 			return;
 		}
@@ -1077,9 +1256,7 @@ public class DesadvBL
 		if (!errorInOuts.isEmpty())
 		{
 			final String aggregatedError = buildAggregatedErrorMessage(errorInOuts);
-			desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
-			desadv.setEDIErrorMsg(aggregatedError);
-			desadvDAO.save(desadv);
+			setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Error, aggregatedError);
 			logger.info("DESADV {} set to Error due to {} error InOuts: {}", desadvId, errorInOuts.size(), aggregatedError);
 			return;
 		}
@@ -1089,21 +1266,65 @@ public class DesadvBL
 
 		final BigDecimal fulfillmentPercent = desadv.getFulfillmentPercent();
 
-		if (allProcessed && fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0)
+		// No further M_InOutLine can arrive if the DESADV is fully fulfilled, or if every line has
+		// already received everything it will ever receive (which is what closing the line's
+		// M_ShipmentSchedule expresses, via EDI_DesadvLine.QtyOrdered_Override).
+		// allProcessed is evaluated first only because it is in-memory over the already-loaded allInOuts.
+		// It does NOT spare the areAllDesadvLinesDeliveryClosed query on the close path this feature
+		// exists for: a schedule is normally closed only once its shipments are already Sent/DontSend, so
+		// allProcessed is true throughout a mass-close and the line query would fire every single time.
+		// What holds that query count to one per transaction is the accumulation in
+		// recomputeDesadvStatusFromInOutsBeforeCommit, not this ordering.
+		final boolean noFurtherDeliveryExpected = allProcessed
+				&& (fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0
+						|| areAllDesadvLinesDeliveryClosed(desadv));
+
+		if (noFurtherDeliveryExpected)
 		{
 			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
 			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
-			desadv.setEDI_ExportStatus(ediExportStatus.getCode());
-			desadv.setEDIErrorMsg(null);
-			desadvDAO.save(desadv);
-			logger.info("DESADV {} auto-closed to Sent (all InOuts sent/don't send, fulfillment {}%)", desadvId, fulfillmentPercent);
+			setDesadvStatusAndSaveIfChanged(desadv, ediExportStatus, null);
+			logger.info("DESADV {} auto-closed to {} (all InOuts sent/don't send, no further delivery expected, fulfillment {}%)",
+					desadvId, ediExportStatus, fulfillmentPercent);
 			return;
 		}
 
-		desadv.setEDI_ExportStatus(EDIExportStatus.Pending.getCode());
-		desadv.setEDIErrorMsg(null);
-		desadvDAO.save(desadv);
+		setDesadvStatusAndSaveIfChanged(desadv, EDIExportStatus.Pending, null);
 		logger.debug("DESADV {} set to Pending (fulfillment {}%, allProcessed={})", desadvId, fulfillmentPercent, allProcessed);
+	}
+
+	/**
+	 * @return {@code true} if writing {@code targetStatus} / {@code targetErrorMsg} onto {@code desadv} would
+	 *         actually change either value. Blank-vs-{@code null} error messages compare as equal.
+	 */
+	@VisibleForTesting
+	static boolean isDesadvStatusChanged(
+			@NonNull final I_EDI_Desadv desadv,
+			@NonNull final EDIExportStatus targetStatus,
+			@Nullable final String targetErrorMsg)
+	{
+		return !Objects.equals(desadv.getEDI_ExportStatus(), targetStatus.getCode())
+				|| !Objects.equals(StringUtils.trimBlankToNull(desadv.getEDIErrorMsg()),
+						StringUtils.trimBlankToNull(targetErrorMsg));
+	}
+
+	/**
+	 * The recompute still runs more than once per transaction whenever several of the DESADV's linked
+	 * shipments change their EDI_ExportStatus, and the earlier passes typically conclude "still open".
+	 * Saving only on an actual change keeps that to at most one write per transition.
+	 */
+	private void setDesadvStatusAndSaveIfChanged(
+			@NonNull final I_EDI_Desadv desadv,
+			@NonNull final EDIExportStatus targetStatus,
+			@Nullable final String targetErrorMsg)
+	{
+		if (!isDesadvStatusChanged(desadv, targetStatus, targetErrorMsg))
+		{
+			return;
+		}
+		desadv.setEDI_ExportStatus(targetStatus.getCode());
+		desadv.setEDIErrorMsg(targetErrorMsg);
+		desadvDAO.save(desadv);
 	}
 
 	/**

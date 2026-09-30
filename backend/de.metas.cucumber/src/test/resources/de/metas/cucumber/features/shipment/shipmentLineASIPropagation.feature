@@ -82,12 +82,12 @@ Feature: Shipment line ASI propagation
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_AttributeSetInstance_ID |
       | orderLine  | order      | product      | 10         | asi_order                 |
     And the order identified by order is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Wait for shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     # Generate shipment (no HU picking — manual packing / dropship path)
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -145,7 +145,7 @@ Feature: Shipment line ASI propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
       | inventory      | warehouse      | 2022-05-17   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | asi_HU                    | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Register the HU's Herkunft attribute
     And metasfresh contains M_HU_PI_Attribute:
@@ -167,8 +167,8 @@ Feature: Shipment line ASI propagation
 
     # Wait for shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     # Generate shipment — HU with Herkunft=IT will be picked on-the-fly
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -225,7 +225,7 @@ Feature: Shipment line ASI propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
       | inventory      | warehouse      | 2022-05-17   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | asi_HU                    | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And metasfresh contains M_HU_PI_Attribute:
       | M_HU_PI_Version_ID | M_Attribute.Value |
@@ -245,8 +245,8 @@ Feature: Shipment line ASI propagation
     And the order identified by order is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |

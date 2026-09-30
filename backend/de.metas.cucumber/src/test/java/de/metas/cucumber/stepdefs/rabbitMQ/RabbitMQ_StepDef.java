@@ -63,7 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RabbitMQ_StepDef
 {
@@ -142,6 +142,17 @@ public class RabbitMQ_StepDef
 	{
 		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
+	}
+
+	/**
+	 * Drains the {@code de.metas.material} RabbitMQ queue, i.e. blocks until it is empty or throws after 5 minutes.
+	 * This is the internal collaborator API for a step def that internalizes its own drain (see
+	 * {@code de.metas.cucumber/CLAUDE.md} rule 7) — use this method, not the Gherkin-bound
+	 * {@link #wait_empty_material_queue()}.
+	 */
+	public void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
 	@Given("rabbitMQ queue is created")

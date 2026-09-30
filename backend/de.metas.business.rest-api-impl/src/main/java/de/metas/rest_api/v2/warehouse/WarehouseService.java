@@ -55,7 +55,7 @@ import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;

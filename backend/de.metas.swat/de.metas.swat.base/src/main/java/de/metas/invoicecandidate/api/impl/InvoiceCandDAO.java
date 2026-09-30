@@ -102,6 +102,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -385,6 +386,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
+				//
+				// Ordered so the caller takes C_Invoice_Candidate row locks in a deterministic sequence;
+				// unordered, this and the async recompute (fetchInvalidInvoiceCandidates) could take the same
+				// rows in opposite order and deadlock.
+				//
+				// C_Invoice_Candidate_ID alone is enough to agree with that recompute even though the recompute
+				// orders by (IsFreightCost, IsManual, C_Invoice_Candidate_ID): both leading keys are constant
+				// across THIS query's result set, so the two orderings coincide on it. IsFreightCost is derived
+				// from the order line's product (C_OrderLine_Handler.setOrderedData), and IsManual can only be
+				// 'N' here -- the sole writer of IsManual='Y' on a candidate,
+				// ExternallyReferencedCandidateRepository, never sets C_OrderLine_ID, so a manual candidate
+				// cannot pass this method's C_OrderLine_ID filter in the first place.
+				.orderBy()
+				.addColumnAscending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.endOrderBy()
 				//
 				.create()
 				.list(I_C_Invoice_Candidate.class);
@@ -1415,7 +1431,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null)
 				.create()
-				.createSelection();
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
 
 		if (selectionToUpdateId == null)
 		{
@@ -1481,7 +1499,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			Loggables.withLogger(logger, Level.INFO)
@@ -1770,7 +1790,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (!Check.isEmpty(orgIDsAsString))
 		{
 
-			defaultFilter.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
+			defaultFilter.append(I_C_Invoice_Candidate.Table_Name)
+					.append(".")
+					.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 					.append(" IN (")
 					.append(orgIDsAsString)
 					.append(")");

@@ -2,6 +2,7 @@ const translations = {
   appName: 'metasfresh mobile',
   error: {
     PleaseTryAgain: 'Please try again',
+    InternalError: 'Please try again. If the problem persists, contact support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Connection error',
     },
@@ -12,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -20,6 +26,7 @@ const translations = {
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
+    LocatorFrom: 'From Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
     QtyToPick_Total: 'Qty to pick (total)',
@@ -33,6 +40,7 @@ const translations = {
     PackingItemName: 'Packing',
     BestBeforeDate: 'Best Before',
     LotNo: 'Lot',
+    SerialNo: 'Serial No',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     closeText: 'Close',
@@ -49,10 +57,16 @@ const translations = {
     workplace: 'Workplace',
     workstation: 'Workstation',
     trolley: 'Trolley',
+    releaseTrolley: {
+      buttonCaption: 'Release trolley',
+    },
   },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',
+    qrLoginPlaceholder: 'Scan your login QR code',
+    username: 'Username',
+    password: 'Password',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Password',
@@ -70,12 +84,28 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation is currently unavailable',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
       scanTrolleyPlaceholder: 'Scan trolley...',
+      scanPrompt: 'Scan barcode',
+      scanInProgress: 'Scanning in progress...',
+      enterManually: 'Enter manually',
+      scanWithCamera: 'Scan with camera',
+      useHardwareScanner: 'Use hardware scanner',
+      manualInputPlaceholder: 'Enter barcode...',
+      manualInputSubmit: 'Submit',
+      cameraError: 'Camera could not be started. Please check camera permissions.',
     },
   },
   activities: {
@@ -86,6 +116,19 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Target QR Code must be scanned first!',
       scanLuOrLocator: 'Scan LU or locator',
+      action: {
+        bulkActions: {
+          windowName: 'Bulk Actions',
+          closeScanner: 'Close scanner',
+          move: 'Move',
+          moveSuccess: 'HU moved successfully',
+          scanHUPlaceholder: 'Scan HU',
+          scanTargetPlaceholder: 'Scan target location',
+        },
+      },
+    },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'This will write off the remaining %(qty)s and empty the HU. Continue?',
     },
     picking: {
       PickingLine: 'Packing line',
@@ -102,11 +145,25 @@ const translations = {
       unPickBtn: 'Unpack',
       target: 'To pack',
       picked: 'Packed',
+      available: 'Available',
       switchToManualInput: 'Manually',
       switchToQrCodeInput: 'Scan',
+      scanSerialNo: 'Scan Serial No',
+      scanSerialNoAgain: 'Scan again',
+      serialNoCount: '%(scanned)s of %(total)s scanned',
+      serialNoCountExtra: '(%(extra)s too many)',
+      serialNoAlreadyScanned: 'Serial number already scanned',
+      serialNoScanDone: 'Done',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
-      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qtyRejectedIgnoreReason: 'Without reason',
+      unpick: {
+        unpickItemBtn: 'Unpack item',
+        scanProduct: 'Scan product',
+        qtyCaption: 'Qty to unpick',
+        scanTargetHU: 'Scan target HU',
+        productNotInPackage: 'This product is not in the package',
+      },
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -124,22 +181,54 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      graiScan: {
+        multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+        count: '%(scanned)s / %(total)s GRAIs scanned',
+        countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s skipped — already on this loading unit)',
+        skippedNotice: '%(count)s crate(s) already on this loading unit were skipped',
+        save: {
+          buttonCaption: 'Save',
+        },
+        clearAll: {
+          buttonCaption: 'Clear All',
+          confirmQuestion: 'Remove all %(count)s GRAIs?',
+        },
+      },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
+      noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
+      rlzConfirmDeclined: 'Pick skipped — shelf life too short',
+      adviseCarrier: 'Carrier Advise',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanProduct: 'Scan Product',
+      scanHUBarcodePlaceholder: 'Scan HU barcode',
+      scanProductGtinPlaceholder: 'Scan product (GTIN)',
       scanDropToLocator: 'Scan drop to Locator',
+      switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      cannotPickFromSelectedHU: 'Cannot pick from the selected HU: %(reason)s. Please scan the HU to pick from.',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
+        productCodeWhereHUExpected: 'This is an article barcode (GTIN), not an HU barcode. Please scan the HU first.',
       },
       printMaterialInTransitReport: 'In Transit Report',
     },
@@ -152,6 +241,11 @@ const translations = {
       },
       abort: 'Abort',
       notFound: 'Not found',
+      error: {
+        title: 'Could not send confirmation',
+        retry: 'Retry',
+        cancel: 'Cancel',
+      },
     },
     mfg: {
       ProductName: 'Product Name',

@@ -38,12 +38,15 @@ import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_S
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.compiere.util.TimeUtil;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -56,6 +59,7 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
 
+import java.time.ZoneId;
 import java.util.List;
 
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
@@ -68,6 +72,7 @@ public class C_PurchaseCandidate_StepDef
 	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidate_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final IdentifierIds_StepDefData identifierIdsTable;
 	private final C_PurchaseCandidate_StepDefData purchaseCandidateTable;
@@ -334,6 +339,19 @@ public class C_PurchaseCandidate_StepDef
 						() -> logCurrentContext(row));
 
 		purchaseCandidateTable.putOrReplace(row.getAsIdentifier(), purchaseCandidateRecord);
+
+		// Optional date assertions
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(purchaseCandidateRecord.getAD_Org_ID()));
+
+		row.getAsOptionalLocalDate(I_C_PurchaseCandidate.COLUMNNAME_PurchaseDatePromised)
+				.ifPresent(expectedDate -> assertThat(TimeUtil.asLocalDate(purchaseCandidateRecord.getPurchaseDatePromised(), zoneId))
+						.as(I_C_PurchaseCandidate.COLUMNNAME_PurchaseDatePromised)
+						.isEqualTo(expectedDate));
+
+		row.getAsOptionalLocalDate(I_C_PurchaseCandidate.COLUMNNAME_PurchaseDateOrdered)
+				.ifPresent(expectedDate -> assertThat(TimeUtil.asLocalDate(purchaseCandidateRecord.getPurchaseDateOrdered(), zoneId))
+						.as(I_C_PurchaseCandidate.COLUMNNAME_PurchaseDateOrdered)
+						.isEqualTo(expectedDate));
 	}
 
 	@NonNull

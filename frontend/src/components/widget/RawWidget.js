@@ -11,6 +11,9 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
+/** Widget types with their own document-change focus rule; `WidgetRenderer` routes these to `Lookup`/`List`. */
+const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -77,6 +80,25 @@ export class RawWidget extends PureComponent {
         JSON.stringify(prevProps.widgetData[0].value)
     ) {
       this.resetCachedValue();
+    }
+
+    // The mount-time focus above never runs again inside a mounted window, so repeat it when the
+    // document changes - not while this widget holds the caret, not in a modal (there `dataId` is
+    // a pinstance id, not a document), and not in a quick-input row (the header's first field is
+    // the one that must get the focus).
+    //
+    // Lookups and dropdowns are skipped: they repeat their own rule under their own conditions,
+    // and focusing them through this widget's ref would bypass those - for a composed lookup the
+    // ref is not even reliably the primary sub-field.
+    if (
+      this.props.autoFocus &&
+      !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
+      !WIDGETS_WITH_OWN_FOCUS_RULE.includes(this.props.widgetType) &&
+      prevProps.dataId !== this.props.dataId &&
+      !this.state.isFocused
+    ) {
+      this.focus();
     }
   }
 
@@ -203,9 +225,18 @@ export class RawWidget extends PureComponent {
 
     listenOnKeysFalse && listenOnKeysFalse();
 
+    // Mark the widget focused synchronously (like `focus()` does). Otherwise, on the
+    // single-click "type to edit" path, the first keystroke's value change is processed
+    // while isFocused is still false, so componentDidUpdate misreads the user's own typing
+    // as an external change and resets cachedValue to it — which makes the on-blur change
+    // detection (shouldPatch) conclude nothing changed and skip the PATCH, silently dropping
+    // the edit (most visible on single-token values such as a one-digit quantity).
+    this.setState({ isFocused: true });
+
+    // Defer only the parent focus callback, to avoid re-entrancy during the focus event.
     setTimeout(() => {
       if (this.mounted) {
-        this.setState({ isFocused: true }, () => handleFocus && handleFocus());
+        handleFocus && handleFocus();
       }
     }, 0);
   };

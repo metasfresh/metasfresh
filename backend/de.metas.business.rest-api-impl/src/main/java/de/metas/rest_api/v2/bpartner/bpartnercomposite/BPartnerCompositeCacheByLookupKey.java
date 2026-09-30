@@ -45,15 +45,27 @@ import java.util.function.Function;
 
 public final class BPartnerCompositeCacheByLookupKey
 {
+	/**
+	 * Must be a CONSTANT, and must follow the {@code TableName#by#...} convention.
+	 * <p>
+	 * One instance of this class is created per REST API call. {@link de.metas.cache.CacheMgt} derives the cache's
+	 * {@code CacheLabel} from this name and keeps one {@code CachesGroup} per distinct label for the lifetime of the
+	 * JVM — the group holds its caches weakly, but the group itself is never removed. An instance-specific name would
+	 * therefore leak one group per API call. The {@code #} matters: without it the whole name (not the table name)
+	 * becomes the label. The suffix keeps v1 and v2 distinguishable in cache stats while leaving the label
+	 * (everything before the first {@code #}) identical.
+	 */
+	private static final String CACHE_NAME = I_C_BPartner.Table_Name + "#by#BPartnerCompositeLookupKey_v2";
+
 	private final transient CCache<OrgAndBPartnerCompositeLookupKey, BPartnerComposite> cache;
 
-	public BPartnerCompositeCacheByLookupKey(@NonNull final String identifier)
+	public BPartnerCompositeCacheByLookupKey()
 	{
 		final CacheIndex<BPartnerId/* RK */, OrgAndBPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> //
 				cacheIndex = CacheIndex.of(new BPartnerCompositeCacheIndex());
 
 		cache = CCache.<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>builder()
-				.cacheName("BPartnerComposite_by_LookupKey" + "_" + identifier)
+				.cacheName(CACHE_NAME)
 				.additionalTableNameToResetFor(I_AD_User.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)

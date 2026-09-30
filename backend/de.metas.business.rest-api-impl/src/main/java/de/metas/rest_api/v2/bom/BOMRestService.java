@@ -35,7 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;

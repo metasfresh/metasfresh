@@ -24,14 +24,13 @@ package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -46,9 +45,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -138,16 +138,16 @@ public class Picking_Terminal_StepDef
 	public void create_M_PickingCandidate_for_M_HU(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupNotNullIdIn(huTable);
-			final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+			final I_M_ShipmentSchedule shipmentSchedule = row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIn(shipmentScheduleTable);
+			final I_M_HU hu = row.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).lookupNotNullIn(huTable);
 
 			final I_M_Picking_Candidate pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
 			pickingCandidate.setStatus(row.getAsString(I_M_Picking_Candidate.COLUMNNAME_Status));
 			pickingCandidate.setPickStatus(row.getAsString(I_M_Picking_Candidate.COLUMNNAME_PickStatus));
 			pickingCandidate.setApprovalStatus(row.getAsString(I_M_Picking_Candidate.COLUMNNAME_ApprovalStatus));
-			pickingCandidate.setPickFrom_HU_ID(huId.getRepoId());
+			pickingCandidate.setPickFrom_HU_ID(hu.getM_HU_ID());
 			pickingCandidate.setQtyPicked(row.getAsBigDecimal(I_M_Picking_Candidate.COLUMNNAME_QtyPicked));
-			pickingCandidate.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
+			pickingCandidate.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
 			pickingCandidate.setC_UOM_ID(UomId.EACH.getRepoId());
 
 			saveRecord(pickingCandidate);
@@ -172,20 +172,32 @@ public class Picking_Terminal_StepDef
 	public void process_picking(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupNotNullIdIn(huTable);
-			final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
-			final String errorMessage = row.getAsOptionalString("ErrorMessage").map(DataTableUtil::nullToken2Null).orElse(null);
+			final ImmutableSet<HuId> huIds = row.getAsIdentifier(COLUMNNAME_M_HU_ID)
+					.toCommaSeparatedList()
+					.stream()
+					.map(id -> HuId.ofRepoId(id.lookupNotNullIn(huTable).getM_HU_ID()))
+					.collect(ImmutableSet.toImmutableSet());
 
-			try
-			{
-				pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId);
+			final String errorMessage = row.getAsOptionalString("ErrorMessage").orElse(null);
 
-				assertThat(errorMessage).as("ErrorMessage should be null if pickingCandidateService.processForHUIds() finished with no error!").isNull();
-			}
-			catch (final Exception e)
-			{
-				StepDefUtil.validateErrorMessage(e, errorMessage);
-			}
+			row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+					.toCommaSeparatedList()
+					.forEach(ssId -> {
+						final I_M_ShipmentSchedule ss = ssId.lookupNotNullIn(shipmentScheduleTable);
+						try
+						{
+							pickingCandidateService.processForHUIds(huIds, ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
+							assertThat(errorMessage).as("ErrorMessage should be null if processForHUIds() finished with no error!").isNull();
+						}
+						catch (final Exception e)
+						{
+							if (errorMessage == null)
+							{
+								throw new AdempiereException(e);
+							}
+							assertThat(e.getMessage()).contains(errorMessage);
+						}
+					});
 		});
 	}
 

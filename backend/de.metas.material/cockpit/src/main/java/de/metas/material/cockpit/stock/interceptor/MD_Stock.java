@@ -25,32 +25,23 @@ package de.metas.material.cockpit.stock.interceptor;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
-import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
-
-import java.util.Properties;
 
 @Interceptor(I_MD_Stock.class)
 @Component
 public class MD_Stock
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 	private final AvailableForSalesService availableForSalesService;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 	private final AvailableForSalesUtil availableForSalesUtil;
@@ -68,26 +59,22 @@ public class MD_Stock
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void triggerSyncAvailableForSales(@NonNull final I_MD_Stock stockRecord)
 	{
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				AvailableForSalesConfigRepo.ConfigQuery.builder()
-						.clientId(ClientId.ofRepoId(stockRecord.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(stockRecord.getAD_Org_ID()))
-						.build());
-
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID());
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 		if (!config.isFeatureEnabled())
 		{
 			return; // nothing to do
 		}
 
-		final Properties ctx = Env.copyCtx(InterfaceWrapperHelper.getCtx(stockRecord));
-		final ProductId productId = ProductId.ofRepoId(stockRecord.getM_Product_ID());
-		final OrgId orgId = OrgId.ofRepoId(stockRecord.getAD_Org_ID());
-		final AttributesKey attributesKey = AttributesKey.ofString(stockRecord.getAttributesKey());
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
-
-		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = availableForSalesUtil
-				.createRequestWithPreparationDateNow(ctx, config, productId, orgId, attributesKey, warehouseId);
-
-		trxManager.runAfterCommit(() -> availableForSalesService.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
+		availableForSalesService.enqueueAvailableForSalesRequestAfterCommit(
+				availableForSalesUtil.requestWithPreparationDateNow()
+						.ctx(InterfaceWrapperHelper.getCtx(stockRecord))
+						.config(config)
+						.productId(ProductId.ofRepoId(stockRecord.getM_Product_ID()))
+						.clientAndOrgId(clientAndOrgId)
+						.storageAttributesKey(AttributesKey.ofString(stockRecord.getAttributesKey()))
+						.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
+						.build()
+		);
 	}
 }

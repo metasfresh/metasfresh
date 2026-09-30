@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,13 +51,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -154,7 +172,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
 		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
@@ -170,7 +187,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(isDropShipWarehouse)
 				.build();
 	}
 
@@ -187,8 +203,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
-
 		final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder = ShipmentScheduleUpdatedEvent.builder();
 
 		shipmentScheduleUpdatedEventBuilder
@@ -196,8 +210,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
-				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(isDropShipWarehouse);
+				.minMaxDescriptor(minMaxDescriptor);
 
 		setShipmentScheduleDetail(shipmentScheduleUpdatedEventBuilder, materialDescriptor, shipmentSchedule);
 
@@ -272,7 +285,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
@@ -284,7 +296,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 						.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
 						.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.isDropShipWarehouse(isDropShipWarehouse)
 				.build();
 	}
 
@@ -325,14 +336,5 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.orElse(BigDecimal.ZERO);
 	}
 
-	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
-	{
-		if (warehouseId == null)
-		{
-			return false;
-		}
 
-		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-		return warehouse != null && warehouse.isDropShipWarehouse();
-	}
 }

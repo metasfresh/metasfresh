@@ -17,10 +17,13 @@ import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -88,9 +91,19 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				.detailId(detailId)
 				.allowCreateNewLogic(entityDescriptor.getAllowCreateNewLogic())
 				.allowDeleteLogic(entityDescriptor.getAllowDeleteLogic())
+				.adTableId(extractAdTableIdOrNull(entityDescriptor))
 				.build();
 		parentReadonly = null; // NOTE: don't fetch it from parentDocument because it's not needed now
 		staled = false;
+	}
+
+	@Nullable
+	private static AdTableId extractAdTableIdOrNull(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		return tableName != null
+				? TableIdsCache.instance.getTableId(tableName).orElse(null)
+				: null;
 	}
 
 	/** copy constructor */
@@ -140,6 +153,12 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	private final Collection<Document> getChangedDocuments()
 	{
 		return _documentsWithChanges.values();
+	}
+
+	@Override
+	public boolean hasNewDocumentsWithChanges()
+	{
+		return getChangedDocuments().stream().anyMatch(doc -> doc.isNew() && doc.hasChangesRecursivelly());
 	}
 
 	private final Document getChangedDocumentOrNull(final DocumentId documentId)
@@ -412,7 +431,9 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	{
 		final Set<DocumentId> savedOrDeletedDocumentIds = new HashSet<>();
 
-		for (final Document document : getChangedDocuments())
+		// Iterate a defensive snapshot: saving a child fires onChildSaved -> forgetChangedDocument,
+		// which removes from _documentsWithChanges mid-loop and would throw ConcurrentModificationException.
+		for (final Document document : new ArrayList<>(getChangedDocuments()))
 		{
 			final DocumentSaveStatus saveStatus = document.saveIfHasChanges();
 			if (saveStatus.isSaved())

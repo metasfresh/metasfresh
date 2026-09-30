@@ -82,19 +82,22 @@ VALUES (584668 /*From ID Server*/, 'en_US', 0, 0, 'Y',
     'Intrastat', 'Intrastat');
 
 -- 1g. OriginCountry
+-- OriginCountry AD_Element 584667 also created (idempotently) by lower-numbered 5664390_sys_gh13942_Delivery_Planning_Table.sql — guard prevents duplicate on a fresh build; no-op on DBs where this already applied.
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     ColumnName, EntityType, Name, PrintName)
-VALUES (584667 /*From ID Server*/, 0, 0, 'Y',
+SELECT 584667 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
-    'OriginCountry', 'D', 'Ursprungsland', 'Ursprungsland');
+    'OriginCountry', 'D', 'Ursprungsland', 'Ursprungsland'
+WHERE NOT EXISTS (SELECT 1 FROM AD_Element WHERE AD_Element_ID=584667);
 
 INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy, IsTranslated,
     Name, PrintName)
-VALUES (584667 /*From ID Server*/, 'en_US', 0, 0, 'Y',
+SELECT 584667 /*From ID Server*/, 'en_US', 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, 'Y',
-    'Origin Country', 'Origin Country');
+    'Origin Country', 'Origin Country'
+WHERE NOT EXISTS (SELECT 1 FROM AD_Element_Trl WHERE AD_Element_ID=584667 AND AD_Language='en_US');
 
 -- =====================================================================
 -- 2. AD_Table: Intrastat_Report_Detail_V

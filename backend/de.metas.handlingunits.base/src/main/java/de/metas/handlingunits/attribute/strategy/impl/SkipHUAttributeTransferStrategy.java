@@ -36,7 +36,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
  */
 public final class SkipHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {
-	public static final SkipHUAttributeTransferStrategy instance = new SkipHUAttributeTransferStrategy();
+	public static SkipHUAttributeTransferStrategy newInstance()
+	{
+		return new SkipHUAttributeTransferStrategy();
+	}
 
 	private SkipHUAttributeTransferStrategy()
 	{

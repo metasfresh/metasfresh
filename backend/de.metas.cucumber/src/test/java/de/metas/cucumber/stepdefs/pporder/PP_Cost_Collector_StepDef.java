@@ -22,19 +22,32 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Cost_Collector;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,32 +56,66 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_CostCollectorType;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID;
 
+@RequiredArgsConstructor
 public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-	private final PP_Order_StepDefData ppOrderTable;
-	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
-	private final M_Product_StepDefData productTable;
-	private final PP_Order_BOMLine_StepDefData bomLineTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData bomLineTable;
 
-	public PP_Cost_Collector_StepDef(
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable)
-	{
-		this.ppOrderTable = ppOrderTable;
-		this.ppCostCollectorTable = ppCostCollectorTable;
-		this.productTable = productTable;
-		this.bomLineTable = bomLineTable;
-	}
 
+	/**
+	 * Loads PP_Cost_Collector records from the database by matching the given DataTable rows,
+	 * with a timeout to account for asynchronous cost collector creation.
+	 *
+	 * <p>Each DataTable row describes one PP_Cost_Collector to load and assert. The step waits up to
+	 * {@code timeoutSec} for the record to appear in the database, then verifies its properties match
+	 * the expected values.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code PP_Cost_Collector_ID.Identifier} — identifier to store the loaded record (for later reference)</li>
+	 *   <li>{@code PP_Order_ID.Identifier} — identifier of the parent production order</li>
+	 *   <li>{@code MovementQty} — expected movement quantity (must match the loaded record)</li>
+	 *   <li>{@code DocStatus} — expected document status, e.g. "Drafted" or "Completed" (must match the loaded record)</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code M_Product_ID.Identifier} — identifier of the product; used to disambiguate when a single PP_Order
+	 *   has multiple cost collectors with the same DocStatus (e.g., one for component issue and one for finished-good
+	 *   receipt). If omitted, only PP_Order_ID and DocStatus are used to match the record.</li>
+	 *   <li>{@code CostCollectorType} — (optional) {@link CostCollectorType} enum name; narrows the match when one
+	 *   PP_Order has several completed cost collectors for the same product.</li>
+	 *   <li>{@code Reversal_ID.Identifier} — (optional) identifier of an already-known PP_Cost_Collector;
+	 *   matches the record whose {@code Reversal_ID} points to it. Needed to tell a reversed cost collector
+	 *   apart from its reversal: both carry the same PP_Order_ID/M_Product_ID/CostCollectorType/DocStatus
+	 *   ('RE'), so those columns alone match two rows.</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And after not more than 5s, PP_Cost_Collector are found:
+	 *   | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+	 *   | cc_1                            | order_1                | product_fg              | 100         | Completed |
+	 *   | cc_2                            | order_1                | product_comp            | -50         | Drafted   |
+	 * </pre>
+	 *
+	 * @param timeoutSec maximum seconds to wait for each PP_Cost_Collector record to appear
+	 * @param dataTable the table defining PP_Cost_Collector records to load and assert
+	 * @throws InterruptedException if the wait is interrupted
+	 */
 	@And("^after not more than (.*)s, PP_Cost_Collector are found:$")
 	public void load_PP_Cost_Collector(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -80,19 +127,40 @@ public class PP_Cost_Collector_StepDef
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorTable.get(ppCostCollectorIdentifier);
 			assertThat(ppCostCollector).isNotNull();
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (productIdentifier != null)
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				assertThat(product).isNotNull();
+				assertThat(ppCostCollector.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			}
 
 			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_MovementQty);
 			final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-			assertThat(ppCostCollector.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
+
+			final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+			if (costCollectorTypeName != null)
+			{
+				assertThat(ppCostCollector.getCostCollectorType()).isEqualTo(CostCollectorType.valueOf(costCollectorTypeName).getCode());
+			}
 		}
 	}
 
+	/**
+	 * Loads a single PP_Cost_Collector record from the database by matching the given table row.
+	 *
+	 * <p>Queries for a PP_Cost_Collector matching the PP_Order_ID and DocStatus from the row.
+	 * If a product identifier is provided, further filters by product to disambiguate when one order
+	 * has multiple cost collectors with the same status. Stores the found record in the
+	 * {@code ppCostCollectorTable} for later reference.
+	 *
+	 * @param tableRow a single DataTable row with required columns:
+	 *        {@code PP_Order_ID.Identifier}, {@code DocStatus}, and optional {@code M_Product_ID.Identifier}
+	 * @return {@code true} if the record was found and stored; {@code false} if not found (caller will retry)
+	 */
 	@NonNull
 	private Boolean loadPPCostCollector(@NonNull final Map<String, String> tableRow)
 	{
@@ -100,9 +168,34 @@ public class PP_Cost_Collector_StepDef
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 		final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
-				.addEqualsFilter(COLUMNNAME_DocStatus, status)
+				.addEqualsFilter(COLUMNNAME_DocStatus, status);
+
+		// When a single order has several cost collectors with the same DocStatus (e.g. a component issue
+		// and a finished-good receipt), disambiguate by the product so each row matches exactly one record.
+		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (productIdentifier != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productTable.get(productIdentifier).getM_Product_ID());
+		}
+
+		final String costCollectorTypeName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_CostCollectorType);
+		if (costCollectorTypeName != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_CostCollectorType, CostCollectorType.valueOf(costCollectorTypeName).getCode());
+		}
+
+		// Disambiguate a reversed cost collector from its reversal: both share PP_Order_ID/M_Product_ID/
+		// CostCollectorType/DocStatus ('RE'), so match the one whose Reversal_ID points to the given record.
+		final String reversalRefIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_PP_Cost_Collector.COLUMNNAME_Reversal_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (reversalRefIdentifier != null)
+		{
+			final I_PP_Cost_Collector reversalRef = ppCostCollectorTable.get(reversalRefIdentifier);
+			queryBuilder.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_Reversal_ID, reversalRef.getPP_Cost_Collector_ID());
+		}
+
+		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBuilder
 				.create()
 				.firstOnlyOptional(I_PP_Cost_Collector.class);
 
@@ -115,6 +208,50 @@ public class PP_Cost_Collector_StepDef
 		ppCostCollectorTable.put(ppCostCollectorIdentifier, ppCostCollector.get());
 
 		return true;
+	}
+
+	/**
+	 * Reverses (Reverse-Correct) the given PP_Cost_Collector and stores the resulting reversal
+	 * cost collector under a new identifier.
+	 *
+	 * @param identifier identifier of the already-completed PP_Cost_Collector to reverse
+	 * @param reversalIdentifier identifier under which the reversal PP_Cost_Collector is stored
+	 */
+	@And("^the PP_Cost_Collector identified by (.*) is reversed as (.*)$")
+	public void reverseCostCollector(@NonNull final String identifier, @NonNull final String reversalIdentifier)
+	{
+		final I_PP_Cost_Collector costCollector = ppCostCollectorTable.get(identifier);
+		InterfaceWrapperHelper.refresh(costCollector);
+		documentBL.processEx(costCollector, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		final PPCostCollectorId reversalId = PPCostCollectorId.ofRepoId(costCollector.getReversal_ID());
+		final I_PP_Cost_Collector reversal = ppCostCollectorBL.getById(reversalId);
+		ppCostCollectorTable.put(reversalIdentifier, reversal);
+	}
+
+	/**
+	 * Asserts that the given PP_Cost_Collector's accounting posting was REJECTED with an error whose
+	 * message contains the given fragment — i.e. it reached {@code Posted='E'} rather than posting.
+	 * <p>
+	 * Used to verify the co-product cost-distribution guard: when the co-products' distribution percent sums to
+	 * more than 100% of the order's total inbound costs, the cost-collector posting throws (naming the offending
+	 * product(s) and the sum) instead of persisting a negative main-product cost. The document itself stays
+	 * completed (its physical receipt already happened); only its GL posting fails.
+	 *
+	 * @param identifier    identifier of a PP_Cost_Collector loaded earlier in the scenario
+	 * @param errorFragment a substring the posting error message must contain
+	 */
+	@And("^the PP_Cost_Collector identified by (.*) was rejected at posting with error containing (.*)$")
+	public void costCollector_rejected_at_posting(
+			@NonNull final String identifier,
+			@NonNull final String errorFragment)
+	{
+		final I_PP_Cost_Collector costCollector = ppCostCollectorTable.get(identifier);
+		final TableRecordReference recordRef = TableRecordReference.of(costCollector);
+
+		assertThatThrownBy(() -> AccountingCucumberHelper.waitUtilPosted(recordRef))
+				.as("posting of PP_Cost_Collector " + identifier + " must be rejected (Posted='E')")
+				.hasMessageContaining(errorFragment);
 	}
 
 	@And("validate I_PP_Cost_Collector")
@@ -149,5 +286,60 @@ public class PP_Cost_Collector_StepDef
 				assertThat(costCollector.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
 			}
 		}
+	}
+
+	/**
+	 * Asserts that all ActivityControl cost collectors of the given PP_Order post gracefully with no accounting facts.
+	 *
+	 * <p>Closing a manufacturing order reports its not-yet-started routing activities, which creates one
+	 * ActivityControl cost collector per activity (see {@code closeAllActivities}). When the activity's resource
+	 * carries no cost product - e.g. the "no resource" placeholder - there is no activity cost to book, so each
+	 * such cost collector must still post successfully ({@code Posted='Y'}) and produce zero Fact_Acct rows
+	 * instead of failing the posting pipeline.
+	 *
+	 * @param timeoutSec maximum seconds to wait for the cost collectors to appear and to become posted
+	 * @param ppOrderIdentifier identifier of the parent production order (must be closed beforehand)
+	 */
+	@And("^after not more than (.*)s, all ActivityControl PP_Cost_Collector for PP_Order (.*) are posted with no Fact_Acct$")
+	public void activityControlCostCollectors_arePostedWithNoFacts(
+			final int timeoutSec,
+			@NonNull final String ppOrderIdentifier) throws InterruptedException
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		assertThat(ppOrder).isNotNull();
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> !queryCompletedActivityControlCostCollectors(ppOrder).isEmpty());
+
+		final List<I_PP_Cost_Collector> activityControlCostCollectors = queryCompletedActivityControlCostCollectors(ppOrder);
+		assertThat(activityControlCostCollectors).as("ActivityControl cost collectors for the closed PP_Order").isNotEmpty();
+
+		final ImmutableSet<TableRecordReference> recordRefs = activityControlCostCollectors.stream()
+				.map(TableRecordReference::of)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Posting must succeed for every ActivityControl cost collector.
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+
+		// A no-cost ActivityControl cost collector must post zero Fact_Acct rows (graceful no-op).
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final int factAcctCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.create()
+					.count();
+			assertThat(factAcctCount).as("Fact_Acct rows for ActivityControl cost collector " + recordRef.getRecord_ID()).isZero();
+		}
+	}
+
+	@NonNull
+	private List<I_PP_Cost_Collector> queryCompletedActivityControlCostCollectors(@NonNull final I_PP_Order ppOrder)
+	{
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl)
+				.addEqualsFilter(COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.create()
+				.list(I_PP_Cost_Collector.class);
 	}
 }

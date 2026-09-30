@@ -1,6 +1,7 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.QtyRejectedReasonContext;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -51,7 +53,9 @@ public class DDOrderMoveScheduleService
 
 	public ADRefList getQtyRejectedReasons()
 	{
-		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return QtyRejectedReasonCode.reasonsFor(
+				adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID),
+				QtyRejectedReasonContext.Distribution);
 	}
 
 	public DDOrderMoveSchedule createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
@@ -74,6 +78,12 @@ public class DDOrderMoveScheduleService
 	public boolean hasInProgressSchedules(@NonNull final DDOrderId ddOrderId)
 	{
 		return ddOrderMoveScheduleRepository.hasInProgressSchedules(ddOrderId);
+	}
+
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderId)}, for a caller that has to ask about a whole set of orders. */
+	public ImmutableSet<DDOrderId> retrieveIdsOfOrdersWithInProgressSchedules(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		return ddOrderMoveScheduleRepository.retrieveIdsOfOrdersWithInProgressSchedules(ddOrderIds);
 	}
 
 	public void removeNotStarted(@NonNull final DDOrderLineId ddOrderLineId)
@@ -213,7 +223,7 @@ public class DDOrderMoveScheduleService
 
 	public void printMaterialInTransitReport(
 			@NonNull final LocatorId inTransitLocatorId,
-			@NonNull String adLanguage)
+			@NonNull final String adLanguage)
 	{
 		MaterialInTransitReportCommand.builder()
 				.adLanguage(adLanguage)

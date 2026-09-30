@@ -13,6 +13,7 @@ import {
   connectionError,
   setLanguages,
   setProcessSaved,
+  showAcknowledgeDialog,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api/login';
 // import PluginsRegistry from '../services/PluginsRegistry';
@@ -179,15 +180,28 @@ const App = () => {
             }
 
             if (data.userFriendlyError) {
-              dispatch(
-                addNotification(
-                  'Error: ' + message.split(' ', 4).join(' ') + '...',
-                  data.message,
-                  5000,
-                  'error',
-                  errorTitle
-                )
-              );
+              if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
+                // Deliberately not errorTitle: that resolves to 'Server error' for a 500, which is the
+                // framing this presentation mode exists to avoid. The server now sends a translated
+                // userMessageTitle (a shared "Information" caption for this presentation mode) alongside
+                // the message; fall back to '' when it's absent so an old/older backend still renders.
+                dispatch(
+                  showAcknowledgeDialog(
+                    data.userMessageTitle || '',
+                    data.message
+                  )
+                );
+              } else {
+                dispatch(
+                  addNotification(
+                    'Error: ' + message.split(' ', 4).join(' ') + '...',
+                    data.message,
+                    5000,
+                    'error',
+                    errorTitle
+                  )
+                );
+              }
             }
           }
         }

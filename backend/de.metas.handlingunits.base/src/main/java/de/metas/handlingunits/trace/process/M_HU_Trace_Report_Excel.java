@@ -142,7 +142,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				"Shipment_Date",
 				"Prod_Stock",
 				"TraceId",
-				"ReportDate"
+				"ReportDate",
+				"Link_Basis"
 				);
 	}
 }

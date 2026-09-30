@@ -72,7 +72,7 @@ public class InOutId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable InOutId id1, @Nullable InOutId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final InOutId id1, @Nullable final InOutId id2) {return Objects.equals(id1, id2);}
 
 	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_M_InOut.Table_Name, repoId);}
 

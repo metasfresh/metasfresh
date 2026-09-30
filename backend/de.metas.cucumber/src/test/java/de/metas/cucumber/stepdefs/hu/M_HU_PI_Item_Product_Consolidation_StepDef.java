@@ -81,7 +81,7 @@ public class M_HU_PI_Item_Product_Consolidation_StepDef
 		final boolean normalizeGtinEan = Boolean.parseBoolean(normalizeGtinEanStr);
 		final boolean consolidate = Boolean.parseBoolean(consolidateStr);
 
-		final String sql = "SELECT m_hu_pi_item_product_consolidate(?, ?, 0)";
+		final String sql = "SELECT m_hu_pi_item_product_consolidate(?::boolean, ?::boolean, 0::numeric)";
 		final SQLValueStringResult result = DB.getSQLValueStringWithWarningEx(
 				ITrx.TRXNAME_None,
 				sql,
@@ -213,6 +213,26 @@ public class M_HU_PI_Item_Product_Consolidation_StepDef
 
 		assertThat(found)
 				.as("Report should contain a conflict row for GTIN " + expectedGtin)
+				.isTrue();
+	}
+
+	@Then("the consolidation report contains a conflict row for GTIN {string} with conflicting field {string}")
+	public void verify_report_contains_conflict_for_gtin_and_field(
+			@NonNull final String expectedGtin,
+			@NonNull final String expectedConflictingField)
+	{
+		assertThat(lastReportResult)
+				.as("Report should contain rows")
+				.isNotEmpty();
+
+		final boolean found = lastReportResult.stream()
+				.anyMatch(row -> expectedGtin.equals(row.gtin)
+						&& expectedConflictingField.equalsIgnoreCase(row.conflictingField));
+
+		assertThat(found)
+				.as("Report should contain a conflict row for GTIN " + expectedGtin
+						+ " with conflicting_field=" + expectedConflictingField
+						+ "; actual rows: " + lastReportResult)
 				.isTrue();
 	}
 

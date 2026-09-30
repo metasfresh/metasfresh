@@ -119,7 +119,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	protected void setInternalValueDate(Date value)
+	protected void setInternalValueDate(final Date value)
 	{
 		attributeInstance.setValueDate(TimeUtil.asTimestamp(value));
 	}
@@ -131,7 +131,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	protected void setInternalValueDateInitial(Date value)
+	protected void setInternalValueDateInitial(final Date value)
 	{
 		throw new UnsupportedOperationException("Setting initial value not supported");
 	}
@@ -151,31 +151,22 @@ import de.metas.util.Services;
 		return X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation;
 	}
 
-	/**
-	 * @return {@link NullAggregationStrategy#instance}.
-	 */
 	@Override
 	public IAttributeAggregationStrategy retrieveAggregationStrategy()
 	{
-		return NullAggregationStrategy.instance;
+		return NullAggregationStrategy.newInstance();
 	}
 
-	/**
-	 * @return {@link NullSplitterStrategy#instance}.
-	 */
 	@Override
 	public IAttributeSplitterStrategy retrieveSplitterStrategy()
 	{
-		return NullSplitterStrategy.instance;
+		return NullSplitterStrategy.newInstance();
 	}
 
-	/**
-	 * @return {@link CopyHUAttributeTransferStrategy#instance}.
-	 */
 	@Override
 	public IHUAttributeTransferStrategy retrieveTransferStrategy()
 	{
-		return CopyHUAttributeTransferStrategy.instance;
+		return CopyHUAttributeTransferStrategy.newInstance();
 	}
 
 	/**

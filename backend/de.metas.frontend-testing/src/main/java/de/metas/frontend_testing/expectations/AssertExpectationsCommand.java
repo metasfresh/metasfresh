@@ -52,6 +52,15 @@ public class AssertExpectationsCommand
 	{
 		try
 		{
+			if (expectations.getSalesOrders() != null)
+			{
+				AssertSalesOrderExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getSalesOrders())
+						.build()
+						.execute();
+			}
 			if (expectations.getPickings() != null)
 			{
 				AssertPickingExpectationsCommand.builder()
@@ -85,6 +94,24 @@ public class AssertExpectationsCommand
 						.services(services)
 						.context(context)
 						.expectations(expectations.getHus())
+						.build()
+						.execute();
+			}
+			if (expectations.getInventories() != null)
+			{
+				AssertInventoryExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getInventories())
+						.build()
+						.execute();
+			}
+			if (expectations.getMovements() != null)
+			{
+				AssertMovementExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getMovements())
 						.build()
 						.execute();
 			}

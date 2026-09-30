@@ -11,6 +11,7 @@ import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -65,14 +66,15 @@ public interface DraftDeliveryOrderCreator
 
 		public Set<PackageId> getPackageIds() {return packageInfos.stream().map(PackageInfo::getPackageId).collect(ImmutableSet.toImmutableSet());}
 
-		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal minWeightKg)
+		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal defaultWeightKg)
 		{
 			final BigDecimal weightInKg = packageInfos.stream()
 					.map(PackageInfo::getWeightInKg)
 					.filter(weight -> weight != null && weight.signum() > 0)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			return weightInKg.max(minWeightKg);
+			// Coalesce, never a floor: the real summed weight when any package has one, the default ONLY when none do.
+			return weightInKg.signum() > 0 ? weightInKg : defaultWeightKg;
 		}
 
 		@NonNull
@@ -96,7 +98,8 @@ public interface DraftDeliveryOrderCreator
 			@Nullable BigDecimal weightInKg;
 			@NonNull PackageDimensions packageDimension;
 
-			public BigDecimal getWeightInKgOr(final BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
+			// Coalesce, never a floor: the real weight when present, the default ONLY when it is absent (0/absent weights are stripped upstream, so null here means genuinely no weight).
+			public BigDecimal getWeightInKgOr(final BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
 		}
 	}
 
@@ -109,6 +112,7 @@ public interface DraftDeliveryOrderCreator
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
+		@Nullable UserId deliverContactId;
 		@NonNull LocalDate pickupDate;
 		@NonNull LocalTime timeFrom;
 		@NonNull LocalTime timeTo;
@@ -116,6 +120,12 @@ public interface DraftDeliveryOrderCreator
 		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
 		@Nullable Set<CarrierServiceId> carrierServices;
 		AsyncBatchId asyncBatchId;
+		/**
+		 * When set, this key is unique per package, i.e. one delivery order per package. Used when the carrier is
+		 * resolved by nShift at ship time (selection rules ON, non-manual): the final per-package carrier is not known
+		 * at grouping time, so packages must not be grouped under a preliminary carrier.
+		 */
+		@Nullable PackageId packageId;
 
 		@Builder
 		public DeliveryOrderKey(
@@ -124,13 +134,15 @@ public interface DraftDeliveryOrderCreator
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
+				@Nullable final UserId deliverToContactId,
 				@NonNull final LocalDate pickupDate,
 				@NonNull final LocalTime timeFrom,
 				@NonNull final LocalTime timeTo,
 				@Nullable final CarrierProductId carrierProductId,
 				@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
 				@Nullable final Set<CarrierServiceId> carrierServices,
-				@Nullable final AsyncBatchId asyncBatchId)
+				@Nullable final AsyncBatchId asyncBatchId,
+				@Nullable final PackageId packageId)
 		{
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
@@ -141,6 +153,7 @@ public interface DraftDeliveryOrderCreator
 			this.fromOrgId = fromOrgId;
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
+			this.deliverContactId = deliverToContactId;
 			this.pickupDate = pickupDate;
 			this.timeFrom = timeFrom;
 			this.timeTo = timeTo;
@@ -149,6 +162,7 @@ public interface DraftDeliveryOrderCreator
 			this.carrierServices = carrierServices;
 
 			this.asyncBatchId = asyncBatchId;
+			this.packageId = packageId;
 		}
 	}
 }

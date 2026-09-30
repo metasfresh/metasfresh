@@ -56,6 +56,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
@@ -72,6 +73,12 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	{
 		return huPIItemProductDAO.getRecordById(id);
 	}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(@NonNull final I_M_HU_PI_Item itemDef) {return huPIItemProductDAO.retrievePIMaterialItemProducts(itemDef);}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveForProducts(@NonNull final Set<ProductId> productIdSet, @Nullable final BPartnerId partnerId) {return huPIItemProductDAO.retrieveForProducts(productIdSet, partnerId);}
 
 	@Override
 	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(

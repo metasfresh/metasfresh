@@ -232,10 +232,10 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = createHU(typeLU);
 		final I_M_HU tu = createHU(typeTU);
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = CollectionUtils.singleElement(
+						ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(
+								createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+								huContext))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -257,10 +257,10 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = createHU(typeLU);
 		final I_M_HU tu = createHU(typeTU);
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = CollectionUtils.singleElement(
+						ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(
+								createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+								huContext))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -281,10 +281,10 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = luAndTU.getLeft();
 		final I_M_HU tu = luAndTU.getRight();
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = CollectionUtils.singleElement(
+						ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(
+								createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+								huContext))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();

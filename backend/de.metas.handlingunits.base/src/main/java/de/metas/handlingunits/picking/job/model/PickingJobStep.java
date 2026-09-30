@@ -113,6 +113,11 @@ public class PickingJobStep
 		return pickFroms.getQtyPicked().orElseGet(qtyToPick::toZero);
 	}
 
+	public Optional<Quantity> getPackedQty()
+	{
+		return pickFroms.getQtyPicked();
+	}
+
 	public Quantity getQtyRejected()
 	{
 		return pickFroms.getQtyRejected().orElseGet(qtyToPick::toZero);

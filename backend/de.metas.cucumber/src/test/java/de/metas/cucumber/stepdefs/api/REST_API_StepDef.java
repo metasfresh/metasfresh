@@ -25,18 +25,25 @@ package de.metas.cucumber.stepdefs.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonTestResponse;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.compiere.model.I_AD_Role;
 import org.compiere.util.Evaluatees;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -48,21 +55,39 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class REST_API_StepDef
 {
 	private String userAuthToken;
 
-	private final TestContext testContext;
-
-	public REST_API_StepDef(final TestContext testContext)
-	{
-		this.testContext = testContext;
-	}
+	@NonNull private final TestContext testContext;
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
+	}
+
+	/**
+	 * Identifier-based counterpart of the name-based token step above: resolves a role registered earlier
+	 * (e.g. by {@code metasfresh contains AD_Roles including the WebUI role:}) via the {@code AD_Role_StepDefData}
+	 * table and mints the auth token from its actual name. This lets a scenario create a role with an
+	 * auto-generated (replay-safe) name and still obtain a token for it, since the generated name is never
+	 * known to the feature text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Role_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'
+	 * </pre>
+	 */
+	@Given("the existing user with login {string} receives a random a API token for the existing role with identifier {string}")
+	public void the_existing_user_has_the_authtoken_by_role_identifier(@NonNull final String userLogin, @NonNull final String roleIdentifier)
+	{
+		final I_AD_Role role = roleTable.get(roleIdentifier);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, role.getName());
 	}
 
 	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
@@ -123,6 +148,33 @@ public class REST_API_StepDef
 		performHTTPRequest(
 				newAPIRequest()
 						.endpointPath(testContext.getEndpointPath())
+						.method(verb)
+						.expectedStatusCode(Integer.parseInt(statusCode))
+						.additionalHeaders(testContext.getHttpHeaders())
+						.build()
+		);
+	}
+
+	/**
+	 * Sends a payload-less request (typically a {@code GET}) to the endpoint path given inline, resolving context
+	 * variables in the path, and asserts the HTTP status code — all in a single step. Use for GET endpoints whose
+	 * query params are written inline in the path; the previous two-step {@code store REST endpointPath} + {@code
+	 * ... with endpointPath from context ...} dance is unnecessary when the path does not need to be reused later.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When a 'GET' request is sent to metasfresh REST-API 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR' and fulfills with '200' status code
+	 * }</pre>
+	 */
+	@When("a {string} request is sent to metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_responds_with_code(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode) throws IOException
+	{
+		performHTTPRequest(
+				newAPIRequest()
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method(verb)
 						.expectedStatusCode(Integer.parseInt(statusCode))
 						.additionalHeaders(testContext.getHttpHeaders())
@@ -247,6 +299,83 @@ public class REST_API_StepDef
 		}
 	}
 
+	/**
+	 * Stores a REST endpoint path (context-variables resolved) into the test context, so a following
+	 * "... with endpointPath from context ..." step can issue the request. Use for GET endpoints that take
+	 * query parameters inline in the path.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When store REST endpointPath 'api/v2/currencyconversion/newestRates?fromCurrencyCode=EUR'
+	 * }</pre>
+	 */
+	@When("store REST endpointPath {string}")
+	public void store_rest_endpointPath(@NonNull final String endpointPath)
+	{
+		testContext.setEndpointPath(resolveContextVariables(endpointPath));
+	}
+
+	/**
+	 * Asserts that the error message of the LAST response contains every value of the data table.
+	 *
+	 * <p>The counterpart for a {@code POST} of the error assertions that
+	 * {@code a PUT request with below payload is sent to metasfresh REST-API … containing …} makes inline:
+	 * it asserts nothing about the request, so it composes with any of the request steps above, and it
+	 * needs no {@code AD_Message} error code — an exception that carries none (e.g. a missing-property or
+	 * no-tax-found rejection) can still be pinned down by what its message says. Several rows are asserted
+	 * against the same single {@code JsonErrorItem}, which is how a message naming more than one thing
+	 * (a rate AND a category AND a scope) is checked. Values may use {@code @contextVariable@}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Value</b> — (required) substring the error message must contain<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the metasfresh REST-API error message contains:
+	 *   | Value             |
+	 *   | 19                |
+	 *   | int-Transport     |
+	 * </pre>
+	 */
+	@Then("the metasfresh REST-API error message contains:")
+	public void the_metasfresh_REST_API_error_message_contains(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final JsonError jsonError = testContext.getApiResponseBodyAs(JsonError.class);
+		final JsonErrorItem errorItem = CollectionUtils.singleElement(jsonError.getErrors());
+		final String actualMessage = errorItem.getMessage();
+
+		DataTableRows.of(dataTable).forEach(row -> assertThat(actualMessage)
+				.as(() -> "Error message of " + jsonError)
+				.contains(resolveContextVariables(row.getAsString("Value"))));
+	}
+
+	/**
+	 * Sends a request carrying NO authentication token to the given v2 endpoint and asserts the HTTP status code —
+	 * used to prove an endpoint rejects unauthenticated callers ({@code 401}). An empty {@code Authorization} header
+	 * is trimmed to absent by {@code UserAuthTokenFilter}, so the standard v2 auth rejects the request.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * When a 'GET' request without authentication is sent to metasfresh REST-API 'api/v2/currencyconversion/currencies' expecting status '401'
+	 * }</pre>
+	 */
+	@When("a {string} request without authentication is sent to metasfresh REST-API {string} expecting status {string}")
+	public void unauthenticated_request(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode) throws IOException
+	{
+		performHTTPRequest(
+				APIRequest.builder()
+						.authToken("") // no token -> UserAuthTokenFilter rejects with 401
+						.endpointPath(resolveContextVariables(endpointPath))
+						.method(verb)
+						.payload(verb.equals("PUT") || verb.equals("POST") ? "{}" : null)
+						.expectedStatusCode(Integer.parseInt(statusCode))
+						.build()
+		);
+	}
+
 	@When("invoke {string} {string} with response code {string}")
 	public void invoke_httpMethod_with_url(
 			@NonNull final String verb,
@@ -331,6 +460,61 @@ public class REST_API_StepDef
 		}
 
 		testContext.setVariable(variableName, value);
+	}
+
+	/**
+	 * Sends a PUT request to the given endpoint with the payload from the doc-string, asserts the HTTP status code,
+	 * and validates the {@code JsonErrorItem} returned in the response body using a machine-readable error code.
+	 *
+	 * <p>All assertions are passed as inline Gherkin parameters so this step takes a single doc-string argument
+	 * (the JSON payload) — Gherkin grammar forbids a step from taking both a DataTable and a DocString.
+	 *
+	 * <p>Parameters (all inline Gherkin expressions):
+	 * <ul>
+	 *   <li>{@code endpointPath} – REST endpoint path, e.g. {@code api/v2/bpartner/002}</li>
+	 *   <li>{@code expectedStatusCode} – HTTP status code the server must return, e.g. {@code 422}</li>
+	 *   <li>{@code expectErrorUserFriendly} – {@code true} or {@code false}; expected value of
+	 *       {@code JsonErrorItem.isUserFriendlyError}</li>
+	 *   <li>{@code expectErrorCode} – exact AD_Message key that must appear in {@code JsonErrorItem.errorCode},
+	 *       e.g. {@code BPartnerCompositeOrgMismatch}</li>
+	 *   <li>{@code expectErrorContaining} – substring that must appear in {@code JsonErrorItem.message}
+	 *       (blank = not asserted). Use it to prove a parameterized AD_Message actually interpolated its
+	 *       arguments, e.g. the path org code {@code 002} in the rendered message.</li>
+	 * </ul>
+	 *
+	 * <p>The doc-string (the step's single argument) is the JSON request body.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error code 'BPartnerCompositeOrgMismatch' containing '002':
+	 *   """
+	 *   { "requestItems": [ { "bpartnerComposite": { "orgCode": "001" } } ] }
+	 *   """
+	 * </pre>
+	 */
+	@When("a PUT request with below payload is sent to metasfresh REST-API {string} expecting status {string} user-friendly {string} error code {string} containing {string}:")
+	public void put_request_with_payload_and_error_assertions(
+			@NonNull final String endpointPath,
+			@NonNull final String expectedStatusCode,
+			@NonNull final String expectErrorUserFriendly,
+			@NonNull final String expectErrorCode,
+			@NonNull final String expectErrorContaining,
+			@NonNull final String payload) throws IOException
+	{
+		final String payloadResolved = resolveContextVariables(payload);
+		testContext.setRequestPayload(payloadResolved);
+
+		performHTTPRequest(
+				newAPIRequest()
+						.endpointPath(resolveContextVariables(endpointPath))
+						.method("PUT")
+						.payload(payloadResolved)
+						.expectedStatusCode(Integer.parseInt(expectedStatusCode))
+						.expectedErrorCode(expectErrorCode)
+						.expectedErrorMessageContaining(StringUtils.trimBlankToNull(expectErrorContaining))
+						.expectErrorUserFriendly(Boolean.parseBoolean(expectErrorUserFriendly))
+						.build()
+		);
 	}
 
 }

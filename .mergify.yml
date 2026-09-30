@@ -34,6 +34,10 @@ merge_protections:
     success_conditions:
       - check-success=Merge Gate
 
+merge_queue:
+  max_parallel_checks: 1
+  queue_controls_comment: false # disable because there is no general default queue rule "@mergifyio queue"
+
 queue_rules:
   - name: squash-queue
     merge_method: squash
@@ -68,36 +72,45 @@ pull_request_rules:
               - base=big_coconut_uat
               - base=clone_wars_uat
               - base=epic_party_uat
-              - base=gray_knight_uat
               - base=hard_encoded_uat
               - base=hostile_tractor_uat
               - base=inner_silence_uat
               - base=intensive_care_uat
               - base=iron_plant_uat
               - base=koala_yawn_uat
-              - base=mad_orange_uat
               - base=majestic_kangaroo_uat
               - base=massive_entropy_uat
-              - base=middle_ages_uat
               - base=modified_carbon_uat
-              - base=modus_operandi_uat
               - base=neon_underwear_uat
               - base=new_dawn_uat
-              - base=oasis_sun_uat
               - base=pink_rooster_uat
-              - base=release
               - base=soft_panda_uat
               - base=science_vessel_uat
               - base=secondary_opinion_uat
-              - base=tasty_ham_uat
               - base=tenacious_d_uat
               - base=vampire_textbook_uat
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=new_dawn_hotfix
+              - base=purple_mandolin_hotfix
+              - base=music_violin_hotfix
+              - base=catfish_takeover_hotfix
+              - base=knightly_ornament_hotfix
+              - base=temporary_test202607_hotfix
+              - base=poster_flotilla_hotfix
+              - base=favorable_esteem_hotfix
+              - base=oasis_sun_hotfix
+              - base=speedy_tiger_hotfix
+              - base=neon_underwear_hotfix
+              - base=midnight_xylophone_hotfix
+              - base=boomerang_signal_hotfix
+              - base=galaxy_hero_hotfix
+              - base=vernal_mousse_hotfix
+              - base=rogue_spacewalk_hotfix
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
-              - base=temporary_test202412_hotfix
+              - base=flaming_merlin_hotfix
               - base=green_oak_hotfix
               - base=mighty_pegasus_hotfix
               - base=task_force_hotfix
@@ -109,22 +122,39 @@ pull_request_rules:
               - base=epic_party_hotfix
               - base=inner_silence_hotfix
               - base=intensive_care_hotfix
-              - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
               - base=memorable_shiny_hotfix
+              - base=middle_ages_hotfix
               - base=modus_operandi_hotfix
               - base=pink_rooster_hotfix
               - base=science_vessel_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
-              - base=tasty_ham_hotfix
+              - base=swift_eagle_hotfix
               - base=vampire_textbook_hotfix
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=new_dawn_release
+              - base=purple_mandolin_release
+              - base=music_violin_release
+              - base=catfish_takeover_release
+              - base=knightly_ornament_release
+              - base=temporary_test202607_release
+              - base=poster_flotilla_release
+              - base=favorable_esteem_release
+              - base=oasis_sun_release
+              - base=speedy_tiger_release
+              - base=midnight_xylophone_release
+              - base=boomerang_signal_release
+              - base=deep_tundra_release
+              - base=galaxy_hero_release
+              - base=vernal_mousse_release
+              - base=rogue_spacewalk_release
               - base=taloned_owl_release
               - base=organic_goat_release
-              - base=temporary_test202412_release
+              - base=flaming_merlin_release
+              - base=gray_knight_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
@@ -132,8 +162,10 @@ pull_request_rules:
               - base=game_time_release
               - base=ghost_rider_release
               - base=intensive_care_release
+              - base=middle_ages_release
               - base=modus_operandi_release
               - base=soft_panda_release
+              - base=swift_eagle_release
               - base=vampire_textbook_release
               - base=science_vessel_release
               - base=memorable_shiny_release
@@ -142,7 +174,6 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
-      delete_head_branch: {}
 
   - name: Block direct merges between protected branches (use auto-port instead)
     conditions:
@@ -198,3 +229,5 @@ pull_request_rules:
       queue:
         name: merge-queue
 
+merge_protections_settings:
+  reporting_method: check-runs

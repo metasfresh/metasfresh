@@ -288,6 +288,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
+	void save(@NonNull I_M_HU huPi);
+
 	/**
 	 * @return packing material or null
 	 */
@@ -366,6 +368,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	void save(@NonNull I_M_HU_PI_Item piItem);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 

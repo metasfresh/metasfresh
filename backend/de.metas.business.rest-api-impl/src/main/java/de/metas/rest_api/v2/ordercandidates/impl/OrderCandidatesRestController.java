@@ -148,7 +148,12 @@ public class OrderCandidatesRestController
 		catch (final Exception ex)
 		{
 			logger.warn("Got exception while processing {}", request, ex);
-			return ResponseEntity.badRequest().build();
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonProcessCompositeResponse.builder()
+							.error(JsonErrors.ofThrowable(ex, adLanguage))
+							.build());
 		}
 	}
 }

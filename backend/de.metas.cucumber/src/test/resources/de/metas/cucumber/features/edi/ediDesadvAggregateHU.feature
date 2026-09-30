@@ -50,9 +50,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S0500   | Y          | ps_S0500           | 9900000500010 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S0500      | true                 | 9900000500010         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier          |
+      | bp_S0500      | true                 | 9900000500010         | edi_setting_S0500_1 |
 
     # HU Packing Instruction hierarchy: LU holds up to 10 TU, each TU holds 2 PCE
     And metasfresh contains M_HU_PI:
@@ -132,9 +132,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And metasfresh contains C_BPartners:
       | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S0500_020  | Y          | ps_S0500_020       | 9900000500020 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S0500_020  | true                 | 9900000500020         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier            |
+      | bp_S0500_020  | true                 | 9900000500020         | edi_setting_S0500_020 |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID       |
@@ -209,9 +209,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S0500_030 | Y          | ps_S0500_030       | 9900000500030 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S0500_030  | true                 | 9900000500030         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier            |
+      | bp_S0500_030  | true                 | 9900000500030         | edi_setting_S0500_030 |
 
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
@@ -269,9 +269,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S0500_040 | Y          | ps_S0500_040       | 9900000500040 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S0500_040  | true                 | 9900000500040         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier            |
+      | bp_S0500_040  | true                 | 9900000500040         | edi_setting_S0500_040 |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
@@ -357,9 +357,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S0500_050 | Y          | ps_S0500_050       | 9900000500050 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S0500_050  | true                 | 9900000500050         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier            |
+      | bp_S0500_050  | true                 | 9900000500050         | edi_setting_S0500_050 |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID       |

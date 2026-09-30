@@ -13,6 +13,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.cache.CacheMgt;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -25,6 +27,7 @@ import org.compiere.model.I_MobileUI_MFG_Config;
 import org.compiere.SpringContextHolder;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManufacturingIssueScheduleOnTheFly_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final TestContext testContext;
 	@NonNull private final M_HU_StepDefData huTable;
@@ -180,7 +184,13 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 	 * Verifies PP_Order_IssueSchedule record details.
 	 *
 	 * <p>Required columns: {@code PP_Order_ID.Identifier}, {@code M_Product_ID.Identifier}, {@code M_HU_ID.Identifier}
-	 * <p>Optional columns: {@code SeqNo}
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code SeqNo}</li>
+	 *   <li>{@code QtyToIssue} — expected {@code PP_Order_IssueSchedule.QtyToIssue} with its UOM, e.g. {@code "20 KGM"}.
+	 *       Asserts both the quantity and the UOM (X12DE355 code) of the stored value, i.e. the schedule's qty must
+	 *       be expressed in the given UOM, not merely numerically equal after an implicit conversion.</li>
+	 * </ul>
 	 */
 	@Then("verify PP_Order_IssueSchedule:")
 	public void verifyIssueSchedule(@NonNull final DataTable dataTable)
@@ -210,6 +220,16 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 					assertThat(schedule.getSeqNo())
 							.as("SeqNo")
 							.isEqualTo(expectedSeqNo));
+
+			final Optional<Quantity> expectedQtyToIssue = row.getAsOptionalQuantity("QtyToIssue", uomDAO::getByX12DE355);
+			expectedQtyToIssue.ifPresent(expectedQty -> {
+				assertThat(schedule.getC_UOM_ID())
+						.as("PP_Order_IssueSchedule.C_UOM_ID for PP_Order %s and HU %s", ppOrderIdentifier, huIdentifier)
+						.isEqualTo(expectedQty.getUomId().getRepoId());
+				assertThat(schedule.getQtyToIssue())
+						.as("PP_Order_IssueSchedule.QtyToIssue for PP_Order %s and HU %s", ppOrderIdentifier, huIdentifier)
+						.isEqualByComparingTo(expectedQty.toBigDecimal());
+			});
 		});
 	}
 }

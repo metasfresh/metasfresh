@@ -21,6 +21,7 @@ import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
@@ -294,6 +295,7 @@ public class PurchaseRowsLoaderTest
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfoOrNull(profitInfo)

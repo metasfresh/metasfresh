@@ -92,7 +92,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID       |
       | inventory_AT   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_AT                    | hu_unreserved |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
       | hu_reserved   | 1000001              | DE       |
@@ -171,7 +171,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory_2    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_2    |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
@@ -264,7 +264,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
       | inventory_CH   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_CH                    | hu_CH   |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
       | hu_DE   | 1000001              | DE       |

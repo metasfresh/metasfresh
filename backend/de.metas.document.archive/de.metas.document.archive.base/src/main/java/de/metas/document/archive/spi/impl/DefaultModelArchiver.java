@@ -10,6 +10,7 @@ import de.metas.document.archive.config.DocOutboundConfig;
 import de.metas.document.archive.config.DocOutboundConfigId;
 import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.spi.IArchiveReportBytesTransformer;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
@@ -24,6 +25,7 @@ import de.metas.report.PrintFormatId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,6 +39,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -210,9 +214,11 @@ public class DefaultModelArchiver
 
 		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
 
+		final Resource archiveData = transformReportBytes(report);
+
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 				.flavor(report.getFlavor())
-				.data(report.getReportData().orElse(null))
+				.data(archiveData)
 				.force(true)
 				.save(true)
 				.asyncBatchId(report.getAsyncBatchId())
@@ -243,6 +249,10 @@ public class DefaultModelArchiver
 		// but it needs to be available in case the system has to create a printing queue item for this archive
 		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, report.getCopies());
 
+		// stamp the suppress-auto-print decision (e.g. drop-ship shipments) so the printing-queue gate can honor it
+		// without a DB column: one AD_Archive can be printed multiple times, so this must not be persisted.
+		archiveBL.setSuppressAutoPrint(archive, report.isSuppressAutoPrint());
+
 		//
 		// forward async batch if there is one
 		final AsyncBatchId asyncBatchId = AsyncHelper.getAsyncBatchId(getRecord());
@@ -255,6 +265,50 @@ public class DefaultModelArchiver
 		logger.debug("Archive: {}", archive);
 
 		return archiveResult;
+	}
+
+	/**
+	 * Optionally transforms the report bytes via the {@link IArchiveReportBytesTransformer} SPI,
+	 * if one is registered in the Spring context.
+	 *
+	 * <p>Returns the original report resource unchanged when no transformer bean is present,
+	 * when the report has no data, or when the report has no document reference. The call is
+	 * inserted between "report bytes produced" and "ArchiveBL.archive()" so that e-invoice
+	 * modules can embed CII XML (ZUGFeRD etc.) into the PDF bytes without touching the generic
+	 * archive persistence path. See {@link IArchiveReportBytesTransformer}.
+	 */
+	@Nullable
+	private Resource transformReportBytes(@NonNull final DocumentReportResult report)
+	{
+		final Resource reportData = report.getReportData().orElse(null);
+		if (reportData == null)
+		{
+			return null;
+		}
+
+		final TableRecordReference recordRef = report.getDocumentRef();
+		if (recordRef == null)
+		{
+			logger.debug("transformReportBytes: no documentRef on report — skipping SPI transformer for {}", report);
+			return reportData;
+		}
+
+		final IArchiveReportBytesTransformer transformer =
+				SpringContextHolder.instance.getBeanOr(IArchiveReportBytesTransformer.class, null);
+		if (transformer == null)
+		{
+			return reportData;
+		}
+
+		final byte[] originalBytes = SpringResourceUtils.toByteArray(reportData);
+		final byte[] transformedBytes = transformer.transform(recordRef, originalBytes);
+
+		// If the transformer returned the same array reference, no transformation occurred — reuse original resource.
+		if (transformedBytes == originalBytes)
+		{
+			return reportData;
+		}
+		return new ByteArrayResource(transformedBytes);
 	}
 
 	private void markProcessed()

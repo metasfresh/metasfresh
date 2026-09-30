@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
@@ -12,6 +11,7 @@ import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -37,6 +37,7 @@ public class PickingJobGRAIValidator
 	@Builder
 	private PickingJobGRAIValidator(
 			@NonNull final PickingJobHUService huService,
+			@NonNull final PickingJobBPartnerService bpartnerService,
 			@NonNull final PickingJob pickingJob)
 	{
 		this.huService = huService;
@@ -46,7 +47,7 @@ public class PickingJobGRAIValidator
 				.orderDAO(Services.get(IOrderDAO.class))
 				.build();
 		this.customerGRAIConfigProvider = CustomerGRAIConfigProvider.builder()
-				.bpartnerDAO(Services.get(IBPartnerDAO.class))
+				.bpartnerService(bpartnerService)
 				.build();
 	}
 

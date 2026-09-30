@@ -49,6 +49,20 @@ public class SEPATestHelper
 	private I_C_PaySelectionLine secondGroupedPaySelectionLine;
 	private I_C_PaySelectionLine ungroupedPaySelectionLine;
 
+	// QR-IBAN (Swiss QRR) fixtures
+	public static final String QR_REFERENCE_1 = "000000000000010360022841297";
+	public static final String QR_REFERENCE_2 = "000000000002015110002913192";
+
+	private I_C_BPartner qrIbanPartner;
+	private I_C_Bank qrIbanBank;
+	private I_C_BP_BankAccount qrIbanBankAccount;
+	private I_C_Invoice qrIbanFirstInvoice;
+	private I_C_Invoice qrIbanSecondInvoice;
+	@Getter
+	private I_C_PaySelection qrIbanPaySelection;
+	private I_C_PaySelectionLine qrIbanFirstPaySelectionLine;
+	private I_C_PaySelectionLine qrIbanSecondPaySelectionLine;
+
 	@NonNull
 	public I_SEPA_Export createSepaExport()
 	{
@@ -61,6 +75,7 @@ public class SEPATestHelper
 	{
 		currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code(CurrencyCode.USD.toThreeLetterCode());
+		currency.setDescription(CurrencyCode.USD.toThreeLetterCode());
 		save(currency);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
@@ -381,5 +396,113 @@ public class SEPATestHelper
 		assertThat(ungroupedLine.getRecord_ID()).isEqualTo(ungroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
 		assertThat(ungroupedLine.getNumberOfReferences()).isEqualTo(0);
+	}
+
+	/**
+	 * Builds a dedicated {@link I_C_PaySelection} with two credit-transfer lines paid via the SAME QR-IBAN bank account
+	 * (plain {@code IBAN} left blank, so it is resolved from {@code QR_IBAN}), each with its own valid 27-digit QR reference.
+	 */
+	public void createQrIbanMockData()
+	{
+		final I_C_Currency chfCurrency = newInstance(I_C_Currency.class);
+		chfCurrency.setISO_Code(CurrencyCode.CHF.toThreeLetterCode());
+		chfCurrency.setDescription(CurrencyCode.CHF.toThreeLetterCode());
+		save(chfCurrency);
+
+		final I_C_Country country = newInstance(I_C_Country.class);
+		save(country);
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setC_Country_ID(country.getC_Country_ID());
+		location.setRegionName("qrRegionName");
+		location.setAddress1("qrAddr1");
+		location.setAddress2("qrAddr2");
+		location.setCity("qrCity");
+		location.setPostal("qrPostal");
+		save(location);
+
+		qrIbanPartner = newInstance(I_C_BPartner.class);
+		qrIbanPartner.setName("qrIbanPartnerName");
+		qrIbanPartner.setIsCompany(true);
+		qrIbanPartner.setAD_OrgBP_ID(1000000);
+		save(qrIbanPartner);
+
+		final I_C_BPartner_Location qrIbanPartnerLocation = newInstance(I_C_BPartner_Location.class);
+		qrIbanPartnerLocation.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+		save(qrIbanPartnerLocation);
+
+		qrIbanBank = newInstance(I_C_Bank.class);
+		qrIbanBank.setName("qrIbanBankName");
+		qrIbanBank.setSwiftCode("qrIbanSwiftCode");
+		save(qrIbanBank);
+
+		qrIbanBankAccount = newInstance(I_C_BP_BankAccount.class);
+		qrIbanBankAccount.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanBankAccount.setC_Bank_ID(qrIbanBank.getC_Bank_ID());
+		qrIbanBankAccount.setC_Currency_ID(chfCurrency.getC_Currency_ID());
+		qrIbanBankAccount.setQR_IBAN("CH4431999123000889012");
+		qrIbanBankAccount.setIsEsrAccount(true);
+		qrIbanBankAccount.setRoutingNo("qrIbanRoutingNo");
+		qrIbanBankAccount.setSEPA_CreditorIdentifier("qrIbanSepaCreditorIdentifier");
+		save(qrIbanBankAccount);
+
+		qrIbanFirstInvoice = newInstance(I_C_Invoice.class);
+		qrIbanFirstInvoice.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanFirstInvoice.setC_BPartner_Location_ID(qrIbanPartnerLocation.getC_BPartner_Location_ID());
+		qrIbanFirstInvoice.setDescription("qrIbanFirstInvoiceDescription");
+		save(qrIbanFirstInvoice);
+
+		qrIbanSecondInvoice = newInstance(I_C_Invoice.class);
+		qrIbanSecondInvoice.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanSecondInvoice.setC_BPartner_Location_ID(qrIbanPartnerLocation.getC_BPartner_Location_ID());
+		qrIbanSecondInvoice.setDescription("qrIbanSecondInvoiceDescription");
+		save(qrIbanSecondInvoice);
+
+		qrIbanPaySelection = newInstance(I_C_PaySelection.class);
+		qrIbanPaySelection.setAD_Org_ID(1000000);
+		qrIbanPaySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_CreditTransfer);
+		qrIbanPaySelection.setC_BP_BankAccount_ID(qrIbanBankAccount.getC_BP_BankAccount_ID());
+		saveRecord(qrIbanPaySelection);
+
+		qrIbanFirstPaySelectionLine = newInstance(I_C_PaySelectionLine.class);
+		qrIbanFirstPaySelectionLine.setC_PaySelection_ID(qrIbanPaySelection.getC_PaySelection_ID());
+		qrIbanFirstPaySelectionLine.setAD_Org_ID(1000000);
+		qrIbanFirstPaySelectionLine.setC_Invoice_ID(qrIbanFirstInvoice.getC_Invoice_ID());
+		qrIbanFirstPaySelectionLine.setC_BP_BankAccount_ID(qrIbanBankAccount.getC_BP_BankAccount_ID());
+		qrIbanFirstPaySelectionLine.setPayAmt(BigDecimal.TEN);
+		qrIbanFirstPaySelectionLine.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanFirstPaySelectionLine.setReference(QR_REFERENCE_1);
+		save(qrIbanFirstPaySelectionLine);
+
+		qrIbanSecondPaySelectionLine = newInstance(I_C_PaySelectionLine.class);
+		qrIbanSecondPaySelectionLine.setC_PaySelection_ID(qrIbanPaySelection.getC_PaySelection_ID());
+		qrIbanSecondPaySelectionLine.setAD_Org_ID(1000000);
+		qrIbanSecondPaySelectionLine.setC_Invoice_ID(qrIbanSecondInvoice.getC_Invoice_ID());
+		qrIbanSecondPaySelectionLine.setC_BP_BankAccount_ID(qrIbanBankAccount.getC_BP_BankAccount_ID());
+		qrIbanSecondPaySelectionLine.setPayAmt(BigDecimal.ONE);
+		qrIbanSecondPaySelectionLine.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		qrIbanSecondPaySelectionLine.setReference(QR_REFERENCE_2);
+		save(qrIbanSecondPaySelectionLine);
+	}
+
+	/**
+	 * Asserts that the two QR-IBAN pay-selection lines created by {@link #createQrIbanMockData()} were exported as two
+	 * individual, non-grouped {@link I_SEPA_Export_Line}s - each keeping its own (valid) QR reference untouched.
+	 */
+	public void assertQrIbanLinesNotGrouped(@NonNull final I_SEPA_Export sepaExport)
+	{
+		final List<I_SEPA_Export_Line> lines = sepaDocumentDAO.retrieveLines(sepaExport);
+		assertThat(lines.size()).isEqualTo(2);
+
+		final I_SEPA_Export_Line firstLine = lines.get(0);
+		assertThat(firstLine.isGroupLine()).isEqualTo(false);
+		assertThat(firstLine.getStructuredRemittanceInfo()).isEqualTo(qrIbanFirstPaySelectionLine.getReference());
+		assertThat(firstLine.getNumberOfReferences()).isEqualTo(0);
+
+		final I_SEPA_Export_Line secondLine = lines.get(1);
+		assertThat(secondLine.isGroupLine()).isEqualTo(false);
+		assertThat(secondLine.getStructuredRemittanceInfo()).isEqualTo(qrIbanSecondPaySelectionLine.getReference());
+		assertThat(secondLine.getNumberOfReferences()).isEqualTo(0);
 	}
 }

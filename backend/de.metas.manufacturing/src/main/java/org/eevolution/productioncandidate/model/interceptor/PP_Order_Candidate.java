@@ -38,6 +38,9 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,6 +57,8 @@ import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -62,6 +67,7 @@ import java.util.Optional;
 import static org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter.getMaterialDispoTraceId;
 
 @Interceptor(I_PP_Order_Candidate.class)
+@Callout(I_PP_Order_Candidate.class)
 @Component
 @RequiredArgsConstructor
 public class PP_Order_Candidate
@@ -75,6 +81,20 @@ public class PP_Order_Candidate
 	private final PostMaterialEventService materialEventService;
 	private final PPOrderCandidateService ppOrderCandidateService;
 	private final DDOrderCandidateRepository ddOrderCandidateRepository;
+
+	@PostConstruct
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@CalloutMethod(columnNames = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+				 ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
+	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		ppOrderCandidateService.setWorkStationFromProductPlanning(ppOrderCandidateRecord);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)

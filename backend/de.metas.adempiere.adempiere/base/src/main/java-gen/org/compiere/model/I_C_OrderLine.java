@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set C_BPartner_Vendor_ID.
+	 * Set Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get C_BPartner_Vendor_ID.
+	 * Get Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2032,6 +2032,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_C_OrderLine.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
 	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
+
+	/**
+	 * Get Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPreparationDate();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PreparationDate = new ModelColumn<>(I_C_OrderLine.class, "PreparationDate", null);
+	String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
 	 * Set Preset Date Invoiced.

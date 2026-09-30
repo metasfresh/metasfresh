@@ -85,4 +85,7 @@ public class AttributeConstants
 
 	public static final AttributeCode ATTR_ExternalBarcode = AttributeCode.ofString("ExternalBarcode");
 	public static final AttributeCode ATTR_Project = AttributeCode.ofString("ProjectValue");
+
+	/** "Herkunft" — ISO 3166-1 alpha-2 country-of-origin list attribute. {@code M_Attribute.Value = '1000001'}. */
+	public static final AttributeCode ATTR_CountryOfOrigin = AttributeCode.ofString("1000001");
 }

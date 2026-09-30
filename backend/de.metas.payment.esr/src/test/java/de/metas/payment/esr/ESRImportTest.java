@@ -5,6 +5,7 @@ package de.metas.payment.esr;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.IPeriodBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -45,6 +46,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
@@ -55,11 +57,14 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +73,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * This class tests the entire module of importing ESR
@@ -1617,6 +1623,10 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine3.isProcessed()).isTrue();
 	}
 
+	/**
+	 * Cross-import duplicate with NO PaymentDate on either line (the fixture default): the second line
+	 * must still get its own payment, and the "invoice already paid" note must appear exactly once.
+	 */
 	@Test
 	public void testDuplicatePayments()
 	{
@@ -1653,11 +1663,472 @@ public class ESRImportTest extends ESRTestBase
 
 		refresh(esrImportLine2, true);
 		assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+		assertThat(esrImportLine2.isProcessed()).as("the duplicate line must stay unprocessed so the accountant still sees it").isFalse();
+		assertThat(esrImportLine2.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		assertThat(esrImportLine2.getImportErrorMsg()).isNull();
-		assertThat(esrImportLine2.getMatchErrorMsg()).isEqualTo("Rechnung " + invDocNo + " wurde im System als bereits bezahlt markiert");
+		// note text now comes from msgBL.getMsg(ESR_INVOICE_ALREADY_PAID_1P, ...); in this no-DB test env
+		// an AD_Message with no registered row resolves to "<key>_[<params>]" (see ESRImportBLTest#test_setInvoice_wrongOrg
+		// for the same fallback shape with 2 params)
+		assertThat(esrImportLine2.getMatchErrorMsg()).isEqualTo("de.metas.payment.esr.InvoiceAlreadyPaid_[" + invDocNo + "]");
 
-		// check the payment
-		assertThat(esrImportLine2.getC_Payment_ID()).isEqualTo(esrImportLine2.getC_Payment_ID());
+		// check the payment: the duplicate-flagged line must have its OWN payment, not the first line's
+		assertThat(esrImportLine2.getC_Payment_ID()).as("the duplicate line must not carry the first line's C_Payment_ID").isNotEqualTo(esrImportLine1.getC_Payment_ID());
+
+		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
+		final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
+				: paymentDAO.getById(esrImportLine2PaymentId);
+		assertThat(esrLine2Payment).as("the duplicate-flagged line must have created its own payment").isNotNull();
+		assertThat(esrLine2Payment.getPayAmt()).isEqualByComparingTo("50");
+		assertThat(esrLine2Payment.isAllocated()).as("the duplicate payment must not be allocated to the invoice").isFalse();
+		assertThat(esrLine2Payment.getC_Invoice_ID()).as("the duplicate payment must not be linked to the invoice").isEqualTo(0);
+	}
+
+	/**
+	 * Same ESR reference and same amount arrive again after the first, already fully-matched payment,
+	 * either on the same day or a later day.
+	 * <ul>
+	 * <li>invoice 50, first ESR line pays it in full on D1
+	 * <li>second ESR line: same reference, same amount 50, PaymentDate D1 or a later D2
+	 * <li>on the same day, the second line must still be flagged as a duplicate payment and remain unprocessed
+	 * <li>either way it must get its OWN payment (not the first line's), for PayAmt 50, not allocated or linked to the invoice
+	 * </ul>
+	 */
+	@Nested
+	class DuplicatePaymentGetsOwnPayment
+	{
+		@Test
+		void arrivingOnTheSameDay()
+		{
+			assertDuplicateGetsOwnPayment(0, X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+		}
+
+		/**
+		 * On this branch, {@code AbstractPaymentDAO#retrievePaymentIds} filters candidate payments on an exact
+		 * {@code DateTrx} match, so a receipt arriving one day after the first payment never matches it and is
+		 * therefore not flagged as {@code Duplicate_Payment} here -- it still receives its own payment, which is
+		 * the money-is-booked guarantee this test pins.
+		 */
+		@Test
+		void arrivingOnALaterDay()
+		{
+			assertDuplicateGetsOwnPayment(1, null);
+		}
+
+		/**
+		 * A later "Process ESR" run must NOT close a line the import flagged Duplicate_Payment.
+		 * <p>
+		 * The action pass ({@code ESRImportBL.handleEsrImportLine(String, I_ESR_ImportLine)}) only checks that
+		 * ESR_Payment_Action is non-null before running a handler and setting Processed. Since the import sets
+		 * Duplicate_Payment itself, that flag would otherwise be read as "the accountant decided" and the line
+		 * would be closed -- observed in UAT, where completing the import for an unrelated line silently closed
+		 * a duplicate line. Duplicate_Payment is not offered in the action dropdown at all, so the accountant
+		 * must still pick one of the overpayment actions; the line has to stay open until then.
+		 */
+		@Test
+		void completingTheImportMustNotCloseTheFlaggedDuplicate()
+		{
+			final String grandTotal = "50";
+			final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+			final String partnerValue = "123456";
+			final String invDocNo = "654321";
+			final String ESR_Rendered_AccountNo = "01-067789-3";
+
+			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, ESR_Rendered_AccountNo, partnerValue, "50", false);
+			esrImportLine1.setESRLineText(esrLineText);
+			final Timestamp paymentDate = TimeUtil.getDay(2024, 1, 10);
+			esrImportLine1.setPaymentDate(paymentDate);
+			save(esrImportLine1);
+			esrImportBL.process(esrImportLine1.getESR_Import());
+
+			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+			esrImportLine2.setESRLineText(esrLineText);
+			esrImportLine2.setPaymentDate(paymentDate);
+			save(esrImportLine2);
+			final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
+			esrImportBL.process(esrImport2);
+
+			refresh(esrImportLine2, true);
+			assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			assertThat(esrImportLine2.isProcessed()).as("precondition: the import leaves the flagged duplicate open").isFalse();
+			final int paymentIdAfterImport = esrImportLine2.getC_Payment_ID();
+
+			// the accountant completes the import without having chosen an overpayment action
+			esrImportBL.complete(esrImport2, "completing the import");
+
+			refresh(esrImportLine2, true);
+			assertThat(esrImportLine2.isProcessed())
+					.as("a flagged duplicate must stay OPEN until an overpayment action is chosen")
+					.isFalse();
+			assertThat(esrImportLine2.getESR_Payment_Action())
+					.as("the flag itself must survive, so the accountant still sees why the line is open")
+					.isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			assertThat(esrImportLine2.getC_Payment_ID())
+					.as("and its own payment must not be swapped or dropped")
+					.isEqualTo(paymentIdAfterImport);
+		}
+
+		/**
+		 * Duplicate recognised because the earlier payment is already allocated to this line's invoice.
+		 * The sibling tests give both lines the same {@code ESRLineText}, so they never reach this route:
+		 * hence the differing line text here, and the equal payment date so the candidate query still
+		 * matches on branches that filter on an exact {@code DateTrx}.
+		 */
+		@Test
+		void earlierPaymentAllocatedToTheSameInvoice_isDetectedViaTheInvoice_notTheLineText()
+		{
+			final String grandTotal = "50";
+			final String esrLineText1 = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+			final String esrLineText2 = esrLineText1.replace("041100", "041200");
+
+			assertThat(esrLineText2).as("the two bank lines must differ").isNotEqualTo(esrLineText1);
+			assertThat(esrLineText2.length()).as("same record length").isEqualTo(esrLineText1.length());
+			assertThat(ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText2))
+					.as("both lines must still resolve the same invoice reference")
+					.isEqualTo(ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText1));
+
+			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText1);
+			final String partnerValue = "123456";
+			final String invDocNo = "654321";
+			final String ESR_Rendered_AccountNo = "01-067789-3";
+
+			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, ESR_Rendered_AccountNo, partnerValue, "50", false);
+			esrImportLine1.setESRLineText(esrLineText1);
+			final Timestamp paymentDate = TimeUtil.getDay(2024, 1, 10);
+			esrImportLine1.setPaymentDate(paymentDate);
+			save(esrImportLine1);
+			esrImportBL.process(esrImportLine1.getESR_Import());
+
+			refresh(esrImportLine1, true);
+			assertThat(esrImportLine1.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
+			final int firstPaymentId = esrImportLine1.getC_Payment_ID();
+			assertThat(firstPaymentId).as("the first line must have produced a payment").isNotZero();
+
+			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+			esrImportLine2.setESRLineText(esrLineText2);
+			esrImportLine2.setPaymentDate(paymentDate);
+			save(esrImportLine2);
+			esrImportBL.process(esrImportLine2.getESR_Import());
+
+			refresh(esrImportLine2, true);
+			assertThat(esrImportLine2.getESR_Payment_Action())
+					.as("flagged through the invoice route, even though no other line carries this bank line")
+					.isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			assertThat(esrImportLine2.isProcessed())
+					.as("must stay open until the accountant picks an overpayment action")
+					.isFalse();
+			assertThat(esrImportLine2.getC_Payment_ID())
+					.as("the money that arrived a second time must be booked as its OWN payment")
+					.isNotZero()
+					.isNotEqualTo(firstPaymentId);
+		}
+
+		/**
+		 * @param expectedPaymentAction the second line's expected {@code ESR_Payment_Action}, or {@code null} if it
+		 * is expected to stay unflagged (see {@link #arrivingOnALaterDay()}).
+		 */
+		private void assertDuplicateGetsOwnPayment(final int daysAfterFirstPayment, final String expectedPaymentAction)
+		{
+			final String grandTotal = "50";
+			final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+			final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+			final String partnerValue = "123456";
+			final String invDocNo = "654321";
+			final String ESR_Rendered_AccountNo = "01-067789-3";
+
+			final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+			esrImportLine1.setESRLineText(esrLineText);
+			final Timestamp paymentDate1 = TimeUtil.getDay(2024, 1, 10);
+			esrImportLine1.setPaymentDate(paymentDate1);
+			save(esrImportLine1);
+
+			final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
+
+			esrImportBL.process(esrImport);
+
+			final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+			esrImportLine2.setESRLineText(esrLineText);
+			final Timestamp paymentDate2 = TimeUtil.addDays(paymentDate1, daysAfterFirstPayment);
+			esrImportLine2.setPaymentDate(paymentDate2);
+			save(esrImportLine2);
+			final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
+			esrImportBL.process(esrImport2);
+
+			// check first import line: unaffected, still fully matched and paid
+			refresh(esrImportLine1, true);
+			assertThat(esrImportLine1.isProcessed()).isTrue();
+			assertThat(esrImportLine1.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
+
+			// check second import line
+			refresh(esrImportLine2, true);
+			if (expectedPaymentAction == null)
+			{
+				// cross-day: the date-scoped duplicate search misses the earlier payment, so no flag is set
+				assertThat(esrImportLine2.getESR_Payment_Action()).isNull();
+			}
+			else
+			{
+				// same-day: flagged as a duplicate payment, and remains unprocessed for the accountant
+				assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(expectedPaymentAction);
+				assertThat(esrImportLine2.isProcessed()).as("the duplicate line must stay unprocessed so the accountant still sees it").isFalse();
+				assertThat(esrImportLine2.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			}
+
+			// ... but it must have its OWN payment, not the first line's -- the money that arrived a second
+			// time is booked either way, which is the guarantee this port exists to provide
+			assertThat(esrImportLine2.getC_Payment_ID()).as("the second line must not carry the first line's C_Payment_ID").isNotEqualTo(esrImportLine1.getC_Payment_ID());
+
+			final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
+			final I_C_Payment esrLine2Payment = esrImportLine2PaymentId == null ? null
+					: paymentDAO.getById(esrImportLine2PaymentId);
+			assertThat(esrLine2Payment).as("the second line must have created its own payment").isNotNull();
+			assertThat(esrLine2Payment.getPayAmt()).isEqualByComparingTo("50");
+			assertThat(esrLine2Payment.isAllocated()).as("the payment must not be allocated to the invoice").isFalse();
+			assertThat(esrLine2Payment.getC_Invoice_ID()).as("the payment must not be linked to the invoice").isEqualTo(0);
+		}
+	}
+
+	/**
+	 * Re-processing the SAME already-processed ESR import must be idempotent.
+	 * <ul>
+	 * <li>invoice 50, one ESR line pays it in full
+	 * <li>{@code esrImportBL.process(esrImport)} is called a SECOND time on the very same, already-processed import
+	 * <li>production code refuses the second call (the header's {@code Processed=Y} guard throws
+	 * {@code AdempiereException}) -- that guard IS the idempotency protection this test pins
+	 * <li>the line must keep its original payment (no new {@code C_Payment_ID})
+	 * <li>exactly ONE {@code C_Payment} must exist for the partner, counted from the actual table, not merely
+	 * re-read from the line's FK
+	 * </ul>
+	 */
+	@Nested
+	class LineWithoutInvoice
+	{
+		private I_C_BP_BankAccount sharedAccount;
+
+		/**
+		 * Scaffolding for a line whose reference resolves to no invoice at all. The org, reference type and
+		 * bank account are created once and reused: creating them per call makes the org and
+		 * reference-type lookups ambiguous as soon as a test needs a second import.
+		 */
+		private I_ESR_Import importWithUnmatchableLine()
+		{
+			if (sharedAccount == null)
+			{
+				final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
+				org.setValue("106");
+				save(org);
+
+				final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+				refNoType.setName("InvoiceReference");
+				save(refNoType);
+
+				sharedAccount = createBankAccount(true,
+						org.getAD_Org_ID(),
+						Env.getAD_User_ID(getCtx()),
+						"01-067789-3",
+						PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR));
+			}
+
+			// the reference in this line belongs to no invoice in the system
+			final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
+			final I_ESR_Import esrImport = createImport();
+			esrImport.setAD_Org_ID(sharedAccount.getAD_Org_ID());
+			esrImport.setC_BP_BankAccount_ID(sharedAccount.getC_BP_BankAccount_ID());
+			save(esrImport);
+
+			esrImportBL.loadAndEvaluateESRImportStream(createImportFile(esrImport), new ByteArrayInputStream(esrLineText.getBytes()));
+			return esrImport;
+		}
+
+		private int createPartner()
+		{
+			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class, contextProvider);
+			bpartner.setValue("payer-without-invoice");
+			save(bpartner);
+			return bpartner.getC_BPartner_ID();
+		}
+
+		/**
+		 * An unmatchable line creates no payment, so nothing can be done with it; setting the partner by
+		 * hand and processing again is the documented recovery, and it is what creates the payment.
+		 */
+		@Test
+		void unknownReference_createsNoPaymentUntilThePartnerIsSetByHand()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			esrImportBL.process(esrImport);
+
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			refresh(line, true);
+			assertThat(line.getC_Payment_ID()).as("no partner, so no payment can be created").isZero();
+			assertThat(line.getC_Invoice_ID()).as("the reference matched no invoice").isZero();
+
+			// the recovery: the accountant sets whoever actually paid
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true); // 'Y' by default in the real DB, false in the POJO store
+			save(line);
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			assertThat(line.getC_Payment_ID())
+					.as("processing again after the partner was set is what creates the payment")
+					.isNotZero();
+		}
+
+		/**
+		 * The payment such a line receives: booked for the full amount, but deliberately not allocated and
+		 * with no action chosen, so the accountant still has to decide what happens to the money.
+		 */
+		@Test
+		void theOwnPaymentIsCompletedUnallocatedAndLeavesTheActionOpen()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true);
+			save(line);
+
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			assertThat(paymentId).as("the line must have got its own payment").isNotNull();
+
+			final I_C_Payment payment = paymentDAO.getById(paymentId);
+			assertThat(payment.getPayAmt())
+					.as("booked for the amount that arrived")
+					.isEqualByComparingTo(line.getAmount());
+			assertThat(payment.getC_Invoice_ID()).as("there is no invoice to link").isZero();
+			assertThat(payment.isAllocated()).as("left unallocated for the accountant").isFalse();
+			assertThat(payment.getDocStatus()).as("completed, so the money is booked").isEqualTo("CO");
+			assertThat(line.getESR_Payment_Action())
+					.as("no action is set for the accountant, so the line stays a visible todo")
+					.isNull();
+			assertThat(line.isProcessed()).as("and the line stays open").isFalse();
+		}
+
+		/**
+		 * Two no-invoice lines for the same payer and amount, on DIFFERENT bank lines. The second line's
+		 * duplicate search finds the first line's payment as a candidate, and because the bank lines differ
+		 * it reaches the invoice route -- where the line has no invoice at all.
+		 * <p>
+		 * On an instance with history any earlier completed payment for that payer and amount is such a
+		 * candidate, so this is the normal case rather than an edge one, and it aborts the whole import.
+		 */
+		@Test
+		void aSecondNoInvoiceLineForTheSamePayerAndAmount_doesNotBlowUp()
+		{
+			final int partnerId = createPartner();
+
+			final I_ESR_Import firstImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine firstLine = ESRTestUtil.retrieveSingleLine(firstImport);
+			firstLine.setC_BPartner_ID(partnerId);
+			firstLine.setESR_IsManual_ReferenceNo(true);
+			save(firstLine);
+			esrImportBL.process(firstImport);
+
+			refresh(firstLine, true);
+			assertThat(firstLine.getC_Payment_ID()).as("guard: the first line booked a payment").isNotZero();
+
+			// a second line, same payer and amount, but NOT the same bank line -- so the "another line already
+			// carries this payment" route cannot match and the invoice route is reached
+			final I_ESR_Import secondImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine secondLine = ESRTestUtil.retrieveSingleLine(secondImport);
+			secondLine.setESRLineText(firstLine.getESRLineText().replace("041100", "041200"));
+			secondLine.setC_BPartner_ID(partnerId);
+			secondLine.setESR_IsManual_ReferenceNo(true);
+			save(secondLine);
+
+			esrImportBL.process(secondImport);
+
+			refresh(secondLine, true);
+			assertThat(secondLine.getC_Payment_ID())
+					.as("the second line must get its own payment, not blow up the import")
+					.isNotZero()
+					.isNotEqualTo(firstLine.getC_Payment_ID());
+		}
+
+		/**
+		 * The refund branch that only a line WITHOUT an invoice reaches: there is no over-payment to
+		 * compute against, so the whole received amount is what gets transferred back. The sibling test
+		 * in ESRActionHandlerTest covers the with-invoice case, where only the excess is refunded.
+		 */
+		@Test
+		void choosingRefund_transfersBackTheWholeReceivedAmount()
+		{
+			final I_ESR_Import esrImport = importWithUnmatchableLine();
+			final I_ESR_ImportLine line = ESRTestUtil.retrieveSingleLine(esrImport);
+			line.setC_BPartner_ID(createPartner());
+			line.setESR_IsManual_ReferenceNo(true);
+			save(line);
+			esrImportBL.process(esrImport);
+
+			refresh(line, true);
+			final java.math.BigDecimal received = line.getAmount();
+			assertThat(POJOLookupMap.get().getRecords(I_C_Payment.class))
+					.as("guard: the import booked the incoming payment")
+					.hasSize(1);
+
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
+			save(line);
+			esrImportBL.registerActionHandler(
+					X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner,
+					new MoneyTransferedBackESRActionHandler());
+			esrImportBL.complete(esrImport, "");
+
+			final java.util.List<I_C_Payment> payments = POJOLookupMap.get().getRecords(I_C_Payment.class);
+			assertThat(payments).as("an outbound payment must have been booked for the refund").hasSize(2);
+
+			final I_C_Payment refund = payments.stream()
+					.filter(pmt -> !pmt.isReceipt())
+					.findFirst()
+					.orElse(null);
+			assertThat(refund).as("the refund is an OUTBOUND payment").isNotNull();
+			assertThat(refund.getPayAmt())
+					.as("with no invoice there is no excess to compute, so the whole amount goes back")
+					.isEqualByComparingTo(received);
+		}
+	}
+
+	@Test
+	public void testReprocessSameImport_createsNoSecondPayment()
+	{
+		final String grandTotal = "50";
+		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+		final String partnerValue = "123456";
+		final String invDocNo = "654321";
+		final String ESR_Rendered_AccountNo = "01-067789-3";
+
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
+
+		esrImportBL.process(esrImport);
+
+		refresh(esrImportLine, true);
+		assertThat(esrImportLine.isProcessed()).isTrue();
+		final int originalPaymentId = esrImportLine.getC_Payment_ID();
+		assertThat(originalPaymentId).as("first processing must have created a payment").isNotEqualTo(0);
+
+		// process the very same, already-processed import a second time: the header-level
+		// "Processed=Y" guard in ESRImportBL#processAndCountLines refuses the call outright
+		final AdempiereException thrown = assertThrows(
+				AdempiereException.class,
+				() -> esrImportBL.process(esrImport));
+		assertThat(thrown.getMessage()).contains("Processed");
+
+		// the line must still point to its original payment, not a new one
+		refresh(esrImportLine, true);
+		assertThat(esrImportLine.getC_Payment_ID()).as("re-processing must not swap in a new payment").isEqualTo(originalPaymentId);
+
+		// load-bearing assertion: count the partner's actual C_Payment rows, not just the line's FK,
+		// so a stray second payment created for the same partner would be caught even if the line's FK was untouched
+		final int partnerId = esrImportLine.getC_Invoice().getC_BPartner_ID();
+		final long partnerPaymentCount = paymentDAO.streamPaymentIdsByBPartnerId(BPartnerId.ofRepoId(partnerId)).count();
+		assertThat(partnerPaymentCount).as("exactly one C_Payment must exist for the partner after re-processing").isEqualTo(1L);
 	}
 
 }

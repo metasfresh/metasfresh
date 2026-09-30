@@ -85,6 +85,7 @@ services:
       # self-contained.
       - TEST_SMTP_HOST=${TEST_SMTP_HOST:-mailpit}
       - TEST_SMTP_PORT=${TEST_SMTP_PORT:-587}
+      - TEST_MAILPIT_API_URL=${TEST_MAILPIT_API_URL:-http://mailpit:8025}
       - TEST_SMTP_STARTTLS=${TEST_SMTP_STARTTLS:-false}
       - TEST_SMTP_FROM=${TEST_SMTP_FROM:-noreply@cucumber.metasfresh.test}
       - TEST_SMTP_USER=${TEST_SMTP_USER:-cucumber}

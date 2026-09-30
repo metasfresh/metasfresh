@@ -44,6 +44,7 @@ import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJO
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DocumentNo;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_HandoverLocation;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductName;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductNames;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_ProductNo;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_QtyToDeliver;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_RuestplatzNr;
@@ -60,6 +61,7 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 	RUESTPLATZ_NR(PICKINGJOBFIELD_RuestplatzNr),
 	PRODUCT_NO(PICKINGJOBFIELD_ProductNo),
 	PRODUCT_NAME(PICKINGJOBFIELD_ProductName),
+	PRODUCT_NAMES(PICKINGJOBFIELD_ProductNames),
 	QTY_TO_DELIVER(PICKINGJOBFIELD_QtyToDeliver),
 	;
 

@@ -25,7 +25,6 @@ package de.metas.ordercandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.externalsystem.ExternalSystemId;
@@ -33,8 +32,8 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.impl.OLCandBL;
@@ -44,9 +43,9 @@ import de.metas.ordercandidate.spi.NullOLCandListener;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.uom.X12DE355;
-import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -84,6 +83,10 @@ class OLCandOrderFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
+		// OLCandOrderFactory eagerly fetches CustomColumnService (which delegates to CustomColumnRepository);
+		// register no-op stubs so the factory can be built in this unit test (no custom columns -> propagation is a no-op).
+		CustomColumnService.newInstanceForUnitTesting();
+
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		SpringContextHolder.registerJUnitBean(new OrderGroupRepository(
@@ -91,16 +94,11 @@ class OLCandOrderFactoryTest
 				Optional.empty()
 		));
 
+		SpringContextHolder.registerJUnitBean(new GroupTemplateRepository(Optional.empty()));
+
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		SpringContextHolder.registerJUnitBean(
-				IOLCandBL.class,
-				new OLCandBL(
-						bpartnerBL,
-						BPartnerOrderParamsRepository.newInstanceForUnitTesting()
-				)
-		);
+		SpringContextHolder.registerJUnitBean(IOLCandBL.class, OLCandBL.newInstanceForUnitTesting());
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();

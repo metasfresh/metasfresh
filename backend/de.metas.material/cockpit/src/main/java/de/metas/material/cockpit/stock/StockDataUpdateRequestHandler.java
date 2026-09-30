@@ -8,9 +8,9 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,15 +47,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 @Component
+@RequiredArgsConstructor
 public class StockDataUpdateRequestHandler
 {
+	@NonNull
 	private final PostMaterialEventService postMaterialEventService;
-
-	public StockDataUpdateRequestHandler(
-			@NonNull final PostMaterialEventService postMaterialEventService)
-	{
-		this.postMaterialEventService = postMaterialEventService;
-	}
+	@NonNull
+	private final StockRepository stockRepository;
 
 	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
 	{
@@ -71,9 +69,39 @@ public class StockDataUpdateRequestHandler
 		fireStockChangedEvent(dataRecord, qtyOnHandOld, dataUpdateRequest.getSourceInfo());
 	}
 
+	/**
+	 * Idempotently set {@code MD_Stock.QtyOnHand} to an absolute target (the HU-derived truth) — the
+	 * reset semantics used by {@code MD_Stock_Update_From_M_HUs}. Unlike {@link #handleDataUpdateRequest}
+	 * (which ADDS a delta, correct for the transaction-event path), this SETS the value, so overlapping
+	 * concurrent reset runs all converge to the same truth instead of compounding into a runaway.
+	 */
+	public void handleResetToQtyOnHand(
+			@NonNull final StockDataRecordIdentifier identifier,
+			@NonNull final BigDecimal targetQtyOnHand,
+			@NonNull final StockChangeSourceInfo sourceInfo)
+	{
+		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(targetQtyOnHand);
+
+		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(identifier);
+		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
+
+		// Idempotent: setting to the same truth twice (overlapping reset runs) is a no-op the second time.
+		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
+		{
+			return;
+		}
+
+		dataRecord.setQtyOnHand(qtyOnHandNew);
+		save(dataRecord);
+
+		fireStockChangedEvent(dataRecord, qtyOnHandOld, sourceInfo);
+	}
+
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
 	{
-		final IQuery<I_MD_Stock> query = createQueryForIdentifier(identifier);
+		// the five-column key query lives in StockRepository, so that this writer and the readers of the same
+		// key (e.g. the ATP reconciliation) cannot end up filtering MD_Stock differently
+		final IQuery<I_MD_Stock> query = stockRepository.createQueryForIdentifier(identifier);
 
 		final I_MD_Stock existingDataRecord = query.firstOnly(I_MD_Stock.class);
 		if (existingDataRecord != null)
@@ -89,23 +117,23 @@ public class StockDataUpdateRequestHandler
 		newDataRecord.setAttributesKey(identifier.getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
-		return newDataRecord;
-	}
-
-	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
-	{
-		final AttributesKey attributesKey = identifier.getStorageAttributesKey();
-		attributesKey.assertNotAllOrOther();
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, identifier.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, identifier.getProductId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
-				.create();
+		try
+		{
+			save(newDataRecord);
+			return newDataRecord;
+		}
+		catch (final DBUniqueConstraintException e)
+		{
+			// meanwhile another thread created the same bucket; return the existing one.
+			// The event dispatch path does not retry on a bare exception, so this in-code fallback
+			// is the only guarantee against a lost update on a create-create race.
+			final I_MD_Stock winner = query.firstOnly(I_MD_Stock.class);
+			if (winner != null)
+			{
+				return winner;
+			}
+			throw e;
+		}
 	}
 
 	private void fireStockChangedEvent(

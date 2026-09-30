@@ -95,7 +95,7 @@ Feature: Dropship fields propagated from SO to Purchase Candidate and Purchase O
       | C_PurchaseCandidate_ID | QtyToPurchase | IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID      |
       | pc_ds1                 | 10            | true       | dropship_dest_ds1    | dropship_dest_ds1_loc     |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify PO was auto-generated
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
@@ -209,7 +209,7 @@ Feature: Dropship fields propagated from SO to Purchase Candidate and Purchase O
       | C_PurchaseCandidate_ID | QtyToPurchase | IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID  |
       | pc_ds2b                | 5             | true       | dropship_dest_B      | dropship_dest_B_loc   |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify two separate POs were created (one per dropship destination)
     And after not more than 60s, C_PurchaseCandidate_Alloc are found

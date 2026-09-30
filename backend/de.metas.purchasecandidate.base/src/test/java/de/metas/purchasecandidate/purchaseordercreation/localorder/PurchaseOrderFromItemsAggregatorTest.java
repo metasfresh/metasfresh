@@ -27,6 +27,7 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
@@ -97,7 +98,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(@NonNull OrderLinePriceUpdateRequest request)
+		public void updatePrices(@NonNull final OrderLinePriceUpdateRequest request)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
@@ -189,6 +190,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.productId(vendorProductInfo.getProductId())
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.qtyToPurchase(TEN)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
@@ -404,6 +406,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.dimension(dimension)
+				.source(PurchaseCandidateSource.SalesOrder)
 				.build();
 	}
 

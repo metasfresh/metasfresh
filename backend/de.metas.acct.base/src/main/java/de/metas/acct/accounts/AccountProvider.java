@@ -300,6 +300,19 @@ public class AccountProvider
 			}
 		}
 
+		//
+		// Product Expense: check/use the override defined on tax level
+		if (acctType == ProductAcctType.P_Expense_Acct && taxId != null)
+		{
+			final Account productExpenseAcct = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
+					.getT_Expense_Acct()
+					.orElse(null);
+			if (productExpenseAcct != null)
+			{
+				return productExpenseAcct;
+			}
+		}
+
 		if (productId == null)
 		{
 			return productCategoryAccountsRepository

@@ -58,6 +58,13 @@ public class ShipmentScheduleAndJobSchedulesCollection implements Iterable<Shipm
 
 	public boolean isEmpty() {return list.isEmpty();}
 
+	public int countUnprocessed()
+	{
+		return (int) list.stream()
+				.filter(schedule -> !schedule.isProcessed())
+				.count();
+	}
+
 	@Override
 	public @NotNull Iterator<ShipmentScheduleAndJobSchedules> iterator() {return list.iterator();}
 

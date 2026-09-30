@@ -24,6 +24,11 @@
       .row {
         span {
           white-space: break-spaces !important;
+
+          &.caption-multiline {
+            width: 100%;
+            text-align: left;
+          }
         }
       }
     }

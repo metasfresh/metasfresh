@@ -5,6 +5,8 @@ const translations = {
       differentProduct: 'The scanned QR Product does not match',
     },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    InternalError:
+      'Bitte erneut versuchen. Sollte das Problem weiterhin auftreten, wenden Sie sich an den Support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Verbindung Fehler',
     },
@@ -15,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -23,6 +30,7 @@ const translations = {
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerplatz',
+    LocatorFrom: 'Quell-Lagerplatz',
     QRCode: 'QR-Code',
     QtyToPick: 'Packmenge',
     QtyToPick_Total: 'Packmenge (total)',
@@ -30,12 +38,13 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    Qty: 'Qty',
+    Qty: 'Menge',
     QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
     PackingItemName: 'Packvorschrift',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
+    SerialNo: 'Seriennummer',
     DropToLocator: 'Ziellagerplatz',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',
@@ -52,10 +61,16 @@ const translations = {
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
     trolley: 'Wagen',
+    releaseTrolley: {
+      buttonCaption: 'Wagen freigeben',
+    },
   },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
+    qrLoginPlaceholder: 'QR-Code zum Anmelden scannen',
+    username: 'Benutzername',
+    password: 'Passwort',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Passwort',
@@ -73,12 +88,28 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
       scanTrolleyPlaceholder: 'Wagen scannen...',
+      scanPrompt: 'Barcode scannen',
+      scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {
@@ -89,6 +120,19 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
+      action: {
+        bulkActions: {
+          windowName: 'Massenaktionen',
+          closeScanner: 'Scanner schließen',
+          move: 'Verschieben',
+          moveSuccess: 'HU erfolgreich verschoben',
+          scanHUPlaceholder: 'HU scannen',
+          scanTargetPlaceholder: 'Ziellagerplatz scannen',
+        },
+      },
+    },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
     },
     picking: {
       PickingLine: 'Packzeile',
@@ -105,11 +149,25 @@ const translations = {
       unPickBtn: 'Entpacken',
       target: 'Soll',
       picked: 'Ist',
+      available: 'Verfügbar',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'Scannen',
+      scanSerialNo: 'Seriennummer scannen',
+      scanSerialNoAgain: 'Erneut scannen',
+      serialNoCount: '%(scanned)s von %(total)s gescannt',
+      serialNoCountExtra: '(%(extra)s zu viele)',
+      serialNoAlreadyScanned: 'Seriennummer bereits gescannt',
+      serialNoScanDone: 'Fertig',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
-      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
+      qtyRejectedIgnoreReason: 'Ohne Grund',
+      unpick: {
+        unpickItemBtn: 'Artikel entpacken',
+        scanProduct: 'Produkt scannen',
+        qtyCaption: 'Zu entpackende Menge',
+        scanTargetHU: 'Ziel HU scannen',
+        productNotInPackage: 'Dieses Produkt ist nicht im Paket',
+      },
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -127,22 +185,56 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Schließen',
       },
+      graiScan: {
+        multipleScanned:
+          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+        count: '%(scanned)s / %(total)s GRAIs gescannt',
+        countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
+        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
+        save: {
+          buttonCaption: 'Speichern',
+        },
+        clearAll: {
+          buttonCaption: 'Alle löschen',
+          confirmQuestion: 'Alle %(count)s GRAIs entfernen?',
+        },
+      },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
+      noMatchingLines: 'Keine passende Packzeile gefunden',
+      massPrinting: {
+        triggerButton: 'Massendruck Etiketten',
+        scanCaption: 'LU scannen',
+        doneButton: 'Fertig',
+        noResults: 'Keine passenden Produkte auf dieser LU gefunden',
+        product: 'Produkt',
+        unitsPacked: 'Verpackte Einheiten',
+        unitsLeftOnLU: 'Restmengen auf LU',
+        unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
+        skippedProducts: 'Übersprungene Produkte',
+      },
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanProduct: 'Artikel scannen',
+      scanHUBarcodePlaceholder: 'HU-Barcode scannen',
+      scanProductGtinPlaceholder: 'Artikel (GTIN) scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
+      switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      cannotPickFromSelectedHU:
+        'Aus der gewählten HU kann nicht entnommen werden: %(reason)s. Bitte die HU zum Entnehmen scannen.',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
+        productCodeWhereHUExpected: 'Das ist ein Artikel-Barcode (GTIN), kein HU-Barcode. Bitte zuerst die HU scannen.',
       },
       printMaterialInTransitReport: 'Materialbegleitschein',
     },
@@ -155,6 +247,11 @@ const translations = {
       },
       abort: 'Rückgängig',
       notFound: 'Nicht gefunden',
+      error: {
+        title: 'Bestätigung konnte nicht gesendet werden',
+        retry: 'Erneut senden',
+        cancel: 'Abbrechen',
+      },
     },
     mfg: {
       ProductName: 'Produkt',

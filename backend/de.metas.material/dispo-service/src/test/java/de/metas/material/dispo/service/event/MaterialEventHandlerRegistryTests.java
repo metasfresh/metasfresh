@@ -42,6 +42,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
@@ -112,6 +113,15 @@ public class MaterialEventHandlerRegistryTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(org.adempiere.warehouse.api.IWarehouseBL.class, new org.adempiere.warehouse.api.impl.WarehouseBL());
+
+		// Pre-create warehouses so WarehouseBL.isIgnoreInMaterialDispo can load them.
+		for (final WarehouseId whId : new WarehouseId[] { fromWarehouseId, toWarehouseId, de.metas.material.event.EventTestHelper.WAREHOUSE_ID })
+		{
+			final org.compiere.model.I_M_Warehouse warehouse = org.adempiere.model.InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_Warehouse.class);
+			org.adempiere.model.InterfaceWrapperHelper.setValue(warehouse, org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, whId.getRepoId());
+			org.adempiere.model.InterfaceWrapperHelper.saveRecord(warehouse);
+		}
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		eventLogUserService = Mockito.spy(EventLogUserService.class);
@@ -140,7 +150,7 @@ public class MaterialEventHandlerRegistryTests
 						stockCandidateService,
 						supplyCandidateHandler,
 						Mockito.mock(MaterialPlanningContextHelper.class),
-						new PPOrderCandidateDemandMatcher()),
+						new PPOrderCandidateDemandMatcher(), new PPOrderCandidateRepository()),
 				supplyCandidateHandler));
 
 		final DDOrderCandidateAdvisedHandler distributionAdvisedEventHandler = new DDOrderCandidateAdvisedHandler(

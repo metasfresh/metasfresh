@@ -15,6 +15,7 @@ import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
@@ -38,8 +39,11 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -56,8 +60,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -133,6 +140,28 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
+	public Optional<CurrentCost> getCurrentCost(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		return Optional.ofNullable(currentCostsRepo.getOrNull(costSegmentAndElement));
+	}
+
+	@Override
+	public Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		final Optional<CostDetail> firstDetailAfter = costDetailsService.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+		if (firstDetailAfter.isPresent())
+		{
+			// That detail's Prev_* IS the state as of asOfDate: the state right before the first movement booked after it.
+			return firstDetailAfter.map(CostDetail::getPreviousAmounts);
+		}
+
+		// Nothing moved after asOfDate, so the live M_Cost row still carries the state as of asOfDate.
+		return getCurrentCost(costSegmentAndElement).map(CostDetailPreviousAmounts::of);
+	}
+
+	@Override
 	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
@@ -158,6 +187,28 @@ public class CostingService implements ICostingService
 		}
 	}
 
+	@Override
+	public ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchema as)
+	{
+		final List<CostDetail> costDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(documentRef, as.getId());
+		if (costDetails.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// Group by product FIRST: each product's rows are one cost segment, so toCostDetailCreateResultsList (which
+		// requires a single segment) is applied per product, never across the whole mixed-product document.
+		final Map<ProductId, List<CostDetail>> byProduct = costDetails.stream()
+				.collect(Collectors.groupingBy(CostDetail::getProductId, LinkedHashMap::new, Collectors.toList()));
+
+		final ImmutableMap.Builder<ProductId, CostAmountDetailed> result = ImmutableMap.builder();
+		byProduct.forEach((productId, rows) ->
+				result.put(productId, costDetailsService.toCostDetailCreateResultsList(rows).getTotalAmountToPost(as)));
+		return result.build();
+	}
+
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
@@ -166,7 +217,9 @@ public class CostingService implements ICostingService
 				.flatMap(handler -> {
 					try
 					{
-						return handler.createOrUpdateCost(request).stream();
+						// a handler returning null for a no-op path must not NPE the pipeline
+						final CostDetailCreateResultsList results = handler.createOrUpdateCost(request);
+						return results != null ? results.stream() : Stream.empty();
 					}
 					catch (final Exception ex)
 					{
@@ -374,19 +427,28 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		final ImmutableMap<CostElementId, CostDetail> existingCostDetails = costDetailsService
-				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						CostDetail::getCostElementId,
-						costDetail -> costDetail));
+		// matched by (productId, costElementId, amtType), NOT costElementId alone: a distribution collector's 3 legs
+		// share one cost element, so a costElementId-keyed map would either return the wrong leg or (once a repost
+		// finds all 3 already persisted) throw on the duplicate key while building the map. productId is part of the
+		// key because a CostDifferenceDistribution collector carries the MAIN product's legs AND each co-product's legs
+		// under one document, all sharing the material cost element -- without productId a co-product's already-reversed
+		// leg would shadow the main product's same-amtType leg (or vice versa) on a reversal repost.
+		final List<CostDetail> existingCostDetailsList = costDetailsService
+				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId());
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();
 
 		for (final CostDetail initialDocCostDetail : initialDocCostDetails)
 		{
+			final ProductId productId = initialDocCostDetail.getProductId();
 			final CostElementId costElementId = initialDocCostDetail.getCostElementId();
-			final CostDetail existingCostDetail = existingCostDetails.get(costElementId);
+			final CostAmountType amtType = initialDocCostDetail.getAmtType();
+			final CostDetail existingCostDetail = existingCostDetailsList.stream()
+					.filter(existing -> ProductId.equals(existing.getProductId(), productId)
+							&& CostElementId.equals(existing.getCostElementId(), costElementId)
+							&& existing.getAmtType() == amtType)
+					.findFirst()
+					.orElse(null);
 			if (existingCostDetail != null)
 			{
 				final CostDetailCreateResult result = utils.toCostDetailCreateResult(existingCostDetail);
@@ -511,7 +573,7 @@ public class CostingService implements ICostingService
 		//
 		// Restore current costs at the time before evaluation date
 		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 		if (!costDetails.isEmpty())
 		{
 			final CostDetail firstCostDetail = costDetails.get(0);
@@ -551,5 +613,99 @@ public class CostingService implements ICostingService
 
 		//
 		return result.build();
+	}
+
+	/**
+	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
+	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
+	 * <p>
+	 * Canonical definition of the "anchor" term:
+	 * {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
+	 */
+	@Override
+	public void seedCurrentCostFromOpening(
+			@NonNull final CostSegmentAndElement targetSegmentAndElement,
+			@NonNull final CostDetailPreviousAmounts opening,
+			@NonNull final Instant anchorDate,
+			@NonNull final CostRevaluationLineId lineId)
+	{
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(targetSegmentAndElement);
+		currentCost.setFrom(opening);
+		currentCostsRepo.save(currentCost);
+
+		final CostElement targetCostElement = getCostElementById(targetSegmentAndElement.getCostElementId());
+
+		// The anchor carries the SAME `opening` as its Prev_*, so a later product_costs_recreate_from_date restores
+		// M_Cost from it and reproduces exactly this state when there are no in-range transactions (recompute-survival).
+		utils.createCostDetailRecordWithChangedCosts(
+				CostDetailCreateRequest.builder()
+						.costSegment(targetSegmentAndElement.toCostSegment())
+						.costElement(targetCostElement)
+						.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
+						.qty(opening.getQty().toZero())
+						.amt(opening.getCumulatedAmt().toZero())
+						.date(anchorDate)
+						.build(),
+				opening);
+	}
+
+	/**
+	 * Returns the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on the target {@code (acctSchemaId, costElementId)} — regardless of {@code RevaluationSource}. Broad,
+	 * source-agnostic signal (not restricted to a prior {@code CopyFromCostElement} switch); see
+	 * {@link de.metas.costing.impl.CostDetailRepository#retrieveProductIdsWithCostRevaluationSeed} for the query.
+	 */
+	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsAlreadySeededOnCostElement(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return costDetailsService.retrieveProductIdsWithCostRevaluationSeed(acctSchemaId, costElementId, productIds);
+	}
+
+	/**
+	 * Value-neutral, symmetric undo of {@link #seedCurrentCostFromOpening}: removes the opening-anchor
+	 * {@code M_CostDetail} and resets the target element's {@code M_Cost} to its pre-switch (absent/zero) state.
+	 * <p>
+	 * Refused when a cost event dated strictly AFTER the cut-off has already built on the seed — the moving
+	 * average has moved on, so restoring the opening would corrupt it. The seed's own anchor is dated AT the
+	 * cut-off, so it is excluded by the strictly-after filter and never counts as a forward event.
+	 */
+	@Override
+	public void reverseSeededCurrentCost(
+			@NonNull final CostSegmentAndElement targetSegmentAndElement,
+			@NonNull final Instant cutoffDate,
+			@NonNull final CostRevaluationLineId lineId)
+	{
+		final boolean hasPostCutoffCostEvents = costDetailsService.hasCostDetails(
+				CostDetailQuery.builderFrom(targetSegmentAndElement)
+						.dateAcctRage(Range.greaterThan(cutoffDate))
+						.build());
+		if (hasPostCutoffCostEvents)
+		{
+			throw new AdempiereException("Cost revaluation cannot be reversed: a cost event after the cut-off date has"
+					+ " already built on the seeded Moving Average Invoice opening balance for product "
+					+ targetSegmentAndElement.getProductId() + ".");
+		}
+
+		// Remove the opening-anchor cost detail(s). The anchor is a changing-costs detail, so voidCosts runs, but it
+		// is value-neutral here (anchor qty=0/amt=0 → addToCurrentQtyAndCumulate(0,0)); the explicit CurrentCost reset
+		// below supersedes it regardless. Net effect: the anchor is deleted and the target's value is reset.
+		voidAndDeleteForDocument(CostingDocumentRef.ofCostRevaluationLineId(lineId));
+
+		// Reset the target element's current cost back to absent/zero (the pre-switch state). The row is kept
+		// (not deleted), mirroring the seed which used getOrCreate.
+		final CurrentCost currentCost = currentCostsRepo.getOrNull(targetSegmentAndElement);
+		if (currentCost != null)
+		{
+			currentCost.setFrom(CostDetailPreviousAmounts.builder()
+					.costPrice(currentCost.getCostPrice().withZeroOwnCostPrice().withZeroComponentsCostPrice())
+					.qty(currentCost.getCurrentQty().toZero())
+					.cumulatedAmt(currentCost.getCumulatedAmt().toZero())
+					.cumulatedQty(currentCost.getCumulatedQty().toZero())
+					.build());
+			currentCostsRepo.save(currentCost);
+		}
 	}
 }

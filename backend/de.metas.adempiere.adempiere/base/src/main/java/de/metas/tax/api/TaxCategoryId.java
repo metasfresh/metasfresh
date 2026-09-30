@@ -37,7 +37,7 @@ import lombok.Value;
 @Value
 public class TaxCategoryId implements RepoIdAware
 {
-	public static TaxCategoryId NOT_FOUND = new TaxCategoryId(100);
+	public static final TaxCategoryId NOT_FOUND = new TaxCategoryId(100);
 
 	@JsonCreator
 	public static TaxCategoryId ofRepoId(final int repoId)
