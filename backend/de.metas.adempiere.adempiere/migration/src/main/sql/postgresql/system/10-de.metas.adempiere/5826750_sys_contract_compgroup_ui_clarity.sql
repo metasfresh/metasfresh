@@ -1,4 +1,4 @@
--- Contract compensation groups: PR-review follow-up clarifying the schema window.
+-- Contract compensation groups: clarifying the schema window.
 --
 -- 1) C_CompensationGroup_Schema.IsAdditive (AD_Element 585491): the Description was too vague
 --    ("computed on its own base instead of the running total") -- rewrite it to spell out BOTH
@@ -12,7 +12,7 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-09-28:
 --   AD_Element 585496 (field-specific "Applies to product category" label, wired via
---                      AD_Field.AD_Name_ID -- see Task 2 below for why a plain AD_Field override
+--                      AD_Field.AD_Name_ID -- see 2b) below for why a plain AD_Field override
 --                      does not survive)
 -- ============================================================================
 -- 1) IsAdditive (AD_Element_ID=585491, AD_Field_ID=785581): explicit Y/N wording
@@ -25,7 +25,7 @@ WHERE AD_Element_ID = 585491
 UPDATE AD_Element_Trl
 SET Description = 'Y = jede Rabattzeile wird auf ihrer eigenen Bemessungsgrundlage berechnet, sodass sich die Prozentsätze addieren (3 % + 2 % = 5 % der Bemessungsgrundlage). N (Standard) = jede Rabattzeile wird auf dem nach den vorherigen Rabattzeilen derselben Bemessungsgrundlage verbleibenden Betrag berechnet (kumulativ).',
     Updated = TO_TIMESTAMP('2026-09-28 12:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Element_ID = 585491 AND AD_Language = 'de_DE' -- base language; IsTranslated stays 'N'
+WHERE AD_Element_ID = 585491 AND AD_Language = 'de_DE' -- IsTranslated is set to 'Y' by 5827210
 ;
 UPDATE AD_Element_Trl
 SET Description = 'Y = jede Rabattzeile wird auf ihrer eigenen Bemessungsgrundlage berechnet, sodass sich die Prozentsätze addieren (3 % + 2 % = 5 % der Bemessungsgrundlage). N (Standard) = jede Rabattzeile wird auf dem nach den vorherigen Rabattzeilen derselben Bemessungsgrundlage verbleibenden Betrag berechnet (kumulativ).',
@@ -83,7 +83,7 @@ SET Name = 'Applies to product category', PrintName = 'Applies to product catego
     Updated = TO_TIMESTAMP('2026-09-28 12:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585496 AND AD_Language = 'en_US'
 ;
--- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N'
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE is set to IsTranslated='Y' by 5827210
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y',
     Updated = TO_TIMESTAMP('2026-09-28 12:00:11', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100

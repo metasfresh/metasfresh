@@ -13,6 +13,7 @@ VALUES (585498 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-30 10:10:00'
         NULL, 'de.metas.contracts', 'Enddatum', 'Enddatum',
         'Letzter Gültigkeitstag des Vertrags (einschließlich).',
         'Wird nur übernommen, wenn der Vertrags-Übergang der Vertragsbedingungen eine Laufzeit von 0 hat; der Vertrag behält dann das eingegebene Enddatum. Bei einer Laufzeit größer 0 wird das Enddatum aus dem Vertrags-Übergang berechnet und diese Eingabe ignoriert.')
+ON CONFLICT (AD_Element_ID) DO NOTHING
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
@@ -34,7 +35,7 @@ SET Name         = 'Contract End',
 WHERE AD_Element_ID = 585498 AND AD_Language = 'en_US'
 ;
 
--- de_CH mirrors de_DE (copied by the skeleton insert above); de_DE stays IsTranslated='N' (branch convention)
+-- de_CH mirrors de_DE (copied by the skeleton insert above); de_DE is set to IsTranslated='Y' by 5827210
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-09-30 10:10:02', 'YYYY-MM-DD HH24:MI:SS'),

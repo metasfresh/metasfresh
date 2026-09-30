@@ -1,4 +1,4 @@
--- Contract compensation groups: PR-review follow-up on the settings window.
+-- Contract compensation groups: settings window additions.
 --
 -- 1) Add an optional Description column + field to C_CompensationGroup_ContractSettings, reusing
 --    the existing shared "Description" AD_Element (275, Text/2000, the module's own convention --
@@ -40,7 +40,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
 SELECT public.db_alter_table('C_CompensationGroup_ContractSettings', 'ALTER TABLE public.C_CompensationGroup_ContractSettings ADD COLUMN Description VARCHAR(2000)')
 ;
 -- Sync the column's Name/translations from the shared "Description" element (standard wording --
--- this field carries no field-specific meaning beyond the generic element, unlike Task 2 below)
+-- this field carries no field-specific meaning beyond the generic element, unlike the schema line's applies-to category field, see 5826750)
 SELECT update_Column_Translation_From_AD_Element(275)
 ;
 -- AD_Field: Description on the settings header tab (549507), default/primary group (555794),

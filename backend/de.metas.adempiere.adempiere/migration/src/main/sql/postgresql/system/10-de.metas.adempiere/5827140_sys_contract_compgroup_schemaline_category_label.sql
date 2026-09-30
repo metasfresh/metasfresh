@@ -10,7 +10,7 @@ SET Name      = 'Gilt für Produktkategorie',
 WHERE AD_Element_ID = 585496
 ;
 
--- IsTranslated stays as set by 5826750 (de_DE 'N', de_CH 'Y')
+-- IsTranslated stays as set by 5826750 (de_CH 'Y'); de_DE is set to 'Y' by 5827210
 UPDATE AD_Element_Trl
 SET Name         = 'Gilt für Produktkategorie',
     PrintName    = 'Gilt für Produktkategorie',

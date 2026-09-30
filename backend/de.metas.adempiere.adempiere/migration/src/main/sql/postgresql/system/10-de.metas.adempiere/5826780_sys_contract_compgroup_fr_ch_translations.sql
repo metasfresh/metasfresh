@@ -1,6 +1,6 @@
--- Contract compensation groups: PR-review follow-up (fix round 1) -- fr_CH translations.
+-- Contract compensation groups: fr_CH translations.
 --
--- AD_Element 585496 (the C2 field-specific "applies to product category" label) shipped with an
+-- AD_Element 585496 (the field-specific "applies to product category" label) shipped with an
 -- untranslated German copy for fr_CH, while element 453 it replaces on this field carries a real
 -- French translation ("Catégorie de produit"). Give it a proper French translation so fr_CH users
 -- don't regress from a real translation to a raw German string.

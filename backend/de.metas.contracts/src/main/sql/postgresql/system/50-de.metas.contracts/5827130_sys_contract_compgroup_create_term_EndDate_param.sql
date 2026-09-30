@@ -15,9 +15,10 @@ SELECT 543331 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-30 09:00:00',
        'de.metas.contracts', 0, 'N', 'Y', 'N', 'N', 'N'
 FROM AD_Element e
 WHERE e.AD_Element_ID = 294 -- EndDate
+ON CONFLICT (AD_Process_Para_ID) DO NOTHING
 ;
 
--- translations are taken over from the EndDate element (e.g. en_US "Contract End"), for this parameter only
+-- translations are taken over from the EndDate element, for this parameter only
 INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT et.AD_Language, t.AD_Process_Para_ID, et.Name, et.Description, et.Help, et.IsTranslated, t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Process_Para t

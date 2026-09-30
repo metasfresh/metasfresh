@@ -1,7 +1,7 @@
 -- Contract compensation groups: settings window.
 --
 -- Creates the "Kompensationsgruppen-Vertragseinstellungen" / "Compensation group contract
--- settings" window over C_CompensationGroup_ContractSettings (AD_Table_ID=542650, from Task 3
+-- settings" window over C_CompensationGroup_ContractSettings (AD_Table_ID=542650, from
 -- migration 5826630) with a header tab (Name, Schema, IsActive) and a child tab "Belegarten" /
 -- "Document types" over C_CompensationGroup_ContractSettings_DocType (AD_Table_ID=542651)
 -- restricting C_DocType_ID to DocBaseType IN ('SOO','POO'). Adds a menu entry under
@@ -19,8 +19,8 @@
 --   AD_UI_Section 548000 (header tab), 548001 (doctypes tab)
 --   AD_UI_Column 549768 (header left), 549769 (header right), 549770 (doctypes)
 --   AD_UI_ElementGroup 555794 (header left "default"), 555795 (header right "flags"),
---                       555796 (doctypes "default"), 555797 (header right "org", added per
---                       window-designer finding -- master-data cornerstone: bottom-right group
+--                       555796 (doctypes "default"), 555797 (header right "org" --
+--                       master-data cornerstone: bottom-right group
 --                       must carry Org then Client)
 --   AD_Field     785583 (Name), 785584 (Schema), 785585 (IsActive) -- header tab
 --                785586 (C_DocType_ID), 785587 (IsActive) -- doctypes tab
@@ -33,7 +33,7 @@
 --   AD_Menu      542364
 --   AD_Val_Rule  540803 ("C_DocType SOO/POO")
 -- ============================================================================
--- 0) Task-3 gap fix: the settings table's Name column needs IsIdentifier='Y' (lookup display
+-- 0) The settings table's Name column needs IsIdentifier='Y' (lookup display
 --    string) to be usable as an FK/search target -- without it the Contract Conditions field
 --    added below fails with "no lookup display columns defined".
 -- ============================================================================
@@ -63,7 +63,7 @@ SET Name = 'Compensation group contract settings', PrintName = 'Compensation gro
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 11:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585494 AND AD_Language = 'en_US'
 ;
--- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE is set to IsTranslated='Y' by 5827210
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 11:00:04', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585494 AND AD_Language = 'de_CH'
@@ -90,7 +90,7 @@ SET Name = 'Document types', PrintName = 'Document types',
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 11:00:07', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585495 AND AD_Language = 'en_US'
 ;
--- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE is set to IsTranslated='Y' by 5827210
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 11:00:08', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585495 AND AD_Language = 'de_CH'
@@ -324,7 +324,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_U
 VALUES (0, 785585, 0, 549507, 555795, 654913 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-09-28 11:00:27', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Aktiv', 10, 30, 0, TO_TIMESTAMP('2026-09-28 11:00:27', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 -- Right column: org group (Org then Client), below the flags group -- master-data cornerstone
--- "bottom-right: Organisation, then Client" (window-designer finding).
+-- "bottom-right: Organisation, then Client".
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_Column_ID, AD_UI_ElementGroup_ID, Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 549769, 555797 /*From ID Server*/, TO_TIMESTAMP('2026-09-28 11:00:39', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'org', 20, NULL, TO_TIMESTAMP('2026-09-28 11:00:39', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
