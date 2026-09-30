@@ -50,7 +50,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   &lt;fixturesDir&gt;/&lt;script&gt;/&lt;case&gt;.expected.&lt;ext&gt;
  * </pre>
  * For every {@code <case>.input.*} the script's {@code transform} function is run and its result is compared with
- * {@code <case>.expected.*}. Every case dir {@code <script>/} needs a matching {@code <scriptsDir>/<script>.js}.
+ * {@code <case>.expected.*}. The test fails if a case dir has no matching {@code <scriptsDir>/<script>.js}, if a case
+ * dir has no {@code *.input.*} case, or (when scripts are read from the fixtures dir) if a {@code <script>.js} has no
+ * case dir.
  * <p>
  * <b>Directories:</b> by default the fixtures are the bundled sample dir {@code external-script-fixtures-sample}
  * (test resources) and the scripts are the module's {@code javascript_templates/} dir, so the test always runs in CI.
@@ -84,6 +86,22 @@ class ExternalScriptFixturesTest
 		final Path fixturesDir = getFixturesDir();
 		final Path scriptsDir = getScriptsDir(fixturesDir);
 		final List<FixtureCase> cases = new ArrayList<>();
+		if (scriptsDir.equals(fixturesDir))
+		{
+			// scripts live next to their case dirs: every script must have a case dir
+			try (final Stream<Path> scripts = Files.list(scriptsDir))
+			{
+				for (final Path scriptFile : (Iterable<Path>)scripts.filter(file -> file.getFileName().toString().endsWith(".js")).sorted()::iterator)
+				{
+					final String fileName = scriptFile.getFileName().toString();
+					final Path caseDir = fixturesDir.resolve(fileName.substring(0, fileName.length() - ".js".length()));
+					if (!Files.isDirectory(caseDir))
+					{
+						throw new IllegalStateException("No case dir " + caseDir + " for script " + scriptFile);
+					}
+				}
+			}
+		}
 		try (final Stream<Path> caseDirs = Files.list(fixturesDir))
 		{
 			for (final Path caseDir : (Iterable<Path>)caseDirs.filter(Files::isDirectory).sorted()::iterator)
@@ -94,6 +112,7 @@ class ExternalScriptFixturesTest
 				{
 					throw new IllegalStateException("No script " + scriptFile + " for case dir " + caseDir);
 				}
+				final int casesBefore = cases.size();
 				try (final Stream<Path> inputs = Files.list(caseDir))
 				{
 					for (final Path inputFile : (Iterable<Path>)inputs.filter(file -> file.getFileName().toString().contains(".input.")).sorted()::iterator)
@@ -102,6 +121,10 @@ class ExternalScriptFixturesTest
 						final String caseName = inputName.substring(0, inputName.indexOf(".input."));
 						cases.add(new FixtureCase(scriptName, caseName, scriptFile, inputFile, findExpectedFile(caseDir, caseName)));
 					}
+				}
+				if (cases.size() == casesBefore)
+				{
+					throw new IllegalStateException("No *.input.* cases in " + caseDir);
 				}
 			}
 		}
