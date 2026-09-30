@@ -79,7 +79,8 @@ public class BPartnerQuery
 	@Nullable Boolean isVendorFilter;
 
 	/**
-	 * If {@code true}, the GLN lookup (only that branch) ignores inactive bpartners and inactive locations. Default is {@code false}.
+	 * If {@code true}, the GLN lookup (only that branch) returns matches where both the {@code C_BPartner} and its {@code C_BPartner_Location} are active.
+	 * If {@code false} (default), also includes matches on inactive bpartners or locations.
 	 */
 	boolean glnLookupOnlyActive;
 
