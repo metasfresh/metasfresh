@@ -564,6 +564,7 @@ public class OrderGroupRepository implements GroupRepository
 				.activityId(newGroupTemplate.getActivityId())
 				.productCategoryId(newGroupTemplate.getProductCategoryId())
 				.groupTemplateId(newGroupTemplate.getId())
+				.flatrateTermId(request.getNewFlatrateTermId())
 				.build());
 
 		setGroupIdToLines(allRegularOrderLines, groupId);
@@ -671,6 +672,10 @@ public class OrderGroupRepository implements GroupRepository
 		if (request.getGroupTemplateId() != null)
 		{
 			groupPO.setC_CompensationGroup_Schema_ID(request.getGroupTemplateId().getRepoId());
+		}
+		if (request.getFlatrateTermId() != null)
+		{
+			groupPO.setC_Flatrate_Term_ID(request.getFlatrateTermId().getRepoId());
 		}
 		saveRecord(groupPO);
 

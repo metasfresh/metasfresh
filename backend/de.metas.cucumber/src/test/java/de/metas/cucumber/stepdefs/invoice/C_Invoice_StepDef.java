@@ -326,6 +326,17 @@ public class C_Invoice_StepDef
 		DataTableRows.of(dataTable).forEach(this::create_C_Invoice);
 	}
 
+	/**
+	 * Credits the given invoices, i.e. creates a drafted credit memo that references the invoice and copies its lines.
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *   <li>{@code CreditMemo} — identifier of the new credit memo</li>
+	 *   <li>{@code C_Invoice_ID} — identifier of the credited invoice</li>
+	 *   <li>{@code CreditMemo.PriceEntered} — optional; sets this price on every credit memo line. If absent, the lines keep the credited invoice's prices</li>
+	 *   <li>{@code CreditMemo.IsCreditedInvoiceReinvoicable} — optional, default {@code false}; {@code true} gives the credited quantities back to their invoice candidates</li>
+	 * </ul>
+	 */
 	@And("create credit memo for C_Invoice")
 	public void create_credit_memo_for_invoice(@NonNull final DataTable dataTable)
 	{
@@ -333,7 +344,8 @@ public class C_Invoice_StepDef
 				.setAdditionalRowIdentifierColumnName("CreditMemo")
 				.forEach(row -> {
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-					final BigDecimal creditMemoLineAmt = row.getAsBigDecimal("CreditMemo.PriceEntered");
+					final Optional<BigDecimal> creditMemoLineAmt = row.getAsOptionalBigDecimal("CreditMemo.PriceEntered");
+					final boolean creditedInvoiceReinvoicable = row.getAsOptionalBoolean("CreditMemo.IsCreditedInvoiceReinvoicable").orElseFalse();
 					final DocTypeId creditMemoDocTypeId = docTypeBL.getDocTypeId(
 							DocTypeQuery.builder()
 									.docBaseType(invoice.isSOTrx() ? DocBaseType.SalesCreditMemo : DocBaseType.PurchaseCreditMemo)
@@ -348,19 +360,22 @@ public class C_Invoice_StepDef
 							.completeAndAllocate(false)
 							.referenceOriginalOrder(false)
 							.referenceInvoice(true)
-							.creditedInvoiceReinvoicable(false).build();
+							.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
 					final I_C_Invoice creditMemo = invoiceBL.creditInvoice(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), creditCtx);
 
-					for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
+					if (creditMemoLineAmt.isPresent())
 					{
-						creditMemoLine.setPriceActual(creditMemoLineAmt);
+						for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
+						{
+							creditMemoLine.setPriceActual(creditMemoLineAmt.get());
 
-						// dev note : manually triggering as callouts don't run in cucumber
-						invoiceLineBL.updatePrices(creditMemoLine);
-						invoiceBL.setLineNetAmt(creditMemoLine);
+							// dev note : manually triggering as callouts don't run in cucumber
+							invoiceLineBL.updatePrices(creditMemoLine);
+							invoiceBL.setLineNetAmt(creditMemoLine);
 
-						InterfaceWrapperHelper.save(creditMemoLine);
+							InterfaceWrapperHelper.save(creditMemoLine);
+						}
 					}
 
 					row.getAsIdentifier().putOrReplace(invoiceTable, creditMemo);

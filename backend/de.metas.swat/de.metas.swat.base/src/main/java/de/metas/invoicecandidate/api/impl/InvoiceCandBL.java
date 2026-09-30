@@ -1642,10 +1642,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
-					assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
-
-					final StockQtyAndUOMQty qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					final boolean contractPercentCompensationLine = isContractPercentCompensationLine(invoiceCandidate);
+					final StockQtyAndUOMQty qtyInvoicedForIc;
+					if (contractPercentCompensationLine)
+					{
+						// The discount candidate of a contract compensation group carries one unit per partial invoice.
+						// Only what this invoice line still counts on the candidate may be taken back, not the units of the candidate's other invoices
+						qtyInvoicedForIc = sumupQtyStillInvoicedByInvoiceLine(invoiceCandidate, il, productId);
+					}
+					else
+					{
+						final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
+						assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
+						qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					}
 
 					// examples:
 					// reversalQtyInvoiced = -5, qtyInvoicedForIc = 3 (because of partial reinvoicable credit memo with qty 2) => overlap=-2 => create Ila with qty -5-(-2)=-3
@@ -1658,9 +1668,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
 					//
-					// The discount candidate of a contract compensation group carries one unit per partial invoice: reversing one invoice
-					// takes back exactly that invoice's unit, not the units of its other, still valid invoices
-					if (isAdjustmentChargeInvoice || isContractPercentCompensationLine(invoiceCandidate))
+					if (isAdjustmentChargeInvoice)
 					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
 					}
@@ -1698,6 +1706,37 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				createUpdateIla(request);
 			}
 		}
+	}
+
+	/**
+	 * @return what the given invoice line still counts on the given invoice candidate: the line's own allocation,
+	 * plus the allocations of the credit memo lines that credit it (a re-invoiceable credit memo has already given the line's quantity back).
+	 * A reversed credit memo is left out: its reversal gave the quantity back to the line again, but the reversal's lines do not reference the credited line.
+	 */
+	private StockQtyAndUOMQty sumupQtyStillInvoicedByInvoiceLine(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final org.compiere.model.I_C_InvoiceLine il,
+			@NonNull final ProductId productId)
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		StockQtyAndUOMQty qtyStillInvoiced = StockQtyAndUOMQtys.createZero(productId, UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()));
+		for (final I_C_Invoice_Line_Alloc ila : invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(invoiceCandidate)))
+		{
+			final org.compiere.model.I_C_InvoiceLine ilaInvoiceLine = ila.getC_InvoiceLine();
+			final boolean ilaOfInvoiceLine = ilaInvoiceLine.getC_InvoiceLine_ID() == il.getC_InvoiceLine_ID();
+			final boolean ilaOfCreditMemoLine = !ilaOfInvoiceLine
+					&& ilaInvoiceLine.getRef_InvoiceLine_ID() == il.getC_InvoiceLine_ID()
+					&& invoiceBL.isCreditMemo(ilaInvoiceLine.getC_Invoice())
+					&& ilaInvoiceLine.getC_Invoice().getReversal_ID() <= 0;
+			if (ilaOfInvoiceLine || ilaOfCreditMemoLine)
+			{
+				qtyStillInvoiced = StockQtyAndUOMQtys.add(
+						qtyStillInvoiced,
+						StockQtyAndUOMQtys.create(ila.getQtyInvoiced(), productId, ila.getQtyInvoicedInUOM(), UomId.ofRepoIdOrNull(ila.getC_UOM_ID())));
+			}
+		}
+		return qtyStillInvoiced;
 	}
 
 	@Override

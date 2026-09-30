@@ -1,7 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
@@ -20,9 +19,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -62,14 +58,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ContractCompensationGroupRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	/** Stamps the group header with the contract term it was (re)created from. */
-	public void setFlatrateTerm(@NonNull final GroupId groupId, @NonNull final FlatrateTermId termId)
-	{
-		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
-		groupRecord.setC_Flatrate_Term_ID(termId.getRepoId());
-		saveRecord(groupRecord);
-	}
 
 	/** @return the {@link GroupId}s of {@code orderId}'s contract-created groups (those with a {@code C_Flatrate_Term_ID} set) */
 	public List<GroupId> retrieveContractGroupIds(@NonNull final OrderId orderId)

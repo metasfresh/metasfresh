@@ -133,11 +133,11 @@ public class ContractCompensationGroupService
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 
-		final Group group = orderGroupRepository.prepareNewGroup()
+		// the header carries the term before its lines join the group, so that the lines' interceptors already see a contract-created group
+		orderGroupRepository.prepareNewGroup()
 				.groupTemplate(schemaWithoutEmptyBases)
+				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
 				.createGroup(candidateSelection.getLineIds());
-
-		contractGroupRepository.setFlatrateTerm(group.getGroupId(), FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()));
 	}
 
 	/**

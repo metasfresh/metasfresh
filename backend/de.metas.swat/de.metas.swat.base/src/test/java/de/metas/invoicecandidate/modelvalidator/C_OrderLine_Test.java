@@ -104,7 +104,7 @@ class C_OrderLine_Test
 	}
 
 	@Test
-	void processedCandidate_isNeverTouched()
+	void invoicedCandidate_isNeverTouched()
 	{
 		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
 		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
@@ -124,22 +124,64 @@ class C_OrderLine_Test
 	 * Reactivating an order closes its candidates, and completing it again regroups its order lines before it reopens them.
 	 */
 	@Test
-	void closedButNotInvoicedCandidate_isSynced()
+	void closedButNotInvoicedCandidate_isSyncedIntoContractGroup()
 	{
 		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
-		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
-		ic.setProcessed(true);
-		saveRecord(ic);
-
-		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
-		groupHeader.setC_Order_ID(orderLine.getC_Order_ID());
-		saveRecord(groupHeader);
+		closeInvoiceCandidate(orderLine);
+		final I_C_Order_CompensationGroup groupHeader = newGroupHeader(orderLine, 1000001);
 
 		orderLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
 		saveRecord(orderLine);
 		interceptor.syncInvoiceCandidateGroupReference(orderLine);
 
 		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isEqualTo(groupHeader.getC_Order_CompensationGroup_ID());
+	}
+
+	@Test
+	void closedButNotInvoicedCandidate_isUngroupedFromContractGroup()
+	{
+		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
+		final I_C_Order_CompensationGroup groupHeader = newGroupHeader(orderLine, 1000001);
+		orderLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		saveRecord(orderLine);
+		interceptor.syncInvoiceCandidateGroupReference(orderLine);
+		closeInvoiceCandidate(orderLine);
+
+		orderLine.setC_Order_CompensationGroup_ID(-1);
+		saveRecord(orderLine);
+		interceptor.syncInvoiceCandidateGroupReference(orderLine);
+
+		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isEqualTo(-1);
+	}
+
+	@Test
+	void closedButNotInvoicedCandidate_isNotTouchedByNonContractGroup()
+	{
+		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
+		closeInvoiceCandidate(orderLine);
+		final I_C_Order_CompensationGroup groupHeader = newGroupHeader(orderLine, -1);
+
+		orderLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		saveRecord(orderLine);
+		interceptor.syncInvoiceCandidateGroupReference(orderLine);
+
+		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isLessThanOrEqualTo(0);
+	}
+
+	private static void closeInvoiceCandidate(final I_C_OrderLine orderLine)
+	{
+		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
+		ic.setProcessed(true);
+		saveRecord(ic);
+	}
+
+	private static I_C_Order_CompensationGroup newGroupHeader(final I_C_OrderLine orderLine, final int flatrateTermId)
+	{
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(orderLine.getC_Order_ID());
+		groupHeader.setC_Flatrate_Term_ID(flatrateTermId);
+		saveRecord(groupHeader);
+		return groupHeader;
 	}
 
 	private static I_C_Invoice_Candidate soleInvoiceCandidateFor(final I_C_OrderLine orderLine)

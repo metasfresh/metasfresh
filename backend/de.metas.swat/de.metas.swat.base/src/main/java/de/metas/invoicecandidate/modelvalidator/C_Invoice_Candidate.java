@@ -41,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
@@ -69,14 +68,17 @@ public class C_Invoice_Candidate
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final ContractCompensationLineInvoicing contractCompensationLineInvoicing;
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
 			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final ContractCompensationLineInvoicing contractCompensationLineInvoicing)
 	{
 		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
+		this.contractCompensationLineInvoicing = contractCompensationLineInvoicing;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
@@ -88,11 +90,13 @@ public class C_Invoice_Candidate
 	@VisibleForTesting
 	public static C_Invoice_Candidate newInstanceForUnitTesting()
 	{
+		final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 		return new C_Invoice_Candidate(
 				new InvoiceCandidateRecordService(),
-				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
+				groupsRepo,
 				AttachmentEntryService.createInstanceForUnitTesting(),
-				DocumentLocationBL.newInstanceForUnitTesting());
+				DocumentLocationBL.newInstanceForUnitTesting(),
+				new ContractCompensationLineInvoicing(groupsRepo));
 	}
 
 	/**
@@ -305,8 +309,7 @@ public class C_Invoice_Candidate
 	 */
 	private BigDecimal computeOrderLineQtyInvoiced(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine ol)
 	{
-		if (ContractCompensationLineInvoicing.isPercentCompensationLine(ic)
-				&& SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).isContractPercentCompensationLine(ic))
+		if (contractCompensationLineInvoicing.isContractPercentCompensationLine(ic))
 		{
 			return ic.getQtyInvoiced().min(ol.getQtyOrdered());
 		}
