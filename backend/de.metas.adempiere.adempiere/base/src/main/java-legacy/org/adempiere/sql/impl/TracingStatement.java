@@ -51,7 +51,6 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 
 	public TracingStatement(final StatementType delegate)
 	{
-		super();
 		this.delegate = delegate;
 	}
 
@@ -109,12 +108,6 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 	public final void commit() throws SQLException
 	{
 		delegate.commit();
-	}
-
-	@Override
-	public void finalize() throws Throwable
-	{
-		delegate.finalize();
 	}
 
 	@Override
