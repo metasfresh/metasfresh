@@ -24,9 +24,12 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -70,35 +73,52 @@ final class LocalArchiveAwait
 	}
 
 	/**
-	 * Waits for {@code dir} to hold exactly one file THAT HAS ITS CONTENT, and returns it.
+	 * Waits for {@code dir} to hold exactly one file whose bytes equal {@code expectedContent}, and
+	 * returns it.
 	 * <p>
-	 * Non-empty is the completion signal, not mere existence: the archiver's
-	 * {@code Files.write(.., CREATE_NEW)} creates the entry and writes the bytes as two observable steps,
-	 * so a listing sees the file first and its content only afterwards. Every caller reads the bytes
-	 * straight after this returns, so settling on existence hands them an empty file.
+	 * The settle condition is the CONTENT, not the file's existence and not its size. The archiver's
+	 * {@code Files.write(.., CREATE_NEW)} creates the entry and writes the bytes as separate observable
+	 * steps, and {@code Files.write} itself writes a large payload in 8 KiB chunks — so a listing can see
+	 * the file at zero bytes, and a size check can see it part-written. Comparing against what the caller
+	 * already expects settles exactly when the archive is the archive, at any payload size.
 	 * <p>
-	 * A zero-byte archive is not a state this flow can legitimately reach — the payload is the polled
-	 * file's own content — so requiring non-empty cannot mask a real outcome. If an empty archive ever
-	 * becomes valid, this wait would block until the timeout and must be revisited.
+	 * It also stays correct for a legitimately EMPTY archive: the poller accepts a 0-byte input file
+	 * ({@code readLockMinLength=0}, so it cannot wedge on one) and only a {@code null} body is rejected
+	 * downstream, so {@code byte[0]} can reach the archiver. A caller expecting no bytes passes
+	 * {@code new byte[0]} and settles on the first poll instead of waiting out the timeout.
 	 */
 	@NonNull
-	static Path awaitSingleCompleteFile(@NonNull final Path dir) throws InterruptedException
+	static Path awaitSingleFileWithContent(@NonNull final Path dir, @NonNull final byte[] expectedContent) throws InterruptedException
+	{
+		return awaitSingleFileWithContent(dir, expectedContent, TIMEOUT_MS);
+	}
+
+	/** Timeout-parameterised for the helper's own tests; production callers use the {@link #TIMEOUT_MS} default. */
+	@NonNull
+	static Path awaitSingleFileWithContent(
+			@NonNull final Path dir,
+			@NonNull final byte[] expectedContent,
+			final long timeoutMs) throws InterruptedException
 	{
 		// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
 		// predicate requires exactly one entry. Loosening it means revisiting this line.
-		return await(dir, entries -> entries.size() == 1 && sizeOf(entries.get(0)) > 0, "exactly one non-empty file").get(0);
+		return await(dir,
+				entries -> entries.size() == 1 && Arrays.equals(contentOf(entries.get(0)), expectedContent),
+				"exactly one file holding the expected " + expectedContent.length + " byte(s)",
+				timeoutMs).get(0);
 	}
 
-	/** A size that cannot be read yet counts as "not there", so the wait keeps polling rather than failing. */
-	private static long sizeOf(@NonNull final Path file)
+	/** Content that cannot be read yet counts as "not there yet", so the wait keeps polling rather than failing. */
+	@Nullable
+	private static byte[] contentOf(@NonNull final Path file)
 	{
 		try
 		{
-			return Files.size(file);
+			return Files.readAllBytes(file);
 		}
 		catch (final IOException e)
 		{
-			return 0;
+			return null;
 		}
 	}
 
@@ -109,7 +129,7 @@ final class LocalArchiveAwait
 	 */
 	static void awaitEmpty(@NonNull final Path dir) throws InterruptedException
 	{
-		await(dir, List::isEmpty, "no files");
+		await(dir, List::isEmpty, "no files", TIMEOUT_MS);
 	}
 
 	/**
@@ -122,9 +142,10 @@ final class LocalArchiveAwait
 	private static List<Path> await(
 			@NonNull final Path dir,
 			@NonNull final Predicate<List<Path>> settled,
-			@NonNull final String expectation) throws InterruptedException
+			@NonNull final String expectation,
+			final long timeoutMs) throws InterruptedException
 	{
-		final long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+		final long deadline = System.currentTimeMillis() + timeoutMs;
 		List<Path> lastSeen;
 		do
 		{
@@ -137,7 +158,7 @@ final class LocalArchiveAwait
 		}
 		while (System.currentTimeMillis() < deadline);
 
-		throw new AssertionError("Expected " + expectation + " in " + dir + " within " + TIMEOUT_MS + "ms, but found: " + lastSeen);
+		throw new AssertionError("Expected " + expectation + " in " + dir + " within " + timeoutMs + "ms, but found: " + lastSeen);
 	}
 
 	@NonNull

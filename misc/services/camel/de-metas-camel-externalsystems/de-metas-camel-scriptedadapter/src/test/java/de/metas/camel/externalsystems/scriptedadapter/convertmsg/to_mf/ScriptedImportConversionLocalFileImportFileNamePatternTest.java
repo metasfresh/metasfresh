@@ -121,7 +121,7 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 		// fileNameOverride would equal the raw incoming name instead of matching the pattern.
 		assertThat(envelope.getFileNameOverride()).matches("Packzettel_scan001_\\d{8}_\\d{6}\\.pdf");
 
-		final Path archivedFile = LocalArchiveAwait.awaitSingleCompleteFile(localProcessedDir);
+		final Path archivedFile = LocalArchiveAwait.awaitSingleFileWithContent(localProcessedDir, pdfBytes);
 		assertThat(Files.readAllBytes(archivedFile)).isEqualTo(pdfBytes);
 
 		// the archived copy's name must be the SAME resolved name as the attachment -- computed once,
