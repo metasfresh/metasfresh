@@ -266,7 +266,7 @@ public class C_OrderLine_Handler_GroupCompensationTest extends AbstractICTestSup
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	// calculatePriceAndTax's percent-compensation branch (C_OrderLine_Handler.java) sets discount=0
 	// explicitly. This is the only guard left for a compensation IC that already carries a non-zero
-	// Discount from before this invariant was enforced -- such a line is never re-saved by
+	// Discount (an existing row that was saved with one) -- such a line is not re-saved by
 	// OrderGroupRepository, so only a fresh recompute (this branch) can still zero it.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
@@ -312,7 +312,7 @@ public class C_OrderLine_Handler_GroupCompensationTest extends AbstractICTestSup
 		save(discountOrderLine);
 
 		// the compensation IC already exists (C_Invoice_Candidate_ID > 0) and carries a non-zero Discount,
-		// e.g. from before this invariant was enforced
+		// i.e. an existing row that was saved with one
 		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
 		discountIc.setC_Order_ID(order.getC_Order_ID());
 		discountIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
