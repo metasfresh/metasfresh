@@ -47,11 +47,13 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
+import org.compiere.model.I_M_CostRevaluation_Detail;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -77,6 +79,7 @@ public class M_CostRevaluation_StepDef
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 	@NonNull private final M_CostElement_StepDefData costElementTable;
@@ -289,14 +292,63 @@ public class M_CostRevaluation_StepDef
 	public void completeExpectingRefusal(@NonNull final String identifier, @NonNull final String adMessageKey)
 	{
 		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
 
 		final Throwable thrown = catchThrowable(() -> documentBL.processEx(header, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
-		assertThat(thrown).as("Completing %s must be refused", identifier).isNotNull();
+		assertRefusedWithMessage(thrown, "Completing " + identifier, adMessageKey);
+
+		InterfaceWrapperHelper.refresh(header);
+		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	/**
+	 * Tries to evaluate ("Run") the given {@code M_CostRevaluation} and expects it to be refused with the given AD_Message.
+	 * Same message assertions as {@link #completeExpectingRefusal(String, String)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And evaluating the cost revaluation identified by revaluation2 is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+	 * </pre>
+	 */
+	@And("^evaluating the cost revaluation identified by (.*) is refused with AD_Message \"(.*)\"$")
+	public void evaluateExpectingRefusal(@NonNull final String identifier, @NonNull final String adMessageKey)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		// in its own transaction, rolled back on failure, like the Run process
+		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> costRevaluationService.createDetails(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()))));
+		assertRefusedWithMessage(thrown, "Evaluating " + identifier, adMessageKey);
+	}
+
+	/**
+	 * Asserts that the given {@code M_CostRevaluation} has no {@code M_CostRevaluation_Detail} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the cost revaluation identified by revaluation2 has no detail lines
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) has no detail lines$")
+	public void assertNoDetails(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		final int count = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+				.create()
+				.count();
+		assertThat(count).as("M_CostRevaluation_Detail count of %s", identifier).isZero();
+	}
+
+	private static void assertRefusedWithMessage(@Nullable final Throwable thrown, @NonNull final String action, @NonNull final String adMessageKey)
+	{
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+		assertThat(thrown).as("%s must be refused", action).isNotNull();
 
 		final ITranslatableString message = extractMessageWithKey(thrown, expectedMessageKey);
 		assertThat(message)
-				.as("Refusal of %s must carry AD_Message %s, but got: %s", identifier, adMessageKey, thrown)
+				.as("Refusal of: %s must carry AD_Message %s, but got: %s", action, adMessageKey, thrown)
 				.isNotNull();
 		for (final String adLanguage : new String[] { "de_DE", "en_US" })
 		{
@@ -305,9 +357,6 @@ public class M_CostRevaluation_StepDef
 					.isNotBlank()
 					.doesNotContain(adMessageKey);
 		}
-
-		InterfaceWrapperHelper.refresh(header);
-		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
 	}
 
 	@Nullable

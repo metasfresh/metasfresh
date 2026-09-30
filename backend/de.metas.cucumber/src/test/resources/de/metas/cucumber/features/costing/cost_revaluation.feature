@@ -679,3 +679,28 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
+
+  @Id:CostRevaluation_TC22
+  Scenario: Run Revaluation is refused when a later completed revaluation is in the way, and creates no detail lines
+    # ── Complete a revaluation on 03-10 while accounting is off: no posting and no cost detail yet, so only the Run check can refuse ──
+    Given set sys config boolean value false for sys config org.adempiere.acct.Enabled
+    When metasfresh contains M_CostRevaluation:
+      | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
+    And cost revaluation lines are created for revaluationLater
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationLater     | product      | 15           |
+    And the cost revaluation identified by revaluationLater is completed
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+
+    # ── Run Revaluation on a back-dated revaluation is refused and leaves no detail lines ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
+    And cost revaluation lines are created for revaluationBackDate
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluationBackDate  | product      | 12           |
+    Then evaluating the cost revaluation identified by revaluationBackDate is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
+    And the cost revaluation identified by revaluationBackDate has no detail lines
