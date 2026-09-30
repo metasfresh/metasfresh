@@ -798,6 +798,19 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
+	/**
+	 * @return the active compensation-group header records of the given order, ordered by ID
+	 */
+	public List<I_C_Order_CompensationGroup> retrieveGroupRecordsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.create()
+				.list();
+	}
+
 	public void renumberOrderLinesForOrderId(@NonNull final OrderId orderId)
 	{
 		final List<I_C_OrderLine> allOrderLines = orderDAO.retrieveOrderLines(orderId)

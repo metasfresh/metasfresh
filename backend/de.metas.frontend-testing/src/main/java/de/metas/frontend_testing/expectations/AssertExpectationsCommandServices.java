@@ -34,13 +34,13 @@ import de.metas.inventory.InventoryId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mmovement.MovementLineQuery;
@@ -73,13 +73,13 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final OrderGroupRepository orderGroupRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -198,12 +198,7 @@ public class AssertExpectationsCommandServices
 
 	public List<I_C_Order_CompensationGroup> getOrderCompensationGroups(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
-				.orderBy(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID)
-				.create()
-				.list();
+		return orderGroupRepository.retrieveGroupRecordsByOrderId(orderId);
 	}
 
 	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)
