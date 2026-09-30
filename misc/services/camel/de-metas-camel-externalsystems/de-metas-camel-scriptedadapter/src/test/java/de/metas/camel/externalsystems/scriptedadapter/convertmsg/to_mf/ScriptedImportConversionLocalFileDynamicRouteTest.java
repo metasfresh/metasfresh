@@ -140,7 +140,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(Base64.getDecoder().decode(envelope.getFileBase64())).isEqualTo(pdfBytes);
 
 		// archived to the processed dir, byte-identical to the source
-		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleFile(localProcessedDir))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleCompleteFile(localProcessedDir))).isEqualTo(pdfBytes);
 
 		// gone from the input directory
 		LocalArchiveAwait.awaitEmpty(localInputDir);
@@ -193,7 +193,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(bodyCaptor.getValue()).isInstanceOf(CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRequestType());
 
 		// archived to the processed dir -- the dispatched item counts as a success
-		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleFile(localProcessedDir))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleCompleteFile(localProcessedDir))).isEqualTo(pdfBytes);
 
 		try (var errorFiles = Files.list(localErrorDir))
 		{
@@ -342,7 +342,7 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		assertThat(notify.matches(10, TimeUnit.SECONDS)).isTrue();
 
 		// archived to the error dir, byte-identical to the source
-		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleFile(localErrorDir))).isEqualTo(pdfBytes);
+		assertThat(Files.readAllBytes(LocalArchiveAwait.awaitSingleCompleteFile(localErrorDir))).isEqualTo(pdfBytes);
 
 		// never filed as a (false) success under processed
 		try (var processedFiles = Files.list(localProcessedDir))

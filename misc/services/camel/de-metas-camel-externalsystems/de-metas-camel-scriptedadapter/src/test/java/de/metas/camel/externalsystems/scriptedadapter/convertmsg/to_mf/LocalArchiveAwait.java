@@ -69,13 +69,37 @@ final class LocalArchiveAwait
 	{
 	}
 
-	/** Waits for {@code dir} to hold exactly one file and returns it. */
+	/**
+	 * Waits for {@code dir} to hold exactly one file THAT HAS ITS CONTENT, and returns it.
+	 * <p>
+	 * Non-empty is the completion signal, not mere existence: the archiver's
+	 * {@code Files.write(.., CREATE_NEW)} creates the entry and writes the bytes as two observable steps,
+	 * so a listing sees the file first and its content only afterwards. Every caller reads the bytes
+	 * straight after this returns, so settling on existence hands them an empty file.
+	 * <p>
+	 * A zero-byte archive is not a state this flow can legitimately reach — the payload is the polled
+	 * file's own content — so requiring non-empty cannot mask a real outcome. If an empty archive ever
+	 * becomes valid, this wait would block until the timeout and must be revisited.
+	 */
 	@NonNull
-	static Path awaitSingleFile(@NonNull final Path dir) throws InterruptedException
+	static Path awaitSingleCompleteFile(@NonNull final Path dir) throws InterruptedException
 	{
 		// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
 		// predicate requires exactly one entry. Loosening it means revisiting this line.
-		return await(dir, entries -> entries.size() == 1, "exactly one file").get(0);
+		return await(dir, entries -> entries.size() == 1 && sizeOf(entries.get(0)) > 0, "exactly one non-empty file").get(0);
+	}
+
+	/** A size that cannot be read yet counts as "not there", so the wait keeps polling rather than failing. */
+	private static long sizeOf(@NonNull final Path file)
+	{
+		try
+		{
+			return Files.size(file);
+		}
+		catch (final IOException e)
+		{
+			return 0;
+		}
 	}
 
 	/**
