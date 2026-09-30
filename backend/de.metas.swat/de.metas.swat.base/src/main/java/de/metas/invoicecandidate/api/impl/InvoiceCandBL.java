@@ -2666,6 +2666,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public BigDecimal computeNetAmtInvoiced(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return sumupQtyInvoicedAndNetAmtInvoiced(ic)
+				.map(IPair::getRight)
+				.map(Money::toBigDecimal)
+				.orElse(ZERO);
+	}
+
+	@Override
 	public OptionalBoolean extractProcessedOverride(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		return OptionalBoolean.ofNullableString(candidate.getProcessed_Override());

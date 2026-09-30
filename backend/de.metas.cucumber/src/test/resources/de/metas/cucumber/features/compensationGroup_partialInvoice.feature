@@ -369,7 +369,7 @@ Feature: Compensation group on a partially delivered and invoiced sales order
       | ic_discount                       | 1          | 1           | 0            | true      |
 
   # ##############################################################################################
-  # A 0 % discount carries nothing while goods are still to come, and is invoiced with the last goods,
+  # A 0 % discount goes with the first goods' invoice and is done once all goods are invoiced,
   # so that the order still ends completely invoiced
   # ##############################################################################################
 
@@ -377,7 +377,7 @@ Feature: Compensation group on a partially delivered and invoiced sales order
   @allure.label.epic:E0100_Sales
   @allure.label.feature:F00102
   @Id:S32353_TC50
-  Scenario: A 0 % percent group is invoiced with the last of its partially invoiced goods and the order ends completely invoiced
+  Scenario: A 0 % percent group is invoiced with the first of its partially invoiced goods and the order ends completely invoiced
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | orderZero  | true    | plainBP                  | 2026-07-01  |
@@ -401,7 +401,7 @@ Feature: Compensation group on a partially delivered and invoiced sales order
       | ss_goods2   | ol_goods2                 | N             |
       | ss_discount | ol_discount               | N             |
 
-    # first invoice: goods1 only; goods2 is still to come, so the 0.00 discount is not invoiced yet
+    # first invoice: goods1, with the 0.00 discount
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods1             |
@@ -418,7 +418,7 @@ Feature: Compensation group on a partially delivered and invoiced sales order
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | ic_goods1                         | 1               |
       | ic_goods2                         | 0               |
-      | ic_discount                       | 0               |
+      | ic_discount                       | 1               |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
@@ -426,8 +426,9 @@ Feature: Compensation group on a partially delivered and invoiced sales order
     And validate invoice lines for invoice1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
       | invoice1_goods1             | goods1                  | 1           | 1000       |
+      | invoice1_discount           | discountProduct         | 1           | 0          |
 
-    # second invoice: goods2 is the last of the goods, so the 0.00 discount comes along and is done
+    # second invoice: goods2 only; with it, all goods are invoiced and the 0.00 discount is done
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_goods2             |
@@ -450,7 +451,6 @@ Feature: Compensation group on a partially delivered and invoiced sales order
     And validate invoice lines for invoice2:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
       | invoice2_goods2             | goods2                  | 1           | 500        |
-      | invoice2_discount           | discountProduct         | 1           | 0          |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | ic_goods1              |
@@ -586,6 +586,131 @@ Feature: Compensation group on a partially delivered and invoiced sales order
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyOrdered | QtyInvoiced | QtyToInvoice | NetAmtInvoiced | Processed | IsError |
       | ic_discount                       | 2          | 2           | 0            | -45            | true      | false   |
+    And validate the created orders
+      | C_Order_ID   | InvoiceStatus |
+      | orderProduct | CI            |
+
+  # ##############################################################################################
+  # A percent discount left off the goods' invoice follows with a later invoice at its full amount
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00102
+  @Id:S32353_TC53
+  Scenario: A product-schema percent discount held back from its goods' invoice is invoiced later at its full amount
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier    | Name       |
+      | productSchema | Bundle 3 % |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_goods1  | productSchema                 | goods1       | 1   | PCE      | 10    |
+      | tl_goods2  | productSchema                 | goods2       | 1   | PCE      | 20    |
+      | tl_goods3  | productSchema                 | goods3       | 1   | PCE      | 30    |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier        | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount |
+      | productSchemaLine | productSchema                            | discountProduct         | 3                         |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderProduct | true    | plainBP                  | 2026-07-01  |
+    When create compensation group from schema template:
+      | C_Order_ID   | C_CompensationGroup_Schema_ID | Qty |
+      | orderProduct | productSchema                 | 1   |
+
+    And the order identified by orderProduct is completed
+
+    # 3% of 1000 + 500 + 200 = 51
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price |
+      | ol_discount               | orderProduct          | discountProduct         | 1          | true                        | -51   |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_goods1   | schema_ol_1               | N             |
+      | ss_goods2   | schema_ol_2               | N             |
+      | ss_goods3   | schema_ol_3               | N             |
+      | ss_discount | ol_discount               | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_goods1             |
+      | ss_goods2             |
+      | ss_goods3             |
+      | ss_discount           |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_goods1                        | shipment1             |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | schema_ol_1    | ic_goods1              |
+      | schema_ol_2    | ic_goods2              |
+      | schema_ol_3    | ic_goods3              |
+      | ol_discount    | ic_discount            |
+
+    # the user holds the discount back from the goods' invoice
+    And update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | QtyToInvoice_Override |
+      | ic_discount            | 0                     |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_discount            |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_goods1                         | 1               |
+      | ic_goods2                         | 1               |
+      | ic_goods3                         | 1               |
+      | ic_discount                       | 0               |
+
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice1                | ic_goods1                         |
+    And validate invoice lines for invoice1:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
+      | invoice1_goods1             | goods1                  | 1           | 1000       |
+      | invoice1_goods2             | goods2                  | 1           | 500        |
+      | invoice1_goods3             | goods3                  | 1           | 200        |
+
+    # the discount is still open at its full amount
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_goods1              |
+      | ic_goods2              |
+      | ic_goods3              |
+      | ic_discount            |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | NetAmtInvoiced | Processed | IsError |
+      | ic_discount                       | 0           | 0              | false     | false   |
+
+    # the user releases the discount; it follows with the next invoice
+    When update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | QtyToInvoice_Override |
+      | ic_discount            | 1                     |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_discount            |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | NetAmtToInvoice | Processed | IsError |
+      | ic_discount                       | 1            | -51             | false     | false   |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_goods1                         |
+      | ic_goods2                         |
+      | ic_goods3                         |
+      | ic_discount                       |
+
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice2                | ic_discount                       |
+    # a discount alone makes a credit memo: its line credits one unit of -51, i.e. 51
+    And validate invoice lines for invoice2:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
+      | invoice2_discount           | discountProduct         | -1          | 51         |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_discount            |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyOrdered | QtyInvoiced | QtyToInvoice | NetAmtInvoiced | Processed | IsError |
+      | ic_discount                       | 1          | 1           | 0            | -51            | true      | false   |
     And validate the created orders
       | C_Order_ID   | InvoiceStatus |
       | orderProduct | CI            |

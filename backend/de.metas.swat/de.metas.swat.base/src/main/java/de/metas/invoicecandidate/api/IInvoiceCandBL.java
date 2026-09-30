@@ -57,6 +57,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -446,6 +447,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
 
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
+
+	/**
+	 * @return the candidate's net amount invoiced as its invoice line allocations say right now, i.e. without waiting for its {@code NetAmtInvoiced} to be updated
+	 */
+	BigDecimal computeNetAmtInvoiced(I_C_Invoice_Candidate ic);
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 

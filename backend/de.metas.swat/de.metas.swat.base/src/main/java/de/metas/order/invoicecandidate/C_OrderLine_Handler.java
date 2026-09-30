@@ -540,8 +540,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			group.updateAllCompensationLines();
 
 			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(icRecord));
-			priceAndTax.priceEntered(compensationLine.getPrice());
-			priceAndTax.priceActual(compensationLine.getPrice());
+			// the group computes the discount on the goods invoiced so far and to invoice now; what is open is that minus the discount invoiced so far
+			final BigDecimal price = compensationLine.getPrice().subtract(Services.get(IInvoiceCandBL.class).computeNetAmtInvoiced(icRecord));
+			priceAndTax.priceEntered(price);
+			priceAndTax.priceActual(price);
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
 			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see PercentCompensationLineInvoicing)
 		}

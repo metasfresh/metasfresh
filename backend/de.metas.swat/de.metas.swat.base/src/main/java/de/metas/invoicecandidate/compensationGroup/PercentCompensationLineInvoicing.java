@@ -43,14 +43,16 @@ import static java.math.BigDecimal.ZERO;
 /**
  * Lets the percent discount invoice candidate of a compensation group follow partially invoiced goods.
  * <p>
- * Its price is repriced to the percentage of the goods currently to invoice (see {@code C_OrderLine_Handler#calculatePriceAndTax}),
- * so each invoice carries one discount unit at the percentage of that invoice's goods:
+ * Its price is the discount amount still open: the percentage of the goods invoiced so far plus the goods to invoice now,
+ * minus what was already invoiced of the discount (see {@code C_OrderLine_Handler#calculatePriceAndTax}).
+ * So each invoice carries one discount unit at the percentage of that invoice's goods, and a discount that was left off an invoice
+ * follows with the next one at its full remaining amount:
  * <ul>
  * <li>{@link #updateQtyOrdered(I_C_Invoice_Candidate)}: one unit per invoice so far plus one more while the group still has goods
  * that are not fully invoiced; this keeps the candidate open (not processed) until the goods are fully invoiced.</li>
- * <li>{@link #updateQtyToInvoice(I_C_Invoice_Candidate)}: once the candidate was invoiced, the next unit is invoiceable as soon as
- * there is a discount amount again; there is nothing to invoice while the discount amount is zero, except for a discount that was never
- * invoiced and whose goods are all invoiced now: that one (e.g. a 0 % line) goes with the last goods, so that it ends processed.</li>
+ * <li>{@link #updateQtyToInvoice(I_C_Invoice_Candidate)}: while a discount amount is open, one unit stays open for it; once the candidate
+ * was invoiced, that unit is invoiceable right away. There is nothing to invoice while the open amount is zero, except for a discount that
+ * was never invoiced: a 0 % discount goes with the first goods to invoice, any other one with the last goods, so that it ends processed.</li>
  * </ul>
  * Compensation lines with a fixed amount are left as they are.
  * <p>
@@ -94,15 +96,11 @@ public class PercentCompensationLineInvoicing
 		}
 
 		final BigDecimal openUnit = groupsRepo.hasNotProcessedRegularInvoiceCandidates(extractGroupId(ic)) ? ONE : ZERO;
-		final BigDecimal qtyOrdered = ic.getQtyOrdered().max(ic.getQtyInvoiced().add(openUnit));
-
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-		ic.setQtyOrdered(qtyOrdered);
-		ic.setQtyEntered(uomConversionBL.convertFromProductUOM(productId, UomId.ofRepoId(ic.getC_UOM_ID()), qtyOrdered));
+		setQtyOrdered(ic, ic.getQtyOrdered().max(ic.getQtyInvoiced().add(openUnit)));
 	}
 
 	/**
-	 * Expects the price, {@code QtyInvoiced} and the processed flag to be up to date.
+	 * Expects the price (i.e. the discount amount still open) and {@code QtyInvoiced} to be up to date.
 	 * <p>
 	 * For a reopened unit, a user's {@code QtyToInvoice_Override} still caps what is invoiced; candidates in dispute
 	 * are left out by the invoicing itself ({@code InvoiceCandBL#getInvoicingSkipReasonOrNull}), and quality issues only
@@ -110,20 +108,32 @@ public class PercentCompensationLineInvoicing
 	 */
 	public void updateQtyToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (ic.isProcessed() || !isPercentCompensationLine(ic))
+		if (!isPercentCompensationLine(ic) || invoiceCandBL.extractProcessedOverride(ic).isTrue())
 		{
-			return;
+			return; // not ours, or closed by the user
+		}
+
+		final boolean openAmount = invoiceCandBL.getPriceActual(ic).toBigDecimal().signum() != 0;
+		// QtyOrdered was set before QtyInvoiced was brought up to date; it never counts less than what is invoiced (else the candidate reads over-invoiced),
+		// and while a discount amount is open (e.g. the discount was left off its goods' invoice), one more unit stays open for it, even if all goods are invoiced
+		final BigDecimal minQtyOrdered = ic.getQtyInvoiced().add(openAmount ? ONE : ZERO);
+		if (ic.getQtyOrdered().compareTo(minQtyOrdered) < 0)
+		{
+			setQtyOrdered(ic, minQtyOrdered);
+			// the processed flag was already computed from the smaller QtyOrdered (InvoiceCandBL#set_QtyInvoiced_NetAmtInvoiced_Aggregation0),
+			// and the interceptor does not recompute it if QtyOrdered is unchanged against the database
+			invoiceCandBL.updateProcessedFlag(ic);
 		}
 
 		final boolean neverInvoiced = ic.getQtyInvoiced().signum() == 0;
 		final BigDecimal qtyToInvoice;
-		if (invoiceCandBL.getPriceActual(ic).toBigDecimal().signum() == 0)
+		if (!openAmount)
 		{
-			if (neverInvoiced && !groupsRepo.hasRegularInvoiceCandidatesWithGoodsStillToCome(extractGroupId(ic)))
+			if (neverInvoiced && goesWithTheseGoods(ic))
 			{
-				return; // e.g. a 0 % discount: it goes with the last goods, as decided by the invoice rule, and so it ends processed
+				return; // e.g. a 0 % discount: the invoice rule decides, so that it is invoiced with goods and ends processed
 			}
-			qtyToInvoice = ZERO; // no discount amount for what is to invoice right now: a 0.00 discount line is not invoiced while more goods follow
+			qtyToInvoice = ZERO; // no discount amount open right now: a 0.00 discount line is not invoiced
 		}
 		else if (!neverInvoiced)
 		{
@@ -142,6 +152,28 @@ public class PercentCompensationLineInvoicing
 		ic.setQtyToInvoiceBeforeDiscount(qtyToInvoice);
 		ic.setQtyToInvoiceInUOM_Calc(qtyToInvoiceInUOM);
 		ic.setQtyToInvoiceInUOM(qtyToInvoiceInUOM);
+	}
+
+	/**
+	 * A never invoiced discount without open amount goes along with goods to invoice: a 0 % discount with the first ones, so that no
+	 * invoice holds only the 0.00 line; any other one (e.g. whose goods are out of its product category) only with the last ones,
+	 * so that it does not carry a 0.00 line on every invoice.
+	 */
+	private boolean goesWithTheseGoods(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final GroupId groupId = extractGroupId(ic);
+		if (ic.getGroupCompensationPercentage().signum() == 0 && groupsRepo.hasRegularInvoiceCandidatesToInvoice(groupId))
+		{
+			return true;
+		}
+		return !groupsRepo.hasRegularInvoiceCandidatesWithGoodsStillToCome(groupId);
+	}
+
+	private void setQtyOrdered(@NonNull final I_C_Invoice_Candidate ic, @NonNull final BigDecimal qtyOrdered)
+	{
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+		ic.setQtyOrdered(qtyOrdered);
+		ic.setQtyEntered(uomConversionBL.convertFromProductUOM(productId, UomId.ofRepoId(ic.getC_UOM_ID()), qtyOrdered));
 	}
 
 	private static BigDecimal capByQtyToInvoiceOverride(@NonNull final I_C_Invoice_Candidate ic, @NonNull final BigDecimal qtyToInvoice)

@@ -255,15 +255,64 @@ class PercentCompensationLineInvoicingTest
 		}
 
 		@Test
-		void processed_untouched()
+		void closedByUser_untouched()
 		{
 			final int groupId = createGroupHeader();
-			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, TWO, TWO);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-15"), ONE, ONE);
+			discount.setProcessed_Override("Y");
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
+		}
+
+		/**
+		 * E.g. the discount was left off the last goods' invoice: all goods are processed, but a discount amount is still open.
+		 */
+		@Test
+		void openAmountAfterAllGoods_staysOpenAndIsInvoiceable()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-15"), ONE, ONE);
 			discount.setProcessed(true);
 
 			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
+			assertThat(discount.isProcessed()).isFalse();
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(TWO);
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ONE);
+		}
+
+		@Test
+		void priceZero_zeroPercent_goesWithFirstGoodsToInvoice()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ONE);
+			createGoodsCandidate(groupId, false, ZERO);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
+		}
+
+		/**
+		 * E.g. only goods outside the discount's product category are to invoice now.
+		 */
+		@Test
+		void priceZero_nonZeroPercent_goodsStillToCome_nothingToInvoice()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ONE);
+			createGoodsCandidate(groupId, false, ZERO);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
+			discount.setGroupCompensationPercentage(new BigDecimal("3"));
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
 		}
 
 		@Test

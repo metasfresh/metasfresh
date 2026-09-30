@@ -39,6 +39,8 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -51,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -227,7 +230,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
 		return GroupRegularLine.builder()
-				.lineNetAmt(invoiceCandidate.getNetAmtToInvoice())
+				// invoiced and to invoice now: a percent discount is computed on both, then its invoiced part is subtracted (see C_OrderLine_Handler#calculatePriceAndTax)
+				.lineNetAmt(invoiceCandidate.getNetAmtToInvoice().add(invoiceCandidate.getNetAmtInvoiced()))
 				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.build();
 	}
@@ -240,12 +244,14 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 			@NonNull final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId)
 	{
 		final BigDecimal qtyToInvoice = invoiceCandidate.getQtyToInvoice();
+		// invoiced and to invoice now, like the regular lines: a compounding percent line's base deducts the whole amount of the lines before it
+		final BigDecimal qtyInvoicedAndToInvoice = invoiceCandidate.getQtyInvoiced().add(qtyToInvoice);
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
 
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
 
 		final UomId priceUomId = UomId.ofRepoId(invoiceCandidate.getPrice_UOM_ID());
-		final BigDecimal qtyInPriceUom = uomConversionBL.convertFromProductUOM(productId, priceUomId, qtyToInvoice);
+		final BigDecimal qtyInPriceUom = uomConversionBL.convertFromProductUOM(productId, priceUomId, qtyInvoicedAndToInvoice);
 
 		final UomId qtyEnteredUomId = UomId.ofRepoId(invoiceCandidate.getC_UOM_ID());
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, qtyEnteredUomId, qtyToInvoice);
@@ -512,9 +518,46 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		return retrieveInvoiceCandidatesForGroupQuery(groupId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.filter(GoodsStillToComeFilter.INSTANCE)
 				.create()
-				.stream()
-				.anyMatch(ic -> ic.getQtyInvoiced().add(ic.getQtyToInvoice()).abs().compareTo(ic.getQtyOrdered().abs()) < 0);
+				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if at least one regular (non-compensation) invoice candidate of the group has something to invoice now
+	 */
+	public boolean hasRegularInvoiceCandidatesToInvoice(@NonNull final GroupId groupId)
+	{
+		return retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
+	}
+
+	/** Goods that are neither invoiced nor to invoice now; the SQL is used on the database, {@link #accept} in unit tests. */
+	private static final class GoodsStillToComeFilter implements IQueryFilter<I_C_Invoice_Candidate>, ISqlQueryFilter
+	{
+		static final GoodsStillToComeFilter INSTANCE = new GoodsStillToComeFilter();
+
+		@Override
+		public String getSql()
+		{
+			return "ABS(" + I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced + " + " + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice + ") < ABS(" + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered + ")";
+		}
+
+		@Override
+		public List<Object> getSqlParams(final Properties ctx)
+		{
+			return ImmutableList.of();
+		}
+
+		@Override
+		public boolean accept(final I_C_Invoice_Candidate ic)
+		{
+			return ic.getQtyInvoiced().add(ic.getQtyToInvoice()).abs().compareTo(ic.getQtyOrdered().abs()) < 0;
+		}
 	}
 
 	/**
