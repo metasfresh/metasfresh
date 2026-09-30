@@ -422,7 +422,7 @@ public class CreateProductCommandTest
 	}
 
 	/**
-	 * Records for which products the command asked to delete the cost rows (the deletion itself is the repository's concern).
+	 * Records for which products the command asked to delete the cost rows.
 	 */
 	private static class RecordingCurrentCostsRepository extends CurrentCostsRepository
 	{

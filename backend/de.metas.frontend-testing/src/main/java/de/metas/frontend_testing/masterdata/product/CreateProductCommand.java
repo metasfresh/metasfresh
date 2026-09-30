@@ -484,10 +484,8 @@ public class CreateProductCommand
 	}
 
 	/**
-	 * The {@code M_Product} costing interceptor auto-creates default {@code M_Cost} rows on product creation.
-	 * When the request asks to skip default costs, delete them again so the product has NO cost record —
-	 * reproducing a migrated / legacy product, the precondition of the cost-revaluation seed-cost path.
-	 * Runs last, after every product save, so nothing re-creates the rows afterwards.
+	 * When the request asks to skip default costs, leaves the product without any {@code M_Cost} row,
+	 * like a migrated product. Must run after the last product save, which would create them again.
 	 */
 	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
 	{

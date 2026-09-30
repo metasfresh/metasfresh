@@ -99,9 +99,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * #L%
  */
 
-/**
- * Tests {@link CostRevaluationService}.
- */
 @ExtendWith(AdempiereTestWatcher.class)
 public class CostRevaluationServiceTest
 {

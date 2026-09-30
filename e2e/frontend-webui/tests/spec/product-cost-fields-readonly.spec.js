@@ -10,14 +10,11 @@ import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID, ProductCostPage } f
 /**
  * Product Cost (Produktkosten, window 344) — legacy M_Cost cost fields are READ-ONLY.
  *
- * The migration flips AD_Field.IsReadOnly='Y' for CurrentCostPrice (11350) and FutureCostPrice (11352)
- * on the M_Cost tab (701) of window 344, so a user can no longer edit a product's cost price directly
- * and bypass the audited Kosten Neubewertung path. This is a GLOBAL CORE change (all customers).
+ * Current Cost Price and Future Cost Price cannot be edited on the M_Cost tab: a cost price is changed only
+ * through a Kosten Neubewertung document.
  *
- * Asserted on the language-invariant `readonly` flag that the WebUI reads to render the fields read-only
- * (both in the grid and in single-row), plus a UI attempt to edit Current Cost Price that must be refused.
- * That the audited Kosten Neubewertung document remains the working path to change a cost price is covered
- * by cost-revaluation-quickinput.spec.js.
+ * Asserted on the language-invariant `readonly` flag (grid and single-row), plus a UI attempt to edit
+ * Current Cost Price that must be refused.
  */
 
 /**

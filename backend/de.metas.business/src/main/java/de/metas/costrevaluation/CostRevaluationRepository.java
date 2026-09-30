@@ -132,7 +132,7 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 
 	/**
 	 * Creates a line for the given {@link CurrentCost}, with {@code NewCostPrice} = the current cost's own price.
-	 * Does not check for an already existing line of the product.
+	 * Does not check for an already existing line of the product; see {@link #hasActiveLineForProduct}.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(
@@ -144,7 +144,7 @@ public class CostRevaluationRepository implements ICompletedCostRevaluationsRepo
 
 	/**
 	 * Creates a line for the given {@link CurrentCost}, with the given {@code newCostPrice}.
-	 * Does not check for an already existing line of the product.
+	 * Does not check for an already existing line of the product; see {@link #hasActiveLineForProduct}.
 	 */
 	@NonNull
 	public CostRevaluationLineId createLineForCurrentCost(

@@ -70,11 +70,8 @@ public class JsonCreateProductRequest
 	@Nullable Boolean isSerialNoPicked;
 
 	/**
-	 * When {@code true}, the default {@code M_Cost} rows that the {@code M_Product} costing interceptor
-	 * auto-creates on product creation are deleted again, leaving the product with NO {@code M_Cost} row
-	 * for any accounting schema / cost element. This mirrors a migrated / legacy product that never went
-	 * through the interceptor — the precondition of the cost-revaluation "seed-cost" path
-	 * (a stocked product with no cost record yet). Defaults to {@code false}.
+	 * When {@code true}, the product is created without any {@code M_Cost} row, like a migrated product.
+	 * Defaults to {@code false}.
 	 */
 	@Nullable Boolean isSkipDefaultCosts;
 

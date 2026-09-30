@@ -123,9 +123,7 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 		final DocumentFieldDescriptor productField = entityDescriptor.getField(ICostRevaluationLineQuickInput.COLUMNNAME_M_Product_ID);
 		final DocumentFieldDescriptor newCostPriceField = entityDescriptor.getField(ICostRevaluationLineQuickInput.COLUMNNAME_NewCostPrice);
 
-		// Note: unlike QuickInputLayoutDescriptor.onlyFields(...), we build the elements explicitly here so the
-		// New cost price element carries its field description (the provisional-price hint). The generic
-		// element builder omits the description, so the hint would otherwise never reach the layout / UI.
+		// built explicitly, not via onlyFields(...): the generic element builder omits the description, which the New cost price hint needs
 		return QuickInputLayoutDescriptor.builder()
 				.element(DocumentLayoutElementDescriptor.builder(productField))
 				.element(DocumentLayoutElementDescriptor.builder(newCostPriceField)

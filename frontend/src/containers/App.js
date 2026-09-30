@@ -173,7 +173,7 @@ const App = () => {
             if (data.userFriendlyError) {
               if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
                 // The server sends a translated userMessageTitle (a shared "Information" caption for this
-                // presentation mode) alongside the message; fall back to '' when it's absent so an older backend still renders.
+                // presentation mode) alongside the message; the '' fallback keeps an older backend (no title) rendering.
                 dispatch(
                   showAcknowledgeDialog(
                     data.userMessageTitle || '',
