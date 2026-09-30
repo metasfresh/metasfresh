@@ -64,11 +64,6 @@ public class AD_SysConfig_StepDef
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
-	{
-		this.userTable = userTable;
-	}
-
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
