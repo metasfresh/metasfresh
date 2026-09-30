@@ -693,7 +693,7 @@ public class C_Invoice_StepDef
 		final List<StepDefDataIdentifier> invoiceIdentifiers = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).toCommaSeparatedList();
 		if (invoiceIds.size() != invoiceIdentifiers.size())
 		{
-			ProviderResult.resultWasNotFound("We expected one C_Invoice for each identified, but got {0} invoices instead; C_Invoice_ID.Identifier={1} ", invoiceIds.size(), invoiceIdentifiers);
+			return ProviderResult.resultWasNotFound("We expected one C_Invoice for each identified, but got {0} invoices instead; C_Invoice_ID.Identifier={1} ", invoiceIds.size(), invoiceIdentifiers);
 		}
 
 		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
