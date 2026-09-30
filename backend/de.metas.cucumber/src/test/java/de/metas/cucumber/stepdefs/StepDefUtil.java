@@ -415,6 +415,20 @@ public class StepDefUtil
 						exception -> assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode));
 	}
 
+	/**
+	 * Runs {@code action} and asserts it is REFUSED with a message containing {@code expectedMessagePart}.
+	 * <p>
+	 * Use only when the refusal has no stable {@code AD_Message.ErrorCode} to assert against instead
+	 * (see {@link #assertRefusedWithErrorCode}) — e.g. a composed, multi-part exception message such as
+	 * {@code ProductNotOnPriceListException}'s does not carry one.
+	 */
+	public void assertRefusedWithMessageContaining(@NonNull final String expectedMessagePart, @NonNull final Runnable action)
+	{
+		assertThatThrownBy(action::run)
+				.isInstanceOfSatisfying(AdempiereException.class,
+						exception -> assertThat(exception.getMessage()).as("Message of %s", exception).contains(expectedMessagePart));
+	}
+
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));

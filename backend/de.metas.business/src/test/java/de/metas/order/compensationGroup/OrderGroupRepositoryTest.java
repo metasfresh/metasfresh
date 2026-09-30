@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,9 +20,12 @@ import javax.annotation.Nullable;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,16 +37,21 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -171,6 +181,338 @@ public class OrderGroupRepositoryTest
 		assertThat(compensationLine.getReason()).isNull();
 	}
 
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 5 — retrieveGroup loads the schema's IsAdditive flag and each line's product-category base
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void retrieveGroup_loadsBaseAndAdditive()
+	{
+		// retrieveGroup() builds a full Group, which needs a BPartner on the order (unlike the other tests here)
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		// categories: parentCategory is the schema line's base; childCategory is the regular line's product's own
+		// category (an ancestor of parentCategory); pfandCategory is unrelated (outside the base)
+		final I_M_Product_Category parentCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(parentCategory);
+		final ProductCategoryId parentCategoryId = ProductCategoryId.ofRepoId(parentCategory.getM_Product_Category_ID());
+
+		final I_M_Product_Category childCategory = newInstance(I_M_Product_Category.class);
+		childCategory.setM_Product_Category_Parent_ID(parentCategoryId.getRepoId());
+		saveRecord(childCategory);
+		final ProductCategoryId childCategoryId = ProductCategoryId.ofRepoId(childCategory.getM_Product_Category_ID());
+
+		final I_M_Product_Category pfandCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(pfandCategory);
+
+		// products
+		final I_M_Product childProductRecord = newInstance(I_M_Product.class);
+		childProductRecord.setC_UOM_ID(uomId.getRepoId());
+		childProductRecord.setM_Product_Category_ID(childCategoryId.getRepoId());
+		saveRecord(childProductRecord);
+
+		final I_M_Product pfandProductRecord = newInstance(I_M_Product.class);
+		pfandProductRecord.setC_UOM_ID(uomId.getRepoId());
+		pfandProductRecord.setM_Product_Category_ID(pfandCategory.getM_Product_Category_ID());
+		saveRecord(pfandProductRecord);
+
+		// schema (IsAdditive=Y) with a schema line whose base = parentCategory
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setIsAdditive(true);
+		saveRecord(schema);
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_Category_ID(parentCategoryId.getRepoId());
+		schemaLine.setM_Product_ID(productId.getRepoId());
+		saveRecord(schemaLine);
+
+		// order compensation group header, linked to the schema
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// regular line: product in the child category (an ancestor of which is the base)
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(childProductRecord.getM_Product_ID());
+		regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		regularLine.setLineNetAmt(new BigDecimal("100"));
+		saveRecord(regularLine);
+		final OrderLineId regularLineId = OrderLineId.ofRepoId(regularLine.getC_OrderLine_ID());
+
+		// Pfand regular line: product outside the base
+		final I_C_OrderLine pfandLine = newInstance(I_C_OrderLine.class);
+		pfandLine.setC_Order_ID(order.getC_Order_ID());
+		pfandLine.setM_Product_ID(pfandProductRecord.getM_Product_ID());
+		pfandLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		pfandLine.setLineNetAmt(new BigDecimal("20"));
+		saveRecord(pfandLine);
+
+		// compensation line pointing to the schema line
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(BigDecimal.ZERO);
+		compensationLine.setLineNetAmt(BigDecimal.ZERO);
+		saveRecord(compensationLine);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+
+		final Group group = repo.retrieveGroup(groupId);
+
+		assertThat(group.isAdditive()).isTrue();
+
+		final GroupCompensationLine loadedCompensationLine = group.getCompensationLines().get(0);
+		assertThat(loadedCompensationLine.getAppliesToProductCategoryId()).isEqualTo(parentCategoryId);
+
+		final GroupRegularLine loadedRegularLine = group.getRegularLines().stream()
+				.filter(rl -> regularLineId.equals(rl.getRepoId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("regular line not found in group"));
+		assertThat(loadedRegularLine.getProductCategoryIds()).contains(childCategoryId, parentCategoryId);
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 6 — fallback branch: a regular line whose product has no entry in the batch-resolved
+	// product-category map (e.g. the product record no longer exists) gets an empty
+	// productCategoryIds, instead of failing. Direct unit test of the pure mapping method — a
+	// genuinely-missing product cannot be round-tripped through retrieveGroup() in this in-memory
+	// test store: unlike a real `SELECT ... WHERE id IN (...)`, IProductDAO's bulk lookup
+	// (POJOWrapper.loadByIds -> POJOLookupMap) throws for any id it can't find rather than
+	// silently omitting it, so the DB-level scenario can't be constructed here; the code path this
+	// exercises is exactly what OrderGroupRepository#toGroupRegularLine falls back on.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void toGroupRegularLine_productNotInCategoryMap_hasEmptyProductCategoryIds()
+	{
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(productId.getRepoId());
+		regularLine.setLineNetAmt(new BigDecimal("50"));
+		saveRecord(regularLine);
+
+		final GroupRegularLine loadedRegularLine = OrderGroupRepository.toGroupRegularLine(regularLine, ImmutableMap.of());
+
+		assertThat(loadedRegularLine.getProductCategoryIds()).isEmpty();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 7 — fallback branch: a manual compensation line (not linked to any schema line) has a
+	// null base, same as a group with no schema at all.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void retrieveGroup_manualCompensationLineWithoutSchemaLine_hasNullBase()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// dedicated category + product for the regular line (the shared `productId` from beforeEach has
+		// no category set, since other tests in this file don't need one)
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final I_M_Product regularLineProduct = newInstance(I_M_Product.class);
+		regularLineProduct.setC_UOM_ID(uomId.getRepoId());
+		regularLineProduct.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		saveRecord(regularLineProduct);
+
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(regularLineProduct.getM_Product_ID());
+		regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		regularLine.setLineNetAmt(new BigDecimal("100"));
+		saveRecord(regularLine);
+
+		// manual compensation line: IsGroupCompensationLine=true, but no C_CompensationGroup_SchemaLine_ID
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(BigDecimal.ZERO);
+		compensationLine.setLineNetAmt(BigDecimal.ZERO);
+		saveRecord(compensationLine);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		final Group group = repo.retrieveGroup(groupId);
+
+		assertThat(group.getCompensationLines()).hasSize(1);
+		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId()).isNull();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 8 — regression: createPartialGroupFromCompensationLine (the manual-percentage-edit path,
+	// C_OrderLine.onGroupCompensationLineChanged -> updateCompensationLineNoSave) must recompute a
+	// BASED compensation line against its stored base amount, not zero. Before the fix, the synthetic
+	// aggregated regular line had an empty productCategoryIds while the compensation line now carries
+	// a non-null appliesToProductCategoryId, so Group#getRegularLinesNetAmt(appliesToProductCategoryId) filtered it out entirely.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void createPartialGroupFromCompensationLine_basedLine_recomputesAgainstStoredBase()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final ProductCategoryId categoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_Category_ID(categoryId.getRepoId());
+		schemaLine.setM_Product_ID(productId.getRepoId());
+		saveRecord(schemaLine);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+
+		// compensation line, linked to the schema line, carrying a previously-computed base of 1000
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setGroupCompensationBaseAmt(new BigDecimal("1000"));
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(new BigDecimal("-100"));
+		compensationLine.setLineNetAmt(new BigDecimal("-100"));
+		saveRecord(compensationLine);
+
+		// exercise the manual-edit path directly
+		final Group group = repo.createPartialGroupFromCompensationLine(compensationLine);
+		group.updateAllCompensationLines();
+
+		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isEqualTo(categoryId);
+		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("1000");
+		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-100.00");
+		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
+	}
+
+	@Test
+	void createPartialGroupFromCompensationLine_noBase_recomputesAgainstStoredNetAmt()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+
+		// manual compensation line: IsGroupCompensationLine=true, but no C_CompensationGroup_SchemaLine_ID
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setGroupCompensationBaseAmt(new BigDecimal("500"));
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(new BigDecimal("-50"));
+		compensationLine.setLineNetAmt(new BigDecimal("-50"));
+		saveRecord(compensationLine);
+
+		final Group group = repo.createPartialGroupFromCompensationLine(compensationLine);
+		group.updateAllCompensationLines();
+
+		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isNull();
+		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
+		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 9 — a compensation line is priced with PriceEntered == PriceActual, which is only correct
+	// while the line carries no discount: saveGroup must reset a non-zero Discount to zero and protect
+	// it from the order-line pricing recompute (IsManualDiscount). Uses PriceAndQty (not Percent): it is
+	// not covered by the pre-existing setDisallowDiscount guard, unlike percent-type lines.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void saveGroup_resetsStaleDiscountToZero()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// compensation line carrying a non-zero Discount (e.g. from a manual edit)
+		final I_C_OrderLine compensationLinePO = newInstance(I_C_OrderLine.class);
+		compensationLinePO.setC_Order_ID(order.getC_Order_ID());
+		compensationLinePO.setM_Product_ID(productId.getRepoId());
+		compensationLinePO.setC_UOM_ID(uomId.getRepoId());
+		compensationLinePO.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLinePO.setIsGroupCompensationLine(true);
+		compensationLinePO.setDiscount(new BigDecimal("15"));
+		compensationLinePO.setIsManualDiscount(false);
+		saveRecord(compensationLinePO);
+		final OrderLineId compensationLineId = OrderLineId.ofRepoId(compensationLinePO.getC_OrderLine_ID());
+
+		final GroupCompensationLine compensationLine = GroupCompensationLine.builder()
+				.repoId(compensationLineId)
+				.productId(productId)
+				.uomId(uomId)
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.PriceAndQty)
+				.qtyEntered(BigDecimal.ONE)
+				.price(BigDecimal.TEN)
+				.lineNetAmt(BigDecimal.TEN)
+				.build();
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		final Group group = Group.builder()
+				.groupId(groupId)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.soTrx(SOTrx.SALES)
+				.regularLine(GroupRegularLine.builder().lineNetAmt(new BigDecimal("100")).build())
+				.compensationLine(compensationLine)
+				.build();
+
+		final OrderLinesStorage storage = repo.createNotSaveableSingleOrderLineStorage(compensationLinePO);
+
+		repo.saveGroup(group, storage);
+
+		assertThat(compensationLinePO.getDiscount()).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(compensationLinePO.isManualDiscount()).isTrue();
+	}
+
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────
 
 	private GroupTemplateRegularLine buildTemplateLine(final boolean isWithoutCharge)
@@ -252,7 +594,7 @@ public class OrderGroupRepositoryTest
 		@Override public PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
 		@Override public void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct) { throw new UnsupportedOperationException(); }
 		@Override public I_M_PriceList_Version getPriceListVersion(de.metas.interfaces.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
-		@Override public void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
+		@Override public void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine) { /* no-op */ }
 		@Override public void updateLineNetAmtFromQty(Quantity qty, org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
 		@Override public void updateQtyReserved(de.metas.interfaces.I_C_OrderLine ol) { throw new UnsupportedOperationException(); }
 		@Override public Quantity convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }

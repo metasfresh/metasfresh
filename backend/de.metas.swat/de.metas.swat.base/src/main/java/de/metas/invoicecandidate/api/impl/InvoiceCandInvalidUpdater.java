@@ -34,6 +34,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -98,6 +99,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private Properties _ctx;
 	private String _trxName;
 	private final IInvoiceCandRecomputeTagger icTagger;
+	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
 	//
 	// State
@@ -388,6 +390,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		invoiceCandBL.setPriceActual_Override(icRecord);
 
 		invoiceCandBL.setQtyAndDateForFreightCost(icRecord);
+
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(icRecord))
+		{
+			percentCompensationLineInvoicing.get().updateQtyToInvoice(icRecord);
+		}
 
 		// setQtyAndDateForFreightCost might have changed the ICs delivery date, so we do setInvoiceScheduleAndDateToInvoice only now
 		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);

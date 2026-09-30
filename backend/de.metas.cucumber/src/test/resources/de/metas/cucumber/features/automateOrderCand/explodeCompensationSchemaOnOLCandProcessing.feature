@@ -444,3 +444,113 @@ Feature: Explode a compensation-group-schema product into its component order li
       | orderLine_comp_subProductA | order_comp            | subProductA             | 4          | false                       |                                 | true      |
       | orderLine_comp_subProductB | order_comp            | subProductB             | 6          | false                       |                                 | true      |
       | orderLine_comp_discount    | order_comp            | discountProduct         | 1          | true                        | 10                              | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00122_Sales_Order_Candidate_to_Order
+  @ghActions:run_on_executor3
+  @Id:S32353_TC55
+  Scenario: A compensation-group schema with two percent lines still compounds when exploded from an order candidate
+    Given metasfresh contains M_PricingSystems
+      | Identifier | Name      |
+      | ps_schema  | ps_schema |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_schema  | ps_schema                     | DE                        | EUR                 | pl_schema | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
+      | plv_schema | pl_schema                 | plv_schema | 2026-07-01 |
+
+    And metasfresh contains M_Products:
+      | Identifier       | Name             |
+      | subProductA      | subProductA      |
+      | subProductB      | subProductB      |
+      | discountProduct1 | discountProduct1 |
+      | discountProduct2 | discountProduct2 |
+
+    # not additive (the default): the second percent line is computed on the total already reduced by the first one
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier      | Name            |
+      | compGroupSchema | compGroupSchema |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier          | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | Qty | C_UOM_ID | SeqNo |
+      | schemaTemplateLineA | compGroupSchema                          | subProductA             | 2   | PCE      | 10    |
+      | schemaTemplateLineB | compGroupSchema                          | subProductB             | 3   | PCE      | 20    |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier      | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.SeqNo |
+      | schemaDiscount1 | compGroupSchema                          | discountProduct1        | 10                        | 30        |
+      | schemaDiscount2 | compGroupSchema                          | discountProduct2        | 5                         | 40        |
+
+    And metasfresh contains M_Products:
+      | Identifier    | Name          | OPT.C_CompensationGroup_Schema_ID.Identifier |
+      | schemaProduct | schemaProduct | compGroupSchema                              |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_schemaProduct    | plv_schema                        | schemaProduct           | 15.00    | PCE               | Normal                        |
+      | pp_subProductA      | plv_schema                        | subProductA             | 5.00     | PCE               | Normal                        |
+      | pp_subProductB      | plv_schema                        | subProductB             | 3.00     | PCE               | Normal                        |
+      | pp_discountProduct1 | plv_schema                        | discountProduct1        | 0.00     | PCE               | Normal                        |
+      | pp_discountProduct2 | plv_schema                        | discountProduct2        | 0.00     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | Name     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           |
+      | customer   | customer | Y              | N            | ps_schema                     | customerLocation           | 4009900001234 |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "schemaExplosion_compound",
+            "externalLineId": "schemaExplosion_compound_0",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4009900001234",
+                "bpartnerLocationIdentifier": "gln-4009900001234"
+            },
+            "dateRequired": "2026-08-01",
+            "dateOrdered": "2026-07-20",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-schemaProduct",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "schemaExplosion_compound",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_compound        |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "schemaExplosion_compound",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_compound        |
+
+    # regular lines: 4 x 5.00 + 6 x 3.00 = 38.00
+    # first discount:  10% of 38.00           = -3.80
+    # second discount:  5% of (38.00 - 3.80)  = -1.71 (on the reduced base; 5% of 38.00 would be -1.90)
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | processed |
+      | orderLine_compound_subProductA  | order_compound        | subProductA             | 4          | false                       |                                 | 5     | true      |
+      | orderLine_compound_subProductB  | order_compound        | subProductB             | 6          | false                       |                                 | 3     | true      |
+      | orderLine_compound_discount1    | order_compound        | discountProduct1        | 1          | true                        | 10                              | -3.80 | true      |
+      | orderLine_compound_discount2    | order_compound        | discountProduct2        | 1          | true                        | 5                               | -1.71 | true      |
