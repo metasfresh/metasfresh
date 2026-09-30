@@ -61,7 +61,8 @@ const TYPE_CONDITIONS_COMPENSATION_GROUP = 'CompensationGroup';
 const TYPE_CONDITIONS_OTHER = 'Subscr';
 
 // Contract transition: duration 0, so the contract keeps the entered end date. Its contract calendar
-// must have periods covering the contract; the standard accounting calendar of the tenant does.
+// must have periods covering the contract; the standard accounting calendar of the tenant does
+// (its years and periods are seeded by the yearly "add years / periods" system migrations).
 const CONTRACT_CALENDAR_ID = 1000000;
 const DURATION_UNIT_MONTH = 'month';
 
@@ -155,6 +156,10 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
+    // ids of records created in the UI, needed again in step 5
+    let schemaId;
+    let termId;
+
     // ------------------------------------------------------------------
     // 1. Kompensationsgruppe Schema (540415)
     // ------------------------------------------------------------------
@@ -163,7 +168,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectWindowTitle(page, DE.schemaWindow);
 
       await fillText(page, page, 'Name', schemaName);
-      const schemaId = await waitForNewRecordId(page, SCHEMA_WINDOW_ID);
+      schemaId = await waitForNewRecordId(page, SCHEMA_WINDOW_ID);
 
       // IsAdditive: German label, in the flags group directly after the other schema flags
       await expectLabel(page, 'IsAdditive', DE.isAdditive);
@@ -327,12 +332,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         retryDelay: 2000,
         refreshOnRetry: true,
       });
-      const termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
+      termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
 
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Bill_BPartner_ID')).value)).toBe(String(customer.id));
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'C_Flatrate_Conditions_ID')).value)).toBe(String(conditionsId));
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Type_Conditions')).value)).toBe(TYPE_CONDITIONS_COMPENSATION_GROUP);
-      expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'M_Product_ID').catch(() => ({ value: null }))).value), 'product-less term').toBeNull();
+      expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'M_Product_ID')).value), 'product-less term').toBeNull();
       expect(String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'StartDate')).value)).toContain(isoDate(contractStart));
       expect(String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'EndDate')).value), 'the entered end date is kept').toContain(isoDate(contractEnd));
       await expectDocStatus(CONTRACT_WINDOW_ID, termId, 'CO');
@@ -372,6 +377,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(lookupKey(goodsLine.fieldsByName.C_Order_CompensationGroup_ID.value), 'goods line is in the same group').toBe(groupId);
       expect(discountLine.fieldsByName.IsGroupCompensationLine.value).toBe(true);
       expect(goodsLine.fieldsByName.IsGroupCompensationLine.value).toBe(false);
+      // ... and that group is the one of this contract, built from this schema
+      // (C_Order_CompensationGroup has no window, so it is read through the testing backend)
+      await Backend.expect({
+        title: 'the order\'s compensation group belongs to the contract and its schema',
+        salesOrders: {
+          [orderId]: { compensationGroups: [{ flatrateTermId: Number(termId), compensationGroupSchemaId: Number(schemaId) }] },
+        },
+      });
 
       // The UI shows both lines in the order-line grid, the discount line with the expected amount.
       // (the order is completed, so the batch-entry toggle SalesOrderPage.goToOrderLineTab relies on is gone)
@@ -418,12 +431,20 @@ async function snap(page, name) {
 }
 
 /**
- * Run `action` and wait until the field change it triggers has been sent to the backend
- * (the WebUI PATCHes a document / included row / process parameter on each field commit).
+ * Run `action` and wait until the change of `fieldName` it triggers has been sent to the backend
+ * (the WebUI PATCHes a document / included row / process parameter on each field commit,
+ * with a body of [{ op, path: <fieldName>, value }]).
  */
-async function withFieldCommit(page, action) {
+async function withFieldCommit(page, fieldName, action) {
   const committed = page.waitForResponse(
-    (response) => response.request().method() === 'PATCH' && response.url().includes('/rest/api/'),
+    (response) => {
+      const request = response.request();
+      if (request.method() !== 'PATCH' || !response.url().includes('/rest/api/')) {
+        return false;
+      }
+      const body = request.postDataJSON();
+      return Array.isArray(body) && body.some((change) => change.path === fieldName);
+    },
     { timeout: SLOW_ACTION_TIMEOUT }
   );
   await action();
@@ -492,7 +513,7 @@ async function fillText(page, scope, fieldName, value) {
   const input = scope.locator(`.form-field-${fieldName} input[type="text"], .form-field-${fieldName} textarea`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.fill(value);
-  await withFieldCommit(page, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
 async function fillNumber(page, scope, fieldName, value) {
@@ -501,7 +522,7 @@ async function fillNumber(page, scope, fieldName, value) {
   await input.click();
   await input.press('ControlOrMeta+a');
   await input.pressSequentially(String(value));
-  await withFieldCommit(page, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
 async function fillDate(page, scope, fieldName, date) {
@@ -511,13 +532,13 @@ async function fillDate(page, scope, fieldName, date) {
   await input.click();
   await input.press('ControlOrMeta+a');
   await input.fill(text);
-  await withFieldCommit(page, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
 async function setCheckbox(page, fieldName) {
   const checkbox = page.locator(`.form-field-${fieldName} input[type="checkbox"]`).first();
   if (!(await checkbox.isChecked())) {
-    await withFieldCommit(page, () => page.locator(`.form-field-${fieldName} label.input-checkbox`).first().click());
+    await withFieldCommit(page, fieldName, () => page.locator(`.form-field-${fieldName} label.input-checkbox`).first().click());
   }
   await expect(checkbox).toBeChecked();
 }
@@ -528,7 +549,7 @@ async function selectListByKey(page, scope, fieldName, key) {
   await input.click();
   const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await withFieldCommit(page, () => option.click());
+  await withFieldCommit(page, fieldName, () => option.click());
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
 
@@ -559,7 +580,7 @@ async function selectLookup(page, scope, fieldName, searchText, { exact = false 
   const dropdown = await typeIntoLookup(page, scope, fieldName, searchText);
   const option = dropdown.locator('.input-dropdown-list-option').getByText(searchText, { exact }).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await withFieldCommit(page, () => option.click());
+  await withFieldCommit(page, fieldName, () => option.click());
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
 
@@ -597,7 +618,7 @@ async function completeDocument(page) {
   await page.getByTestId('status-button').click();
   const co = page.getByTestId('status-CO');
   await co.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await withFieldCommit(page, () => co.click());
+  await withFieldCommit(page, 'DocAction', () => co.click());
 }
 
 async function expectDocStatus(windowId, recordId, docStatus) {
