@@ -1042,6 +1042,10 @@ Feature: Contract-triggered compensation group on a partially delivered and invo
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | NetAmtInvoiced | Processed | IsError |
       | ic_discount                       | 1           | -30            | false     | false   |
+    # the goods are completely invoiced; the order reads so, while the held-back discount stays open on its candidate
+    And validate the created orders
+      | C_Order_ID   | InvoiceStatus |
+      | orderPartial | CI            |
 
     # the user releases the discount; its remaining amount follows with the next invoice
     When update C_Invoice_Candidate:
