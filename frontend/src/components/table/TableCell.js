@@ -6,6 +6,7 @@ import counterpart from 'counterpart';
 import {
   checkIfDateField,
   getSizeClass,
+  getSizeStyle,
   getTdTitle,
 } from '../../utils/tableHelpers';
 import TableCellWidget from './TableCellWidget';
@@ -47,7 +48,17 @@ class TableCell extends PureComponent {
    */
   handleBackdropLock = (state) => {
     const { item } = this.props;
-    const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
+    // 'Address' is object-valued and edits through the same <Attributes>
+    // button-overlay as 'ProductAttributes', so it must be treated as a
+    // backdrop-locking widget too; otherwise clicking outside would trigger the
+    // grid's onClickOutside and tear down the overlay mid-edit.
+    const widgetsList = [
+      'ProductAttributes',
+      'Address',
+      'Attributes',
+      'List',
+      'Lookup',
+    ];
 
     if (!widgetsList.includes(item.widgetType)) {
       !state && this.props.onClickOutside();
@@ -69,12 +80,20 @@ class TableCell extends PureComponent {
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
     const widgetType = tableCellData?.widgetType;
 
+    // 'Address' is object-valued ({key,caption}) and, like 'ProductAttributes',
+    // commits its value through the <Attributes> button-overlay — never through
+    // the grid-nav raw-text row-write. Flag it as an attribute widget so
+    // TableRow's Tab/Enter handlers skip that write; otherwise the button's raw
+    // (empty) text clobbers the {key,caption} object -> silent data loss.
+    const isAttributeWidget =
+      widgetType === 'ProductAttributes' || widgetType === 'Address';
+
     onKeyDown &&
       onKeyDown({
         event,
         property,
         readonly: isReadonly,
-        isAttributeWidget: widgetType === 'ProductAttributes',
+        isAttributeWidget,
       });
   };
 
@@ -192,6 +211,9 @@ class TableCell extends PureComponent {
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
+    // a stored custom width wins over the size class (handled above); absent that, a combobox column
+    // still needs its ~210px minimum-usable-width floor applied inline, without promoting the td-* band
+    const comboboxFloorStyle = columnWidth ? undefined : getSizeStyle(item);
     const tdStyle = columnWidth
       ? {
           ...style,
@@ -199,6 +221,8 @@ class TableCell extends PureComponent {
           minWidth: `${columnWidth}px`,
           maxWidth: `${columnWidth}px`,
         }
+      : comboboxFloorStyle
+      ? { ...style, ...comboboxFloorStyle }
       : undefined;
 
     return (

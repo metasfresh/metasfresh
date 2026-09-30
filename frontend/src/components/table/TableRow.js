@@ -90,6 +90,26 @@ class TableRow extends PureComponent {
   };
 
   /**
+   * @method isObjectValuedWidget
+   * @summary True for grid cells whose value is a {key,caption} object
+   * (Lookup/List; Search resolves to Lookup at field level).
+   *
+   * The grid nav row-write on Tab/Enter commits `event.target.value` (the
+   * editor's raw text string). For these object-valued cells that raw string
+   * would clobber the {key,caption} object, so the cell renders literal
+   * "undefined"/stale text after the user advances away and back. The active
+   * editing widget (RawLookup/RawList at selection) owns their commit, so the
+   * nav layer must skip the row-write for them. Scalar (text/number) cells are
+   * unaffected and still commit.
+   *
+   * @param {string} fieldName - the cell's field name
+   */
+  isObjectValuedWidget = (fieldName) => {
+    const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
+    return widgetType === 'Lookup' || widgetType === 'List';
+  };
+
+  /**
    * @method initPropertyEditor
    * @summary Initialize the editor for a widget field
    * @param {object} fieldName - the name of the field,
@@ -167,9 +187,27 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          const inp = String.fromCharCode(event.keyCode);
-          if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
-            this.handleKeyDown_RegularChar({ event, property, readonly });
+          // Activate on any single printable character (event.key), not on
+          // event.keyCode/String.fromCharCode: keyCode-based mapping is wrong
+          // for the numeric keypad (e.g. numpad-0 is keyCode 96, which
+          // String.fromCharCode maps to a backtick, never matching a
+          // printable-character gate). event.key already reflects the
+          // actual character produced (numpad-0 and main-row-0 both give
+          // "0"), while non-printable keys (Enter, ArrowDown, F-keys, ...)
+          // report a multi-character name and are excluded by the length
+          // check below.
+          if (
+            event.key.length === 1 &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+          ) {
+            this.handleKeyDown_RegularChar({
+              event,
+              property,
+              readonly,
+              isAttributeWidget,
+            });
           }
         }
         break;
@@ -207,6 +245,12 @@ class TableRow extends PureComponent {
         valueBeforeEditing: fieldValue,
       },
       () => {
+        // Skip the raw-string row-write for object-valued (Lookup/List) cells:
+        // it would clobber the {key,caption} object -> literal "undefined" on
+        // re-entry. Their own widget owns the commit at selection.
+        if (this.isObjectValuedWidget(property)) {
+          return;
+        }
         updatePropertyValue({
           property,
           value: inputContent,
@@ -232,8 +276,14 @@ class TableRow extends PureComponent {
 
     // this test is for a case when user is navigating around the table
     // without activating the field. Then there's no widget (input), so the value
-    // is undefined and we don't have to worry about it
-    if (typeof event.target.value !== 'undefined') {
+    // is undefined and we don't have to worry about it.
+    // Also skip the raw-string row-write for object-valued (Lookup/List) cells:
+    // it would clobber the {key,caption} object -> literal "undefined" on
+    // re-entry. Their own widget owns the commit at selection.
+    if (
+      typeof event.target.value !== 'undefined' &&
+      !this.isObjectValuedWidget(property)
+    ) {
       updatePropertyValue({
         property,
         value: event.target.value,
@@ -288,7 +338,22 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown_RegularChar = ({ event, property, readonly }) => {
+  handleKeyDown_RegularChar = ({
+    event,
+    property,
+    readonly,
+    isAttributeWidget,
+  }) => {
+    // Object-valued attribute widgets (ProductAttributes/Address) commit through
+    // the <Attributes> overlay, not the raw-text edit path. Routing a printable
+    // key (e.g. Space, accepted by the single-printable-character gate above)
+    // into handleEditProperty({ select: true }) would clearValue() the widget
+    // and clobber its {key,caption} value (silent data loss). Skip it here,
+    // mirroring the Tab/Enter isAttributeWidget guards.
+    if (isAttributeWidget) {
+      return;
+    }
+
     const { valueBeforeEditing } = this.state;
     if (valueBeforeEditing === null) {
       // for disabled fields/fields without value, we don't get the field data from the backend
