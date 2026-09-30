@@ -118,6 +118,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
 	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
@@ -366,7 +367,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
 		{
-			SpringContextHolder.instance.getBean(PercentCompensationLineInvoicing.class).updateQtyOrdered(ic);
+			percentCompensationLineInvoicing.get().updateQtyOrdered(ic);
 		}
 	}
 

@@ -142,6 +142,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -2076,6 +2077,18 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("bpartnerId", billPartnerId)
 				.setParameter("orgId", term.getAD_Org_ID())
 				.setParameter("existingContractIds", existingContractsOfTargetType);
+	}
+
+	@Override
+	@Nullable
+	public Timestamp getEndDateToApply(@NonNull final I_C_Flatrate_Conditions conditions, @Nullable final Timestamp enteredEndDate)
+	{
+		if (enteredEndDate == null || conditions.getC_Flatrate_Transition_ID() <= 0)
+		{
+			return null;
+		}
+		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
+		return transition.getTermDuration() == 0 ? enteredEndDate : null;
 	}
 
 	@Override

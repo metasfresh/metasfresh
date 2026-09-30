@@ -13,6 +13,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
@@ -68,18 +69,14 @@ import static java.math.BigDecimal.ZERO;
  * so a stalled recompute delays the next invoice instead of invoicing it without its discount.
  */
 @Component
+@RequiredArgsConstructor
 public class PercentCompensationLineInvoicing
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final InvoiceCandidateGroupRepository groupsRepo;
-
-	public PercentCompensationLineInvoicing(@NonNull final InvoiceCandidateGroupRepository groupsRepo)
-	{
-		this.groupsRepo = groupsRepo;
-	}
+	@NonNull private final InvoiceCandidateGroupRepository groupsRepo;
 
 	/**
 	 * Cheap check without DB access, so that callers need to look up this bean only for percent compensation lines.

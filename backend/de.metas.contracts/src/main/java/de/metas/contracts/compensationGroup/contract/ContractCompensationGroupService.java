@@ -9,6 +9,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -70,13 +71,13 @@ import java.util.Optional;
  * <b>Interceptor order (do not weaken):</b> registered via its own {@code AD_ModelValidator} row
  * (migration {@code 5826810_sys_AddContractCompensationGroupOrderValidator.sql}, {@code SeqNo = 550}):
  * after HU's packing-material lines ({@code de.metas.handlingunits.model.validator.Main}, {@code SeqNo
- * = 500}) and before every loose interceptor, including freight — so a packaging-type schema base
- * matches the HU lines, and a {@code FlatShippingFee} tier's shipment value already includes the bonus.
+ * = 500}) and before every loose interceptor, including freight — so a packaging-type applies-to
+ * category matches the HU lines, and a {@code FlatShippingFee} tier's shipment value already includes the bonus.
  * Keep {@code SeqNo} above 500; never register via {@code de.metas.contracts.interceptor.MainValidator}
  * ({@code SeqNo = 0}). Deactivating the {@code AD_ModelValidator} row (or its entity type) disables this
- * interceptor entirely. Pinned by {@code compensationGroupContract_salesOrder.feature} {@code
- * @Id:S32353_TC17}: if the HU ordering ever broke, the packaging discount line would silently
- * disappear.
+ * interceptor entirely. Pinned by the {@code compensationGroupContract_salesOrder.feature} scenario
+ * where the packaging discount is computed on the HU packing-material lines: if the HU ordering ever
+ * broke, the packaging discount line would silently disappear.
  */
 @Service
 @RequiredArgsConstructor
@@ -88,6 +89,7 @@ public class ContractCompensationGroupService
 	@NonNull private final ContractCompensationGroupTermRepository termRepository;
 	@NonNull private final ContractCompensationGroupRepository contractGroupRepository;
 	@NonNull private final OrderFreightCostsService orderFreightCostService;
+	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
 
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
@@ -95,7 +97,7 @@ public class ContractCompensationGroupService
 	 * Removes this order's contract-created compensation group(s) (if any), then, if the order's invoice
 	 * partner has an active {@code CompensationGroup} contract whose settings list the order's document type
 	 * and whose period covers the order date, (re)creates the group from the order's current, not-yet-grouped
-	 * lines that lie in one of the schema's bases.
+	 * lines that fall into one of the schema's applies-to categories.
 	 * <p>
 	 * A no-op (beyond the removal) when no contract matches, or when no order line qualifies as a candidate.
 	 */
@@ -123,19 +125,19 @@ public class ContractCompensationGroupService
 			return;
 		}
 
-		// A discount line whose base matches none of the candidate lines is skipped (no 0.00 line);
-		// a discount line with no base at all always applies to the whole group.
-		final GroupTemplate schemaWithoutEmptyBases = schema.toBuilder()
+		// A discount line whose applies-to category matches none of the candidate lines is skipped (no 0.00 line);
+		// a discount line with no applies-to category always applies to the whole group.
+		final GroupTemplate schemaWithoutUnmatchedCompensationLines = schema.toBuilder()
 				.clearCompensationLines()
 				.compensationLines(schema.getCompensationLines().stream()
 						.filter(compensationLine -> compensationLine.getAppliesToProductCategoryId() == null
-								|| candidateSelection.getMatchedBases().contains(compensationLine.getAppliesToProductCategoryId()))
+								|| candidateSelection.getMatchedAppliesToCategoryIds().contains(compensationLine.getAppliesToProductCategoryId()))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 
 		// the header carries the term before its lines join the group, so that the lines' interceptors already see a contract-created group
 		orderGroupRepository.prepareNewGroup()
-				.groupTemplate(schemaWithoutEmptyBases)
+				.groupTemplate(schemaWithoutUnmatchedCompensationLines)
 				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
 				.createGroup(candidateSelection.getLineIds());
 	}
@@ -166,7 +168,7 @@ public class ContractCompensationGroupService
 		{
 			return;
 		}
-		contractGroupRepository.lockInvoiceCandidatesOfOrder(orderId);
+		invoiceCandidateGroupRepository.lockInvoiceCandidatesOfOrder(orderId);
 	}
 
 	/**
@@ -182,7 +184,7 @@ public class ContractCompensationGroupService
 		for (final GroupId groupId : contractGroupIds)
 		{
 			contractGroupRepository.deleteCompensationLines(groupId);
-			contractGroupRepository.ungroupNotInvoicedInvoiceCandidates(groupId);
+			invoiceCandidateGroupRepository.ungroupNotInvoicedInvoiceCandidates(groupId);
 
 			final Group group = orderGroupRepository.retrieveGroupIfExists(groupId);
 			if (group != null)
@@ -252,11 +254,11 @@ public class ContractCompensationGroupService
 	/**
 	 * @return this order's candidate regular lines — not (yet) in any compensation group, active, not a
 	 * freight-cost line, carrying a product (a product-less charge line cannot be part of a {@link Group}) —
-	 * and, when every one of the schema's discount lines has an applies-to base, whose product's category (or
-	 * an ancestor of it) is one of those bases (when at least one discount line has no base, every eligible
-	 * line is a candidate) — together with the subset of the schema's declared bases that at least one of
-	 * those candidate lines actually falls into. The latter is used to drop a discount line whose base matches
-	 * none of the order's lines, so it never becomes a spurious 0.00 line.
+	 * and, when every one of the schema's discount lines has an applies-to category, whose product's category (or
+	 * an ancestor of it) is one of those categories (when at least one discount line has none, every eligible
+	 * line is a candidate) — together with the subset of the schema's applies-to categories that at least one of
+	 * those candidate lines actually falls into. The latter is used to drop a discount line whose applies-to category
+	 * matches none of the order's lines, so it never becomes a spurious 0.00 line.
 	 */
 	private CandidateSelection findCandidateLines(@NonNull final OrderId orderId, @NonNull final GroupTemplate schema)
 	{
@@ -272,36 +274,36 @@ public class ContractCompensationGroupService
 			return CandidateSelection.NONE;
 		}
 
-		final ImmutableSet<ProductCategoryId> declaredBases = schema.getCompensationLines().stream()
+		final ImmutableSet<ProductCategoryId> declaredAppliesToCategoryIds = schema.getCompensationLines().stream()
 				.map(GroupTemplateCompensationLine::getAppliesToProductCategoryId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-		final boolean hasUnbasedCompensationLine = schema.getCompensationLines().stream()
+		final boolean hasCompensationLineWithoutAppliesToCategory = schema.getCompensationLines().stream()
 				.anyMatch(compensationLine -> compensationLine.getAppliesToProductCategoryId() == null);
 
 		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestorsByProductId =
 				orderGroupRepository.retrieveProductCategoryIdAndAncestorsByProductId(eligibleOrderLines);
 
 		final ImmutableList.Builder<OrderLineId> candidateLineIds = ImmutableList.builder();
-		final ImmutableSet.Builder<ProductCategoryId> matchedBases = ImmutableSet.builder();
+		final ImmutableSet.Builder<ProductCategoryId> matchedAppliesToCategoryIds = ImmutableSet.builder();
 		for (final I_C_OrderLine orderLine : eligibleOrderLines)
 		{
 			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID()); // safe: filtered above
 			final ImmutableSet<ProductCategoryId> productCategoryIdAndAncestors = productCategoryIdAndAncestorsByProductId.getOrDefault(productId, ImmutableSet.of());
 
-			final ImmutableSet<ProductCategoryId> lineMatchedBases = declaredBases.stream()
+			final ImmutableSet<ProductCategoryId> lineMatchedAppliesToCategoryIds = declaredAppliesToCategoryIds.stream()
 					.filter(productCategoryIdAndAncestors::contains)
 					.collect(ImmutableSet.toImmutableSet());
 
-			final boolean isCandidate = hasUnbasedCompensationLine || !lineMatchedBases.isEmpty();
+			final boolean isCandidate = hasCompensationLineWithoutAppliesToCategory || !lineMatchedAppliesToCategoryIds.isEmpty();
 			if (isCandidate)
 			{
 				candidateLineIds.add(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
-				matchedBases.addAll(lineMatchedBases);
+				matchedAppliesToCategoryIds.addAll(lineMatchedAppliesToCategoryIds);
 			}
 		}
 
-		return new CandidateSelection(candidateLineIds.build(), matchedBases.build());
+		return new CandidateSelection(candidateLineIds.build(), matchedAppliesToCategoryIds.build());
 	}
 
 	@Value
@@ -310,6 +312,6 @@ public class ContractCompensationGroupService
 		static final CandidateSelection NONE = new CandidateSelection(ImmutableList.of(), ImmutableSet.of());
 
 		ImmutableList<OrderLineId> lineIds;
-		ImmutableSet<ProductCategoryId> matchedBases;
+		ImmutableSet<ProductCategoryId> matchedAppliesToCategoryIds;
 	}
 }

@@ -99,6 +99,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private Properties _ctx;
 	private String _trxName;
 	private final IInvoiceCandRecomputeTagger icTagger;
+	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
 	//
 	// State
@@ -392,7 +393,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		if (PercentCompensationLineInvoicing.isPercentCompensationLine(icRecord))
 		{
-			SpringContextHolder.instance.getBean(PercentCompensationLineInvoicing.class).updateQtyToInvoice(icRecord);
+			percentCompensationLineInvoicing.get().updateQtyToInvoice(icRecord);
 		}
 
 		// setQtyAndDateForFreightCost might have changed the ICs delivery date, so we do setInvoiceScheduleAndDateToInvoice only now

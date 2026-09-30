@@ -1056,7 +1056,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}	// removeDocValidate
 
-	/** @return the globally-registered DocValidate listeners of {@code tableName}, in registration/invocation order (read-only; for tests and diagnostics). */
+	/**
+	 * @return the globally-registered DocValidate listeners of {@code tableName}, in registration/invocation order (read-only; for tests and diagnostics).
+	 * <p>
+	 * Serves the cucumber test that pins the order of the {@code C_Order} interceptors (compensation-group contract vs. HU packing material vs. freight).
+	 */
 	public List<String> getGlobalDocValidateListenerDescriptions(@NonNull final String tableName)
 	{
 		final ArrayList<ModelValidator> listeners = m_docValidateListeners.get(getPropertyName(tableName));

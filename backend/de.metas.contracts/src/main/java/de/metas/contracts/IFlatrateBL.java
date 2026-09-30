@@ -45,6 +45,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -203,7 +204,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Refuses completion when another active {@code CompensationGroup}-type term of the same invoice partner
-	 * (and org) overlaps this term's period and shares at least one order document type with it (via each
+	 * (in any org) overlaps this term's period and shares at least one order document type with it (via each
 	 * term's {@code C_CompensationGroup_ContractSettings}) — a quit (cancelled) or past-dated term still
 	 * counts up to its end date; draft and voided terms never block. A term whose conditions carry no
 	 * compensation-group settings is skipped (nothing to overlap on).
@@ -211,6 +212,15 @@ public interface IFlatrateBL extends ISingletonService
 	 * @throws AdempiereException naming the conflicting term, when found
 	 */
 	void assertNoOverlappingCompensationGroupTerm(I_C_Flatrate_Term term);
+
+	/**
+	 * @return the end date to request for a new term of the given conditions ("Erzeuge Vertrag"), or {@code null} to let the term compute it.
+	 * The entered end date is applied only when the conditions' transition has duration 0: such a contract keeps the entered end date.
+	 * For a transition with duration greater than 0 it is ignored, so the end date computed from the transition stands
+	 * (the term creation would otherwise overwrite the computed end date after completion, inconsistent with notice date and data entries).
+	 */
+	@Nullable
+	Timestamp getEndDateToApply(@NonNull I_C_Flatrate_Conditions conditions, @Nullable Timestamp enteredEndDate);
 
 	/**
 	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.

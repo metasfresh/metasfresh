@@ -19,7 +19,6 @@ import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -260,7 +259,7 @@ public class OrderGroupRepository implements GroupRepository
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.additive(retrieveAdditive(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()));
+				.additive(isAdditive(orderCompensationGroupPO));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
 
@@ -283,15 +282,37 @@ public class OrderGroupRepository implements GroupRepository
 		return groupBuilder.build();
 	}
 
-	/** @return the schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
-	private static boolean retrieveAdditive(final int compensationGroupSchemaId)
+	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	public static boolean isAdditive(@NonNull final I_C_Order_CompensationGroup groupRecord)
 	{
+		final int compensationGroupSchemaId = groupRecord.getC_CompensationGroup_Schema_ID();
 		if (compensationGroupSchemaId <= 0)
 		{
 			return false;
 		}
 
 		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
+	}
+
+	/**
+	 * The one definition of a contract-created group: its {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
+	 *
+	 * @see #createContractCreatedGroupsQueryBuilder()
+	 */
+	public static boolean isContractCreated(@NonNull final I_C_Order_CompensationGroup groupRecord)
+	{
+		return groupRecord.getC_Flatrate_Term_ID() > 0;
+	}
+
+	/**
+	 * @return a query builder on the contract-created {@code C_Order_CompensationGroup} headers, the SQL counterpart of {@link #isContractCreated(I_C_Order_CompensationGroup)}
+	 */
+	public static IQueryBuilder<I_C_Order_CompensationGroup> createContractCreatedGroupsQueryBuilder()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addNotNull(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID) // SQL-redundant; the in-memory (unit test) compare sorts null above 0
+				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0);
 	}
 
 	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
@@ -369,19 +390,7 @@ public class OrderGroupRepository implements GroupRepository
 				.filter(orderLine -> !orderLine.isGroupCompensationLine())
 				.map(orderLine -> ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-		if (productIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
-		for (final ProductAndCategoryId productAndCategoryId : productDAO.retrieveProductAndCategoryIdsByProductIds(productIds))
-		{
-			final ImmutableSet<ProductCategoryId> categoryIdAndAncestors =
-					productDAO.getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId());
-			result.put(productAndCategoryId.getProductId(), categoryIdAndAncestors);
-		}
-		return result.build();
+		return productDAO.getProductCategoryIdAndAncestorsByProductIds(productIds);
 	}
 
 	/**
@@ -861,6 +870,15 @@ public class OrderGroupRepository implements GroupRepository
 	 */
 	public ImmutableSet<GroupId> retrieveContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
 	{
+		return filterContractCreatedGroupIds(groupIds);
+	}
+
+	/**
+	 * Static variant of {@link #retrieveContractCreatedGroupIds(Set)}, for repositories that don't have this repository at hand
+	 * (e.g. the invoice candidates' group repository).
+	 */
+	public static ImmutableSet<GroupId> filterContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
+	{
 		if (groupIds.isEmpty())
 		{
 			return ImmutableSet.of();
@@ -871,9 +889,8 @@ public class OrderGroupRepository implements GroupRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableSet<Integer> contractCreatedRepoIds = ImmutableSet.copyOf(
-				queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				createContractCreatedGroupsQueryBuilder()
 						.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupIds)
-						.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0)
 						.create()
 						.listIds());
 

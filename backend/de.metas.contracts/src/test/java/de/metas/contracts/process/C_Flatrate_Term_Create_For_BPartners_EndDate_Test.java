@@ -90,7 +90,7 @@ class C_Flatrate_Term_Create_For_BPartners_EndDate_Test extends AbstractFlatrate
 	/** Gate the entered end date like the process does, then create the term like the process does. */
 	private I_C_Flatrate_Term createTermAsProcess(final I_C_Flatrate_Conditions conditions, @Nullable final Timestamp endDateParam)
 	{
-		final Timestamp endDate = C_Flatrate_Term_Create_For_BPartners.getEndDateToApply(conditions, endDateParam);
+		final Timestamp endDate = flatrateBL.getEndDateToApply(conditions, endDateParam);
 		return flatrateBL.createTerm(CreateFlatrateTermRequest.builder()
 				.context(helper.getContextProvider())
 				.orgId(OrgId.ofRepoId(helper.getOrg().getAD_Org_ID()))
@@ -108,7 +108,7 @@ class C_Flatrate_Term_Create_For_BPartners_EndDate_Test extends AbstractFlatrate
 	{
 		final I_C_Flatrate_Conditions conditions = conditionsWithTermDuration(0);
 
-		assertThat(C_Flatrate_Term_Create_For_BPartners.getEndDateToApply(conditions, enteredEndDate)).isEqualTo(enteredEndDate);
+		assertThat(flatrateBL.getEndDateToApply(conditions, enteredEndDate)).isEqualTo(enteredEndDate);
 
 		final I_C_Flatrate_Term term = createTermAsProcess(conditions, enteredEndDate);
 		assertThat(term.getEndDate()).isEqualTo(enteredEndDate);
@@ -120,7 +120,7 @@ class C_Flatrate_Term_Create_For_BPartners_EndDate_Test extends AbstractFlatrate
 	{
 		final I_C_Flatrate_Conditions conditions = conditionsWithTermDuration(3);
 
-		assertThat(C_Flatrate_Term_Create_For_BPartners.getEndDateToApply(conditions, enteredEndDate)).isNull();
+		assertThat(flatrateBL.getEndDateToApply(conditions, enteredEndDate)).isNull();
 
 		final I_C_Flatrate_Term term = createTermAsProcess(conditions, enteredEndDate);
 		// startDate (2020-01-01) + 3 months - 1 day; the notice date follows the computed end date
@@ -133,7 +133,7 @@ class C_Flatrate_Term_Create_For_BPartners_EndDate_Test extends AbstractFlatrate
 	{
 		final I_C_Flatrate_Conditions conditions = conditionsWithTermDuration(3);
 
-		assertThat(C_Flatrate_Term_Create_For_BPartners.getEndDateToApply(conditions, null)).isNull();
+		assertThat(flatrateBL.getEndDateToApply(conditions, null)).isNull();
 
 		final I_C_Flatrate_Term term = createTermAsProcess(conditions, null);
 		assertThat(term.getEndDate()).isEqualTo(TimeUtil.getDay(2020, 3, 31));

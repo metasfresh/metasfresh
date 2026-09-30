@@ -43,8 +43,8 @@ import java.util.List;
 /**
  * Repository Tables: C_Flatrate_Term
  * <p>
- * Repository Cluster: sole owner of {@code C_Flatrate_Term} within this scope (no other class declares
- * a {@code Repository Tables:} line for it).
+ * Repository Cluster: ContractCompensationGroupTermRepository, {@code FlatrateDAO} — this one only reads
+ * {@code C_Flatrate_Term} (CompensationGroup terms only); {@code FlatrateDAO} reads and writes all terms.
  * <p>
  * Queries {@code CompensationGroup}-type contract terms.
  */

@@ -6,19 +6,15 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
-import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.OrderId;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupService;
 import de.metas.order.OrderLineId;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -32,21 +28,19 @@ public class C_OrderLine
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final InvoiceCandidateGroupRepository groupsRepo;
-	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+	private final InvoiceCandidateGroupService invoiceCandidateGroupService;
 
-	public C_OrderLine(@NonNull final InvoiceCandidateGroupRepository groupsRepo)
+	public C_OrderLine(@NonNull final InvoiceCandidateGroupService invoiceCandidateGroupService)
 	{
-		this.groupsRepo = groupsRepo;
-		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
-				.groupsRepo(groupsRepo)
-				.build();
+		this.invoiceCandidateGroupService = invoiceCandidateGroupService;
 	}
 
 	@VisibleForTesting
 	public static C_OrderLine newInstanceForUnitTesting()
 	{
-		return new C_OrderLine(new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()));
+		return SpringContextHolder.getBeanOrSupply(
+				C_OrderLine.class,
+				() -> new C_OrderLine(InvoiceCandidateGroupService.newInstanceForUnitTesting()));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
@@ -68,50 +62,16 @@ public class C_OrderLine
 	}
 
 	/**
-	 * Keeps the invoice candidates' {@code C_Order_CompensationGroup_ID} in sync with the order line.
-	 * Candidates that are not processed are always synced; processed ones are left as-is,
-	 * with one exception for contract-created groups (see below).
-	 * <p>
-	 * A processed candidate with nothing invoiced is synced if the old or the new group is contract-created:
-	 * reactivating an order closes its candidates, and completing it again regroups its order lines <em>before</em>
-	 * it reopens them, so skipping every processed candidate would leave such a candidate outside the rebuilt contract group.
-	 * Non-contract groups keep skipping all processed candidates.
+	 * Keeps the invoice candidates' {@code C_Order_CompensationGroup_ID} in sync with the order line
+	 * (see {@link InvoiceCandidateGroupService#syncGroupReferenceFromOrderLine}).
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
 	public void syncInvoiceCandidateGroupReference(@NonNull final I_C_OrderLine ol)
 	{
-		final int orderCompensationGroupId = ol.getC_Order_CompensationGroup_ID();
-
-		invoiceCandDAO.retrieveReferencing(TableRecordReference.of(ol))
-				.stream()
-				.filter(ic -> !ic.isProcessed() || isClosedNotInvoicedCandidateOfContractGroup(ic, orderCompensationGroupId))
-				.filter(ic -> ic.getC_Order_CompensationGroup_ID() != orderCompensationGroupId)
-				.forEach(ic -> {
-					ic.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
-					invoiceCandDAO.save(ic);
-
-					// group change alone does not trigger the group recompute
-					groupChangesHandler.onInvoiceCandidateChanged(ic);
-				});
-	}
-
-	private boolean isClosedNotInvoicedCandidateOfContractGroup(@NonNull final I_C_Invoice_Candidate ic, final int newOrderCompensationGroupId)
-	{
-		if (ic.getQtyInvoiced().signum() != 0)
-		{
-			return false;
-		}
-
-		final OrderId orderId = OrderId.ofRepoId(ic.getC_Order_ID());
-		return isContractCreatedGroup(orderId, ic.getC_Order_CompensationGroup_ID())
-				|| isContractCreatedGroup(orderId, newOrderCompensationGroupId);
-	}
-
-	private boolean isContractCreatedGroup(@NonNull final OrderId orderId, final int orderCompensationGroupId)
-	{
-		return orderCompensationGroupId > 0
-				&& groupsRepo.isContractCreatedGroup(OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId));
+		invoiceCandidateGroupService.syncGroupReferenceFromOrderLine(
+				OrderLineId.ofRepoId(ol.getC_OrderLine_ID()),
+				OrderGroupRepository.extractGroupIdOrNull(ol));
 	}
 
 	/**

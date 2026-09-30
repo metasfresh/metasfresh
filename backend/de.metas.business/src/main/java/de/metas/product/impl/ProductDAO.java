@@ -23,6 +23,7 @@
 package de.metas.product.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -504,6 +505,23 @@ public class ProductDAO implements IProductDAO
 			currentId = ProductCategoryId.ofRepoIdOrNull(productCategory.getM_Product_Category_Parent_ID());
 		}
 
+		return result.build();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> getProductCategoryIdAndAncestorsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			result.put(productAndCategoryId.getProductId(), getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId()));
+		}
 		return result.build();
 	}
 

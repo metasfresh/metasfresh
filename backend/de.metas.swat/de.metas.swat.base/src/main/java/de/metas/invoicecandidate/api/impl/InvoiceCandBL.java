@@ -297,6 +297,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -1723,9 +1725,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			@NonNull final I_C_InvoiceLine reversalLine,
 			@NonNull final ProductId productId)
 	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final I_C_InvoiceLine creditedLine = invoiceBL.isCreditMemo(il.getC_Invoice()) && il.getRef_InvoiceLine_ID() > 0
 				? InterfaceWrapperHelper.create(il.getRef_InvoiceLine(), I_C_InvoiceLine.class)
 				: il;

@@ -35,9 +35,8 @@ import org.springframework.stereotype.Component;
  */
 
 /**
- * (Re)creates a contract's compensation group on sales order completion, and (same code path, not covered
- * by an automated test) on purchase order completion — including the auto-created, auto-completed
- * drop-ship purchase order. Removes the group again on reactivation, refusing the reactivation while a
+ * (Re)creates a contract's compensation group on sales order completion, and (same code path) on purchase
+ * order completion — including the auto-created, auto-completed drop-ship purchase order. Removes the group again on reactivation, refusing the reactivation while a
  * discount line is already invoiced.
  * <p>
  * Runs at {@link ModelValidator#TIMING_BEFORE_PREPARE}, not before-complete: adding the lines this early lets

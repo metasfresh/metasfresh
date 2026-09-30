@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.CCache;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -25,10 +24,8 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
@@ -38,11 +35,14 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -90,16 +91,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
-
-	/**
-	 * Asked when an order line moves to another group, to decide whether its closed but not invoiced candidates follow it
-	 * (see {@code modelvalidator.C_OrderLine#syncInvoiceCandidateGroupReference});
-	 * reset whenever a {@code C_Order_CompensationGroup} changes.
-	 */
-	private final CCache<Integer, Boolean> contractCreatedGroupCache = CCache.<Integer, Boolean>builder()
-			.tableName(I_C_Order_CompensationGroup.Table_Name)
-			.initialCapacity(100)
-			.build();
 
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
 	{
@@ -151,7 +142,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.additive(retrieveAdditive(groupId.getOrderCompensationGroupId()));
+				.additive(isAdditive(groupId));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId =
 				retrieveProductCategoryIdAndAncestorsByProductId(invoiceCandidates);
@@ -180,29 +171,15 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	/** @return the schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
-	private static boolean retrieveAdditive(final int orderCompensationGroupId)
+	private static boolean isAdditive(@NonNull final GroupId groupId)
 	{
-		if (orderCompensationGroupId <= 0)
-		{
-			return false;
-		}
-
-		final I_C_Order_CompensationGroup orderCompensationGroupPO = load(orderCompensationGroupId, I_C_Order_CompensationGroup.class);
-		final int compensationGroupSchemaId = orderCompensationGroupPO.getC_CompensationGroup_Schema_ID();
-		if (compensationGroupSchemaId <= 0)
-		{
-			return false;
-		}
-
-		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
+		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
+		return OrderGroupRepository.isAdditive(groupRecord);
 	}
 
 	/**
-	 * Batch-resolves each regular (non-compensation) invoice candidate's product category (plus ancestors) in one
-	 * query, instead of one uncached in-trx product lookup per line.
-	 *
-	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
-	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
+	 * @return product id -> that product's category id plus all ancestor category ids, for the regular (non-compensation) candidates
+	 * (see {@link IProductDAO#getProductCategoryIdAndAncestorsByProductIds})
 	 */
 	private ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
 			final List<I_C_Invoice_Candidate> invoiceCandidates)
@@ -211,19 +188,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.filter(invoiceCandidate -> !invoiceCandidate.isGroupCompensationLine())
 				.map(invoiceCandidate -> ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-		if (productIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
-		for (final ProductAndCategoryId productAndCategoryId : productDAO.retrieveProductAndCategoryIdsByProductIds(productIds))
-		{
-			final ImmutableSet<ProductCategoryId> categoryIdAndAncestors =
-					productDAO.getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId());
-			result.put(productAndCategoryId.getProductId(), categoryIdAndAncestors);
-		}
-		return result.build();
+		return productDAO.getProductCategoryIdAndAncestorsByProductIds(productIds);
 	}
 
 	private GroupRegularLine createReqularLine(
@@ -486,15 +451,53 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * @return {@code true} if the group's {@code C_Order_CompensationGroup} header was created by a contract, i.e. carries a {@code C_Flatrate_Term_ID}
+	 * @return the subset of {@code groupIds} whose {@code C_Order_CompensationGroup} header was created by a contract, in one query
 	 */
-	public boolean isContractCreatedGroup(@NonNull final GroupId groupId)
+	public ImmutableSet<GroupId> retrieveContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
 	{
-		return contractCreatedGroupCache.getOrLoad(
-				groupId.getOrderCompensationGroupId(),
-				orderCompensationGroupId -> {
-					final I_C_Order_CompensationGroup groupRecord = load(orderCompensationGroupId, I_C_Order_CompensationGroup.class);
-					return groupRecord != null && groupRecord.getC_Flatrate_Term_ID() > 0;
+		return OrderGroupRepository.filterContractCreatedGroupIds(groupIds);
+	}
+
+	/**
+	 * @return the invoice candidates of the given order line (regardless of their group)
+	 */
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesOfOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		return invoiceCandDAO.retrieveReferencing(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId));
+	}
+
+	/**
+	 * Locks the order's invoice candidates in the order in which the invoice-candidate recompute takes them
+	 * ({@code InvoiceCandDAO.fetchInvalidInvoiceCandidates}: IsFreightCost, IsManual, C_Invoice_Candidate_ID).
+	 * <p>
+	 * Removing a group touches its candidates in a different order (discount line first, then the regular lines); without locking them
+	 * upfront, a recompute running at the same time deadlocks with it and one of the two candidate updates is lost.
+	 */
+	public void lockInvoiceCandidatesOfOrder(@NonNull final OrderId orderId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_IsManual)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.listIds();
+	}
+
+	/**
+	 * Removes the group reference from the group's not yet invoiced invoice candidates, also from those its order lines don't reach
+	 * (e.g. a candidate committed by another transaction after its order line was ungrouped), so that the group header can be deleted.
+	 * Invoiced candidates keep it.
+	 */
+	public void ungroupNotInvoicedInvoiceCandidates(@NonNull final GroupId groupId)
+	{
+		retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, BigDecimal.ZERO)
+				.create()
+				.update(invoiceCandidate -> {
+					invoiceCandidate.setC_Order_CompensationGroup_ID(-1);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}
 
