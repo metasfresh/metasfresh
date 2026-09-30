@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -85,6 +86,24 @@ class LocalArchiveAwaitTest
 		final Path settled = LocalArchiveAwait.awaitSingleFileWithContent(dir, CONTENT);
 
 		assertThat(Files.readAllBytes(settled)).isEqualTo(CONTENT);
+	}
+
+	/**
+	 * A read that never succeeds must not be reported as an ordinary content mismatch: the timeout has to
+	 * carry the failure, or whoever debugs it chases a timing theory while the real fault was that the file
+	 * could not be read at all. Provoked with a directory entry that cannot be read as a file.
+	 */
+	@Test
+	void surfacesAPersistentReadFailureOnTimeout() throws Exception
+	{
+		final Path dir = Files.createTempDirectory("archive-await");
+		Files.createDirectory(dir.resolve("scan.pdf")); // listed like a file, never readable as one
+
+		assertThatThrownBy(() -> LocalArchiveAwait.awaitSingleFileWithContent(dir, CONTENT, SHORT_TIMEOUT_MS))
+				.isInstanceOf(AssertionError.class)
+				.satisfies(thrown -> assertThat(thrown.getSuppressed())
+						.as("the read failure must travel with the timeout, not be swallowed")
+						.hasAtLeastOneElementOfType(IOException.class));
 	}
 
 	/**

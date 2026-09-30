@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -100,17 +101,42 @@ final class LocalArchiveAwait
 			@NonNull final byte[] expectedContent,
 			final long timeoutMs) throws InterruptedException
 	{
-		// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
-		// predicate requires exactly one entry. Loosening it means revisiting this line.
-		return await(dir,
-				entries -> entries.size() == 1 && Arrays.equals(contentOf(entries.get(0)), expectedContent),
-				"exactly one file holding the expected " + expectedContent.length + " byte(s)",
-				timeoutMs).get(0);
+		// A read that keeps failing is NOT the same as an archive still being written, but both look
+		// identical to the poll loop. Keep the last failure so a timeout can say which one it was.
+		final AtomicReference<IOException> lastReadFailure = new AtomicReference<>();
+		try
+		{
+			// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
+			// predicate requires exactly one entry. Loosening it means revisiting this line.
+			return await(dir,
+					entries -> entries.size() == 1 && Arrays.equals(contentOf(entries.get(0), lastReadFailure), expectedContent),
+					"exactly one file holding the expected " + expectedContent.length + " byte(s)",
+					timeoutMs).get(0);
+		}
+		catch (final AssertionError timedOut)
+		{
+			final IOException readFailure = lastReadFailure.get();
+			if (readFailure != null)
+			{
+				// without this the report reads as "the content never matched", sending the next reader
+				// after a timing theory when the file was in fact never readable
+				timedOut.addSuppressed(readFailure);
+			}
+			throw timedOut;
+		}
 	}
 
-	/** Content that cannot be read yet counts as "not there yet", so the wait keeps polling rather than failing. */
+	/**
+	 * Content that cannot be read counts as "no match yet", so the wait keeps polling instead of failing on
+	 * the read still in flight during the archiver's create-then-write.
+	 * <p>
+	 * That is the EXPECTED cause, not the only one: a permissions fault or a handle held by something else
+	 * throws the same {@link IOException} and never clears. The failure is therefore recorded in
+	 * {@code sink} rather than discarded, so a timeout can report it instead of presenting a permanent
+	 * fault as an ordinary content mismatch.
+	 */
 	@Nullable
-	private static byte[] contentOf(@NonNull final Path file)
+	private static byte[] contentOf(@NonNull final Path file, @NonNull final AtomicReference<IOException> sink)
 	{
 		try
 		{
@@ -118,6 +144,7 @@ final class LocalArchiveAwait
 		}
 		catch (final IOException e)
 		{
+			sink.set(e);
 			return null;
 		}
 	}
