@@ -49,7 +49,8 @@ import static java.math.BigDecimal.ZERO;
  * <li>{@link #updateQtyOrdered(I_C_Invoice_Candidate)}: one unit per invoice so far plus one more while the group still has goods
  * that are not fully invoiced; this keeps the candidate open (not processed) until the goods are fully invoiced.</li>
  * <li>{@link #updateQtyToInvoice(I_C_Invoice_Candidate)}: once the candidate was invoiced, the next unit is invoiceable as soon as
- * there is a discount amount again; there is never anything to invoice while the discount amount is zero.</li>
+ * there is a discount amount again; there is nothing to invoice while the discount amount is zero, except for a discount that was never
+ * invoiced and whose goods are all invoiced now: that one (e.g. a 0 % line) goes with the last goods, so that it ends processed.</li>
  * </ul>
  * Compensation lines with a fixed amount are left as they are.
  * <p>
@@ -114,12 +115,17 @@ public class PercentCompensationLineInvoicing
 			return;
 		}
 
+		final boolean neverInvoiced = ic.getQtyInvoiced().signum() == 0;
 		final BigDecimal qtyToInvoice;
 		if (invoiceCandBL.getPriceActual(ic).toBigDecimal().signum() == 0)
 		{
-			qtyToInvoice = ZERO; // no goods to invoice right now: a 0.00 discount line shall never be invoiced
+			if (neverInvoiced && !groupsRepo.hasRegularInvoiceCandidatesWithGoodsStillToCome(extractGroupId(ic)))
+			{
+				return; // e.g. a 0 % discount: it goes with the last goods, as decided by the invoice rule, and so it ends processed
+			}
+			qtyToInvoice = ZERO; // no discount amount for what is to invoice right now: a 0.00 discount line is not invoiced while more goods follow
 		}
-		else if (ic.getQtyInvoiced().signum() != 0)
+		else if (!neverInvoiced)
 		{
 			// the candidate's own invoice rule (e.g. its delivery) was already satisfied by an earlier invoice
 			qtyToInvoice = capByQtyToInvoiceOverride(ic, ic.getQtyOrdered().subtract(ic.getQtyInvoiced()).max(ZERO));

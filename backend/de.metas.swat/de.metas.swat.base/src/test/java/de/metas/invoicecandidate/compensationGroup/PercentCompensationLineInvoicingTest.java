@@ -93,6 +93,7 @@ class PercentCompensationLineInvoicingTest
 		goods.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
 		goods.setM_Product_ID(product.getM_Product_ID());
 		goods.setProcessed(processed);
+		goods.setQtyOrdered(ONE);
 		goods.setQtyToInvoice(qtyToInvoice);
 		saveRecord(goods);
 	}
@@ -178,15 +179,44 @@ class PercentCompensationLineInvoicingTest
 	class updateQtyToInvoice
 	{
 		@Test
-		void priceZero_nothingToInvoice()
+		void priceZero_goodsStillToCome_nothingToInvoice()
 		{
 			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ZERO);
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
 
 			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
 			assertThat(discount.getQtyToInvoiceInUOM()).isEqualByComparingTo(ZERO);
+		}
+
+		/**
+		 * E.g. a 0 % discount: it goes with the last goods, so that it ends processed and the order completely invoiced.
+		 */
+		@Test
+		void priceZero_lastGoodsToInvoice_invoiceRuleDecides()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, true, ZERO);
+			createGoodsCandidate(groupId, false, ONE);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
+		}
+
+		@Test
+		void priceZero_alreadyInvoiced_nothingToInvoice()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ONE);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, TWO, ONE);
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
 		}
 
 		@Test

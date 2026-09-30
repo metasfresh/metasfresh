@@ -87,8 +87,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	/**
-	 * Asked on every recompute of a group's discount candidate and on every change of a processed regular candidate;
-	 * reset whenever a {@code C_Order_CompensationGroup} changes, e.g. when a contract stamps its term onto a new group.
+	 * Asked when an order line moves to another group, to decide whether its closed but not invoiced candidates follow it
+	 * (see {@code modelvalidator.C_OrderLine#syncInvoiceCandidateGroupReference});
+	 * reset whenever a {@code C_Order_CompensationGroup} changes.
 	 */
 	private final CCache<Integer, Boolean> contractCreatedGroupCache = CCache.<Integer, Boolean>builder()
 			.tableName(I_C_Order_CompensationGroup.Table_Name)
@@ -500,6 +501,20 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if at least one regular (non-compensation) invoice candidate of the group still has goods that are neither invoiced
+	 * nor to invoice now, i.e. goods that follow with a later invoice
+	 */
+	public boolean hasRegularInvoiceCandidatesWithGoodsStillToCome(@NonNull final GroupId groupId)
+	{
+		return retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.create()
+				.stream()
+				.anyMatch(ic -> ic.getQtyInvoiced().add(ic.getQtyToInvoice()).abs().compareTo(ic.getQtyOrdered().abs()) < 0);
 	}
 
 	/**

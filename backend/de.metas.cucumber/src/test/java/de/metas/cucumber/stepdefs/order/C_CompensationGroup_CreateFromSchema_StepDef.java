@@ -22,37 +22,37 @@
 
 package de.metas.cucumber.stepdefs.order;
 
-import de.metas.cucumber.stepdefs.DataTableRows;
-import java.util.List;
-import de.metas.util.collections.CollectionUtils;
-import de.metas.product.ProductId;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
-import de.metas.order.OrderLineId;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.product.ProductId;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Step definitions for creating compensation groups from schema templates and applying PI inheritance.
