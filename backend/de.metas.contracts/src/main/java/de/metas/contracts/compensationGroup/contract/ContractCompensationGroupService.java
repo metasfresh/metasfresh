@@ -156,6 +156,20 @@ public class ContractCompensationGroupService
 	}
 
 	/**
+	 * To be called before the reactivation touches anything: locks the order's invoice candidates in the recompute's order,
+	 * so that {@link #removeContractGroups} cannot deadlock with an invoice-candidate recompute that runs at the same time.
+	 */
+	public void lockInvoiceCandidatesForGroupRemoval(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		if (contractGroupRepository.retrieveContractGroupIds(orderId).isEmpty())
+		{
+			return;
+		}
+		contractGroupRepository.lockInvoiceCandidatesOfOrder(orderId);
+	}
+
+	/**
 	 * Removes every contract-created compensation group of the given order: deletes the group's compensation
 	 * lines, then ungroups its regular lines and deletes the (now empty) group header. If the header's regular
 	 * lines were themselves removed beforehand, there is no rebuildable {@link Group} left — the orphaned
@@ -168,6 +182,7 @@ public class ContractCompensationGroupService
 		for (final GroupId groupId : contractGroupIds)
 		{
 			contractGroupRepository.deleteCompensationLines(groupId);
+			contractGroupRepository.ungroupNotInvoicedInvoiceCandidates(groupId);
 
 			final Group group = orderGroupRepository.retrieveGroupIfExists(groupId);
 			if (group != null)

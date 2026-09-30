@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -83,6 +84,15 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+
+	/**
+	 * Asked on every recompute of a group's discount candidate and on every change of a processed regular candidate;
+	 * reset whenever a {@code C_Order_CompensationGroup} changes, e.g. when a contract stamps its term onto a new group.
+	 */
+	private final CCache<Integer, Boolean> contractCreatedGroupCache = CCache.<Integer, Boolean>builder()
+			.tableName(I_C_Order_CompensationGroup.Table_Name)
+			.initialCapacity(100)
+			.build();
 
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
 	{
@@ -471,8 +481,12 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	 */
 	public boolean isContractCreatedGroup(@NonNull final GroupId groupId)
 	{
-		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
-		return groupRecord != null && groupRecord.getC_Flatrate_Term_ID() > 0;
+		return contractCreatedGroupCache.getOrLoad(
+				groupId.getOrderCompensationGroupId(),
+				orderCompensationGroupId -> {
+					final I_C_Order_CompensationGroup groupRecord = load(orderCompensationGroupId, I_C_Order_CompensationGroup.class);
+					return groupRecord != null && groupRecord.getC_Flatrate_Term_ID() > 0;
+				});
 	}
 
 	/**

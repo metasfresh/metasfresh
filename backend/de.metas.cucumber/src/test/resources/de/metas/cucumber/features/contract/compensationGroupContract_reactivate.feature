@@ -93,6 +93,15 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | ol_ts5Discount            | orderTS5              | discountProduct         | 1          | true                        | -30   | mainTerm                          |
     And the order identified by orderTS5 has 2 order lines
 
+    # a user reactivates an order whose invoice candidates and shipment schedules already exist
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_ts5Goods    | ic_ts5Goods            |
+      | ol_ts5Discount | ic_ts5Discount         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_ts5Goods | ol_ts5Goods               | N             |
+
     And the order identified by orderTS5 is reactivated
 
     Then no C_Order_CompensationGroup exists for order "orderTS5"
@@ -115,11 +124,14 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     # only ever set once, at candidate creation; if it were never re-synced when the order line itself gets
     # (re)grouped, the discount candidate would recompute against ol_ts5Goods2 alone (-30) instead of both
     # regular lines (-60), even though the order line itself already shows the correct -60 above.
+    # (ic_ts5Goods was already located before the reactivation; an identifier is registered only once)
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID  | C_Invoice_Candidate_ID |
-      | ol_ts5Goods     | ic_ts5Goods            |
       | ol_ts5Goods2    | ic_ts5Goods2           |
       | ol_ts5Discount2 | ic_ts5Discount2        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_ts5Goods            |
 
     # Both goods products are stocked, so neither candidate's NetAmtToInvoice is populated without an
     # actual delivery -- override the invoice rule to Immediate (as TC21/TC22 do) so the regular lines'

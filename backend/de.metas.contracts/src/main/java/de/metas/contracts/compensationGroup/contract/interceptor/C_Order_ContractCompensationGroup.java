@@ -63,11 +63,15 @@ public class C_Order_ContractCompensationGroup
 	 * Refuses the reactivation while any compensation line of a contract-created group is (partially)
 	 * invoiced. Note: {@code MOrder.reActivateIt()} ignores this timing's return value (only later timings'
 	 * return values abort the action) — the refusal only takes effect because this method throws.
+	 * <p>
+	 * Also locks the order's invoice candidates before the reactivation changes anything (see
+	 * {@link ContractCompensationGroupService#lockInvoiceCandidatesForGroupRemoval}).
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void beforeReactivate(final I_C_Order order)
 	{
 		contractCompensationGroupService.assertNoInvoicedContractGroupLines(order);
+		contractCompensationGroupService.lockInvoiceCandidatesForGroupRemoval(order);
 	}
 
 	/**

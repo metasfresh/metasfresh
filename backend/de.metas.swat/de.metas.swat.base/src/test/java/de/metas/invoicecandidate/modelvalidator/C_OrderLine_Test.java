@@ -29,9 +29,11 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -107,6 +109,7 @@ class C_OrderLine_Test
 		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
 		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
 		ic.setProcessed(true);
+		ic.setQtyInvoiced(BigDecimal.ONE);
 		saveRecord(ic);
 
 		orderLine.setC_Order_CompensationGroup_ID(1000042);
@@ -115,6 +118,28 @@ class C_OrderLine_Test
 
 		// still whatever it was before -- the (already invoiced) candidate's group membership is history
 		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * Reactivating an order closes its candidates, and completing it again regroups its order lines before it reopens them.
+	 */
+	@Test
+	void closedButNotInvoicedCandidate_isSynced()
+	{
+		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
+		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
+		ic.setProcessed(true);
+		saveRecord(ic);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(orderLine.getC_Order_ID());
+		saveRecord(groupHeader);
+
+		orderLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		saveRecord(orderLine);
+		interceptor.syncInvoiceCandidateGroupReference(orderLine);
+
+		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isEqualTo(groupHeader.getC_Order_CompensationGroup_ID());
 	}
 
 	private static I_C_Invoice_Candidate soleInvoiceCandidateFor(final I_C_OrderLine orderLine)

@@ -2,13 +2,16 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -104,6 +107,43 @@ public class ContractCompensationGroupRepository
 				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyInvoiced, Operator.NOT_EQUAL, BigDecimal.ZERO)
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * Locks the order's invoice candidates in the order in which the invoice-candidate recompute takes them
+	 * ({@code InvoiceCandDAO.fetchInvalidInvoiceCandidates}: IsFreightCost, IsManual, C_Invoice_Candidate_ID).
+	 * <p>
+	 * Removing a group touches its candidates in a different order (discount line first, then the regular lines); without locking them
+	 * upfront, a recompute running at the same time deadlocks with it and one of the two candidate updates is lost.
+	 */
+	public void lockInvoiceCandidatesOfOrder(@NonNull final OrderId orderId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_IsManual)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.listIds();
+	}
+
+	/**
+	 * Removes the group reference from the group's not yet invoiced invoice candidates, also from those its order lines don't reach
+	 * (e.g. a candidate committed by another transaction after its order line was ungrouped), so that the group header can be deleted.
+	 * Invoiced candidates keep it; the reactivation is refused for them before (see {@link #hasInvoicedContractGroupLines}).
+	 */
+	public void ungroupNotInvoicedInvoiceCandidates(@NonNull final GroupId groupId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, OrderGroupRepository.extractOrderIdFromGroupId(groupId))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, BigDecimal.ZERO)
+				.create()
+				.update(invoiceCandidate -> {
+					invoiceCandidate.setC_Order_CompensationGroup_ID(-1);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
 	}
 
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */

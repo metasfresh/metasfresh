@@ -10,6 +10,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -50,7 +51,12 @@ import static java.math.BigDecimal.ZERO;
  * <li>{@link #updateQtyToInvoice(I_C_Invoice_Candidate)}: once the candidate was invoiced, the next unit is invoiceable as soon as
  * there is a discount amount again; there is never anything to invoice while the discount amount is zero.</li>
  * </ul>
- * Compensation groups that were not created by a contract keep their behaviour.
+ * Compensation groups that were not created by a contract are left as they are.
+ * <p>
+ * Right after a partial invoice the candidate is processed until its recompute (triggered by its goods, see
+ * {@link InvoiceCandidateGroupCompensationChangesHandler}) reopens it. Until then it is still marked "to recompute", and invoicing
+ * waits for all selected candidates to be recomputed before it enqueues them ({@code InvoiceCandidateEnqueuer#prepareSelection}),
+ * so a stalled recompute delays the next invoice instead of invoicing it without its discount.
  */
 @Component
 public class ContractCompensationLineInvoicing
@@ -101,6 +107,10 @@ public class ContractCompensationLineInvoicing
 
 	/**
 	 * Expects the price, {@code QtyInvoiced} and the processed flag to be up to date.
+	 * <p>
+	 * For a reopened unit, a user's {@code QtyToInvoice_Override} still caps what is invoiced; candidates in dispute
+	 * are left out by the invoicing itself ({@code InvoiceCandBL#getInvoicingSkipReasonOrNull}), and quality issues only
+	 * exist on receipts, i.e. never on a sales discount line.
 	 */
 	public void updateQtyToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
@@ -117,7 +127,7 @@ public class ContractCompensationLineInvoicing
 		else if (ic.getQtyInvoiced().signum() != 0)
 		{
 			// the candidate's own invoice rule (e.g. its delivery) was already satisfied by an earlier invoice
-			qtyToInvoice = ic.getQtyOrdered().subtract(ic.getQtyInvoiced()).max(ZERO);
+			qtyToInvoice = capByQtyToInvoiceOverride(ic, ic.getQtyOrdered().subtract(ic.getQtyInvoiced()).max(ZERO));
 			alignInvoiceDatesWithGoodsToInvoice(ic);
 		}
 		else
@@ -131,6 +141,17 @@ public class ContractCompensationLineInvoicing
 		ic.setQtyToInvoiceBeforeDiscount(qtyToInvoice);
 		ic.setQtyToInvoiceInUOM_Calc(qtyToInvoiceInUOM);
 		ic.setQtyToInvoiceInUOM(qtyToInvoiceInUOM);
+	}
+
+	private static BigDecimal capByQtyToInvoiceOverride(@NonNull final I_C_Invoice_Candidate ic, @NonNull final BigDecimal qtyToInvoice)
+	{
+		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+		{
+			return qtyToInvoice;
+		}
+
+		final BigDecimal remainingOverride = ic.getQtyToInvoice_Override().subtract(ic.getQtyToInvoice_OverrideFulfilled());
+		return qtyToInvoice.min(remainingOverride).max(ZERO);
 	}
 
 	/**

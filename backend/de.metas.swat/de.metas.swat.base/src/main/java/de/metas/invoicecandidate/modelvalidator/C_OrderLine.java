@@ -64,8 +64,12 @@ public class C_OrderLine
 	}
 
 	/**
-	 * Keeps not-processed invoice candidates' {@code C_Order_CompensationGroup_ID} in sync with the order
-	 * line; processed candidates are left as-is.
+	 * Keeps not yet invoiced invoice candidates' {@code C_Order_CompensationGroup_ID} in sync with the order
+	 * line; invoiced ones are left as-is.
+	 * <p>
+	 * "Not yet invoiced" includes a candidate that is merely closed: reactivating an order closes its candidates, and completing it
+	 * again regroups its order lines <em>before</em> it reopens them, so a processed-only filter would leave such a candidate
+	 * outside the rebuilt group.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
@@ -75,7 +79,7 @@ public class C_OrderLine
 
 		invoiceCandDAO.retrieveReferencing(TableRecordReference.of(ol))
 				.stream()
-				.filter(ic -> !ic.isProcessed())
+				.filter(ic -> !ic.isProcessed() || ic.getQtyInvoiced().signum() == 0)
 				.filter(ic -> ic.getC_Order_CompensationGroup_ID() != orderCompensationGroupId)
 				.forEach(ic -> {
 					ic.setC_Order_CompensationGroup_ID(orderCompensationGroupId);

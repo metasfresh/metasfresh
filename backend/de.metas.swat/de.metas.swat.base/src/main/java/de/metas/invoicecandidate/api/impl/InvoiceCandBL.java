@@ -600,9 +600,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// the discount candidate of a contract compensation group is repriced after each partial invoice,
 		// so its own current price does not tell what its earlier invoice lines were invoiced at
-		final boolean useInvoiceLinePrice = !ilas.isEmpty()
-				&& ContractCompensationLineInvoicing.isPercentCompensationLine(ic)
-				&& SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).isContractPercentCompensationLine(ic);
+		final boolean useInvoiceLinePrice = !ilas.isEmpty() && isContractPercentCompensationLine(ic);
 
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
@@ -1659,7 +1657,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
-					if (isAdjustmentChargeInvoice)
+					//
+					// The discount candidate of a contract compensation group carries one unit per partial invoice: reversing one invoice
+					// takes back exactly that invoice's unit, not the units of its other, still valid invoices
+					if (isAdjustmentChargeInvoice || isContractPercentCompensationLine(invoiceCandidate))
 					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
 					}
@@ -2442,6 +2443,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							}
 						}
 
+						if (isContractPercentCompensationLine(candidate))
+						{
+							// one discount unit per partial invoice: its invoice line always carries a full unit, so it is never "partially invoiced";
+							// it stays open while its group's goods do (see ContractCompensationLineInvoicing)
+							logger.debug("contract compensation line; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+							continue;
+						}
+
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
@@ -2474,6 +2483,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			default:
 				return false;
 		}
+	}
+
+	private static boolean isContractPercentCompensationLine(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ContractCompensationLineInvoicing.isPercentCompensationLine(ic)
+				&& SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).isContractPercentCompensationLine(ic);
 	}
 
 	@Override

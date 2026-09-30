@@ -972,6 +972,8 @@ public class C_Order_StepDef
 	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
+	 *   <li>{@code InvoiceStatus} (optional) — expected invoice status: {@code O} = open, {@code PI} = partially invoiced, {@code CI} = completely invoiced;
+	 *       waits up to 60s for it, because it follows the asynchronous recompute of the order's invoice candidates</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -1103,6 +1105,40 @@ public class C_Order_StepDef
 	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
 	 * </pre>
 	 */
+	/**
+	 * The order's invoiced quantities are summed up when its order lines are updated by the (asynchronous) recompute of their
+	 * invoice candidates; waits up to 60s for them to reach the expected status.
+	 * <p>
+	 * {@code InvoiceStatus} is a virtual column that a refreshed model keeps from its first read, so every attempt queries the order anew.
+	 *
+	 * @return the last invoice status read, for the caller's assertion
+	 */
+	private String awaitInvoiceStatus(@NonNull final I_C_Order order, @NonNull final String expectedInvoiceStatus)
+	{
+		final String[] lastInvoiceStatus = { null };
+		try
+		{
+			StepDefUtil.tryAndWait(60, 500, () -> {
+				lastInvoiceStatus[0] = queryBL.createQueryBuilderOutOfTrx(I_C_Order.class)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+						.create()
+						.firstOnlyNotNull(I_C_Order.class)
+						.getInvoiceStatus();
+				return expectedInvoiceStatus.equals(lastInvoiceStatus[0]);
+			});
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		catch (final AssertionError ignored)
+		{
+			// not reached within the timeout: the caller's assertion reports the last status read
+		}
+		return lastInvoiceStatus[0];
+	}
+
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
@@ -1170,6 +1206,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceStatus)
+				.ifPresent(invoiceStatus -> softly.assertThat(awaitInvoiceStatus(order, invoiceStatus)).as("InvoiceStatus for Identifier=%s", identifierStr).isEqualTo(invoiceStatus));
 
 		row.getAsOptionalString(COLUMNNAME_BPartnerName)
 				.ifPresent(bpartnerName -> softly.assertThat(order.getBPartnerName()).as("BPartnerName for Identifier=%s", identifierStr).isEqualTo(bpartnerName));
