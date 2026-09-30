@@ -201,6 +201,7 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 	{
 		this.prepareRouteForTesting();
 		this.prepareErrorFileRouteForTesting();
+		this.prepareADIssueRouteForTesting();
 
 		context.start();
 
