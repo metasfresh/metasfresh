@@ -116,7 +116,7 @@ public class POSReturnService
 	 * waits synchronously for an async invoice-candidate workpackage that reads the candidates from a different
 	 * DB connection, so phase 1's changes (the {@code PriceEntered_Override} etc.) must already be committed by
 	 * the time phase 2 runs, exactly like the {@code updateInvalid()} visibility issue phase 1 itself works
-	 * around (see the class Javadoc history).
+	 * around.
 	 * <p>
 	 * A transaction-scoped row lock cannot span three separate transactions, so the whole method body runs inside
 	 * {@link POSTerminalService#runWithCrossTransactionLock}: a Postgres advisory lock, held on its own
@@ -486,11 +486,9 @@ public class POSReturnService
 	 * <p>
 	 * Idempotent, AND — since {@link #createReturn} now runs its whole body inside
 	 * {@link POSTerminalService#runWithCrossTransactionLock} — no two callers for the SAME terminal ever execute
-	 * this method (or any other phase of {@link #createReturn}) concurrently, so a retry (sequential OR a genuinely
-	 * concurrent one, blocked by that lock until the first caller is fully done) can never observe a completed
-	 * payment with no matching journal line, or vice versa: {@code MPayment#allocateIt()} synchronously sets the
-	 * credit memo's {@code IsPaid=Y}, so a retry sees {@code creditMemo.isPaid()} true and reuses the existing
-	 * settlement payment instead of creating a second one and a second journal line.
+	 * this method (or any other phase of {@link #createReturn}) concurrently. {@code MPayment#allocateIt()}
+	 * synchronously sets the credit memo's {@code IsPaid=Y}, so a retry sees {@code creditMemo.isPaid()} true and
+	 * reuses the existing settlement payment instead of creating a second one and a second journal line.
 	 */
 	@NonNull
 	private POSReturnResult ensureSettlement(

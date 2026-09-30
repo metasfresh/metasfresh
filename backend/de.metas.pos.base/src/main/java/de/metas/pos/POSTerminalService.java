@@ -79,10 +79,9 @@ public class POSTerminalService
 	/**
 	 * Runs {@code action} while holding a Postgres advisory lock keyed on the given POS terminal, for the WHOLE
 	 * duration of {@code action} — even across separate top-level transactions {@code action} opens internally,
-	 * unlike {@link #lockForUpdate} which only lasts until the caller's OWN transaction commits. Used by
-	 * {@code POSReturnService#createReturn} to serialize its three separate top-level transactions (goods
-	 * receipt/pricing, credit-memo generation, cash settlement) end to end against the same terminal, so two
-	 * concurrent callers (e.g. two in-flight retries) can never interleave into each other's phases.
+	 * unlike {@link #lockForUpdate} which only lasts until the caller's OWN transaction commits. This lets a
+	 * caller serialize several separate top-level transactions end to end against the same terminal, so two
+	 * concurrent callers can never interleave into each other's phases.
 	 * <p>
 	 * BOUNDED: polls to acquire the lock for at most {@code timeoutMillis} before giving up — never blocks
 	 * indefinitely, so a single stuck caller (e.g. {@code action} hanging on a slow async wait) cannot freeze every

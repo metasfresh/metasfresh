@@ -39,8 +39,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 /**
  * Asserts a POS product return: the return {@code M_InOut}, its credit memo, the credit memo's allocated
  * outbound payment, and the till's cash journal. Separately, via {@code invoices}, asserts a plain invoice's
- * paid / allocated-payment state — infrastructure with no POS-return artifact behind it, for a later flow that
- * does not exist on this branch yet.
+ * paid / allocated-payment state — general invoice-assertion infrastructure, not tied to a POS-return artifact.
  *
  * <p>Consumer-side JSON shape: see {@link JsonPOSExpectation}'s own Javadoc.
  */
