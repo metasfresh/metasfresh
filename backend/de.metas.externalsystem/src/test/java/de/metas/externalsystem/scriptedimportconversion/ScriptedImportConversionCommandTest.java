@@ -22,8 +22,12 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.endpoint.TransportType;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -68,5 +72,34 @@ class ScriptedImportConversionCommandTest
 		assertThat(ScriptedImportConversionCommand.EnableSftpPolling.getIntent()).isEqualTo(ScriptedImportConversionIntent.Start);
 		assertThat(ScriptedImportConversionCommand.DisableRestAPI.getIntent()).isEqualTo(ScriptedImportConversionIntent.Stop);
 		assertThat(ScriptedImportConversionCommand.DisableSftpPolling.getIntent()).isEqualTo(ScriptedImportConversionIntent.Stop);
+	}
+
+	@Test
+	void ofIntentAndTransport_localFileResolvesToTheLocalFilePollingCommands()
+	{
+		// Asserted on the wire value, not only on the enum constant: this string is one of the three
+		// joints the whole enable chain turns on (ExternalSystem_Service.EnableCommand and the camel
+		// component's direct route id are the other two), so a rename of the constant alone must not
+		// slip through here.
+		assertThat(ScriptedImportConversionCommand.ofIntentAndTransport(ScriptedImportConversionIntent.Start, TransportType.LOCAL_FILE).getValue())
+				.isEqualTo("enableLocalFilePolling");
+		assertThat(ScriptedImportConversionCommand.ofIntentAndTransport(ScriptedImportConversionIntent.Stop, TransportType.LOCAL_FILE).getValue())
+				.isEqualTo("disableLocalFilePolling");
+	}
+
+	@Test
+	void ofIntentAndTransport_eachTransportGetsItsOwnCommand()
+	{
+		// Two transports sharing a command means one of them is silently running the other one's route.
+		// Distinctness (rather than a fixed expected list) also makes a transport added later fail here
+		// unless ofIntentAndTransport was extended for it.
+		for (final ScriptedImportConversionIntent intent : ScriptedImportConversionIntent.values())
+		{
+			final ImmutableList<ScriptedImportConversionCommand> commands = Arrays.stream(TransportType.values())
+					.map(transportType -> ScriptedImportConversionCommand.ofIntentAndTransport(intent, transportType))
+					.collect(ImmutableList.toImmutableList());
+
+			assertThat(commands).as("commands for intent %s", intent).doesNotHaveDuplicates();
+		}
 	}
 }

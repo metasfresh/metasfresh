@@ -302,12 +302,52 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		assertThat(exception).isInstanceOf(JavaScriptExecutorException.class).hasMessageContaining("JavaScript script must define a 'transform' function that is executable.");
 	}
 
+	/**
+	 * An endpoint configured with an inbound-only transport must be rejected with a message that names
+	 * the transport, instead of being taken down the HTTP branch. The outbound branch is
+	 * SFTP-or-otherwise, so any other transport value silently lands on the HTTP side — where such an
+	 * endpoint has no target URL, no HTTP method and no authentication (those fields are cleared when
+	 * the endpoint is switched to a file-polling transport), and the operator would get an error about
+	 * whichever of them is missed first rather than about the transport.
+	 */
+	@Test
+	void inboundOnlyTransportType_isRejectedWithAClearMessage() throws Exception
+	{
+		final String jsScript = """
+				function transform(messageFromMetasfresh) {
+					return messageFromMetasfresh;
+				}
+				""";
+
+		final Exchange exchange = prepareScriptAndExchangeWithInboundOnlyTransportType(jsScript, "{}");
+
+		final MockEndpoint mockErrorRoute = creatAndInjectMockErrorRoute();
+		mockErrorRoute.expectedMessageCount(1);
+
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint(mockJsonAttachmentRequestProcessor);
+		// nothing may be sent out: the endpoint cannot be used for an outbound call at all
+		mockHttpEndpoint.expectedMessageCount(0);
+
+		context.start();
+
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+		MockEndpoint.assertIsSatisfied(context);
+
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		assertThat(exception)
+				.isNotNull()
+				.hasMessageContaining("LOCAL_FILE")
+				.hasMessageContaining("inbound-only");
+	}
+
 	// ========================================================================================
-	// ARRAY-MODE C6: fan-out unit-test matrix per PLAN_ARRAY_MODE.md §4.2.
-	// The 7 tests below cover the splitOnArrayIfRequested + per-element split branch:
-	//   - arrayFanOut=null (disabled) — payload is single object OR array (backward-compat path)
-	//   - arrayFanOut=true  — single-object/empty-array (no-op + WARN log) / multi-element happy path
-	//                       / multi-element with partial downstream failure / all-failed (aggregate throws)
+	// Fan-out matrix for the isFanOutEnabled + per-element split branch (see
+	// ScriptedAdapterConvertMsgFromMFRouteBuilder#isFanOutEnabled / #splitOnArrayIfRequested): the 7
+	// tests below cross arrayFanOut={null (disabled), true} with the transform's result shape (single
+	// object, array) and, for the enabled+array case, with the per-element outcome (all succeed, one
+	// fails, all fail).
 	// ========================================================================================
 
 	@Test
@@ -1107,6 +1147,41 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	}
 
 	@NonNull
+	/**
+	 * An endpoint on an inbound-only (file-polling) transport, as the endpoint record actually looks:
+	 * switching an endpoint to such a transport clears the HTTP fields, so there is no {@code endpointUrl},
+	 * no {@code method} and no {@code authType} here either.
+	 */
+	private Exchange prepareScriptAndExchangeWithInboundOnlyTransportType(
+			@NonNull final String jsScript,
+			@NonNull final String messageFromMetasfresh)
+	{
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		javaScriptRepo.save("testScript", jsScript);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+		exchange.getIn().setBody(
+				JsonExternalSystemRequest.builder()
+						.orgCode("orgCode")
+						.externalSystemName(JsonExternalSystemName.of("externalSystemName"))
+						.command("command")
+						.externalSystemConfigId(JsonMetasfreshId.of(1))
+						.traceId("traceId")
+						.externalSystemChildConfigValue("externalSystemChildConfigValue")
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
+						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, """
+								{
+								  "value" : "value",
+								  "transportType" : "LOCAL_FILE"
+								}""")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
+						.build());
+
+		return exchange;
+	}
+
 	private Exchange prepareScriptAndExchange(
 			@NonNull final String jsScript,
 			@NonNull final String messageFromMetasfresh)
