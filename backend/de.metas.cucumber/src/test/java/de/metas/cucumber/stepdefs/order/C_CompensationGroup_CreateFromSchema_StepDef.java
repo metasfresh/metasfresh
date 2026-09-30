@@ -23,6 +23,14 @@
 package de.metas.cucumber.stepdefs.order;
 
 import de.metas.cucumber.stepdefs.DataTableRows;
+import java.util.List;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.product.ProductId;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.OrderLineId;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -84,9 +92,11 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	private final @NonNull C_OrderLine_StepDefData orderLineTable;
 	private final @NonNull C_CompensationGroup_Schema_StepDefData schemaTable;
 	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final @NonNull M_Product_StepDefData productTable;
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
+	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderGroupPIInheritanceService piInheritanceService = new OrderGroupPIInheritanceService();
 
 	/**
@@ -143,6 +153,75 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 				orderLineTable.putOrReplace("schema_ol_" + lineIndex, orderLine);
 				lineIndex++;
 			}
+		});
+	}
+
+	/**
+	 * Groups existing order lines the way the order's "create compensation group" action does (a group without a schema,
+	 * whose compensation line takes its type from the compensation product), then edits the new compensation line
+	 * the way a user does in the order line grid.
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *   <li>{@code C_OrderLine_ID} — comma-separated identifiers of the order lines to group</li>
+	 *   <li>{@code M_Product_ID} — the compensation product</li>
+	 *   <li>{@code Name} — the group's name</li>
+	 *   <li>{@code CompensationLine} — identifier under which the new compensation order line is registered</li>
+	 *   <li>{@code OPT.GroupCompensationAmtType} — optional; {@code P} (percent) or {@code Q} (price and quantity, i.e. a fixed amount)</li>
+	 *   <li>{@code OPT.GroupCompensationPercentage} — optional; the percentage of a percent line</li>
+	 *   <li>{@code OPT.PriceEntered} — optional; the amount of a fixed-amount line (quantity 1)</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * When create compensation group from order lines:
+	 *   | C_OrderLine_ID      | M_Product_ID    | Name       | CompensationLine | OPT.GroupCompensationPercentage |
+	 *   | ol_goods1,ol_goods2 | discountProduct | Bundle 3 % | ol_discount      | 3                               |
+	 * </pre>
+	 */
+	@When("create compensation group from order lines:")
+	public void createGroupFromOrderLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final List<OrderLineId> orderLineIds = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+					.toCommaSeparatedList()
+					.stream()
+					.map(identifier -> OrderLineId.ofRepoId(identifier.lookupNotNullIn(orderLineTable).getC_OrderLine_ID()))
+					.collect(ImmutableList.toImmutableList());
+			final ProductId compensationProductId = ProductId.ofRepoId(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_M_Product_ID)
+					.lookupNotNullIn(productTable)
+					.getM_Product_ID());
+
+			final Group group = orderGroupsRepo.prepareNewGroup()
+					.groupTemplate(GroupTemplate.builder()
+							.name(row.getAsString("Name"))
+							.compensationLine(GroupTemplateCompensationLine.ofProductId(compensationProductId))
+							.regularLinesToAdd(ImmutableList.of())
+							.build())
+					.createGroup(orderLineIds);
+
+			final I_C_OrderLine compensationLine = InterfaceWrapperHelper.load(
+					CollectionUtils.singleElement(group.getCompensationLines()).getRepoId().getRepoId(),
+					I_C_OrderLine.class);
+
+			row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType)
+					.ifPresent(compensationLine::setGroupCompensationAmtType);
+			row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
+					.ifPresent(compensationLine::setGroupCompensationPercentage);
+			row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_PriceEntered)
+					.ifPresent(price -> {
+						compensationLine.setQtyEntered(BigDecimal.ONE);
+						compensationLine.setQtyOrdered(BigDecimal.ONE);
+						compensationLine.setIsManualPrice(true);
+						compensationLine.setPriceEntered(price);
+						compensationLine.setPriceActual(price);
+					});
+
+			// what the order line grid's callout does when the user edits the compensation line
+			groupChangesHandler.updateCompensationLineNoSave(compensationLine);
+			InterfaceWrapperHelper.save(compensationLine);
+
+			orderLineTable.putOrReplace(row.getAsIdentifier("CompensationLine"), compensationLine);
 		});
 	}
 }

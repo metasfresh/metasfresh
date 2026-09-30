@@ -44,11 +44,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-class ContractCompensationLineInvoicingTest
+class PercentCompensationLineInvoicingTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");
 
-	private ContractCompensationLineInvoicing contractCompensationLineInvoicing;
+	private PercentCompensationLineInvoicing percentCompensationLineInvoicing;
 	private I_C_Order order;
 	private I_M_Product product;
 	private I_C_UOM uom;
@@ -74,15 +74,14 @@ class ContractCompensationLineInvoicingTest
 		order.setDocumentNo("order"); // no generated document number, no log output about it
 		saveRecord(order);
 
-		contractCompensationLineInvoicing = new ContractCompensationLineInvoicing(
+		percentCompensationLineInvoicing = new PercentCompensationLineInvoicing(
 				new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class)));
 	}
 
-	private int createGroupHeader(final boolean contractCreated)
+	private int createGroupHeader()
 	{
 		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
 		groupHeader.setC_Order_ID(order.getC_Order_ID());
-		groupHeader.setC_Flatrate_Term_ID(contractCreated ? 1 : -1);
 		saveRecord(groupHeader);
 		return groupHeader.getC_Order_CompensationGroup_ID();
 	}
@@ -126,11 +125,11 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void notYetInvoiced_keepsOrderLineQty()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			createGoodsCandidate(groupId, false, ONE);
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-30"), ONE, ZERO);
 
-			contractCompensationLineInvoicing.updateQtyOrdered(discount);
+			percentCompensationLineInvoicing.updateQtyOrdered(discount);
 
 			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
 		}
@@ -138,12 +137,12 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void invoicedOnceWithGoodsLeft_oneMoreUnit()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			createGoodsCandidate(groupId, true, ZERO);
 			createGoodsCandidate(groupId, false, ZERO);
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ONE);
 
-			contractCompensationLineInvoicing.updateQtyOrdered(discount);
+			percentCompensationLineInvoicing.updateQtyOrdered(discount);
 
 			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(TWO);
 			assertThat(discount.getQtyEntered()).isEqualByComparingTo(TWO);
@@ -152,23 +151,24 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void allGoodsProcessed_noFurtherUnit()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			createGoodsCandidate(groupId, true, ZERO);
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, TWO);
 
-			contractCompensationLineInvoicing.updateQtyOrdered(discount);
+			percentCompensationLineInvoicing.updateQtyOrdered(discount);
 
 			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(TWO);
 		}
 
 		@Test
-		void groupNotCreatedByContract_untouched()
+		void priceAndQuantityCompensationLine_untouched()
 		{
-			final int groupId = createGroupHeader(false);
+			final int groupId = createGroupHeader();
 			createGoodsCandidate(groupId, false, ZERO);
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ONE);
+			discount.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_PriceAndQty);
 
-			contractCompensationLineInvoicing.updateQtyOrdered(discount);
+			percentCompensationLineInvoicing.updateQtyOrdered(discount);
 
 			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
 		}
@@ -180,10 +180,10 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void priceZero_nothingToInvoice()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
 			assertThat(discount.getQtyToInvoiceInUOM()).isEqualByComparingTo(ZERO);
@@ -192,10 +192,10 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void notYetInvoiced_invoiceRuleDecides()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-30"), ONE, ZERO);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
 		}
@@ -203,10 +203,10 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void reopenedUnit_isInvoiceable()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-21"), TWO, ONE);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ONE);
 			assertThat(discount.getQtyToInvoiceInUOM()).isEqualByComparingTo(ONE);
@@ -215,11 +215,11 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void reopenedUnit_cappedByQtyToInvoiceOverride()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-21"), TWO, ONE);
 			discount.setQtyToInvoice_Override(ZERO);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
 		}
@@ -227,22 +227,24 @@ class ContractCompensationLineInvoicingTest
 		@Test
 		void processed_untouched()
 		{
-			final int groupId = createGroupHeader(true);
+			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, TWO, TWO);
 			discount.setProcessed(true);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
 		}
 
 		@Test
-		void groupNotCreatedByContract_untouched()
+		void priceAndQuantityCompensationLine_untouched()
 		{
-			final int groupId = createGroupHeader(false);
-			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ONE);
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ONE);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-30"), ONE, ONE);
+			discount.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_PriceAndQty);
 
-			contractCompensationLineInvoicing.updateQtyToInvoice(discount);
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
 		}

@@ -40,8 +40,8 @@ import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
-import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -364,9 +364,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
 		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
 
-		if (ContractCompensationLineInvoicing.isPercentCompensationLine(ic))
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
 		{
-			SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).updateQtyOrdered(ic);
+			SpringContextHolder.instance.getBean(PercentCompensationLineInvoicing.class).updateQtyOrdered(ic);
 		}
 	}
 
@@ -543,7 +543,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			priceAndTax.priceEntered(compensationLine.getPrice());
 			priceAndTax.priceActual(compensationLine.getPrice());
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
-			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see ContractCompensationLineInvoicing for contract groups)
+			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see PercentCompensationLineInvoicing)
 		}
 
 		return priceAndTax.build();

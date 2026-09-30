@@ -8,6 +8,7 @@ import de.metas.cache.CCache;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -519,6 +520,15 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		final IQuery<I_C_Invoice_Candidate> query = retrieveInvoiceCandidatesForGroupQuery(groupId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsGroupCompensationLine, true) // only compensation lines
+				.create();
+		invoiceCandDAO.invalidateCandsFor(query);
+	}
+
+	public void invalidatePercentCompensationInvoiceCandidatesOfGroup(@NonNull final GroupId groupId)
+	{
+		final IQuery<I_C_Invoice_Candidate> query = retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsGroupCompensationLine, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationAmtType, X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent)
 				.create();
 		invoiceCandDAO.invalidateCandsFor(query);
 	}

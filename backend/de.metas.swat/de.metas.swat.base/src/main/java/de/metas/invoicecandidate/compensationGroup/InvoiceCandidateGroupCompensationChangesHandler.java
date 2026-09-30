@@ -50,10 +50,13 @@ public class InvoiceCandidateGroupCompensationChangesHandler
 		final boolean groupCompensationLine = invoiceCandidate.isGroupCompensationLine();
 
 		// Don't touch processed lines;
-		// except for a contract group, whose discount candidate stays open until its goods are processed (see ContractCompensationLineInvoicing)
-		if (invoiceCandidate.isProcessed()
-				&& (groupCompensationLine || !groupsRepo.isContractCreatedGroup(groupsRepo.extractGroupId(invoiceCandidate))))
+		// but a processed regular line still reprices its group's percent discount candidate, which stays open until all its goods are processed (see PercentCompensationLineInvoicing)
+		if (invoiceCandidate.isProcessed())
 		{
+			if (!groupCompensationLine)
+			{
+				groupsRepo.invalidatePercentCompensationInvoiceCandidatesOfGroup(groupsRepo.extractGroupId(invoiceCandidate));
+			}
 			return;
 		}
 

@@ -62,7 +62,6 @@ import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
@@ -748,8 +747,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
 					attachmentEntryService,
-					DocumentLocationBL.newInstanceForUnitTesting(),
-					new ContractCompensationLineInvoicing(groupsRepo));
+					DocumentLocationBL.newInstanceForUnitTesting());
 		}
 		return invoiceCandidateValidator;
 	}

@@ -97,7 +97,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
-import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -600,9 +600,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
 
-		// the discount candidate of a contract compensation group is repriced after each partial invoice,
+		// the percent discount candidate of a compensation group is repriced after each partial invoice,
 		// so its own current price does not tell what its earlier invoice lines were invoiced at
-		final boolean useInvoiceLinePrice = !ilas.isEmpty() && isContractPercentCompensationLine(ic);
+		final boolean useInvoiceLinePrice = !ilas.isEmpty() && PercentCompensationLineInvoicing.isPercentCompensationLine(ic);
 
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
@@ -1644,11 +1644,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final boolean contractPercentCompensationLine = isContractPercentCompensationLine(invoiceCandidate);
 					final StockQtyAndUOMQty qtyInvoicedForIc;
-					if (contractPercentCompensationLine)
+					if (PercentCompensationLineInvoicing.isPercentCompensationLine(invoiceCandidate))
 					{
-						// The discount candidate of a contract compensation group carries one unit per partial invoice.
+						// The percent discount candidate of a compensation group carries one unit per partial invoice.
 						// Only what this invoice line still counts on the candidate may be taken back, not the units of the candidate's other invoices
 						qtyInvoicedForIc = sumupQtyStillInvoicedByInvoiceLineGroup(invoiceCandidate, il, reversalLine, productId);
 					}
@@ -2514,11 +2513,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							}
 						}
 
-						if (isContractPercentCompensationLine(candidate))
+						if (PercentCompensationLineInvoicing.isPercentCompensationLine(candidate))
 						{
 							// one discount unit per partial invoice: its invoice line always carries a full unit, so it is never "partially invoiced";
-							// it stays open while its group's goods do (see ContractCompensationLineInvoicing)
-							logger.debug("contract compensation line; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+							// it stays open while its group's goods do (see PercentCompensationLineInvoicing)
+							logger.debug("percent compensation line; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
 							continue;
 						}
 
@@ -2554,12 +2553,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			default:
 				return false;
 		}
-	}
-
-	private static boolean isContractPercentCompensationLine(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		return ContractCompensationLineInvoicing.isPercentCompensationLine(ic)
-				&& SpringContextHolder.instance.getBean(ContractCompensationLineInvoicing.class).isContractPercentCompensationLine(ic);
 	}
 
 	@Override

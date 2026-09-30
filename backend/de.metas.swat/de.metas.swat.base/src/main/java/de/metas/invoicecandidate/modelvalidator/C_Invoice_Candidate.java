@@ -14,9 +14,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
-import de.metas.invoicecandidate.compensationGroup.ContractCompensationLineInvoicing;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.InvoiceCandidateLocationsUpdater;
@@ -68,17 +68,14 @@ public class C_Invoice_Candidate
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final ContractCompensationLineInvoicing contractCompensationLineInvoicing;
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
 			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final ContractCompensationLineInvoicing contractCompensationLineInvoicing)
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
-		this.contractCompensationLineInvoicing = contractCompensationLineInvoicing;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
@@ -90,13 +87,11 @@ public class C_Invoice_Candidate
 	@VisibleForTesting
 	public static C_Invoice_Candidate newInstanceForUnitTesting()
 	{
-		final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 		return new C_Invoice_Candidate(
 				new InvoiceCandidateRecordService(),
-				groupsRepo,
+				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
 				AttachmentEntryService.createInstanceForUnitTesting(),
-				DocumentLocationBL.newInstanceForUnitTesting(),
-				new ContractCompensationLineInvoicing(groupsRepo));
+				DocumentLocationBL.newInstanceForUnitTesting());
 	}
 
 	/**
@@ -303,13 +298,13 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * The discount candidate of a contract compensation group is invoiced one unit per partial invoice (see {@link ContractCompensationLineInvoicing}),
+	 * The percent discount candidate of a compensation group is invoiced one unit per partial invoice (see {@link PercentCompensationLineInvoicing}),
 	 * but its order line ordered only one unit: the order line never counts more than it ordered, so that the order's invoice status
 	 * reads "completely invoiced" only when its goods are.
 	 */
 	private BigDecimal computeOrderLineQtyInvoiced(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine ol)
 	{
-		if (contractCompensationLineInvoicing.isContractPercentCompensationLine(ic))
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
 		{
 			return ic.getQtyInvoiced().min(ol.getQtyOrdered());
 		}

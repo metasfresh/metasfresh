@@ -41,7 +41,7 @@ import static java.math.BigDecimal.ZERO;
  */
 
 /**
- * Lets the percent discount invoice candidate of a contract-created compensation group follow partially invoiced goods.
+ * Lets the percent discount invoice candidate of a compensation group follow partially invoiced goods.
  * <p>
  * Its price is repriced to the percentage of the goods currently to invoice (see {@code C_OrderLine_Handler#calculatePriceAndTax}),
  * so each invoice carries one discount unit at the percentage of that invoice's goods:
@@ -51,7 +51,7 @@ import static java.math.BigDecimal.ZERO;
  * <li>{@link #updateQtyToInvoice(I_C_Invoice_Candidate)}: once the candidate was invoiced, the next unit is invoiceable as soon as
  * there is a discount amount again; there is never anything to invoice while the discount amount is zero.</li>
  * </ul>
- * Compensation groups that were not created by a contract are left as they are.
+ * Compensation lines with a fixed amount are left as they are.
  * <p>
  * Right after a partial invoice the candidate is processed until its recompute (triggered by its goods, see
  * {@link InvoiceCandidateGroupCompensationChangesHandler}) reopens it. Until then it is still marked "to recompute", and invoicing
@@ -59,20 +59,20 @@ import static java.math.BigDecimal.ZERO;
  * so a stalled recompute delays the next invoice instead of invoicing it without its discount.
  */
 @Component
-public class ContractCompensationLineInvoicing
+public class PercentCompensationLineInvoicing
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final InvoiceCandidateGroupRepository groupsRepo;
 
-	public ContractCompensationLineInvoicing(@NonNull final InvoiceCandidateGroupRepository groupsRepo)
+	public PercentCompensationLineInvoicing(@NonNull final InvoiceCandidateGroupRepository groupsRepo)
 	{
 		this.groupsRepo = groupsRepo;
 	}
 
 	/**
-	 * Cheap pre-check without DB access, so that callers need to look up this bean only for percent compensation lines.
+	 * Cheap check without DB access, so that callers need to look up this bean only for percent compensation lines.
 	 */
 	public static boolean isPercentCompensationLine(@NonNull final I_C_Invoice_Candidate ic)
 	{
@@ -82,17 +82,12 @@ public class ContractCompensationLineInvoicing
 				&& GroupCompensationAmtType.Percent.getAdRefListValue().equals(ic.getGroupCompensationAmtType());
 	}
 
-	public boolean isContractPercentCompensationLine(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		return isPercentCompensationLine(ic) && groupsRepo.isContractCreatedGroup(extractGroupId(ic));
-	}
-
 	/**
 	 * Expects {@code QtyOrdered} to be already set from the order line.
 	 */
 	public void updateQtyOrdered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (!isContractPercentCompensationLine(ic))
+		if (!isPercentCompensationLine(ic))
 		{
 			return;
 		}
@@ -114,7 +109,7 @@ public class ContractCompensationLineInvoicing
 	 */
 	public void updateQtyToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (ic.isProcessed() || !isContractPercentCompensationLine(ic))
+		if (ic.isProcessed() || !isPercentCompensationLine(ic))
 		{
 			return;
 		}
