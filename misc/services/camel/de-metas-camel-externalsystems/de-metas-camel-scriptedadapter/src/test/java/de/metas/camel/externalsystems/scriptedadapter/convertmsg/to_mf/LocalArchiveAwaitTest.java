@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -104,6 +105,30 @@ class LocalArchiveAwaitTest
 				.satisfies(thrown -> assertThat(thrown.getSuppressed())
 						.as("the read failure must travel with the timeout, not be swallowed")
 						.hasAtLeastOneElementOfType(IOException.class));
+	}
+
+	/**
+	 * A failure that has since stopped happening must not be reported at all. Asserted on the recorder
+	 * directly: provoking it through the wait would need the directory mutated mid-poll, which is the
+	 * thread-racing these tests deliberately do not do.
+	 * <p>
+	 * Without this, a timeout caused by a genuine content mismatch would carry a transient failure from an
+	 * earlier poll and blame a fault that was no longer occurring — the inverse of the masking the recorder
+	 * exists to prevent.
+	 */
+	@Test
+	void forgetsAReadFailureOnceAReadSucceeds() throws Exception
+	{
+		final Path dir = Files.createTempDirectory("archive-await");
+		final Path unreadable = Files.createDirectory(dir.resolve("unreadable"));
+		final Path readable = Files.write(dir.resolve("readable"), CONTENT);
+		final AtomicReference<IOException> sink = new AtomicReference<>();
+
+		assertThat(LocalArchiveAwait.contentOf(unreadable, sink)).isNull();
+		assertThat(sink.get()).as("the failing read must be recorded").isNotNull();
+
+		assertThat(LocalArchiveAwait.contentOf(readable, sink)).isEqualTo(CONTENT);
+		assertThat(sink.get()).as("a later success must clear it").isNull();
 	}
 
 	/**

@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -136,11 +137,17 @@ final class LocalArchiveAwait
 	 * fault as an ordinary content mismatch.
 	 */
 	@Nullable
-	private static byte[] contentOf(@NonNull final Path file, @NonNull final AtomicReference<IOException> sink)
+	@VisibleForTesting
+	static byte[] contentOf(@NonNull final Path file, @NonNull final AtomicReference<IOException> sink)
 	{
 		try
 		{
-			return Files.readAllBytes(file);
+			final byte[] content = Files.readAllBytes(file);
+			// a read that has since succeeded must not keep a stale failure alive: attaching it to a later
+			// timeout would blame a fault that stopped happening, the inverse of the masking this sink exists
+			// to prevent
+			sink.set(null);
+			return content;
 		}
 		catch (final IOException e)
 		{
