@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -64,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
@@ -87,6 +89,9 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 	private static final String OLCAND_ENDPOINT_NAME = "restOlCandEndpoint";
 	private static final String OLCAND_SCRIPT_IDENTIFIER = "rest_olcand_test_transform";
 	private static final String OLCAND_INPUT_JSON = "{\"orderId\": \"REST-99\"}";
+
+	private static final String TWO_ITEM_ENDPOINT_NAME = "restTwoItemOlCandEndpoint";
+	private static final String TWO_ITEM_SCRIPT_IDENTIFIER = "rest_two_item_olcand_test_transform";
 
 	/**
 	 * The requestBody the {@code rest_olcand_test_transform.js} script produces for {@link #OLCAND_INPUT_JSON}.
@@ -146,11 +151,11 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		System.clearProperty(PROPERTY_SCRIPT_REPO_BASE_DIR);
 	}
 
-	/** LOCAL processed-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	/** LOCAL processed-folder archive target: the REST path has no remote file to move, so it archives the POST payload itself. */
 	@TempDir
 	Path localProcessedDir;
 
-	/** LOCAL error-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	/** LOCAL error-folder archive target: the REST path has no remote file to move, so it archives the POST payload itself. */
 	@TempDir
 	Path localErrorDir;
 
@@ -332,8 +337,8 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		final Integer httpResponseCode = responseExchange.getMessage().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 		assertThat(httpResponseCode).isEqualTo(200);
 
-		// And: the raw POST payload was archived to the LOCAL processed folder (REST has no remote file
-		// to consume — see AC5 runtime-fixes refinement)
+		// And: the raw POST payload was archived to the LOCAL processed folder (the REST path has no remote
+		// file to consume, so the payload itself is what gets archived)
 		final List<Path> processedFiles;
 		try (var files = Files.list(localProcessedDir))
 		{
@@ -345,6 +350,67 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		try (var errorFiles = Files.list(localErrorDir))
 		{
 			assertThat(errorFiles.findAny()).isEmpty();
+		}
+	}
+
+	/**
+	 * The REST endpoint answers per item, not per request: a POST whose transform yields several items of
+	 * which only some are rejected must come back as 207 MULTI_STATUS (see
+	 * {@code handleMultipleResponses}), so the caller can tell a partial import from a total one. That
+	 * answer only exists if every item is attempted and each item's outcome — including a rejected
+	 * dispatch — reaches the aggregated response; a failure that aborts the split instead collapses the
+	 * whole thing into a flat 500 with no per-item detail. The partially-imported payload still belongs
+	 * in the error folder, not under processed.
+	 */
+	@Test
+	void postWithOneRejectedItemYieldsMultiStatusAndArchivesToLocalErrorDir() throws Exception
+	{
+		final MockAuthenticateTokenEP mockAuthenticateTokenEP = new MockAuthenticateTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
+
+		prepareEnableRouteForTesting(mockAuthenticateTokenEP, mockStoreExternalStatusEP);
+		registerDummyErrorRoute();
+		registerOlCandMockRouteRejectingTheFirstMessage();
+
+		context.start();
+
+		writeTwoItemOlCandTransformScript();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(2);
+
+		final JsonExternalSystemRequest enableRequest = buildOlCandEnableRequest(TWO_ITEM_ENDPOINT_NAME, TWO_ITEM_SCRIPT_IDENTIFIER);
+		template.sendBody("direct:" + ScriptedImportConversionRestAPIRouteBuilder.ENABLE_RESOURCE_ROUTE_ID, enableRequest);
+		assertThat(context.getRouteController().getRouteStatus(TWO_ITEM_ENDPOINT_NAME).isStarted()).isTrue();
+
+		mockAuthenticatedRequest();
+
+		final Exchange responseExchange = template.send("direct:" + ScriptedImportConversionRestAPIRouteBuilder.REST_API_ROUTE_ID,
+				exchange -> {
+					exchange.getIn().setHeader(Exchange.HTTP_PATH, "/interchange/import/" + TWO_ITEM_ENDPOINT_NAME);
+					exchange.getIn().setBody(OLCAND_INPUT_JSON);
+				});
+
+		// Then: the second item was dispatched although the first one had already been rejected.
+		// Generous timeout: cold-starting the polyglot JS engine can itself take many seconds.
+		olCandMockEndpoint.assertIsSatisfied(60_000);
+
+		// And: the caller is told this was a PARTIAL import, not a total failure.
+		final Integer httpResponseCode = responseExchange.getMessage().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+		assertThat(httpResponseCode).isEqualTo(207);
+
+		// And: a partially-imported payload is filed as an error, never as processed.
+		final List<Path> errorFiles;
+		try (var files = Files.list(localErrorDir))
+		{
+			errorFiles = files.toList();
+		}
+		assertThat(errorFiles).hasSize(1);
+		assertThat(Files.readString(errorFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(OLCAND_INPUT_JSON);
+
+		try (var processedFiles = Files.list(localProcessedDir))
+		{
+			assertThat(processedFiles.findAny()).isEmpty();
 		}
 	}
 
@@ -424,9 +490,15 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 
 	private JsonExternalSystemRequest buildOlCandEnableRequest()
 	{
+		return buildOlCandEnableRequest(OLCAND_ENDPOINT_NAME, OLCAND_SCRIPT_IDENTIFIER);
+	}
+
+	private JsonExternalSystemRequest buildOlCandEnableRequest(@NonNull final String endpointName,
+															   @NonNull final String scriptIdentifier)
+	{
 		final Map<String, String> params = new HashMap<>();
-		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, OLCAND_ENDPOINT_NAME);
-		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, OLCAND_SCRIPT_IDENTIFIER);
+		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpointName);
+		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, scriptIdentifier);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, "token");
 		// LOCAL, transport-agnostic archive folders (REST has no remote file to consume)
 		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, localProcessedDir.toAbsolutePath().toString());
@@ -479,6 +551,22 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		Files.writeString(SCRIPT_REPO_DIR.resolve(OLCAND_SCRIPT_IDENTIFIER + ".js"), script, StandardCharsets.UTF_8);
 	}
 
+	/**
+	 * A real JS transform emitting TWO items for a single POST — the minimum a per-item response
+	 * (200 / 207 / 500) can be built from. The payload is deliberately the smallest structurally valid
+	 * OLCand bulk request: what matters here is how many items there are and how each one's dispatch
+	 * ends, not what they carry.
+	 */
+	private void writeTwoItemOlCandTransformScript() throws IOException
+	{
+		final String script = "function transform(messageFromMetasfresh) {\n"
+				+ "    var requestBody = JSON.stringify({ requests: [] });\n"
+				+ "    var item = { camelServiceRouteID: \"" + MF_PUSH_OL_CANDIDATES_ROUTE_ID + "\", requestBody: requestBody };\n"
+				+ "    return JSON.stringify([item, item]);\n"
+				+ "}\n";
+		Files.writeString(SCRIPT_REPO_DIR.resolve(TWO_ITEM_SCRIPT_IDENTIFIER + ".js"), script, StandardCharsets.UTF_8);
+	}
+
 	private void registerDummyErrorRoute() throws Exception
 	{
 		// Register a dummy error route so onException doesn't fail
@@ -509,6 +597,34 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
 						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
 						.to(OLCAND_MOCK_ROUTE_URI)
+						.setBody(constant("{}"));
+			}
+		});
+	}
+
+	/**
+	 * Like {@link #registerOlCandMockRoute()}, but the FIRST message it receives is rejected and every
+	 * later one succeeds — emulating a destination that refuses one item of a multi-item import. The
+	 * mock endpoint is fed before the rejection so the rejected dispatch is still counted there.
+	 */
+	private void registerOlCandMockRouteRejectingTheFirstMessage() throws Exception
+	{
+		final AtomicInteger dispatchCount = new AtomicInteger();
+
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.to(OLCAND_MOCK_ROUTE_URI)
+						.process(exchange -> {
+							if (dispatchCount.incrementAndGet() == 1)
+							{
+								throw new RuntimeCamelException("first OLCand push rejected");
+							}
+						})
 						.setBody(constant("{}"));
 			}
 		});

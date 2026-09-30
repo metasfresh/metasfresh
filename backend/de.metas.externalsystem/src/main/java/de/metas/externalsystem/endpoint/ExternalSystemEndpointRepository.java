@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.http.MediaType;
@@ -75,6 +76,21 @@ public class ExternalSystemEndpointRepository
 				.collect(ImmutableMap.toImmutableMap(ExternalSystemEndpoint::getId, Function.identity()));
 	}
 
+	/**
+	 * Writes the given values onto the record, a {@code null} value taking the column's value away.
+	 * Goes through {@link InterfaceWrapperHelper#setValue}, since no typed setter can be selected from an
+	 * {@code Object} -- and a typed setter cannot express "clear it" and "put the column default back" alike.
+	 * <p>
+	 * Does NOT save: the caller is a {@code TYPE_BEFORE_CHANGE} handler, and the save it runs inside stores
+	 * these values.
+	 */
+	public void setColumnValues(
+			@NonNull final I_ExternalSystem_Endpoint endpoint,
+			@NonNull final List<ColumnValue> values)
+	{
+		values.forEach(columnValue -> InterfaceWrapperHelper.setValue(endpoint, columnValue.getColumnName(), columnValue.getValue()));
+	}
+
 	@NonNull
 	private ExternalSystemEndpoint retrieveById(@NonNull final ExternalSystemEndpointId id)
 	{
@@ -93,7 +109,7 @@ public class ExternalSystemEndpointRepository
 				.id(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
 				.value(endpointRecord.getValue())
 				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
-				// HTTP transport fields (nullable — only set for HTTP transport)
+				// HTTP transport fields
 				.endpointUrl(endpointRecord.getHttpEndPoint())
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
@@ -105,15 +121,19 @@ public class ExternalSystemEndpointRepository
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.sasSignature(endpointRecord.getSasSignature())
-				// SFTP transport fields (nullable — only set for SFTP transport)
+				// SFTP transport fields
 				.sftpHost(endpointRecord.getSftpHost())
-				.sftpPort(endpointRecord.getSftpPort())
+				.sftpPort(endpointRecord.getSftpPort() > 0 ? endpointRecord.getSftpPort() : null)
 				.sftpUsername(endpointRecord.getSftpUsername())
 				.sftpAuthType(parseSftpAuthType(endpointRecord.getSftpAuthType()))
 				.sshPrivateKey(endpointRecord.getSshPrivateKey())
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.sftpPollingIntervalMs(endpointRecord.getSftpPollingIntervalMs() > 0 ? endpointRecord.getSftpPollingIntervalMs() : null)
+				// LOCAL_FILE transport fields
+				.localRootLocation(endpointRecord.getLocalRootLocation())
+				.frequency(endpointRecord.getFrequency() > 0 ? endpointRecord.getFrequency() : null)
+				.importFileNamePattern(endpointRecord.getImportFileNamePattern())
 				.processedDirectory(endpointRecord.getProcessedDirectory())
 				.errorDirectory(endpointRecord.getErrorDirectory())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
@@ -152,5 +172,14 @@ public class ExternalSystemEndpointRepository
 			return null;
 		}
 		return SftpAuthType.ofCode(code);
+	}
+
+	/** One column of {@code ExternalSystem_Endpoint} and the value to write into it; {@code null} clears it. */
+	@Value(staticConstructor = "of")
+	public static class ColumnValue
+	{
+		@NonNull String columnName;
+
+		@Nullable Object value;
 	}
 }
