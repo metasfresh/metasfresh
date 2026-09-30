@@ -42,7 +42,7 @@ public class CostDetailPreviousAmounts
 	@NonNull CostAmount cumulatedAmt;
 	@NonNull Quantity cumulatedQty;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private CostDetailPreviousAmounts(
 			@NonNull final CostPrice costPrice,
 			@NonNull final Quantity qty,
@@ -65,11 +65,8 @@ public class CostDetailPreviousAmounts
 
 	public CostDetailPreviousAmounts withOwnCostPrice(@NonNull final CostAmount ownCostPrice)
 	{
-		return builder()
+		return toBuilder()
 				.costPrice(costPrice.withOwnCostPrice(ownCostPrice))
-				.qty(qty)
-				.cumulatedAmt(cumulatedAmt)
-				.cumulatedQty(cumulatedQty)
 				.build();
 	}
 
