@@ -22,24 +22,27 @@ import { openRelatedDocument } from '../utils/DocumentReferences';
  *      limited to a product category (M_Product_Category_ID = "applies to" category).
  *   2. Kompensationsgruppen-Vertragseinstellungen (542194): settings pointing at the schema;
  *      the Belegarten tab lists the order doc type (search field limited to order doc types).
- *   3. Vertragsbedingungen (540113): conditions of type compensation group; the settings field
- *      is shown only for that type.
+ *   3. Vertrags-Übergang (540120) + Vertragsbedingungen (540113): a transition with duration 0
+ *      (the contract keeps its entered end date) and conditions of type compensation group; the
+ *      settings field is shown only for that type.
  *   4. Geschäftspartner action "Erzeuge Vertrag": a product-less contract term for the partner on
- *      those conditions, opened in Verträge (540359).
+ *      those conditions, with start and end date, opened in Verträge (540359).
  *   5. Auftrag (143): a sales order for the partner; completing it adds the contract group and
  *      its discount line.
  *
  * Besides the flow, the spec asserts the window titles, tab names, field labels and field order
- * the operator sees. The spec runs as a de_DE user; every expected German caption below was read
- * from the application dictionary (AD_Window/AD_Tab/AD_Field/AD_Element translations, de_DE) of
- * the local database - they are the window-design contract of this feature, not guesses.
+ * the operator sees.
  */
 
+// German captions are asserted on purpose: correctly named windows and fields ARE the subject under
+// test here, so the login language is pinned to de_DE. Every expected caption below was read from the
+// application dictionary (AD_Window/AD_Tab/AD_Field/AD_Element translations, de_DE).
 const LANGUAGE = 'de_DE';
 
 // Windows
 const SCHEMA_WINDOW_ID = 540415;
 const SETTINGS_WINDOW_ID = 542194;
+const TRANSITION_WINDOW_ID = 540120;
 const CONDITIONS_WINDOW_ID = 540113;
 const CONTRACT_WINDOW_ID = 540359;
 const BUSINESS_PARTNER_WINDOW_ID = 123;
@@ -57,9 +60,10 @@ const ORDER_LINE_TAB = 'AD_Tab-187';
 const TYPE_CONDITIONS_COMPENSATION_GROUP = 'CompensationGroup';
 const TYPE_CONDITIONS_OTHER = 'Subscr';
 
-// Conditions can only be completed with a completed contract transition. The seeded, completed
-// transition "1 Jahr, autom. verlängern" (1 year) matches the one-year term created in step 4.
-const TRANSITION_ONE_YEAR_ID = 1000003;
+// Contract transition: duration 0, so the contract keeps the entered end date. Its contract calendar
+// must have periods covering the contract; the standard accounting calendar of the tenant does.
+const CONTRACT_CALENDAR_ID = 1000000;
+const DURATION_UNIT_MONTH = 'month';
 
 // Sales-order document type: Standardauftrag (DocBaseType SOO, DocSubType SO)
 const DOCTYPE_STANDARD_ORDER_ID = 1000030;
@@ -82,7 +86,7 @@ const DE = {
   schemaWindow: 'Kompensationsgruppe Schema',
   schemaLineTab: 'Kompensationszeilen',
   isAdditive: 'Additiv',
-  schemaLineCategory: 'Gilt für Produkt Kategorie',
+  schemaLineCategory: 'Gilt für Produktkategorie',
   schemaLineProduct: 'Produkt',
   schemaLineSeqNo: 'Reihenfolge',
   schemaLineDiscount: 'Gesamtauftragsrabatt %',
@@ -94,8 +98,11 @@ const DE = {
   settingsDescription: 'Beschreibung',
   settingsDocType: 'Belegart',
 
+  transitionWindow: 'Vertrags-Übergang',
   conditionsWindow: 'Vertragsbedingungen',
   conditionsSettings: 'Einstellungen für Kompensationsgruppen-Verträge',
+
+  createContractEndDate: 'Enddatum',
 };
 
 // Business values
@@ -114,7 +121,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const runId = Date.now();
     const schemaName = `CG schema ${runId}`;
     const settingsName = `CG settings ${runId}`;
+    const transitionName = `CG transition ${runId}`;
     const conditionsName = `CG conditions ${runId}`;
+
+    // The contract runs from the first of the current month to the end of the current year;
+    // the sales order (dated today) falls into it.
+    const today = new Date();
+    const contractStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const contractEnd = new Date(today.getFullYear(), 11, 31);
 
     // ------------------------------------------------------------------
     // Master data: a customer, a goods product in its own category, and a
@@ -148,12 +162,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await openNewRecord(page, SCHEMA_WINDOW_ID);
       await expectWindowTitle(page, DE.schemaWindow);
 
-      await fillText(page, 'Name', schemaName);
+      await fillText(page, page, 'Name', schemaName);
       const schemaId = await waitForNewRecordId(page, SCHEMA_WINDOW_ID);
 
-      // IsAdditive: German label, placed in the flags group right after the other schema flags
+      // IsAdditive: German label, in the flags group directly after the other schema flags
       await expectLabel(page, 'IsAdditive', DE.isAdditive);
-      await expectFieldOrder(page, ['IsActive', 'IsInheritPackingInstruction', 'IsAdditive']);
+      await expectFieldsDirectlyInOrder(page, ['IsActive', 'IsInheritPackingInstruction', 'IsAdditive']);
       await setCheckbox(page, 'IsAdditive');
       await waitForRecordSaved(SCHEMA_WINDOW_ID, schemaId, { maxRetries: 20, retryDelayMs: 500 });
       expect((await getFieldData(SCHEMA_WINDOW_ID, schemaId, 'IsAdditive')).value).toBe(true);
@@ -167,14 +181,17 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectLabel(modal, 'M_Product_Category_ID', DE.schemaLineCategory);
       await expectLabel(modal, 'M_Product_ID', DE.schemaLineProduct);
       await expectLabel(modal, 'CompleteOrderDiscount', DE.schemaLineDiscount);
-      // the "applies to" category sits directly above the discount product
-      await expectFieldOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_ID']);
+      // the "applies to" category sits directly between the sequence and the discount product
+      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_ID']);
 
       await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
       await selectLookup(page, modal, 'M_Product_ID', discount.productCode);
       await fillNumber(page, modal, 'CompleteOrderDiscount', DISCOUNT_PERCENT);
       await snap(page, '540415-schema-line');
-      await closeModal(page, modal);
+      await closeModal(modal);
+
+      // the category column is also in the schema-line grid, next to the product
+      await expect(page.locator('th[data-testid="column-M_Product_Category_ID"]')).toBeVisible();
 
       const lines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
       expect(lines, 'exactly one schema line').toHaveLength(1);
@@ -194,12 +211,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectLabel(page, 'Name', DE.settingsName);
       await expectLabel(page, 'C_CompensationGroup_Schema_ID', DE.settingsSchema);
       await expectLabel(page, 'Description', DE.settingsDescription);
-      await expectFieldOrder(page, ['Name', 'C_CompensationGroup_Schema_ID', 'Description']);
+      await expectFieldsDirectlyInOrder(page, ['Name', 'C_CompensationGroup_Schema_ID', 'Description']);
 
-      await fillText(page, 'Name', settingsName);
+      await fillText(page, page, 'Name', settingsName);
       settingsId = await waitForNewRecordId(page, SETTINGS_WINDOW_ID);
       await selectLookup(page, page, 'C_CompensationGroup_Schema_ID', schemaName);
-      await fillText(page, 'Description', `Settings created by the WebUI test ${runId}`);
+      await fillText(page, page, 'Description', `Settings created by the WebUI test ${runId}`);
       await waitForRecordSaved(SETTINGS_WINDOW_ID, settingsId, { maxRetries: 20, retryDelayMs: 500 });
       await snap(page, '542194-settings-header');
 
@@ -216,10 +233,11 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         expect(ORDER_DOCTYPE_NAMES, `offered doc type "${name}" must be an order doc type`).toContain(name);
       }
       await page.keyboard.press('Escape');
+      await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 
       await selectLookup(page, modal, 'C_DocType_ID', DOCTYPE_STANDARD_ORDER_NAME, { exact: true });
       await snap(page, '542194-belegarten-tab');
-      await closeModal(page, modal);
+      await closeModal(modal);
 
       const docTypes = await getTabRows(SETTINGS_WINDOW_ID, settingsId, `AD_Tab-${SETTINGS_DOCTYPE_TAB_ID}`);
       expect(docTypes, 'exactly one doc type row').toHaveLength(1);
@@ -227,14 +245,33 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     });
 
     // ------------------------------------------------------------------
-    // 3. Vertragsbedingungen (540113)
+    // 3. Vertrags-Übergang (540120) and Vertragsbedingungen (540113)
     // ------------------------------------------------------------------
+    let transitionId;
+    await test.step('3a. Transition window: create a completed transition with duration 0', async () => {
+      await openNewRecord(page, TRANSITION_WINDOW_ID);
+      await expectWindowTitle(page, DE.transitionWindow);
+
+      await fillText(page, page, 'Name', transitionName);
+      transitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
+      await selectListByKey(page, page, 'C_Calendar_Contract_ID', CONTRACT_CALENDAR_ID);
+      await fillNumber(page, page, 'TermDuration', 0);
+      await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
+      await fillNumber(page, page, 'TermOfNotice', 0);
+      await selectListByKey(page, page, 'TermOfNoticeUnit', DURATION_UNIT_MONTH);
+      await waitForRecordSaved(TRANSITION_WINDOW_ID, transitionId, { maxRetries: 20, retryDelayMs: 500 });
+      expect(Number((await getFieldData(TRANSITION_WINDOW_ID, transitionId, 'TermDuration')).value)).toBe(0);
+
+      await completeDocument(page);
+      await expectDocStatus(TRANSITION_WINDOW_ID, transitionId, 'CO');
+    });
+
     let conditionsId;
-    await test.step('3. Conditions window: type compensation group shows the settings field', async () => {
+    await test.step('3b. Conditions window: type compensation group shows the settings field', async () => {
       await openNewRecord(page, CONDITIONS_WINDOW_ID);
       await expectWindowTitle(page, DE.conditionsWindow);
 
-      await fillText(page, 'Name', conditionsName);
+      await fillText(page, page, 'Name', conditionsName);
       conditionsId = await waitForNewRecordId(page, CONDITIONS_WINDOW_ID);
 
       // another contract type: the settings field stays hidden
@@ -247,11 +284,11 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await selectListByKey(page, page, 'Type_Conditions', TYPE_CONDITIONS_COMPENSATION_GROUP);
       await expect(page.locator('.form-field-C_CompensationGroup_ContractSettings_ID')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expectLabel(page, 'C_CompensationGroup_ContractSettings_ID', DE.conditionsSettings);
-      await expectFieldOrder(page, ['Name', 'Type_Conditions', 'C_CompensationGroup_ContractSettings_ID']);
+      await expectFieldsDirectlyInOrder(page, ['Name', 'Type_Conditions', 'C_CompensationGroup_ContractSettings_ID']);
 
       await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
       expect(lookupKey((await getFieldData(CONDITIONS_WINDOW_ID, conditionsId, 'C_CompensationGroup_ContractSettings_ID')).value)).toBe(String(settingsId));
-      await selectListByKey(page, page, 'C_Flatrate_Transition_ID', TRANSITION_ONE_YEAR_ID);
+      await selectListByKey(page, page, 'C_Flatrate_Transition_ID', transitionId);
       await waitForRecordSaved(CONDITIONS_WINDOW_ID, conditionsId, { maxRetries: 20, retryDelayMs: 500 });
       await snap(page, '540113-conditions-compensation-group-field-shown');
 
@@ -268,18 +305,19 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     await test.step('4. Business partner: create the product-less contract term and complete it', async () => {
       await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
       await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await page.waitForTimeout(1000);
 
-      const today = new Date();
-      const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
       const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
       await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
-      await fillDate(page, modal, 'StartDate', startDate);
+      await fillDate(page, modal, 'StartDate', contractStart);
+      await expectLabel(modal, 'EndDate', DE.createContractEndDate);
+      await fillDate(page, modal, 'EndDate', contractEnd);
       await expect(modal.locator('.form-field-IsComplete input[type="checkbox"]').first(), 'the term is completed by the action').toBeChecked();
-      await snap(page, '123-bpartner-create-contract-parameters');
+      await snap(page, '123-bpartner-erzeuge-vertrag-parameters');
+
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await modal.getByTestId('process-modal-start-button').click();
-      await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(2000);
+      expect((await processStarted).ok(), '"Erzeuge Vertrag" must run without error').toBe(true);
+      await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
       // The partner now references its contract term; open it in the Verträge window.
       await openRelatedDocument({
@@ -289,13 +327,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
         retryDelay: 2000,
         refreshOnRetry: true,
       });
-      await page.waitForURL(new RegExp(`/window/${CONTRACT_WINDOW_ID}/\\d+`), { timeout: SLOW_ACTION_TIMEOUT });
       const termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
 
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Bill_BPartner_ID')).value)).toBe(String(customer.id));
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'C_Flatrate_Conditions_ID')).value)).toBe(String(conditionsId));
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Type_Conditions')).value)).toBe(TYPE_CONDITIONS_COMPENSATION_GROUP);
       expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'M_Product_ID').catch(() => ({ value: null }))).value), 'product-less term').toBeNull();
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'StartDate')).value)).toContain(isoDate(contractStart));
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'EndDate')).value), 'the entered end date is kept').toContain(isoDate(contractEnd));
       await expectDocStatus(CONTRACT_WINDOW_ID, termId, 'CO');
       await snap(page, '540359-contract-term');
     });
@@ -327,15 +366,27 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(goodsLine, 'goods line').toBeTruthy();
       expect(discountLine, 'discount line added on completion').toBeTruthy();
       expect(Number(discountLine.fieldsByName.LineNetAmt.value)).toBeCloseTo(EXPECTED_DISCOUNT_AMOUNT, 2);
+      // the goods line and the discount line form one compensation group, the discount line being its compensation line
+      const groupId = lookupKey(discountLine.fieldsByName.C_Order_CompensationGroup_ID.value);
+      expect(groupId, 'discount line belongs to a compensation group').toBeTruthy();
+      expect(lookupKey(goodsLine.fieldsByName.C_Order_CompensationGroup_ID.value), 'goods line is in the same group').toBe(groupId);
+      expect(discountLine.fieldsByName.IsGroupCompensationLine.value).toBe(true);
+      expect(goodsLine.fieldsByName.IsGroupCompensationLine.value).toBe(false);
 
       // The UI shows both lines in the order-line grid, the discount line with the expected amount.
+      // (the order is completed, so the batch-entry toggle SalesOrderPage.goToOrderLineTab relies on is gone)
       await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${orderId}`);
-      await SalesOrderPage.goToOrderLineTab();
+      const orderLineTab = page.getByTestId(`tab-${ORDER_LINE_TAB}`);
+      await orderLineTab.click();
+      await expect(orderLineTab.locator('a.nav-link')).toHaveClass(/active/);
       const discountRow = page.locator('table tbody tr')
         .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: discount.productCode }) });
       await expect(discountRow).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
       await expect(discountRow.locator('[data-cy="cell-LineNetAmt"]')).toContainText('-30,00');
-      await snap(page, '143-sales-order-discount-group');
+      await discountRow.scrollIntoViewIfNeeded();
+      await snap(page, '143-sales-order-discount-group-lines');
+      await discountRow.locator('[data-cy="cell-LineNetAmt"]').scrollIntoViewIfNeeded();
+      await snap(page, '143-sales-order-discount-group-amount');
     });
   });
 });
@@ -352,9 +403,13 @@ function lookupKey(value) {
   return typeof value === 'object' ? String(value.key) : String(value);
 }
 
+/** yyyy-MM-dd of a local date */
+function isoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 /** Screenshot of the current viewport, attached to the report and kept in the test output folder. */
 async function snap(page, name) {
-  await page.waitForTimeout(500);
   const buffer = await page.screenshot({ fullPage: false });
   const file = test.info().outputPath(`${name}.png`);
   require('fs').writeFileSync(file, buffer);
@@ -362,10 +417,22 @@ async function snap(page, name) {
   console.log(`[INFO] screenshot ${file}`);
 }
 
+/**
+ * Run `action` and wait until the field change it triggers has been sent to the backend
+ * (the WebUI PATCHes a document / included row / process parameter on each field commit).
+ */
+async function withFieldCommit(page, action) {
+  const committed = page.waitForResponse(
+    (response) => response.request().method() === 'PATCH' && response.url().includes('/rest/api/'),
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+  await action();
+  await committed;
+}
+
 async function openNewRecord(page, windowId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/NEW`);
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-  await page.waitForTimeout(1000);
 }
 
 async function waitForNewRecordId(page, windowId) {
@@ -382,31 +449,50 @@ async function expectTabCaption(page, tabId, caption) {
 }
 
 async function expectLabel(scope, fieldName, caption) {
+  // The label is read from the rendered DOM, not via getFieldLabelFromLayout (WebAPIValidation.js),
+  // because what is asserted is the caption the operator actually sees on the painted form.
   const label = scope.locator(`.form-field-${fieldName} > label.form-control-label`).first();
   await expect(label, `label of ${fieldName}`).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
 }
 
-/** Assert the given fields are rendered in this order (document order of their form groups). */
-async function expectFieldOrder(scope, fieldNames) {
-  const positions = [];
-  for (const fieldName of fieldNames) {
-    const group = scope.locator(`.form-field-${fieldName}`).first();
-    await group.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    positions.push(await group.evaluate((el) => {
-      const all = Array.from(document.querySelectorAll('.form-group'));
-      return all.indexOf(el);
-    }));
-  }
-  const sorted = [...positions].sort((a, b) => a - b);
-  expect(positions, `field order ${fieldNames.join(' < ')}`).toEqual(sorted);
+/**
+ * Assert that the given fields render as consecutive element lines of ONE element group, in this
+ * order, with no other visible field between them. Lines whose field is hidden by display logic
+ * render without a form group and are skipped. Pattern taken from vatid-status-on-bpartner-window.spec.js.
+ */
+async function expectFieldsDirectlyInOrder(scope, fieldNames) {
+  const [first] = fieldNames;
+  await scope.locator(`.form-field-${first}`).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  // the filter's inner locator must be page-rooted: it is evaluated relative to each candidate group
+  const pageRoot = typeof scope.page === 'function' ? scope.page() : scope;
+  const group = scope.locator('div.panel.panel-spaced').filter({ has: pageRoot.locator(`.form-field-${first}`) });
+  await expect(group, `exactly one element group must hold ${first}`).toHaveCount(1);
+
+  const lineFields = await group.evaluate((groupEl) =>
+    Array.from(groupEl.querySelectorAll(':scope > .elements-line'))
+      .map((line) =>
+        Array.from(line.querySelectorAll('.form-group'))
+          .flatMap((formGroup) => Array.from(formGroup.classList).filter((cssClass) => cssClass.startsWith('form-field-')))
+          .join(' ')
+      )
+      .filter((classes) => classes.length > 0)
+  );
+  const indexOfField = (fieldName) => lineFields.findIndex((classes) => classes.split(' ').includes(`form-field-${fieldName}`));
+
+  const firstIndex = indexOfField(first);
+  fieldNames.forEach((fieldName, offset) => {
+    expect(
+      indexOfField(fieldName),
+      `${fieldName} must be visible element line ${offset} after ${first} in the same group (rendered: ${JSON.stringify(lineFields)})`
+    ).toBe(firstIndex + offset);
+  });
 }
 
-async function fillText(page, fieldName, value) {
-  const input = page.locator(`.form-field-${fieldName} input[type="text"], .form-field-${fieldName} textarea`).first();
+async function fillText(page, scope, fieldName, value) {
+  const input = scope.locator(`.form-field-${fieldName} input[type="text"], .form-field-${fieldName} textarea`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.fill(value);
-  await input.press('Tab');
-  await page.waitForTimeout(800);
+  await withFieldCommit(page, () => input.press('Tab'));
 }
 
 async function fillNumber(page, scope, fieldName, value) {
@@ -415,30 +501,25 @@ async function fillNumber(page, scope, fieldName, value) {
   await input.click();
   await input.press('ControlOrMeta+a');
   await input.pressSequentially(String(value));
-  await input.press('Tab');
-  await page.waitForTimeout(800);
+  await withFieldCommit(page, () => input.press('Tab'));
 }
 
 async function fillDate(page, scope, fieldName, date) {
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const text = `${dd}.${mm}.${date.getFullYear()}`;
+  const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
   const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await input.press('ControlOrMeta+a');
   await input.fill(text);
-  await input.press('Tab');
-  await page.waitForTimeout(800);
+  await withFieldCommit(page, () => input.press('Tab'));
 }
 
 async function setCheckbox(page, fieldName) {
   const checkbox = page.locator(`.form-field-${fieldName} input[type="checkbox"]`).first();
   if (!(await checkbox.isChecked())) {
-    await page.locator(`.form-field-${fieldName} label.input-checkbox`).first().click();
+    await withFieldCommit(page, () => page.locator(`.form-field-${fieldName} label.input-checkbox`).first().click());
   }
   await expect(checkbox).toBeChecked();
-  await page.waitForTimeout(800);
 }
 
 async function selectListByKey(page, scope, fieldName, key) {
@@ -447,20 +528,24 @@ async function selectListByKey(page, scope, fieldName, key) {
   await input.click();
   const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await option.click();
-  await page.locator('.input-dropdown-list').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.waitForTimeout(1000);
+  await withFieldCommit(page, () => option.click());
+  await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
 
+/** Type into a lookup field and wait until the typeahead result for the full search text has arrived. */
 async function typeIntoLookup(page, scope, fieldName, searchText) {
   const input = scope.locator(`.form-field-${fieldName} input.input-field, .form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await input.fill('');
+  const typeaheadDone = page.waitForResponse(
+    (response) => response.url().includes(`/typeahead?query=${encodeURIComponent(searchText)}`),
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
   await input.pressSequentially(searchText, { delay: 30 });
-  await page.waitForTimeout(1500);
+  await typeaheadDone;
   const dropdown = page.locator('.input-dropdown-list');
-  await dropdown.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   return dropdown;
 }
 
@@ -474,23 +559,19 @@ async function selectLookup(page, scope, fieldName, searchText, { exact = false 
   const dropdown = await typeIntoLookup(page, scope, fieldName, searchText);
   const option = dropdown.locator('.input-dropdown-list-option').getByText(searchText, { exact }).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await option.click();
-  await dropdown.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.keyboard.press('Tab');
-  await page.waitForTimeout(1000);
+  await withFieldCommit(page, () => option.click());
+  await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
 
 async function openNewIncludedRow(page, tabId) {
   await page.getByTestId(`tab-AD_Tab-${tabId}`).click();
-  await page.waitForTimeout(1000);
   // The "add new" button of the included tab has no data-testid; it is the filter-panel button
   // that is not the batch-entry toggle.
   const button = page.locator('.tab-pane .table-filter-line .filter-panel-buttons button:not(.close-batch-entry)').first();
   await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await button.click();
   const modal = page.locator('.panel-modal').first();
-  await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await page.waitForTimeout(1000);
+  await modal.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   return modal;
 }
 
@@ -503,22 +584,20 @@ async function openAction(page, processValue) {
   await action.click();
   const modal = page.locator('.panel-modal').first();
   await modal.getByTestId('process-modal-start-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await page.waitForTimeout(1000);
+  await modal.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   return modal;
 }
 
-async function closeModal(page, modal) {
+async function closeModal(modal) {
   await modal.getByTestId('process-modal-cancel-button').first().click();
-  await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.waitForTimeout(1000);
+  await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
 }
 
 async function completeDocument(page) {
   await page.getByTestId('status-button').click();
   const co = page.getByTestId('status-CO');
   await co.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await co.click();
-  await page.waitForTimeout(3000);
+  await withFieldCommit(page, () => co.click());
 }
 
 async function expectDocStatus(windowId, recordId, docStatus) {
