@@ -297,15 +297,7 @@ public class OrderGroupRepository implements GroupRepository
 	/**
 	 * The one definition of a contract-created group: its {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
 	 *
-	 * @see #createContractCreatedGroupsQueryBuilder()
-	 */
-	public static boolean isContractCreated(@NonNull final I_C_Order_CompensationGroup groupRecord)
-	{
-		return groupRecord.getC_Flatrate_Term_ID() > 0;
-	}
-
-	/**
-	 * @return a query builder on the contract-created {@code C_Order_CompensationGroup} headers, the SQL counterpart of {@link #isContractCreated(I_C_Order_CompensationGroup)}
+	 * @return a query builder on the contract-created {@code C_Order_CompensationGroup} headers
 	 */
 	public static IQueryBuilder<I_C_Order_CompensationGroup> createContractCreatedGroupsQueryBuilder()
 	{

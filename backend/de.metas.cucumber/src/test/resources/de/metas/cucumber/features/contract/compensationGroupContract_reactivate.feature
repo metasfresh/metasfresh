@@ -79,28 +79,28 @@ Feature: Contract-triggered compensation group on sales-order reactivation
   @Id:S32353_TC20
   Scenario: Reactivating a sales order removes its contract-created compensation group; completing again rebuilds it on the current lines
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
-      | orderReactivate   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderReactivate | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
 
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_reactivateGoods | orderReactivate              | goodsProduct            | 1          |
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_reactivateGoods | orderReactivate       | goodsProduct            | 1          |
 
     And the order identified by orderReactivate is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_reactivateDiscount            | orderReactivate              | discountProduct         | 1          | true                        | -30   | mainTerm                          |
+      | ol_reactivateDiscount     | orderReactivate       | discountProduct         | 1          | true                        | -30   | mainTerm                          |
     And the order identified by orderReactivate has 2 order lines
 
     # a user reactivates an order whose invoice candidates and shipment schedules already exist
     And after not more than 60s locate up2date invoice candidates by order line:
-      | C_OrderLine_ID | C_Invoice_Candidate_ID |
-      | ol_reactivateGoods    | ic_reactivateGoods            |
-      | ol_reactivateDiscount | ic_reactivateDiscount         |
+      | C_OrderLine_ID        | C_Invoice_Candidate_ID |
+      | ol_reactivateGoods    | ic_reactivateGoods     |
+      | ol_reactivateDiscount | ic_reactivateDiscount  |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ss_reactivateGoods | ol_reactivateGoods               | N             |
+      | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_reactivateGoods | ol_reactivateGoods        | N             |
 
     And the order identified by orderReactivate is reactivated
 
@@ -108,14 +108,14 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     And the order identified by orderReactivate has 1 order lines
 
     And metasfresh contains C_OrderLines:
-      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_reactivateGoods2 | orderReactivate              | goodsProduct            | 1          |
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_reactivateGoods2 | orderReactivate       | goodsProduct            | 1          |
 
     And the order identified by orderReactivate is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_reactivateDiscount2           | orderReactivate              | discountProduct         | 1          | true                        | -60   | mainTerm                          |
+      | ol_reactivateDiscount2    | orderReactivate       | discountProduct         | 1          | true                        | -60   | mainTerm                          |
     And the order identified by orderReactivate has 3 order lines
 
     # The rebuilt group's invoice candidates must include ol_reactivateGoods (pre-existing before the reactivate)
@@ -126,12 +126,12 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     # regular lines (-60), even though the order line itself already shows the correct -60 above.
     # (ic_reactivateGoods was already located before the reactivation; an identifier is registered only once)
     And after not more than 60s locate up2date invoice candidates by order line:
-      | C_OrderLine_ID  | C_Invoice_Candidate_ID |
-      | ol_reactivateGoods2    | ic_reactivateGoods2           |
-      | ol_reactivateDiscount2 | ic_reactivateDiscount2        |
+      | C_OrderLine_ID         | C_Invoice_Candidate_ID |
+      | ol_reactivateGoods2    | ic_reactivateGoods2    |
+      | ol_reactivateDiscount2 | ic_reactivateDiscount2 |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
-      | ic_reactivateGoods            |
+      | ic_reactivateGoods     |
 
     # Both goods products are stocked, so neither candidate's NetAmtToInvoice is populated without an
     # actual delivery -- override the invoice rule to Immediate (as the refused-reactivation scenarios below do) so the regular lines'
@@ -140,19 +140,19 @@ Feature: Contract-triggered compensation group on sales-order reactivation
     # the same identifiers and fail), before checking the discount candidate's amount below.
     And update invoice candidates
       | C_Invoice_Candidate_ID | OPT.InvoiceRule_Override |
-      | ic_reactivateGoods            | I                        |
-      | ic_reactivateGoods2           | I                        |
-      | ic_reactivateDiscount2        | I                        |
+      | ic_reactivateGoods     | I                        |
+      | ic_reactivateGoods2    | I                        |
+      | ic_reactivateDiscount2 | I                        |
 
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
-      | ic_reactivateGoods            |
-      | ic_reactivateGoods2           |
-      | ic_reactivateDiscount2        |
+      | ic_reactivateGoods     |
+      | ic_reactivateGoods2    |
+      | ic_reactivateDiscount2 |
 
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | NetAmtToInvoice |
-      | ic_reactivateDiscount2                   | -60             |
+      | ic_reactivateDiscount2            | -60             |
 
   # ##############################################################################################
   # Reactivation is refused while a contract discount line is already invoiced

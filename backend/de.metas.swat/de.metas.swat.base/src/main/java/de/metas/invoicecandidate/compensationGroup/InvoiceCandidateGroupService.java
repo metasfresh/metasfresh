@@ -80,7 +80,7 @@ public class InvoiceCandidateGroupService
 
 		final ImmutableList<I_C_Invoice_Candidate> candidatesToMove = groupsRepo.retrieveInvoiceCandidatesOfOrderLine(orderLineId)
 				.stream()
-				.filter(ic -> ic.getC_Order_CompensationGroup_ID() != newOrderCompensationGroupId)
+				.filter(ic -> !Objects.equals(extractGroupIdOrNull(ic), newGroupId))
 				.collect(ImmutableList.toImmutableList());
 		if (candidatesToMove.isEmpty())
 		{

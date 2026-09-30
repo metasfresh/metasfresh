@@ -82,6 +82,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
+/**
+ * Repository Tables: C_Invoice_Candidate, C_Order_CompensationGroup (read)
+ * <p>
+ * Repository Cluster: InvoiceCandidateGroupRepository, {@code IInvoiceCandDAO}/{@code InvoiceCandDAO}, {@link OrderGroupRepository} —
+ * {@code InvoiceCandDAO} is the generic invoice-candidate DAO; this one handles the candidates of a compensation group
+ * (group reference, lock and ungroup). {@link OrderGroupRepository} owns {@code C_Order_CompensationGroup}; this class only reads it.
+ */
 @Component
 public class InvoiceCandidateGroupRepository implements GroupRepository
 {

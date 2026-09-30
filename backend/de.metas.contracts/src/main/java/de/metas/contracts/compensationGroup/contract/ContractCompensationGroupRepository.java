@@ -44,7 +44,7 @@ import java.util.List;
  * <p>
  * Repository Cluster: ContractCompensationGroupRepository, {@link OrderGroupRepository} — both
  * write these two tables; {@link OrderGroupRepository} is the generic compensation-group repo (any
- * schema), this one is scoped to contract-created groups (see {@link OrderGroupRepository#isContractCreated}),
+ * schema), this one is scoped to contract-created groups (see {@link OrderGroupRepository#createContractCreatedGroupsQueryBuilder}),
  * except for {@link #retrieveActiveRegularOrderLines}, which reads every regular line
  * of the order regardless of group. The groups' invoice candidates are handled by
  * {@code InvoiceCandidateGroupRepository} (de.metas.swat.base).

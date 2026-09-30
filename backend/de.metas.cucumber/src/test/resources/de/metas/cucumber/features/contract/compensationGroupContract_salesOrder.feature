@@ -17,25 +17,25 @@ Feature: Contract-triggered compensation group on sales-order completion
 
     And metasfresh contains M_Products:
       | Identifier      | OPT.M_Product_Category_ID.Identifier |
-      | contractProduct |                                       |
-      | goodsProduct    | goodsCategory                         |
-      | pfandProduct    | pfandCategory                         |
-      | discountProduct | goodsCategory                         |
+      | contractProduct |                                      |
+      | goodsProduct    | goodsCategory                        |
+      | pfandProduct    | pfandCategory                        |
+      | discountProduct | goodsCategory                        |
 
     And metasfresh contains M_PricingSystems
       | Identifier |
       | contractPS |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision |
-      | contractPL | contractPS                    | DE                        | EUR                  | contractPL | true  | false          | 2              |
+      | contractPL | contractPS                    | DE                        | EUR                 | contractPL | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier  | M_PriceList_ID.Identifier | Name        | ValidFrom  |
       | contractPLV | contractPL                | contractPLV | 2026-01-01 |
     And metasfresh contains M_ProductPrices
       | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_goods    | contractPLV                       | goodsProduct             | 1000     | PCE                | Normal                        |
-      | pp_pfand    | contractPLV                       | pfandProduct             | 200      | PCE                | Normal                        |
-      | pp_discount | contractPLV                       | discountProduct          | 1        | PCE                | Normal                        |
+      | pp_goods    | contractPLV                       | goodsProduct            | 1000     | PCE               | Normal                        |
+      | pp_pfand    | contractPLV                       | pfandProduct            | 200      | PCE               | Normal                        |
+      | pp_discount | contractPLV                       | discountProduct         | 1        | PCE               | Normal                        |
 
     And load C_DocType:
       | DocBaseType | DocSubType | C_DocType_ID      |
@@ -43,10 +43,10 @@ Feature: Contract-triggered compensation group on sales-order completion
 
     And metasfresh contains C_Flatrate_Transition:
       | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
-      | zeroDurTrans | 0            | day              | 0                 | day                   | EO                 | 2026,2027                 |
+      | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
     And metasfresh contains C_Contract_Change:
       | Identifier   | C_Flatrate_Transition_ID.Identifier | Action | ContractStatus | DeadLine | DeadLineUnit |
-      | contractChg1 | zeroDurTrans                         | SU     | Qu              | 0        | day          |
+      | contractChg1 | zeroDurTrans                        | SU     | Qu             | 0        | day          |
 
     And metasfresh contains C_BPartners:
       | Identifier   | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -58,19 +58,19 @@ Feature: Contract-triggered compensation group on sales-order completion
       | mainSchema | Bonus Ware 3% | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier     | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | mainSchemaLine | mainSchema                                | discountProduct          | 3                         | goodsCategory                        |
+      | mainSchemaLine | mainSchema                               | discountProduct         | 3                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier   | Name          | C_CompensationGroup_Schema_ID.Identifier |
-      | mainSettings | Main settings | mainSchema                                |
+      | mainSettings | Main settings | mainSchema                               |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | mainSettings                                        | docTypeSalesOrder       |
+      | mainSettings                                       | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier     | Name            | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | mainConditions | Main conditions | CompensationGroup | zeroDurTrans                            | mainSettings                                           |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | mainTerm   | mainConditions                       | headOfficeBP                 | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | mainTerm   | mainConditions                      | headOfficeBP                | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by mainTerm is completed
 
   # ##############################################################################################
@@ -84,17 +84,17 @@ Feature: Contract-triggered compensation group on sales-order completion
   Scenario: Completing a sales order adds the contract's discount line only on the ungrouped, in-base lines
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
-      | order10    | true    | storeBP                  | storeBP                                | 2026-07-01  | headOfficeBP                     |
+      | order10    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
 
     And metasfresh contains C_Order_CompensationGroups:
       | Identifier  | C_Order_ID.Identifier | Name        |
-      | bundleGroup | order10                | Mischkarton |
+      | bundleGroup | order10               | Mischkarton |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Order_CompensationGroup_ID.Identifier |
-      | ol_goods   | order10                | goodsProduct             | 1          |                                              |
-      | ol_pfand   | order10                | pfandProduct             | 1          |                                              |
-      | ol_bundle  | order10                | goodsProduct             | 1          | bundleGroup                                  |
+      | ol_goods   | order10               | goodsProduct            | 1          |                                             |
+      | ol_pfand   | order10               | pfandProduct            | 1          |                                             |
+      | ol_bundle  | order10               | goodsProduct            | 1          | bundleGroup                                 |
 
     And the order identified by order10 is completed
 
@@ -119,8 +119,8 @@ Feature: Contract-triggered compensation group on sales-order completion
   @Id:S32353_TC54
   Scenario: A goods product in a sub-category of the schema line's applies-to category gets the discount
     Given metasfresh contains M_Product_Category:
-      | Identifier       | Name        | Value             | OPT.M_Product_Category_Parent_ID.Identifier |
-      | goodsSubCategory | Ware Äpfel  | WareApfelS32353   | goodsCategory                               |
+      | Identifier       | Name       | Value           | OPT.M_Product_Category_Parent_ID.Identifier |
+      | goodsSubCategory | Ware Äpfel | WareApfelS32353 | goodsCategory                               |
 
     And metasfresh contains M_Products:
       | Identifier       | OPT.M_Product_Category_ID.Identifier |
@@ -135,9 +135,9 @@ Feature: Contract-triggered compensation group on sales-order completion
       | orderSubCategory | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
 
     And metasfresh contains C_OrderLines:
-      | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_subCategoryGoods      | orderSubCategory      | subCategoryGoods        | 1          |
-      | ol_subCategoryPfand      | orderSubCategory      | pfandProduct            | 1          |
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_subCategoryGoods | orderSubCategory      | subCategoryGoods        | 1          |
+      | ol_subCategoryPfand | orderSubCategory      | pfandProduct            | 1          |
 
     And the order identified by orderSubCategory is completed
 
@@ -158,42 +158,42 @@ Feature: Contract-triggered compensation group on sales-order completion
   @Id:S32353_TC11
   Scenario: No group is added when there is no matching contract or the order document type is not listed
     Given metasfresh contains C_BPartners:
-      | Identifier        | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier         | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | noContractBP       | Y              | contractPS                    |
       | docTypeNotListedBP | Y              | contractPS                    |
 
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name        | OPT.IsAdditive |
+      | Identifier   | Name                       | OPT.IsAdditive |
       | poOnlySchema | Purchase order only schema | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier     | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | poOnlySchemaLine | poOnlySchema                                | discountProduct          | 3                         | goodsCategory                        |
+      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | poOnlySchemaLine | poOnlySchema                             | discountProduct         | 3                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier   | Name                                | C_CompensationGroup_Schema_ID.Identifier |
-      | poOnlySettings | Settings (purchase order only) | poOnlySchema                               |
+      | Identifier     | Name                           | C_CompensationGroup_Schema_ID.Identifier |
+      | poOnlySettings | Settings (purchase order only) | poOnlySchema                             |
     And load C_DocType:
       | DocBaseType | C_DocType_ID         |
       | POO         | docTypePurchaseOrder |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | poOnlySettings                                       | docTypePurchaseOrder    |
+      | poOnlySettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier     | Name            | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | poOnlyConditions | Purchase order only conditions | CompensationGroup | contractProduct                       | zeroDurTrans                             | poOnlySettings                                            |
+      | Identifier       | Name                           | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | poOnlyConditions | Purchase order only conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | poOnlySettings                                         |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | poOnlyTerm   | poOnlyConditions                       | docTypeNotListedBP           | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | poOnlyTerm | poOnlyConditions                    | docTypeNotListedBP          | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by poOnlyTerm is completed
 
     And metasfresh contains C_Orders:
       | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderNoContract     | true    | noContractBP              | 2026-07-01  |
-      | orderDocTypeMissing | true    | docTypeNotListedBP        | 2026-07-01  |
+      | orderNoContract     | true    | noContractBP             | 2026-07-01  |
+      | orderDocTypeMissing | true    | docTypeNotListedBP       | 2026-07-01  |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_nc      | orderNoContract        | goodsProduct             | 1          |
-      | ol_dtm     | orderDocTypeMissing    | goodsProduct             | 1          |
+      | ol_nc      | orderNoContract       | goodsProduct            | 1          |
+      | ol_dtm     | orderDocTypeMissing   | goodsProduct            | 1          |
 
     And the order identified by orderNoContract is completed
     And the order identified by orderDocTypeMissing is completed
@@ -212,17 +212,17 @@ Feature: Contract-triggered compensation group on sales-order completion
   Scenario: The contract fires only within its Start/End date window, inclusive
     Given metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
-      | orderBefore | true    | storeBP                  | storeBP                                | 2026-06-14  | headOfficeBP                     |
-      | orderStart  | true    | storeBP                  | storeBP                                | 2026-06-15  | headOfficeBP                     |
-      | orderEnd    | true    | storeBP                  | storeBP                                | 2026-12-31  | headOfficeBP                     |
-      | orderAfter  | true    | storeBP                  | storeBP                                | 2027-01-01  | headOfficeBP                     |
+      | orderBefore | true    | storeBP                  | storeBP                               | 2026-06-14  | headOfficeBP                    |
+      | orderStart  | true    | storeBP                  | storeBP                               | 2026-06-15  | headOfficeBP                    |
+      | orderEnd    | true    | storeBP                  | storeBP                               | 2026-12-31  | headOfficeBP                    |
+      | orderAfter  | true    | storeBP                  | storeBP                               | 2027-01-01  | headOfficeBP                    |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_before  | orderBefore            | goodsProduct             | 1          |
-      | ol_start   | orderStart             | goodsProduct             | 1          |
-      | ol_end     | orderEnd               | goodsProduct             | 1          |
-      | ol_after   | orderAfter             | goodsProduct             | 1          |
+      | ol_before  | orderBefore           | goodsProduct            | 1          |
+      | ol_start   | orderStart            | goodsProduct            | 1          |
+      | ol_end     | orderEnd              | goodsProduct            | 1          |
+      | ol_after   | orderAfter            | goodsProduct            | 1          |
 
     And the order identified by orderBefore is completed
     And the order identified by orderStart is completed
@@ -234,8 +234,8 @@ Feature: Contract-triggered compensation group on sales-order completion
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price |
-      | ol_discountStart            | orderStart             | discountProduct          | 1          | true                         | -30   |
-      | ol_discountEnd              | orderEnd               | discountProduct          | 1          | true                         | -30   |
+      | ol_discountStart          | orderStart            | discountProduct         | 1          | true                        | -30   |
+      | ol_discountEnd            | orderEnd              | discountProduct         | 1          | true                        | -30   |
 
   # ##############################################################################################
   # A schema line's base with no matching lines is skipped (no 0.00 line);
@@ -257,7 +257,7 @@ Feature: Contract-triggered compensation group on sales-order completion
 
     And metasfresh contains M_ProductPrices
       | Identifier           | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_discountPackaging | contractPLV                       | discountProductPackaging | 1        | PCE                | Normal                        |
+      | pp_discountPackaging | contractPLV                       | discountProductPackaging | 1        | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -268,38 +268,38 @@ Feature: Contract-triggered compensation group on sales-order completion
       | rf1Schema  | RF1 schema | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier  | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | rf1SchemaLineGoods | rf1Schema                                 | discountProduct           | 3                         | goodsCategory                        |
-      | rf1SchemaLinePack  | rf1Schema                                 | discountProductPackaging  | 2                         | packagingCategory                    |
+      | rf1SchemaLineGoods | rf1Schema                                | discountProduct          | 3                         | goodsCategory                        |
+      | rf1SchemaLinePack  | rf1Schema                                | discountProductPackaging | 2                         | packagingCategory                    |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier  | Name         | C_CompensationGroup_Schema_ID.Identifier |
-      | rf1Settings | RF1 settings | rf1Schema                                 |
+      | rf1Settings | RF1 settings | rf1Schema                                |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | rf1Settings                                         | docTypeSalesOrder       |
+      | rf1Settings                                        | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier    | Name           | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | rf1Conditions | RF1 conditions | CompensationGroup | contractProduct                       | zeroDurTrans                             | rf1Settings                                             |
+      | rf1Conditions | RF1 conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | rf1Settings                                            |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | rf1Term    | rf1Conditions                        | rf1BP                        | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | rf1Term    | rf1Conditions                       | rf1BP                       | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by rf1Term is completed
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderOnlyGoods      | true    | rf1BP                     | 2026-07-01  |
-      | orderNoInBaseLines  | true    | rf1BP                     | 2026-07-01  |
+      | orderOnlyGoods     | true    | rf1BP                    | 2026-07-01  |
+      | orderNoInBaseLines | true    | rf1BP                    | 2026-07-01  |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_og      | orderOnlyGoods         | goodsProduct             | 1          |
-      | ol_nib     | orderNoInBaseLines     | pfandProduct             | 1          |
+      | ol_og      | orderOnlyGoods        | goodsProduct            | 1          |
+      | ol_nib     | orderNoInBaseLines    | pfandProduct            | 1          |
 
     And the order identified by orderOnlyGoods is completed
     And the order identified by orderNoInBaseLines is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price |
-      | ol_ogDiscount               | orderOnlyGoods         | discountProduct          | 1          | true                         | -30   |
+      | ol_ogDiscount             | orderOnlyGoods        | discountProduct         | 1          | true                        | -30   |
 
     And the order identified by orderOnlyGoods has 2 order lines
     And no C_Order_CompensationGroup exists for order "orderNoInBaseLines"
@@ -327,28 +327,28 @@ Feature: Contract-triggered compensation group on sales-order completion
       | rf3Schema  | RF3 schema | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier    | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier  | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | rf3SchemaLine | rf3Schema                                 | discountProductNoPricing  | 3                         | goodsCategory                        |
+      | rf3SchemaLine | rf3Schema                                | discountProductNoPricing | 3                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier  | Name         | C_CompensationGroup_Schema_ID.Identifier |
-      | rf3Settings | RF3 settings | rf3Schema                                 |
+      | rf3Settings | RF3 settings | rf3Schema                                |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | rf3Settings                                         | docTypeSalesOrder       |
+      | rf3Settings                                        | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier    | Name           | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | rf3Conditions | RF3 conditions | CompensationGroup | contractProduct                       | zeroDurTrans                             | rf3Settings                                             |
+      | rf3Conditions | RF3 conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | rf3Settings                                            |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | rf3Term    | rf3Conditions                        | rf3BP                        | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | rf3Term    | rf3Conditions                       | rf3BP                       | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by rf3Term is completed
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderRf3   | true    | rf3BP                     | 2026-07-01  |
+      | orderRf3   | true    | rf3BP                    | 2026-07-01  |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_rf3     | orderRf3               | goodsProduct             | 1          |
+      | ol_rf3     | orderRf3              | goodsProduct            | 1          |
 
     Then the order identified by orderRf3 cannot be completed because the error message contains discountProductNoPricing
 
@@ -368,41 +368,41 @@ Feature: Contract-triggered compensation group on sales-order completion
 
     And metasfresh contains M_ProductPrices
       | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_storeDiscount | contractPLV                       | storeDiscountProduct     | 1        | PCE                | Normal                        |
+      | pp_storeDiscount | contractPLV                       | storeDiscountProduct    | 1        | PCE               | Normal                        |
 
     And metasfresh contains C_CompensationGroup_Schema:
       | Identifier  | Name         | OPT.IsAdditive |
       | storeSchema | Store schema | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier      | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | storeSchemaLine | storeSchema                               | storeDiscountProduct     | 5                         | goodsCategory                        |
+      | storeSchemaLine | storeSchema                              | storeDiscountProduct    | 5                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier    | Name           | C_CompensationGroup_Schema_ID.Identifier |
-      | storeSettings | Store settings | storeSchema                               |
+      | storeSettings | Store settings | storeSchema                              |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | storeSettings                                       | docTypeSalesOrder       |
+      | storeSettings                                      | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier      | Name              | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | storeConditions | Store conditions  | CompensationGroup | contractProduct                       | zeroDurTrans                             | storeSettings                                           |
+      | Identifier      | Name             | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | storeConditions | Store conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | storeSettings                                          |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | storeTerm  | storeConditions                      | storeBP                      | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | storeTerm  | storeConditions                     | storeBP                     | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by storeTerm is completed
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
-      | order15    | true    | storeBP                  | storeBP                                | 2026-07-01  | headOfficeBP                     |
+      | order15    | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_15      | order15                | goodsProduct             | 1          |
+      | ol_15      | order15               | goodsProduct            | 1          |
 
     And the order identified by order15 is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price |
-      | ol_15Discount               | order15                | discountProduct          | 1          | true                         | -30   |
+      | ol_15Discount             | order15               | discountProduct         | 1          | true                        | -30   |
 
     And the order identified by order15 has 2 order lines
 
@@ -433,22 +433,22 @@ Feature: Contract-triggered compensation group on sales-order completion
       | pp_pfand2  | contractPLV                       | pfand2                  | 185.28   | PCE               | Normal                        |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
-      | orderSample   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderSample | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_elstar1 | orderSample              | elstar1                 | 1          |
-      | ol_elstar2 | orderSample              | elstar2                 | 1          |
-      | ol_gala    | orderSample              | gala                    | 1          |
-      | ol_pfand1  | orderSample              | pfand1                  | 1          |
-      | ol_pfand2  | orderSample              | pfand2                  | 1          |
+      | ol_elstar1 | orderSample           | elstar1                 | 1          |
+      | ol_elstar2 | orderSample           | elstar2                 | 1          |
+      | ol_gala    | orderSample           | gala                    | 1          |
+      | ol_pfand1  | orderSample           | pfand1                  | 1          |
+      | ol_pfand2  | orderSample           | pfand2                  | 1          |
 
     And the order identified by orderSample is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_sampleDiscount            | orderSample              | discountProduct         | 1          | true                        | 3                               | -64.66 | mainTerm                          |
+      | ol_sampleDiscount         | orderSample           | discountProduct         | 1          | true                        | 3                               | -64.66 | mainTerm                          |
 
     And the order identified by orderSample has 6 order lines
 
@@ -464,78 +464,78 @@ Feature: Contract-triggered compensation group on sales-order completion
   @Id:S32353_TC17
   Scenario: Goods and packaging bonuses are each computed on their own base
     Given metasfresh contains M_Product_Category:
-      | Identifier           | Name       | Value               |
+      | Identifier                         | Name       | Value                             |
       | goodsAndPackagingPackagingCategory | Verpackung | VerpackungS32353GoodsAndPackaging |
 
     And metasfresh contains M_Products:
-      | Identifier                  | OPT.M_Product_Category_ID.Identifier |
-      | goodsAndPackagingPackingProduct           | goodsAndPackagingPackagingCategory                 |
+      | Identifier                                | OPT.M_Product_Category_ID.Identifier |
+      | goodsAndPackagingPackingProduct           | goodsAndPackagingPackagingCategory   |
       | goodsAndPackagingGoodsDiscountProduct     | goodsCategory                        |
-      | goodsAndPackagingPackagingDiscountProduct | goodsAndPackagingPackagingCategory                 |
+      | goodsAndPackagingPackagingDiscountProduct | goodsAndPackagingPackagingCategory   |
 
     And metasfresh contains M_ProductPrices
-      | Identifier              | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | Identifier                            | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier                   | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_goodsAndPackagingPacking           | contractPLV                       | goodsAndPackagingPackingProduct           | 2        | PCE               | Normal                        |
       | pp_goodsAndPackagingGoodsDiscount     | contractPLV                       | goodsAndPackagingGoodsDiscountProduct     | 1        | PCE               | Normal                        |
       | pp_goodsAndPackagingPackagingDiscount | contractPLV                       | goodsAndPackagingPackagingDiscountProduct | 1        | PCE               | Normal                        |
 
     And metasfresh contains M_HU_PI:
-      | Identifier |
-      | goodsAndPackagingHuPI    |
+      | Identifier            |
+      | goodsAndPackagingHuPI |
     And metasfresh contains M_HU_PI_Version:
-      | Identifier | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
-      | goodsAndPackagingHuPIV   | goodsAndPackagingHuPI               | TU          | Y         |
+      | Identifier             | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
+      | goodsAndPackagingHuPIV | goodsAndPackagingHuPI | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | Identifier           | M_Product_ID.Identifier |
-      | goodsAndPackagingHuPackingMaterial | goodsAndPackagingPackingProduct       |
+      | Identifier                         | M_Product_ID.Identifier         |
+      | goodsAndPackagingHuPackingMaterial | goodsAndPackagingPackingProduct |
     And metasfresh contains M_HU_PI_Item:
-      | Identifier  | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
-      | goodsAndPackagingHuPiItem | goodsAndPackagingHuPIV                      | 0   | PM       | goodsAndPackagingHuPackingMaterial               |
+      | Identifier                | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
+      | goodsAndPackagingHuPiItem | goodsAndPackagingHuPIV        | 0   | PM       | goodsAndPackagingHuPackingMaterial |
     And metasfresh contains M_HU_PI_Item_Product:
-      | Identifier         | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty |
-      | goodsAndPackagingHuPiItemProduct | goodsAndPackagingHuPiItem                | goodsProduct            | 10  |
+      | Identifier                       | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | goodsAndPackagingHuPiItemProduct | goodsAndPackagingHuPiItem  | goodsProduct            | 10  |
 
     And metasfresh contains C_BPartners:
-      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | goodsAndPackagingBP      | Y              | contractPS                    |
+      | Identifier          | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | goodsAndPackagingBP | Y              | contractPS                    |
 
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name                            | OPT.IsAdditive |
-      | goodsAndPackagingSchema  | Bonus Ware 3% + Verpackung 0,6% | true           |
+      | Identifier              | Name                            | OPT.IsAdditive |
+      | goodsAndPackagingSchema | Bonus Ware 3% + Verpackung 0,6% | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier           | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier     | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | goodsAndPackagingSchemaLineGoods   | goodsAndPackagingSchema                                | goodsAndPackagingGoodsDiscountProduct     | 3                         | goodsCategory                        |
-      | goodsAndPackagingSchemaLinePacking | goodsAndPackagingSchema                                | goodsAndPackagingPackagingDiscountProduct | 0.6                       | goodsAndPackagingPackagingCategory                 |
+      | Identifier                         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier                   | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | goodsAndPackagingSchemaLineGoods   | goodsAndPackagingSchema                  | goodsAndPackagingGoodsDiscountProduct     | 3                         | goodsCategory                        |
+      | goodsAndPackagingSchemaLinePacking | goodsAndPackagingSchema                  | goodsAndPackagingPackagingDiscountProduct | 0.6                       | goodsAndPackagingPackagingCategory   |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier  | Name         | C_CompensationGroup_Schema_ID.Identifier |
-      | goodsAndPackagingSettings | Goods and packaging settings | goodsAndPackagingSchema                                |
+      | Identifier                | Name                         | C_CompensationGroup_Schema_ID.Identifier |
+      | goodsAndPackagingSettings | Goods and packaging settings | goodsAndPackagingSchema                  |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | goodsAndPackagingSettings                                        | docTypeSalesOrder       |
+      | goodsAndPackagingSettings                          | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier    | Name           | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | goodsAndPackagingConditions | Goods and packaging conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | goodsAndPackagingSettings                                            |
+      | Identifier                  | Name                           | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | goodsAndPackagingConditions | Goods and packaging conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | goodsAndPackagingSettings                              |
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | goodsAndPackagingTerm    | goodsAndPackagingConditions                       | goodsAndPackagingBP                       | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | Identifier            | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | goodsAndPackagingTerm | goodsAndPackagingConditions         | goodsAndPackagingBP         | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by goodsAndPackagingTerm is completed
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderGoodsAndPackaging   | true    | goodsAndPackagingBP                    | 2026-07-01  |
+      | Identifier             | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderGoodsAndPackaging | true    | goodsAndPackagingBP      | 2026-07-01  |
 
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_goodsAndPackagingGoods | orderGoodsAndPackaging              | goodsProduct            | 100        | goodsAndPackagingHuPiItemProduct                     |
-      | ol_goodsAndPackagingPfand | orderGoodsAndPackaging              | pfandProduct            | 1          |                                        |
+      | Identifier                | C_Order_ID.Identifier  | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_goodsAndPackagingGoods | orderGoodsAndPackaging | goodsProduct            | 100        | goodsAndPackagingHuPiItemProduct       |
+      | ol_goodsAndPackagingPfand | orderGoodsAndPackaging | pfandProduct            | 1          |                                        |
 
     And the order identified by orderGoodsAndPackaging is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier     | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_goodsAndPackagingPacking             | orderGoodsAndPackaging              | goodsAndPackagingPackingProduct           | 10         | false                       |                                 |       |                                   |
-      | ol_goodsAndPackagingGoodsDiscount       | orderGoodsAndPackaging              | goodsAndPackagingGoodsDiscountProduct     | 1          | true                        | 3                               | -3000 | goodsAndPackagingTerm                           |
-      | ol_goodsAndPackagingPackagingDiscount   | orderGoodsAndPackaging              | goodsAndPackagingPackagingDiscountProduct | 1          | true                        | 0.6                             | -0.12 | goodsAndPackagingTerm                           |
+      | C_OrderLine_ID.Identifier             | C_Order_ID.Identifier  | M_Product_ID.Identifier                   | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_goodsAndPackagingPacking           | orderGoodsAndPackaging | goodsAndPackagingPackingProduct           | 10         | false                       |                                 |       |                                   |
+      | ol_goodsAndPackagingGoodsDiscount     | orderGoodsAndPackaging | goodsAndPackagingGoodsDiscountProduct     | 1          | true                        | 3                               | -3000 | goodsAndPackagingTerm             |
+      | ol_goodsAndPackagingPackagingDiscount | orderGoodsAndPackaging | goodsAndPackagingPackagingDiscountProduct | 1          | true                        | 0.6                             | -0.12 | goodsAndPackagingTerm             |
 
     And the order identified by orderGoodsAndPackaging has 5 order lines
 
@@ -549,66 +549,66 @@ Feature: Contract-triggered compensation group on sales-order completion
   @Id:S32353_TC18
   Scenario: Additive computes every discount line on the full base; non-additive compounds
     Given metasfresh contains M_Products:
-      | Identifier          | OPT.M_Product_Category_ID.Identifier |
+      | Identifier       | OPT.M_Product_Category_ID.Identifier |
       | discountProduct2 | goodsCategory                        |
 
     And metasfresh contains M_ProductPrices
-      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_discount2 | contractPLV                       | discountProduct2     | 1        | PCE               | Normal                        |
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_discount2 | contractPLV                       | discountProduct2        | 1        | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier    | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | additiveBP | Y              | contractPS                    |
       | compoundBP | Y              | contractPS                    |
 
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier        | Name            | OPT.IsAdditive |
-      | additiveSchema | Additive        | true           |
-      | compoundSchema | Compounding     | false          |
+      | Identifier     | Name        | OPT.IsAdditive |
+      | additiveSchema | Additive    | true           |
+      | compoundSchema | Compounding | false          |
     And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.SeqNo |
-      | additiveLine1 | additiveSchema                        | discountProduct         | 3.15                      | goodsCategory                        | 10        |
-      | additiveLine2 | additiveSchema                        | discountProduct2     | 0.25                      | goodsCategory                        | 20        |
-      | compoundLine1 | compoundSchema                        | discountProduct         | 3.15                      | goodsCategory                        | 10        |
-      | compoundLine2 | compoundSchema                        | discountProduct2     | 0.25                      | goodsCategory                        | 20        |
+      | Identifier    | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.SeqNo |
+      | additiveLine1 | additiveSchema                           | discountProduct         | 3.15                      | goodsCategory                        | 10        |
+      | additiveLine2 | additiveSchema                           | discountProduct2        | 0.25                      | goodsCategory                        | 20        |
+      | compoundLine1 | compoundSchema                           | discountProduct         | 3.15                      | goodsCategory                        | 10        |
+      | compoundLine2 | compoundSchema                           | discountProduct2        | 0.25                      | goodsCategory                        | 20        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier          | Name                     | C_CompensationGroup_Schema_ID.Identifier |
-      | additiveSettings | Additive settings        | additiveSchema                        |
-      | compoundSettings | Compounding settings     | compoundSchema                        |
+      | Identifier       | Name                 | C_CompensationGroup_Schema_ID.Identifier |
+      | additiveSettings | Additive settings    | additiveSchema                           |
+      | compoundSettings | Compounding settings | compoundSchema                           |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | additiveSettings                                | docTypeSalesOrder       |
-      | compoundSettings                                | docTypeSalesOrder       |
+      | additiveSettings                                   | docTypeSalesOrder       |
+      | compoundSettings                                   | docTypeSalesOrder       |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier            | Name                       | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | additiveConditions | Additive conditions        | CompensationGroup | contractProduct                      | zeroDurTrans                            | additiveSettings                                    |
-      | compoundConditions | Compounding conditions     | CompensationGroup | contractProduct                      | zeroDurTrans                            | compoundSettings                                    |
+      | Identifier         | Name                   | Type_Conditions   | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | additiveConditions | Additive conditions    | CompensationGroup | contractProduct                      | zeroDurTrans                            | additiveSettings                                       |
+      | compoundConditions | Compounding conditions | CompensationGroup | contractProduct                      | zeroDurTrans                            | compoundSettings                                       |
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier      | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | additiveTerm | additiveConditions               | additiveBP               | 2026-06-15 | 2026-12-31 | DR            | false         |
-      | compoundTerm | compoundConditions               | compoundBP               | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | additiveTerm | additiveConditions                  | additiveBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | compoundTerm | compoundConditions                  | compoundBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by additiveTerm is completed
     And the C_Flatrate_Term identified by compoundTerm is completed
 
     And metasfresh contains C_Orders:
-      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderAdditive | true    | additiveBP            | 2026-07-01  |
-      | orderCompound | true    | compoundBP            | 2026-07-01  |
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderAdditive | true    | additiveBP               | 2026-07-01  |
+      | orderCompound | true    | compoundBP               | 2026-07-01  |
 
     And metasfresh contains C_OrderLines:
-      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_additiveGoods | orderAdditive      | goodsProduct            | 1          |
-      | ol_compoundGoods | orderCompound      | goodsProduct            | 1          |
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_additiveGoods | orderAdditive         | goodsProduct            | 1          |
+      | ol_compoundGoods | orderCompound         | goodsProduct            | 1          |
 
     And the order identified by orderAdditive is completed
     And the order identified by orderCompound is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
-      | ol_additiveDiscount1   | orderAdditive      | discountProduct         | 1          | true                        | 3.15                            | -31.50 |
-      | ol_additiveDiscount2   | orderAdditive      | discountProduct2     | 1          | true                        | 0.25                            | -2.50  |
-      | ol_compoundDiscount1   | orderCompound      | discountProduct         | 1          | true                        | 3.15                            | -31.50 |
-      | ol_compoundDiscount2   | orderCompound      | discountProduct2     | 1          | true                        | 0.25                            | -2.42  |
+      | ol_additiveDiscount1      | orderAdditive         | discountProduct         | 1          | true                        | 3.15                            | -31.50 |
+      | ol_additiveDiscount2      | orderAdditive         | discountProduct2        | 1          | true                        | 0.25                            | -2.50  |
+      | ol_compoundDiscount1      | orderCompound         | discountProduct         | 1          | true                        | 3.15                            | -31.50 |
+      | ol_compoundDiscount2      | orderCompound         | discountProduct2        | 1          | true                        | 0.25                            | -2.42  |
 
   @Id:S32353_TC19
   Scenario: The compensation-group interceptor is registered between HU's packing-material builder and freight
