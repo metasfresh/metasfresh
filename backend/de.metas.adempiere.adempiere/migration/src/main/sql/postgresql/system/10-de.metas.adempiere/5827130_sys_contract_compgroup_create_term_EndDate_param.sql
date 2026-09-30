@@ -1,7 +1,8 @@
 -- Process "Erzeuge Vertrag" (C_Flatrate_Term_Create_For_BPartners): optional end date parameter.
 -- A contract whose conditions' transition has duration 0 keeps the entered end date and is refused without one,
 -- so without this parameter the process cannot create such contracts (e.g. compensation-group contracts).
--- For a transition with duration > 0 the end date is still computed from the transition.
+-- The entered end date is applied only when the conditions' transition has duration 0; for a duration > 0 the process
+-- ignores it, so the end date computed from the transition stands.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-30:
 --   AD_Process_Para 543331

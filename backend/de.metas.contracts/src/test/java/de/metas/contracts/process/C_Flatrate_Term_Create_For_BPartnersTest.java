@@ -43,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Which terms "Erzeuge Vertrag" creates per partner: one entry per product, where a {@code null} entry
  * stands for one product-less term. No entry means no term is created at all.
  */
-public class C_Flatrate_Term_Create_For_BPartnersTest
+class C_Flatrate_Term_Create_For_BPartnersTest
 {
 	private C_Flatrate_Term_Create_For_BPartners process;
 

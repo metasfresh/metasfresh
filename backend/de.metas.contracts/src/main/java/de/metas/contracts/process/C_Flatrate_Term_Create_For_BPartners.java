@@ -8,6 +8,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
@@ -29,6 +30,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -110,14 +112,30 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			setUserInCharge(userInCharge);
 		}
 		setStartDate(p_startDate);
-		// optional; only kept for conditions whose transition has duration 0, otherwise the transition computes the end date
-		setEndDate(para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_EndDate));
+		setEndDate(getEndDateToApply(conditions, para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_EndDate)));
 
 		//so far via this process, only commission type contracts can be created as a `Simulation`.
 		if(TYPE_CONDITIONS_Commission.equals(conditions.getType_Conditions()))
 		{
 			setIsSimulation(StringUtils.toBoolean(isSimulation));
 		}
+	}
+
+	/**
+	 * The entered end date is applied only when the conditions' transition has duration 0: such a contract keeps the entered end date.
+	 * For a transition with duration greater than 0 it is ignored, so the end date computed from the transition stands
+	 * (the term creation would otherwise overwrite the computed end date after completion, inconsistent with notice date and data entries).
+	 */
+	@VisibleForTesting
+	@Nullable
+	static Timestamp getEndDateToApply(@NonNull final I_C_Flatrate_Conditions conditions, @Nullable final Timestamp enteredEndDate)
+	{
+		if (enteredEndDate == null || conditions.getC_Flatrate_Transition_ID() <= 0)
+		{
+			return null;
+		}
+		final I_C_Flatrate_Transition transition = loadOutOfTrx(conditions.getC_Flatrate_Transition_ID(), I_C_Flatrate_Transition.class);
+		return transition.getTermDuration() == 0 ? enteredEndDate : null;
 	}
 
 	/**
