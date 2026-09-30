@@ -43,17 +43,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Conformance test for external converter scripts (scripts maintained outside this repo).
  * <p>
- * <b>Fixture layout</b> (all in one directory):
+ * <b>Fixture layout</b>:
  * <pre>
- *   &lt;dir&gt;/&lt;script&gt;.js
- *   &lt;dir&gt;/&lt;script&gt;/&lt;case&gt;.input.&lt;ext&gt;
- *   &lt;dir&gt;/&lt;script&gt;/&lt;case&gt;.expected.&lt;ext&gt;
+ *   &lt;scriptsDir&gt;/&lt;script&gt;.js
+ *   &lt;fixturesDir&gt;/&lt;script&gt;/&lt;case&gt;.input.&lt;ext&gt;
+ *   &lt;fixturesDir&gt;/&lt;script&gt;/&lt;case&gt;.expected.&lt;ext&gt;
  * </pre>
  * For every {@code <case>.input.*} the script's {@code transform} function is run and its result is compared with
- * {@code <case>.expected.*}.
+ * {@code <case>.expected.*}. Every case dir {@code <script>/} needs a matching {@code <scriptsDir>/<script>.js}.
  * <p>
- * <b>Directory:</b> by default the bundled sample dir {@code external-script-fixtures-sample} (test resources), so the
- * test always runs in CI. Override with {@code -Dscriptedadapter.fixtures.dir=<dir>}.
+ * <b>Directories:</b> by default the fixtures are the bundled sample dir {@code external-script-fixtures-sample}
+ * (test resources) and the scripts are the module's {@code javascript_templates/} dir, so the test always runs in CI.
+ * Override the fixtures dir with {@code -Dscriptedadapter.fixtures.dir=<dir>}; the scripts are then taken from the same
+ * dir (i.e. {@code <dir>/<script>.js} next to {@code <dir>/<script>/<case>.*}), unless
+ * {@code -Dscriptedadapter.scripts.dir=<dir>} names a separate scripts dir.
  * <p>
  * <b>Normalisation rule</b> (the one and only; a Jest test may mirror it): line endings ({@code \r\n}, {@code \r}) are
  * normalised to {@code \n} in both texts, and the texts are compared line by line (same line count required).
@@ -65,6 +68,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ExternalScriptFixturesTest
 {
 	static final String SYSTEM_PROPERTY_FIXTURES_DIR = "scriptedadapter.fixtures.dir";
+	static final String SYSTEM_PROPERTY_SCRIPTS_DIR = "scriptedadapter.scripts.dir";
+	private static final String DEFAULT_SCRIPTS_DIR = "javascript_templates";
 	private static final String SAMPLE_DIR_RESOURCE = "external-script-fixtures-sample";
 	private static final String ANY_TOKEN = "<<ANY>>";
 
@@ -76,18 +81,18 @@ class ExternalScriptFixturesTest
 
 	static Stream<FixtureCase> fixtureCases() throws IOException, URISyntaxException
 	{
-		final Path dir = getFixturesDir();
+		final Path fixturesDir = getFixturesDir();
+		final Path scriptsDir = getScriptsDir(fixturesDir);
 		final List<FixtureCase> cases = new ArrayList<>();
-		try (final Stream<Path> scripts = Files.list(dir))
+		try (final Stream<Path> caseDirs = Files.list(fixturesDir))
 		{
-			for (final Path scriptFile : (Iterable<Path>)scripts.filter(file -> file.getFileName().toString().endsWith(".js")).sorted()::iterator)
+			for (final Path caseDir : (Iterable<Path>)caseDirs.filter(Files::isDirectory).sorted()::iterator)
 			{
-				final String fileName = scriptFile.getFileName().toString();
-				final String scriptName = fileName.substring(0, fileName.length() - ".js".length());
-				final Path caseDir = dir.resolve(scriptName);
-				if (!Files.isDirectory(caseDir))
+				final String scriptName = caseDir.getFileName().toString();
+				final Path scriptFile = scriptsDir.resolve(scriptName + ".js");
+				if (!Files.isRegularFile(scriptFile))
 				{
-					throw new IllegalStateException("No case dir " + caseDir + " for " + scriptFile);
+					throw new IllegalStateException("No script " + scriptFile + " for case dir " + caseDir);
 				}
 				try (final Stream<Path> inputs = Files.list(caseDir))
 				{
@@ -100,7 +105,7 @@ class ExternalScriptFixturesTest
 				}
 			}
 		}
-		assertThat(cases).as("no fixture cases found in %s", dir).isNotEmpty();
+		assertThat(cases).as("no fixture cases found in %s", fixturesDir).isNotEmpty();
 		return cases.stream();
 	}
 
@@ -130,6 +135,21 @@ class ExternalScriptFixturesTest
 		return Paths.get(Objects.requireNonNull(
 				ExternalScriptFixturesTest.class.getClassLoader().getResource(SAMPLE_DIR_RESOURCE),
 				"sample fixtures dir not on classpath").toURI());
+	}
+
+	private static Path getScriptsDir(final Path fixturesDir)
+	{
+		final String override = System.getProperty(SYSTEM_PROPERTY_SCRIPTS_DIR);
+		if (override != null && !override.isBlank())
+		{
+			return Paths.get(override).toAbsolutePath();
+		}
+		final String fixturesOverride = System.getProperty(SYSTEM_PROPERTY_FIXTURES_DIR);
+		if (fixturesOverride != null && !fixturesOverride.isBlank())
+		{
+			return fixturesDir; // external layout: scripts live next to their case dirs
+		}
+		return Paths.get(System.getProperty("user.dir")).resolve(DEFAULT_SCRIPTS_DIR);
 	}
 
 	@ParameterizedTest(name = "{0}")
