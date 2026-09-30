@@ -22,17 +22,14 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
-import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -102,57 +99,33 @@ final class LocalArchiveAwait
 			@NonNull final byte[] expectedContent,
 			final long timeoutMs) throws InterruptedException
 	{
-		// A read that keeps failing is NOT the same as an archive still being written, but both look
-		// identical to the poll loop. Keep the last failure so a timeout can say which one it was.
-		final AtomicReference<IOException> lastReadFailure = new AtomicReference<>();
-		try
-		{
-			// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
-			// predicate requires exactly one entry. Loosening it means revisiting this line.
-			return await(dir,
-					entries -> entries.size() == 1 && Arrays.equals(contentOf(entries.get(0), lastReadFailure), expectedContent),
-					"exactly one file holding the expected " + expectedContent.length + " byte(s)",
-					timeoutMs).get(0);
-		}
-		catch (final AssertionError timedOut)
-		{
-			final IOException readFailure = lastReadFailure.get();
-			if (readFailure != null)
-			{
-				// without this the report reads as "the content never matched", sending the next reader
-				// after a timing theory when the file was in fact never readable
-				timedOut.addSuppressed(readFailure);
-			}
-			throw timedOut;
-		}
+		// get(0) is safe by construction: await returns only a listing its predicate accepted, and this
+		// predicate requires exactly one entry. Loosening it means revisiting this line.
+		return await(dir,
+				entries -> entries.size() == 1 && Arrays.equals(contentOf(entries.get(0)), expectedContent),
+				"exactly one file holding the expected " + expectedContent.length + " byte(s)",
+				timeoutMs).get(0);
 	}
 
 	/**
-	 * Content that cannot be read counts as "no match yet", so the wait keeps polling instead of failing on
-	 * the read still in flight during the archiver's create-then-write.
+	 * The archiver's create-then-write leaves a read EMPTY or PARTIAL, never failing — that is the whole
+	 * race this wait exists for, and {@link Arrays#equals} against the caller's expected bytes already
+	 * covers it. An {@link IOException} here therefore means a REAL fault (an unreadable path, a file that
+	 * vanished), which no amount of further polling will clear.
 	 * <p>
-	 * That is the EXPECTED cause, not the only one: a permissions fault or a handle held by something else
-	 * throws the same {@link IOException} and never clears. The failure is therefore recorded in
-	 * {@code sink} rather than discarded, so a timeout can report it instead of presenting a permanent
-	 * fault as an ordinary content mismatch.
+	 * So it is not swallowed: letting it out fails immediately with its own stack trace, instead of
+	 * spending the timeout and then reporting a content mismatch that describes the wrong problem.
 	 */
-	@Nullable
-	@VisibleForTesting
-	static byte[] contentOf(@NonNull final Path file, @NonNull final AtomicReference<IOException> sink)
+	@NonNull
+	private static byte[] contentOf(@NonNull final Path file)
 	{
 		try
 		{
-			final byte[] content = Files.readAllBytes(file);
-			// a read that has since succeeded must not keep a stale failure alive: attaching it to a later
-			// timeout would blame a fault that stopped happening, the inverse of the masking this sink exists
-			// to prevent
-			sink.set(null);
-			return content;
+			return Files.readAllBytes(file);
 		}
 		catch (final IOException e)
 		{
-			sink.set(e);
-			return null;
+			throw new UncheckedIOException("Failed to read " + file, e);
 		}
 	}
 

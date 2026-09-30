@@ -24,10 +24,8 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -87,48 +85,6 @@ class LocalArchiveAwaitTest
 		final Path settled = LocalArchiveAwait.awaitSingleFileWithContent(dir, CONTENT);
 
 		assertThat(Files.readAllBytes(settled)).isEqualTo(CONTENT);
-	}
-
-	/**
-	 * A read that never succeeds must not be reported as an ordinary content mismatch: the timeout has to
-	 * carry the failure, or whoever debugs it chases a timing theory while the real fault was that the file
-	 * could not be read at all. Provoked with a directory entry that cannot be read as a file.
-	 */
-	@Test
-	void surfacesAPersistentReadFailureOnTimeout() throws Exception
-	{
-		final Path dir = Files.createTempDirectory("archive-await");
-		Files.createDirectory(dir.resolve("scan.pdf")); // listed like a file, never readable as one
-
-		assertThatThrownBy(() -> LocalArchiveAwait.awaitSingleFileWithContent(dir, CONTENT, SHORT_TIMEOUT_MS))
-				.isInstanceOf(AssertionError.class)
-				.satisfies(thrown -> assertThat(thrown.getSuppressed())
-						.as("the read failure must travel with the timeout, not be swallowed")
-						.hasAtLeastOneElementOfType(IOException.class));
-	}
-
-	/**
-	 * A failure that has since stopped happening must not be reported at all. Asserted on the recorder
-	 * directly: provoking it through the wait would need the directory mutated mid-poll, which is the
-	 * thread-racing these tests deliberately do not do.
-	 * <p>
-	 * Without this, a timeout caused by a genuine content mismatch would carry a transient failure from an
-	 * earlier poll and blame a fault that was no longer occurring — the inverse of the masking the recorder
-	 * exists to prevent.
-	 */
-	@Test
-	void forgetsAReadFailureOnceAReadSucceeds() throws Exception
-	{
-		final Path dir = Files.createTempDirectory("archive-await");
-		final Path unreadable = Files.createDirectory(dir.resolve("unreadable"));
-		final Path readable = Files.write(dir.resolve("readable"), CONTENT);
-		final AtomicReference<IOException> sink = new AtomicReference<>();
-
-		assertThat(LocalArchiveAwait.contentOf(unreadable, sink)).isNull();
-		assertThat(sink.get()).as("the failing read must be recorded").isNotNull();
-
-		assertThat(LocalArchiveAwait.contentOf(readable, sink)).isEqualTo(CONTENT);
-		assertThat(sink.get()).as("a later success must clear it").isNull();
 	}
 
 	/**
