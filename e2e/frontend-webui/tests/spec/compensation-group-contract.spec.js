@@ -435,9 +435,10 @@ async function snap(page, name) {
 /**
  * Run `action` and wait until the change of `fieldName` it triggers has been sent to the backend
  * (the WebUI PATCHes a document / included row / process parameter on each field commit,
- * with a body of [{ op, path: <fieldName>, value }]).
+ * with a body of [{ op, path: <fieldName>, value }]). With `expectedKey`, only a change to that
+ * lookup/list key counts.
  */
-async function withFieldCommit(page, fieldName, action) {
+async function withFieldCommit(page, fieldName, action, expectedKey = undefined) {
   const committed = page.waitForResponse(
     (response) => {
       const request = response.request();
@@ -445,7 +446,8 @@ async function withFieldCommit(page, fieldName, action) {
         return false;
       }
       const body = request.postDataJSON();
-      return Array.isArray(body) && body.some((change) => change.path === fieldName);
+      return Array.isArray(body) && body.some((change) =>
+        change.path === fieldName && (expectedKey === undefined || lookupKey(change.value) === String(expectedKey)));
     },
     { timeout: SLOW_ACTION_TIMEOUT }
   );
@@ -545,13 +547,23 @@ async function setCheckbox(page, fieldName) {
   await expect(checkbox).toBeChecked();
 }
 
+/**
+ * Pick the option with the given key in a list field and wait until that key has been committed.
+ *
+ * The commit is awaited from the moment the dropdown is opened, not only from the option click:
+ * a mandatory list that offers a single option selects it by itself as soon as its values have
+ * loaded (ListWidget.requestListData, forceSelection), so the PATCH already goes out on the input
+ * click, and the option click afterwards sends no second PATCH.
+ */
 async function selectListByKey(page, scope, fieldName, key) {
   const input = scope.locator(`.form-field-${fieldName} input`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await input.click();
   const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
-  await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await withFieldCommit(page, fieldName, () => option.click());
+  await withFieldCommit(page, fieldName, async () => {
+    await input.click();
+    await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await option.click();
+  }, key);
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
 
