@@ -48,7 +48,14 @@ class ScriptedImportConversionLocalArchiver
 	 * Writes {@code content}'s raw bytes to {@code directory}/{@code fileName} (creating missing parent
 	 * dirs), never decoding/re-encoding them. Never overwrites either: a name collision (e.g. a scanner
 	 * reusing {@code scan001.pdf}) gets a numeric suffix and a retried write, with
-	 * {@link StandardOpenOption#CREATE_NEW} closing the check-then-write race atomically.
+	 * {@link StandardOpenOption#CREATE_NEW} closing the COLLISION race atomically — creation either wins
+	 * or throws, so two archivers cannot both claim one name.
+	 * <p>
+	 * That atomicity covers the name, NOT the content: creation and the write are two observable steps, so
+	 * a reader listing the directory can see the entry before its bytes are there. Nothing in this flow
+	 * re-reads the archive (the route polls only the input root), so no consumer of ours is exposed; an
+	 * external watcher of the processed/error directory would be, and closing that would mean publishing
+	 * via a temp file plus an atomic rename.
 	 *
 	 * @throws RuntimeCamelException if {@code fileName} would resolve outside {@code directory}, or the
 	 * write fails for any other reason.
