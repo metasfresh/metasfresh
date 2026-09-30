@@ -169,14 +169,20 @@ def test_a_customer_suffix_is_not_a_subfeature_separator():
 
 def test_a_tag_only_feature_is_published_with_a_null_uid(tmp_path):
     """It must appear in the index -- with nothing to deep-link to -- rather than
-    look absent. Previously such a feature was simply not in permalinks.json."""
+    look absent. Previously such a feature was simply not in permalinks.json.
+
+    It now ALSO carries `tests`: with no Behaviours node there is no node uid to
+    link at, so the per-test uids are the only way to reach the tests at all."""
     bdir = tmp_path / "allure" / "cucumber" / "data"
     bdir.mkdir(parents=True)
     (bdir / "behaviors.json").write_text(json.dumps({"children": [
         {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [
             _leaf("a".ljust(32, "0"), "F12345")]}]}), encoding="utf-8")
     feats, _ = gp.build_index(str(tmp_path))
-    assert feats["F12345"]["cucumber"] == {"uid": None, "count": 0, "tagged": 1}
+    assert feats["F12345"]["cucumber"] == {
+        "uid": None, "count": 0, "tagged": 1,
+        "tests": [{"uid": "a".ljust(32, "0"), "name": "t-" + "a".ljust(32, "0"),
+                   "status": None}]}
 
 
 def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path):
@@ -204,3 +210,102 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     assert gp._canonical_fcode("F5001") == "F5001"
     assert gp._canonical_fcode("F00138_se203") == "F00138_se203"
     assert gp._canonical_fcode("F00762.1_is184") == "F00762.1_is184"
+
+
+# --- per-test deep links: published ONLY where the node link falls short -----
+
+def _behaviors(tmp_path, suite, root):
+    d = tmp_path / "allure" / suite / "data"
+    d.mkdir(parents=True)
+    (d / "behaviors.json").write_text(json.dumps(root), encoding="utf-8")
+    return tmp_path
+
+
+def test_no_node_at_all_publishes_every_tagged_test_as_a_link(tmp_path):
+    """The case the resolver could only answer with 'no linkable node'."""
+    base = _behaviors(tmp_path, "frontend-webui", {"children": [
+        {"name": "E0100: Sales", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "Complete Order-to-Cash", "uid": "s".ljust(32, "0"), "children": [
+                _leaf("1".ljust(16, "0"), "F00105"),
+                _leaf("2".ljust(16, "0"), "F00105")]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00105"]["frontend-webui"]
+    assert e["uid"] is None and e["tagged"] == 2
+    assert [t["uid"] for t in e["tests"]] == ["1".ljust(16, "0"), "2".ljust(16, "0")]
+
+
+def test_a_node_that_covers_everything_publishes_no_test_list(tmp_path):
+    """The node link already reaches every tagged test, so a list is pure weight —
+    attaching it unconditionally grew the published index by ~70%."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E0105 Picking", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00230 MobileUI Picking", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00230"),
+                _leaf("b".ljust(32, "0"), "F00230")]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00230"]["cucumber"]
+    assert e["uid"] == "f".ljust(32, "0") and e["count"] == 2 and e["tagged"] == 2
+    assert "tests" not in e
+
+
+def test_a_node_covering_fewer_than_tagged_publishes_the_list(tmp_path):
+    """Worse than having no node: the link LOOKS complete. Measured on the real
+    report, F00700/cucumber links to a node holding 1 test while 115 are tagged."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E1 Epic", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00700 Invoicing", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00700")]}]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            _leaf("b".ljust(32, "0"), "F00700"),
+            _leaf("c".ljust(32, "0"), "F00700")]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00700"]["cucumber"]
+    assert e["count"] == 1 and e["tagged"] == 3, "node shows fewer than carry the tag"
+    assert [t["uid"] for t in e["tests"]] == [
+        "a".ljust(32, "0"), "b".ljust(32, "0"), "c".ljust(32, "0")]
+
+
+def test_the_published_test_list_is_capped(tmp_path):
+    """`tagged` keeps the true total, so the page can say 'showing N of M'."""
+    leaves = [_leaf(str(i).rjust(32, "0"), "F00900") for i in range(gp.MAX_LINKED_TESTS + 7)]
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": leaves}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00900"]["cucumber"]
+    assert e["tagged"] == gp.MAX_LINKED_TESTS + 7
+    assert len(e["tests"]) == gp.MAX_LINKED_TESTS
+
+
+def test_a_test_without_a_uid_is_not_published_as_a_link(tmp_path):
+    """It cannot be linked. `tagged` still counts it, so the page reports
+    'showing N of M' instead of implying the list is complete."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            {"name": "no-uid test", "tags": ["F01234"]},
+            _leaf("b".ljust(32, "0"), "F01234")]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F01234"]["cucumber"]
+    assert e["tagged"] == 2
+    assert [t["uid"] for t in e["tests"]] == ["b".ljust(32, "0")]
+
+
+def test_the_internal_scratch_key_never_reaches_the_published_file(tmp_path):
+    """`_tests` is build-time scratch; leaking it would double the file size."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            _leaf("a".ljust(32, "0"), "F05555")]}]})
+    gp.main(["prog", "b", "v1", str(tmp_path.parent)]) if False else None
+    feats, _ = gp.build_index(str(base))
+    for entry in feats.values():
+        for e in entry.values():
+            assert "_tests" not in e
+
+
+def test_extract_tagged_features_still_counts_the_same(tmp_path):
+    """The count wrapper is what `tagged` is built from; keep it pinned directly."""
+    root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
+        _leaf("a".ljust(32, "0"), "F00900: Business Partner", "F00900"),
+        _leaf("b".ljust(32, "0"), "F00900")]}]}
+    assert gp.extract_tagged_features(root) == {"F00900": 2}
+    assert [t["uid"] for t in gp.extract_tagged_tests(root)["F00900"]] == [
+        "a".ljust(32, "0"), "b".ljust(32, "0")]

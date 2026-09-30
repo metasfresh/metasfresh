@@ -13,6 +13,12 @@ FCODE_RE = re.compile(r"^(F\d+(?:\.\d+)?)\b")
 TAG_FCODE_RE = re.compile(r"^\s*(F\d+(?:[._]\d+)?)\s*(?::|$)")
 ECODE_RE = re.compile(r"^E\d+\b")
 SPEC_SUFFIXES = (".spec.js", ".feature")
+#: Cap on per-test deep links published for one feature in one suite. The true
+#: total always stays in `tagged`, so a capped list is reported as "N of M".
+MAX_LINKED_TESTS = 25
+#: Test names are free text; bound them so one pathological name cannot bloat
+#: the published index.
+NAME_MAX = 160
 
 def _count_leaves(node):
     # A leaf test-case has no "children" key (Allure uses null); a group node has a
@@ -46,6 +52,36 @@ def _canonical_fcode(code):
     """`F5001_1` and `F5001.1` are the same subfeature; index them once."""
     return code.replace("_", ".", 1) if re.match(r"^F\d+_\d", code) else code
 
+def extract_tagged_tests(behaviors_root):
+    """{F-code: [{"uid","name","status"}, ...]} for every test carrying it as a TAG.
+
+    Same traversal and de-duplication as `extract_tagged_features` (which is now
+    a thin count-only wrapper over this); it returns the tests themselves so the
+    resolver can deep-link each one where no Behaviours node exists to link at.
+    """
+    seen = {}   # F-code -> {uid: record}; dict, not set, to keep a stable order
+                # AND de-duplicate, because a test appears MORE THAN ONCE in the
+                # tree (cucumber lists every test under its .feature file AND
+                # again under Epic -> Feature). Counting occurrences inflated
+                # F00230 from 190 real tests to 293 before this was de-duplicated.
+    def walk(node):
+        ch = node.get("children")
+        if ch is None:
+            key = node.get("uid") or node.get("name")
+            rec = {"uid": node.get("uid"),
+                   "name": (node.get("name") or "")[:NAME_MAX],
+                   "status": node.get("status")}
+            for tag in node.get("tags") or []:
+                m = TAG_FCODE_RE.match(str(tag))
+                if m:
+                    seen.setdefault(_canonical_fcode(m.group(1)), {}).setdefault(key, rec)
+            return
+        for c in ch:
+            walk(c)
+    for top in behaviors_root.get("children") or []:
+        walk(top)
+    return {code: list(bag.values()) for code, bag in seen.items()}
+
 def extract_tagged_features(behaviors_root):
     """{F-code: number of tests carrying it as a TAG}, for the whole tree.
 
@@ -59,24 +95,7 @@ def extract_tagged_features(behaviors_root):
     Indexing the tag route is what lets the resolver page say which of the two
     numbers a link is about to show.
     """
-    seen = {}   # F-code -> set of leaf uids, because a test appears MORE THAN ONCE
-                # in the tree (cucumber lists every test under its .feature file AND
-                # again under Epic -> Feature). Counting occurrences inflated F00230
-                # from 190 real tests to 293 before this was de-duplicated.
-    def walk(node):
-        ch = node.get("children")
-        if ch is None:
-            uid = node.get("uid") or node.get("name")
-            for tag in node.get("tags") or []:
-                m = TAG_FCODE_RE.match(str(tag))
-                if m:
-                    seen.setdefault(_canonical_fcode(m.group(1)), set()).add(uid)
-            return
-        for c in ch:
-            walk(c)
-    for top in behaviors_root.get("children") or []:
-        walk(top)
-    return {code: len(uids) for code, uids in seen.items()}
+    return {code: len(tests) for code, tests in extract_tagged_tests(behaviors_root).items()}
 
 def extract_specs(suites_root):
     out = {}
@@ -102,16 +121,47 @@ def build_index(build_dir):
             # this suite and still have no entry above. Record it either way --
             # with a null uid when there is nothing to deep-link to, so the
             # resolver can say "no linkable node" instead of the key looking absent.
-            for code, tagged in extract_tagged_features(behaviors).items():
+            for code, tests in extract_tagged_tests(behaviors).items():
                 entry = features.setdefault(code, {}).setdefault(
                     suite, {"uid": None, "count": 0, "tagged": 0})
-                entry["tagged"] = tagged
+                entry["tagged"] = len(tests)
+                entry["_tests"] = tests
         spath = os.path.join(build_dir, "allure", suite, "data", "suites.json")
         if os.path.isfile(spath):
             with open(spath, encoding="utf-8") as f:
                 for name, (uid, count) in extract_specs(json.load(f)).items():
                     specs.setdefault(name, {})[suite] = {"uid": uid, "count": count}
+    _attach_test_links(features)
     return features, specs
+
+def _attach_test_links(features):
+    """Publish per-test deep links only where the node link cannot stand in for them.
+
+    Two cases, both measured on 5.175-new-dawn-release.44677:
+      * NO Behaviours node at all -- 83 feature/suite pairs covering 339 tests.
+        The page could previously only say "no linkable node".
+      * A node that covers FEWER tests than carry the tag -- 11 pairs, and worse
+        than the first case because the link LOOKS complete: F00700 in cucumber
+        links to a node holding 1 test while 115 carry the tag.
+
+    Everywhere else the node link already reaches every tagged test, so a list
+    would be pure weight: attaching it unconditionally grew permalinks.json by
+    ~70% (+117 KB) against ~19% (+32 KB) for the cases that need it.
+
+    A test with no uid cannot be linked and is dropped from the list -- `tagged`
+    still counts it, so the page reports "showing N of M" rather than implying
+    the list is everything.
+    """
+    for entry in features.values():
+        for e in entry.values():
+            tests = e.pop("_tests", None)
+            if not tests:
+                continue
+            if e.get("uid") and e.get("count", 0) >= e.get("tagged", 0):
+                continue          # the node link already shows them all
+            linkable = [t for t in tests if t.get("uid")]
+            if linkable:
+                e["tests"] = linkable[:MAX_LINKED_TESTS]
 
 def main(argv):
     branch, version = argv[1], argv[2]

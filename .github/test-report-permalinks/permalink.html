@@ -25,6 +25,39 @@
     msg.appendChild(codeEl);
     msg.appendChild(document.createTextNode(' on this branch’s newest build.'));
   }
+  // Individual test links, for the two cases where the Behaviours node cannot
+  // stand in for them: there is no node at all, or the node covers fewer tests
+  // than carry the F-code. Without this the page could only say "no linkable
+  // node" — 83 feature/suite pairs on new-dawn-release, covering 339 tests.
+  function testList(version, s) {
+    if (!s.tests || !s.tests.length) { return null; }
+    var wrap = document.createElement('div');
+    var cap = document.createElement('div');
+    cap.style.cssText = 'margin:4px 0 2px;font-size:90%;color:#555';
+    cap.textContent = s.tests.length < s.tagged
+      ? 'showing ' + s.tests.length + ' of ' + s.tagged + ' tagged tests:'
+      : (s.tests.length === 1 ? 'the tagged test:' : 'all ' + s.tests.length + ' tagged tests:');
+    wrap.appendChild(cap);
+    var ul = document.createElement('ul');
+    ul.style.cssText = 'margin:0 0 8px';
+    s.tests.forEach(function (t) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = Permalink.buildTestUrl(version, s.suite, t.uid);
+      a.textContent = t.name || t.uid;
+      li.appendChild(a);
+      if (t.status) {
+        var st = document.createElement('span');
+        st.style.cssText = 'margin-left:6px;font-size:85%;color:'
+          + (t.status === 'passed' ? '#2e7d32' : (t.status === 'failed' || t.status === 'broken' ? '#c62828' : '#777'));
+        st.textContent = t.status;
+        li.appendChild(st);
+      }
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+    return wrap;
+  }
   function chooser(version, entry, suites) {
     msg.textContent = '';
     var h = document.createElement('p');
@@ -32,22 +65,30 @@
     var codeEl = document.createElement('code');
     codeEl.textContent = key;
     h.appendChild(codeEl);
-    h.appendChild(document.createTextNode(' has tests in ' + suites.length + ' suites — pick one:'));
+    h.appendChild(document.createTextNode(suites.length === 1
+      ? ' — tests in 1 suite:'
+      : ' has tests in ' + suites.length + ' suites — pick one:'));
     msg.appendChild(h);
     var ul = document.createElement('ul');
     suites.forEach(function (s, i) {
       var li = document.createElement('li');
       var a = document.createElement('a');
-      a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
-      // `count` is what the link will actually show; `tagged` is how many tests
-      // carry the F-code. They differ whenever the specs tag instead of calling
-      // allure.feature(), so say both rather than let the link look complete.
+      // `count` is what the node link will actually show; `tagged` is how many
+      // tests carry the F-code. They differ whenever the specs tag instead of
+      // calling allure.feature(), so say both rather than let the link look
+      // complete — and list the individual tests underneath.
       var label = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests');
       if (s.tagged > s.count) { label += ' shown of ' + s.tagged + ' tagged'; }
-      if (!s.uid) { label = s.suite + ' — ' + s.tagged + ' tagged, no linkable node'; }
-      a.textContent = label + (i === 0 && s.uid ? ' (most)' : '');
-      if (!s.uid) { a.removeAttribute('href'); }
-      li.appendChild(a);
+      if (!s.uid) { label = s.suite + ' — ' + s.tagged + ' tagged, no grouping node'; }
+      if (s.uid) {
+        a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
+        a.textContent = label + (i === 0 && Permalink.isComplete(s) ? ' (most)' : '');
+        li.appendChild(a);
+      } else {
+        li.appendChild(document.createTextNode(label));
+      }
+      var tl = testList(version, s);
+      if (tl) { li.appendChild(tl); }
       ul.appendChild(li);
     });
     msg.appendChild(ul);
@@ -58,15 +99,27 @@
       var entry = Permalink.lookup(data, kind, key);
       if (!entry) { notFound(); return; }
       var suites = Permalink.suitesByCount(entry);
-      // explicit &suite= override, or 0/1 suite -> go straight there (a 0-suite entry can't
-      // happen from the generator, but <=1 keeps it falling to notFound() rather than a 0-item chooser)
-      if (suite || suites.length <= 1) {
+      if (!suites.length) { notFound(); return; }
+      // An explicit &suite= is a deliberate choice, so it still redirects when it
+      // can — that keeps every previously-shared permalink resolving as before.
+      if (suite) {
         var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
-        if (!url) { notFound(); return; }  // e.g. an &suite= value with no tests for this key, or an empty entry
-        location.replace(url);
+        if (url) { location.replace(url); return; }
+        chooser(data.version, entry, suites.filter(function (s) { return s.suite === suite; }));
         return;
       }
-      // multi-suite, no override -> surface the alternatives instead of silently redirecting
+      // One suite whose node covers EVERY tagged test -> nothing to choose or
+      // qualify, go straight there. Redirecting when the node is partial (or
+      // absent) is what made the page look complete while showing a fraction.
+      if (suites.length === 1 && Permalink.isComplete(suites[0])) {
+        var one = Permalink.buildRedirectUrl(data.version, kind, entry, suites[0].suite);
+        if (one) { location.replace(one); return; }
+      }
+      // Specs have no tag route, so a single spec suite still redirects as before.
+      if (kind === 'spec' && suites.length === 1 && suites[0].uid) {
+        var sp = Permalink.buildRedirectUrl(data.version, kind, entry, suites[0].suite);
+        if (sp) { location.replace(sp); return; }
+      }
       chooser(data.version, entry, suites);
     })
     .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });

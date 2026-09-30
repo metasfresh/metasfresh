@@ -98,3 +98,38 @@ assert.strictEqual(
   P.chooseSuite({ 'cucumber': { uid: 'a'.repeat(32), count: 1, tagged: 1 },
                   'frontend-webui': { uid: null, count: 99, tagged: 99 } }),
   'cucumber');
+
+// --- per-test deep links -----------------------------------------------------
+
+// buildTestUrl targets Allure's single-test route, verified against the live
+// report: .../index.html#testresult/<uid> opens that test's detail page.
+assert.strictEqual(
+  P.buildTestUrl('5.175-x.1', 'frontend-webui', '80b362963a825ee0'),
+  'builds/5.175-x.1/allure/frontend-webui/index.html#testresult/80b362963a825ee0');
+assert.strictEqual(P.buildTestUrl('v', 's', null), null, 'no uid -> no link');
+assert.strictEqual(P.buildTestUrl(null, 's', 'u'), null, 'no version -> no link');
+
+// isComplete decides whether a silent redirect is honest.
+assert.strictEqual(P.isComplete({ uid: 'x', count: 5, tagged: 5 }), true);
+assert.strictEqual(P.isComplete({ uid: 'x', count: 5, tagged: 0 }), true, 'node-only feature');
+assert.strictEqual(P.isComplete({ uid: 'x', count: 1, tagged: 115 }), false,
+  'F00700/cucumber: the node holds 1 of 115 tagged — redirecting there looks complete');
+assert.strictEqual(P.isComplete({ uid: null, count: 0, tagged: 2 }), false);
+assert.strictEqual(P.isComplete(null), false);
+
+// suitesByCount carries the published test list through to the page.
+const tagged = {
+  'frontend-webui': { uid: null, count: 0, tagged: 2,
+                      tests: [{ uid: 'u1', name: 'English UI', status: 'passed' },
+                              { uid: 'u2', name: 'German UI', status: 'passed' }] },
+  'cucumber': { uid: 'c'.repeat(32), count: 13, tagged: 6 }
+};
+const byCount = P.suitesByCount(tagged);
+assert.strictEqual(byCount[0].suite, 'cucumber', 'linkable suites sort first');
+assert.strictEqual(byCount[1].tests.length, 2, 'test list survives suitesByCount');
+assert.deepStrictEqual(P.suitesByCount({ 'x': { uid: 'u', count: 1 } })[0].tests, [],
+  'absent test list normalises to []');
+
+// A tag-only suite still has no node link — the per-test links are the only route.
+assert.strictEqual(P.buildRedirectUrl('v', 'feature', tagged, 'frontend-webui'), null);
+assert.strictEqual(P.chooseSuite(tagged), 'cucumber');
