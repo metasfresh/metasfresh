@@ -1,6 +1,8 @@
 package de.metas.bpartner.service.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
@@ -10,6 +12,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -131,24 +134,76 @@ public class GLNLoadingCacheTest
 		assertThatThrownBy(() -> glnLoadingCache.getSingleBPartnerId(query)).isInstanceOf(AdempiereException.class);
 	}
 
-	private void createBPartnerLocationRecord(@NonNull final OrgId orgId, 
+	@Nested
+	class onlyActive
+	{
+		@Test
+		public void onlyActive_ignores_inactive_partner()
+		{
+			final GLN gln = GLN.ofString("gln-active-only");
+			createBPartnerLocationRecord(orgId1, bpartnerId1, gln, null, true, true);
+			createBPartnerLocationRecord(orgId1, bpartnerId2, gln, null, false, true);
+
+			assertThat(glnLoadingCache.getBPartnerIds(GLNQuery.builder().gln(gln).onlyActive(true).build()))
+					.containsExactlyInAnyOrder(bpartnerId1);
+		}
+
+		@Test
+		public void onlyActive_ignores_inactive_location()
+		{
+			final GLN gln = GLN.ofString("gln-active-only");
+			final BPartnerLocationId activeLocationId = createBPartnerLocationRecord(orgId1, bpartnerId1, gln, null, true, true);
+			createBPartnerLocationRecord(orgId1, bpartnerId1, gln, null, true, false);
+
+			assertThat(glnLoadingCache.getBPartnerLocationIds(GLNQuery.builder().gln(gln).onlyActive(true).build()))
+					.isEqualTo(ImmutableSet.of(activeLocationId));
+		}
+
+		@Test
+		public void default_keeps_inactive_partner_and_location()
+		{
+			final GLN gln = GLN.ofString("gln-active-only");
+			createBPartnerLocationRecord(orgId1, bpartnerId1, gln, null, true, true);
+			createBPartnerLocationRecord(orgId1, bpartnerId2, gln, null, false, true);
+			createBPartnerLocationRecord(orgId1, bpartnerId1, gln, null, true, false);
+
+			final GLNQuery query = GLNQuery.builder().gln(gln).build();
+			assertThat(glnLoadingCache.getBPartnerIds(query)).containsExactlyInAnyOrder(bpartnerId1, bpartnerId2);
+			assertThat(glnLoadingCache.getBPartnerLocationIds(query)).hasSize(3);
+		}
+	}
+
+	private void createBPartnerLocationRecord(@NonNull final OrgId orgId,
 											  @NonNull final BPartnerId bpartnerId,
-											  @Nullable final GLN gln, 
+											  @Nullable final GLN gln,
 											  @Nullable final String glnLookupLabel)
 	{
-		bpartnerId2BPartnerMap.computeIfAbsent(bpartnerId, id -> {
+		createBPartnerLocationRecord(orgId, bpartnerId, gln, glnLookupLabel, true, true);
+	}
+
+	private BPartnerLocationId createBPartnerLocationRecord(@NonNull final OrgId orgId,
+															@NonNull final BPartnerId bpartnerId,
+															@Nullable final GLN gln,
+															@Nullable final String glnLookupLabel,
+															final boolean partnerActive,
+															final boolean locationActive)
+	{
+		final I_C_BPartner bpartner = bpartnerId2BPartnerMap.computeIfAbsent(bpartnerId, id -> {
 			final I_C_BPartner newBPartner = newInstance(I_C_BPartner.class);
 			newBPartner.setC_BPartner_ID(id.getRepoId());
 			newBPartner.setAD_Org_ID(orgId.getRepoId());
 			newBPartner.setLookup_Label(glnLookupLabel);
-			saveRecord(newBPartner);
 			return newBPartner;
 		});
+		bpartner.setIsActive(partnerActive);
+		saveRecord(bpartner);
 
 		final I_C_BPartner_Location record = newInstance(I_C_BPartner_Location.class);
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setGLN(GLN.toCode(gln));
+		record.setIsActive(locationActive);
 		saveRecord(record);
+		return BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID());
 	}
 }

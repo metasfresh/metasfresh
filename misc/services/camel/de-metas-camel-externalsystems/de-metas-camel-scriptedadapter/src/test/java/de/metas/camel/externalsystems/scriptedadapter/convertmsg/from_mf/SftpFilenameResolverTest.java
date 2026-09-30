@@ -94,4 +94,18 @@ class SftpFilenameResolverTest
 		final String result = SftpFilenameResolver.resolve("{timestamp}.json", Map.of());
 		assertThat(result).matches("\\d{8}_\\d{6}\\.json");
 	}
+
+	@Test
+	void index_placeholder_is_replaced()
+	{
+		final String result = SftpFilenameResolver.resolve("DESADV_{recordid}_{index}.edi", Map.of("recordid", "123", "index", "2"));
+		assertThat(result).isEqualTo("DESADV_123_2.edi");
+	}
+
+	@Test
+	void index_placeholder_is_empty_without_fan_out()
+	{
+		final String result = SftpFilenameResolver.resolve("DESADV_{recordid}_{index}.edi", Map.of("recordid", "123"));
+		assertThat(result).isEqualTo("DESADV_123_.edi");
+	}
 }
