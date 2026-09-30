@@ -8,6 +8,7 @@ UPDATE AD_Index_Column SET ColumnSQL='COALESCE(Customer_Group_ID, 0)', Updated=T
 
 -- add C_BPartner_Customer_ID to the index
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,ColumnSQL,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,570071,541546 /*From ID Server*/,540507,0,'COALESCE(C_BPartner_Customer_ID, 0)',TO_TIMESTAMP('2026-09-25 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts.commission','Y',40,TO_TIMESTAMP('2026-09-25 10:00:01','YYYY-MM-DD HH24:MI:SS'),100)
+ON CONFLICT (AD_Index_Column_ID) DO NOTHING -- the script is applied manually on one instance ahead of the rollout
 ;
 
 DROP INDEX IF EXISTS C_CommissionSettingsLine_UC
