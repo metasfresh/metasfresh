@@ -8,6 +8,7 @@ import de.metas.cache.CCache;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -43,6 +44,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -243,9 +245,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId)
 	{
-		final BigDecimal qtyToInvoice = invoiceCandidate.getQtyToInvoice();
 		// invoiced and to invoice now, like the regular lines: a compounding percent line's base deducts the whole amount of the lines before it
-		final BigDecimal qtyInvoicedAndToInvoice = invoiceCandidate.getQtyInvoiced().add(qtyToInvoice);
+		final BigDecimal qtyInvoicedAndToInvoice = invoiceCandidate.getQtyInvoiced().add(invoiceCandidate.getQtyToInvoice());
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
 
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
@@ -254,7 +255,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final BigDecimal qtyInPriceUom = uomConversionBL.convertFromProductUOM(productId, priceUomId, qtyInvoicedAndToInvoice);
 
 		final UomId qtyEnteredUomId = UomId.ofRepoId(invoiceCandidate.getC_UOM_ID());
-		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, qtyEnteredUomId, qtyToInvoice);
+		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, qtyEnteredUomId, qtyInvoicedAndToInvoice);
 
 		final BigDecimal lineNetAmt = price.multiply(qtyInPriceUom);
 
@@ -525,6 +526,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	/**
 	 * @return {@code true} if at least one regular (non-compensation) invoice candidate of the group has something to invoice now
+	 * that the invoicing will not leave out (i.e. neither in dispute nor in error)
 	 */
 	public boolean hasRegularInvoiceCandidatesToInvoice(@NonNull final GroupId groupId)
 	{
@@ -532,8 +534,35 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, BigDecimal.ZERO)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInDispute, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsError, false)
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if goods of the group were invoiced on an invoice (or credit memo) that has no line of the given compensation candidate,
+	 * i.e. goods were invoiced without their discount
+	 */
+	public boolean hasRegularInvoiceLinesWithout(@NonNull final GroupId groupId, @NonNull final InvoiceCandidateId compensationInvoiceCandidateId)
+	{
+		final ImmutableSet<Integer> goodsInvoiceIds = retrieveInvoiceCandidatesForGroupQuery(groupId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
+				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+				.create()
+				.listDistinctAsImmutableSet(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, Integer.class);
+		if (goodsInvoiceIds.isEmpty())
+		{
+			return false;
+		}
+
+		final ImmutableSet<Integer> compensationInvoiceIds = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, compensationInvoiceCandidateId)
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+				.create()
+				.listDistinctAsImmutableSet(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, Integer.class);
+		return !compensationInvoiceIds.containsAll(goodsInvoiceIds);
 	}
 
 	/** Goods that are neither invoiced nor to invoice now; the SQL is used on the database, {@link #accept} in unit tests. */

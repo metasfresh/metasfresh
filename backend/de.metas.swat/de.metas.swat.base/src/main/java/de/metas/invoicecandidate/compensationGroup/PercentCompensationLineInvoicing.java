@@ -1,8 +1,11 @@
 package de.metas.invoicecandidate.compensationGroup;
 
+import de.metas.currency.ICurrencyDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.product.ProductId;
@@ -14,6 +17,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -67,6 +73,7 @@ public class PercentCompensationLineInvoicing
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final InvoiceCandidateGroupRepository groupsRepo;
 
 	public PercentCompensationLineInvoicing(@NonNull final InvoiceCandidateGroupRepository groupsRepo)
@@ -90,9 +97,9 @@ public class PercentCompensationLineInvoicing
 	 */
 	public void updateQtyOrdered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (!isPercentCompensationLine(ic))
+		if (!isPercentCompensationLine(ic) || isPriceOverridden(ic))
 		{
-			return;
+			return; // an overridden discount is invoiced once, in full (see #computeOpenAmount)
 		}
 
 		final BigDecimal openUnit = groupsRepo.hasNotProcessedRegularInvoiceCandidates(extractGroupId(ic)) ? ONE : ZERO;
@@ -100,7 +107,7 @@ public class PercentCompensationLineInvoicing
 	}
 
 	/**
-	 * Expects the price (i.e. the discount amount still open) and {@code QtyInvoiced} to be up to date.
+	 * Expects the calculated price (i.e. the discount amount still open), {@code QtyInvoiced}, {@code NetAmtInvoiced} and the processed flag to be up to date.
 	 * <p>
 	 * For a reopened unit, a user's {@code QtyToInvoice_Override} still caps what is invoiced; candidates in dispute
 	 * are left out by the invoicing itself ({@code InvoiceCandBL#getInvoicingSkipReasonOrNull}), and quality issues only
@@ -113,7 +120,7 @@ public class PercentCompensationLineInvoicing
 			return; // not ours, or closed by the user
 		}
 
-		final boolean openAmount = invoiceCandBL.getPriceActual(ic).toBigDecimal().signum() != 0;
+		final boolean openAmount = computeOpenAmount(ic).signum() != 0;
 		// QtyOrdered was set before QtyInvoiced was brought up to date; it never counts less than what is invoiced (else the candidate reads over-invoiced),
 		// and while a discount amount is open (e.g. the discount was left off its goods' invoice), one more unit stays open for it, even if all goods are invoiced
 		final BigDecimal minQtyOrdered = ic.getQtyInvoiced().add(openAmount ? ONE : ZERO);
@@ -155,6 +162,46 @@ public class PercentCompensationLineInvoicing
 	}
 
 	/**
+	 * The discount amount still open, from the calculated values, never from the effective price: the calculated price is the
+	 * percentage of the goods invoiced so far and to invoice now, minus the discount invoiced so far (see {@code C_OrderLine_Handler#calculatePriceAndTax}).
+	 * <ul>
+	 * <li>A user's price or discount override replaces the calculated total discount: it is invoiced once, in full, and so it is open
+	 * only while nothing of it is invoiced. Changing the override after the discount was invoiced does not invoice the difference.</li>
+	 * <li>A processed discount only reopens for goods that were invoiced without it (e.g. it was held back from their invoice),
+	 * and never for a difference within the currency precision, so that settled orders are not reopened by rounding or by
+	 * a changed percentage.</li>
+	 * </ul>
+	 */
+	private BigDecimal computeOpenAmount(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (isPriceOverridden(ic))
+		{
+			final boolean nothingInvoiced = ic.getQtyInvoiced().signum() == 0 && ic.getNetAmtInvoiced().signum() == 0;
+			return nothingInvoiced ? invoiceCandBL.getPriceActual(ic).toBigDecimal() : ZERO;
+		}
+
+		final BigDecimal openAmount = ic.getPriceActual();
+		if (openAmount.signum() == 0 || !ic.isProcessed())
+		{
+			return openAmount;
+		}
+
+		final BigDecimal tolerance = ONE.movePointLeft(currencyDAO.getStdPrecision(CurrencyId.ofRepoId(ic.getC_Currency_ID())).toInt());
+		if (openAmount.abs().compareTo(tolerance) <= 0
+				|| !groupsRepo.hasRegularInvoiceLinesWithout(extractGroupId(ic), InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())))
+		{
+			return ZERO;
+		}
+		return openAmount;
+	}
+
+	private static boolean isPriceOverridden(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return !InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override)
+				|| !InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_Discount_Override);
+	}
+
+	/**
 	 * A never invoiced discount without open amount goes along with goods to invoice: a 0 % discount with the first ones, so that no
 	 * invoice holds only the 0.00 line; any other one (e.g. whose goods are out of its product category) only with the last ones,
 	 * so that it does not carry a 0.00 line on every invoice.
@@ -190,15 +237,20 @@ public class PercentCompensationLineInvoicing
 	/**
 	 * DateInvoiced/DateAcct are part of the header aggregation key; after its earlier invoice this candidate still carries that invoice's dates.
 	 * Without aligning them, the next discount unit would not be invoiced together with its goods, but in an invoice of its own.
+	 * Without goods to invoice (the discount alone, e.g. after it was held back), the dates are cleared, so that it gets the dates of any new invoice.
 	 */
 	private void alignInvoiceDatesWithGoodsToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		groupsRepo.retrieveFirstRegularInvoiceCandidateToInvoice(extractGroupId(ic))
-				.ifPresent(goodsToInvoice -> {
-					ic.setDateInvoiced(goodsToInvoice.getDateInvoiced());
-					ic.setDateAcct(goodsToInvoice.getDateAcct());
-					aggregationBL.getUpdateProcessor().process(ic);
-				});
+		final Optional<I_C_Invoice_Candidate> goodsToInvoice = groupsRepo.retrieveFirstRegularInvoiceCandidateToInvoice(extractGroupId(ic));
+		final Timestamp dateInvoiced = goodsToInvoice.map(I_C_Invoice_Candidate::getDateInvoiced).orElse(null);
+		final Timestamp dateAcct = goodsToInvoice.map(I_C_Invoice_Candidate::getDateAcct).orElse(null);
+		if (Objects.equals(dateInvoiced, ic.getDateInvoiced()) && Objects.equals(dateAcct, ic.getDateAcct()))
+		{
+			return;
+		}
+		ic.setDateInvoiced(dateInvoiced);
+		ic.setDateAcct(dateAcct);
+		aggregationBL.getUpdateProcessor().process(ic);
 	}
 
 	private GroupId extractGroupId(@NonNull final I_C_Invoice_Candidate ic)

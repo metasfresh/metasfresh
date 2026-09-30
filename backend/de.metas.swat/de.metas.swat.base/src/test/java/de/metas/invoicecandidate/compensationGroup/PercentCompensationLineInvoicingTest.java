@@ -1,10 +1,14 @@
 package de.metas.invoicecandidate.compensationGroup;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_UOM;
@@ -64,6 +68,9 @@ class PercentCompensationLineInvoicingTest
 
 		currency = newInstance(I_C_Currency.class);
 		currency.setStdPrecision(2);
+		currency.setISO_Code("EUR");
+		currency.setCurSymbol("€");
+		currency.setDescription("euro");
 		saveRecord(currency);
 
 		product = newInstance(I_M_Product.class);
@@ -86,7 +93,7 @@ class PercentCompensationLineInvoicingTest
 		return groupHeader.getC_Order_CompensationGroup_ID();
 	}
 
-	private void createGoodsCandidate(final int orderCompensationGroupId, final boolean processed, final BigDecimal qtyToInvoice)
+	private I_C_Invoice_Candidate createGoodsCandidate(final int orderCompensationGroupId, final boolean processed, final BigDecimal qtyToInvoice)
 	{
 		final I_C_Invoice_Candidate goods = newInstance(I_C_Invoice_Candidate.class);
 		goods.setC_Order_ID(order.getC_Order_ID());
@@ -96,6 +103,40 @@ class PercentCompensationLineInvoicingTest
 		goods.setQtyOrdered(ONE);
 		goods.setQtyToInvoice(qtyToInvoice);
 		saveRecord(goods);
+		return goods;
+	}
+
+	private I_C_Invoice createInvoice()
+	{
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("invoice"); // no generated document number, no log output about it
+		saveRecord(invoice);
+		return invoice;
+	}
+
+	/** Allocates one unit of the given candidate to a new line of the given invoice. */
+	private static void allocate(final I_C_Invoice_Candidate ic, final I_C_Invoice invoice)
+	{
+		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
+		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		saveRecord(invoiceLine);
+
+		final I_C_Invoice_Line_Alloc ila = newInstance(I_C_Invoice_Line_Alloc.class);
+		ila.setC_Invoice_Candidate_ID(ic.getC_Invoice_Candidate_ID());
+		ila.setC_InvoiceLine_ID(invoiceLine.getC_InvoiceLine_ID());
+		ila.setQtyInvoiced(ONE);
+		ila.setDocStatus(X_C_Invoice_Line_Alloc.DOCSTATUS_Completed);
+		saveRecord(ila);
+	}
+
+	/** A discount that is invoiced 1 of 1 and processed, with the given (calculated) amount still open. */
+	private I_C_Invoice_Candidate createSettledDiscountCandidate(final int orderCompensationGroupId, final String openAmount)
+	{
+		final I_C_Invoice_Candidate discount = createDiscountCandidate(orderCompensationGroupId, new BigDecimal(openAmount), ONE, ONE);
+		discount.setNetAmtInvoiced(new BigDecimal("-30"));
+		discount.setProcessed(true);
+		saveRecord(discount);
+		return discount;
 	}
 
 	private I_C_Invoice_Candidate createDiscountCandidate(
@@ -268,21 +309,112 @@ class PercentCompensationLineInvoicingTest
 		}
 
 		/**
-		 * E.g. the discount was left off the last goods' invoice: all goods are processed, but a discount amount is still open.
+		 * E.g. the discount was held back from the last goods' invoice: all goods are processed, but a discount amount is still open.
 		 */
 		@Test
-		void openAmountAfterAllGoods_staysOpenAndIsInvoiceable()
+		void openAmount_goodsInvoicedWithoutDiscount_reopensAndIsInvoiceable()
 		{
 			final int groupId = createGroupHeader();
-			createGoodsCandidate(groupId, true, ZERO);
-			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-15"), ONE, ONE);
-			discount.setProcessed(true);
+			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "-15");
+			allocate(discount, createInvoice());
+			allocate(goods, createInvoice());
 
 			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
 
 			assertThat(discount.isProcessed()).isFalse();
 			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(TWO);
 			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ONE);
+		}
+
+		@Test
+		void settled_noOpenAmount_staysProcessed()
+		{
+			final int groupId = createGroupHeader();
+			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "0");
+			final I_C_Invoice invoice = createInvoice();
+			allocate(goods, invoice);
+			allocate(discount, invoice);
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.isProcessed()).isTrue();
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
+		}
+
+		/**
+		 * E.g. an order invoiced before the discount followed partially invoiced goods, with a rounding difference against the cumulative basis.
+		 */
+		@Test
+		void settled_roundingDifference_staysProcessed()
+		{
+			final int groupId = createGroupHeader();
+			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "-0.01");
+			allocate(discount, createInvoice());
+			allocate(goods, createInvoice());
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.isProcessed()).isTrue();
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+		}
+
+		/**
+		 * E.g. the percentage was changed after goods and discount were invoiced together.
+		 */
+		@Test
+		void settled_manualDifference_goodsInvoicedWithDiscount_staysProcessed()
+		{
+			final int groupId = createGroupHeader();
+			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "-5");
+			final I_C_Invoice invoice = createInvoice();
+			allocate(goods, invoice);
+			allocate(discount, invoice);
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.isProcessed()).isTrue();
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+		}
+
+		/**
+		 * A price override replaces the calculated total discount: once it is invoiced, it is not invoiced again.
+		 */
+		@Test
+		void priceOverride_invoiced_allGoodsProcessed_staysProcessed()
+		{
+			final int groupId = createGroupHeader();
+			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "0");
+			discount.setPriceEntered_Override(new BigDecimal("-40"));
+			discount.setPriceActual_Override(new BigDecimal("-40"));
+			discount.setNetAmtInvoiced(new BigDecimal("-40"));
+			allocate(discount, createInvoice());
+			allocate(goods, createInvoice());
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.isProcessed()).isTrue();
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo(ZERO);
+		}
+
+		@Test
+		void priceOverride_notYetInvoiced_invoiceRuleDecides()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ONE);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, ZERO, ONE, ZERO);
+			discount.setPriceEntered_Override(new BigDecimal("-40"));
+			discount.setPriceActual_Override(new BigDecimal("-40"));
+
+			percentCompensationLineInvoicing.updateQtyToInvoice(discount);
+
+			assertThat(discount.getQtyToInvoice()).isEqualByComparingTo("7");
 		}
 
 		@Test

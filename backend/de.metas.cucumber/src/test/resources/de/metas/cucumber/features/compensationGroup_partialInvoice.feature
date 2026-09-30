@@ -714,3 +714,16 @@ Feature: Compensation group on a partially delivered and invoiced sales order
     And validate the created orders
       | C_Order_ID   | InvoiceStatus |
       | orderProduct | CI            |
+
+    # reversing the discount's credit memo gives the discount back to be invoiced again
+    When the invoice identified by invoice2 is reversed
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_discount            |
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | NetAmtToInvoice | NetAmtInvoiced | Processed | IsError |
+      | ic_discount                       | 0           | -51             | 0              | false     | false   |
+    And validate the created orders
+      | C_Order_ID   | InvoiceStatus |
+      | orderProduct | PI            |

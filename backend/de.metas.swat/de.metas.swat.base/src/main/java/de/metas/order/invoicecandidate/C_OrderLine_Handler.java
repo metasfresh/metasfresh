@@ -541,7 +541,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(icRecord));
 			// the group computes the discount on the goods invoiced so far and to invoice now; what is open is that minus the discount invoiced so far
-			final BigDecimal price = compensationLine.getPrice().subtract(Services.get(IInvoiceCandBL.class).computeNetAmtInvoiced(icRecord));
+			final BigDecimal price = compensationLine.getPrice().subtract(invoiceCandBL.computeNetAmtInvoiced(icRecord));
 			priceAndTax.priceEntered(price);
 			priceAndTax.priceActual(price);
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
