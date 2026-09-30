@@ -47,7 +47,7 @@ import java.util.function.Function;
 @Repository
 public class ExternalSystemEndpointRepository
 {
-	CCache<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsCache = CCache.<ExternalSystemEndpointId, ExternalSystemEndpoint>builder().tableName(I_ExternalSystem_Endpoint.Table_Name)
+	private final CCache<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsCache = CCache.<ExternalSystemEndpointId, ExternalSystemEndpoint>builder().tableName(I_ExternalSystem_Endpoint.Table_Name)
 			.build();
 
 	@NonNull
