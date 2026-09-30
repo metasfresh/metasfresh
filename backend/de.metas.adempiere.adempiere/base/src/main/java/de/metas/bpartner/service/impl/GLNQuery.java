@@ -52,4 +52,11 @@ public class GLNQuery
 
 	@Default
 	boolean outOfTrx = true;
+
+	/**
+	 * When {@code true}, only GLN matches where both the {@code C_BPartner_Location} and its {@code C_BPartner} are active are returned.
+	 * When {@code false} (default), also includes matches on inactive locations or partners.
+	 */
+	@Default
+	boolean onlyActive = false;
 }

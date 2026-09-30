@@ -26,7 +26,9 @@ import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
@@ -80,6 +82,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -177,12 +180,103 @@ public final class MasterdataProvider
 						.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo));
 	}
 
+	/**
+	 * A {@code gln-} partner or location identifier is resolved among active partners and active locations only;
+	 * it is then passed on as metasfresh-id. Other identifiers are passed on unchanged.
+	 */
 	public Optional<BPartnerInfo> getBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@Nullable final OrgId orgId)
 	{
+		if (jsonBPartnerInfo == null)
+		{
+			return Optional.empty();
+		}
+
 		final String orgCode = orgId != null ? orgDAO.retrieveOrgValue(orgId) : null;
-		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfo, orgCode);
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = resolveGLNIdentifiersAmongActiveRecords(jsonBPartnerInfo, orgId, orgCode);
+		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfoToUse, orgCode);
+	}
+
+	@NonNull
+	private JsonRequestBPartnerLocationAndContact resolveGLNIdentifiersAmongActiveRecords(
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			@Nullable final OrgId orgId,
+			@Nullable final String orgCode)
+	{
+		// Lombok's @NonNull on the DTO getters does not apply to requests deserialized from JSON (a missing property arrives as null), so check explicitly.
+		if (jsonBPartnerInfo.getBPartnerIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		if (jsonBPartnerInfo.getBPartnerLocationIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerLocationIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerIdentifier());
+		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerLocationIdentifier());
+		final boolean bpartnerIsGLN = ExternalIdentifier.Type.GLN.equals(bpartnerIdentifier.getType());
+		final boolean locationIsGLN = ExternalIdentifier.Type.GLN.equals(locationIdentifier.getType());
+		if (!bpartnerIsGLN && !locationIsGLN)
+		{
+			return jsonBPartnerInfo;
+		}
+
+		final BPartnerId bpartnerId = bpartnerIsGLN
+				? getActiveBPartnerIdByGLN(bpartnerIdentifier.asGLN(), orgId, jsonBPartnerInfo)
+				: BPartnerId.ofRepoId(bpartnerEndpointAdapter.getBPartnerMetasfreshId(orgCode, jsonBPartnerInfo.getBPartnerIdentifier()).getValue());
+
+		final String locationIdentifierToUse = locationIsGLN
+				? String.valueOf(getActiveBPartnerLocationIdByGLN(bpartnerId, locationIdentifier.asGLN(), jsonBPartnerInfo).getRepoId())
+				: jsonBPartnerInfo.getBPartnerLocationIdentifier();
+
+		return JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(String.valueOf(bpartnerId.getRepoId()))
+				.bPartnerLocationIdentifier(locationIdentifierToUse)
+				.contactIdentifier(jsonBPartnerInfo.getContactIdentifier())
+				.build();
+	}
+
+	@NonNull
+	private BPartnerId getActiveBPartnerIdByGLN(
+			@NonNull final GLN gln,
+			@Nullable final OrgId orgId,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		final OrgId orgIdToUse = orgId != null ? orgId : Env.getOrgId(); // same fallback as the bpartner REST endpoint for a missing orgCode
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.onlyOrgId(orgIdToUse)
+				.onlyOrgId(OrgId.ANY)
+				.gln(gln)
+				.glnLookupOnlyActive(true)
+				.failIfNotExists(false)
+				.build();
+
+		return bPartnerDAO.retrieveBPartnerIdBy(query)
+				.orElseThrow(() -> new AdempiereException("No BPartner found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier()));
+	}
+
+	@NonNull
+	private BPartnerLocationId getActiveBPartnerLocationIdByGLN(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final GLN gln,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		return bPartnerDAO.retrieveBPartnerLocations(bpartnerId) // active locations only
+				.stream()
+				.filter(location -> GLN.equals(GLN.ofNullableString(location.getGLN()), gln))
+				.map(location -> BPartnerLocationId.ofRepoId(bpartnerId, location.getC_BPartner_Location_ID()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No BPartnerLocation found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier())
+						.setParameter("BPartnerLocationIdentifier", jsonBPartnerInfo.getBPartnerLocationIdentifier()));
 	}
 
 	@NonNull
@@ -223,9 +317,10 @@ public final class MasterdataProvider
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId,
-			@Nullable final ZonedDateTime date)
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
 	{
-		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date);
+		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date, bpartnerId);
 	}
 
 	@Nullable
