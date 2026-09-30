@@ -105,7 +105,6 @@ class ManufacturingRepostCostDifferenceDistributionTest
 {
 	private static final Instant DATE = Instant.parse("2026-08-29T00:00:00Z");
 
-	// issued 100 (= price 10 x qty 10) - received 60 (= price 6 x qty 10) => residual 40.
 	// issued 100 (= price 10 x qty 10) - received 60 (= price 6 x qty 10) => residual 40, of which the distributor
 	// would capitalize 32 (8 of 10 still in stock) and spill 8 to COGS: the two non-MAIN legs seeded below.
 	private static final String ISSUED_PRICE = "10";
