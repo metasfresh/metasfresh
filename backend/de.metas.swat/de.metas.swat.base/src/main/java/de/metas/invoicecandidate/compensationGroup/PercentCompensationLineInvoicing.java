@@ -165,11 +165,21 @@ public class PercentCompensationLineInvoicing
 	 * The discount amount still open, from the calculated values, never from the effective price: the calculated price is the
 	 * percentage of the goods invoiced so far and to invoice now, minus the discount invoiced so far (see {@code C_OrderLine_Handler#calculatePriceAndTax}).
 	 * <ul>
-	 * <li>A user's price or discount override replaces the calculated total discount: it is invoiced once, in full, and so it is open
-	 * only while nothing of it is invoiced. Changing the override after the discount was invoiced does not invoice the difference.</li>
-	 * <li>A processed discount only reopens for goods that were invoiced without it (e.g. it was held back from their invoice),
-	 * and never for a difference within the currency precision, so that settled orders are not reopened by rounding or by
-	 * a changed percentage.</li>
+	 * <li>A user's override is invoiced once, at its effective price, and so it is open only while nothing of the discount is invoiced;
+	 * it does not follow partially invoiced goods:
+	 * <ul>
+	 * <li>{@code PriceEntered_Override} replaces the calculated total discount. Changing it after the discount was invoiced does not
+	 * invoice the difference.</li>
+	 * <li>{@code Discount_Override} alone scales the calculated open price, so it is invoiced once at that scaled open price of the
+	 * invoice it goes with (e.g. of the first partial invoice's goods); later goods get no discount.</li>
+	 * <li>Setting an override after a partial invoice freezes the discount at what was already invoiced; later goods get no discount.</li>
+	 * <li>Removing an override brings the discount back to the calculated total: the difference (possibly a positive line, if more
+	 * was invoiced than calculated) is invoiced with the next invoice, as far as the candidate may reopen (see the next point).</li>
+	 * </ul></li>
+	 * <li>A processed discount only reopens once goods of its group were invoiced without it (e.g. it was held back from their invoice),
+	 * and never for a difference within the currency precision. So an order whose goods were always invoiced together with the discount
+	 * is not reopened by rounding or by a changed percentage. Once goods were invoiced without it, that stays so: a later changed
+	 * percentage then reopens the discount and invoices the difference, which is intended.</li>
 	 * </ul>
 	 */
 	private BigDecimal computeOpenAmount(@NonNull final I_C_Invoice_Candidate ic)

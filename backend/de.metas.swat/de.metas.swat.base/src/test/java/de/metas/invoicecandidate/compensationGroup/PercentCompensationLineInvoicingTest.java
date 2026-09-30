@@ -164,6 +164,22 @@ class PercentCompensationLineInvoicingTest
 	@Nested
 	class updateQtyOrdered
 	{
+		/**
+		 * An overridden discount does not follow partially invoiced goods, so it keeps no unit open for them.
+		 */
+		@Test
+		void priceOverride_noOpenUnit()
+		{
+			final int groupId = createGroupHeader();
+			createGoodsCandidate(groupId, false, ZERO);
+			final I_C_Invoice_Candidate discount = createDiscountCandidate(groupId, new BigDecimal("-30"), ONE, ONE);
+			discount.setPriceEntered_Override(new BigDecimal("-40"));
+
+			percentCompensationLineInvoicing.updateQtyOrdered(discount);
+
+			assertThat(discount.getQtyOrdered()).isEqualByComparingTo(ONE);
+		}
+
 		@Test
 		void notYetInvoiced_keepsOrderLineQty()
 		{
@@ -382,14 +398,15 @@ class PercentCompensationLineInvoicingTest
 		}
 
 		/**
-		 * A price override replaces the calculated total discount: once it is invoiced, it is not invoiced again.
+		 * A price override is invoiced once: after that, a calculated amount still open (here -5) and goods invoiced without the discount
+		 * do not reopen it.
 		 */
 		@Test
 		void priceOverride_invoiced_allGoodsProcessed_staysProcessed()
 		{
 			final int groupId = createGroupHeader();
 			final I_C_Invoice_Candidate goods = createGoodsCandidate(groupId, true, ZERO);
-			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "0");
+			final I_C_Invoice_Candidate discount = createSettledDiscountCandidate(groupId, "-5");
 			discount.setPriceEntered_Override(new BigDecimal("-40"));
 			discount.setPriceActual_Override(new BigDecimal("-40"));
 			discount.setNetAmtInvoiced(new BigDecimal("-40"));

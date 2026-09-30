@@ -526,18 +526,29 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	/**
 	 * @return {@code true} if at least one regular (non-compensation) invoice candidate of the group has something to invoice now
-	 * that the invoicing will not leave out (i.e. neither in dispute nor in error)
+	 * that the invoicing will not leave out (see {@link #retrieveRegularInvoiceCandidatesToInvoiceQuery(GroupId)})
 	 */
 	public boolean hasRegularInvoiceCandidatesToInvoice(@NonNull final GroupId groupId)
+	{
+		return retrieveRegularInvoiceCandidatesToInvoiceQuery(groupId)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Regular (non-compensation) invoice candidates of the group with something to invoice now, leaving out those the invoicing skips:
+	 * this mirrors {@code InvoiceCandBL#getInvoicingSkipReasonOrNull} (processed, IsError, IsToClear, IsInDispute, IsSimulation).
+	 */
+	private IQueryBuilder<I_C_Invoice_Candidate> retrieveRegularInvoiceCandidatesToInvoiceQuery(@NonNull final GroupId groupId)
 	{
 		return retrieveInvoiceCandidatesForGroupQuery(groupId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, BigDecimal.ZERO)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInDispute, false)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsError, false)
-				.create()
-				.anyMatch();
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsToClear, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInDispute, false)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSimulation, false);
 	}
 
 	/**
@@ -590,14 +601,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * @return the first (by ID) regular invoice candidate of the group that currently has something to invoice
+	 * @return the first (by ID) regular invoice candidate of the group that currently has something to invoice that the invoicing will not leave out
 	 */
 	public Optional<I_C_Invoice_Candidate> retrieveFirstRegularInvoiceCandidateToInvoice(@NonNull final GroupId groupId)
 	{
-		return Optional.ofNullable(retrieveInvoiceCandidatesForGroupQuery(groupId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, false)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, BigDecimal.ZERO)
+		return Optional.ofNullable(retrieveRegularInvoiceCandidatesToInvoiceQuery(groupId)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.first(I_C_Invoice_Candidate.class));
