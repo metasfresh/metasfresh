@@ -168,29 +168,30 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void errorWithoutPInstanceId_isLoggedWithItsException() throws Exception
+	void errorWithoutPInstanceId_isLoggedAsWarning() throws Exception
 	{
 		this.prepareRouteForTesting();
 
 		context.start();
 
-		final Logger logger = (Logger)LoggerFactory.getLogger(ErrorReportRouteBuilder.class);
+		final Logger rootLogger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		final ListAppender<ILoggingEvent> appender = new ListAppender<>();
 		appender.start();
-		logger.addAppender(appender);
+		rootLogger.addAppender(appender);
 		try
 		{
 			template.send("direct:" + ERROR_SEND_LOG_MESSAGE, newErrorExchange(null));
 		}
 		finally
 		{
-			logger.detachAppender(appender);
+			rootLogger.detachAppender(appender);
 		}
 
 		assertThat(appender.list)
-				.filteredOn(event -> event.getLevel() == Level.ERROR)
+				.filteredOn(event -> event.getLevel() == Level.WARN)
+				.filteredOn(event -> event.getFormattedMessage().contains("No PInstanceId available; reporting error without pInstance linkage"))
 				.singleElement()
-				.satisfies(event -> assertThat(event.getThrowableProxy().getMessage()).isEqualTo("startup failure"));
+				.satisfies(event -> assertThat(event.getFormattedMessage()).contains("startup failure"));
 	}
 
 	@Test
