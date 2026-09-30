@@ -73,9 +73,6 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 	private Timestamp p_startDate;
 
-	/** optional; only kept for conditions whose transition has duration 0, otherwise the transition computes the end date */
-	private Timestamp p_endDate;
-
 	private int p_adUserInChargeId;
 
 	private static final String PARAM_IS_SIMULATION = I_C_Flatrate_Term.COLUMNNAME_IsSimulation;
@@ -98,7 +95,6 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, -1);
 		p_adUserInChargeId = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_AD_User_InCharge_ID, -1);
 		p_startDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_StartDate);
-		p_endDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_EndDate);
 		p_completeDocument = para.getParameterAsBool(PARAM_IS_COMPLETE_DOCUMENT);
 
 		setIsCompleteDocument(p_completeDocument);
@@ -114,7 +110,8 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			setUserInCharge(userInCharge);
 		}
 		setStartDate(p_startDate);
-		setEndDate(p_endDate);
+		// optional; only kept for conditions whose transition has duration 0, otherwise the transition computes the end date
+		setEndDate(para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_EndDate));
 
 		//so far via this process, only commission type contracts can be created as a `Simulation`.
 		if(TYPE_CONDITIONS_Commission.equals(conditions.getType_Conditions()))
