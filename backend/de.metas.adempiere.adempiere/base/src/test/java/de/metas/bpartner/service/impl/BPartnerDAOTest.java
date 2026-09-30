@@ -2,6 +2,7 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -13,6 +14,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractComparableAssert;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,6 +95,59 @@ public class BPartnerDAOTest
 		assertRetrieveBPartnerIdByName("BPartner 1").isEqualTo(bpartnerId1);
 		assertRetrieveBPartnerIdByName("BPartner 2").isEqualTo(bpartnerId2);
 		assertRetrieveBPartnerIdByName("BPartner").isNull();
+	}
+
+	@Test
+	public void retrieveBPartnerIdBy_gln_glnLookupOnlyActive()
+	{
+		final GLN gln = GLN.ofString("gln-dao-active-only");
+		final BPartnerId inactiveBPartnerId = createBPartnerWithName("Inactive BPartner");
+		final BPartnerId activeBPartnerId = createBPartnerWithName("Active BPartner");
+		final I_C_BPartner inactiveBPartner = bpartnerDAO.getById(inactiveBPartnerId);
+		inactiveBPartner.setIsActive(false);
+		saveRecord(inactiveBPartner);
+		createLocationWithGLN(inactiveBPartnerId, gln);
+		createLocationWithGLN(activeBPartnerId, gln);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.gln(gln)
+				.onlyOrgId(OrgId.ANY)
+				.glnLookupOnlyActive(true)
+				.failIfNotExists(false)
+				.build();
+
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null)).isEqualTo(activeBPartnerId);
+	}
+
+	/**
+	 * Partner maintenance (e.g. the bpartner REST upsert/retrieve) uses the default query; it must still find a partner that only an inactive partner's location carries.
+	 */
+	@Test
+	public void retrieveBPartnerIdsBy_gln_default_stillFindsInactiveBPartner()
+	{
+		final GLN gln = GLN.ofString("gln-dao-inactive-only");
+		final BPartnerId inactiveBPartnerId = createBPartnerWithName("Inactive BPartner");
+		final I_C_BPartner inactiveBPartner = bpartnerDAO.getById(inactiveBPartnerId);
+		inactiveBPartner.setIsActive(false);
+		saveRecord(inactiveBPartner);
+		createLocationWithGLN(inactiveBPartnerId, gln);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.gln(gln)
+				.onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build();
+
+		assertThat(bpartnerDAO.retrieveBPartnerIdsBy(query)).containsExactly(inactiveBPartnerId);
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query)).contains(inactiveBPartnerId);
+	}
+
+	private void createLocationWithGLN(final BPartnerId bpartnerId, final GLN gln)
+	{
+		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartnerId.getRepoId());
+		location.setGLN(gln.getCode());
+		saveRecord(location);
 	}
 
 	private AbstractComparableAssert<?, BPartnerId> assertRetrieveBPartnerIdByName(final String queryBPName)
