@@ -80,7 +80,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.multicast()
 					.parallelProcessing(true)
 					.doTry()
-						.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE))
+						.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE), direct(ERROR_WRITE_TO_ADISSUE))
 					.endDoTry()
 					.doCatch(Exception.class)
 						.log(LoggingLevel.ERROR, "Failed to handle error!")
@@ -96,38 +96,36 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		from(direct(ERROR_WRITE_TO_ADISSUE))
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
-				.process(ErrorProcessor::prepareJsonErrorRequest)
+
 				.choice()
-					.when(body().isNull())
-						.log("No PInstanceId available! => cannot log error in metasfresh, skipping...")
+					.when(header(HEADER_PINSTANCE_ID).isNull())
+						// no PInstanceId to attach the AD_Issue write to (e.g. a continuous polling consumer never sets one) ->
+						// degrade gracefully instead of throwing, which would mask the actual error being reported
+						.process(this::logErrorWithoutPInstance)
+						.log(LoggingLevel.WARN, "${body}")
 					.otherwise()
+						.process(ErrorProcessor::prepareJsonErrorRequest)
 						.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 						.removeHeaders("CamelHttp*")
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
-				.endChoice()
 				.end();
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)
 				.log("Route invoked")
 
-				// startup/timer errors carry no PInstanceId => they can't be sent to metasfresh, so log them here (besides the error file)
 				.choice()
 					.when(header(HEADER_PINSTANCE_ID).isNull())
-						.process(this::logErrorWithoutPInstanceId)
+						// no PInstanceId to attach the log message to (e.g. a continuous polling consumer never sets one) ->
+						// degrade gracefully instead of throwing, which would mask the actual error being reported
+						.process(this::logErrorWithoutPInstance)
+						.log(LoggingLevel.WARN, "${body}")
 					.otherwise()
 						.process(this::prepareErrorLogMessage)
 						.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
-				.endChoice()
 				.end();
 		//@formatter:on
-	}
-
-	private void logErrorWithoutPInstanceId(@NonNull final Exchange exchange)
-	{
-		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-		log.error("No PInstanceId available! => cannot log error in metasfresh, logging it here instead", exception);
 	}
 
 	private void prepareErrorFile(@NonNull final Exchange exchange)
@@ -185,9 +183,21 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		}
 	}
 
+	private void logErrorWithoutPInstance(@NonNull final Exchange exchange)
+	{
+		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
+
+		exchange.getIn().setBody("No PInstanceId available; reporting error without pInstance linkage. Error: " + errorItem);
+	}
+
 	private void prepareErrorLogMessage(@NonNull final Exchange exchange)
 	{
 		final Integer pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class);
+
+		if (pInstanceId == null)
+		{
+			throw new RuntimeException("No PInstanceId available!");
+		}
 
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
