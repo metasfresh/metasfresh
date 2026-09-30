@@ -455,9 +455,10 @@ public class OrderGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Test 9 — a percent compensation line is priced with PriceEntered == PriceActual, which is only
-	// correct while the line carries no discount: saveGroup must reset a stale non-zero Discount to
-	// zero and protect it from the order-line pricing recompute (IsManualDiscount).
+	// Test 9 — a compensation line is priced with PriceEntered == PriceActual, which is only correct
+	// while the line carries no discount: saveGroup must reset a non-zero Discount to zero and protect
+	// it from the order-line pricing recompute (IsManualDiscount). Uses PriceAndQty (not Percent): it is
+	// not covered by the pre-existing setDisallowDiscount guard, unlike percent-type lines.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void saveGroup_resetsStaleDiscountToZero()
@@ -470,8 +471,7 @@ public class OrderGroupRepositoryTest
 		saveRecord(groupHeader);
 		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
 
-		// compensation line saved earlier carrying a non-zero Discount (e.g. a manual edit, or a stale
-		// value from before this invariant existed)
+		// compensation line carrying a non-zero Discount (e.g. from a manual edit)
 		final I_C_OrderLine compensationLinePO = newInstance(I_C_OrderLine.class);
 		compensationLinePO.setC_Order_ID(order.getC_Order_ID());
 		compensationLinePO.setM_Product_ID(productId.getRepoId());

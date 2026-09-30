@@ -494,7 +494,7 @@ class InvoiceCandidateGroupRepositoryTest
 		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
 		saveRecord(goodsIc);
 
-		// compensation IC carrying a stale non-zero Discount (e.g. inherited from an order line before this invariant existed)
+		// compensation IC carrying a non-zero Discount (e.g. inherited from its order line)
 		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
 		discountIc.setC_Order_ID(order.getC_Order_ID());
 		discountIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
