@@ -30,6 +30,7 @@ import de.metas.costing.methods.AverageInvoiceCostingMethodHandler;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.costrevaluation.interceptor.M_CostRevaluation;
+import de.metas.costrevaluation.interceptor.M_CostRevaluationLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -1257,6 +1258,57 @@ public class CostRevaluationServiceTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining("Expected exactly one cost detail");
 			assertSingleLineValues(costRevaluationId, "100", "10", "500");
+		}
+
+		/**
+		 * With the line interceptor registered: Complete writes the re-evaluated stock and cost price through it, which keeps the value
+		 * difference, the evaluated flag and the detail rows (it does not touch {@code NewCostPrice}).
+		 */
+		@Test
+		public void complete_withLineInterceptor_keepsDeltaEvaluationAndDetails()
+		{
+			registerLineInterceptor();
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_completeWithLineInterceptor");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.createDetails(costRevaluationId); // "Run"
+			updateCurrentCost(productId, "11", "80"); // stock and cost price moved between Run and Complete
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			assertSingleLineValues(costRevaluationId, "80", "11", "320"); // 80 x (15 - 11)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "11", "15", "320");
+		}
+
+		/**
+		 * With the line interceptor registered: posting writes back the booked values of a completed revaluation as they are,
+		 * here a booked amount rounded to the currency precision (3 × (15 − 10.333) = 14.001, booked 14.00).
+		 */
+		@Test
+		public void writeBookedValues_withLineInterceptor_completedHeader_keepsTheBookedValues()
+		{
+			registerLineInterceptor();
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_postingWithLineInterceptor");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+			final I_M_CostRevaluation header = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+			header.setDocStatus(DocStatus.Completed.getCode());
+			saveRecord(header);
+
+			costRevaluationService.writeBookedValues(lineId, revaluationCostDetail(lineId, productId, "3", "10.333", "14.00"));
+
+			assertSingleLineValues(costRevaluationId, "3", "10.333", "14.00");
+		}
+
+		private void registerLineInterceptor()
+		{
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new M_CostRevaluationLine(costRevaluationService));
 		}
 
 		private CostRevaluationLine getSingleLine(@NonNull final CostRevaluationId costRevaluationId)

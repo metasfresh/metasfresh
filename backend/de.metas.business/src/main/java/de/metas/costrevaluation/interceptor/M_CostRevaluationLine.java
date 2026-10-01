@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_CostRevaluationLine.class)
 @Component
-class M_CostRevaluationLine
+public class M_CostRevaluationLine
 {
 	private final CostRevaluationService costRevaluationService;
 
-	M_CostRevaluationLine(@NonNull final CostRevaluationService costRevaluationService)
+	public M_CostRevaluationLine(@NonNull final CostRevaluationService costRevaluationService)
 	{
 		this.costRevaluationService = costRevaluationService;
 	}

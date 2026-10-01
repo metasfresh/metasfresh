@@ -148,6 +148,42 @@ class M_CostRevaluationLineTest
 	}
 
 	@Test
+	void inProgressRevaluation_newCostPriceEdit_recomputesDeltaAndResetsEvaluation()
+	{
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.InProgress);
+		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
+		assertThat(line.getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10)
+		markEvaluatedWithDetail(line);
+
+		line.setNewCostPrice(new BigDecimal("16"));
+		saveRecord(line);
+
+		refresh(line);
+		assertThat(line.getDeltaAmt()).isEqualByComparingTo("600"); // 100 x (16 - 10)
+		assertThat(line.isRevaluated()).isFalse();
+		assertThat(countDetails(line)).isZero();
+	}
+
+	@Test
+	void reversedRevaluation_lineIsLeftAsWritten()
+	{
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
+		markEvaluatedWithDetail(line);
+
+		header.setDocStatus(DocStatus.Reversed.getCode());
+		saveRecord(header);
+
+		line.setNewCostPrice(new BigDecimal("16"));
+		saveRecord(line);
+
+		refresh(line);
+		assertThat(line.getDeltaAmt()).isEqualByComparingTo("500");
+		assertThat(line.isRevaluated()).isTrue();
+		assertThat(countDetails(line)).isEqualTo(1);
+	}
+
+	@Test
 	void completedRevaluation_bookedValuesAreLeftAsWritten()
 	{
 		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
