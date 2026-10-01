@@ -525,7 +525,6 @@ public class CostingService implements ICostingService
 				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
 				.costPriceNew(newCostPrice)
 				.build();
-		currentCost.setOwnCostPrice(newCostPrice);
 
 		return CostsRevaluationResult.builder()
 				.currentCostBeforeEvaluation(currentCostBeforeEvaluation)

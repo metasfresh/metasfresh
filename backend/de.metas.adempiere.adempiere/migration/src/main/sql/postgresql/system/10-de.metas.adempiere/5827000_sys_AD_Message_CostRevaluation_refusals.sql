@@ -1,6 +1,6 @@
--- Refusal messages shown when completing a Kosten Neubewertung (cost revaluation) that cannot be booked correctly.
+-- Messages of the Kosten Neubewertung (cost revaluation); 545881 is deleted again by 5827280, 545879 gets a neutral text in 5827310.
 
--- CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported: another completed cost revaluation of the same product is dated on or after the evaluation start date
+-- CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,545879 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-29 16:30:05','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Für das Produkt {0} gibt es bereits eine spätere Kosten Neubewertung vom {1}. Eine Kosten Neubewertung kann nicht vor oder am selben Tag wie eine andere Neubewertung desselben Produkts beginnen. Bitte ein späteres Startdatum der Bewertung wählen, nach dem {1}.','E',TO_TIMESTAMP('2026-09-29 16:30:05','YYYY-MM-DD HH24:MI:SS'),100,'CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported');
 UPDATE AD_Message SET ErrorCode='CostRevaluationOfRevaluationNotSupported', Updated=TO_TIMESTAMP('2026-09-29 16:30:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545879;
