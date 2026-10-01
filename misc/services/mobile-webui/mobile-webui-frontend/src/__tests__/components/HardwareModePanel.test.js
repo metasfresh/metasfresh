@@ -7,14 +7,19 @@ import { combineReducers, createStore } from 'redux';
 import { reducer as settings } from '../../reducers/settings';
 import HardwareModePanel from '../../components/BarcodeScanner/HardwareModePanel';
 
-const renderPanel = () => {
+const store = createStore(combineReducers({ settings }));
+
+const panel = ({ isProcessing = false, onBarcodeScanned }) => (
+  <Provider store={store}>
+    <HardwareModePanel isProcessing={isProcessing} onBarcodeScanned={onBarcodeScanned} />
+  </Provider>
+);
+
+const renderPanel = ({ isProcessing } = {}) => {
   const onBarcodeScanned = jest.fn();
-  const utils = render(
-    <Provider store={createStore(combineReducers({ settings }))}>
-      <HardwareModePanel onBarcodeScanned={onBarcodeScanned} />
-    </Provider>
-  );
-  return { onBarcodeScanned, input: utils.container.querySelector('#input-text'), ...utils };
+  const utils = render(panel({ isProcessing, onBarcodeScanned }));
+  const rerenderPanel = (props) => utils.rerender(panel({ onBarcodeScanned, ...props }));
+  return { onBarcodeScanned, rerenderPanel, input: utils.container.querySelector('#input-text'), ...utils };
 };
 
 const pressKeys = (text) => {
@@ -46,5 +51,18 @@ describe('HardwareModePanel', () => {
 
     expect(valueWrites).toEqual(['H']);
     expect(input.value).toBe('H');
+  });
+
+  it('still shows the scan in progress when the input was not mounted at the first character', () => {
+    // While the previous scan is processing, the hidden input is not rendered. If the next scan's first
+    // character arrives then, the caption must still appear once the input is back.
+    const { rerenderPanel, container } = renderPanel({ isProcessing: true });
+    expect(container.querySelector('#input-text')).toBeNull();
+
+    pressKeys('H');
+    rerenderPanel({ isProcessing: false });
+    pressKeys('U#1#');
+
+    expect(container.querySelector('#input-text').value).not.toBe('');
   });
 });

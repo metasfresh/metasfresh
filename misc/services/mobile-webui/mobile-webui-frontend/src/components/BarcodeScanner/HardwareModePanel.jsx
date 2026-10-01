@@ -106,11 +106,12 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       onBarcodeScanned({ scannedBarcode: barcode, traceParams: { ...traceParams, ...scanStats } });
     },
     onReadInProgress: (barcode) => {
-      // Write only the scan's FIRST char: that alone flips the input off :placeholder-shown, which
+      // Write only while the input is still empty: one char flips it off :placeholder-shown, which
       // drives the "scan in progress" caption (BarcodeScannerComponent.scss); onReadDone clears it.
       // A write per keystroke forces a style recalc + layout of the input per char, also on a
-      // read-only input, which on a slow handheld adds up to seconds per long QR code.
-      if (barcode.length === 1 && inputTextRef?.current) {
+      // read-only input, which on a slow handheld adds up to seconds per long QR code. Reading
+      // .value forces no layout. The scanned code itself comes from the hook's buffer (onReadDone).
+      if (inputTextRef?.current && !inputTextRef.current.value) {
         inputTextRef.current.value = barcode;
       }
     },
