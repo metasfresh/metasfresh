@@ -570,6 +570,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public <T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNoEndingWith(final String documentNoSuffix, final OrgId orgId, final Class<T> modelClass)
+	{
+		return queryBL
+				.createQueryBuilder(modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEndsWithQueryFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNoSuffix)
+				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(modelClass);
+	}
+
+	@Override
 	public ImmutableList<I_C_Invoice> retrieveUnpaid(@NonNull final UnpaidInvoiceQuery query)
 	{
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL

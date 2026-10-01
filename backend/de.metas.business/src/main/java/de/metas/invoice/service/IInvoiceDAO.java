@@ -201,6 +201,14 @@ public interface IInvoiceDAO extends ISingletonService
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
+	/**
+	 * Like {@link #getByDocumentNo(String, OrgId, Class)} but matches invoices whose {@code DocumentNo}
+	 * <b>ends with</b> {@code documentNoSuffix} (SQL {@code DocumentNo LIKE '%'||?}), scoped to {@code orgId}.
+	 * Used by the POS invoice-settlement search, whose numeric keypad enters only the trailing numeric part of
+	 * an alphanumeric-prefixed invoice number (e.g. keying {@code 170245} finds {@code AR-170245}).
+	 */
+	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNoEndingWith(String documentNoSuffix, OrgId orgId, Class<T> modelClass);
+
 	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
 
 	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);

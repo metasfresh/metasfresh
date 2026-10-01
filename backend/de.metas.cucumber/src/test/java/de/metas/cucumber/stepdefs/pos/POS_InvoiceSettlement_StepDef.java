@@ -159,7 +159,8 @@ public class POS_InvoiceSettlement_StepDef
 			@NonNull final DataTableRow expectedRow,
 			@NonNull final String documentNo)
 	{
-		final InvoiceId expectedInvoiceId = expectedRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+		final StepDefDataIdentifier invoiceIdentifier = expectedRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID);
+		final InvoiceId expectedInvoiceId = invoiceIdentifier.lookupNotNullIdIn(invoiceTable);
 
 		final POSOpenInvoice openInvoice = actual.stream()
 				.filter(candidate -> candidate.getInvoiceId().equals(expectedInvoiceId))
@@ -169,7 +170,12 @@ public class POS_InvoiceSettlement_StepDef
 						.setParameter("documentNo", documentNo)
 						.setParameter("actual", actual));
 
-		assertThat(openInvoice.getDocumentNo()).as("documentNo").isEqualTo(documentNo);
+		// Assert against the invoice's OWN DocumentNo, not the search term: a suffix search (the till keypad enters
+		// only the trailing numeric part of an alphanumeric-prefixed invoice number) returns an invoice whose full
+		// DocumentNo differs from what was keyed.
+		final I_C_Invoice expectedInvoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(expectedInvoice);
+		assertThat(openInvoice.getDocumentNo()).as("documentNo").isEqualTo(expectedInvoice.getDocumentNo());
 
 		expectedRow.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.map(bpartnerTable::getId)

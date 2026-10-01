@@ -187,3 +187,33 @@ Feature: POS Invoice Settlement
       | paidInv      | CO        | true   |
     And the cash journal of POS terminal till contains lines:
       | Type | Amount |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC27
+  Scenario: An invoice whose document number has a non-numeric prefix is found by keying only its numeric part
+    # Real invoice numbers carry a fixed alphanumeric prefix (e.g. 'AR-'), but the till keypad enters only
+    # digits — so the search matches the trailing keyed digits (DocumentNo ending with the entered number).
+    # The invoice is settled here, not left open, so this scenario leaves no open leftover that a later run's
+    # suffix search could collide with on the non-reset cucumber DB.
+    Given metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID   | DocumentNo         | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | prefixedInvoice | invoiceCustomer | AR-POS-TC27-770245 | 2026-09-24   | Spot                     | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
+      | prefixedInvL | prefixedInvoice | product      | 1 PCE       |
+    And the invoice identified by prefixedInvoice is completed
+
+    Then find open invoices at POS terminal till by document number '770245' returns:
+      | C_Invoice_ID    | C_BPartner_ID   | GrandTotal | OpenAmt |
+      | prefixedInvoice | invoiceCustomer | 119.00     | 119.00  |
+
+    When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
+      | C_Invoice_ID    | C_Payment_ID          |
+      | prefixedInvoice | settlementPaymentTC27 |
+
+    Then validate created invoices
+      | C_Invoice_ID    | DocStatus | IsPaid |
+      | prefixedInvoice | CO        | true   |

@@ -74,10 +74,11 @@ public class POSInvoiceSettlementService
 	@NonNull private final POSCashJournalService posCashJournalService;
 
 	/**
-	 * @return the terminal org's sales invoices matching {@code documentNo} that are completed/closed, not yet
-	 * fully paid, and not a credit memo — i.e. eligible for cash settlement at the till. A document number is not
-	 * necessarily unique across doc types, so more than one candidate may come back; each is filtered
-	 * independently, never assumed to be the only match.
+	 * @return the terminal org's sales invoices whose {@code DocumentNo} <b>ends with</b> {@code documentNo}
+	 * (the till numeric keypad enters only the trailing numeric part of an alphanumeric-prefixed invoice number,
+	 * so the search matches on the keyed suffix) and that are completed/closed, not yet fully paid, and not a
+	 * credit memo — i.e. eligible for cash settlement at the till. A suffix match is not necessarily unique, so
+	 * more than one candidate may come back; each is filtered independently, never assumed to be the only match.
 	 */
 	@NonNull
 	public List<POSOpenInvoice> findOpenInvoices(@NonNull final POSTerminalId posTerminalId, @NonNull final String documentNo)
@@ -87,7 +88,7 @@ public class POSInvoiceSettlementService
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 		final ImmutableList.Builder<POSOpenInvoice> result = ImmutableList.builder();
-		for (final I_C_Invoice invoice : invoiceDAO.getByDocumentNo(documentNo, orgId, I_C_Invoice.class))
+		for (final I_C_Invoice invoice : invoiceDAO.getByDocumentNoEndingWith(documentNo, orgId, I_C_Invoice.class))
 		{
 			if (isEligibleForCashSettlement(invoice))
 			{
