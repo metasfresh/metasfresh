@@ -1,3 +1,11 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/HU_MHD_V.sql
+-- Add "Letzter EK" (LastCostPrice) + "Standard EK" (AverageCostPrice) columns to the MHD Liste report (HU_MHD_V).
+-- Letzter EK  = getLastCostPrice(product)                     -- last completed-PO price, fallback M_Product.SeedCost
+-- Standard EK = getAverageCostPrice(product, client, org)     -- average cost (M_Cost method 'A'), any schema
+-- Both numeric columns are DE-number-formatted (comma decimal, no thousand separator).
+-- HU_MHD_V is a leaf report view (no dependent views) read only by the HU_MHD_Report process via SELECT *,
+-- so it is recreated with DROP+CREATE like its original creation migration.
+
 DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.HU_MHD_V
 ;
 
