@@ -175,6 +175,143 @@ export class CostRevaluationPage {
     await unhighlight();
   }
 
+  /**
+   * Clear a header date field the way a user does (select all, delete, Tab) and wait for the change to reach the server.
+   * A cleared mandatory date leaves the header unsaved (invalid) until it is filled again.
+   */
+  static async clearHeaderDate(columnName) {
+    const page = getPage();
+    const input = this.headerDateInput(columnName);
+    await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const unhighlight = await highlightForCaptureIfEnabled(page.locator(`.form-field-${columnName}`).first());
+    const patched = page.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    patched.catch(() => {}); // awaited below; avoids an unhandled rejection if a step in between throws
+    await input.click();
+    await input.press('ControlOrMeta+a');
+    await input.press('Delete');
+    await input.press('Tab');
+    expect((await patched).ok()).toBe(true);
+    await page
+      .locator('.rdtOpen')
+      .waitFor({ state: 'attached', timeout: 2000 })
+      .catch(() => {});
+    await page.keyboard.press('Escape');
+    await page.locator('.rdtOpen').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    await expect(input).toHaveValue('');
+    await holdForCaptureIfEnabled(1500);
+    await unhighlight();
+  }
+
+  /** @returns {import('@playwright/test').Locator} the header list (dropdown) field of the given ColumnName */
+  static headerListField(columnName) {
+    return getPage().locator(`.form-field-${columnName}`).first();
+  }
+
+  /** @returns {import('@playwright/test').Locator} the input showing the selected value of a header list field */
+  static headerListInput(columnName) {
+    return this.headerListField(columnName).locator('input').first();
+  }
+
+  /**
+   * Choose a header list (dropdown) value by its key, e.g. a record id, and wait for the change to reach the server.
+   * @param {string} columnName e.g. CopyFrom_M_CostElement_ID
+   * @param {string} key the option key
+   */
+  static async selectHeaderListOption(columnName, key) {
+    await test.step(`Select ${columnName} ${key}`, async () => {
+      const page = getPage();
+      const field = this.headerListField(columnName);
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const unhighlight = await highlightForCaptureIfEnabled(field);
+      await field.locator('.input-dropdown').first().click();
+      const option = page.locator('.input-dropdown-list').getByTestId(`option-${key}`);
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const patched = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      patched.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
+      await option.click();
+      expect((await patched).ok()).toBe(true);
+      await page
+        .locator('.input-dropdown-list')
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {});
+      await holdForCaptureIfEnabled(1500);
+      await unhighlight();
+    });
+  }
+
+  /**
+   * Reload the open document and wait until its header is shown again. Use it before a change that leaves the header
+   * unsaved for a moment (an emptied mandatory field): the WebUI drops the unsaved changes of an invalid document when
+   * the cache invalidation of an earlier save of that document arrives, which it does asynchronously, shortly after the
+   * save. The reload gives that invalidation the time to pass.
+   */
+  static async reloadDocument(recordId) {
+    await test.step('Reload the document', async () => {
+      const page = getPage();
+      const loaded = page.waitForResponse(
+        (r) => r.request().method() === 'GET' && new RegExp(`/window/${COST_REVAL_WINDOW_ID}/${recordId}/?$`).test(r.url()),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      loaded.catch(() => {}); // awaited below; avoids an unhandled rejection if the reload throws
+      await page.reload();
+      expect((await loaded).ok()).toBe(true);
+      await this.headerListField('C_AcctSchema_ID').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+  }
+
+  /**
+   * Change a mandatory header list field that has a single option the way the UI allows it: clear it with its clear
+   * icon, then have the option selected again. The UI selects a mandatory list's single option by itself when it loads
+   * the list on the field's focus; when it had loaded the list before, the option is chosen from the dropdown.
+   * Either way the field changes twice, to empty and back to the option, and both changes reach the server.
+   * @param {string} columnName e.g. C_AcctSchema_ID
+   * @param {string} key the single option's key
+   */
+  static async clearAndReselectSingleOption(columnName, key) {
+    await test.step(`Clear ${columnName} and select its single option ${key} again`, async () => {
+      const page = getPage();
+      const field = this.headerListField(columnName);
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const shownBefore = await this.headerListInput(columnName).inputValue();
+      const unhighlight = await highlightForCaptureIfEnabled(field);
+      const isFieldPatch = (r, isCleared) => {
+        if (r.request().method() !== 'PATCH' || !r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`)) {
+          return false;
+        }
+        const op = (r.request().postDataJSON() || []).find((o) => o.path === columnName);
+        return !!op && (op.value == null) === isCleared;
+      };
+      const cleared = page.waitForResponse((r) => isFieldPatch(r, true), { timeout: SLOW_ACTION_TIMEOUT });
+      const reselected = page.waitForResponse((r) => isFieldPatch(r, false), { timeout: SLOW_ACTION_TIMEOUT });
+      cleared.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
+      reselected.catch(() => {});
+      await field.locator('.input-icon .meta-icon-close-alt').click();
+      expect((await cleared).ok()).toBe(true);
+      await holdForCaptureIfEnabled(1500);
+
+      const autoSelected = await Promise.race([
+        reselected.then(() => true),
+        new Promise((resolve) => setTimeout(() => resolve(false), 3000)),
+      ]);
+      if (!autoSelected) {
+        await field.locator('.input-dropdown').first().click();
+        const option = page.locator('.input-dropdown-list').getByTestId(`option-${key}`);
+        await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await option.click();
+      }
+      expect((await reselected).ok()).toBe(true);
+      await expect(this.headerListInput(columnName)).toHaveValue(shownBefore);
+      await holdForCaptureIfEnabled(1500);
+      await unhighlight();
+    });
+  }
+
   /** In a capture run: point at both header dates so the viewer can compare them. */
   static async showHeaderDates() {
     const page = getPage();
