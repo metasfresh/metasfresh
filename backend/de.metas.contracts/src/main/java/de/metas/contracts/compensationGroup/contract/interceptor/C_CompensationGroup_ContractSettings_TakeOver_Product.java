@@ -37,8 +37,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /**
  * Within one compensation-group contract settings, a customer discount product may be listed on at most one take-over
  * record. A single database index cannot express this, because the settings reference sits on the parent take-over
@@ -65,7 +63,12 @@ public class C_CompensationGroup_ContractSettings_TakeOver_Product
 			return;
 		}
 
-		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = load(record.getC_CompensationGroup_ContractSettings_TakeOver_ID(), I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		// Load the parent take-over record via IQueryBL, not InterfaceWrapperHelper.load: the architecture rule
+		// (service-injection.md §4) restricts direct InterfaceWrapperHelper.save/saveRecord/load to *Repository/*DAO classes.
+		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, record.getC_CompensationGroup_ContractSettings_TakeOver_ID())
+				.create()
+				.firstOnlyNotNull(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 
 		final List<Integer> takeOverIdsOfSettings = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
 				.addOnlyActiveRecordsFilter()
