@@ -7,8 +7,10 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -34,6 +36,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Proxy;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,10 +66,19 @@ class POSInvoiceSettlementServiceTest
 	private POSInvoiceSettlementService service;
 	private POSTerminal terminal;
 
+	/** Controls what the fake {@link IInvoiceBL#isCreditMemo} returns, flipped per test. */
+	private boolean invoiceIsCreditMemo;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// isEligibleForCashSettlement calls invoiceBL.isCreditMemo(invoice); a real IInvoiceBL would need a
+		// DB-backed doc type, so register a dynamic-proxy fake that just returns the per-test flag. Registered
+		// before the service is constructed, because the service captures Services.get(IInvoiceBL.class) at field-init.
+		invoiceIsCreditMemo = false;
+		Services.registerService(IInvoiceBL.class, newFakeInvoiceBL());
 
 		terminal = newTerminal();
 		final FixedPOSTerminalService posTerminalService = new FixedPOSTerminalService();
@@ -75,6 +87,60 @@ class POSInvoiceSettlementServiceTest
 		service = new POSInvoiceSettlementService(
 				posTerminalService,
 				new POSCashJournalService(new POSCashJournalRepository()));
+	}
+
+	@Test
+	void eligible_completedUnpaidSalesInvoice_isAccepted()
+	{
+		final I_C_Invoice invoice = newInvoice(TERMINAL_ORG_ID, true, DocStatus.Completed, false);
+		assertThat(service.isEligibleForCashSettlement(invoice)).isTrue();
+	}
+
+	@Test
+	void notEligible_purchaseInvoice_isRejected()
+	{
+		final I_C_Invoice invoice = newInvoice(TERMINAL_ORG_ID, false, DocStatus.Completed, false);
+		assertThat(service.isEligibleForCashSettlement(invoice)).isFalse();
+	}
+
+	@Test
+	void notEligible_draftedInvoice_isRejected()
+	{
+		final I_C_Invoice invoice = newInvoice(TERMINAL_ORG_ID, true, DocStatus.Drafted, false);
+		assertThat(service.isEligibleForCashSettlement(invoice)).isFalse();
+	}
+
+	@Test
+	void notEligible_paidInvoice_isRejected()
+	{
+		final I_C_Invoice invoice = newInvoice(TERMINAL_ORG_ID, true, DocStatus.Completed, true);
+		assertThat(service.isEligibleForCashSettlement(invoice)).isFalse();
+	}
+
+	@Test
+	void notEligible_creditMemo_isRejected()
+	{
+		invoiceIsCreditMemo = true;
+		final I_C_Invoice invoice = newInvoice(TERMINAL_ORG_ID, true, DocStatus.Completed, false);
+		assertThat(service.isEligibleForCashSettlement(invoice)).isFalse();
+	}
+
+	@Test
+	void structural_paidSalesInvoice_isStillStructurallyEligible_butNotFullyEligible()
+	{
+		// A paid-but-otherwise-valid invoice stays STRUCTURALLY eligible (the settle path then rejects it via the
+		// open-amount check as NoLongerOpen, not as NotEligibleForSettlement), while the search-filter eligibility
+		// (which excludes paid) returns false.
+		final I_C_Invoice paidInvoice = newInvoice(TERMINAL_ORG_ID, true, DocStatus.Completed, true);
+		assertThat(service.isCompletedSalesInvoice(paidInvoice)).as("structurally eligible").isTrue();
+		assertThat(service.isEligibleForCashSettlement(paidInvoice)).as("fully eligible for search").isFalse();
+	}
+
+	@Test
+	void structural_purchaseInvoice_isNotStructurallyEligible()
+	{
+		final I_C_Invoice purchaseInvoice = newInvoice(TERMINAL_ORG_ID, false, DocStatus.Completed, false);
+		assertThat(service.isCompletedSalesInvoice(purchaseInvoice)).isFalse();
 	}
 
 	@Test
@@ -112,6 +178,46 @@ class POSInvoiceSettlementServiceTest
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(orgId.getRepoId());
 		return invoice;
+	}
+
+	private static I_C_Invoice newInvoice(
+			@NonNull final OrgId orgId,
+			final boolean isSOTrx,
+			@NonNull final DocStatus docStatus,
+			final boolean isPaid)
+	{
+		final I_C_Invoice invoice = newInvoice(orgId);
+		invoice.setIsSOTrx(isSOTrx);
+		invoice.setDocStatus(docStatus.getCode());
+		invoice.setIsPaid(isPaid);
+		return invoice;
+	}
+
+	/**
+	 * A dynamic-proxy {@link IInvoiceBL} whose only meaningful method is {@link IInvoiceBL#isCreditMemo}, returning
+	 * {@link #invoiceIsCreditMemo}. Avoids pulling in a DB-backed real implementation (and Mockito, which this
+	 * module's test scope does not carry) just to flip one boolean.
+	 */
+	private IInvoiceBL newFakeInvoiceBL()
+	{
+		return (IInvoiceBL)Proxy.newProxyInstance(
+				IInvoiceBL.class.getClassLoader(),
+				new Class<?>[] { IInvoiceBL.class },
+				(proxy, method, args) -> {
+					switch (method.getName())
+					{
+						case "isCreditMemo":
+							return invoiceIsCreditMemo;
+						case "toString":
+							return "FakeIInvoiceBL";
+						case "hashCode":
+							return System.identityHashCode(proxy);
+						case "equals":
+							return proxy == args[0];
+						default:
+							throw new UnsupportedOperationException("FakeIInvoiceBL does not implement " + method.getName());
+					}
+				});
 	}
 
 	private static POSTerminal newTerminal()

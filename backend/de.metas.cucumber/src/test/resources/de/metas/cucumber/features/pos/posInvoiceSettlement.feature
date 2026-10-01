@@ -49,16 +49,17 @@ Feature: POS Invoice Settlement
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
   @Id:S28210_TC23
-  Scenario: An open sales invoice is found by document number and settled in cash at the till
+  Scenario: An open sales invoice is found by keying its numeric document number and settled in cash at the till
+    # The till keypad enters digits only, so the search term is the trailing numeric part of the invoice number.
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID   | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
-      | invoice1   | invoiceCustomer | INV-POS-TC1 | 2026-09-24   | Spot                     | true    | EUR           |
+      | Identifier | C_BPartner_ID   | DocumentNo          | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | invoice1   | invoiceCustomer | INV-POS-TC23-990123 | 2026-09-24   | Spot                     | true    | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | invoiceL1  | invoice1     | product      | 1 PCE       |
     And the invoice identified by invoice1 is completed
 
-    Then find open invoices at POS terminal till by document number 'INV-POS-TC1' returns:
+    Then find open invoices at POS terminal till by document number '990123' returns:
       | C_Invoice_ID | C_BPartner_ID   | GrandTotal | OpenAmt |
       | invoice1     | invoiceCustomer | 119.00     | 119.00  |
 
@@ -76,8 +77,8 @@ Feature: POS Invoice Settlement
       | C_Invoice_ID | C_Payment_ID      | Amount |
       | invoice1     | settlementPayment | 119.00 |
     And the cash journal of POS terminal till contains lines:
-      | Type       | Amount | Description          |
-      | CASH_INOUT | 119.00 | Rechnung INV-POS-TC1 |
+      | Type       | Amount | Description                  |
+      | CASH_INOUT | 119.00 | Rechnung INV-POS-TC23-990123 |
 
   # ##########################################################################
   @from:cucumber
@@ -210,6 +211,15 @@ Feature: POS Invoice Settlement
       | C_Invoice_ID    | C_BPartner_ID   | GrandTotal | OpenAmt |
       | prefixedInvoice | invoiceCustomer | 119.00     | 119.00  |
 
+    # A space-padded digit term is trimmed, then still matches the keyed suffix.
+    And find open invoices at POS terminal till by document number ' 770245 ' returns:
+      | C_Invoice_ID    | C_BPartner_ID   | GrandTotal | OpenAmt |
+      | prefixedInvoice | invoiceCustomer | 119.00     | 119.00  |
+
+    # A wildcard or any non-digit term is rejected (digits-only keypad), so it never LIKE-dumps the org.
+    And find open invoices at POS terminal till by document number '%' returns no invoices
+    And find open invoices at POS terminal till by document number 'POS-TC27' returns no invoices
+
     When the following invoices are settled in cash at POS terminal till by cashier metasfresh:
       | C_Invoice_ID    | C_Payment_ID          |
       | prefixedInvoice | settlementPaymentTC27 |
@@ -217,3 +227,41 @@ Feature: POS Invoice Settlement
     Then validate created invoices
       | C_Invoice_ID    | DocStatus | IsPaid |
       | prefixedInvoice | CO        | true   |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC28
+  Scenario: A completed PURCHASE invoice settled by id is rejected, leaving no payment and no journal line
+    # The settle endpoint takes a client-supplied invoiceId that the org-scoped search would never have offered.
+    # A same-org completed PURCHASE invoice (IsSOTrx=N) has an open amount, but auto-allocating an inbound receipt
+    # to it would silently no-op (receipt vs purchase mismatch) — so the settle path must reject it up front,
+    # before any cash is booked.
+    # A purchase price list is needed so the AP invoice can complete (the Background only sets up a sales one).
+    Given metasfresh contains M_PriceLists
+      | Identifier  | M_PricingSystem_ID | C_Currency_ID | SOTrx |
+      | priceListPO | pricingSystem      | EUR           | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier         | M_PriceList_ID |
+      | priceListVersionPO | priceListPO    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | priceListVersionPO     | product      | 100.00   | PCE      | taxCategory19    |
+    Given metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | purchaseInvoice | invoiceCustomer | 2026-09-24   | Spot                     | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
+      | purchaseInvoiceL | purchaseInvoice | product      | 1 PCE       |
+    And the invoice identified by purchaseInvoice is completed
+
+    When settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceSettlement.NotEligibleForSettlement':
+      | C_Invoice_ID    | CashTenderedAmount |
+      | purchaseInvoice | 119.00             |
+
+    Then validate created invoices
+      | C_Invoice_ID    | DocStatus | IsPaid |
+      | purchaseInvoice | CO        | false  |
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |

@@ -28,6 +28,8 @@ import de.metas.pos.POSTerminalService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ForUpdate;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -55,9 +57,12 @@ public class POSInvoiceSettlementService
 	private static final AdMessageKey MSG_NoLongerOpen = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NoLongerOpen");
 	private static final AdMessageKey MSG_WrongOrg = AdMessageKey.of("de.metas.pos.InvoiceSettlement.WrongOrg");
 	private static final AdMessageKey MSG_TenderedTooLow = AdMessageKey.of("de.metas.pos.InvoiceSettlement.TenderedTooLow");
+	private static final AdMessageKey MSG_NotEligibleForSettlement = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NotEligibleForSettlement");
+	private static final AdMessageKey MSG_AllocationIncomplete = AdMessageKey.of("de.metas.pos.InvoiceSettlement.AllocationIncomplete");
 	private static final AdMessageKey MSG_JournalDescription = AdMessageKey.of("de.metas.pos.InvoiceSettlement.JournalDescription");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	// both IInvoiceDAO and IInvoiceBL are needed: IInvoiceDAO.getByDocumentNo()/getByIdInTrx() have no BL equivalent,
 	// while invoiceBL.isCreditMemo() is BL-only — same reasoning for the IAllocationDAO/IAllocationBL pair below
 	// (IAllocationDAO.retrieveOpenAmtInInvoiceCurrency() has no BL equivalent; IAllocationBL.autoAllocateSpecificPayment() is BL-only)
@@ -83,12 +88,22 @@ public class POSInvoiceSettlementService
 	@NonNull
 	public List<POSOpenInvoice> findOpenInvoices(@NonNull final POSTerminalId posTerminalId, @NonNull final String documentNo)
 	{
+		// The till keypad enters digits only, so the search term is a trailing numeric suffix. Trim it and reject
+		// anything that is not a non-empty run of digits: this closes the SQL-wildcard hole (a REST caller sending
+		// '%' would otherwise LIKE-match every invoice of the org) and the untrimmed-space miss (" 170245" would
+		// otherwise never match). An invalid term finds nothing rather than dumping or erroring.
+		final String searchSuffix = documentNo.trim();
+		if (!isValidSearchSuffix(searchSuffix))
+		{
+			return ImmutableList.of();
+		}
+
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(posTerminalId);
 		final OrgId orgId = terminal.getOrgId();
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 		final ImmutableList.Builder<POSOpenInvoice> result = ImmutableList.builder();
-		for (final I_C_Invoice invoice : invoiceDAO.getByDocumentNoEndingWith(documentNo, orgId, I_C_Invoice.class))
+		for (final I_C_Invoice invoice : invoiceDAO.getByDocumentNoEndingWith(searchSuffix, orgId, I_C_Invoice.class))
 		{
 			if (isEligibleForCashSettlement(invoice))
 			{
@@ -98,11 +113,41 @@ public class POSInvoiceSettlementService
 		return result.build();
 	}
 
-	private boolean isEligibleForCashSettlement(@NonNull final I_C_Invoice invoice)
+	private static boolean isValidSearchSuffix(@NonNull final String searchSuffix)
+	{
+		if (searchSuffix.isEmpty())
+		{
+			return false;
+		}
+		for (int i = 0; i < searchSuffix.length(); i++)
+		{
+			if (!Character.isDigit(searchSuffix.charAt(i)))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@VisibleForTesting
+	boolean isEligibleForCashSettlement(@NonNull final I_C_Invoice invoice)
+	{
+		return isCompletedSalesInvoice(invoice)
+				&& !invoice.isPaid();
+	}
+
+	/**
+	 * The <i>structural</i> half of {@link #isEligibleForCashSettlement}: a completed/closed, non-credit-memo SALES
+	 * invoice. Deliberately excludes {@code IsPaid} — the settle path uses this (not the full eligibility check) so
+	 * that an already-paid but otherwise valid invoice is reported as {@code NoLongerOpen} (open amount zero, the
+	 * legitimate "paid on another till in the meantime" case) rather than {@code NotEligibleForSettlement}, which is
+	 * reserved for an invoice that could never be settled at the till at all (purchase / drafted / credit memo).
+	 */
+	@VisibleForTesting
+	boolean isCompletedSalesInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return invoice.isSOTrx()
 				&& DocStatus.ofCode(invoice.getDocStatus()).isCompletedOrClosed()
-				&& !invoice.isPaid()
 				&& !invoiceBL.isCreditMemo(invoice);
 	}
 
@@ -124,9 +169,18 @@ public class POSInvoiceSettlementService
 
 	/**
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.NoLongerOpen}) if the invoice is no longer
-	 * open (e.g. already settled by a concurrent request) by the time this transaction re-reads it. This is a
-	 * best-effort optimistic re-check (a plain re-read, no row lock) — it narrows, but does not eliminate, the race
-	 * between two concurrent settlement requests for the same invoice; it is not a hard concurrency guarantee.
+	 * open (e.g. already settled by a concurrent request) by the time this transaction re-reads it. The re-read
+	 * takes a {@code FOR NO KEY UPDATE} row lock on the {@code C_Invoice} first, so two concurrent settlement
+	 * requests for the same invoice are serialized: the second blocks until the first commits, then reads
+	 * {@code open <= 0} and fails here — the double-settle is prevented, not merely narrowed.
+	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.NotEligibleForSettlement}) if the
+	 * client-supplied invoice is not eligible for cash settlement (not a completed/closed, still-open,
+	 * non-credit-memo SALES invoice). {@code request.getInvoiceId()} is client-supplied and is NOT scoped by the
+	 * org-filtered {@link #findOpenInvoices} search, so this guard is re-applied here before any payment is created.
+	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.AllocationIncomplete}) if, after
+	 * auto-allocating the payment, the invoice is still not fully settled (open amount not zero) — e.g.
+	 * {@code autoAllocateSpecificPayment} silently no-ops on a non-financial invoice. Throwing rolls the whole
+	 * transaction back, so the cash payment and the journal line never survive an invoice that stayed unpaid.
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.CurrencyMismatch}) if the invoice's currency
 	 * differs from the terminal's — checked BEFORE the payment is created: a foreign-currency invoice would put a
 	 * wrongly-denominated amount into the till's own-currency cash journal, and {@link Money#assertCurrencyId} inside
@@ -189,11 +243,23 @@ public class POSInvoiceSettlementService
 	{
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 
-		// re-read inside this transaction: the amount looked up by the caller earlier (e.g. via findOpenInvoices,
-		// in its own transaction) may be stale by the time the cashier confirms the settlement
-		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(request.getInvoiceId());
+		// re-read inside this transaction, holding a FOR NO KEY UPDATE row lock on the invoice: the amount looked
+		// up by the caller earlier (e.g. via findOpenInvoices, in its own transaction) may be stale by the time
+		// the cashier confirms, and the lock serializes two concurrent settlements of the same invoice so the
+		// loser reads open=0 below and fails with NoLongerOpen rather than double-booking cash.
+		final I_C_Invoice invoice = getByIdInTrxWithRowLock(request.getInvoiceId());
 
 		assertInvoiceBelongsToTerminalOrg(invoice, terminal);
+
+		// re-apply the structural eligibility guard: invoiceId is client-supplied and this path is NOT scoped by the
+		// org-filtered findOpenInvoices query, so without this a same-org purchase / non-completed / credit-memo
+		// invoice would book cash that autoAllocateSpecificPayment could never allocate. IsPaid is intentionally NOT
+		// part of this guard — an already-paid invoice falls through to the open-amount check below and is reported
+		// as NoLongerOpen (the legitimate "paid on another till meanwhile" case), not as structurally ineligible.
+		if (!isCompletedSalesInvoice(invoice))
+		{
+			throw new AdempiereException(MSG_NotEligibleForSettlement).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
+		}
 
 		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
 		if (open.signum() <= 0)
@@ -233,8 +299,19 @@ public class POSInvoiceSettlementService
 
 		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 
+		// post-condition: autoAllocateSpecificPayment silently no-ops on a receipt↔purchase mismatch, a
+		// non-financial invoice, or an already-paid one. If it left the invoice open, the cash + journal line
+		// would be booked against an invoice that is still unpaid — throw so the whole transaction rolls back.
+		final Money openAfterAllocation = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
+		if (openAfterAllocation.signum() != 0)
+		{
+			throw new AdempiereException(MSG_AllocationIncomplete)
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+					.setParameter("openAfterAllocation", openAfterAllocation);
+		}
+
 		final String description = msgBL.getMsg(
-				Env.getAD_Language(),
+				Env.getADLanguageOrBaseLanguage(),
 				MSG_JournalDescription,
 				new Object[] { invoice.getDocumentNo() });
 		final POSCashJournal journal = posCashJournalService.changeJournalById(
@@ -247,5 +324,20 @@ public class POSInvoiceSettlementService
 				.documentNo(invoice.getDocumentNo())
 				.journal(journal)
 				.build();
+	}
+
+	/**
+	 * Re-reads the invoice inside the current transaction with a {@code FOR NO KEY UPDATE} row lock, so two
+	 * concurrent settlements of the same invoice serialize on this row (the settle path never changes the invoice's
+	 * primary key, only {@code IsPaid}, so the weaker {@code FOR NO KEY UPDATE} is enough — see {@link ForUpdate}).
+	 */
+	@NonNull
+	private I_C_Invoice getByIdInTrxWithRowLock(@NonNull final InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyNotNull(I_C_Invoice.class);
 	}
 }

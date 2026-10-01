@@ -519,7 +519,7 @@ public class POSReturnService
 					.createAndProcess();
 
 			final String journalDescription = msgBL.getMsg(
-					Env.getAD_Language(),
+					Env.getADLanguageOrBaseLanguage(),
 					MSG_JournalDescription,
 					new Object[] { creditMemo.getDocumentNo() });
 			journal = posCashJournalService.changeJournalById(

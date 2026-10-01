@@ -94,6 +94,42 @@ class POSTerminalServiceTest
 	}
 
 	@Test
+	void actionThrowsAndReleaseThrows_releaseFailureIsSuppressed_notMaskingTheBusinessError()
+	{
+		// The cashier must see the business error (the action's), not a lock-release plumbing failure. A failing
+		// release is attached as a suppressed throwable, never allowed to replace the in-flight error.
+		final RuntimeException actionException = new RuntimeException("business error the cashier needs to see");
+		final RuntimeException releaseException = new RuntimeException("pg_advisory_unlock failed");
+
+		assertThatThrownBy(() -> POSTerminalService.runWithBoundedAcquire(
+				() -> true,
+				() -> { throw releaseException; },
+				1_000L,
+				10L,
+				() -> { throw actionException; },
+				() -> new RuntimeException("onTimeout must not be invoked — the lock was acquired")))
+				.isSameAs(actionException)
+				.satisfies(thrown -> assertThat(thrown.getSuppressed()).containsExactly(releaseException));
+	}
+
+	@Test
+	void actionSucceedsButReleaseThrows_releaseFailurePropagates()
+	{
+		// No business error is in flight, so a failing release must NOT be swallowed — otherwise the advisory lock
+		// would leak on the pooled connection and wedge the terminal as permanently "till busy".
+		final RuntimeException releaseException = new RuntimeException("pg_advisory_unlock failed");
+
+		assertThatThrownBy(() -> POSTerminalService.runWithBoundedAcquire(
+				() -> true,
+				() -> { throw releaseException; },
+				1_000L,
+				10L,
+				() -> "acquired",
+				() -> new RuntimeException("onTimeout must not be invoked — the lock was acquired")))
+				.isSameAs(releaseException);
+	}
+
+	@Test
 	void acquiresOnASubsequentPoll_runsActionOnce()
 	{
 		final AtomicInteger acquireAttempts = new AtomicInteger();

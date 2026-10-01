@@ -131,6 +131,7 @@ public class POSTerminalService
 			@NonNull final Supplier<? extends RuntimeException> onTimeout)
 	{
 		boolean locked = false;
+		Throwable primaryError = null;
 		try
 		{
 			// REAL elapsed time via a monotonic clock — NOT SystemTime, which is the business clock and is
@@ -149,11 +150,35 @@ public class POSTerminalService
 
 			return action.get();
 		}
+		catch (final RuntimeException | Error e)
+		{
+			primaryError = e;
+			throw e;
+		}
 		finally
 		{
 			if (locked)
 			{
-				release.run();
+				try
+				{
+					release.run();
+				}
+				catch (final RuntimeException releaseError)
+				{
+					// A failing release (pg_advisory_unlock throwing) must NEVER mask the error the caller is
+					// already propagating — e.g. the business rejection the cashier needs to see — nor be
+					// swallowed when the action succeeded (the advisory lock would then leak on the pooled
+					// connection and wedge the terminal as permanently "till busy"). So: attach it to the
+					// in-flight error if there is one, otherwise let it propagate on its own.
+					if (primaryError != null)
+					{
+						primaryError.addSuppressed(releaseError);
+					}
+					else
+					{
+						throw releaseError;
+					}
+				}
 			}
 		}
 	}

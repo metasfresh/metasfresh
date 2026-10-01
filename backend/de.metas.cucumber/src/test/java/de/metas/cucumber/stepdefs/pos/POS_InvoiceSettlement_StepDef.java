@@ -176,6 +176,10 @@ public class POS_InvoiceSettlement_StepDef
 		final I_C_Invoice expectedInvoice = invoiceTable.get(invoiceIdentifier);
 		InterfaceWrapperHelper.refresh(expectedInvoice);
 		assertThat(openInvoice.getDocumentNo()).as("documentNo").isEqualTo(expectedInvoice.getDocumentNo());
+		// Also pin the suffix contract itself: the returned DocumentNo must END WITH the (trimmed) keyed search
+		// term — the isEqualTo above alone is tautological (it compares the invoice's DocumentNo to itself) and
+		// would no longer catch a wrong/foreign match that the search mistakenly returned.
+		assertThat(openInvoice.getDocumentNo()).as("documentNo ends with the keyed suffix").endsWith(documentNo.trim());
 
 		expectedRow.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.map(bpartnerTable::getId)
