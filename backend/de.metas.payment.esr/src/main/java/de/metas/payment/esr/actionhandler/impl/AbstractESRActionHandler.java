@@ -57,7 +57,7 @@ public class AbstractESRActionHandler implements IESRActionHandler
 		final I_C_Payment payment = paymentId == null ? null
 				: paymentDAO.getById(paymentId);
 
-		if (invoice != null && payment != null)
+		if (invoice != null && payment != null && isAllocatePaymentToInvoice(line))
 		{
 			if (!payment.isAllocated() && !invoice.isPaid())
 			{
@@ -73,6 +73,20 @@ public class AbstractESRActionHandler implements IESRActionHandler
 				Services.get(IESRImportBL.class).linkInvoiceToPayment(line);
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * Whether this handler wants the payment allocated against the line's invoice. Subclasses override
+	 * it to opt out; the default is the allocation this class has always done.
+	 * <p>
+	 * Opting out is the only way to leave the payment open: the allocation below goes through
+	 * {@code IESRImportBL.linkInvoiceToPayment}, which allocates with
+	 * {@code ignoreIsAutoAllocateAvailableAmt = true}, so a subclass cannot undo it afterwards by
+	 * clearing that flag.
+	 */
+	protected boolean isAllocatePaymentToInvoice(final I_ESR_ImportLine line)
+	{
 		return true;
 	}
 

@@ -267,4 +267,45 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		assertThat(openAmt.toBigDecimal()).as("invoice open amount").isEqualByComparingTo("50");
 	}
+
+	/**
+	 * TC3, the must-stay-OK counterpart: on an OVER-payment "leave payment open" still allocates, so
+	 * the invoice really is settled and only the surplus is left sitting on the partner. Opting out of
+	 * the allocation is specific to the under-payment case.
+	 */
+	@Test
+	public void testUnableToAssignAction_overPayment_stillSettlesTheInvoice()
+	{
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "01-059931-0", "15364170", "40", false);
+		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
+
+		esrImportBL.evaluateLine(esrImportLine);
+		esrImportBL.process(esrImport);
+
+		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+		save(esrImportLine);
+
+		assertThat(esrImportLine.getESR_Invoice_Openamt()).as("guard: this is an over-payment").isNegative();
+
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
+		esrImportBL.complete(esrImport, "");
+
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
+
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
+
+		final I_C_Payment linePayment = POJOLookupMap.get().getRecords(I_C_Payment.class).stream()
+				.filter(p -> p.getC_Payment_ID() == esrImportLine.getC_Payment_ID())
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no payment for the line"));
+
+		assertThat(linePayment.getC_Invoice_ID()).as("payment's invoice").isGreaterThan(0);
+		assertThat(linePayment.isAutoAllocateAvailableAmt()).as("IsAutoAllocateAvailableAmt").isFalse();
+
+		final I_C_Invoice invoice = getC_Invoice();
+		refresh(invoice, true);
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		assertThat(openAmt.toBigDecimal()).as("invoice open amount").isZero();
+	}
 }

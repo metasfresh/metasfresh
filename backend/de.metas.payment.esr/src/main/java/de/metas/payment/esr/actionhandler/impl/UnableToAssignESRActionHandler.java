@@ -25,11 +25,28 @@ package de.metas.payment.esr.actionhandler.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
 
+import java.math.BigDecimal;
+
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
 public class UnableToAssignESRActionHandler extends AbstractESRActionHandler
 {
+
+	/**
+	 * An UNDER-payment picked as "leave payment open" must stay unallocated: the money goes back to the
+	 * partner through payment selection, which only picks up a payment that is still open, and the
+	 * invoice must stay open for its full amount rather than appear settled except for the missing part.
+	 * <p>
+	 * An over-payment still allocates as before -- there the invoice really is settled and only the
+	 * surplus is left over.
+	 */
+	@Override
+	protected boolean isAllocatePaymentToInvoice(final I_ESR_ImportLine line)
+	{
+		final BigDecimal openAmt = line.getESR_Invoice_Openamt();
+		return openAmt == null || openAmt.signum() <= 0;
+	}
 
 	@Override
 	public boolean process(I_ESR_ImportLine line, String message)
