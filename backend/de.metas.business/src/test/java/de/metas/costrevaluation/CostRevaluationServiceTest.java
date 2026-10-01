@@ -1337,7 +1337,7 @@ public class CostRevaluationServiceTest
 				assertThatThrownBy(() -> voidIt(costRevaluationId))
 						.as("Void of a %s revaluation", docStatus)
 						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining("Invalid document status");
+						.hasMessageContaining(CostRevaluationDocumentHandler.MSG_VoidInvalidDocStatus.toAD_Message());
 			}
 		}
 	}

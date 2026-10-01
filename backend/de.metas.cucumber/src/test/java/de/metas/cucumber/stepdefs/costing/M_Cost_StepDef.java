@@ -4,7 +4,6 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingLevel;

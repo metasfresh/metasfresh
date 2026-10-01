@@ -55,8 +55,8 @@ import java.util.Objects;
 @TabCallout(I_M_CostRevaluation.class)
 public class M_CostRevaluation implements ITabCallout
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final CostRevaluationService costRevaluationService;
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final CostRevaluationService costRevaluationService;
 
 	public M_CostRevaluation(@NonNull final CostRevaluationService costRevaluationService)
 	{

@@ -52,14 +52,14 @@ public class CostRevaluationService
 	static final AdMessageKey MSG_NewCostPriceNegative = AdMessageKey.of("M_CostRevaluation.NewCostPriceNegative");
 	static final AdMessageKey MSG_DocumentNotDraft = AdMessageKey.of("M_CostRevaluation.DocumentNotDraft");
 
-	private final CostRevaluationRepository costRevaluationRepository;
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostingService costingService;
-	private final ICostDetailRepository costDetailRepository;
-	private final ICostElementRepository costElementRepository;
-	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final CostRevaluationRepository costRevaluationRepository;
+	@NonNull private final ICurrentCostsRepository currentCostsRepo;
+	@NonNull private final ICostingService costingService;
+	@NonNull private final ICostDetailRepository costDetailRepository;
+	@NonNull private final ICostElementRepository costElementRepository;
+	@NonNull private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
@@ -555,7 +555,7 @@ public class CostRevaluationService
 	{
 		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			createDetailsForManual(costRevaluation, line);
+			createDetailsForManual(line);
 		}
 		else
 		{
@@ -567,12 +567,11 @@ public class CostRevaluationService
 	 * {@code Manual}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row).
 	 * The line shows the stock on hand and the current cost price of this evaluation.
 	 */
-	private void createDetailsForManual(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
+	private void createDetailsForManual(@NonNull final CostRevaluationLine line)
 	{
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.dateAcct(costRevaluation.getDateAcct())
 				.newCostPrice(line.getNewCostPrice())
 				.build());
 

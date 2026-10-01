@@ -51,7 +51,6 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 
@@ -190,10 +189,10 @@ public class CostingDocuments_StepDef
 		invoiceCandDAO.save(invoiceCandidate);
 		invoiceCandidateStepDef.waitUntilValid(invoiceCandidateId, 120);
 
-		final Optional<LocalDate> dateInvoiced = row.getAsOptionalLocalDate(I_C_Invoice.COLUMNNAME_DateInvoiced);
-		if (dateInvoiced.isPresent())
+		final LocalDate dateInvoiced = row.getAsOptionalLocalDate(I_C_Invoice.COLUMNNAME_DateInvoiced).orElse(null);
+		if (dateInvoiced != null)
 		{
-			invoiceCandidateStepDef.generateInvoices(ImmutableSet.of(invoiceCandidateId), dateInvoiced.get());
+			invoiceCandidateStepDef.generateInvoices(ImmutableSet.of(invoiceCandidateId), dateInvoiced);
 		}
 		else
 		{

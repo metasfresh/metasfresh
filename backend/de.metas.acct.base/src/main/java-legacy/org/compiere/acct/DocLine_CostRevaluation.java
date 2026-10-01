@@ -21,7 +21,7 @@ import org.compiere.model.I_M_CostRevaluationLine;
 
 public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 {
-	private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
+	@NonNull private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 	private final CostRevaluationLine costRevaluationLine;
 
 	public DocLine_CostRevaluation(final @NonNull I_M_CostRevaluationLine lineRecord, final @NonNull Doc_CostRevaluation doc)

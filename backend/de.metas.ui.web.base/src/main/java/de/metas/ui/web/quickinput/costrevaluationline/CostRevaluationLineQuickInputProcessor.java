@@ -30,6 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 
@@ -38,7 +39,7 @@ import java.util.Set;
 
 public class CostRevaluationLineQuickInputProcessor implements IQuickInputProcessor
 {
-	private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
+	@NonNull private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)

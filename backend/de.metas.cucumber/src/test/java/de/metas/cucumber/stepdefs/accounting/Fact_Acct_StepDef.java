@@ -40,6 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class Fact_Acct_StepDef
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final FactAcctMatchersFactory factAcctMatchersFactory;
 	@NonNull private final FactAcctToTabularStringConverter factAcctTabularStringConverter;
@@ -160,7 +162,7 @@ public class Fact_Acct_StepDef
 			final ProductId productId = row.getAsIdentifier(I_Fact_Acct.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 			final AcctSchemaId acctSchemaId = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID)
 					.map(acctSchemaTable::getId)
-					.orElseGet(() -> Services.get(IAcctSchemaDAO.class).getPrimaryAcctSchemaId(StepDefConstants.CLIENT_ID));
+					.orElseGet(() -> acctSchemaDAO.getPrimaryAcctSchemaId(StepDefConstants.CLIENT_ID));
 			final LocalDate dateAcct = row.getAsLocalDate(I_Fact_Acct.COLUMNNAME_DateAcct);
 			final BigDecimal expectedBalance = row.getAsBigDecimal("Balance");
 
@@ -242,7 +244,7 @@ public class Fact_Acct_StepDef
 		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int count = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
+			final int count = queryBL.createQueryBuilder(I_Fact_Acct.class)
 					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 					.create()

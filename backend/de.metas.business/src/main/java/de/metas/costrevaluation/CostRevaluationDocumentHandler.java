@@ -42,6 +42,7 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 {
 	static final AdMessageKey MSG_CannotVoidBookedRevaluation = AdMessageKey.of("M_CostRevaluation.CannotVoidBookedRevaluation");
 	static final AdMessageKey MSG_CopyFromCostElementCannotBeVoided = AdMessageKey.of("M_CostRevaluation.CopyFromCostElementCannotBeVoided");
+	static final AdMessageKey MSG_VoidInvalidDocStatus = AdMessageKey.of("M_CostRevaluation.VoidInvalidDocStatus");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CostRevaluationService costRevaluationService;
@@ -123,7 +124,8 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
 		if (docStatus.isClosedReversedOrVoided())
 		{
-			throw new AdempiereException("Invalid document status: " + docStatus);
+			throw new AdempiereException(MSG_VoidInvalidDocStatus)
+					.setParameter("docStatus", docStatus);
 		}
 
 		if (costRevaluationService.hasAnyLineWithCostDetail(costRevaluationId))

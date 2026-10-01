@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class M_CostRevaluationLine
 {
-	private final CostRevaluationService costRevaluationService;
+	@NonNull private final CostRevaluationService costRevaluationService;
 
 	public M_CostRevaluationLine(@NonNull final CostRevaluationService costRevaluationService)
 	{

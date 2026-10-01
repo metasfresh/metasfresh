@@ -107,14 +107,16 @@ class M_CostRevaluationTest
 	private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 	private static final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
 
+	private CostRevaluationService costRevaluationService;
 	private M_CostRevaluation interceptor;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		// the mock finds no preset cost element (empty Optional by default)
-		interceptor = new M_CostRevaluation(mock(CostRevaluationService.class));
+		// unstubbed, the mock finds no preset cost element (empty Optional) and no active lines
+		costRevaluationService = mock(CostRevaluationService.class);
+		interceptor = new M_CostRevaluation(costRevaluationService);
 	}
 
 	@Nested
@@ -177,13 +179,12 @@ class M_CostRevaluationTest
 		@Test
 		void beforeNew_presetsCostElementFromSchemaCostingMethod()
 		{
-			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
 			when(costRevaluationService.findPresetCostElement(any(), eq(AcctSchemaId.ofRepoId(1000000)))).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
 			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
 			record.setC_AcctSchema_ID(1000000);
 			record.setDateAcct(day(2020, 1, 15));
 
-			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+			interceptor.beforeNew(record);
 
 			assertThat(record.getM_CostElement_ID()).isEqualTo(1000008);
 		}
@@ -191,14 +192,13 @@ class M_CostRevaluationTest
 		@Test
 		void beforeNew_keepsAnExplicitCostElement()
 		{
-			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
 			when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
 			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
 			record.setC_AcctSchema_ID(1000000);
 			record.setM_CostElement_ID(1000000);
 			record.setDateAcct(day(2020, 1, 15));
 
-			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+			interceptor.beforeNew(record);
 
 			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
 		}
@@ -209,14 +209,13 @@ class M_CostRevaluationTest
 		@Test
 		void beforeNew_copyFromCostElement_keepsItsTargetElement()
 		{
-			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
 			when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
 			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
 			record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
 			record.setC_AcctSchema_ID(1000000);
 			record.setDateAcct(day(2020, 1, 15));
 
-			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+			interceptor.beforeNew(record);
 
 			assertThat(record.getM_CostElement_ID()).isLessThanOrEqualTo(0);
 		}
@@ -237,20 +236,13 @@ class M_CostRevaluationTest
 		return record;
 	}
 
-	private M_CostRevaluation interceptorWithActiveLines()
-	{
-		final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
-		when(costRevaluationService.hasActiveLines(any())).thenReturn(true);
-		return new M_CostRevaluation(costRevaluationService);
-	}
-
 	/**
 	 * A posting-date change on a draft with lines is allowed; the evaluation start date follows it.
 	 */
 	@Test
 	void beforeChange_dateAcctChanged_withActiveLines_isAccepted_andStartDateFollows()
 	{
-		interceptor = interceptorWithActiveLines();
+		when(costRevaluationService.hasActiveLines(any())).thenReturn(true);
 		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
 
 		record.setDateAcct(day(2020, 2, 20));
@@ -266,7 +258,7 @@ class M_CostRevaluationTest
 	@Test
 	void beforeChange_draftWithLines_startDateDiffersFromDateAcct_isAlignedWithoutError()
 	{
-		interceptor = interceptorWithActiveLines();
+		when(costRevaluationService.hasActiveLines(any())).thenReturn(true);
 		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
 
 		record.setEvaluationStartDate(day(2019, 11, 1));
@@ -317,7 +309,7 @@ class M_CostRevaluationTest
 	@Test
 	void beforeChange_costElementChanged_withActiveLines_failsWithDeleteLinesFirst_namingTheField()
 	{
-		interceptor = interceptorWithActiveLines();
+		when(costRevaluationService.hasActiveLines(any())).thenReturn(true);
 		final I_M_CostRevaluation record = createSavedRecord(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
 
 		record.setM_CostElement_ID(4711);
