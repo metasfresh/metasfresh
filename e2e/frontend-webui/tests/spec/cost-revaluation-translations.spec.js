@@ -97,8 +97,7 @@ difference caption and the refusal message.
     const recordId = await CostRevaluationPage.createHeader();
 
     await test.step('Header: Revaluation Source and line creation process', async () => {
-      // A list field shows Value_Name; the translated part is the name
-      expect(await CostRevaluationPage.revaluationSourceText()).toMatch(new RegExp(`_${expected.manualSourceName}$`));
+      expect(await CostRevaluationPage.revaluationSourceText()).toBe(expected.manualSourceName);
       const captions = await CostRevaluationPage.actionCaptions(['M_CostRevaluation_CreateLines']);
       expect(captions.M_CostRevaluation_CreateLines).toBe(expected.createLinesProcessName);
     });
