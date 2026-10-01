@@ -28,21 +28,26 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, which of the
- * contract's own discount lines is taken over from the customer's sales order.
+ * contract's own discount lines is taken over from the customer's sales order — and asserts the composition
+ * description the take-over writes onto the resulting compensation order line.
  */
 @RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
@@ -51,6 +56,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	private final @NonNull C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
 	private final @NonNull M_Product_Category_StepDefData productCategoryTable;
 	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_OrderLine_StepDefData orderLineTable;
 
 	/**
 	 * DataTable columns:
@@ -93,6 +99,33 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_CompensationGroup_ContractSettings_TakeOver record = buildTakeOver(row);
 			StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> saveRecord(record));
+		});
+	}
+
+	/**
+	 * Asserts the {@code Description} of an order line created earlier (registered under an identifier by a
+	 * {@code validate the created order lines} step) — the take-over composition, e.g. {@code 3% Bonus A + 3% Bonus B}.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code C_OrderLine_ID} (required, identifier-ref) — the order line</li>
+	 *     <li>{@code Description} (required) — the exact expected description</li>
+	 * </ul>
+	 * <pre>
+	 * Then validate the take-over composition description of the order lines:
+	 *   | C_OrderLine_ID | Description                          |
+	 *   | ol_discount    | 3% Bonus A + 3% Bonus B              |
+	 * </pre>
+	 */
+	@Then("validate the take-over composition description of the order lines:")
+	public void validateTakeOverDescription(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+			refresh(orderLine);
+			assertThat(orderLine.getDescription())
+					.as("Description of C_OrderLine %s", row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).getAsString())
+					.isEqualTo(row.getAsString(I_C_OrderLine.COLUMNNAME_Description));
 		});
 	}
 
