@@ -13,6 +13,33 @@ import { getAccountingFacts, getFieldData, WEBAPI_BASE_URL } from '../WebAPIVali
 export const COST_REVAL_WINDOW_ID = '541568';
 export const COST_REVAL_LINE_TAB_ID = 'AD_Tab-546465';
 
+/** Posting runs asynchronously after Complete; under CI load it can take well over the 40 s of VERY_SLOW_ACTION_TIMEOUT. */
+const POSTING_TIMEOUT = 2 * VERY_SLOW_ACTION_TIMEOUT;
+
+/**
+ * @returns {Promise<Object>} the JSON body of a WebAPI GET (relative to WEBAPI_BASE_URL), in the session's language
+ */
+const getWebAPI = async (path) => {
+  const response = await getPage().request.get(`${WEBAPI_BASE_URL}${path}`);
+  expect(response.ok(), `GET ${path}`).toBe(true);
+  return await response.json();
+};
+
+/** @returns {Object<string, {caption: string, description: string}>} the caption and description of each layout element, by its field's ColumnName */
+const textsByColumnName = (layoutNode, result = {}) => {
+  if (Array.isArray(layoutNode)) {
+    layoutNode.forEach((child) => textsByColumnName(child, result));
+  } else if (layoutNode && typeof layoutNode === 'object') {
+    if (Array.isArray(layoutNode.fields) && 'caption' in layoutNode) {
+      layoutNode.fields.forEach((f) => {
+        result[f.field] = { caption: layoutNode.caption, description: layoutNode.description };
+      });
+    }
+    Object.values(layoutNode).forEach((child) => textsByColumnName(child, result));
+  }
+  return result;
+};
+
 /**
  * Render isoDate (yyyy-MM-dd) in the display format of a date field whose current text is `shown` while its
  * stored value is currentIsoDate. Supports the day/month/year orders of the tested languages (en_US, de_DE);
@@ -189,6 +216,16 @@ export class CostRevaluationPage {
     });
   }
 
+  /** Open the line tab's quick-input (batch entry) if it is closed. */
+  static async openQuickInput() {
+    const page = getPage();
+    const container = page.locator('.quick-input-container');
+    if (!(await container.isVisible().catch(() => false))) {
+      await page.getByTestId('batch-entry-toggle').click();
+    }
+    await container.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  }
+
   /** @returns {import('@playwright/test').Locator} a field of the open quick-input, by ColumnName */
   static quickInputField(columnName) {
     return getPage().locator(`.quick-input-container .form-field-${columnName}`);
@@ -319,7 +356,7 @@ export class CostRevaluationPage {
           facts = await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId);
           return facts.length;
         },
-        { message: `Cost revaluation ${recordId} is posted (has accounting facts)`, timeout: 30000 }
+        { message: `Cost revaluation ${recordId} is posted (has accounting facts)`, timeout: POSTING_TIMEOUT }
       )
       .toBeGreaterThan(0);
     return facts;
@@ -409,9 +446,10 @@ export class CostRevaluationPage {
    * Pick the product in the open quick-input, type the New cost price, submit (Enter) and expect the server to refuse
    * the line: the quick-input's complete request fails and the error notification shows the given (translated) message.
    * @param {string} expectedMessage the expected error message text (or a fragment of it)
+   * @returns {Promise<string>} the notification's shown (full) text
    */
   static async addLineExpectingRefusal(productCode, newCostPrice, expectedMessage) {
-    await test.step(`Pick product ${productCode} + enter New cost price ${newCostPrice} -> the line is refused`, async () => {
+    return await test.step(`Pick product ${productCode} + enter New cost price ${newCostPrice} -> the line is refused`, async () => {
       const page = getPage();
       await this.pickProduct(productCode);
       await this.enterNewCostPrice(newCostPrice);
@@ -422,7 +460,7 @@ export class CostRevaluationPage {
       created.catch(() => {}); // awaited below; avoids an unhandled rejection if the key press throws
       await page.keyboard.press('Enter');
       expect((await created).ok(), 'the quick-input line is refused').toBe(false);
-      await this.expectErrorNotification(expectedMessage);
+      return await this.expectErrorNotification(expectedMessage);
     });
   }
 
@@ -430,6 +468,7 @@ export class CostRevaluationPage {
    * Expect the error notification to show the given (translated) message, not framed as a technical failure
    * (no "Server error" prefix).
    * @param {string} expectedMessage the expected error message text (or a fragment of it)
+   * @returns {Promise<string>} the notification's shown (full) text
    */
   static async expectErrorNotification(expectedMessage) {
     const page = getPage();
@@ -444,9 +483,11 @@ export class CostRevaluationPage {
     await expect(error.locator('.notification-content')).toContainText(expectedMessage);
     // A business refusal is a validation message, not framed as a technical failure
     await expect(error.locator('.notification-content')).not.toContainText('Server error');
+    const shownText = (await error.locator('.notification-content').innerText()).trim();
     const unhighlight = await highlightForCaptureIfEnabled(error);
     await holdForCaptureIfEnabled(4000);
     await unhighlight();
+    return shownText;
   }
 
   /** @returns {import('@playwright/test').Locator} the given column's cell of the line grid row with the given row id */
@@ -556,10 +597,7 @@ export class CostRevaluationPage {
     return getPage().locator('.form-field-RevaluationSource').first();
   }
 
-  /**
-   * @returns {Promise<string>} the shown text of the header Revaluation Source. A list field shows "Value_Name"
-   * (e.g. Manual_Manuell).
-   */
+  /** @returns {Promise<string>} the shown text of the header Revaluation Source */
   static async revaluationSourceText() {
     const field = this.revaluationSourceField();
     await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -618,6 +656,37 @@ export class CostRevaluationPage {
       await page.locator('.subheader-container').waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       return captions;
     });
+  }
+
+  /**
+   * The line tab's field texts as the WebAPI layout gives them in the session's language, by ColumnName:
+   * `grid` from the window layout (the line grid), `singleRow` from the tab's advanced layout (the line's single-row view).
+   * @returns {Promise<{grid: Object<string, {caption: string, description: string}>, singleRow: Object<string, {caption: string, description: string}>}>}
+   */
+  static async lineLayoutTexts() {
+    const windowLayout = await getWebAPI(`/window/${COST_REVAL_WINDOW_ID}/layout`);
+    const lineTab = (windowLayout.tabs || []).find((t) => t.tabId === COST_REVAL_LINE_TAB_ID);
+    expect(lineTab, `line tab ${COST_REVAL_LINE_TAB_ID} in the window layout`).toBeTruthy();
+    const singleRowLayout = await getWebAPI(`/window/${COST_REVAL_WINDOW_ID}/${COST_REVAL_LINE_TAB_ID}/layout?advanced=true`);
+    return { grid: textsByColumnName(lineTab.elements), singleRow: textsByColumnName(singleRowLayout.sections) };
+  }
+
+  /**
+   * The quick-input field texts as the WebAPI quick-input layout gives them in the session's language, by ColumnName.
+   * @returns {Promise<Object<string, {caption: string, description: string}>>}
+   */
+  static async quickInputLayoutTexts(recordId) {
+    const layout = await getWebAPI(`/window/${COST_REVAL_WINDOW_ID}/${recordId}/${COST_REVAL_LINE_TAB_ID}/quickInput/layout`);
+    return textsByColumnName(layout.elements);
+  }
+
+  /**
+   * The document's action (process) captions as the WebAPI gives them in the session's language, by process internal name.
+   * @returns {Promise<Object<string, string>>}
+   */
+  static async actionCaptionsFromWebAPI(recordId) {
+    const { actions } = await getWebAPI(`/window/${COST_REVAL_WINDOW_ID}/${recordId}/actions`);
+    return Object.fromEntries((actions || []).map((a) => [a.internalName, a.caption]));
   }
 
   /** In a capture run: keep the completed document (status + lines) on screen. */

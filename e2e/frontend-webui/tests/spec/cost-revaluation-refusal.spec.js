@@ -11,7 +11,7 @@ import { getFieldData } from '../utils/WebAPIValidation';
  * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation, window 541568), window + quick-input behaviour:
  *  - a revaluation completed after another revaluation of the same product was completed and posted is accepted;
  *    its line shows the values recalculated from the first one's posted cost price;
- *  - a second quick-input line for the same product is refused with a translated message, not framed as "Server error";
+ *  - a second quick-input line for the same product is refused with a message naming the product, not framed as "Server error";
  *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old).
  *
  * Expects the accounting schema to use CLIENT-level costing.
@@ -43,18 +43,10 @@ const addDays = (isoDate, days) => {
 /** The product as the messages render it: Value_Name. */
 const productValueAndName = (md) => `${md.products.PSTK.productCode}_${md.products.PSTK.productName}`;
 
+// The exact translations of the refusal message are checked in cost-revaluation-translations.spec.js.
 const testCases = [
-  {
-    language: 'en_US',
-    label: 'English',
-    // AD_Message M_CostRevaluation.LineAlreadyExistsForProduct
-    lineAlreadyExistsMessage: (product) => `This cost revaluation already has a line for product ${product}.`,
-  },
-  {
-    language: 'de_DE',
-    label: 'German',
-    lineAlreadyExistsMessage: (product) => `Für das Produkt ${product} gibt es in dieser Kosten Neubewertung bereits eine Zeile.`,
-  },
+  { language: 'en_US', label: 'English' },
+  { language: 'de_DE', label: 'German' },
 ];
 
 const allureTags = (story) => {
@@ -82,7 +74,7 @@ async function createCompletedRevaluation(productCode, newCostPrice) {
   return { recordId, dateAcct };
 }
 
-testCases.forEach(({ language, label, lineAlreadyExistsMessage }) => {
+testCases.forEach(({ language, label }) => {
   // eslint-disable-next-line no-unused-vars
   test(`Complete after another revaluation was completed and posted is accepted; the line shows the recalculated values (${label})`, async ({ page }) => {
     test.setTimeout(240000);
@@ -104,7 +96,10 @@ and the value difference 10 x (15 - 10) = 50.
       const first = await createCompletedRevaluation(productCode, '10');
       const firstLine = (await CostRevaluationPage.getLines(first.recordId))[0].fieldsByName;
       // A value difference is booked, so the posting writes accounting facts the wait below can see.
-      expect(Number(firstLine.CurrentCostPrice.value)).not.toBe(10);
+      expect(
+        Number(firstLine.CurrentCostPrice.value),
+        'precondition: the fresh product\'s default cost price differs from 10, so the first revaluation books a difference'
+      ).not.toBe(10);
       // The current cost price changes only when the revaluation is posted.
       await CostRevaluationPage.waitUntilPosted(first.recordId);
     });
@@ -126,30 +121,29 @@ and the value difference 10 x (15 - 10) = 50.
   });
 
   // eslint-disable-next-line no-unused-vars
-  test(`A second quick-input line for the same product is refused with the translated message and no 'Server error' prefix (${label})`, async ({ page }) => {
+  test(`A second quick-input line for the same product is refused with a message naming the product and no 'Server error' prefix (${label})`, async ({ page }) => {
     test.setTimeout(180000);
     allureTags('Quick-input: a second line for the same product is refused');
     allure.description(`
 ## F1500: Costing — one line per product
 
 A Kosten Neubewertung already has a line for a stocked product. Adding a second line for the same product
-through the quick-input is refused with the translated message naming the product, shown as a plain
-message (not framed as "Server error"); the document keeps its one line.
+through the quick-input is refused with a message naming the product, shown as a plain message (not framed as
+"Server error"); the document keeps its one line.
     `);
 
     // A long product name on purpose: the notification shows a status prefix such as "Server error" only for a
     // message longer than 100 characters (SHOW_READ_MORE_FROM), so the message must be that long for the check to bite.
     const md = await createStockedMasterdata(language, 'CR_DUPLICATE_LINE_FOR_THE_SAME_PRODUCT');
     const productCode = md.products.PSTK.productCode;
-    const expectedMessage = lineAlreadyExistsMessage(productValueAndName(md));
-    expect(expectedMessage.length).toBeGreaterThan(100);
     await login(md);
 
     const recordId = await CostRevaluationPage.createHeader();
     await CostRevaluationPage.expectQuickInputOpened();
     await CostRevaluationPage.addLine(productCode, '10');
 
-    await CostRevaluationPage.addLineExpectingRefusal(productCode, '15', expectedMessage);
+    const shownMessage = await CostRevaluationPage.addLineExpectingRefusal(productCode, '15', productValueAndName(md));
+    expect(shownMessage.length, 'the refusal message is longer than 100 characters, so the "Server error" check bites').toBeGreaterThan(100);
 
     const lines = await CostRevaluationPage.getLines(recordId);
     expect(lines.length).toBe(1);
