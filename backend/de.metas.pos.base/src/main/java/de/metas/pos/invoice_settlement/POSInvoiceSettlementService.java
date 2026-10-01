@@ -9,6 +9,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -31,6 +32,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +55,7 @@ public class POSInvoiceSettlementService
 	private static final AdMessageKey MSG_NoLongerOpen = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NoLongerOpen");
 	private static final AdMessageKey MSG_WrongOrg = AdMessageKey.of("de.metas.pos.InvoiceSettlement.WrongOrg");
 	private static final AdMessageKey MSG_TenderedTooLow = AdMessageKey.of("de.metas.pos.InvoiceSettlement.TenderedTooLow");
+	private static final AdMessageKey MSG_JournalDescription = AdMessageKey.of("de.metas.pos.InvoiceSettlement.JournalDescription");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	// both IInvoiceDAO and IInvoiceBL are needed: IInvoiceDAO.getByDocumentNo()/getByIdInTrx() have no BL equivalent,
@@ -65,6 +68,7 @@ public class POSInvoiceSettlementService
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSCashJournalService posCashJournalService;
@@ -128,10 +132,7 @@ public class POSInvoiceSettlementService
 	 * {@link POSCashJournal#addCashInOut} would throw only after the payment had already been completed in this same
 	 * transaction, leaving a completed payment with no matching journal line.
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.WrongOrg}) if the invoice does not belong to
-	 * the terminal's org — {@code request.getInvoiceId()} is client-supplied and, unlike {@link #findOpenInvoices},
-	 * this method has no other org gate; without this check a client-supplied invoiceId from another org would be
-	 * settled using THIS terminal's cashbook/cashier, bypassing the org scoping that {@link #findOpenInvoices} alone
-	 * would otherwise enforce.
+	 * the terminal's org — see {@link #assertInvoiceBelongsToTerminalOrg} for the full rationale.
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.TenderedTooLow}) if
 	 * {@link POSInvoiceSettleRequest#getCashTenderedAmount()} is given (non-{@code null}) and is less than the open
 	 * amount — checked BEFORE {@code paymentBL.newInboundReceiptBuilder()...createAndProcess()} runs, so a rejected
@@ -231,7 +232,10 @@ public class POSInvoiceSettlementService
 
 		allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 
-		final String description = "Rechnung " + invoice.getDocumentNo();
+		final String description = msgBL.getMsg(
+				Env.getAD_Language(),
+				MSG_JournalDescription,
+				new Object[] { invoice.getDocumentNo() });
 		final POSCashJournal journal = posCashJournalService.changeJournalById(
 				terminal.getCashJournalIdNotNull(),
 				cashJournal -> cashJournal.addCashInOut(open, request.getCashierId(), description));
