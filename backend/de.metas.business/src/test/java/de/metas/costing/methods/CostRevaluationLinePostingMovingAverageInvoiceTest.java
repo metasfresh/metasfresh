@@ -35,6 +35,7 @@ import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -141,8 +142,13 @@ public class CostRevaluationLinePostingMovingAverageInvoiceTest
 
 	private AcctSchemaId createAcctSchema()
 	{
+		return createAcctSchema("Test AcctSchema");
+	}
+
+	private AcctSchemaId createAcctSchema(@NonNull final String name)
+	{
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
-		acctSchemaRecord.setName("Test AcctSchema");
+		acctSchemaRecord.setName(name);
 		acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
 		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
@@ -208,8 +214,14 @@ public class CostRevaluationLinePostingMovingAverageInvoiceTest
 
 	private void seedStock(final int qty, final int costPrice)
 	{
+		seedStock(acctSchemaId, qty, costPrice);
+	}
+
+	private void seedStock(@NonNull final AcctSchemaId schemaId, final int qty, final int costPrice)
+	{
 		handler.createOrUpdateCost(costDetailCreateRequest()
-				.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+				.acctSchemaId(schemaId)
+				.documentRef(CostingDocumentRef.ofInventoryLineId(schemaId.getRepoId() * 100 + 1))
 				.amt(CostAmount.zero(euroCurrencyId))
 				.explicitCostPrice(CostAmount.of(costPrice, euroCurrencyId))
 				.qty(Quantity.of(qty, eachUOM))
@@ -239,9 +251,15 @@ public class CostRevaluationLinePostingMovingAverageInvoiceTest
 	@NonNull
 	private CurrentCost getCurrentCost()
 	{
+		return getCurrentCost(acctSchemaId);
+	}
+
+	@NonNull
+	private CurrentCost getCurrentCost(@NonNull final AcctSchemaId schemaId)
+	{
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(CostingLevel.Client)
-				.acctSchemaId(acctSchemaId)
+				.acctSchemaId(schemaId)
 				.costTypeId(costTypeId)
 				.clientId(ClientId.METASFRESH)
 				.orgId(orgId)
@@ -312,6 +330,34 @@ public class CostRevaluationLinePostingMovingAverageInvoiceTest
 		assertThat(currentCostAfterRepost.getCurrentQty()).isEqualTo(currentCostBeforeRepost.getCurrentQty());
 		assertThat(currentCostAfterRepost.getCostPrice()).isEqualTo(currentCostBeforeRepost.getCostPrice());
 		assertThat(currentCostAfterRepost.getCumulatedAmt()).isEqualTo(currentCostBeforeRepost.getCumulatedAmt());
+	}
+
+	@Test
+	public void posting_readsOnlyTheDocumentsAcctSchema()
+	{
+		final AcctSchemaId otherAcctSchemaId = createAcctSchema("Other AcctSchema");
+		final I_M_Product_Category_Acct otherProductCategoryAcct = newInstanceOutOfTrx(I_M_Product_Category_Acct.class);
+		otherProductCategoryAcct.setM_Product_Category_ID(InterfaceWrapperHelper.load(productId, I_M_Product.class).getM_Product_Category_ID());
+		otherProductCategoryAcct.setC_AcctSchema_ID(otherAcctSchemaId.getRepoId());
+		saveRecord(otherProductCategoryAcct);
+
+		seedStock(acctSchemaId, 100, 10);
+		seedStock(otherAcctSchemaId, 60, 20);
+		final CurrentCost otherCurrentCostBefore = getCurrentCost(otherAcctSchemaId);
+
+		final CostDetailCreateResult result = postRevaluationLine("500", "15");
+
+		assertThat(result.getAmtAndQty()).isEqualTo(mainAmtAndQty("500", "0"));
+		final CurrentCost currentCost = getCurrentCost(acctSchemaId);
+		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("15");
+		assertThat(costDetailsRepo.listByDocumentRefAndAcctSchemaId(revaluationLineRef, acctSchemaId)).hasSize(1);
+
+		final CurrentCost otherCurrentCost = getCurrentCost(otherAcctSchemaId);
+		assertThat(otherCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("60");
+		assertThat(otherCurrentCost.getCostPrice().toBigDecimal()).isEqualByComparingTo("20");
+		assertThat(otherCurrentCost.getCumulatedAmt()).isEqualTo(otherCurrentCostBefore.getCumulatedAmt());
+		assertThat(costDetailsRepo.listByDocumentRefAndAcctSchemaId(revaluationLineRef, otherAcctSchemaId)).isEmpty();
 	}
 
 	/**

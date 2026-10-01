@@ -117,6 +117,7 @@ public class CostRevaluationServiceTest
 	private CostElementRepository costElementRepo;
 	private CurrentCostsRepository currentCostsRepo;
 	private CostRevaluationRepository costRevaluationRepository;
+	private CostDetailRepository costDetailsRepo;
 	private CostRevaluationService costRevaluationService;
 
 	private CurrencyId euroCurrencyId;
@@ -139,7 +140,7 @@ public class CostRevaluationServiceTest
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		costRevaluationRepository = new CostRevaluationRepository();
 
-		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
+		costDetailsRepo = new CostDetailRepository();
 		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
 		final CostingMethodHandlerUtils handlerUtils = new CostingMethodHandlerUtils(
 				new CurrencyRepository(),
@@ -152,7 +153,7 @@ public class CostRevaluationServiceTest
 				currentCostsRepo,
 				ImmutableList.of(new AverageInvoiceCostingMethodHandler(handlerUtils)));
 
-		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService);
+		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();
@@ -1187,7 +1188,89 @@ public class CostRevaluationServiceTest
 			assertThat(before.getNewAmt()).isEqualByComparingTo("1200");
 		}
 
+		/**
+		 * Posting writes back the values of the line's own revaluation cost detail: the main one on the line's cost element and accounting schema.
+		 */
+		@Test
+		public void writeBookedValues_ofLine_writesTheLinesOwnRevaluationCostDetail()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_writeBookedValuesOfLine");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+			assertSingleLineValues(costRevaluationId, "100", "10", "500");
+
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "80", "10", "400"));
+			// same document ref, but not the line's own revaluation cost detail
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "1", "1", "901").costElementId(createCostElement("Other", CostingMethod.AverageInvoice)));
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "2", "2", "902").acctSchemaId(createAcctSchemaRecord("Other AcctSchema")));
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "3", "3", "903").amtType(CostAmountType.ADJUSTMENT));
+
+			costRevaluationService.writeBookedValues(getSingleLine(costRevaluationId));
+
+			assertSingleLineValues(costRevaluationId, "80", "10", "400");
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "10", "15", "400");
+		}
+
+		@Test
+		public void writeBookedValues_ofLine_throws_whenTheLineHasNoRevaluationCostDetail()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_writeBookedValuesNoCostDetail");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			final CostRevaluationLine line = getSingleLine(costRevaluationId);
+			assertThatThrownBy(() -> costRevaluationService.writeBookedValues(line))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Expected exactly one cost detail");
+			assertSingleLineValues(costRevaluationId, "100", "10", "500");
+		}
+
+		@Test
+		public void writeBookedValues_ofLine_throws_whenTheLineHasTwoRevaluationCostDetails()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_writeBookedValuesTwoCostDetails");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "80", "10", "400"));
+			costDetailsRepo.create(revaluationCostDetailBuilder(lineId, productId, "70", "10", "350"));
+
+			final CostRevaluationLine line = getSingleLine(costRevaluationId);
+			assertThatThrownBy(() -> costRevaluationService.writeBookedValues(line))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Expected exactly one cost detail");
+			assertSingleLineValues(costRevaluationId, "100", "10", "500");
+		}
+
+		private CostRevaluationLine getSingleLine(@NonNull final CostRevaluationId costRevaluationId)
+		{
+			final List<CostRevaluationLine> lines = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId);
+			assertThat(lines).hasSize(1);
+			return lines.get(0);
+		}
+
 		private CostDetail revaluationCostDetail(
+				@NonNull final CostRevaluationLineId lineId,
+				@NonNull final ProductId productId,
+				@NonNull final String previousQty,
+				@NonNull final String previousCostPrice,
+				@NonNull final String amt)
+		{
+			return revaluationCostDetailBuilder(lineId, productId, previousQty, previousCostPrice, amt).build();
+		}
+
+		private CostDetail.CostDetailBuilder revaluationCostDetailBuilder(
 				@NonNull final CostRevaluationLineId lineId,
 				@NonNull final ProductId productId,
 				@NonNull final String previousQty,
@@ -1216,8 +1299,7 @@ public class CostRevaluationServiceTest
 							.cumulatedQty(Quantity.of(BigDecimal.ZERO, eachUOM))
 							.build())
 					.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
-					.dateAcct(Instant.parse("2024-03-05T23:00:00Z"))
-					.build();
+					.dateAcct(Instant.parse("2024-03-05T23:00:00Z"));
 		}
 	}
 
@@ -1267,7 +1349,7 @@ public class CostRevaluationServiceTest
 					currentCostsRepo,
 					ImmutableList.of());
 
-			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService);
+			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
 
 			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 			eachUOM = BusinessTestHelper.createUomEach();

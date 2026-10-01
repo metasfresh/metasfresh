@@ -12,12 +12,15 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -48,17 +51,20 @@ public class CostRevaluationService
 	private final CostRevaluationRepository costRevaluationRepository;
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostingService costingService;
+	private final ICostDetailRepository costDetailRepository;
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostingService costingService)
+			@NonNull final ICostingService costingService,
+			@NonNull final ICostDetailRepository costDetailRepository)
 	{
 		this.costRevaluationRepository = costRevaluationRepository;
 		this.currentCostsRepo = currentCostsRepo;
 		this.costingService = costingService;
+		this.costDetailRepository = costDetailRepository;
 	}
 
 	@NonNull
@@ -324,11 +330,34 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Writes the values booked at posting onto the line and its before-row: the stock on hand and the cost price the revaluation's
+	 * Writes the values booked at posting onto the line and its before-row: the stock on hand and the cost price the line's revaluation
 	 * {@code M_CostDetail} was booked from (its previous amounts) and its amount. They differ from the values of Complete when stock
 	 * moved between Complete and posting.
+	 *
+	 * @throws AdempiereException if the line has not exactly one main cost detail on its own cost element and accounting schema.
 	 */
-	public void writeBookedValues(@NonNull final CostRevaluationLineId lineId, @NonNull final CostDetail costDetail)
+	public void writeBookedValues(@NonNull final CostRevaluationLine line)
+	{
+		writeBookedValues(line.getId(), getRevaluationCostDetail(line));
+	}
+
+	private CostDetail getRevaluationCostDetail(@NonNull final CostRevaluationLine line)
+	{
+		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
+		final CostingDocumentRef documentRef = CostingDocumentRef.ofCostRevaluationLineId(line.getId());
+		final ImmutableList<CostDetail> costDetails = costDetailRepository.listByDocumentRefAndAcctSchemaId(documentRef, costSegmentAndElement.getAcctSchemaId())
+				.stream()
+				.filter(costDetail -> CostElementId.equals(costDetail.getCostElementId(), costSegmentAndElement.getCostElementId()))
+				.filter(costDetail -> costDetail.getAmtType() == CostAmountType.MAIN)
+				.collect(ImmutableList.toImmutableList());
+		if (costDetails.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one cost detail for " + documentRef + " but got " + costDetails);
+		}
+		return costDetails.get(0);
+	}
+
+	void writeBookedValues(@NonNull final CostRevaluationLineId lineId, @NonNull final CostDetail costDetail)
 	{
 		final CostDetailPreviousAmounts previousAmounts = costDetail.getPreviousAmounts();
 		if (previousAmounts == null)

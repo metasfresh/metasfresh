@@ -236,7 +236,7 @@ class M_CostRevaluationTest
 					currentCostsRepo,
 					ImmutableList.of());
 
-			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService);
+			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
 			interceptor = new M_CostRevaluation(costRevaluationService);
 
 			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
