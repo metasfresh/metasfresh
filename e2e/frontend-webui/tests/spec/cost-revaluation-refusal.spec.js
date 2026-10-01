@@ -8,22 +8,19 @@ import { COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRe
 import { getFieldData } from '../utils/WebAPIValidation';
 
 /**
- * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation, window 541568), Complete:
- *  - a revaluation whose Evaluation Start Date is on or before the Accounting Date of another completed revaluation
- *    of the same product is refused, with a translated message naming the product and that date, and stays Drafted;
- *  - a revaluation while an earlier completed revaluation of the product is not posted yet is refused likewise;
- *  - a back-dated revaluation (starting before the product's stock receipt) completes and books qty x (new - old).
+ * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation, window 541568), window + quick-input behaviour:
+ *  - a revaluation completed after another revaluation of the same product was completed and posted is accepted;
+ *    its line shows the values recalculated from the first one's posted cost price;
+ *  - a second quick-input line for the same product is refused with a translated message, not framed as "Server error";
+ *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old).
  *
  * Expects the accounting schema to use CLIENT-level costing.
  */
 
-const ACCT_ENABLED_SYSCONFIG = 'org.adempiere.acct.Enabled';
-
-/** Masterdata: PSTK, a stocked Item with 10 on hand in a warehouse (optionally with sysconfigs applied first). */
-async function createStockedMasterdata(language, productName, sysconfigs) {
+/** Masterdata: PSTK, a stocked Item with 10 on hand in a warehouse. */
+async function createStockedMasterdata(language, productName) {
   return await Backend.createMasterdata({
     request: {
-      ...(sysconfigs ? { sysconfigs } : {}),
       login: { user: { language, firstname: 'CostReval', lastname: 'E2E' } },
       warehouses: { WH: {} },
       products: { PSTK: { name: productName, type: 'Item' } },
@@ -43,43 +40,20 @@ const addDays = (isoDate, days) => {
   return date.toISOString().substring(0, 10);
 };
 
-/** The product as the refusal messages render it: Value_Name. */
+/** The product as the messages render it: Value_Name. */
 const productValueAndName = (md) => `${md.products.PSTK.productCode}_${md.products.PSTK.productName}`;
 
 const testCases = [
   {
     language: 'en_US',
     label: 'English',
-    // yyyy-MM-dd -> MM/dd/yyyy
-    formatDate: (isoDate) => {
-      const [y, m, d] = isoDate.split('-');
-      return `${m}/${d}/${y}`;
-    },
-    // AD_Message CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported
-    laterRevaluationMessage: (product, date) =>
-      `Product ${product} already has a later cost revaluation dated ${date}. ` +
-      'A cost revaluation cannot start before or on the same day as another revaluation of the same product. ' +
-      `Please choose a later evaluation start date, after ${date}.`,
-    // AD_Message M_CostRevaluation.EarlierRevaluationNotPosted
-    notPostedMessage: (product, date) =>
-      `The cost revaluation of product ${product} dated ${date} is completed but not posted yet. ` +
-      'Please wait until it is posted (or fix its posting error), then try again.',
+    // AD_Message M_CostRevaluation.LineAlreadyExistsForProduct
+    lineAlreadyExistsMessage: (product) => `This cost revaluation already has a line for product ${product}.`,
   },
   {
     language: 'de_DE',
     label: 'German',
-    // yyyy-MM-dd -> dd.MM.yyyy
-    formatDate: (isoDate) => {
-      const [y, m, d] = isoDate.split('-');
-      return `${d}.${m}.${y}`;
-    },
-    laterRevaluationMessage: (product, date) =>
-      `Für das Produkt ${product} gibt es bereits eine spätere Kosten Neubewertung vom ${date}. ` +
-      'Eine Kosten Neubewertung kann nicht vor oder am selben Tag wie eine andere Neubewertung desselben Produkts beginnen. ' +
-      `Bitte ein späteres Startdatum der Bewertung wählen, nach dem ${date}.`,
-    notPostedMessage: (product, date) =>
-      `Für das Produkt ${product} ist die Kosten Neubewertung vom ${date} fertiggestellt, aber noch nicht gebucht. ` +
-      'Bitte warten, bis sie gebucht ist (oder ihren Buchungsfehler beheben), und dann erneut versuchen.',
+    lineAlreadyExistsMessage: (product) => `Für das Produkt ${product} gibt es in dieser Kosten Neubewertung bereits eine Zeile.`,
   },
 ];
 
@@ -108,110 +82,91 @@ async function createCompletedRevaluation(productCode, newCostPrice) {
   return { recordId, dateAcct };
 }
 
-testCases.forEach(({ language, label, formatDate, laterRevaluationMessage, notPostedMessage }) => {
+testCases.forEach(({ language, label, lineAlreadyExistsMessage }) => {
   // eslint-disable-next-line no-unused-vars
-  test(`Completing a revaluation that starts on or before another revaluation of the product is refused (${label})`, async ({ page }) => {
+  test(`Complete after another revaluation was completed and posted is accepted; the line shows the recalculated values (${label})`, async ({ page }) => {
     test.setTimeout(240000);
-    allureTags('Complete: refused when another revaluation of the product is in the way');
+    allureTags('Complete: a revaluation after another posted revaluation of the product');
     allure.description(`
-## F1500: Costing — a cost revaluation cannot restate another one
+## F1500: Costing — a revaluation after another posted revaluation
 
-A stocked product (10 on hand) gets a completed Kosten Neubewertung (New cost price 10).
-A second Kosten Neubewertung for the same product, whose Evaluation Start Date is set to the first one's
-Accounting Date, is refused on Complete with the translated message naming the product and that date, and stays Drafted.
+A stocked product (10 on hand) gets a completed and posted Kosten Neubewertung (New cost price 10).
+A second Kosten Neubewertung for the same product, New cost price 15, is accepted on Complete (CO);
+its line shows the current cost price set by the first one's posting (10), the quantity on hand 10
+and the value difference 10 x (15 - 10) = 50.
     `);
 
-    const md = await createStockedMasterdata(language, 'CR_REFUSAL');
+    const md = await createStockedMasterdata(language, 'CR_AFTER_POSTED');
     const productCode = md.products.PSTK.productCode;
     await login(md);
 
-    let first = null;
-    await test.step('First Kosten Neubewertung: New cost price 10, completed', async () => {
-      first = await createCompletedRevaluation(productCode, '10');
+    await test.step('First Kosten Neubewertung: New cost price 10, completed and posted', async () => {
+      const first = await createCompletedRevaluation(productCode, '10');
+      const firstLine = (await CostRevaluationPage.getLines(first.recordId))[0].fieldsByName;
+      // A value difference is booked, so the posting writes accounting facts the wait below can see.
+      expect(Number(firstLine.CurrentCostPrice.value)).not.toBe(10);
+      // The current cost price changes only when the revaluation is posted.
+      await CostRevaluationPage.waitUntilPosted(first.recordId);
     });
 
     const recordId = await CostRevaluationPage.createHeader();
-    await test.step(`Set the Evaluation Start Date to the first one's Accounting Date ${first.dateAcct}`, async () => {
-      // Set explicitly: the default (the new header's posting date) would move past it if the day changed in between.
-      if ((await getDate(recordId, 'EvaluationStartDate')) !== first.dateAcct) {
-        await CostRevaluationPage.typeHeaderDate(recordId, 'EvaluationStartDate', first.dateAcct);
-      }
-      expect(await getDate(recordId, 'EvaluationStartDate')).toBe(first.dateAcct);
-    });
-
     await CostRevaluationPage.expectQuickInputOpened();
     await CostRevaluationPage.addLine(productCode, '15');
+    await CostRevaluationPage.complete();
 
-    await test.step('Try to complete the second one -> refused, naming the product and the first one\'s date', async () => {
-      await CostRevaluationPage.completeExpectingRefusal(
-        laterRevaluationMessage(productValueAndName(md), formatDate(first.dateAcct))
-      );
-    });
+    expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus')).value.key).toBe('CO');
+    const lines = await CostRevaluationPage.getLines(recordId);
+    expect(lines.length).toBe(1);
+    const line = lines[0].fieldsByName;
+    expect(Number(line.CurrentCostPrice.value)).toBe(10);
+    expect(Number(line.CurrentQty.value)).toBe(10);
+    expect(Number(line.NewCostPrice.value)).toBe(15);
+    expect(Number(line.DeltaAmt.value)).toBe(50);
+    await CostRevaluationPage.showCompletedDocument();
+  });
 
+  // eslint-disable-next-line no-unused-vars
+  test(`A second quick-input line for the same product is refused with the translated message and no 'Server error' prefix (${label})`, async ({ page }) => {
+    test.setTimeout(180000);
+    allureTags('Quick-input: a second line for the same product is refused');
+    allure.description(`
+## F1500: Costing — one line per product
+
+A Kosten Neubewertung already has a line for a stocked product. Adding a second line for the same product
+through the quick-input is refused with the translated message naming the product, shown as a plain
+message (not framed as "Server error"); the document keeps its one line.
+    `);
+
+    // A long product name on purpose: the notification shows a status prefix such as "Server error" only for a
+    // message longer than 100 characters (SHOW_READ_MORE_FROM), so the message must be that long for the check to bite.
+    const md = await createStockedMasterdata(language, 'CR_DUPLICATE_LINE_FOR_THE_SAME_PRODUCT');
+    const productCode = md.products.PSTK.productCode;
+    const expectedMessage = lineAlreadyExistsMessage(productValueAndName(md));
+    expect(expectedMessage.length).toBeGreaterThan(100);
+    await login(md);
+
+    const recordId = await CostRevaluationPage.createHeader();
+    await CostRevaluationPage.expectQuickInputOpened();
+    await CostRevaluationPage.addLine(productCode, '10');
+
+    await CostRevaluationPage.addLineExpectingRefusal(productCode, '15', expectedMessage);
+
+    const lines = await CostRevaluationPage.getLines(recordId);
+    expect(lines.length).toBe(1);
+    expect(Number(lines[0].fieldsByName.NewCostPrice.value)).toBe(10);
     expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus')).value.key).toBe('DR');
   });
 
   // eslint-disable-next-line no-unused-vars
-  test(`Completing a revaluation while an earlier one of the product is not posted yet is refused (${label})`, async ({ page }) => {
+  test(`A revaluation with a past posting date completes; its line shows qty on hand x (new - old) (${label})`, async ({ page }) => {
     test.setTimeout(240000);
-    allureTags('Complete: refused while an earlier revaluation of the product is not posted');
+    allureTags('Complete: revaluation with a past posting date');
     allure.description(`
-## F1500: Costing — wait for the earlier revaluation to be posted
+## F1500: Costing — cost revaluation with a past posting date
 
-With accounting switched off (sysconfig ${ACCT_ENABLED_SYSCONFIG}=N), a completed Kosten Neubewertung of a stocked product
-stays not posted. A later Kosten Neubewertung of the same product (starting the day after) is refused on Complete
-with the translated message naming the product and the unposted one's date, and stays Drafted.
-    `);
-
-    // Accounting is on by default; it is switched back on in finally even if creating the masterdata fails halfway,
-    // so a failure here cannot leave accounting off for the next specs of the shard (or for a retry).
-    try {
-      const md = await createStockedMasterdata(language, 'CR_NOT_POSTED', { [ACCT_ENABLED_SYSCONFIG]: 'N' });
-      const productCode = md.products.PSTK.productCode;
-      await login(md);
-
-      let first = null;
-      await test.step('First Kosten Neubewertung: completed, not posted (accounting is off)', async () => {
-        first = await createCompletedRevaluation(productCode, '10');
-        // Posted is not a field of every window layout (e.g. the CI database's); the refusal below names the not-posted state itself
-        expect((await getFieldData(COST_REVAL_WINDOW_ID, first.recordId, 'DocStatus')).value.key).toBe('CO');
-      });
-
-      const recordId = await CostRevaluationPage.createHeader();
-      const laterDate = addDays(first.dateAcct, 1);
-      await test.step(`Second one dated ${laterDate}, after the first one`, async () => {
-        if ((await getDate(recordId, 'DateAcct')) !== laterDate) {
-          await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', laterDate);
-        }
-        expect(await getDate(recordId, 'EvaluationStartDate')).toBe(laterDate);
-      });
-
-      await CostRevaluationPage.expectQuickInputOpened();
-      await CostRevaluationPage.addLine(productCode, '15');
-
-      await test.step('Try to complete the second one -> refused, naming the product and the unposted one\'s date', async () => {
-        await CostRevaluationPage.completeExpectingRefusal(notPostedMessage(productValueAndName(md), formatDate(first.dateAcct)));
-      });
-
-      expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus')).value.key).toBe('DR');
-    } finally {
-      try {
-        await Backend.createMasterdata({ request: { sysconfigs: { [ACCT_ENABLED_SYSCONFIG]: 'Y' } } });
-      } catch (error) {
-        console.error(`Could not switch ${ACCT_ENABLED_SYSCONFIG} back on`, error); // must not hide the test's own failure
-      }
-    }
-  });
-
-  // eslint-disable-next-line no-unused-vars
-  test(`A back-dated revaluation, starting before the stock receipt, completes and books qty x (new - old) (${label})`, async ({ page }) => {
-    test.setTimeout(240000);
-    allureTags('Complete: back-dated revaluation');
-    allure.description(`
-## F1500: Costing — back-dated cost revaluation
-
-A stocked product (10 received today). A Kosten Neubewertung whose Accounting Date and Evaluation Start Date lie
-two days before the receipt, New cost price 15, completes (CO); its line's value difference is qty x (new - old).
+A stocked product (10 on hand). A Kosten Neubewertung whose Accounting Date (and so its Evaluation Start Date)
+lies two days in the past, New cost price 15, completes (CO); its line's value difference is
+qty on hand x (new - old).
     `);
 
     const md = await createStockedMasterdata(language, 'CR_BACKDATED');
@@ -237,7 +192,7 @@ two days before the receipt, New cost price 15, completes (CO); its line's value
     const qty = Number(line.CurrentQty.value);
     const oldPrice = Number(line.CurrentCostPrice.value);
     const newPrice = Number(line.NewCostPrice.value);
-    // The stock received after the start date is revalued.
+    // The stock on hand is revalued.
     expect(qty).toBe(10);
     expect(newPrice).toBe(15);
     expect(oldPrice).not.toBe(newPrice);

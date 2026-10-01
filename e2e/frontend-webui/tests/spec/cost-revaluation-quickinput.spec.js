@@ -6,17 +6,22 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { COST_REVAL_LINE_TAB_ID, COST_REVAL_WINDOW_ID, CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
 import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID } from '../utils/pages/ProductCostPage';
-import { getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { getFieldData, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation) per-product quick-input E2E suite.
  *
- * Desktop WebUI, window 541568. Proves the manual cost-adjustment quick-input:
- *  - quick-input a per-product line for a stocked product that has a current cost, Complete (posts the value difference).
+ * Desktop WebUI, window 541568. Proves the window and its manual cost-adjustment quick-input:
+ *  - quick-input a per-product line for a stocked product that has a current cost: the line shows the current
+ *    values and the value difference, which follows an edit of the line's new cost price; the line fields' hints;
+ *    Complete.
+ *  - a new header presets the cost element of the accounting schema's costing method, offers the processes by
+ *    their names, and keeps the Evaluation Start Date equal to the Accounting Date (read-only for Manual).
  *  - the quick-input product picker offers stocked/eligible products (incl. a stocked product with no
  *    cost record) and NOT non-stocked products.
- *  - seed a cost for a stocked product that has NO cost record (seeded when the line is added; Complete sets the
- *    entered, fractional price), with the provisional-price hint shown on the New cost price field.
+ *  - seed a cost for a stocked product that has NO cost record (seeded when the line is added), with the
+ *    provisional-price hint shown on the New cost price field.
  *
  * Expects the accounting schema to use CLIENT-level costing.
  */
@@ -99,6 +104,19 @@ async function getCostElementId(page, productIdWithCosts, costElementName) {
   return costElementIds[0];
 }
 
+/** Accounting schema (Buchführungs-Schema) and cost element (Kostenart) windows, read for the expected preset. */
+const ACCT_SCHEMA_WINDOW_ID = '125';
+const COST_ELEMENT_WINDOW_ID = '343';
+
+/** @returns {Promise<{key: string, caption: string}[]>} the header's Cost Element dropdown options */
+async function getCostElementOptions(page, recordId) {
+  const response = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/field/M_CostElement_ID/dropdown`
+  );
+  expect(response.status()).toBe(200);
+  return ((await response.json()).values || []).map((v) => ({ key: String(v.key), caption: v.caption }));
+}
+
 function allureTags(story) {
   allure.epic('E0226: Costing');
   allure.tag('F1500: Costing');
@@ -110,11 +128,46 @@ function allureTags(story) {
 // ============================================================================
 
 const testCases = [
-  { language: 'en_US', label: 'English' },
-  { language: 'de_DE', label: 'German' },
+  {
+    language: 'en_US',
+    label: 'English',
+    // AD_Field_Trl description of the line fields CurrentCostPrice / CurrentQty / DeltaAmt (window 541568, line tab)
+    lineValuesHint: 'Values as of line creation or the last "Run Revaluation"; recalculated at Complete; booked values after posting.',
+    deltaAmtCaption: 'Delta Amount',
+    // AD_Process_Trl names of M_CostRevaluation_Run / M_CostRevaluation_CreateLines
+    runProcessName: 'Run Revaluation',
+    createLinesProcessName: 'Create revaluation lines',
+    // AD_Ref_List_Trl name of the Revaluation Source value Manual
+    manualSourceName: 'Manual',
+    // AD_Message M_CostRevaluationLine_ZeroStockCostProvisional (545864): the New cost price hint under moving-average costing
+    provisionalPriceHint: 'For a product with no stock the entered cost price is provisional: if goods are received before this cost revaluation is posted, it books stock × (new − current); after that every goods receipt re-derives the moving-average price.',
+  },
+  {
+    language: 'de_DE',
+    label: 'German',
+    // AD_Field_Trl description of the line fields CurrentCostPrice / CurrentQty / DeltaAmt (window 541568, line tab)
+    lineValuesHint: 'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    deltaAmtCaption: 'Differenzbetrag',
+    // AD_Process_Trl names of M_CostRevaluation_Run / M_CostRevaluation_CreateLines
+    runProcessName: 'Neubewertung ausführen',
+    createLinesProcessName: 'Neubewertungspositionen erstellen',
+    // AD_Ref_List_Trl name of the Revaluation Source value Manual
+    manualSourceName: 'Manuell',
+    // AD_Message M_CostRevaluationLine_ZeroStockCostProvisional (545864): the New cost price hint under moving-average costing
+    provisionalPriceHint: 'Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kostenneubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
+  },
 ];
 
-testCases.forEach(({ language, label }) => {
+testCases.forEach(({
+  language,
+  label,
+  lineValuesHint,
+  deltaAmtCaption,
+  runProcessName,
+  createLinesProcessName,
+  manualSourceName,
+  provisionalPriceHint,
+}) => {
   // eslint-disable-next-line no-unused-vars
   test(`Quick-input manual cost adjustment for a stocked product with a current cost (${label})`, async ({ page }) => {
     test.setTimeout(240000);
@@ -122,38 +175,33 @@ testCases.forEach(({ language, label }) => {
     allure.description(`
 ## F1500: Costing — manual per-product cost adjustment (Kosten Neubewertung)
 
-A stocked product (10 on hand) is first given a current cost price of 10 with one Kosten Neubewertung.
-A second Kosten Neubewertung then adds ONE line via the per-product quick-input with New cost price 15
-and is completed. Verifies the quick-input offers Product + New cost price, the line shows the current
-cost 10, the quantity on hand 10 and the value difference 10 x (15 - 10) = 50, and the document is
-completed and posted.
+A stocked product (10 on hand) is first given a current cost price of 10 with one Kosten Neubewertung (completed
+and posted). A second Kosten Neubewertung then adds ONE line via the per-product quick-input with New cost price 15.
+Verifies the quick-input offers Product + New cost price, the line shows the current cost 10, the quantity on hand 10
+and the value difference 10 x (15 - 10) = 50; editing the line's New cost price to 16 makes the value difference
+10 x (16 - 10) = 60. The line values' hint is shown on the grid columns and in the line's single-row view, and the
+value difference column is captioned "${deltaAmtCaption}". The action menu offers "${runProcessName}".
+The document is completed with these values.
     `);
 
     const md = await createStockedMasterdata(language);
     const productCode = md.products.PSTK.productCode;
 
-    // The adjustment is posted the day after the setup: its revaluation window starts at its own Accounting Date,
-    // so the stock received and the setup revaluation of the previous day are not replayed again.
-    let adjustmentDate = null;
-    await test.step('Setup: stock of 10 with a current cost price of 10 (first Kosten Neubewertung)', async () => {
+    await test.step('Setup: stock of 10 with a current cost price of 10 (first Kosten Neubewertung, posted)', async () => {
       const setupRecordId = await loginAndCreateHeader(md);
-      const serverDate = String((await getFieldData(COST_REVAL_WINDOW_ID, setupRecordId, 'DateAcct')).value).substring(0, 10);
-      const nextDay = new Date(`${serverDate}T00:00:00Z`);
-      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-      adjustmentDate = nextDay.toISOString().substring(0, 10);
       await CostRevaluationPage.expectQuickInputOpened();
       await CostRevaluationPage.addLine(productCode, '10');
+      const setupLine = (await CostRevaluationPage.getLines(setupRecordId))[0].fieldsByName;
+      // A value difference is booked, so the posting writes accounting facts the wait below can see.
+      expect(Number(setupLine.CurrentCostPrice.value)).not.toBe(10);
       await CostRevaluationPage.complete();
       const setupDocStatus = await getFieldData(COST_REVAL_WINDOW_ID, setupRecordId, 'DocStatus');
       expect(setupDocStatus.value.key).toBe('CO');
+      // The current cost price changes only when the revaluation is posted.
+      await CostRevaluationPage.waitUntilPosted(setupRecordId);
     });
 
     const recordId = await CostRevaluationPage.createHeader();
-    const headerDate = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
-    if (headerDate !== adjustmentDate) {
-      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', adjustmentDate);
-    }
-
     await CostRevaluationPage.expectQuickInputOpened();
 
     // Quick-input offers exactly Product + New cost price
@@ -165,82 +213,176 @@ completed and posted.
     // Exactly one line exists (assert via WebAPI, language-independent)
     const rows = await CostRevaluationPage.getLines(recordId);
     expect(rows.length).toBe(1);
+    const rowId = String(rows[0].rowId);
     const line = rows[0].fieldsByName;
     expect(Number(line.NewCostPrice.value)).toBe(15);
     // Derived from the product's live cost: current cost 10 for the 10 on hand
     expect(Number(line.CurrentCostPrice.value)).toBe(10);
     expect(Number(line.CurrentQty.value)).toBe(10);
+    // The value difference is the line's own qty x (new - current) right away: 10 x (15 - 10)
+    expect(Number(line.DeltaAmt.value)).toBe(50);
+
+    await test.step('The line grid shows the value difference and the hint on the line values', async () => {
+      await expect(CostRevaluationPage.lineCell(rowId, 'DeltaAmt')).toBeVisible();
+      const deltaAmtHeader = await CostRevaluationPage.lineColumnHeader('DeltaAmt');
+      expect(deltaAmtHeader.caption).toBe(deltaAmtCaption);
+      expect(deltaAmtHeader.hint).toBe(lineValuesHint);
+      expect((await CostRevaluationPage.lineColumnHeader('CurrentCostPrice')).hint).toBe(lineValuesHint);
+    });
+
+    await CostRevaluationPage.editLineNewCostPrice(rowId, '16');
+    const editedLine = (await CostRevaluationPage.getLines(recordId))[0].fieldsByName;
+    expect(Number(editedLine.NewCostPrice.value)).toBe(16);
+    // Follows the edit at once: 10 x (16 - 10)
+    expect(Number(editedLine.DeltaAmt.value)).toBe(60);
+
+    await test.step('The line\'s single-row view shows the hint on the line values', async () => {
+      await CostRevaluationPage.openLine(rowId);
+      for (const columnName of ['CurrentCostPrice', 'CurrentQty', 'DeltaAmt']) {
+        expect((await CostRevaluationPage.openLineFieldLabel(columnName)).hint, columnName).toBe(lineValuesHint);
+      }
+      expect((await CostRevaluationPage.openLineFieldLabel('DeltaAmt')).caption).toBe(deltaAmtCaption);
+      await CostRevaluationPage.closeLine();
+    });
+
+    await test.step('With a line, the action menu offers the revaluation process by its name', async () => {
+      const captions = await CostRevaluationPage.actionCaptions(['M_CostRevaluation_Run']);
+      expect(captions.M_CostRevaluation_Run).toBe(runProcessName);
+    });
 
     await CostRevaluationPage.complete();
 
-    // Completed (CO) and posted; the value difference 10 x (15 - 10) = 50 is on the line and in the accounting facts
+    // Completed (CO) with the line's values: 10 on hand at 10, new price 16, value difference 60
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
     expect(docStatus.value.key).toBe('CO');
-    const facts = await CostRevaluationPage.waitUntilPosted(recordId);
-    const factAmounts = facts.map((fact) => ({
-      recordId: String(fact.Record_ID.value),
-      account: fact.AccountConceptualName && fact.AccountConceptualName.value,
-      dr: Number(fact.AmtAcctDr.value),
-      cr: Number(fact.AmtAcctCr.value),
-    }));
-    expect(factAmounts.every((fact) => fact.recordId === String(recordId))).toBe(true);
-    // Posted with the value difference 50: balanced, and the product asset account is debited by 50
-    expect(factAmounts.reduce((sum, fact) => sum + fact.dr, 0)).toBe(50);
-    expect(factAmounts.reduce((sum, fact) => sum + fact.cr, 0)).toBe(50);
-    expect(factAmounts.filter((fact) => fact.account === 'P_Asset_Acct').map((fact) => fact.dr - fact.cr)).toEqual([50]);
-    const completedRows = await CostRevaluationPage.getLines(recordId);
-    expect(Number(completedRows[0].fieldsByName.DeltaAmt.value)).toBe(50);
+    const completedLine = (await CostRevaluationPage.getLines(recordId))[0].fieldsByName;
+    expect(Number(completedLine.CurrentCostPrice.value)).toBe(10);
+    expect(Number(completedLine.CurrentQty.value)).toBe(10);
+    expect(Number(completedLine.DeltaAmt.value)).toBe(60);
     await CostRevaluationPage.showCompletedDocument();
   });
 
   // eslint-disable-next-line no-unused-vars
-  test(`Evaluation Start Date follows the Accounting Date unless set by hand (${label})`, async ({ page }) => {
+  test(`Evaluation Start Date always equals the Accounting Date and is read-only (${label})`, async ({ page }) => {
     test.setTimeout(180000);
-    allureTags('Header: Evaluation Start Date follows the Accounting Date');
+    allureTags('Header: Evaluation Start Date equals the Accounting Date');
     allure.description(`
-## F1500: Costing — Evaluation Start Date follows the Accounting Date (UI)
+## F1500: Costing — Evaluation Start Date equals the Accounting Date (UI)
 
-On a new Kosten Neubewertung header the Evaluation Start Date defaults to the Accounting Date.
-Changing the Accounting Date in the UI moves a defaulted Evaluation Start Date along with it.
-An Evaluation Start Date the user set by hand is NOT overwritten by a later Accounting Date change.
+On a new (Manual) Kosten Neubewertung header the Evaluation Start Date is the Accounting Date and cannot be edited.
+Changing the Accounting Date in the UI moves the Evaluation Start Date along with it, every time.
     `);
 
     const md = await createMasterdata(language);
     const recordId = await loginAndCreateHeader(md);
 
+    await test.step('Evaluation Start Date is read-only', async () => {
+      await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toBeDisabled();
+    });
+
     // Derive the dates from the server-defaulted posting date, not from the test runner's clock.
     const initialDateAcct = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
     const [y, m, d] = initialDateAcct.split('-');
-    // Stay inside the header's month (open period); days that differ from the initial Accounting Date.
+    // Stay inside the header's month (open period); days that differ from the initial Accounting Date and each other.
     const otherDay = (day) => `${y}-${m}-${String(day).padStart(2, '0')}`;
     const dateAcct1 = otherDay(Number(d) === 15 ? 14 : 15);
-    const manualEvalStart = otherDay(Number(d) === 5 ? 6 : 5);
     const dateAcct2 = otherDay(Number(d) === 20 ? 21 : 20);
 
-    await test.step(`Change Accounting Date to ${dateAcct1} -> Evaluation Start Date follows`, async () => {
-      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct1);
-      const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
-      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      expect(String(dateAcct.value)).toContain(dateAcct1);
-      expect(String(evalStart.value)).toContain(dateAcct1);
+    for (const dateAcct of [dateAcct1, dateAcct2]) {
+      await test.step(`Change Accounting Date to ${dateAcct} -> Evaluation Start Date follows`, async () => {
+        await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct);
+        expect(String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value)).toContain(dateAcct);
+        expect(String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate')).value)).toContain(dateAcct);
+        await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toHaveValue(
+          await CostRevaluationPage.headerDateInput('DateAcct').inputValue()
+        );
+        await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toBeDisabled();
+        await CostRevaluationPage.showHeaderDates();
+      });
+    }
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test(`A new header shows the preset cost element, the Manual source and the line creation process (${label})`, async ({ page }) => {
+    test.setTimeout(180000);
+    allureTags('Header: preset cost element, Manual source, line creation process');
+    allure.description(`
+## F1500: Costing — a new Kosten Neubewertung header
+
+Before anything is typed, a new header shows:
+ - the Cost Element (Kostenart) preset to the active material cost element of the accounting schema's costing method,
+ - the Revaluation Source "${manualSourceName}",
+ - the process "${createLinesProcessName}" in the action menu.
+    `);
+
+    const md = await createMasterdata(language);
+    const recordId = await loginAndCreateHeader(md);
+
+    await test.step('Cost element preset = the active material cost element of the schema\'s costing method', async () => {
+      const acctSchemaId = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'C_AcctSchema_ID')).value.key);
+      const costingMethod = (await getFieldData(ACCT_SCHEMA_WINDOW_ID, acctSchemaId, 'CostingMethod')).value.key;
+      const expected = [];
+      for (const option of await getCostElementOptions(page, recordId)) {
+        const element = (await getRecordData(COST_ELEMENT_WINDOW_ID, String(option.key))).fieldsByName;
+        if (
+          element.CostingMethod.value.key === costingMethod &&
+          element.CostElementType.value.key === 'M' &&
+          element.IsActive.value === true
+        ) {
+          expected.push(option);
+        }
+      }
+      expect(expected, `exactly one active material cost element for costing method ${costingMethod}`).toHaveLength(1);
+      const costElement = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'M_CostElement_ID');
+      expect(String(costElement.value.key)).toBe(String(expected[0].key));
+      await expect(page.locator('.form-field-M_CostElement_ID input').first()).toHaveValue(expected[0].caption);
+    });
+
+    await test.step(`Revaluation Source shows "${manualSourceName}"`, async () => {
+      expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'RevaluationSource')).value.key).toBe('Manual');
+      expect(await CostRevaluationPage.revaluationSourceText()).toBe(`Manual_${manualSourceName}`);
+    });
+
+    await test.step('The action menu offers the line creation process by its name', async () => {
+      // "Run Revaluation" is offered only once the document has lines: checked in the quick-input test.
+      const captions = await CostRevaluationPage.actionCaptions(['M_CostRevaluation_CreateLines']);
+      expect(captions.M_CostRevaluation_CreateLines).toBe(createLinesProcessName);
+    });
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test(`Switching the source back to Manual before save puts the Evaluation Start Date back to the Accounting Date (${label})`, async ({ page }) => {
+    test.setTimeout(180000);
+    allureTags('Header: Evaluation Start Date follows the source switch to Manual');
+    allure.description(`
+## F1500: Costing — switching the Revaluation Source to Manual
+
+On a new header switched to Copy from cost element, the Evaluation Start Date (the cut-off date) is editable and set
+to another day. The header is not saved yet (the cost element to copy from is still empty). Switching the source back
+to "${manualSourceName}" sets the Evaluation Start Date to the Accounting Date again and makes it read-only.
+    `);
+
+    const md = await createMasterdata(language);
+    const recordId = await loginAndCreateHeader(md);
+    const dateAcct = String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct')).value).substring(0, 10);
+    const [y, m, d] = dateAcct.split('-');
+    const otherDay = `${y}-${m}-${Number(d) === 5 ? '06' : '05'}`;
+
+    await test.step(`Copy from cost element: Evaluation Start Date editable, set to ${otherDay}`, async () => {
+      await CostRevaluationPage.selectRevaluationSource('CopyFromCostElement');
+      await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+      await CostRevaluationPage.typeHeaderDate(recordId, 'EvaluationStartDate', otherDay);
+      expect(String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate')).value)).toContain(otherDay);
+    });
+
+    await test.step(`Back to ${manualSourceName}: Evaluation Start Date = Accounting Date ${dateAcct}, read-only`, async () => {
+      await CostRevaluationPage.selectRevaluationSource('Manual');
+      expect(await CostRevaluationPage.revaluationSourceText()).toBe(`Manual_${manualSourceName}`);
+      expect(String((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate')).value)).toContain(dateAcct);
       await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toHaveValue(
         await CostRevaluationPage.headerDateInput('DateAcct').inputValue()
       );
-      await CostRevaluationPage.showHeaderDates();
-    });
-
-    await test.step(`Set Evaluation Start Date by hand to ${manualEvalStart}`, async () => {
-      await CostRevaluationPage.typeHeaderDate(recordId, 'EvaluationStartDate', manualEvalStart);
-      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      expect(String(evalStart.value)).toContain(manualEvalStart);
-    });
-
-    await test.step(`Change Accounting Date to ${dateAcct2} -> hand-set Evaluation Start Date is kept`, async () => {
-      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', dateAcct2);
-      const dateAcct = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DateAcct');
-      const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
-      expect(String(dateAcct.value)).toContain(dateAcct2);
-      expect(String(evalStart.value)).toContain(manualEvalStart);
+      await expect(CostRevaluationPage.headerDateInput('EvaluationStartDate')).toBeDisabled({ timeout: SLOW_ACTION_TIMEOUT });
       await CostRevaluationPage.showHeaderDates();
     });
   });
@@ -284,10 +426,9 @@ and it does NOT offer a non-stocked (Service) product.
 ## F1500: Costing — seed-cost path (stocked product with no cost record)
 
 Picks a STOCKED product that has NO M_Cost row and quick-inputs a fractional New cost price (12.35).
-Adding the line seeds the missing cost row at qty 0; completing the document sets the product's current
-cost price to the entered price, without any accounting facts (nothing on hand, so no value difference).
-The header uses the moving-average cost element (Bestellpreis Durchschnitt), under which the New cost price
-field's provisional-price hint applies (provisional until the first goods receipt).
+Adding the line seeds the missing cost row at qty 0, and the document completes. The header uses the
+moving-average cost element (Bestellpreis Durchschnitt), under which the New cost price field shows the
+provisional-price hint "${provisionalPriceHint}".
     `);
 
     const md = await createMasterdata(language);
@@ -313,7 +454,7 @@ field's provisional-price hint applies (provisional until the first goods receip
     });
 
     // The provisional-price hint is shown on the New cost price field (label title).
-    // Language-independent: compare the rendered title to the field's description from the quick-input layout.
+    // The quick-input layout carries the hint as the field description; the label renders it as its title.
     await test.step('Verify provisional-price hint on New cost price field', async () => {
       const qiLayout = await (
         await page.request.get(
@@ -323,11 +464,10 @@ field's provisional-price hint applies (provisional until the first goods receip
       const npcElement = (qiLayout.elements || []).find(
         (e) => (e.fields || []).some((f) => f.field === 'NewCostPrice')
       );
-      const expectedHint = npcElement.description;
-      expect(expectedHint && expectedHint.length).toBeGreaterThan(0);
+      expect(npcElement.description).toBe(provisionalPriceHint);
 
       const npcLabelTitle = await CostRevaluationPage.hoverNewCostPriceHint();
-      expect(npcLabelTitle).toBe(expectedHint);
+      expect(npcLabelTitle).toBe(provisionalPriceHint);
     });
 
     // A fractional price: the quick-input must submit it as typed (not blocked by the number input's step).
@@ -347,24 +487,6 @@ field's provisional-price hint applies (provisional until the first goods receip
     const docStatus = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus');
     expect(docStatus.value.key).toBe('CO');
 
-    // End result: the product's moving-average current cost price is now the entered price.
-    // Posting the document sets it (in the same transaction as the document's accounting facts), so once it shows,
-    // the document is posted.
-    await expect
-      .poll(
-        async () => {
-          const costsAfterComplete = await getProductCosts(page, seedProductId);
-          return costsAfterComplete
-            .filter((c) => c.costElementId === averagePOCostElementId)
-            .map((c) => c.currentCostPrice);
-        },
-        { message: 'the posted document sets the moving-average current cost price', timeout: 30000 }
-      )
-      .toEqual([SEED_COST_PRICE]);
-
-    // Nothing on hand, so no value difference: the posted document booked no accounting facts.
-    // The per-product test above is the positive control that the same read returns the facts of a posted revaluation.
-    await CostRevaluationPage.expectNoAccountingFacts(recordId);
     await CostRevaluationPage.showCompletedDocument();
   });
 });

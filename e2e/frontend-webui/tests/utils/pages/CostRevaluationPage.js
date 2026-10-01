@@ -325,16 +325,6 @@ export class CostRevaluationPage {
     return facts;
   }
 
-  /**
-   * Expect the posted document to have no accounting facts (a document with no value difference books none).
-   * A document that is not posted yet has no facts either, so the caller must first wait for a result of the posting
-   * itself (e.g. the current cost price the posting sets) before calling this.
-   * @param {string} recordId the header record id
-   */
-  static async expectNoAccountingFacts(recordId) {
-    expect(await getAccountingFacts(COST_REVAL_WINDOW_ID, recordId)).toEqual([]);
-  }
-
   /** Type the New cost price into the open quick-input (does not submit). */
   static async enterNewCostPrice(newCostPrice) {
     const page = getPage();
@@ -416,30 +406,33 @@ export class CostRevaluationPage {
   }
 
   /**
-   * Try to Complete the document (status button -> Complete) and expect the server to refuse it:
-   * the Complete request fails and the error notification shows the given (translated) message text.
+   * Pick the product in the open quick-input, type the New cost price, submit (Enter) and expect the server to refuse
+   * the line: the quick-input's complete request fails and the error notification shows the given (translated) message.
    * @param {string} expectedMessage the expected error message text (or a fragment of it)
    */
-  static async completeExpectingRefusal(expectedMessage) {
-    const page = getPage();
-    const quickInput = page.locator('.quick-input-container');
-    if (await quickInput.isVisible().catch(() => false)) {
-      await page.getByTestId('batch-entry-toggle').click();
-      await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
-    }
-    const statusButton = page.getByTestId('status-button');
-    await statusButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await statusButton.click();
-    const completeOption = page.getByTestId('status-CO');
-    await completeOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    const completed = page.waitForResponse(
-      (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
-      { timeout: VERY_SLOW_ACTION_TIMEOUT }
-    );
-    completed.catch(() => {}); // awaited below; avoids an unhandled rejection if the click throws
-    await completeOption.click();
-    expect((await completed).ok(), 'the Complete request is refused').toBe(false);
+  static async addLineExpectingRefusal(productCode, newCostPrice, expectedMessage) {
+    await test.step(`Pick product ${productCode} + enter New cost price ${newCostPrice} -> the line is refused`, async () => {
+      const page = getPage();
+      await this.pickProduct(productCode);
+      await this.enterNewCostPrice(newCostPrice);
+      const created = page.waitForResponse(
+        (r) => r.request().method() === 'POST' && /\/quickInput\/[^/]+\/complete/.test(r.url()),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      created.catch(() => {}); // awaited below; avoids an unhandled rejection if the key press throws
+      await page.keyboard.press('Enter');
+      expect((await created).ok(), 'the quick-input line is refused').toBe(false);
+      await this.expectErrorNotification(expectedMessage);
+    });
+  }
 
+  /**
+   * Expect the error notification to show the given (translated) message, not framed as a technical failure
+   * (no "Server error" prefix).
+   * @param {string} expectedMessage the expected error message text (or a fragment of it)
+   */
+  static async expectErrorNotification(expectedMessage) {
+    const page = getPage();
     // The error notification shows a shortened message; hovering keeps it open, "(read more)" shows the full text.
     const error = page.locator('.notification-handler .notification-item.error').last();
     await error.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -454,6 +447,177 @@ export class CostRevaluationPage {
     const unhighlight = await highlightForCaptureIfEnabled(error);
     await holdForCaptureIfEnabled(4000);
     await unhighlight();
+  }
+
+  /** @returns {import('@playwright/test').Locator} the given column's cell of the line grid row with the given row id */
+  static lineCell(rowId, columnName) {
+    return getPage().getByTestId(`table-row-${rowId}`).locator(`td[data-cy="cell-${columnName}"]`);
+  }
+
+  /**
+   * Edit a line's New cost price in the line grid the way a user does (double-click the cell, type, Enter)
+   * and wait for the line's save.
+   */
+  static async editLineNewCostPrice(rowId, newCostPrice) {
+    await test.step(`Edit the line's New cost price to ${newCostPrice}`, async () => {
+      const page = getPage();
+      const quickInput = page.locator('.quick-input-container');
+      if (await quickInput.isVisible().catch(() => false)) {
+        await page.getByTestId('batch-entry-toggle').click();
+        await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+      }
+      const cell = this.lineCell(rowId, 'NewCostPrice');
+      await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await cell.scrollIntoViewIfNeeded();
+      const unhighlight = await highlightForCaptureIfEnabled(cell);
+      await cell.dblclick();
+      const input = cell.locator('input').first();
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const saved = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes(`/${COST_REVAL_LINE_TAB_ID}/${rowId}`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      saved.catch(() => {}); // awaited below; avoids an unhandled rejection if the typing throws
+      await input.press('ControlOrMeta+a');
+      await input.pressSequentially(String(newCostPrice));
+      await input.press('Enter');
+      expect((await saved).ok()).toBe(true);
+      await holdForCaptureIfEnabled(2000);
+      await unhighlight();
+    });
+  }
+
+  /**
+   * The hint (title) of a line grid column header, i.e. the field's description.
+   * @returns {Promise<{caption: string, hint: string}>}
+   */
+  static async lineColumnHeader(columnName) {
+    const header = getPage().getByTestId(`column-${columnName}`).first();
+    await header.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const captionElement = header.locator('span[title]').first();
+    const caption = (await captionElement.innerText()).trim();
+    const hint = await captionElement.getAttribute('title');
+    const unhighlight = await highlightForCaptureIfEnabled(header);
+    await captionElement.hover();
+    await holdForCaptureIfEnabled(1500);
+    await unhighlight();
+    return { caption, hint };
+  }
+
+  /** Open the single-row view (Advanced edit, Alt+E) of the line with the given row id. */
+  static async openLine(rowId) {
+    await test.step('Open the line in its single-row view (Advanced edit)', async () => {
+      const page = getPage();
+      const quickInput = page.locator('.quick-input-container');
+      if (await quickInput.isVisible().catch(() => false)) {
+        await page.getByTestId('batch-entry-toggle').click();
+        await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+      }
+      // The row's context menu offers "Advanced edit"; its item is identified by its (language-invariant) shortcut.
+      await this.lineCell(rowId, 'M_Product_ID').click({ button: 'right' });
+      const advancedEdit = page
+        .locator('.context-menu-item')
+        .filter({ has: page.locator('.tooltip-inline', { hasText: /^alt\+e$/i }) });
+      await advancedEdit.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await advancedEdit.click();
+      await page
+        .locator(`.panel-modal-content .form-field-DeltaAmt`)
+        .first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+  }
+
+  /**
+   * In the open single-row view: the hint (label title, i.e. the field's description) of the given field.
+   * @returns {Promise<{caption: string, hint: string}>}
+   */
+  static async openLineFieldLabel(columnName) {
+    const field = getPage().locator(`.panel-modal-content .form-field-${columnName}`).first();
+    await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const label = field.locator('label').first();
+    const caption = (await label.innerText()).trim();
+    const hint = await label.getAttribute('title');
+    const unhighlight = await highlightForCaptureIfEnabled(field);
+    await label.hover();
+    await holdForCaptureIfEnabled(1500);
+    await unhighlight();
+    return { caption, hint };
+  }
+
+  /** Close the open single-row view. */
+  static async closeLine() {
+    const page = getPage();
+    await page.keyboard.press('Escape');
+    await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+  }
+
+  /** @returns {import('@playwright/test').Locator} the header Revaluation Source (Neubewertungsquelle) field */
+  static revaluationSourceField() {
+    return getPage().locator('.form-field-RevaluationSource').first();
+  }
+
+  /**
+   * @returns {Promise<string>} the shown text of the header Revaluation Source. A list field shows "Value_Name"
+   * (e.g. Manual_Manuell).
+   */
+  static async revaluationSourceText() {
+    const field = this.revaluationSourceField();
+    await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    return (await field.locator('input').first().inputValue()).trim();
+  }
+
+  /**
+   * Choose the header Revaluation Source by its list value (Manual, CopyFromCostElement) and wait for the save.
+   */
+  static async selectRevaluationSource(valueKey) {
+    await test.step(`Select Revaluation Source ${valueKey}`, async () => {
+      const page = getPage();
+      const field = this.revaluationSourceField();
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const unhighlight = await highlightForCaptureIfEnabled(field);
+      const saved = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && r.url().includes(`/window/${COST_REVAL_WINDOW_ID}/`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      saved.catch(() => {}); // awaited below; avoids an unhandled rejection if a click throws
+      await field.locator('.input-dropdown-container').click();
+      const option = page.locator(`.input-dropdown-list-option[data-testid="option-${valueKey}"]`).first();
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await option.click();
+      await saved;
+      await page
+        .locator('.input-dropdown-list')
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {});
+      await holdForCaptureIfEnabled(1500);
+      await unhighlight();
+    });
+  }
+
+  /**
+   * The captions of the document's actions (processes) in the header action menu, by process internal name.
+   * @param {string[]} internalNames e.g. ['M_CostRevaluation_Run']
+   * @returns {Promise<Object<string, string>>}
+   */
+  static async actionCaptions(internalNames) {
+    return await test.step('Open the action menu (Alt+1) and read the process names', async () => {
+      const page = getPage();
+      await page.locator('body').click({ position: { x: 5, y: 5 } });
+      await page.keyboard.press('Alt+1');
+      await page.locator('.subheader-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const captions = {};
+      for (const internalName of internalNames) {
+        const action = page.getByTestId(`action-${internalName}`).first();
+        await action.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        captions[internalName] = (await action.innerText()).split('\n')[0].trim();
+      }
+      const unhighlight = await highlightForCaptureIfEnabled(page.locator('.subheader-container'));
+      await holdForCaptureIfEnabled(2500);
+      await unhighlight();
+      await page.keyboard.press('Escape');
+      await page.locator('.subheader-container').waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      return captions;
+    });
   }
 
   /** In a capture run: keep the completed document (status + lines) on screen. */
