@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig, devices, test as testOrig } from '@playwright/test';
-import { setCurrentPage } from "./tests/utils/common";
+import { setCurrentPage, resetErrorWatchers } from "./tests/utils/common";
 import { installFakeCameraIfBrowserExposesNone } from "./tests/utils/fakeCamera";
 import os from 'os';
 
@@ -94,6 +94,7 @@ export const testContext = {};
 export const test = testOrig.extend({
     page: async ({ page }, use) => {
         setCurrentPage(page);
+        resetErrorWatchers();
         Object.keys(testContext).forEach(key => delete testContext[key]);
         await installFakeCameraIfBrowserExposesNone(page);
 
