@@ -52,7 +52,7 @@ const TEXTS = {
     createLinesProcessName: 'Neubewertungspositionen erstellen',
     manualSourceName: 'Manuell',
     provisionalPriceHint:
-      'Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kostenneubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
+      'Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kosten Neubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
     lineAlreadyExistsMessage: (product) => `Für das Produkt ${product} gibt es in dieser Kosten Neubewertung bereits eine Zeile.`,
   },
 };
