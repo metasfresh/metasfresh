@@ -299,16 +299,13 @@ public class ESRPaymentActionValidationRuleTest
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
 		assertThat(accepted).as("accepted").isFalse();
 
-		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
-		// accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		// assertThat(accepted).as("accepted").isTrue();
-
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
 		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	/**
-	 * The payment's payAmt is equal to the open amount. We expect the underpayment actions to be valid, because there is still an open amount
+	 * The payment's payAmt is equal to the open amount. We expect the underpayment actions to be valid, because there is still an open amount.
+	 * That includes leaving the payment unallocated, which was rejected here before.
 	 */
 	@Test
 	public void esrPaymentActionValidationRule_partial_payment1()
@@ -329,14 +326,12 @@ public class ESRPaymentActionValidationRuleTest
 
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-
-		// Accepted (it was rejected before): an under-payment the accountant must leave unallocated,
-		// so payment selection can still refund the money.
 		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
 
 	/**
 	 * The payment's payAmt greater than the open amount. Still we expect the underpayment actions to be valid, because there is still an open amount.
+	 * That includes leaving the payment unallocated, which was rejected here before.
 	 */
 	@Test
 	public void esrPaymentActionValidationRule_partial_payment2()
@@ -357,9 +352,6 @@ public class ESRPaymentActionValidationRuleTest
 
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-
-		// Accepted (it was rejected before): an under-payment the accountant must leave unallocated,
-		// so payment selection can still refund the money.
 		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
 
