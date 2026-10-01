@@ -1,8 +1,8 @@
 package de.metas.pos;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -132,10 +133,14 @@ public class POSTerminalService
 		boolean locked = false;
 		try
 		{
-			final long deadline = SystemTime.millis() + timeoutMillis;
+			// REAL elapsed time via a monotonic clock — NOT SystemTime, which is the business clock and is
+			// frozen in integration tests ("metasfresh has date and time ..."); a frozen SystemTime would make
+			// the deadline unreachable, so the poll loop would never time out and the till-busy guard would
+			// never fire (cucumber S28210_TC20).
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 			while (!(locked = tryAcquire.getAsBoolean()))
 			{
-				if (SystemTime.millis() >= deadline)
+				if (stopwatch.elapsed(TimeUnit.MILLISECONDS) >= timeoutMillis)
 				{
 					throw onTimeout.get();
 				}

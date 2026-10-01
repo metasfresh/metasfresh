@@ -1,12 +1,16 @@
 package de.metas.pos;
 
+import de.metas.common.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 /**
  * Pins the contract of {@link POSTerminalService#runWithBoundedAcquire}: the pure "poll a bounded number
@@ -104,5 +108,35 @@ class POSTerminalServiceTest
 
 		assertThat(result).isEqualTo("acquired");
 		assertThat(acquireAttempts).hasValue(3);
+	}
+
+	@Test
+	void timesOut_evenWhenSystemTimeIsFrozen()
+	{
+		// A cucumber scenario freezes SystemTime ("metasfresh has date and time ..."), so the lock-acquire
+		// timeout must measure REAL elapsed time (a monotonic clock), NOT the business clock (SystemTime):
+		// with a frozen SystemTime the deadline is never reached and the loop never times out, so the
+		// till-busy guard never fires. Regression guard for cucumber S28210_TC20 (POS return till-busy),
+		// which failed when the timeout was computed from SystemTime.millis(). The assertTimeoutPreemptively
+		// turns a reverted (frozen-clock-dependent) implementation's infinite poll loop into a clean failure
+		// instead of a hang.
+		final RuntimeException timeoutException = new RuntimeException("timed out");
+		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-09-24T08:00:00+02:00[Europe/Berlin]"));
+		try
+		{
+			assertTimeoutPreemptively(Duration.ofSeconds(5), () ->
+					assertThatThrownBy(() -> POSTerminalService.runWithBoundedAcquire(
+							() -> false, // never acquires
+							() -> { },
+							50L,
+							10L,
+							() -> "action must never run if the lock is never acquired",
+							() -> timeoutException))
+							.isSameAs(timeoutException));
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 }
