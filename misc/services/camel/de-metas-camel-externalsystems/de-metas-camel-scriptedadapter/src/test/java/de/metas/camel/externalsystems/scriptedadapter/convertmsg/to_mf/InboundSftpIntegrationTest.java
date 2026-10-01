@@ -35,6 +35,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -391,6 +392,64 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	/**
+	 * A file whose transform succeeds but whose dispatched metasfresh call fails (here: metasfresh answers with an error body, as a
+	 * real HTTP call reports it) must not be archived as "processed". It goes to the LOCAL error dir. The failed call itself already
+	 * records its AD_Issue in metasfresh, so no extra error-route (AD_Issue) call is made for it.
+	 */
+	@Test
+	void sftpFileWithFailedDispatchedCallArchivedToLocalErrorDirWithoutExtraErrorRouteCall() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.to(OLCAND_MOCK_ROUTE_URI)
+						.process(exchange -> {
+							throw new HttpOperationFailedException("http://localhost:8282/api/v2/orders/sales/candidates/bulk", 422, "Unprocessable Entity", null, null,
+									"{\"errors\":[{\"message\":\"No BPartner found for identifier 2156425\"}]}");
+						});
+			}
+		});
+
+		context.start();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(1);
+		final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(ERROR_ROUTE_MOCK_URI);
+		errorRouteMockEndpoint.expectedMessageCount(0);
+
+		final Path inboundFile = sftpRootDir.resolve("inbound").resolve(TEST_FILE_NAME);
+		Files.writeString(inboundFile, TEST_FILE_CONTENT, StandardCharsets.UTF_8);
+
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND));
+
+		// the call was dispatched and failed ...
+		olCandMockEndpoint.assertIsSatisfied(10_000);
+
+		// ... so the payload is archived to the LOCAL error folder, not to processed
+		final Path localErrorFile = localErrorDir.resolve(TEST_FILE_NAME);
+		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
+		final boolean archived = waitForCondition(() -> Files.exists(localErrorFile) || Files.exists(localDoneFile), 10_000, 250);
+		assertThat(archived).as("Payload should be archived locally within 10 seconds").isTrue();
+		assertThat(localDoneFile).doesNotExist();
+		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+
+		// the remote file is still consumed
+		assertThat(inboundFile).doesNotExist();
+
+		// no extra AD_Issue via the error route: the failed metasfresh call already recorded its own
+		errorRouteMockEndpoint.assertIsSatisfied(1_000);
+
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, buildDisableRequest());
 		assertThat(context.getRoute(ROUTE_KEY)).isNull();
 	}
 

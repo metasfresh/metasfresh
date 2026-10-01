@@ -97,6 +97,16 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		archiveLocally(exchange, errorDir);
 	}
 
+	/**
+	 * Whether one item's aggregated response (see {@link ResponseAggregationStrategy}) reports a failure: a metasfresh error body
+	 * ({@value de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#FIELD_ERROR_MESSAGE}) or a caught exception.
+	 */
+	static boolean isErrorResponse(@Nullable final Object response)
+	{
+		final String responseStr = String.valueOf(response);
+		return responseStr.contains(FIELD_ERROR_MESSAGE) || responseStr.startsWith(EXCEPTION_PREFIX);
+	}
+
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
 	{
 		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);

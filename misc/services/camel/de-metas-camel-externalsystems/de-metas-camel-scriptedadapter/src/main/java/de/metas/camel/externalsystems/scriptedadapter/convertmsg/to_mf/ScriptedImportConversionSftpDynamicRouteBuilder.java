@@ -31,6 +31,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
 
+import java.util.List;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
@@ -95,8 +96,27 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveByDispatchOutcome);
 		//@formatter:on
+	}
+
+	/**
+	 * A file with ANY failed dispatched call goes to the error dir, otherwise to processed. No error-route (AD_Issue) call here:
+	 * a failed metasfresh call already records its own AD_Issue.
+	 */
+	private void archiveByDispatchOutcome(@NonNull final Exchange exchange)
+	{
+		final List<?> responses = exchange.getIn().getBody(List.class); // null when there was nothing to dispatch
+		final long errorCount = responses == null ? 0 : responses.stream().filter(AbstractScriptedImportConversionArchivingRouteBuilder::isErrorResponse).count();
+		if (errorCount > 0)
+		{
+			log.warn("{} of {} dispatched calls failed for file {}; archiving it to the error dir", errorCount, responses.size(), archiveFileName(exchange));
+			archiveLocallyOnError(exchange);
+		}
+		else
+		{
+			archiveLocallyOnSuccess(exchange);
+		}
 	}
 
 	@Override

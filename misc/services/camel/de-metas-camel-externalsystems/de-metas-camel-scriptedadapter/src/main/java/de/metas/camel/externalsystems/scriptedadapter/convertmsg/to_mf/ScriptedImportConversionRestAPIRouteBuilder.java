@@ -63,8 +63,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJacksonDataFormatFor;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_ERROR_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_PROCESSED_DIR;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PREFIX_IMPORT_AUTHORITY;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_ENDPOINT_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_SCRIPTED_IMPORTED_CONVERSION_CONTEXT;
@@ -191,7 +189,7 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 	private void handleSingleResponse(@NonNull final String response,
 									  @NonNull final Exchange exchange)
 	{
-		if (isErrorResponse(response))
+		if (AbstractScriptedImportConversionArchivingRouteBuilder.isErrorResponse(response))
 		{
 			throw new RuntimeCamelException(response);
 		}
@@ -202,7 +200,7 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 										 @NonNull final Exchange exchange)
 	{
 		final long errorCount = responses.stream()
-				.filter(this::isErrorResponse)
+				.filter(AbstractScriptedImportConversionArchivingRouteBuilder::isErrorResponse)
 				.count();
 
 		final HttpStatus status;
@@ -220,12 +218,6 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 		}
 
 		setHttpStatus(exchange, status);
-	}
-
-	private boolean isErrorResponse(@NonNull final String response)
-	{
-		return response.contains(FIELD_ERROR_MESSAGE) ||
-				response.startsWith(EXCEPTION_PREFIX);
 	}
 
 	private void setHttpStatus(@NonNull final Exchange exchange,
