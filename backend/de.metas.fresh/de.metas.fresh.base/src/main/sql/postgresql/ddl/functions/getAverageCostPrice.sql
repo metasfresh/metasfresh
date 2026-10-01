@@ -27,13 +27,14 @@ DROP FUNCTION IF EXISTS getAverageCostPrice(numeric, numeric, numeric)
  *   - SUM(CurrentCostPrice): in the standard setup exactly one row matches, so the sum is that value;
  *     the SUM also combines multiple average cost COMPONENTS (cost elements) into the total cost when
  *     more than one is configured. (Matches the aggregation semantics of getCostPrice.)
- *   - COALESCE(..., 0): a client not using average costing may have no 'A' row -> returns 0.
+ *   - No COALESCE: a client not using average costing may have no 'A' row -> returns NULL, so the
+ *     report leaves the cell blank (rather than showing a misleading 0). A genuine 0 cost still shows.
  *
  * Parameters:
  *   p_M_Product_ID - product to look up
  *   p_AD_Client_ID - client (selects the primary accounting schema)
  *   p_AD_Org_ID    - org the cost is maintained for
- * Returns: the average cost price as numeric (0 when no average cost exists).
+ * Returns: the average cost price as numeric, or NULL (rendered as a blank cell) when no average cost exists.
  */
 CREATE OR REPLACE FUNCTION getAverageCostPrice(IN p_M_Product_ID numeric, IN p_AD_Client_ID numeric, IN p_AD_Org_ID numeric)
     RETURNS numeric
@@ -41,7 +42,7 @@ CREATE OR REPLACE FUNCTION getAverageCostPrice(IN p_M_Product_ID numeric, IN p_A
     STABLE
 AS
 $$
-SELECT COALESCE(sum(cost.CurrentCostPrice), 0)
+SELECT sum(cost.CurrentCostPrice)
 FROM M_Cost cost
          INNER JOIN M_CostElement ce ON ce.M_CostElement_ID = cost.M_CostElement_ID
 WHERE cost.M_Product_ID = p_M_Product_ID

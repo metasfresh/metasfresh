@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION getAverageCostPrice(IN p_M_Product_ID numeric, IN p_A
     STABLE
 AS
 $$
-SELECT COALESCE(sum(cost.CurrentCostPrice), 0)
+SELECT sum(cost.CurrentCostPrice)
 FROM M_Cost cost
          INNER JOIN M_CostElement ce ON ce.M_CostElement_ID = cost.M_CostElement_ID
 WHERE cost.M_Product_ID = p_M_Product_ID
