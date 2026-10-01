@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate branches/{branch}/permalinks.json from a just-published build's Allure trees.
 Pure I/O: reads behaviors.json (features) + suites.json (spec files); writes a stable
-feature/spec -> {suite: {uid, count}} map. Runs server-side (piped over ssh) and locally (tests)."""
+feature/spec -> {suite: {uid, count, tagged, attributed, tests?}} map. Runs server-side (piped over ssh) and locally (tests)."""
 import json, os, re, sys, tempfile
 
 ALLURE_SUITES = ["cucumber", "frontend-webui", "mobile-webui"]
@@ -17,6 +17,13 @@ FCODE_RE = re.compile(r"^(F\d+(?:\.\d+)?)\b")
 TAG_FCODE_RE = re.compile(r"^\s*(F\d+(?:[._]\d+)?)\s*(?::|$)")
 ECODE_RE = re.compile(r"^E\d+\b")
 SPEC_SUFFIXES = (".spec.js", ".feature")
+#: Cap on per-test deep links published for one feature in one suite. The true
+#: total stays in `attributed` (NOT in `tagged`, which counts the tag route
+#: alone), so a capped list is reported as "N of M".
+MAX_LINKED_TESTS = 25
+#: Test names are free text; bound them so one pathological name cannot bloat
+#: the published index.
+NAME_MAX = 160
 
 def _count_leaves(node):
     # A leaf test-case has no "children" key (Allure uses null); a group node has a
@@ -45,6 +52,34 @@ def extract_features(behaviors_root):
         elif top.get("children"):
             add(tname, top.get("uid"), _count_leaves(top))
     return out
+
+def node_leaf_uids(behaviors_root):
+    """{node uid: set of leaf uids beneath it} for the nodes `extract_features`
+    indexes.
+
+    Lets `_attach_test_links` ask the only question that matters — does the node
+    this feature links to actually REACH the tests attributed to it? — instead of
+    comparing a leaf count against a differently-built set.
+    """
+    out = {}
+    def leaves(node, acc):
+        ch = node.get("children")
+        if ch is None:
+            acc.add(node.get("uid") or node.get("name"))
+            return acc
+        for c in ch:
+            leaves(c, acc)
+        return acc
+    for top in behaviors_root.get("children") or []:
+        tname = top.get("name") or ""
+        if ECODE_RE.match(tname):
+            for feat in top.get("children") or []:
+                if feat.get("children") and feat.get("uid"):
+                    out[feat["uid"]] = leaves(feat, set())
+        elif top.get("children") and top.get("uid"):
+            out[top["uid"]] = leaves(top, set())
+    return out
+
 
 def _canonical_fcode(code):
     """`F5001_1` and `F5001.1` are the same subfeature; index them once."""
@@ -149,6 +184,31 @@ def _count_distinct_leaves(behaviors_root):
     for top in behaviors_root.get("children") or []:
         walk(top)
     return len(seen)
+
+
+def leaf_names(behaviors_root):
+    """{uid: name} for every leaf, so a published test link can carry its title.
+
+    A separate pass rather than a change to `_leaf_features`, whose {uid: status}
+    shape `build_coverage` depends on.
+    """
+    out = {}
+    def walk(node):
+        ch = node.get("children")
+        if ch is None:
+            uid = node.get("uid")
+            # ONLY real uids. `_leaf_features` falls back to the NAME as its key
+            # when a leaf has no uid; publishing that as a link would build
+            # `#testresult/<a test name>`, which resolves to nothing. Keying on
+            # real uids here makes this map double as the "is it linkable" set.
+            if uid and uid not in out:
+                out[uid] = (node.get("name") or "")[:NAME_MAX]
+            return
+        for c in ch:
+            walk(c)
+    for top in behaviors_root.get("children") or []:
+        walk(top)
+    return out
 
 
 def extract_coverage(behaviors_root):
@@ -270,12 +330,138 @@ def build_index(build_dir):
                 entry = features.setdefault(code, {}).setdefault(
                     suite, {"uid": None, "count": 0, "tagged": 0})
                 entry["tagged"] = tagged
+            # The tests a link should reach come from `extract_coverage`, NOT from
+            # the tag route above: a leaf is credited to the UNION of its own tags
+            # and the enclosing `Fxxxx` node, which is the semantics the coverage
+            # page uses. Reading tags alone drops 27 attributions on
+            # 5.175-intensive-care-release.43783 and loses F01010 entirely, so a
+            # tags-only list would disagree with the coverage page and omit tests.
+            names = leaf_names(behaviors)
+            reach = node_leaf_uids(behaviors)
+            for code, by_uid in extract_coverage(behaviors).items():
+                entry = features.setdefault(code, {}).setdefault(
+                    suite, {"uid": None, "count": 0, "tagged": 0})
+                # EVERY attributed test, linkable or not. `uid` is None for a
+                # leaf the report gives no uid (`_leaf_features` keys those by
+                # name): it cannot be deep-linked, but it still carries the
+                # feature, so it must count toward `attributed` -- filtering it
+                # out here made `attributed` absent whenever nothing at all was
+                # linkable, and the page then fell back to a different number.
+                entry["_tests"] = [{"uid": u if u in names else None,
+                                    "name": names.get(u, ""), "status": st}
+                                   for u, st in by_uid.items()]
+                # `_leaf_features` and `node_leaf_uids` key a leaf the same way
+                # (uid, else name), so these compare directly -- including the
+                # uid-less leaves, which a linkable-only check would have let a
+                # node "reach" by simply not looking at them.
+                entry["_attr_keys"] = set(by_uid)
+                entry["_node_uids"] = reach.get(entry.get("uid")) or set()
+            # `extract_features` indexes one node under BOTH its full name
+            # ("F00700 Invoicing") and its F-code alias, but `extract_coverage`
+            # is keyed by F-code, so only the alias got a verdict above. Without
+            # this, `?feature=F00700 Invoicing` fell through to the legacy guess
+            # (`count >= tagged`, and `tagged` is 0 on a name key, so always
+            # true) and redirected into the very node its F-code twin knows is
+            # short -- the exact defect this whole change removes.
+            for name, per_suite in features.items():
+                ent = per_suite.get(suite)
+                if not ent or "_tests" in ent:
+                    continue
+                m = FCODE_RE.match(name)
+                if not m:
+                    continue                      # not an F-code-prefixed name
+                # `_canonical_fcode` is a no-op on this match (FCODE_RE cannot
+                # capture the `_` spelling) and `not twin` is unreachable, since
+                # `extract_features` always setdefaults the alias in this same
+                # suite. Both are kept to mirror `_leaf_features`, which
+                # canonicalises the identical regex match, and to fail soft
+                # rather than raise if either assumption ever changes.
+                twin = (features.get(_canonical_fcode(m.group(1))) or {}).get(suite)
+                if not twin or "_tests" not in twin:
+                    continue          # that F-code has no attributed tests
+                # The attributed SET belongs to the F-code, so it is shared; the
+                # REACH is a property of this key's own node, so it is looked up
+                # per key. Requiring the twin's uid to match left a second node
+                # with the same F-code prefix ("F00700 Billing" beside "F00700
+                # Invoicing") with no verdict at all, falling back to the legacy
+                # guess and redirecting into a node holding 2 of 3 tests.
+                ent["_tests"] = twin["_tests"]
+                ent["_attr_keys"] = twin["_attr_keys"]
+                ent["_node_uids"] = reach.get(ent["uid"]) or set()
         spath = os.path.join(build_dir, "allure", suite, "data", "suites.json")
         if os.path.isfile(spath):
             with open(spath, encoding="utf-8") as f:
                 for name, (uid, count) in extract_specs(json.load(f)).items():
                     specs.setdefault(name, {})[suite] = {"uid": uid, "count": count}
+    _attach_test_links(features)
     return features, specs
+
+def _attach_test_links(features):
+    """Publish per-test deep links where the node link cannot stand in for them.
+
+    Two cases, measured on 5.175-new-dawn-release.44677:
+      * NO Behaviours node at all -- 83 feature/suite pairs covering 339 tests.
+        The page could previously only say "no linkable node".
+      * A node reaching FEWER tests than are attributed to the feature -- worse
+        than the first case, because the link LOOKS complete: F00700 in cucumber
+        opens a node holding 1 test while 115 carry the tag.
+
+    `attributed` is the size of the union set from `extract_coverage`. It is
+    published on EVERY entry with coverage, including complete ones that need no
+    list -- it is the single number the PERMALINK page uses for "how big is this
+    suite", and making it conditional is what let two consumers derive it from
+    different fields and disagree. Note it is NOT reconciled against
+    failures.json the way `build_coverage` is, so for a suite whose tree does not
+    reconcile the coverage page drops the suite while this index still carries an
+    `attributed` for it. The two pages can therefore disagree on a mis-parsed
+    suite; only the coverage page treats that as a reason to say nothing. The page must therefore NOT read its presence as
+    "incomplete" -- the presence of the `tests` KEY is that signal, and it is
+    written (possibly as an empty list) for every entry the node falls short of.
+
+    Completeness is decided on uid overlap, never by comparing `count` with
+    `tagged`. `count` is `_count_leaves` on the node: it includes untagged
+    siblings, and counts a test twice when cucumber lists it under both the
+    .feature file and Epic -> Feature. A node of 5 untagged leaves would
+    otherwise look like it covered 3 attributed tests it does not contain.
+
+    Where the node already reaches every attributed test, no `tests` key is
+    published (`attributed` still is):
+    attaching the list unconditionally grew permalinks.json by ~70% (+117 KB)
+    against ~19% (+32 KB) for the cases that need it.
+    """
+    for entry in features.values():
+        for e in entry.values():
+            # BOTH scratch keys come off first, before any early exit -- leaving
+            # one behind publishes build-time state into permalinks.json.
+            tests = e.pop("_tests", None)
+            reached = e.pop("_node_uids", None) or set()
+            attr_keys = e.pop("_attr_keys", None) or set()
+            if not tests:
+                continue
+            # ALWAYS publish the size of the attributed set, even when the node
+            # reaches all of it and no list is needed. It is one integer per
+            # entry (~11% on the published file) and it is what makes the page's
+            # "how big is this suite" answer single-sourced: every earlier
+            # revision had two consumers deriving it from different fields
+            # (`count`, `tagged`) and disagreeing with each other.
+            e["attributed"] = len(tests)
+            # `e.get("uid")` is redundant -- a node-less entry has an empty
+            # `reached` and a non-empty `attr_keys`, so the subset test is
+            # already False -- but it is kept for the same reason as the guards
+            # above: it states the invariant (only a node-backed entry can be
+            # complete) rather than relying on two other facts to imply it.
+            if e.get("uid") and attr_keys <= reached:
+                continue          # the node link already opens every one of them
+            # Past here the node is KNOWN not to reach everything, so the `tests`
+            # key is written unconditionally -- that key's presence is the signal
+            # the page reads. Writing it only when the list is non-empty let an
+            # entry whose attributed tests are all unlinkable look complete.
+            linkable = [t for t in tests if t.get("uid")]
+            # A failure is what a reader follows the link for, so it must survive
+            # the cap: order failed/broken first, then the rest, each in tree order.
+            rank = {"failed": 0, "broken": 1}
+            ordered = sorted(linkable, key=lambda t: rank.get(t.get("status"), 2))
+            e["tests"] = ordered[:MAX_LINKED_TESTS]
 
 def main(argv):
     branch, version = argv[1], argv[2]
