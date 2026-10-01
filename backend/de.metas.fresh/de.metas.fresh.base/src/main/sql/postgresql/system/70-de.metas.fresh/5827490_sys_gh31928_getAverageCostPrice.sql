@@ -17,7 +17,10 @@ FROM M_Cost cost
 WHERE cost.M_Product_ID = p_M_Product_ID
   AND cost.AD_Client_ID = p_AD_Client_ID
   AND cost.AD_Org_ID = p_AD_Org_ID
+  AND cost.M_AttributeSetInstance_ID = 0
   AND cost.C_AcctSchema_ID = (SELECT ci.C_AcctSchema1_ID FROM AD_ClientInfo ci WHERE ci.AD_Client_ID = p_AD_Client_ID)
   AND ce.CostingMethod = 'A'
+  AND cost.IsActive = 'Y'
+  AND ce.IsActive = 'Y'
 $$
 ;
