@@ -1262,18 +1262,21 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID | M_InOutLine_ID |
       | po_l1          | receipt    | receipt_line1  |
+    And Wait until documents receipt are posted
     And for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID  | QtyEntered | Price |
       | soFull_l1      | customer      | 2021-04-14  | SOO         | warehouse      | productTraded | 10         | 19    |
     And for costing, create completed shipment with one line
-      | C_OrderLine_ID | M_InOutLine_ID     |
-      | soFull_l1      | shipmentFull_line1 |
+      | C_OrderLine_ID | M_InOut_ID   | M_InOutLine_ID     |
+      | soFull_l1      | shipmentFull | shipmentFull_line1 |
+    And Wait until documents shipmentFull are posted
     And for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID  | QtyEntered | Price | DeliveryRule |
       | soOver_l1      | customer      | 2021-04-14  | SOO         | warehouse      | productTraded | 5          | 19    | F            |
     And for costing, create completed shipment with one line
-      | C_OrderLine_ID | M_InOutLine_ID     |
-      | soOver_l1      | shipmentOver_line1 |
+      | C_OrderLine_ID | M_InOut_ID   | M_InOutLine_ID     |
+      | soOver_l1      | shipmentOver | shipmentOver_line1 |
+    And Wait until documents shipmentOver are posted
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID  | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | productTraded | MovingAverageInvoice | 10 CHF           | 0 PCE      |
@@ -1302,6 +1305,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And for costing, create completed material receipt with one line
       | C_OrderLine_ID | M_InOut_ID  | M_InOutLine_ID    |
       | poNext_l1      | receiptNext | receiptNext_line1 |
+    And Wait until documents receiptNext are posted
     Then validate current costs
       | C_AcctSchema_ID | M_Product_ID  | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | productTraded | MovingAverageInvoice | 9 CHF            | 15 PCE     |
