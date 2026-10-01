@@ -1099,6 +1099,65 @@ public class CostRevaluationServiceTest
 		}
 	}
 
+	@Nested
+	class LineDeltaAmtInvariant
+	{
+		/**
+		 * An evaluated line's {@code DeltaAmt} is the sum of its detail rows' {@code DeltaAmt}, on one- and two-line documents, after "Run" and after "Complete".
+		 */
+		@Test
+		public void lineDeltaAmt_equalsSumOfDetailDeltas()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId product1 = createProduct("product_invariant1");
+			final ProductId product2 = createProduct("product_invariant2");
+			seedCurrentCost(product1, "10", "100");
+			seedCurrentCost(product2, "4", "30");
+
+			final CostRevaluationId oneLineDoc = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(oneLineDoc, product1, new BigDecimal("15"));
+
+			final CostRevaluationId twoLineDoc = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(twoLineDoc, product1, new BigDecimal("12"));
+			costRevaluationService.createLineForProduct(twoLineDoc, product2, new BigDecimal("5.5"));
+
+			costRevaluationService.createDetails(oneLineDoc); // "Run"
+			costRevaluationService.createDetails(twoLineDoc); // "Run"
+			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(oneLineDoc, 1);
+			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(twoLineDoc, 2);
+
+			updateCurrentCost(product1, "11", "80");
+
+			costRevaluationService.reevaluateAllLines(oneLineDoc); // "Complete"
+			costRevaluationService.reevaluateAllLines(twoLineDoc); // "Complete"
+			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(oneLineDoc, 1);
+			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(twoLineDoc, 2);
+		}
+
+		private void assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(@NonNull final CostRevaluationId costRevaluationId, final int expectedEvaluatedLines)
+		{
+			final List<I_M_CostRevaluationLine> evaluatedLines = getLineRecords(costRevaluationId)
+					.stream()
+					.filter(I_M_CostRevaluationLine::isRevaluated)
+					.collect(ImmutableList.toImmutableList());
+			assertThat(evaluatedLines).hasSize(expectedEvaluatedLines);
+
+			for (final I_M_CostRevaluationLine line : evaluatedLines)
+			{
+				final List<I_M_CostRevaluation_Detail> details = Services.get(IQueryBL.class)
+						.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+						.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, line.getM_CostRevaluationLine_ID())
+						.create()
+						.list(I_M_CostRevaluation_Detail.class);
+				assertThat(details).as("details of line %s", line.getM_CostRevaluationLine_ID()).isNotEmpty();
+
+				final BigDecimal sumOfDetailDeltas = details.stream()
+						.map(I_M_CostRevaluation_Detail::getDeltaAmt)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				assertThat(line.getDeltaAmt()).as("DeltaAmt of line %s", line.getM_CostRevaluationLine_ID()).isEqualByComparingTo(sumOfDetailDeltas);
+			}
+		}
+	}
 
 	@Nested
 	class WriteBookedValues

@@ -61,6 +61,12 @@ public class CostRevaluationService
 		this.costingService = costingService;
 	}
 
+	@NonNull
+	public CostRevaluation getById(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return costRevaluationRepository.getById(costRevaluationId);
+	}
+
 	public boolean isDraftedDocument(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		return costRevaluationRepository.getById(costRevaluationId).getDocStatus().isDrafted();
