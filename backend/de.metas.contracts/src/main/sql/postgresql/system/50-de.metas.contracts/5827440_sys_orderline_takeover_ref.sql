@@ -22,7 +22,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsEncrypted, IsSelectionColumn,
                        IsAllowLogging, PersonalDataCategory)
 VALUES (593695 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-01 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        0, 'de.metas.contracts', 'C_CompensationGroup_ContractSettings_TakeOver_ID', 260, 585505, 19,
+        0, 'D', 'C_CompensationGroup_ContractSettings_TakeOver_ID', 260, 585505, 19,
         10, 'Kompensationsgruppen-Vertragseinstellung Übernahme', 'Übernahme-Einstellung je Produktkategorie: Rabatt-Produkt der eigenen Zeile eines Kompensationsgruppen-Vertrags.', NULL,
         'N', 'Y', 'N', NULL,
         'N', 'N', 'N', 'N', 'N', 'N',

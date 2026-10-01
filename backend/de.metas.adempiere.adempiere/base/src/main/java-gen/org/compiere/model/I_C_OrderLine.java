@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Vendor.
+	 * Set C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get Vendor.
+	 * Get C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -330,6 +330,29 @@ public interface I_C_OrderLine
 	int getC_Charge_ID();
 
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/**
+	 * Set Compensation group contract settings take-over.
+	 * Take-over setting per product category: discount product of the own line of a compensation group contract.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_ContractSettings_TakeOver_ID (int C_CompensationGroup_ContractSettings_TakeOver_ID);
+
+	/**
+	 * Get Compensation group contract settings take-over.
+	 * Take-over setting per product category: discount product of the own line of a compensation group contract.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_ContractSettings_TakeOver_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_C_CompensationGroup_ContractSettings_TakeOver_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_ContractSettings_TakeOver_ID", null);
+	String COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID = "C_CompensationGroup_ContractSettings_TakeOver_ID";
 
 	/**
 	 * Set Compensations.
@@ -850,6 +873,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -859,6 +883,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
