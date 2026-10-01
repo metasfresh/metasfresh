@@ -71,6 +71,7 @@ public class ContractCompensationGroupSettingsRepository
 		final ImmutableSet<DocTypeId> docTypeIds = retrieveDocTypeIds(settingsId);
 
 		return ContractCompensationGroupSettings.builder()
+				.settingsId(settingsId)
 				.schemaId(schemaId)
 				.docTypeIds(docTypeIds)
 				.build();
