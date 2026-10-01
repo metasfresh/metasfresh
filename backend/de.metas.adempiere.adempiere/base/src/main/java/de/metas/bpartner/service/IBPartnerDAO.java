@@ -300,7 +300,10 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *                              that relation's bPartner location.
+	 *                              that relation's bPartner location. Since there is no partner-location context here, the partner-wide relation
+	 *                              ({@code C_BPartner_Location_ID IS NULL}, see {@link #retrieveBillToBPartnerRelationOrNull(BPartnerId, BPartnerLocationId)}) is used first;
+	 *                              if there is none, any active bill-to relation of the partner is used (partner-only lookup with {@code firstOnly},
+	 *                              i.e. it fails if the partner has several location-bound bill-to relations).
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */

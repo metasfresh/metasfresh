@@ -1132,7 +1132,16 @@ public class BPartnerDAO implements IBPartnerDAO
 			return ownBillToLocation;
 		}
 
-		final I_C_BP_Relation billtoRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId, null); // no location context => partner-wide relation only
+		// no location context => partner-wide relation first, then the partner-only lookup as it was before the per-location resolution
+		final I_C_BP_Relation partnerWideRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId, null);
+		final I_C_BP_Relation billtoRelation = partnerWideRelation != null
+				? partnerWideRelation
+				: queryBL.createQueryBuilder(I_C_BP_Relation.class)
+						.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
+						.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstOnly(I_C_BP_Relation.class);
 		if (billtoRelation != null)
 		{
 			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartnerRelation_ID(), billtoRelation.getC_BPartnerRelation_Location_ID());

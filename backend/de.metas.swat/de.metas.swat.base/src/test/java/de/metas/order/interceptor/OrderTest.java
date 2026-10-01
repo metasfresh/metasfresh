@@ -391,6 +391,43 @@ public class OrderTest
 		Assertions.assertEquals(billLocY1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
 	}
 
+	/**
+	 * Changing the order's bpartner location re-resolves the bill partner from the new location's bill-to relation.
+	 */
+	@Test
+	public void setBillBPartner_reResolvesBillToRelation_whenOrderLocationChanges()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		final I_C_BPartner billPartnerY = createBPartnerInGroup("BillPartnerY", plainGroup);
+		final I_C_BPartner_Location billLocY1 = createBPartnerLocation(billPartnerY);
+
+		createBillToRelation(memberLocA, billLocX1);
+		createBillToRelation(memberLocB, billLocY1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocA.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+		Assertions.assertEquals(billPartnerX.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(billLocX1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		// a POJO save is never a UI action, so the non-UI "provided bill partner" guard applies;
+		// simulate the own-bill-to default (Bill_BPartner == C_BPartner) that setBillLocation sets before this interceptor
+		order.setBill_BPartner_ID(member.getC_BPartner_ID());
+		save(order);
+
+		Assertions.assertEquals(billPartnerY.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(billLocY1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
 	private I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
 	{
 		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
