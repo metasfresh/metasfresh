@@ -9,22 +9,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Pins the contract of {@link POSTerminalRepository#runWithBoundedAcquire}: the pure "poll a bounded number
+ * Pins the contract of {@link POSTerminalService#runWithBoundedAcquire}: the pure "poll a bounded number
  * of times to acquire, then run-and-return-verbatim or throw" algorithm behind
- * {@link POSTerminalRepository#runWithCrossTransactionLock}, tested here directly with fake
- * acquire/release suppliers — no real DB connection needed or possible in this plain-JUnit context (see the
- * class Javadoc on {@code runWithBoundedAcquire}).
+ * {@link POSTerminalService#runWithCrossTransactionLock}, tested here directly with fake
+ * acquire/release suppliers — no real DB connection needed or possible in this plain-JUnit context (the DB
+ * primitives + connection lifecycle live in {@link POSTerminalRepository}; only the timing algorithm lives in
+ * the service, so only it is unit-tested here).
  * <p>
  * The central property under test: a timeout can NEVER be confused with the action's own (possibly null)
  * result — the design this replaced (an {@code Optional<T>} return, {@code empty()} meaning either) could not
  * make that distinction.
  */
-class POSTerminalRepositoryTest
+class POSTerminalServiceTest
 {
 	@Test
 	void actionReturningNull_isReturnedVerbatim_notThrowing()
 	{
-		final Object result = POSTerminalRepository.runWithBoundedAcquire(
+		final Object result = POSTerminalService.runWithBoundedAcquire(
 				() -> true, // acquires immediately
 				() -> { },  // release: no-op
 				1_000L,
@@ -40,7 +41,7 @@ class POSTerminalRepositoryTest
 	{
 		final AtomicBoolean released = new AtomicBoolean(false);
 
-		final String result = POSTerminalRepository.runWithBoundedAcquire(
+		final String result = POSTerminalService.runWithBoundedAcquire(
 				() -> true,
 				() -> released.set(true),
 				1_000L,
@@ -58,7 +59,7 @@ class POSTerminalRepositoryTest
 		final RuntimeException timeoutException = new RuntimeException("timed out");
 		final AtomicBoolean released = new AtomicBoolean(false);
 
-		assertThatThrownBy(() -> POSTerminalRepository.runWithBoundedAcquire(
+		assertThatThrownBy(() -> POSTerminalService.runWithBoundedAcquire(
 				() -> false, // never acquires
 				() -> released.set(true),
 				50L,
@@ -76,7 +77,7 @@ class POSTerminalRepositoryTest
 		final AtomicBoolean released = new AtomicBoolean(false);
 		final RuntimeException actionException = new RuntimeException("boom");
 
-		assertThatThrownBy(() -> POSTerminalRepository.runWithBoundedAcquire(
+		assertThatThrownBy(() -> POSTerminalService.runWithBoundedAcquire(
 				() -> true,
 				() -> released.set(true),
 				1_000L,
@@ -93,7 +94,7 @@ class POSTerminalRepositoryTest
 	{
 		final AtomicInteger acquireAttempts = new AtomicInteger();
 
-		final String result = POSTerminalRepository.runWithBoundedAcquire(
+		final String result = POSTerminalService.runWithBoundedAcquire(
 				() -> acquireAttempts.incrementAndGet() >= 3, // fails twice, then succeeds
 				() -> { },
 				5_000L,

@@ -162,17 +162,21 @@ Feature: POS Product Return
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
   @Id:S28210_TC15
-  Scenario: A concurrent request for the same terminal blocks on the terminal lock instead of racing
-    When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
-      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
-      | product      | 0.3 | KGM | return_4       |
+  Scenario: Retrying a POS return with the same key but edited content is rejected and keeps the original
+    When a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.ExternalId |
+      | product      | 0.3 | KGM | return_edit    | editRetryToken |
+    And a product return at POS terminal till by metasfresh fails with AD_Message 'de.metas.pos.Return.RetryContentMismatch':
+      | M_Product_ID | Qty | UOM | OPT.ExternalId |
+      | product      | 0.5 | KGM | editRetryToken |
 
-    Then after not more than 60s, credit memo candidates are found:
-      | M_InOut_ID | C_Invoice_Candidate_ID |
-      | return_4   | lockedCreditCand       |
+    Then there is exactly one POS return for retry token editRetryToken
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID  | C_Invoice_Candidate_ID |
+      | return_edit | editCreditCand         |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID | IsError |
-      | lockedCreditCand       | false   |
+      | editCreditCand         | false   |
 
   # ##########################################################################
   @from:cucumber

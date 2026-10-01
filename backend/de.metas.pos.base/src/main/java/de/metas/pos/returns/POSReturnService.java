@@ -8,15 +8,14 @@ import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -58,6 +57,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -66,11 +66,12 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Receives goods handed back at the till (a customer return, no HUs, no prior sales order) and prices the
- * credit at the till's price for each returned product — phase 1 of the POS product-return flow.
+ * Receives goods handed back at the till (a walk-in customer return, no prior sales order) and prices the
+ * credit at the till's own current price for each returned product.
  */
 @Service
 @RequiredArgsConstructor
@@ -85,9 +86,11 @@ public class POSReturnService
 	private static final AdMessageKey MSG_NotACreditMemo = AdMessageKey.of("de.metas.pos.Return.NotACreditMemo");
 	private static final AdMessageKey MSG_TillBusy = AdMessageKey.of("de.metas.pos.Return.TillBusy");
 	private static final AdMessageKey MSG_NoTillPrice = AdMessageKey.of("de.metas.pos.Return.NoTillPrice");
+	private static final AdMessageKey MSG_RetryContentMismatch = AdMessageKey.of("de.metas.pos.Return.RetryContentMismatch");
+	private static final AdMessageKey MSG_JournalDescription = AdMessageKey.of("de.metas.pos.Return.JournalDescription");
 
 	/** How long {@link #createReturn} waits to acquire the terminal's cross-transaction lock before rejecting
-	 * with {@link #MSG_TillBusy} — see {@code 5826360_POS_Return_TillBusyMessageAndLockTimeout.sql}. */
+	 * with {@link #MSG_TillBusy}. */
 	private static final String SYSCONFIG_LockTimeoutMillis = "de.metas.pos.Return.LockTimeoutMillis";
 	private static final int SYSCONFIG_LockTimeoutMillis_DEFAULT = 30_000;
 
@@ -95,13 +98,12 @@ public class POSReturnService
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
@@ -122,10 +124,7 @@ public class POSReturnService
 	 * {@link POSTerminalService#runWithCrossTransactionLock}: a Postgres advisory lock, held on its own
 	 * dedicated connection for the ENTIRE call, that serializes two concurrent callers against the SAME terminal
 	 * end to end — a second caller cannot start ANY phase while a first is still in flight in any of its three,
-	 * closing the cross-phase race a phase-1-only lock would leave open. The {@code C_POS} row lock inside phase 1
-	 * ({@link POSTerminalService#lockForUpdate}) still runs too, unchanged from before this method existed — it is
-	 * now redundant for mutual exclusion (the outer lock already guarantees only one caller is ever inside phase 1
-	 * at a time) but is kept as-is since it is exercised directly, on its own, by a dedicated test.
+	 * closing the cross-phase race a phase-1-only lock would leave open.
 	 * <p>
 	 * The lock acquisition is BOUNDED (polled {@code pg_try_advisory_lock}, not a blocking {@code pg_advisory_lock})
 	 * — an unbounded wait would let one stuck caller (e.g. a slow/hung async workpackage inside phase 2) freeze
@@ -223,9 +222,8 @@ public class POSReturnService
 	/**
 	 * Turns a client's product+qty (no price, no UOM) into a fully priced {@link POSReturnLine}: priced per
 	 * {@link POSProduct#getPriceUom()} — the catch-weight UOM (e.g. kg) when the product is priced by catch
-	 * weight, else the product's own UOM (see that method's own Javadoc). Package-private and pure (no DB access
-	 * of its own — {@code priceUomRecord} is passed in already resolved) so this mapping is unit-testable
-	 * without a real price list.
+	 * weight, else the product's own UOM (see that method's own Javadoc). {@code priceUomRecord} is passed in
+	 * already resolved, so the mapping does no DB access of its own.
 	 */
 	@NonNull
 	static POSReturnLine toReturnLine(
@@ -259,28 +257,35 @@ public class POSReturnService
 		}
 		request.getLines().forEach(this::assertQtyIsPositive);
 
-		// serializes two concurrent requests against the same terminal (e.g. two in-flight retries carrying the
-		// same idempotency key): the second blocks here until the first commits, by which point findReturnIdByExternalId
-		// below finds its result instead of racing to create a second document
-		posTerminalService.lockForUpdate(request.getPosTerminalId());
-
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 		final OrgId orgId = terminal.getOrgId();
 		final boolean tillPriceListIsTaxIncluded = terminal.isTaxIncluded();
 		final String returnExternalId = "POSReturn-" + request.getExternalId();
 
-		final InOutId returnId = returnRepository.findReturnIdByExternalId(returnExternalId)
+		final Optional<InOutId> existingReturnId = returnRepository.findReturnIdByExternalId(returnExternalId);
+		final boolean isRetry = existingReturnId.isPresent();
+		final InOutId returnId = existingReturnId
 				.orElseGet(() -> createReturnDocument(request, terminal, orgId, returnExternalId));
 
 		final I_M_InOut returnRecord = inOutDAO.getById(returnId);
-
-		// make sure every line has an invoice candidate — a no-op if they already exist (retry)
-		invoiceCandidateHandlerBL.createMissingCandidatesFor(returnRecord);
 
 		// pair request lines with their created return line BY POSITION (both ordered the same way the return was
 		// built), so a product returned on two separate lines of the same request (e.g. two different batches) is
 		// priced line-by-line rather than by a M_Product_ID lookup that can't tell the lines apart
 		final List<I_M_InOutLine> returnLines = inOutDAO.retrieveLines(returnRecord);
+
+		// a retry (same externalId) must be for the SAME cart: if the cashier edited the cart (changed a qty,
+		// swapped/added/removed a product) and pressed pay-out again, that is a NEW operation — resolving back to the
+		// already-recorded return would refund the OLD amount while the UI shows the edited total, so reject it here
+		// instead of silently reusing the document. A genuine retry of the unchanged cart passes and stays idempotent.
+		if (isRetry)
+		{
+			assertExistingReturnMatchesRequest(returnLines, request);
+		}
+
+		// make sure every line has an invoice candidate — a no-op if they already exist (retry)
+		invoiceCandidateHandlerBL.createMissingCandidatesFor(returnRecord);
+
 		if (returnLines.size() != request.getLines().size())
 		{
 			throw new AdempiereException("The POS return document does not have exactly one line per request line")
@@ -297,17 +302,25 @@ public class POSReturnService
 				SystemTime.asInstant(),
 				request.getLines().stream().map(POSReturnLine::getProductId).collect(ImmutableSet.toImmutableSet())));
 
-		// one query per line (not batched): the return's line count is small (single digits), and this reuses
-		// invoiceCandDAO's own canonical, full-semantics lookup (direct match, C_OrderLine_ID, IC-IOL association)
-		// rather than re-deriving a narrower query
 		final ImmutableList.Builder<I_C_Invoice_Candidate> pricedCandidates = ImmutableList.builder();
 		for (int i = 0; i < request.getLines().size(); i++)
 		{
 			final POSReturnLine line = request.getLines().get(i);
 			final I_M_InOutLine returnLine = returnLines.get(i);
 
-			for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(returnLine))
+			for (final I_C_Invoice_Candidate ic : invoiceCandBL.retrieveInvoiceCandidatesForInOutLine(returnLine))
 			{
+				// idempotent retry: a candidate already invoiced onto the credit memo must NOT be re-priced or
+				// re-invalidated — rewriting its overrides (and flagging a fresh async recompute) on an
+				// already-invoiced candidate is exactly the corruption the retry guard above shields the cashier
+				// from. It carries the price the credit memo was built on, so reuse it verbatim.
+				if (isRetry
+						&& !invoiceCandBL.retrieveIlForIc(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID())).isEmpty())
+				{
+					pricedCandidates.add(ic);
+					continue;
+				}
+
 				// checked first: a candidate with no tax is left in a degraded state (e.g. no Price_UOM_ID yet),
 				// so a UOM/currency check below would fail on that symptom instead of the real cause. A
 				// not-found tax means the product's price row on the walk-in customer's own sales pricing
@@ -335,11 +348,11 @@ public class POSReturnService
 				ic.setInvoiceRule_Override(InvoiceRule.Immediate.getCode());
 
 				// the C_Invoice_Candidate model interceptor recomputes PriceActual/NetAmtToInvoice on this save
-				invoiceCandDAO.save(ic);
+				invoiceCandBL.save(ic);
 
 				// tags the candidate for a later, already-committed async recompute; the full IInvoiceCandBL#updateInvalid()
 				// is never called synchronously here because it can't see a line created in this same open transaction
-				invoiceCandDAO.invalidateCand(ic);
+				invoiceCandBL.invalidateCand(ic);
 
 				if (ic.isError())
 				{
@@ -445,10 +458,8 @@ public class POSReturnService
 	@NonNull
 	private InvoiceId ensureCreditMemo(@NonNull final List<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		// one query per candidate (not batched): the return's candidate count is small (single digits), the same
-		// "cardinality is small" trade-off already accepted for the per-line query in ensureReturnAndCandidates above
 		final ImmutableSet<InvoiceId> existingInvoiceIds = invoiceCandidateIds.stream()
-				.flatMap(icId -> invoiceCandDAO.retrieveIlForIc(icId).stream())
+				.flatMap(icId -> invoiceCandBL.retrieveIlForIc(icId).stream())
 				.map(I_C_InvoiceLine::getC_Invoice_ID)
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
@@ -457,16 +468,10 @@ public class POSReturnService
 				? CollectionUtils.singleElement(invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.copyOf(invoiceCandidateIds)))
 				: CollectionUtils.singleElement(existingInvoiceIds);
 
-		// a customer-return invoice candidate always carries a negative qty/amount (IInvoiceCandidateHandlerBL's
-		// M_InOutLine_Handler#getQtyMultiplier flips the sign for a return movement type), and this return's own
-		// invoice never mixes with an unrelated candidate (it is its own standalone document, C_Order_ID=null) —
-		// InvoiceCandBLCreateInvoices itself asserts a generated invoice's header/line credit-memo status agree, so
-		// a genuinely mixed aggregation would already fail loudly there, before this guard is ever reached. Could
-		// not fully trace every doc-type-resolution path (e.g. a BPartner-level doc-type override) to prove this
-		// guard is unreachable with 100% certainty, so — unlike this file's other internal-consistency guards
-		// (e.g. "does not have exactly one line per request line" above) — it gets a proper localized AD_Message
-		// rather than a raw exception, in case a cashier ever does see it.
-		final I_C_Invoice creditMemo = invoiceDAO.getByIdInTrx(creditMemoId);
+		// a customer-return candidate is sign-flipped to a negative qty/amount and invoiced as its own standalone
+		// document (C_Order_ID=null), so the generated invoice must be a credit memo; guard it with a localized
+		// message in case a doc-type misconfiguration ever yields otherwise
+		final I_C_Invoice creditMemo = invoiceBL.getById(creditMemoId);
 		if (!invoiceBL.isCreditMemo(creditMemo))
 		{
 			throw new AdempiereException(MSG_NotACreditMemo).setParameter("C_Invoice_ID", creditMemoId);
@@ -499,7 +504,7 @@ public class POSReturnService
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 		final POSCashJournalId journalId = terminal.getCashJournalIdNotNull();
 
-		final I_C_Invoice creditMemo = invoiceDAO.getByIdInTrx(creditMemoId);
+		final I_C_Invoice creditMemo = invoiceBL.getById(creditMemoId);
 		final Money refundAmount = Money.of(creditMemo.getGrandTotal(), CurrencyId.ofRepoId(creditMemo.getC_Currency_ID()));
 
 		final I_C_Payment payment;
@@ -513,9 +518,13 @@ public class POSReturnService
 					.dateTrx(SystemTime.asInstant())
 					.createAndProcess();
 
+			final String journalDescription = msgBL.getMsg(
+					Env.getAD_Language(),
+					MSG_JournalDescription,
+					new Object[] { creditMemo.getDocumentNo() });
 			journal = posCashJournalService.changeJournalById(
 					journalId,
-					j -> j.addCashInOut(refundAmount.negate(), request.getCashierId(), "Rücknahme " + creditMemo.getDocumentNo()));
+					j -> j.addCashInOut(refundAmount.negate(), request.getCashierId(), journalDescription));
 		}
 		else
 		{
@@ -534,6 +543,50 @@ public class POSReturnService
 				.build();
 	}
 
+	/**
+	 * A retry (same {@code externalId}) must be for the SAME cart. When {@link POSReturnRepository#findReturnIdByExternalId}
+	 * resolves an existing return, its lines must still match the request position-by-position — the product plus the
+	 * entered quantity and its UOM (mirroring how {@code CustomerReturnInOutRecordFactory} persists each request line:
+	 * {@code M_Product_ID}, {@code QtyEntered}, {@code C_UOM_ID}). An edited cart (a changed qty, a swapped/added/removed
+	 * product) is a NEW operation: reusing the already-recorded return would refund its OLD amount while the UI shows the
+	 * edited total, so it is rejected with {@link #MSG_RetryContentMismatch} rather than silently reused.
+	 */
+	void assertExistingReturnMatchesRequest(
+			@NonNull final List<I_M_InOutLine> existingReturnLines,
+			@NonNull final POSReturnRequest request)
+	{
+		final List<POSReturnLine> requestLines = request.getLines();
+		if (existingReturnLines.size() != requestLines.size())
+		{
+			throw new AdempiereException(MSG_RetryContentMismatch)
+					.setParameter("ExternalId", request.getExternalId())
+					.setParameter("existingReturnLines", existingReturnLines.size())
+					.setParameter("requestLines", requestLines.size());
+		}
+
+		for (int i = 0; i < requestLines.size(); i++)
+		{
+			final POSReturnLine requestLine = requestLines.get(i);
+			final I_M_InOutLine existingLine = existingReturnLines.get(i);
+
+			final boolean sameProduct = existingLine.getM_Product_ID() == requestLine.getProductId().getRepoId();
+			final boolean sameUom = existingLine.getC_UOM_ID() == requestLine.getQty().getUomId().getRepoId();
+			final boolean sameQty = existingLine.getQtyEntered().compareTo(requestLine.getQty().toBigDecimal()) == 0;
+
+			if (!sameProduct || !sameUom || !sameQty)
+			{
+				throw new AdempiereException(MSG_RetryContentMismatch)
+						.setParameter("ExternalId", request.getExternalId())
+						.setParameter("position", i)
+						.setParameter("M_InOutLine_ID", existingLine.getM_InOutLine_ID())
+						.setParameter("existingProductId", existingLine.getM_Product_ID())
+						.setParameter("requestProductId", requestLine.getProductId().getRepoId())
+						.setParameter("existingQtyEntered", existingLine.getQtyEntered())
+						.setParameter("requestQty", requestLine.getQty().toBigDecimal());
+			}
+		}
+	}
+
 	private void assertQtyIsPositive(@NonNull final POSReturnLine line)
 	{
 		if (line.getQty().isZeroOrNegative())
@@ -546,8 +599,6 @@ public class POSReturnService
 	 * Phase 1 assumes the line's price is entered per the invoice candidate's own price UOM; a mismatch would
 	 * silently misprice the credit, so it fails fast instead.
 	 */
-	// package-private (not private): unit-tested directly in POSReturnServiceTest — the mismatch this guards
-	// against can't be produced end to end from the cucumber step, which always derives a matching UOM/currency
 	void assertPriceUomMatchesCandidate(@NonNull final POSReturnLine line, @NonNull final I_C_Invoice_Candidate ic)
 	{
 		final UomId candidatePriceUomId = UomId.ofRepoIdOrNull(ic.getPrice_UOM_ID());
@@ -566,8 +617,6 @@ public class POSReturnService
 	 * currency (derived from the walk-in customer's own price list) would silently misprice the credit, so it
 	 * fails fast instead.
 	 */
-	// package-private (not private): unit-tested directly in POSReturnServiceTest, same reason as
-	// assertPriceUomMatchesCandidate above
 	void assertCurrencyMatchesCandidate(@NonNull final POSReturnLine line, @NonNull final I_C_Invoice_Candidate ic)
 	{
 		final CurrencyId candidateCurrencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());

@@ -6,9 +6,6 @@ import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
 import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.remote.RemotePOSOrder;
-import de.metas.pos.returns.POSReturnRequest;
-import de.metas.pos.returns.POSReturnResult;
-import de.metas.pos.returns.POSReturnService;
 import de.metas.pos.withdrawal.POSCashWithdrawalCategory;
 import de.metas.pos.withdrawal.POSCashWithdrawalRequest;
 import de.metas.pos.withdrawal.POSCashWithdrawalResult;
@@ -36,7 +33,6 @@ public class POSService
 	@NonNull private final POSProductsService productsService;
 	@NonNull private final POSOrdersService ordersService;
 	@NonNull private final POSCashWithdrawalService cashWithdrawalService;
-	@NonNull private final POSReturnService returnService;
 	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
 
 	@NonNull
@@ -157,11 +153,6 @@ public class POSService
 	public Optional<Resource> getReceiptPdf(@NonNull final POSOrderExternalId externalId)
 	{
 		return ordersService.getReceiptPdf(externalId);
-	}
-
-	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
-	{
-		return returnService.createReturn(request);
 	}
 
 	@NonNull

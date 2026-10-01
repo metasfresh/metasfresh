@@ -2,6 +2,7 @@ package de.metas.pos;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -46,6 +48,11 @@ import java.util.function.UnaryOperator;
 @RequiredArgsConstructor
 public class POSTerminalService
 {
+	// how often a caller blocked waiting for the terminal's cross-transaction advisory lock re-polls
+	// pg_try_advisory_lock; short enough that the caller-supplied timeout (de.metas.pos.Return.LockTimeoutMillis,
+	// read by POSReturnService) is honored closely, long enough not to hammer the DB with a tight spin loop
+	private static final long POLL_INTERVAL_MILLIS = 250;
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -67,20 +74,10 @@ public class POSTerminalService
 	}
 
 	/**
-	 * Locks the terminal's {@code C_POS} row for the rest of the caller's transaction, serializing two concurrent
-	 * callers against the SAME terminal (e.g. two in-flight requests carrying the same idempotency key) — the
-	 * second blocks here until the first commits, by which point its result already exists for the second to find.
-	 */
-	public void lockForUpdate(@NonNull final POSTerminalId posTerminalId)
-	{
-		posTerminalRepository.lockForUpdate(posTerminalId);
-	}
-
-	/**
 	 * Runs {@code action} while holding a Postgres advisory lock keyed on the given POS terminal, for the WHOLE
 	 * duration of {@code action} — even across separate top-level transactions {@code action} opens internally,
-	 * unlike {@link #lockForUpdate} which only lasts until the caller's OWN transaction commits. This lets a
-	 * caller serialize several separate top-level transactions end to end against the same terminal, so two
+	 * unlike a transaction-scoped row lock, which only lasts until the caller's OWN transaction commits. This lets
+	 * a caller serialize several separate top-level transactions end to end against the same terminal, so two
 	 * concurrent callers can never interleave into each other's phases.
 	 * <p>
 	 * BOUNDED: polls to acquire the lock for at most {@code timeoutMillis} before giving up — never blocks
@@ -102,7 +99,71 @@ public class POSTerminalService
 			@NonNull final Supplier<T> action,
 			@NonNull final Supplier<? extends RuntimeException> onTimeout)
 	{
-		return posTerminalRepository.runWithCrossTransactionLock(posTerminalId, timeoutMillis, action, onTimeout);
+		// the repository owns the JDBC connection + the two advisory-lock SQL primitives (tryAcquire/release);
+		// the bounded poll/timeout policy — the clock and the sleep — lives HERE, not in the repository
+		return posTerminalRepository.runWithAdvisoryLockConnection(
+				posTerminalId,
+				(tryAcquire, release) -> runWithBoundedAcquire(
+						tryAcquire,
+						release,
+						timeoutMillis,
+						POLL_INTERVAL_MILLIS,
+						action,
+						onTimeout));
+	}
+
+	/**
+	 * The generic "poll a bounded number of times to acquire, then run-and-return-verbatim or throw" algorithm
+	 * behind {@link #runWithCrossTransactionLock}. Package-private + static: a pure timing algorithm over the
+	 * caller-supplied {@code tryAcquire}/{@code release} — no DB connection, no instance state, no AD-context
+	 * dependency — so it can be unit-tested directly with fake acquire/release suppliers (see
+	 * {@code POSTerminalServiceTest}). Lives in the service, not the repository, because a repository must carry
+	 * no clock/loop/sleep.
+	 */
+	@NonNull
+	static <T> T runWithBoundedAcquire(
+			@NonNull final BooleanSupplier tryAcquire,
+			@NonNull final Runnable release,
+			final long timeoutMillis,
+			final long pollIntervalMillis,
+			@NonNull final Supplier<T> action,
+			@NonNull final Supplier<? extends RuntimeException> onTimeout)
+	{
+		boolean locked = false;
+		try
+		{
+			final long deadline = SystemTime.millis() + timeoutMillis;
+			while (!(locked = tryAcquire.getAsBoolean()))
+			{
+				if (SystemTime.millis() >= deadline)
+				{
+					throw onTimeout.get();
+				}
+				sleepQuietly(pollIntervalMillis);
+			}
+
+			return action.get();
+		}
+		finally
+		{
+			if (locked)
+			{
+				release.run();
+			}
+		}
+	}
+
+	private static void sleepQuietly(final long millis)
+	{
+		try
+		{
+			Thread.sleep(millis);
+		}
+		catch (final InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	public Collection<POSTerminal> getPOSTerminals()

@@ -37,17 +37,14 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.money.Money;
 import de.metas.pos.POSProduct;
 import de.metas.pos.POSService;
-import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
-import de.metas.pos.returns.POSReturnLine;
-import de.metas.pos.returns.POSReturnRequest;
+import de.metas.pos.returns.POSReturnRequestedLine;
 import de.metas.pos.returns.POSReturnResult;
+import de.metas.pos.returns.POSReturnService;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -56,8 +53,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -89,8 +86,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Step definitions for a POS product return: the cashier takes goods back at the till, via
- * {@link POSService#createReturn}, and its credit invoice candidate is priced at the till's own price for the
- * product (not the walk-in customer's own sales pricing system).
+ * {@link POSReturnService#createReturnFromTillPrices} (the production REST entry), and its credit invoice
+ * candidate is priced at the till's own price for the product (not the walk-in customer's own sales pricing
+ * system).
  */
 @RequiredArgsConstructor
 public class POS_Return_StepDef
@@ -100,8 +98,8 @@ public class POS_Return_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
+	@NonNull private final POSReturnService posReturnService = SpringContextHolder.instance.getBean(POSReturnService.class);
 	@NonNull private final POSTerminalService posTerminalService = SpringContextHolder.instance.getBean(POSTerminalService.class);
 
 	private final C_POS_StepDefData posTable;
@@ -116,15 +114,15 @@ public class POS_Return_StepDef
 	private final Map<String, UUID> retryTokenToExternalId = new HashMap<>();
 
 	/**
-	 * Drives a POS product return end to end: reads the till's current price for each returned product the same
-	 * way {@code POSProductsService} does (from the terminal's own price list, not the walk-in customer's), then
-	 * hands it to {@link POSService#createReturn}.
+	 * Drives a POS product return end to end through the production entry
+	 * {@link POSReturnService#createReturnFromTillPrices}: the step sends only product+qty, and the till's own
+	 * current price (and its price UOM) is resolved server-side — never a client-supplied price.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) returned product<br>
-	 *   <b>Qty</b> — (required) returned quantity<br>
-	 *   <b>UOM</b> — (required) {@code X12DE355} code the quantity is expressed in (e.g. {@code KGM})<br>
+	 *   <b>Qty</b> — (required) returned quantity, interpreted server-side in the till's price UOM for the product<br>
+	 *   <b>UOM</b> — (required) {@code X12DE355} code (e.g. {@code KGM}) asserted to be the till's price UOM for the product<br>
 	 *   <b>OPT.M_InOut_ID</b> — (optional, first row only, identifier) alias for the resulting customer-return
 	 *   {@code M_InOut}<br>
 	 *   <b>OPT.C_Invoice_ID</b> — (optional, first row only, identifier) alias for the resulting credit memo<br>
@@ -149,9 +147,9 @@ public class POS_Return_StepDef
 			@NonNull final DataTable dataTable)
 	{
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
-		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
+		final ReturnRequestParams params = buildRequestParams(terminalIdentifier, userLogin, rows);
 
-		final POSReturnResult result = posService.createReturn(request);
+		final POSReturnResult result = createReturnFromTillPrices(params);
 
 		registerReturnResult(rows, result);
 	}
@@ -181,7 +179,7 @@ public class POS_Return_StepDef
 			@NonNull final DataTable dataTable)
 	{
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
-		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
+		final ReturnRequestParams params = buildRequestParams(terminalIdentifier, userLogin, rows);
 
 		// AdempiereException#getErrorCode() resolves to AD_Message.ErrorCode when the message has one, falling
 		// back to the AdMessageKey itself otherwise (the exact resolution AdempiereException's own constructor
@@ -190,146 +188,25 @@ public class POS_Return_StepDef
 		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(expectedKey))
 				.orElseGet(expectedKey::toAD_Message);
 
-		assertThatThrownBy(() -> posService.createReturn(request))
+		assertThatThrownBy(() -> createReturnFromTillPrices(params))
 				.as("POS return must be rejected")
 				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode));
 	}
 
 	/**
-	 * Proves the terminal's {@code C_POS} row lock genuinely SERIALIZES two concurrent requests, rather than
-	 * only resolving a retry after the fact once one has already committed (that idempotency-only case is
-	 * {@link #posProductReturn} called twice with the same {@code OPT.ExternalId}, asserted via
-	 * {@link #assertExactlyOnePOSReturnDocument}).
-	 *
-	 * <p>In production this models a client that resends a request — e.g. after a network timeout — while the
-	 * server is still mid-flight on the first attempt for the SAME terminal. Locking the {@code C_POS} row
-	 * directly, on a separate thread/transaction, instead of racing two real {@code createReturn} calls and
-	 * hoping they overlap, makes the blocking window deterministic: a bare race is flaky (the two calls might
-	 * never actually overlap inside the critical section), so this step controls the window explicitly instead.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns same as {@link #posProductReturn} (incl. {@code OPT.M_InOut_ID}, registered once the
-	 * call has completed)
-	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
-	 *   | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
-	 *   | product      | 0.3 | KGM | return_1       |
-	 * </pre>
-	 */
-	@And("^a product return at POS terminal (\\S+) by (\\S+) blocks while the terminal is locked by a concurrent transaction:$")
-	public void posProductReturnBlocksOnConcurrentLock(
-			@NonNull final String terminalIdentifier,
-			@NonNull final String userLogin,
-			@NonNull final DataTable dataTable) throws Exception
-	{
-		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
-		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
-		final POSTerminalId posTerminalId = request.getPosTerminalId();
-		final String returnExternalId = "POSReturn-" + request.getExternalId();
-
-		final ExecutorService executor = Executors.newFixedThreadPool(2);
-		// signals crossing the two worker threads and the main (step) thread — no StepDefData/shared step-def
-		// state is touched by either worker; they only see the plain posTerminalId/request captured above and
-		// report back exclusively via these latches and the Futures below
-		final CountDownLatch lockAcquired = new CountDownLatch(1);
-		final CountDownLatch releaseSignal = new CountDownLatch(1);
-		final AtomicReference<Throwable> lockHolderFailure = new AtomicReference<>();
-
-		try
-		{
-			// 1) own thread, own (thread-inherited) transaction: acquire and HOLD the row lock until told to
-			// release. Goes through POSTerminalService (not POSTerminalRepository directly) so this exercises
-			// the exact same production entry point POSReturnService itself calls.
-			final Future<?> lockHolderFuture = executor.submit(() -> holdLockUntilReleased(posTerminalId, lockAcquired, releaseSignal, lockHolderFailure));
-
-			assertThat(lockAcquired.await(10, TimeUnit.SECONDS)).as("lock holder acquired the C_POS row lock").isTrue();
-			if (lockHolderFailure.get() != null)
-			{
-				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
-			}
-
-			// 2) own thread, own (thread-inherited) transaction: the real call under test
-			final Future<POSReturnResult> createReturnFuture = executor.submit(() -> posService.createReturn(request));
-
-			// 3) must NOT complete while the lock is held, and must not have created a document yet
-			assertThatThrownBy(() -> createReturnFuture.get(3, TimeUnit.SECONDS))
-					.as("createReturn must block while the terminal's row lock is held by the concurrent transaction")
-					.isInstanceOf(TimeoutException.class);
-			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("no POS return document while the lock is held").isZero();
-
-			// 4) release the lock
-			releaseSignal.countDown();
-			lockHolderFuture.get(10, TimeUnit.SECONDS);
-			if (lockHolderFailure.get() != null)
-			{
-				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
-			}
-
-			// 5) must now complete, and exactly one document must exist
-			final POSReturnResult result = createReturnFuture.get(30, TimeUnit.SECONDS);
-			assertThat(result).as("createReturn must complete once the lock is released").isNotNull();
-			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("exactly one POS return document once the lock is released").isEqualTo(1);
-
-			registerReturnResult(rows, result);
-		}
-		finally
-		{
-			// unconditional cleanup so a failed assertion above can never wedge the stack: unblock the lock
-			// holder (no-op if already released) and wait for both worker threads to actually finish
-			releaseSignal.countDown();
-			executor.shutdown();
-			if (!executor.awaitTermination(30, TimeUnit.SECONDS))
-			{
-				executor.shutdownNow();
-			}
-		}
-	}
-
-	/**
-	 * Runs on the lock-holder worker thread, in its own (thread-inherited) transaction: acquires the terminal's
-	 * {@code C_POS} row lock and HOLDS it until {@code releaseSignal} fires (or 30s pass). Any failure is logged and
-	 * handed back to the step thread via {@code failure}; {@code lockAcquired} is counted down either way so the
-	 * step thread never waits on a lock holder that already died.
-	 */
-	private void holdLockUntilReleased(
-			@NonNull final POSTerminalId posTerminalId,
-			@NonNull final CountDownLatch lockAcquired,
-			@NonNull final CountDownLatch releaseSignal,
-			@NonNull final AtomicReference<Throwable> failure)
-	{
-		trxManager.callInThreadInheritedTrx(() -> {
-			try
-			{
-				posTerminalService.lockForUpdate(posTerminalId);
-				lockAcquired.countDown();
-				releaseSignal.await(30, TimeUnit.SECONDS);
-			}
-			catch (final Throwable t)
-			{
-				logger.error("Lock holder failed for posTerminalId={}", posTerminalId, t);
-				failure.set(t);
-				lockAcquired.countDown();
-			}
-			return null;
-		});
-	}
-
-	/**
 	 * Proves {@link POSTerminalService#runWithCrossTransactionLock} genuinely serializes two concurrent
-	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration — not just phase 1
-	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock} above). Without this lock, a
+	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration. Without this lock, a
 	 * second caller could reach phase 3 (cash settlement) while a first caller's own phase 3 is still in flight,
 	 * double-refunding the same credit memo; this step proves a real {@code createReturn} call cannot even START
 	 * while the lock is held by a concurrent holder, and — once released well within
 	 * {@code de.metas.pos.Return.LockTimeoutMillis} — completes with exactly one credit memo, one settlement
 	 * payment and one journal line, never two.
 	 *
-	 * <p>Uses the same deterministic-holder technique as {@link #posProductReturnBlocksOnConcurrentLock}, but
-	 * holds {@link POSTerminalService#runWithCrossTransactionLock} itself (the same lock
-	 * {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1 row lock, so the
-	 * blocking window it proves covers all three phases, not just the first.
+	 * <p>Holds {@link POSTerminalService#runWithCrossTransactionLock} itself (the same lock
+	 * {@code POSReturnService#createReturn} takes for its whole body) on a separate thread, instead of racing two
+	 * real {@code createReturn} calls and hoping they overlap, so the blocking window it proves — covering all
+	 * three phases — is deterministic (a bare race is flaky: the two calls might never actually overlap inside the
+	 * critical section).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns same as {@link #posProductReturn} (incl. {@code OPT.M_InOut_ID}/{@code OPT.C_Invoice_ID}/
@@ -350,9 +227,9 @@ public class POS_Return_StepDef
 			@NonNull final DataTable dataTable) throws Exception
 	{
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
-		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
-		final POSTerminalId posTerminalId = request.getPosTerminalId();
-		final String returnExternalId = "POSReturn-" + request.getExternalId();
+		final ReturnRequestParams params = buildRequestParams(terminalIdentifier, userLogin, rows);
+		final POSTerminalId posTerminalId = params.getPosTerminalId();
+		final String returnExternalId = "POSReturn-" + params.getExternalId();
 
 		final ExecutorService executor = Executors.newFixedThreadPool(2);
 		final CountDownLatch lockAcquired = new CountDownLatch(1);
@@ -372,7 +249,7 @@ public class POS_Return_StepDef
 			}
 
 			// 2) own thread: the real call under test — must not be able to make ANY progress while the lock is held
-			final Future<POSReturnResult> createReturnFuture = executor.submit(() -> posService.createReturn(request));
+			final Future<POSReturnResult> createReturnFuture = executor.submit(() -> createReturnFromTillPrices(params));
 
 			// 3) must NOT complete while the lock is held, and must not have created a document yet (so certainly
 			// no credit memo or settlement payment either — those can only exist once the M_InOut does)
@@ -438,9 +315,9 @@ public class POS_Return_StepDef
 			@NonNull final DataTable dataTable) throws Exception
 	{
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
-		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
-		final POSTerminalId posTerminalId = request.getPosTerminalId();
-		final String returnExternalId = "POSReturn-" + request.getExternalId();
+		final ReturnRequestParams params = buildRequestParams(terminalIdentifier, userLogin, rows);
+		final POSTerminalId posTerminalId = params.getPosTerminalId();
+		final String returnExternalId = "POSReturn-" + params.getExternalId();
 
 		final AdMessageKey expectedKey = AdMessageKey.of(expectedAdMessage);
 		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(expectedKey)).orElseGet(expectedKey::toAD_Message);
@@ -462,7 +339,7 @@ public class POS_Return_StepDef
 
 			// the holder is NOT released here — createReturn must give up on its own once the configured
 			// (scenario-shortened) LockTimeoutMillis elapses, well before the holder's own 30s safety bound
-			assertThatThrownBy(() -> posService.createReturn(request))
+			assertThatThrownBy(() -> createReturnFromTillPrices(params))
 					.as("createReturn must reject once its bounded lock-acquire wait is exhausted")
 					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode));
 			assertThat(countReturnDocumentsByExternalId(returnExternalId))
@@ -486,9 +363,9 @@ public class POS_Return_StepDef
 	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#runWithCrossTransactionLock} and
 	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Passes a
 	 * generous acquire timeout (60s) since this holder is always the FIRST to contend for the lock, so its
-	 * {@code onTimeout} supplier is never expected to run. Unlike {@link #holdLockUntilReleased}, needs no
-	 * {@code callInThreadInheritedTrx} wrapper — the cross-transaction lock runs on its own dedicated JDBC
-	 * connection, independent of the thread-inherited transaction.
+	 * {@code onTimeout} supplier is never expected to run. Needs no {@code callInThreadInheritedTrx} wrapper — the
+	 * cross-transaction lock runs on its own dedicated JDBC connection, independent of any thread-inherited
+	 * transaction.
 	 */
 	private void holdCrossTransactionLockUntilReleased(
 			@NonNull final POSTerminalId posTerminalId,
@@ -661,25 +538,33 @@ public class POS_Return_StepDef
 		return retryTokenToExternalId.computeIfAbsent(retryToken, ignored -> UUID.randomUUID());
 	}
 
+	private POSReturnResult createReturnFromTillPrices(@NonNull final ReturnRequestParams params)
+	{
+		return posReturnService.createReturnFromTillPrices(
+				params.getPosTerminalId(),
+				params.getExternalId(),
+				params.getCashierId(),
+				params.getRequestedLines());
+	}
+
 	@NonNull
-	private POSReturnRequest buildRequest(
+	private ReturnRequestParams buildRequestParams(
 			@NonNull final String terminalIdentifier,
 			@NonNull final String userLogin,
 			@NonNull final List<DataTableRow> rows)
 	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final UserId cashierId = StepDefUtil.getUserIdByLogin(userLogin);
-		final POSTerminal terminal = posService.getPOSTerminalById(posTerminalId);
 
 		// reads the till's own products/prices ONCE, the same way POSProductsService does — not per row
 		final List<POSProduct> posProducts = posService.getProducts(posTerminalId, SystemTime.asInstant(), null).toList();
 
-		final ImmutableList.Builder<POSReturnLine> lines = ImmutableList.builder();
+		final ImmutableList.Builder<POSReturnRequestedLine> requestedLines = ImmutableList.builder();
 		for (final DataTableRow row : rows)
 		{
 			final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 			final BigDecimal qty = row.getAsBigDecimal("Qty");
-			final UomId uomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("UOM"));
+			final UomId expectedPriceUomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("UOM"));
 
 			final POSProduct posProduct = posProducts.stream()
 					.filter(product -> product.getId().equals(productId))
@@ -688,14 +573,15 @@ public class POS_Return_StepDef
 							.setParameter("M_Product_ID", productId)
 							.setParameter("posTerminalId", posTerminalId));
 
-			// price UOM (posProduct.getUom()) is the product's own configured price UOM, a separate concept from
-			// the Qty column's UOM above; POSReturnService rejects a genuine mismatch against the invoice
-			// candidate's own price UOM
-			lines.add(POSReturnLine.builder()
+			// the production entry derives the price UOM server-side from the till (never from the client), and the
+			// returned qty is measured in it; assert the scenario's UOM IS that till price UOM instead of sending one
+			assertThat(posProduct.getPriceUom().getUomId())
+					.as("till price UOM for product %s", productId)
+					.isEqualTo(expectedPriceUomId);
+
+			requestedLines.add(POSReturnRequestedLine.builder()
 					.productId(productId)
-					.qty(Quantity.of(qty, uomDAO.getById(uomId)))
-					.price(Money.of(posProduct.getPrice().getAsBigDecimal(), terminal.getCurrencyId()))
-					.priceUomId(posProduct.getUom().getUomId())
+					.qty(qty)
 					.build());
 		}
 
@@ -703,11 +589,16 @@ public class POS_Return_StepDef
 				.map(this::externalIdForRetryToken)
 				.orElseGet(UUID::randomUUID);
 
-		return POSReturnRequest.builder()
-				.posTerminalId(posTerminalId)
-				.externalId(externalId)
-				.cashierId(cashierId)
-				.lines(lines.build())
-				.build();
+		return new ReturnRequestParams(posTerminalId, externalId, cashierId, requestedLines.build());
+	}
+
+	/** The production inputs to {@link POSReturnService#createReturnFromTillPrices}: product+qty only, no price. */
+	@Value
+	private static class ReturnRequestParams
+	{
+		@NonNull POSTerminalId posTerminalId;
+		@NonNull UUID externalId;
+		@NonNull UserId cashierId;
+		@NonNull ImmutableList<POSReturnRequestedLine> requestedLines;
 	}
 }
