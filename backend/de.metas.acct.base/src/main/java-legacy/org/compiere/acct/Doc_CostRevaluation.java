@@ -76,6 +76,7 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 	private void createFactsForLine(@NonNull final Fact fact, @NonNull final DocLine_CostRevaluation docLine)
 	{
 		final AcctSchema acctSchema = fact.getAcctSchema();
+		// Amount is determined at posting from stock on hand
 		final CostAmount costs = docLine.getCreateCosts(acctSchema);
 
 		//

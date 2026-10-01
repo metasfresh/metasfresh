@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -314,6 +315,28 @@ public class CostRevaluationService
 		}
 
 		return currentCosts.isEmpty() ? Optional.empty() : Optional.of(currentCosts.get(0));
+	}
+
+	/**
+	 * Writes the values booked at posting onto the line and its before-row: the stock on hand and the cost price the revaluation's
+	 * {@code M_CostDetail} was booked from (its previous amounts) and its amount. They differ from the values of Complete when stock
+	 * moved between Complete and posting.
+	 */
+	public void writeBookedValues(@NonNull final CostRevaluationLineId lineId, @NonNull final CostDetail costDetail)
+	{
+		final CostDetailPreviousAmounts previousAmounts = costDetail.getPreviousAmounts();
+		if (previousAmounts == null)
+		{
+			throw new AdempiereException("Cost detail of a cost revaluation line shall have previous amounts: " + costDetail);
+		}
+
+		final Quantity qty = previousAmounts.getQty();
+		final CostAmount oldCostPrice = previousAmounts.getCostPrice().getOwnCostPrice();
+		final CostAmount deltaAmount = costDetail.getAmt();
+		final CostAmount oldAmount = oldCostPrice.multiply(qty);
+
+		costRevaluationRepository.saveEvaluated(lineId, qty, oldCostPrice, deltaAmount);
+		costRevaluationRepository.updateBeforeRevaluationDetail(lineId, qty, oldCostPrice, oldAmount, oldAmount.add(deltaAmount), deltaAmount);
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)

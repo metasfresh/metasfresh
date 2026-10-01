@@ -1100,6 +1100,68 @@ public class CostRevaluationServiceTest
 	}
 
 
+	@Nested
+	class WriteBookedValues
+	{
+		/**
+		 * Posting books the stock on hand at posting (here 80, after 20 were issued since Complete); the line and its before-row
+		 * then show the booked values instead of those of Complete (100 × (15 − 10) = 500).
+		 */
+		@Test
+		public void writeBookedValues_updatesLineAndBeforeRowDetail()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_writeBookedValues");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+			assertSingleLineValues(costRevaluationId, "100", "10", "500");
+
+			costRevaluationService.writeBookedValues(lineId, revaluationCostDetail(lineId, productId, "80", "10", "400"));
+
+			assertSingleLineValues(costRevaluationId, "80", "10", "400");
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "10", "15", "400");
+			final I_M_CostRevaluation_Detail before = getDetailRecords(costRevaluationId, CostRevaluationDetailType.CurrentCostBeforeRevaluation).get(0);
+			assertThat(before.getOldAmt()).isEqualByComparingTo("800");
+			assertThat(before.getNewAmt()).isEqualByComparingTo("1200");
+		}
+
+		private CostDetail revaluationCostDetail(
+				@NonNull final CostRevaluationLineId lineId,
+				@NonNull final ProductId productId,
+				@NonNull final String previousQty,
+				@NonNull final String previousCostPrice,
+				@NonNull final String amt)
+		{
+			return CostDetail.builder()
+					.clientId(ClientId.METASFRESH)
+					.orgId(OrgId.ANY)
+					.acctSchemaId(acctSchemaId)
+					.costElementId(costElementId)
+					.productId(productId)
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.amtType(CostAmountType.MAIN)
+					.amt(CostAmount.of(new BigDecimal(amt), euroCurrencyId))
+					.qty(Quantity.of(BigDecimal.ZERO, eachUOM))
+					.changingCosts(true)
+					.previousAmounts(CostDetailPreviousAmounts.builder()
+							.costPrice(CostPrice.builder()
+									.ownCostPrice(CostAmount.of(new BigDecimal(previousCostPrice), euroCurrencyId))
+									.componentsCostPrice(CostAmount.zero(euroCurrencyId))
+									.uomId(UomId.ofRepoId(eachUOM.getC_UOM_ID()))
+									.build())
+							.qty(Quantity.of(new BigDecimal(previousQty), eachUOM))
+							.cumulatedAmt(CostAmount.zero(euroCurrencyId))
+							.cumulatedQty(Quantity.of(BigDecimal.ZERO, eachUOM))
+							.build())
+					.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
+					.dateAcct(Instant.parse("2024-03-05T23:00:00Z"))
+					.build();
+		}
+	}
+
 	/**
 	 * The {@code CopyFromCostElement} source, with its own fixture: a source and a target cost element on a Moving Average Invoice schema.
 	 */

@@ -434,6 +434,59 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
+	 * Validates the active line of a product: the stock on hand, the current cost price and the value difference it shows;
+	 * for an evaluated line also that the value difference equals the sum of its detail rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the line's product<br>
+	 *   <b>CurrentQty</b> — (optional) expected stock on hand<br>
+	 *   <b>CurrentCostPrice</b> — (optional) expected current cost price<br>
+	 *   <b>DeltaAmt</b> — (optional) expected value difference<br>
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_CostRevaluationLine:
+	 *   | M_CostRevaluation_ID | M_Product_ID | CurrentQty | CurrentCostPrice | DeltaAmt |
+	 *   | revaluation          | product      | 80         | 10               | 400      |
+	 * </pre>
+	 */
+	@And("^validate M_CostRevaluationLine:$")
+	public void validateCostRevaluationLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
+			final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+
+			final I_M_CostRevaluationLine line = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnlyNotNull(I_M_CostRevaluationLine.class);
+
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_CurrentQty)
+					.ifPresent(expected -> assertThat(line.getCurrentQty()).as("CurrentQty").isEqualByComparingTo(expected));
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_CurrentCostPrice)
+					.ifPresent(expected -> assertThat(line.getCurrentCostPrice()).as("CurrentCostPrice").isEqualByComparingTo(expected));
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_DeltaAmt)
+					.ifPresent(expected -> assertThat(line.getDeltaAmt()).as("DeltaAmt").isEqualByComparingTo(expected));
+
+			if (line.isRevaluated())
+			{
+				final BigDecimal detailsDeltaAmt = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+						.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, line.getM_CostRevaluationLine_ID())
+						.create()
+						.stream()
+						.map(I_M_CostRevaluation_Detail::getDeltaAmt)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				assertThat(line.getDeltaAmt()).as("DeltaAmt = sum of the line's detail DeltaAmt").isEqualByComparingTo(detailsDeltaAmt);
+			}
+		});
+	}
+
+	/**
 	 * Reverses the cost-revaluation document via the real DocAction pipeline
 	 * ({@code reverseCorrectIt} → undo the seeded target cost, value-neutral).
 	 *

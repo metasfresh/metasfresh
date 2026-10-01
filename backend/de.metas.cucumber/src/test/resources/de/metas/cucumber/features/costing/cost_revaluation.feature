@@ -707,3 +707,72 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | revaluationBackDate  | product      | 12           |
     Then evaluating the cost revaluation identified by revaluationBackDate is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
     And the cost revaluation identified by revaluationBackDate has no detail lines
+
+  @Id:CostRevaluation_TC24
+  Scenario: Stock issued between Complete and posting - the posting books the stock on hand at posting, and a repost books the same amount
+    # ── Complete a revaluation 10 -> 15 CHF on 03-06 while accounting is off: Complete shows 100 PCE * 5 = 500 CHF, nothing is booked yet ──
+    Given set sys config boolean value false for sys config org.adempiere.acct.Enabled
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And create lines for cost revaluation revaluation
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation          | product      | 15           |
+    And the cost revaluation identified by revaluation is completed
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    And validate M_CostRevaluation:
+      | Identifier  | DocStatus | Posted |
+      | revaluation | CO        | false  |
+    And validate M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | CurrentQty | CurrentCostPrice | DeltaAmt |
+      | revaluation          | product      | 100        | 10               | 500      |
+
+    # ── 20 PCE are issued on 03-06 before the revaluation is posted: booked at the old cost 10 CHF -> 80 PCE @ 10 CHF ──
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID    | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
+      | inventoryDecrease | inventoryDecreaseLine | 2024-03-06   | warehouse      | product      | 100     | 80       | PCE          | hu      |
+    And Fact_Acct records balances for documents inventoryDecrease are matching
+      | AccountConceptualName | SourceBalance |
+      | P_Asset_Acct          | -200 CHF      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 80 PCE     |
+
+    # ── Posting books 80 PCE * (15 - 10) = 400 CHF (not the 500 CHF shown at Complete); the line shows the booked values ──
+    When the documents revaluation are reposted
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
+      | P_Asset_Acct          | 400 CHF     |             | 0   | revaluation | product      |
+      | P_CostAdjustment_Acct |             | 400 CHF     | 0   | revaluation | product      |
+    And validate M_CostRevaluation:
+      | Identifier  | DocStatus | Posted |
+      | revaluation | CO        | true   |
+    And validate M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | CurrentQty | CurrentCostPrice | DeltaAmt |
+      | revaluation          | product      | 80         | 10               | 400      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 80 PCE     |
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-07 | product      | warehouse      | 80  | 15.0000        | 1200.00          |
+
+    # ── 10 PCE are issued on 03-07 (a later-day cost change), then the revaluation is reposted: it books the same 400 CHF and leaves M_Cost alone ──
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID     | M_InventoryLine_ID     | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID |
+      | inventoryDecrease2 | inventoryDecrease2Line | 2024-03-07   | warehouse      | product      | 80      | 70       | PCE          | hu      |
+    When the documents revaluation are reposted
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
+      | P_Asset_Acct          | 400 CHF     |             | 0   | revaluation | product      |
+      | P_CostAdjustment_Acct |             | 400 CHF     | 0   | revaluation | product      |
+    And validate M_CostRevaluation:
+      | Identifier  | DocStatus | Posted |
+      | revaluation | CO        | true   |
+    And validate M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | CurrentQty | CurrentCostPrice | DeltaAmt |
+      | revaluation          | product      | 80         | 10               | 400      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 70 PCE     |
