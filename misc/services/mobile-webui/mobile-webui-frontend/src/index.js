@@ -10,7 +10,9 @@ import { setupOfflineModeDetector } from './services/offlineModeDetector';
 import { setupServiceWorker } from './services/serviceWorker/serviceWorkerRegistration';
 
 import './assets/index.scss';
-import '@fortawesome/fontawesome-free/js/all.min';
+// CSS web-font build, not js/all: the SVG+JS build observes every DOM mutation and rewrites each <i> into an
+// <svg>, which stalls long lists for minutes on handhelds. all.min.css does not compile with react-scripts 4.
+import '@fortawesome/fontawesome-free/css/all.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { logErrorToBackend } from './api/applications';
 import ErrorScreen from './components/ErrorScreen';

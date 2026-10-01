@@ -187,12 +187,8 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   return (
     <div className="hardware-mode-panel scan-prompt">
-      {/* FontAwesome SVG-with-JS (src/index.js → @fortawesome/fontawesome-free/js/all.min) mutates
-          <i className="fas …"> into <svg> in place. React's fiber keeps a stale stateNode pointer
-          to the detached <i>; if the conditional <input> below were ever a sibling needing
-          insertBefore against the icon, React would throw NotFoundError. Wrapping in <span>
-          (codebase convention — see ButtonWithIndicator.jsx) gives React a stable, React-owned
-          parent that FA never touches. */}
+      {/* <span> wrapper (codebase convention — see ButtonWithIndicator.jsx) dates from the FontAwesome SVG+JS
+          build, which replaced the <i> with an <svg> in place. The CSS web-font build (src/index.js) leaves it alone. */}
       <span>
         <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
       </span>
