@@ -1406,6 +1406,59 @@ public class CostRevaluationServiceTest
 				assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
 			}
 
+			@Test
+			public void reevaluateAllLines_doesNotReseedOrDeactivateAnAlreadyEvaluatedLine()
+			{
+				final ProductId productWithStock = createProduct("productWithStock");
+				seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(costRevaluationId);
+				costRevaluationService.createDetails(costRevaluationId);
+
+				final CostDetailQuery targetDetailsQuery = CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(targetCostElementId)
+						.productId(productWithStock)
+						.build();
+				final List<CostDetail> anchorsAfterRun = new CostDetailRepository().stream(targetDetailsQuery).collect(ImmutableList.toImmutableList());
+				assertThat(anchorsAfterRun).hasSize(1);
+				final CostDetailId anchorIdAfterRun = anchorsAfterRun.get(0).getId();
+
+				// The source moves before Complete: a re-seed would now open the target with different numbers.
+				updateSourceCurrentCost(productWithStock, "20.00", "5.00", "200");
+
+				costRevaluationService.reevaluateAllLines(costRevaluationId);
+
+				final I_M_CostRevaluationLine line = getLineForProduct(
+						costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluationId).collect(ImmutableList.toImmutableList()),
+						productWithStock);
+				assertThat(line.isActive()).as("line still active").isTrue();
+				assertThat(line.isRevaluated()).as("line still evaluated").isTrue();
+
+				final List<CostDetail> anchorsAfterComplete = new CostDetailRepository().stream(targetDetailsQuery).collect(ImmutableList.toImmutableList());
+				assertThat(anchorsAfterComplete).hasSize(1);
+				assertThat(anchorsAfterComplete.get(0).getId()).as("anchor cost detail unchanged").isEqualTo(anchorIdAfterRun);
+
+				final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
+						.costingLevel(CostingLevel.Client)
+						.acctSchemaId(acctSchemaId)
+						.costTypeId(costTypeId)
+						.clientId(ClientId.METASFRESH)
+						.orgId(OrgId.ANY)
+						.productId(productWithStock)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.costElementId(targetCostElementId)
+						.build();
+				final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSeg);
+				assertThat(targetCurrentCost).isNotNull();
+				assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+				assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+				assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+				assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1250.00");
+				assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+			}
+
 			/**
 			 * Guards against a stale/fresh mixed snapshot: the seed must take own price, LL, and qty from a SINGLE fresh
 			 * read of the source's {@code M_Cost} at complete time — not the line's values frozen at create-lines time.
