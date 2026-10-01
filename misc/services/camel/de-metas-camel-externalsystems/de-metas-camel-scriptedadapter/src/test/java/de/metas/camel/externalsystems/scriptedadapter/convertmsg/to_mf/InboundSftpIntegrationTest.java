@@ -100,6 +100,10 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	private static final String MALFORMED_TEST_FILE_CONTENT = "{ \"orderId\": \"12345\", this is not valid json !!";
 
 	private static final String OLCAND_MOCK_ROUTE_URI = "mock:olCandRoute";
+	private static final String ERROR_ROUTE_MOCK_URI = "mock:errorRoute";
+
+	/** The configured Importeur's WEBUI token, as the backend sends it under {@code PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN}. */
+	private static final String IMPORTEUR_TOKEN = "importeur-webui-token";
 
 	/**
 	 * The requestBody the {@code inbound_sftp_test_olcand.js} script produces for {@link #TEST_FILE_CONTENT}.
@@ -329,6 +333,10 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				.readValue(OLCAND_REQUEST_BODY_JSON, JsonOLCandCreateBulkRequest.class);
 		assertThat(actualDispatchedBody).isEqualTo(expectedDispatchedBody);
 
+		// And: the dispatched call carries the Importeur's token (exchange property, never a header) for the metasfresh API
+		assertThat(olCandMockEndpoint.getExchanges().get(0).getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN)).isEqualTo(IMPORTEUR_TOKEN);
+		assertThat(olCandMockEndpoint.getExchanges().get(0).getIn().getHeaders()).doesNotContainValue(IMPORTEUR_TOKEN);
+
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
@@ -384,6 +392,28 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
 		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	@Test
+	void enableWithoutImporteurToken_failsAndStartsNoPoller() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+
+		context.start();
+
+		final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(ERROR_ROUTE_MOCK_URI);
+		errorRouteMockEndpoint.expectedMessageCount(1);
+
+		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER, ENDPOINT_NAME, ROUTE_KEY, "inbound", false);
+
+		final org.apache.camel.Exchange result = template.send("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				exchange -> exchange.getIn().setBody(enableRequest));
+
+		// without the Importeur's token the import could only run as camel's service user: refuse to start it, loudly
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+		assertThat(result.getException()).hasMessageContaining(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+		errorRouteMockEndpoint.assertIsSatisfied();
 	}
 
 	/**
@@ -471,7 +501,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 			{
 				from("direct:" + MF_ERROR_ROUTE_ID)
 						.routeId(MF_ERROR_ROUTE_ID)
-						.log("Error route invoked (test): ${body}");
+						.log("Error route invoked (test): ${body}")
+						.to(ERROR_ROUTE_MOCK_URI);
 			}
 		});
 	}
@@ -507,10 +538,24 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 			@NonNull final String routeKey,
 			@NonNull final String remotePath)
 	{
+		return buildEnableRequest(scriptIdentifier, endpointName, routeKey, remotePath, true);
+	}
+
+	private JsonExternalSystemRequest buildEnableRequest(
+			@NonNull final String scriptIdentifier,
+			@NonNull final String endpointName,
+			@NonNull final String routeKey,
+			@NonNull final String remotePath,
+			final boolean withImporteurToken)
+	{
 		final Map<String, String> params = new HashMap<>();
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpointName);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, routeKey);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, scriptIdentifier);
+		if (withImporteurToken)
+		{
+			params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, IMPORTEUR_TOKEN);
+		}
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST, "localhost");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(sftpServer.getPort()));
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME, SFTP_USERNAME);

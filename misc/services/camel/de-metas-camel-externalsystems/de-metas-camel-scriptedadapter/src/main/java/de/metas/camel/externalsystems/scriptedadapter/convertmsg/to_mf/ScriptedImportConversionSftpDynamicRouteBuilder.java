@@ -56,9 +56,10 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 			@NonNull final JavaScriptExecutorService javaScriptExecutorService,
 			@NonNull final ProducerTemplate producerTemplate,
 			@NonNull final String processedDir,
-			@NonNull final String errorDir)
+			@NonNull final String errorDir,
+			@NonNull final String mfAuthToken)
 	{
-		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir);
+		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir, mfAuthToken);
 		this.routeKey = routeKey;
 		this.sftpUri = sftpUri;
 	}

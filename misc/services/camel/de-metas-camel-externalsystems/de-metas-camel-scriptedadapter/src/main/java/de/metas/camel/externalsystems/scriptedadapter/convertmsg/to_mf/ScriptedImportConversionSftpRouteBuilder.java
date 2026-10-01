@@ -110,6 +110,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// endpoint name/host — otherwise a later endpoint change orphans this poller (disable recomputes a
 		// different key and stops nothing). endpointName is kept only for display / the archive-file fallback.
 		final String routeKey = requireRouteKey(params);
+		final String mfAuthToken = requireImporteurToken(params);
 
 		// Idempotent replace: tear down any poller (and its in-memory ssh-key bean) already running under this
 		// stable key BEFORE (re)creating it — a re-enable after an endpoint/connection change must not leak the
@@ -131,7 +132,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
 				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
-				processedDir, errorDir));
+				processedDir, errorDir, mfAuthToken));
 
 		getCamelContext().getRouteController().startRoute(routeKey);
 		log.info("Dynamic SFTP polling route '{}' started successfully.", routeKey);
@@ -234,6 +235,22 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY + "' is required!");
 		}
 		return routeKey;
+	}
+
+	/**
+	 * The Importeur's WEBUI token ({@link ExternalSystemConstants#PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN}) is mandatory: every call the
+	 * import dispatches is sent with it. Without it the records would be authored by camel's service user, so fail loudly instead.
+	 */
+	@NonNull
+	private static String requireImporteurToken(@NonNull final Map<String, String> params)
+	{
+		final String token = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+		if (token == null || token.isBlank())
+		{
+			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN
+					+ "' (the Importeur's WEBUI token) is required!");
+		}
+		return token;
 	}
 
 	/**

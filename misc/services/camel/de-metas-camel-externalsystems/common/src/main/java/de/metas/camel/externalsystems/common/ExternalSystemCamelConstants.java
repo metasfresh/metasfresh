@@ -51,6 +51,10 @@ public class ExternalSystemCamelConstants
 	 * Exchange PROPERTY (never a header, so it is never sent over the wire) holding a metasfresh API token for this exchange only.
 	 * When non-blank, it is sent as {@code Authorization} instead of camel's global service token, and a 401 for it
 	 * does not stop the routes nor re-request the global token. Used by the scripted import to call metasfresh as the configured Importeur.
+	 * <p>
+	 * Exchange properties travel with the exchange (also via {@code direct:} and into split copies), but a NEW exchange starts
+	 * without them, e.g. one created by a {@code ProducerTemplate} or a wireTap with {@code copy=false}. So the property must be set
+	 * on the exchange that actually calls the metasfresh API (or that reaches that call via {@code direct:}).
 	 */
 	public static final String PROPERTY_MF_AUTH_TOKEN = "metasfresh.authToken";
 

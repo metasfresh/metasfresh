@@ -142,7 +142,7 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			{
 				// the exchange's own token was rejected (e.g. a scripted import's Importeur token): only that exchange fails;
 				// the global service token is not involved, so neither stop the routes nor re-request it
-				logger.warning("MF-API responded with 401 to the exchange's explicit auth token " + StringUtils.maskString(usedAuthToken)
+				logger.warning("MF-API responded with 401 from: " + endpoint.getEndpointUri() + " to the exchange's explicit auth token " + StringUtils.maskString(usedAuthToken)
 									   + "; routes keep running and the global token is not re-requested");
 				return;
 			}

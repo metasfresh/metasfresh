@@ -287,10 +287,12 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 		// container path when the endpoint's dir fields are unset.
 		final String processedDir = request.getParameters().getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, DEFAULT_LOCAL_PROCESSED_DIR);
 		final String errorDir = request.getParameters().getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, DEFAULT_LOCAL_ERROR_DIR);
+		// the Importeur's WEBUI token (already validated as the inbound auth key, see getJsonAuthenticateRequest)
+		final String mfAuthToken = request.getParameters().get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
 		final CamelContext camelContext = getCamelContext();
 
 		camelContext.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
-				processedDir, errorDir));
+				processedDir, errorDir, mfAuthToken));
 
 		camelContext.getRouteController().startRoute(endpointName);
 

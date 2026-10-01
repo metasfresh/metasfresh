@@ -269,7 +269,7 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		final String scriptIdentifier = invokeExternalSystemRequest.getParameters().get(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 
 		context.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, new JavaScriptRepo("baseDir"), new JavaScriptExecutorService(), template,
-				localProcessedDir.toAbsolutePath().toString(), localErrorDir.toAbsolutePath().toString()));
+				localProcessedDir.toAbsolutePath().toString(), localErrorDir.toAbsolutePath().toString(), "token"));
 		context.getRouteController().startRoute(endpointName);
 
 		//when fire the route
@@ -326,6 +326,9 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		final JsonOLCandCreateBulkRequest expectedDispatchedBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
 				.readValue(OLCAND_REQUEST_BODY_JSON, JsonOLCandCreateBulkRequest.class);
 		assertThat(actualDispatchedBody).isEqualTo(expectedDispatchedBody);
+
+		// And: the dispatched call carries the Importeur's token (exchange property, never a header) for the metasfresh API
+		assertThat(olCandMockEndpoint.getExchanges().get(0).getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN)).isEqualTo("token");
 
 		// And: the REST path completed successfully — confirms the endpoint-derived channel name
 		// (toD("direct:${exchangeProperty.endpointName}")) correctly routed to the dynamic OLCand-producing route
