@@ -160,6 +160,7 @@ const TableFilter = ({
               onClick={openTableModal}
               tabIndex={tabIndex}
               disabled={pending}
+              data-testid="add-new-record"
             >
               {counterpart.translate('window.addNew.caption')}
             </button>

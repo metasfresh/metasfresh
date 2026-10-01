@@ -16,8 +16,8 @@ Feature: Switch to Moving Average Invoice
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-12-31T13:30:13+01:00[Europe/Berlin]
     And load and update C_AcctSchema:
-      | C_AcctSchema_ID | Name                  |
-      | acctSchema      | metas fresh UN/34 CHF |
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | M             |
     And cost elements for material costing methods AveragePO,MovingAverageInvoice are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
@@ -139,6 +139,28 @@ Feature: Switch to Moving Average Invoice
     #
     And no Fact_Acct records are found for documents costRevalMAI
 
+  @Id:S26253_ReverseThenRepost
+  Scenario: Reposting a reversed switch writes no cost detail, leaves the cost unchanged and posts nothing
+    Given update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | product      | AveragePO        | 10 CHF           |
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | costRevalMAI | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation costRevalMAI
+    And the cost revaluation identified by costRevalMAI is completed
+    And no Fact_Acct records are found for documents costRevalMAI
+    And the cost revaluation identified by costRevalMAI is reversed
+    #
+    # The reversal deleted the opening anchor, so a repost must not reach the costing engine again.
+    #
+    When the documents costRevalMAI are reposted
+    Then no M_CostDetails are found for product product and cost element MovingAverageInvoice
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 0 CHF            | 0 PCE      | 0 CHF        |
+    And no Fact_Acct records are found for documents costRevalMAI
+
   @Id:S26253_TC4
   Scenario: Re-running the switch skips an already-seeded product so a redundant reversal cannot disturb it
     #
@@ -184,8 +206,8 @@ Feature: Switch to Moving Average Invoice
       | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
       | product      | AveragePO        | 10 CHF           |
     When metasfresh contains M_CostRevaluation:
-      | Identifier   | C_AcctSchema_ID | M_CostElement_ID | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
-      | selfCopy     | acctSchema      | AveragePO        | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+      | Identifier | C_AcctSchema_ID | M_CostElement_ID | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | selfCopy   | acctSchema      | AveragePO        | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
     Then create lines for cost revaluation selfCopy expecting error
 
   @Id:S26253_TC6
@@ -774,13 +796,13 @@ Feature: Switch to Moving Average Invoice
       | C_AcctSchema_ID | StartDateAcct |
       | acctSchema      | 2027-12-10    |
     Then the accounting repost run left these documents:
-      | Record_ID           | IsStaged | IsReleased |
-      | invRepost3          | N        | Y          |
-      | invRepost2          | N        | Y          |
-      | invRepost1          | N        | Y          |
-      | invPreCutRepost1    | N        | N          |
-      | invPreCutRepost2    | N        | N          |
-      | invPreCutRepost3    | N        | N          |
+      | Record_ID        | IsStaged | IsReleased |
+      | invRepost3       | N        | Y          |
+      | invRepost2       | N        | Y          |
+      | invRepost1       | N        | Y          |
+      | invPreCutRepost1 | N        | N          |
+      | invPreCutRepost2 | N        | N          |
+      | invPreCutRepost3 | N        | N          |
     And every document on the repost queue has its own SeqNo
     #
     # Note the IsStaged column above: every one of them went to the queue DIRECTLY. Staging belongs to the

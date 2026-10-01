@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
@@ -30,6 +31,7 @@ public class CreateMasterdataCommandSupportingServices
 {
 	@NonNull public final UserAuthTokenService userAuthTokenService;
 	@NonNull public final ProductRepository productRepository;
+	@NonNull public final ICurrentCostsRepository currentCostsRepository;
 	@NonNull public final WorkplaceService workplaceService;
 	@NonNull public final MobileConfigService mobileConfigService;
 	@NonNull public final MobileUIPickingUserProfileService mobilePickingConfigService;

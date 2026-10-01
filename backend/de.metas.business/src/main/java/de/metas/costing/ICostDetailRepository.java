@@ -3,6 +3,7 @@ package de.metas.costing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -95,4 +96,9 @@ public interface ICostDetailRepository
 			@NonNull AcctSchemaId acctSchemaId,
 			@NonNull CostElementId costElementId,
 			@NonNull Set<ProductId> productIds);
+
+	/**
+	 * @return {@code true} if any line of the given {@code M_CostRevaluation}, active or not, has written a cost detail.
+	 */
+	boolean hasCostDetailsForCostRevaluation(@NonNull CostRevaluationId costRevaluationId);
 }

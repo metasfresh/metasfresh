@@ -84,6 +84,86 @@ export function getViewLayoutFilterParameterNames(layout) {
 }
 
 /**
+ * Get the related-document references of a record (the Alt+6 "related documents" list) from the WebAPI.
+ *
+ * Reads the same server-sent-events endpoint the WebUI uses; the stream ends with a COMPLETED event,
+ * so the whole response body is available once the request returns.
+ *
+ * @param {string} windowId - Window ID
+ * @param {string} recordId - Record ID
+ * @returns {Promise<Object[]>} the references (`internalName`, `id`, `targetWindowId`, `documentsCount`, ...)
+ */
+export async function getDocumentReferences(windowId, recordId) {
+  const page = getPage();
+
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/references/sse`, {
+    headers: { Accept: 'text/event-stream' },
+  });
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()} reading references of window ${windowId} record ${recordId}`);
+  }
+
+  const events = (await response.text())
+    .split('\n')
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => JSON.parse(line.substring('data:'.length).trim()));
+  if (!events.some((event) => event.type === 'COMPLETED')) {
+    throw new Error(`References stream of window ${windowId} record ${recordId} ended without its COMPLETED event`);
+  }
+  return events
+    .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
+    .flatMap((event) => event.partialGroup.references || []);
+}
+
+/**
+ * Get the accounting facts (Fact_Acct rows) a document was posted with, read through its "Accounting facts"
+ * related-document reference — the same path the WebUI's Alt+6 zoom takes. Independent of whether the
+ * document's window shows a Posted field.
+ *
+ * @param {string} windowId - Window ID of the posted document
+ * @param {string} recordId - Record ID of the posted document
+ * The server lists a reference only when it has at least one record, so "no Fact_Acct reference" means "no facts
+ * (yet)": an unposted document and one whose facts reference is not configured look the same here. A test that
+ * expects facts is the positive control for the latter.
+ *
+ * @returns {Promise<Object[]>} the fact rows' `fieldsByName`; empty while the document has no facts
+ */
+export async function getAccountingFacts(windowId, recordId) {
+  const page = getPage();
+
+  const reference = (await getDocumentReferences(windowId, recordId)).find((ref) => ref.internalName === 'Fact_Acct');
+  if (!reference || !reference.documentsCount) {
+    return [];
+  }
+
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${reference.targetWindowId}`, {
+    data: {
+      documentType: String(reference.targetWindowId),
+      viewType: 'grid',
+      referencing: { documentType: String(windowId), documentId: String(recordId), referenceId: reference.id },
+    },
+  });
+  if (!viewResponse.ok()) {
+    throw new Error(`HTTP ${viewResponse.status()} creating the accounting facts view of window ${windowId} record ${recordId}`);
+  }
+  const { viewId } = await viewResponse.json();
+
+  const rowsResponse = await page.request.get(
+    `${WEBAPI_BASE_URL}/documentView/${reference.targetWindowId}/${viewId}?firstRow=0&pageLength=500`
+  );
+  if (!rowsResponse.ok()) {
+    throw new Error(`HTTP ${rowsResponse.status()} reading the accounting facts of window ${windowId} record ${recordId}`);
+  }
+  const rows = (await rowsResponse.json()).result || [];
+  if (rows.length !== reference.documentsCount) {
+    throw new Error(
+      `Accounting facts view of window ${windowId} record ${recordId} returned ${rows.length} rows, its reference counts ${reference.documentsCount}`
+    );
+  }
+  return rows.map((row) => row.fieldsByName);
+}
+
+/**
  * Get complete record data including validation status from WebAPI.
  *
  * @param {string} windowId - Window ID (e.g., '143' for Sales Order)
