@@ -1752,6 +1752,26 @@ public class CostRevaluationServiceTest
 			currentCostsRepo.save(currentCost);
 		}
 
+		/** Seeds a client-level {@code M_Cost} row for {@code targetCostElementId} directly (bypassing the costing engine). */
+		private void seedTargetCurrentCost(
+				@NonNull final ProductId productId,
+				@NonNull final String ownCostPrice,
+				@NonNull final String qty)
+		{
+			final CostSegmentAndElement costSegmentAndElement = costSegmentAndElement(productId, targetCostElementId, acctSchemaId, CostingLevel.Client, OrgId.ANY);
+
+			currentCostsRepo.save(CurrentCost.builder()
+					.costSegment(costSegmentAndElement.toCostSegment())
+					.costElement(costElementRepo.getById(targetCostElementId))
+					.currencyId(euroCurrencyId)
+					.precision(CurrencyPrecision.ofInt(2))
+					.uom(eachUOM)
+					.ownCostPrice(new BigDecimal(ownCostPrice))
+					.componentsCostPrice(BigDecimal.ZERO)
+					.currentQty(new BigDecimal(qty))
+					.build());
+		}
+
 		/** Updates the EXISTING source {@code M_Cost} in place (unlike {@link #seedSourceCurrentCost} which inserts). */
 		private void updateSourceCurrentCost(
 				@NonNull final ProductId productId,
@@ -1939,8 +1959,55 @@ public class CostRevaluationServiceTest
 		}
 
 		@Nested
+		class CreateLineForProduct_CopyFromCostElement
+		{
+			/**
+			 * The quick-input adds lines with a typed new cost price, which a {@code CopyFromCostElement} revaluation would
+			 * ignore (it copies the source element's cost). Its lines come from "Create revaluation lines" only.
+			 */
+			@Test
+			public void throws_whenSourceIsCopyFromCostElement()
+			{
+				final ProductId productId = createProduct("product_quickInputOnCopyFrom");
+				seedSourceCurrentCost(productId, "12.50", "0", "100");
+				seedTargetCurrentCost(productId, "10.00", "100"); // so that the quick-input would find a target cost to build its line from
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+
+				assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00")))
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining(CostRevaluationService.MSG_QuickInputOnlyForManualSource.toAD_Message());
+
+				assertThat(costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluationId).count()).isZero();
+			}
+		}
+
+		@Nested
 		class CreateDetails_CopyFromCostElement
 		{
+			/**
+			 * The source element lost the product's cost between "Create revaluation lines" and Complete: Complete refuses
+			 * the line with a translated message naming the product.
+			 */
+			@Test
+			public void throws_whenSourceHasNoCostAtComplete()
+			{
+				final ProductId productId = createProduct("product_sourceCostGone");
+				seedSourceCurrentCost(productId, "12.50", "0", "100");
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(costRevaluationId);
+
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_Cost.class)
+						.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+						.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, sourceCostElementId)
+						.create()
+						.list(I_M_Cost.class)
+						.forEach(InterfaceWrapperHelper::delete);
+
+				assertThatThrownBy(() -> costRevaluationService.reevaluateAllLines(costRevaluationId)) // Complete
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining(CostRevaluationService.MSG_NoSourceCostAsOfEvaluationStartDate.toAD_Message());
+			}
+
 			@Test
 			public void directSetsTargetMCost_andWritesOpeningAnchor()
 			{

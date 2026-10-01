@@ -51,6 +51,8 @@ public class CostRevaluationService
 	static final AdMessageKey MSG_AmbiguousCurrentCost = AdMessageKey.of("M_CostRevaluation.AmbiguousCurrentCost");
 	static final AdMessageKey MSG_NewCostPriceNegative = AdMessageKey.of("M_CostRevaluation.NewCostPriceNegative");
 	static final AdMessageKey MSG_DocumentNotDraft = AdMessageKey.of("M_CostRevaluation.DocumentNotDraft");
+	static final AdMessageKey MSG_QuickInputOnlyForManualSource = AdMessageKey.of("M_CostRevaluation.QuickInputOnlyForManualSource");
+	static final AdMessageKey MSG_NoSourceCostAsOfEvaluationStartDate = AdMessageKey.of("M_CostRevaluation.NoSourceCostAsOfEvaluationStartDate");
 
 	@NonNull private final CostRevaluationRepository costRevaluationRepository;
 	@NonNull private final ICurrentCostsRepository currentCostsRepo;
@@ -202,7 +204,7 @@ public class CostRevaluationService
 
 		// Fails loudly rather than silently falling back to the live cost — the very bug the as-of read exists to fix.
 		final CostDetailPreviousAmounts costAsOf = costingService.getCostAsOf(segmentAndElement, asOfDate)
-				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + segmentAndElement));
+				.orElseThrow(() -> new AdempiereException(MSG_NoSourceCostAsOfEvaluationStartDate, productBL.getProductValueAndName(segmentAndElement.getProductId())));
 
 		final CurrentCost restated = currentCost.copy();
 		restated.setFrom(costAsOf);
@@ -267,7 +269,8 @@ public class CostRevaluationService
 	 * <p>
 	 * Other lines of the revaluation are left untouched.
 	 *
-	 * @throws AdempiereException if {@code newCostPrice} is negative, if the revaluation is not drafted / in progress,
+	 * @throws AdempiereException if {@code newCostPrice} is negative, if the revaluation's source is not {@link RevaluationSource#Manual},
+	 * if the revaluation is not drafted / in progress,
 	 * if an active line already exists for {@code productId} (duplicate guard), if the product still has
 	 * no current cost after seeding (unsupported costing setup), or if it has more than one (ambiguous multi-segment product).
 	 * @return the id of the newly created line.
@@ -284,6 +287,11 @@ public class CostRevaluationService
 		}
 
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		if (!costRevaluation.getRevaluationSource().isManual())
+		{
+			// a CopyFromCostElement revaluation copies the source element's cost and would ignore the typed price
+			throw new AdempiereException(MSG_QuickInputOnlyForManualSource);
+		}
 		if (!costRevaluation.getDocStatus().isDraftedOrInProgress())
 		{
 			throw new AdempiereException(MSG_DocumentNotDraft);
@@ -659,7 +667,7 @@ public class CostRevaluationService
 		final CostSegmentAndElement sourceSegmentAndElement = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
 		final CostDetailPreviousAmounts sourceCostAsOfCutoff = costingService.getCostAsOf(sourceSegmentAndElement, costRevaluation.getEvaluationStartDate())
-				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement));
+				.orElseThrow(() -> new AdempiereException(MSG_NoSourceCostAsOfEvaluationStartDate, productBL.getProductValueAndName(sourceSegmentAndElement.getProductId())));
 
 		// Value-neutral seed: snapshot own price + LL + qty together from that SINGLE as-of-the-cut-off read of the
 		// source — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview frozen at
