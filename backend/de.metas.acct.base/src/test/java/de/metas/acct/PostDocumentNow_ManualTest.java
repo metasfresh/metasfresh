@@ -40,7 +40,6 @@ import de.metas.costing.methods.AverageInvoiceCostingMethodHandler;
 import de.metas.costing.methods.AveragePOCostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.costing.methods.StandardCostingMethodHandler;
-import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.dimension.DimensionService;
 import de.metas.elementvalue.ChartOfAccountsRepository;
@@ -179,7 +178,6 @@ public class PostDocumentNow_ManualTest
 				costDetailsService,
 				costElementRepo,
 				currentCostsRepo,
-				new CostRevaluationRepository(),
 				ImmutableList.of(
 						new AveragePOCostingMethodHandler(
 								costingMethodHandlerUtils,

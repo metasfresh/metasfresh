@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostsRevaluationRequest;
@@ -21,7 +20,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.lang.SeqNoProvider;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -221,7 +220,7 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Evaluates all lines again, also those already evaluated, so the refusals and the value differences reflect the current state.
+	 * Evaluates all lines again, also those already evaluated, so the value differences reflect the current stock and cost price.
 	 */
 	public void reevaluateAllLines(@NonNull final CostRevaluationId costRevaluationId)
 	{
@@ -254,101 +253,33 @@ public class CostRevaluationService
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.evaluationStartDate(costRevaluation.getEvaluationStartDate())
 				.dateAcct(costRevaluation.getDateAcct())
 				.newCostPrice(line.getNewCostPrice())
 				.build());
 
-		final CostRevaluationLineId lineId = line.getId();
-		final SeqNoProvider seqNo = SeqNoProvider.ofInt(10);
-		CostAmount deltaAmountTotal = CostAmount.zero(line.getNewCostPrice().getCurrencyId());
+		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = result.getCurrentCostBeforeEvaluation();
+		final Quantity qty = currentCostBeforeEvaluation.getQty();
+		final CostAmount costPriceOld = currentCostBeforeEvaluation.getCostPriceOld();
+		final CostAmount costPriceNew = currentCostBeforeEvaluation.getCostPriceNew();
+		final CostAmount costAmountOld = costPriceOld.multiply(qty);
+		final CostAmount costAmountNew = costPriceNew.multiply(qty);
+		final CostAmount deltaAmount = costAmountNew.subtract(costAmountOld);
 
-		//
-		// Current Cost Before Revaluation Adjustment:
-		{
-			final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = result.getCurrentCostBeforeEvaluation();
-			final Quantity qty = currentCostBeforeEvaluation.getQty();
-			final CostAmount costPriceOld = currentCostBeforeEvaluation.getCostPriceOld();
-			final CostAmount costPriceNew = currentCostBeforeEvaluation.getCostPriceNew();
-			final CostAmount costAmountOld = costPriceOld.multiply(qty);
-			final CostAmount costAmountNew = costPriceNew.multiply(qty);
-			final CostAmount deltaAmount = costAmountNew.subtract(costAmountOld);
-			deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
+		costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
+				.lineId(line.getId())
+				.seqNo(SeqNo.ofInt(10))
+				.type(CostRevaluationDetailType.CurrentCostBeforeRevaluation)
+				.costSegmentAndElement(costSegmentAndElement)
+				//
+				.qty(qty)
+				.oldCostPrice(costPriceOld)
+				.newCostPrice(costPriceNew)
+				.oldAmount(costAmountOld)
+				.newAmount(costAmountNew)
+				.deltaAmount(deltaAmount)
+				//
+				.build());
 
-			costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-					.lineId(lineId)
-					.seqNo(seqNo.getAndIncrement())
-					.type(CostRevaluationDetailType.CurrentCostBeforeRevaluation)
-					.costSegmentAndElement(costSegmentAndElement)
-					//
-					.qty(qty)
-					.oldCostPrice(costPriceOld)
-					.newCostPrice(costPriceNew)
-					.oldAmount(costAmountOld)
-					.newAmount(costAmountNew)
-					.deltaAmount(deltaAmount)
-					//
-					.build());
-		}
-
-		//
-		// Cost Detail Adjustments:
-		for (final CostDetailAdjustment costDetailAdjustment : result.getCostDetailAdjustments())
-		{
-			final CostAmount oldCostAmount = costDetailAdjustment.getOldCostAmount();
-			final CostAmount newCostAmount = costDetailAdjustment.getNewCostAmount();
-			final CostAmount deltaAmount = newCostAmount.subtract(oldCostAmount);
-			deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
-
-			costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-					.lineId(lineId)
-					.seqNo(seqNo.getAndIncrement())
-					.type(CostRevaluationDetailType.CostDetailAdjustment)
-					.costSegmentAndElement(costSegmentAndElement)
-					//
-					.qty(costDetailAdjustment.getQty())
-					.oldCostPrice(costDetailAdjustment.getOldCostPrice())
-					.newCostPrice(costDetailAdjustment.getNewCostPrice())
-					.oldAmount(oldCostAmount)
-					.newAmount(newCostAmount)
-					.deltaAmount(deltaAmount)
-					//
-					.costDetailId(costDetailAdjustment.getCostDetailId())
-					.build());
-		}
-
-		//
-		// Current Cost After Revaluation Adjustment:
-		{
-			final CostsRevaluationResult.CurrentCostAfterEvaluation currentCostAfterEvaluation = result.getCurrentCostAfterEvaluation();
-			final CostAmount oldCostPrice = currentCostAfterEvaluation.getCostPriceComputed();
-			final CostAmount newCostPrice = line.getNewCostPrice();
-
-			if (!oldCostPrice.compareToEquals(newCostPrice))
-			{
-				final Quantity qty = currentCostAfterEvaluation.getQty();
-				final CostAmount oldCostAmount = oldCostPrice.multiply(qty);
-				final CostAmount newCostAmount = newCostPrice.multiply(qty);
-				final CostAmount deltaAmount = newCostAmount.subtract(oldCostAmount);
-				deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
-
-				costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-						.lineId(lineId)
-						.seqNo(seqNo.getAndIncrement())
-						.type(CostRevaluationDetailType.CurrentCostAfterRevaluation)
-						.costSegmentAndElement(costSegmentAndElement)
-						//
-						.qty(qty)
-						.oldCostPrice(oldCostPrice)
-						.newCostPrice(newCostPrice)
-						.oldAmount(oldCostAmount)
-						.newAmount(newCostAmount)
-						.deltaAmount(deltaAmount)
-						//
-						.build());
-			}
-		}
-
-		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmountTotal));
+		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmount));
 	}
 }

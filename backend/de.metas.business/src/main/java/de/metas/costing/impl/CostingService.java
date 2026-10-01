@@ -4,20 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
-import de.metas.costing.CostDetailId;
-import de.metas.costing.CostDetailQuery;
-import de.metas.costing.CostDetailRestatement;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -33,7 +28,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICompletedCostRevaluationsRepository;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
@@ -43,14 +37,8 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -60,8 +48,6 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -97,18 +83,12 @@ public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
-	private static final AdMessageKey MSG_EarlierRevaluationNotPosted = AdMessageKey.of("M_CostRevaluation.EarlierRevaluationNotPosted");
-	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
-
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final CostingMethodHandlerUtils utils;
 	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICompletedCostRevaluationsRepository completedCostRevaluationsRepo;
 
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
@@ -117,14 +97,12 @@ public class CostingService implements ICostingService
 			@NonNull final ICostDetailService costDetailsService,
 			@NonNull final ICostElementRepository costElementsRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICompletedCostRevaluationsRepository completedCostRevaluationsRepo,
 			@NonNull final List<CostingMethodHandler> costingMethodHandlers)
 	{
 		this.utils = utils;
 		this.costDetailsService = costDetailsService;
 		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
-		this.completedCostRevaluationsRepo = completedCostRevaluationsRepo;
 
 		this.costingMethodHandlers = costingMethodHandlers
 				.stream()
@@ -512,125 +490,18 @@ public class CostingService implements ICostingService
 	@Override
 	public CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request)
 	{
-		final CostSegmentAndElement costSegmentAndElement = request.getCostSegmentAndElement();
-		final Instant evaluationStartDate = request.getEvaluationStartDate();
 		final CostAmount newCostPrice = request.getNewCostPrice();
 
-		//
-		// Lock the current cost first: a concurrent completion of another revaluation of this segment waits here until it is committed,
-		// so the checks below see it
-		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
-
-		//
-		// Fetch cost details for our cost segment, starting from evaluation start date
-		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
-						CostDetailQuery.builderFrom(costSegmentAndElement)
-								.dateAcctRage(Range.atLeast(evaluationStartDate))
-								.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
-								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
-								.build())
-				.collect(ImmutableList.toImmutableList());
-		assertNoOtherRevaluationInTheWay(costSegmentAndElement, evaluationStartDate, costDetails, request.getDateAcct().getOrgId());
-
-		//
-		// Cost details already restated by an earlier completed revaluation are replayed from that restatement
-		final ImmutableMap<CostDetailId, CostDetailRestatement> restatements = completedCostRevaluationsRepo.getLatestCompletedRestatementsByCostDetailIds(
-				costDetails.stream().map(CostDetail::getId).collect(ImmutableSet.toImmutableSet()));
-
-		//
-		// Restore current costs at the time before evaluation date
-		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		if (!costDetails.isEmpty())
-		{
-			final CostDetail firstCostDetail = costDetails.get(0);
-			final CostDetailRestatement firstCostDetailRestatement = restatements.get(firstCostDetail.getId());
-			// Prev_* is the snapshot at the time the cost detail was posted; a later restatement changed the cost price in effect before it.
-			currentCost.setFrom(firstCostDetailRestatement != null
-					? firstCostDetail.getPreviousAmounts().withOwnCostPrice(firstCostDetailRestatement.getNewCostPrice())
-					: firstCostDetail.getPreviousAmounts());
-		}
-		//
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(request.getCostSegmentAndElement());
 		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = CostsRevaluationResult.CurrentCostBeforeEvaluation.builder()
 				.qty(currentCost.getCurrentQty())
 				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
 				.costPriceNew(newCostPrice)
 				.build();
 		currentCost.setOwnCostPrice(newCostPrice);
-		result.currentCostBeforeEvaluation(currentCostBeforeEvaluation);
 
-		//
-		// Iterate all cost details, calculate adjustments and update the current costs
-		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
-		for (final CostDetail costDetail : costDetails)
-		{
-			// Cost details which were not changing the costs (so are there only for recording)
-			// are not relevant for cost adjustment.
-			if (!costDetail.isChangingCosts())
-			{
-				continue;
-			}
-
-			final CostDetailRestatement restatement = restatements.get(costDetail.getId());
-			final CostDetail effectiveCostDetail = restatement != null
-					? costDetail.withAmt(restatement.getNewAmount())
-					: costDetail;
-
-			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
-			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(effectiveCostDetail, currentCost);
-			result.costDetailAdjustment(costDetailAdjustment);
-		}
-
-		//
-		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
-
-		//
-		return result.build();
-	}
-
-	/**
-	 * Refuses a revaluation which would be booked before, or interleaved with, another cost revaluation of the same cost segment and element:
-	 * <ul>
-	 *     <li>a completed revaluation posted on or after the evaluation start date (posted or still waiting for its accounting), or a revaluation cost detail
-	 *     in the evaluation window: it would be replayed, but a revaluation cannot restate another one;</li>
-	 *     <li>a completed revaluation whose accounting is not done yet: it has not updated the cost yet, and its posting would overwrite this revaluation's cost price.</li>
-	 * </ul>
-	 * Only cost revaluations are checked; stock movements after the posting date are replayed normally.
-	 * Days are those of the revaluation organization's time zone.
-	 */
-	private void assertNoOtherRevaluationInTheWay(
-			@NonNull final CostSegmentAndElement costSegmentAndElement,
-			@NonNull final Instant evaluationStartDate,
-			@NonNull final List<CostDetail> costDetails,
-			@NonNull final OrgId revaluationOrgId)
-	{
-		final ProductId productId = costSegmentAndElement.getProductId();
-		final ZoneId timeZone = orgDAO.getTimeZone(revaluationOrgId);
-
-		final Instant laterRevaluationDate = completedCostRevaluationsRepo.getFirstCompletedDateAcctOnOrAfter(costSegmentAndElement, evaluationStartDate)
-				// a revaluation cost detail in the window without a completed revaluation document
-				.orElseGet(() -> costDetails.stream()
-						.filter(CostDetail::isChangingCosts)
-						.filter(costDetail -> costDetail.getDocumentRef().isCostRevaluationLine())
-						.map(CostDetail::getDateAcct)
-						.findFirst()
-						.orElse(null));
-		if (laterRevaluationDate != null)
-		{
-			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported, productBL.getProductValueAndName(productId), toLocalDate(laterRevaluationDate, timeZone))
-					.setParameter("costSegmentAndElement", costSegmentAndElement);
-		}
-
-		completedCostRevaluationsRepo.getFirstCompletedNotPostedDateAcct(costSegmentAndElement).ifPresent(notPostedRevaluationDate -> {
-			throw new AdempiereException(MSG_EarlierRevaluationNotPosted, productBL.getProductValueAndName(productId), toLocalDate(notPostedRevaluationDate, timeZone))
-					.setParameter("costSegmentAndElement", costSegmentAndElement);
-		});
-	}
-
-	private static ITranslatableString toLocalDate(@NonNull final Instant instant, @NonNull final ZoneId timeZone)
-	{
-		return TranslatableStrings.date(instant.atZone(timeZone).toLocalDate());
+		return CostsRevaluationResult.builder()
+				.currentCostBeforeEvaluation(currentCostBeforeEvaluation)
+				.build();
 	}
 }

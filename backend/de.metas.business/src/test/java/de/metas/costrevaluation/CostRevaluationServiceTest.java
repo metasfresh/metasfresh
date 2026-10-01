@@ -142,7 +142,6 @@ public class CostRevaluationServiceTest
 				costDetailsService,
 				costElementRepo,
 				currentCostsRepo,
-				costRevaluationRepository,
 				ImmutableList.of(new AverageInvoiceCostingMethodHandler(handlerUtils)));
 
 		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService);

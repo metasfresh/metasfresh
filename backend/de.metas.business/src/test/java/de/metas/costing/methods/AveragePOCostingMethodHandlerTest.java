@@ -283,12 +283,8 @@ public class AveragePOCostingMethodHandlerTest
 				.build();
 	}
 
-	/**
-	 * Last line of defence (normally refused earlier by the costing service): the refusal names the product and the
-	 * other revaluation's day in its organization's time zone.
-	 */
 	@Test
-	public void recalculate_refusesACostRevaluationCostDetail_namingProductAndDate()
+	public void recalculate_refusesACostRevaluationCostDetail()
 	{
 		handler.createOrUpdateCost(costDetailCreateRequest()
 				.documentRef(CostingDocumentRef.ofInventoryLineId(1))
@@ -309,16 +305,12 @@ public class AveragePOCostingMethodHandlerTest
 				.qty(Quantity.of(0, eachUOM))
 				.changingCosts(true)
 				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(CostRevaluationId.ofRepoId(1), 1)))
-				// 23:30 UTC on 03-05 is 00:30 on 03-06 in Europe/Berlin
 				.dateAcct(Instant.parse("2024-03-05T23:30:00Z"))
 				.build();
 
-		final String productValue = InterfaceWrapperHelper.load(productId.getRepoId(), I_M_Product.class).getValue();
 		assertThatThrownBy(() -> handler.recalculateCostDetailAmountAndUpdateCurrentCost(revaluationCostDetail, currentCost))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
-				.hasMessageContaining(productValue)
-				.hasMessageContaining("06.03.2024");
+				.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
 	}
 
 	@Test

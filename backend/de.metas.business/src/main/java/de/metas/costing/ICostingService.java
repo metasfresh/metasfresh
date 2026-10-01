@@ -48,11 +48,7 @@ public interface ICostingService
 			CostingMethod costingMethod);
 
 	/**
-	 * Replays the cost segment's cost details from the evaluation start date with the new cost price. A cost detail already
-	 * restated by a completed cost revaluation is replayed from its restated amount.
-	 *
-	 * @throws org.adempiere.exceptions.AdempiereException if another completed cost revaluation of the segment is posted on or after
-	 *                                                     the evaluation start date, or is not posted yet
+	 * Takes the on-hand quantity and current cost price of the segment, locked for update, as the base of the new cost price; no cost detail is replayed.
 	 */
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

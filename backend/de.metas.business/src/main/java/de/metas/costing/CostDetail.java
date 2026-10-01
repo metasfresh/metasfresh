@@ -55,7 +55,7 @@ public class CostDetail
 	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull CostAmountType amtType;
-	@NonNull @With CostAmount amt;
+	@NonNull CostAmount amt;
 	@NonNull @With Quantity qty;
 
 	@With boolean changingCosts;
