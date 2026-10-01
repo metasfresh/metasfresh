@@ -212,4 +212,59 @@ public class ESRActionHandlerTest extends ESRTestBase
 		assertThat(secondAllocationLine.getC_Invoice_ID()).isGreaterThan(0);
 		assertThat(secondAllocationLine.getC_Payment_ID()).isLessThanOrEqualTo(0);
 	}
+
+	/**
+	 * The customer's case: the payment is SMALLER than the invoice's open amount and the accountant
+	 * picks "leave payment open". The money is theirs to return, and the refund runs through payment
+	 * selection, which only picks up a payment that is still open -- so nothing may be allocated and the
+	 * invoice must stay open for its FULL amount, not "settled except the missing part".
+	 */
+	@Test
+	public void testUnableToAssignAction_underPayment_leavesThePaymentUnallocated()
+	{
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "01-059931-0", "15364170", "40", false);
+		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
+
+		final I_C_Invoice invoice = getC_Invoice();
+		invoice.setGrandTotal(new BigDecimal("50.0"));
+		invoice.setIsSOTrx(true);
+		invoice.setProcessed(true);
+		save(invoice);
+
+		esrImportBL.evaluateLine(esrImportLine);
+		esrImportBL.process(esrImport);
+
+		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+		save(esrImportLine);
+
+		final I_C_Payment payment = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0);
+		assertThat(payment.getPayAmt()).isEqualByComparingTo("40"); // guard
+		assertThat(esrImportLine.getESR_Invoice_Openamt()).isPositive(); // guard: this is an under-payment
+
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
+		esrImportBL.complete(esrImport, "");
+
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
+		refresh(invoice, true);
+
+		assertTrue(esrImport.isProcessed(), "Import should be processed");
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
+
+		// resolve the payment from the LINE: complete() can create further payments, so the first
+		// record in the map is not necessarily this line's any more.
+		final I_C_Payment linePayment = POJOLookupMap.get().getRecords(I_C_Payment.class).stream()
+				.filter(p -> p.getC_Payment_ID() == esrImportLine.getC_Payment_ID())
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no payment for the line"));
+
+		assertThat(linePayment.isAllocated()).as("payment is allocated").isFalse();
+		assertThat(linePayment.getC_Invoice_ID()).as("payment's invoice").isLessThanOrEqualTo(0);
+		assertThat(linePayment.isAutoAllocateAvailableAmt()).as("IsAutoAllocateAvailableAmt").isFalse();
+		assertThat(linePayment.getC_BPartner_ID()).as("payment's partner").isGreaterThan(0);
+
+		assertThat(invoice.isPaid()).as("invoice is paid").isFalse();
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		assertThat(openAmt.toBigDecimal()).as("invoice open amount").isEqualByComparingTo("50");
+	}
 }
