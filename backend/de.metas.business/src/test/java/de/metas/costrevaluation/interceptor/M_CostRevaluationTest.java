@@ -226,6 +226,26 @@ class M_CostRevaluationTest
 		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
 	}
 
+	/**
+	 * A draft switched from CopyFromCostElement to the manual source keeps no cut-off date: its start date is realigned to the posting date
+	 * on the same save, even though neither DateAcct nor EvaluationStartDate changed.
+	 */
+	@Test
+	void beforeChange_sourceSwitchedFromCopyFromToManual_startDateIsRealignedToDateAcct()
+	{
+		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+		record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
+		record.setDateAcct(day(2020, 1, 15));
+		record.setEvaluationStartDate(day(2019, 12, 1));
+		record.setDocStatus(DocStatus.Drafted.getCode());
+		saveRecord(record);
+
+		record.setRevaluationSource(RevaluationSource.Calculated.getCode());
+
+		assertThatCode(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE)).doesNotThrowAnyException();
+		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
+	}
+
 	@Test
 	void beforeChange_costElementChanged_withActiveLines_failsWithDeleteLinesFirst_namingTheField()
 	{

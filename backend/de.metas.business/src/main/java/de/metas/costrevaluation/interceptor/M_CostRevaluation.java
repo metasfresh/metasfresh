@@ -56,7 +56,8 @@ public class M_CostRevaluation
 	{
 		final boolean isCopyFromCostElement = isCopyFromCostElement(record);
 		if (!isCopyFromCostElement
-				&& InterfaceWrapperHelper.isValueChanged(record, I_M_CostRevaluation.COLUMNNAME_DateAcct, I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate))
+				// RevaluationSource: a draft switched away from CopyFromCostElement must drop its cut-off date
+				&& InterfaceWrapperHelper.isValueChanged(record, I_M_CostRevaluation.COLUMNNAME_DateAcct, I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate, I_M_CostRevaluation.COLUMNNAME_RevaluationSource))
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
 		}
