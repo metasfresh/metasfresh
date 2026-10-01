@@ -309,6 +309,37 @@ public class CostRevaluationServiceTest
 		currentCostsRepo.save(currentCost);
 	}
 
+	/** Updates the product's EXISTING client-level {@code M_Cost} in place (unlike {@link #seedCurrentCost}, which inserts). */
+	private void updateCurrentCost(
+			@NonNull final ProductId productId,
+			@NonNull final String ownCostPrice,
+			@NonNull final String qty)
+	{
+		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
+				.costingLevel(CostingLevel.Client)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(costElementId)
+				.build();
+
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
+		currentCost.setFrom(CostDetailPreviousAmounts.builder()
+				.costPrice(CostPrice.builder()
+						.ownCostPrice(CostAmount.of(ownCostPrice, euroCurrencyId))
+						.componentsCostPrice(CostAmount.zero(euroCurrencyId))
+						.uomId(UomId.ofRepoId(eachUOM.getC_UOM_ID()))
+						.build())
+				.qty(Quantity.of(qty, eachUOM))
+				.cumulatedAmt(CostAmount.of(new BigDecimal(ownCostPrice).multiply(new BigDecimal(qty)), euroCurrencyId))
+				.cumulatedQty(Quantity.of(qty, eachUOM))
+				.build());
+		currentCostsRepo.save(currentCost);
+	}
+
 	/** Sets the product's category-acct {@code CostingLevel} for the header schema, so {@link IProductCostingBL#getCostingLevel} resolves to it. */
 	private void setProductCostingLevel(@NonNull final ProductId productId, @NonNull final CostingLevel costingLevel)
 	{
@@ -756,6 +787,22 @@ public class CostRevaluationServiceTest
 		assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo(expectedDeltaAmt);
 	}
 
+	/** The single line shows the stock on hand and the current cost price the evaluation used, and the value difference it computed. */
+	private void assertSingleLineValues(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final String expectedCurrentQty,
+			@NonNull final String expectedCurrentCostPrice,
+			@NonNull final String expectedDeltaAmt)
+	{
+		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+		assertThat(lines).hasSize(1);
+		final I_M_CostRevaluationLine line = lines.get(0);
+		InterfaceWrapperHelper.refresh(line);
+		assertThat(line.getCurrentQty()).isEqualByComparingTo(expectedCurrentQty);
+		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo(expectedCurrentCostPrice);
+		assertThat(line.getDeltaAmt()).isEqualByComparingTo(expectedDeltaAmt);
+	}
+
 	private BigDecimal getSingleLineDeltaAmt(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
@@ -875,10 +922,11 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Completing re-checks lines already evaluated by "Run": a revaluation completed in between is in the way.
+		 * Completing re-evaluates lines already evaluated by "Run": another revaluation posted in between moved the current
+		 * cost price, so the line is computed from that price, not from the one "Run" saw.
 		 */
 		@Test
-		public void completing_throws_whenALaterRevaluationWasCompletedAfterTheLinesWereEvaluated()
+		public void complete_reevaluates_whenAnotherRevaluationWasPostedSinceRun()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_laterAfterRun");
@@ -887,13 +935,101 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
-			costRevaluationService.createDetails(costRevaluationId); // "Run"
+			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (12 - 10) = 200
 
 			createCompletedRevaluation(productId, LocalDate.parse("2024-03-10"), true);
+			updateCurrentCost(productId, "11", "100"); // the posted revaluation set the current cost price to 11
 
-			assertThatThrownBy(() -> costRevaluationService.reevaluateAllLines(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			assertSingleLineValues(costRevaluationId, "100", "11", "100"); // 100 x (12 - 11), not the "Run" value 200
+		}
+
+		/**
+		 * "Run" writes the stock on hand and the current cost price it evaluated with onto the line, not the values from when the line was created.
+		 */
+		@Test
+		public void run_writesCurrentQtyAndPriceOfTheCalculation()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_runWritesQtyAndPrice");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			updateCurrentCost(productId, "12", "80");
+
+			costRevaluationService.createDetails(costRevaluationId); // "Run"
+
+			assertSingleLineValues(costRevaluationId, "80", "12", "240"); // 80 x (15 - 12)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "12", "15", "240");
+		}
+
+		/**
+		 * Completing a line never evaluated by "Run" writes the stock on hand and the current cost price of the evaluation onto the line.
+		 */
+		@Test
+		public void complete_writesCurrentQtyAndPrice_forALineNotRunBefore()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_completeWritesQtyAndPrice");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			updateCurrentCost(productId, "12", "80");
+
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			assertSingleLineValues(costRevaluationId, "80", "12", "240"); // 80 x (15 - 12)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "12", "15", "240");
+		}
+
+		/**
+		 * The stock changed between "Run" and "Complete": completing re-evaluates the line with the stock on hand at completion.
+		 */
+		@Test
+		public void complete_reevaluates_whenStockChangedSinceRun()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_stockChangedSinceRun");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (15 - 10) = 500
+
+			updateCurrentCost(productId, "10", "80");
+
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			assertSingleLineValues(costRevaluationId, "80", "10", "400"); // 80 x (15 - 10)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "10", "15", "400");
+		}
+
+		/**
+		 * The new cost price was edited after "Run": completing re-evaluates the line with the edited price.
+		 */
+		@Test
+		public void complete_reevaluates_whenNewCostPriceChangedAfterRun()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_newPriceChangedAfterRun");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			updateCurrentCost(productId, "12", "80");
+			costRevaluationService.createDetails(costRevaluationId); // "Run": 80 x (15 - 12) = 240
+
+			final I_M_CostRevaluationLine line = getLineRecords(costRevaluationId).get(0);
+			line.setNewCostPrice(new BigDecimal("16"));
+			saveRecord(line);
+
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+
+			assertSingleLineValues(costRevaluationId, "80", "12", "320"); // 80 x (16 - 12)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "12", "16", "320");
 		}
 
 		/**

@@ -18,6 +18,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -411,6 +412,22 @@ public class CostRevaluationRepository
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
 		record.setIsActive(false);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Writes the stock on hand and the current cost price a line was evaluated with, and the value difference computed from them.
+	 */
+	public void updateBookedValues(
+			@NonNull final CostRevaluationLineId lineId,
+			@NonNull final Quantity currentQty,
+			@NonNull final CostAmount currentCostPrice,
+			@NonNull final CostAmount deltaAmt)
+	{
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
+		record.setCurrentQty(currentQty.toBigDecimal());
+		record.setCurrentCostPrice(currentCostPrice.toBigDecimal());
+		record.setDeltaAmt(deltaAmt.toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 	}
 

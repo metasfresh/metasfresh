@@ -444,7 +444,10 @@ public class CostRevaluationService
 		}
 	}
 
-	/** {@code Calculated}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row). */
+	/**
+	 * {@code Calculated}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row).
+	 * The line shows the stock on hand and the current cost price of this evaluation.
+	 */
 	private void createDetailsForCalculated(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
@@ -478,6 +481,7 @@ public class CostRevaluationService
 				.build());
 
 		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmount));
+		costRevaluationRepository.updateBookedValues(line.getId(), qty, costPriceOld, deltaAmount);
 	}
 
 	/**

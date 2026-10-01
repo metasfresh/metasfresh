@@ -95,7 +95,7 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 			throw new AdempiereException("@NoLines@");
 		}
 
-		// Evaluate all lines again, also those already evaluated by "Run": another revaluation may have been completed since then
+		// Evaluate all lines again, also those already evaluated by "Run": the stock, the current cost price or the new cost price may have changed since then
 		costRevaluationService.reevaluateAllLines(costRevaluationId);
 
 		costRevaluation.setDocAction(IDocument.ACTION_None);
