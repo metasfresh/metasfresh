@@ -179,6 +179,20 @@ class M_CostRevaluationTest
 			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
 		}
 
+		/**
+		 * An unset source counts as Manual, the column's default.
+		 */
+		@Test
+		void sourceCleared_startDateFollowsDateAcct()
+		{
+			final I_M_CostRevaluation record = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
+			record.setRevaluationSource(null);
+
+			callout.onRevaluationSourceChanged(record);
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
+		}
+
 		@Test
 		void sourceSwitchedToCopyFromCostElement_startDateKept()
 		{

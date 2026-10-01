@@ -215,7 +215,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier  | DocStatus | Processed | EvaluationStartDate |
       | revaluation | CO        | true      | 2024-03-01          |
 
-    # ── After: current cost 15 CHF; CumulatedAmt RECALCULATED to 1500 CHF (100 PCE replayed at the new price) — proves the retrospective replay happened ──
+    # ── After: current cost 15 CHF; CumulatedAmt 1500 CHF (the 100 PCE on hand at the new price) ──
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
