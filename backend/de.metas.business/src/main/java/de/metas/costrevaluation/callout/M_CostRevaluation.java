@@ -106,6 +106,26 @@ public class M_CostRevaluation implements ITabCallout
 		}
 	}
 
+	/**
+	 * On a UI switch of a draft to the Manual source, the EvaluationStartDate follows DateAcct at once (as on save),
+	 * because only a CopyFromCostElement revaluation has a cut-off date of its own.
+	 */
+	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_RevaluationSource)
+	public void onRevaluationSourceChanged(@NonNull final I_M_CostRevaluation costRevaluation)
+	{
+		final DocStatus docStatus = DocStatus.ofNullableCode(costRevaluation.getDocStatus());
+		if (docStatus != null && !docStatus.isDraftedOrInProgress())
+		{
+			return;
+		}
+
+		final RevaluationSource revaluationSource = RevaluationSource.ofNullableCode(costRevaluation.getRevaluationSource());
+		if (revaluationSource == null || revaluationSource.isManual())
+		{
+			costRevaluation.setEvaluationStartDate(costRevaluation.getDateAcct());
+		}
+	}
+
 	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)
 	{
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()

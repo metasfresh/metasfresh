@@ -41,7 +41,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link M_CostRevaluation#onDateAcctChanged(I_M_CostRevaluation, ICalloutField)}.
+ * Unit tests for {@link M_CostRevaluation#onDateAcctChanged(I_M_CostRevaluation, ICalloutField)} and
+ * {@link M_CostRevaluation#onRevaluationSourceChanged(I_M_CostRevaluation)}.
  * <p>
  * The callout sees the edited record plus, via {@link ICalloutField#getModelBeforeChanges(Class)}, the record as it was
  * before the user's edit. Both are modelled here as POJO records.
@@ -161,6 +162,43 @@ class M_CostRevaluationTest
 			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
 
 			assertThat(record.getEvaluationStartDate()).isNull();
+		}
+	}
+
+	@Nested
+	class RevaluationSourceChanged
+	{
+		@Test
+		void sourceSwitchedToManual_startDateFollowsDateAcct()
+		{
+			final I_M_CostRevaluation record = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
+			record.setRevaluationSource(RevaluationSource.Manual.getCode());
+
+			callout.onRevaluationSourceChanged(record);
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
+		}
+
+		@Test
+		void sourceSwitchedToCopyFromCostElement_startDateKept()
+		{
+			final I_M_CostRevaluation record = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Drafted);
+			record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
+
+			callout.onRevaluationSourceChanged(record);
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
+		}
+
+		@Test
+		void sourceSwitchedToManual_startDateKept_whenDocumentIsNotDraft()
+		{
+			final I_M_CostRevaluation record = record(day(2020, 1, 15), day(2019, 12, 1), DocStatus.Completed);
+			record.setRevaluationSource(RevaluationSource.Manual.getCode());
+
+			callout.onRevaluationSourceChanged(record);
+
+			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
 		}
 	}
 
