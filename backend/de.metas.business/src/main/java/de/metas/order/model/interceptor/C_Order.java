@@ -777,7 +777,8 @@ public class C_Order
 			return;
 		}
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
