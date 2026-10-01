@@ -53,6 +53,15 @@ export const step = async (title, func) => await test.step(title, async () => aw
 
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
+
+/**
+ * Clear the error-watcher state. Playwright runs every spec in ONE worker process, so this module's
+ * state is shared by all tests; a leaked non-zero id makes every later runAndWatchForErrors take the
+ * "already watching" short-circuit and arm NO watcher at all. Called per test from the page fixture.
+ */
+export const resetErrorWatchers = () => {
+    currentErrorWatcherId = 0;
+};
 const runAndWatchForErrors = async (func) => {
     if (currentErrorWatcherId > 0) {
         // console.log(`Already watching for errors (watcherId=${currentErrorWatcherId}), calling the function directly`);
