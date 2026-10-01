@@ -97,13 +97,21 @@
       padding-top: 0.2em;
       padding-bottom: 0.2em;
 
+      // A 0.7em icon with 0.1em padding (in button-text em), the same box the FontAwesome SVG build drew
+      // (its <svg> was content-box). The web font draws the glyph at the element's font-size, so the font is
+      // set to 0.7em and the box expressed in it; without this the glyph is drawn at full text size and
+      // overflows the box downwards. line-height 1.2 lowers the glyph to where the SVG sat.
       .indicator-box {
         flex: 0;
 
         display: block;
-        width: 0.7em;
-        height: 0.7em;
-        padding: 0.1em;
+        font-size: 0.7em;
+        line-height: 1.2;
+        text-align: center;
+        width: 1em;
+        height: 1em;
+        padding: calc(0.1em / 0.7);
+        box-sizing: content-box;
       }
 
       .indicator-color-red {
