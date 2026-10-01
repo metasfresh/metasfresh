@@ -29,6 +29,10 @@ import java.util.List;
  *       // (aggregation-independent: sums movementQty across all processed M_InOutLines
  *       //  for this order, regardless of how many M_InOut documents they belong to):
  *       shippedQty: 2
+ *     },
+ *     '1000123': {
+ *       // assert the order's compensation groups, matched in id order (record ids)
+ *       compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }]
  *     }
  *   }
  * });
@@ -62,4 +66,10 @@ public class JsonSalesOrderExpectation
 	 * <p>Null means no shipped-qty assertion (field omitted from JSON).
 	 */
 	@Nullable BigDecimal shippedQty;
+
+	/**
+	 * The order's expected compensation groups (C_Order_CompensationGroup), matched 1:1 in id order.
+	 * Null means no compensation-group assertion (field omitted from JSON).
+	 */
+	@Nullable List<JsonOrderCompensationGroupExpectation> compensationGroups;
 }

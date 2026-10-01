@@ -34,6 +34,7 @@ import de.metas.inventory.InventoryId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -47,6 +48,7 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
@@ -77,6 +79,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final OrderGroupRepository orderGroupRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -191,6 +194,11 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
 	{
 		return inOutDAO.retrieveLines(inOut);
+	}
+
+	public List<I_C_Order_CompensationGroup> getOrderCompensationGroups(@NonNull final OrderId orderId)
+	{
+		return orderGroupRepository.retrieveGroupRecordsByOrderId(orderId);
 	}
 
 	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)

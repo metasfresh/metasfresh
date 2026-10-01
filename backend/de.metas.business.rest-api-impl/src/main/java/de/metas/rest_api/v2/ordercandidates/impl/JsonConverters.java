@@ -162,7 +162,8 @@ public class JsonConverters
 		final ZonedDateTime datePromised = request.getDateRequired() != null
 				? request.getDateRequired().atStartOfDay(masterdataProvider.getOrgTimeZone(orgId))
 				: null;
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId, datePromised);
+		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId, datePromised, bPartnerInfo.getBpartnerId());
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
@@ -217,7 +218,6 @@ public class JsonConverters
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
 
-		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 		final BPartnerInfo billBPartnerInfo = masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null);
 
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
