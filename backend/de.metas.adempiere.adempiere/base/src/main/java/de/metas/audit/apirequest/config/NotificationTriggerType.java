@@ -34,6 +34,7 @@ import java.util.Arrays;
 
 import static org.compiere.model.X_API_Audit_Config.NOTIFYUSERINCHARGE_AllenAufrufen;
 import static org.compiere.model.X_API_Audit_Config.NOTIFYUSERINCHARGE_AufrufenMitFehler;
+import static org.compiere.model.X_API_Audit_Config.NOTIFYUSERINCHARGE_AufrufenMitFehlerOderTeilweisemFehler207;
 import static org.compiere.model.X_API_Audit_Config.NOTIFYUSERINCHARGE_Niemals;
 
 @AllArgsConstructor
@@ -42,7 +43,8 @@ public enum NotificationTriggerType implements ReferenceListAwareEnum
 {
 	ALWAYS(NOTIFYUSERINCHARGE_AllenAufrufen),
 	NEVER(NOTIFYUSERINCHARGE_Niemals),
-	ONLY_ON_ERROR(NOTIFYUSERINCHARGE_AufrufenMitFehler);
+	ONLY_ON_ERROR(NOTIFYUSERINCHARGE_AufrufenMitFehler),
+	ERROR_OR_PARTIAL_ERROR(NOTIFYUSERINCHARGE_AufrufenMitFehlerOderTeilweisemFehler207);
 
 	private final String code;
 

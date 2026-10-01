@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -30,12 +31,14 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -134,7 +137,7 @@ class ProductMasterDataProviderTest
 
 		// when — pre-switch: date before NEW's ValidFrom → only OLD is valid
 		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 
 		// then — OLD row (Qty=9)
 		assertThat(infoBeforeSwitch.getProductId()).isEqualTo(productId);
@@ -144,7 +147,7 @@ class ProductMasterDataProviderTest
 
 		// when — on/after switch: date on NEW's ValidFrom → both valid, pick latest ValidFrom → NEW wins
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 
 		// then — NEW row (Qty=6)
 		assertThat(infoAfterSwitch.getProductId()).isEqualTo(productId);
@@ -194,15 +197,59 @@ class ProductMasterDataProviderTest
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
 
 		// Call beforeSwitch FIRST — populates cache for (identifier, orgId, beforeSwitch)
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 		assertThat(infoBeforeSwitch.getHupiItemProductId())
 				.as("first call (beforeSwitch): cache miss → resolve → OLD row")
 				.isEqualTo(oldRowId);
 
 		// Call afterSwitch SECOND — must NOT return the cached beforeSwitch result
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 		assertThat(infoAfterSwitch.getHupiItemProductId())
 				.as("second call (afterSwitch): different date → separate cache entry → NEW row (if date is part of key)")
 				.isEqualTo(newRowId);
+	}
+
+	/**
+	 * Two partners each own a carton row with the same GTIN. Both requests go through the same provider
+	 * instance (shared cache); each partner must get its own packing instruction.
+	 */
+	@Test
+	void getProductInfo_is_cached_per_ordering_partner()
+	{
+		// given
+		final I_M_Product product = createProduct("feta-200g");
+		final BPartnerId partnerA = createBPartner("partnerA");
+		final BPartnerId partnerB = createBPartner("partnerB");
+		final HUPIItemProductId rowA = createPiip(product, "90000000001", partnerA);
+		final HUPIItemProductId rowB = createPiip(product, "90000000001", partnerB);
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-90000000001");
+
+		// when / then
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerA).getHupiItemProductId())
+				.as("partner A").isEqualTo(rowA);
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerB).getHupiItemProductId())
+				.as("partner B (must not get A's cached row)").isEqualTo(rowB);
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerA).getHupiItemProductId())
+				.as("partner A again").isEqualTo(rowA);
+	}
+
+	private BPartnerId createBPartner(final String value)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartner.setValue(value);
+		bpartner.setName(value);
+		InterfaceWrapperHelper.save(bpartner);
+		return BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+	}
+
+	private HUPIItemProductId createPiip(final I_M_Product product, final String gtin, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		piip.setM_Product_ID(product.getM_Product_ID());
+		piip.setGTIN(gtin);
+		piip.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		piip.setIsActive(true);
+		InterfaceWrapperHelper.save(piip);
+		return HUPIItemProductId.ofRepoId(piip.getM_HU_PI_Item_Product_ID());
 	}
 }

@@ -1,7 +1,9 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
@@ -15,6 +17,9 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -30,6 +35,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.MutableInt;
@@ -40,6 +46,7 @@ import org.eevolution.api.ProductBOMId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -84,18 +91,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
+	@NonNull private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
 	public OrderGroupRepository(
-			final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
-			final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
+			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
+			@NonNull final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
@@ -251,13 +259,16 @@ public class OrderGroupRepository implements GroupRepository
 				.pricePrecision(orderBL.getPricePrecision(order))
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.additive(isAdditive(orderCompensationGroupPO));
+
+		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
 			if (!groupOrderLine.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine);
+				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId);
 				groupBuilder.regularLine(regularLine);
 			}
 			else
@@ -270,6 +281,31 @@ public class OrderGroupRepository implements GroupRepository
 		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
 
 		return groupBuilder.build();
+	}
+
+	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	public static boolean isAdditive(@NonNull final I_C_Order_CompensationGroup groupRecord)
+	{
+		final int compensationGroupSchemaId = groupRecord.getC_CompensationGroup_Schema_ID();
+		if (compensationGroupSchemaId <= 0)
+		{
+			return false;
+		}
+
+		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
+	}
+
+	/**
+	 * The one definition of a contract-created group: its {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
+	 *
+	 * @return a query builder on the contract-created {@code C_Order_CompensationGroup} headers
+	 */
+	public static IQueryBuilder<I_C_Order_CompensationGroup> createContractCreatedGroupsQueryBuilder()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addNotNull(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID) // SQL-redundant; the in-memory (unit test) compare sorts null above 0
+				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0);
 	}
 
 	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
@@ -320,12 +356,34 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	private static GroupRegularLine toGroupRegularLine(final I_C_OrderLine record)
+	@VisibleForTesting
+	static GroupRegularLine toGroupRegularLine(
+			final I_C_OrderLine record,
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
 	{
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		return GroupRegularLine.builder()
 				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.lineNetAmt(record.getLineNetAmt())
+				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.build();
+	}
+
+	/**
+	 * Batch-resolves each regular (non-compensation) line's product category (plus ancestors) in one query,
+	 * instead of one uncached in-trx product lookup per line (this method runs on the hot order-completion path).
+	 *
+	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
+	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
+	 */
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
+			final List<I_C_OrderLine> groupOrderLines)
+	{
+		final ImmutableSet<ProductId> productIds = groupOrderLines.stream()
+				.filter(orderLine -> !orderLine.isGroupCompensationLine())
+				.map(orderLine -> ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		return productDAO.getProductCategoryIdAndAncestorsByProductIds(productIds);
 	}
 
 	/**
@@ -346,7 +404,21 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
+				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
 				.build();
+	}
+
+	/** @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line */
+	@Nullable
+	private static ProductCategoryId retrieveAppliesToProductCategoryId(final int compensationGroupSchemaLineId)
+	{
+		if (compensationGroupSchemaLineId <= 0)
+		{
+			return null;
+		}
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
+		return ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID());
 	}
 
 	@Override
@@ -425,6 +497,11 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setPriceEntered(compensationLine.getPrice());
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
 
+		// a compensation line is priced with PriceEntered == PriceActual, which is only correct if it carries no discount;
+		// IsManualDiscount also protects it from the order-line pricing recompute (see OrderLinePriceCalculator#isAllowChangingDiscount)
+		compensationLinePO.setIsManualDiscount(true);
+		compensationLinePO.setDiscount(BigDecimal.ZERO);
+
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
 
 		orderLineBL.updateLineNetAmtFromQtyEntered(compensationLinePO);
@@ -494,6 +571,7 @@ public class OrderGroupRepository implements GroupRepository
 				.activityId(newGroupTemplate.getActivityId())
 				.productCategoryId(newGroupTemplate.getProductCategoryId())
 				.groupTemplateId(newGroupTemplate.getId())
+				.flatrateTermId(request.getNewFlatrateTermId())
 				.build());
 
 		setGroupIdToLines(allRegularOrderLines, groupId);
@@ -602,6 +680,10 @@ public class OrderGroupRepository implements GroupRepository
 		{
 			groupPO.setC_CompensationGroup_Schema_ID(request.getGroupTemplateId().getRepoId());
 		}
+		if (request.getFlatrateTermId() != null)
+		{
+			groupPO.setC_Flatrate_Term_ID(request.getFlatrateTermId().getRepoId());
+		}
 		saveRecord(groupPO);
 
 		return createGroupId(request.getOrderId(), groupPO.getC_Order_CompensationGroup_ID());
@@ -703,8 +785,10 @@ public class OrderGroupRepository implements GroupRepository
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
+		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
+				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
 				.build();
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));
@@ -718,6 +802,19 @@ public class OrderGroupRepository implements GroupRepository
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();
+	}
+
+	/**
+	 * @return the active compensation-group header records of the given order, ordered by ID
+	 */
+	public List<I_C_Order_CompensationGroup> retrieveGroupRecordsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.create()
+				.list();
 	}
 
 	public void renumberOrderLinesForOrderId(@NonNull final OrderId orderId)
@@ -771,6 +868,46 @@ public class OrderGroupRepository implements GroupRepository
 				.name(groupRecord.getName())
 				.bomId(ProductBOMId.optionalOfRepoId(groupRecord.getPP_Product_BOM_ID()))
 				.build();
+	}
+
+	/**
+	 * Batched check of which of the given {@link GroupId}s were created by a contract, i.e. their
+	 * {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
+	 * <p>
+	 * A single query for however many distinct group ids a caller needs to check (e.g. every
+	 * compensation line of one order) — never one load per line.
+	 *
+	 * @return the subset of {@code groupIds} that are contract-created
+	 */
+	public ImmutableSet<GroupId> retrieveContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
+	{
+		return filterContractCreatedGroupIds(groupIds);
+	}
+
+	/**
+	 * Static variant of {@link #retrieveContractCreatedGroupIds(Set)}, for repositories that don't have this repository at hand
+	 * (e.g. the invoice candidates' group repository).
+	 */
+	public static ImmutableSet<GroupId> filterContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
+	{
+		if (groupIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<Integer> orderCompensationGroupIds = groupIds.stream()
+				.map(GroupId::getOrderCompensationGroupId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<Integer> contractCreatedRepoIds = ImmutableSet.copyOf(
+				createContractCreatedGroupsQueryBuilder()
+						.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupIds)
+						.create()
+						.listIds());
+
+		return groupIds.stream()
+				.filter(groupId -> contractCreatedRepoIds.contains(groupId.getOrderCompensationGroupId()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void setGroupProductBOMId(@NonNull final GroupId groupId, @NonNull final ProductBOMId bomId)

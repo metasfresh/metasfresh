@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -48,7 +50,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -61,7 +65,9 @@ import java.util.stream.Collectors;
  *     vendor lookup via {@link VendorProductInfoService#getDefaultVendorProductInfo} and
  *     <em>populates</em> the line's {@code C_BPartner_Vendor_ID} when the lookup succeeds.
  *     Throws an {@link AdempiereException} listing offending line numbers if any line still has no vendor
- *     after the auto-fill attempt.</li>
+ *     after the auto-fill attempt. A compensation (discount) line whose group was created by a contract is
+ *     skipped entirely — it needs no vendor of its own (a manually-grouped line, with no contract behind it,
+ *     is still checked like any regular line).</li>
  * <li>AFTER_COMPLETE: triggers dropship PO creation for the sales order via
  *     {@link DropshipPOFromSOService}.</li>
  * </ul>
@@ -76,6 +82,7 @@ public class C_Order_DropshipPO
 
 	@NonNull private final DropshipPOFromSOService dropshipPOFromSOService;
 	@NonNull private final VendorProductInfoService vendorProductInfoService;
+	@NonNull private final OrderGroupRepository orderGroupRepository;
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -98,9 +105,27 @@ public class C_Order_DropshipPO
 		final List<de.metas.interfaces.I_C_OrderLine> lines = orderBL.getLinesByOrderIds(
 				Collections.singleton(OrderId.ofRepoId(order.getC_Order_ID())));
 
+		// batch-resolve every line's group header in ONE query, rather than a relation-traversal
+		// load per line inside the loop (service-injection.md's persistence-in-DAO-only rule)
+		final Set<GroupId> compensationGroupIds = lines.stream()
+				.filter(de.metas.interfaces.I_C_OrderLine::isGroupCompensationLine)
+				.map(OrderGroupRepository::extractGroupIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		final Set<GroupId> contractCreatedGroupIds = compensationGroupIds.isEmpty()
+				? Collections.emptySet()
+				: orderGroupRepository.retrieveContractCreatedGroupIds(compensationGroupIds);
+
 		final List<Integer> offendingLineNumbers = new ArrayList<>();
 		for (final de.metas.interfaces.I_C_OrderLine line : lines)
 		{
+			if (isContractCompensationLine(line, contractCreatedGroupIds))
+			{
+				// a contract-created discount line needs no vendor of its own and must not be copied
+				// to the PO; the PO's own completion builds its own group from whatever contract
+				// matches the PO's own bill partner (the vendor).
+				continue;
+			}
 			final BPartnerId vendorId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_Vendor_ID());
 			if (vendorId != null)
 			{
@@ -155,6 +180,25 @@ public class C_Order_DropshipPO
 	}
 
 	// -------
+
+	/**
+	 * @param contractCreatedGroupIds every compensation line's group id that is contract-created (pre-resolved
+	 *                                via {@link OrderGroupRepository#retrieveContractCreatedGroupIds})
+	 * @return {@code true} if {@code line} is a compensation (discount) line whose group was created by a
+	 * contract (see {@code C_Order_ContractCompensationGroup} in {@code de.metas.contracts}, not referenced
+	 * here to keep this module free of a contracts dependency). Such a line needs no vendor of its own.
+	 */
+	private boolean isContractCompensationLine(
+			@NonNull final de.metas.interfaces.I_C_OrderLine line,
+			@NonNull final Set<GroupId> contractCreatedGroupIds)
+	{
+		if (!line.isGroupCompensationLine())
+		{
+			return false;
+		}
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(line);
+		return groupId != null && contractCreatedGroupIds.contains(groupId);
+	}
 
 	private boolean isDropshipWarehouseOrder(@NonNull final I_C_Order order)
 	{

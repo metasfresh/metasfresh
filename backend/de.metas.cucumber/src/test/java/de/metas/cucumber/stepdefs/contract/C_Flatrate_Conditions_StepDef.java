@@ -28,7 +28,9 @@ import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
+import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -58,7 +60,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_CompensationGroup_ContractSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Customer_Trade_Margin_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Transition_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_LicenseFeeSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_MediatedCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_UOM_ID;
@@ -85,6 +89,8 @@ public class C_Flatrate_Conditions_StepDef
 	private final @NonNull M_Product_StepDefData productTable;
 	private final @NonNull C_UOM_StepDefData uomTable;
 	private final @NonNull TestContext testContext;
+	private final @NonNull C_CompensationGroup_ContractSettings_StepDefData compensationGroupContractSettingsTable;
+	private final @NonNull C_Flatrate_Transition_StepDefData transitionTable;
 
 	/**
 	 * Creates (or upserts by {@code Name}) {@link I_C_Flatrate_Conditions} records used to set up flatrate/contract
@@ -99,7 +105,9 @@ public class C_Flatrate_Conditions_StepDef
 	 *         {@code OPT.C_Customer_Trade_Margin_ID.Identifier}, {@code OPT.C_MediatedCommissionSettings_ID.Identifier},
 	 *         {@code OPT.DocStatus} (default Completed), {@code OPT.InvoiceRule} (default AfterDelivery),
 	 *         {@code OPT.C_UOM_ID.Identifier}, {@code OPT.M_PricingSystem_ID.Identifier},
-	 *         {@code OPT.OnFlatrateTermExtend} (all optional)</li>
+	 *         {@code OPT.OnFlatrateTermExtend}, {@code OPT.C_CompensationGroup_ContractSettings_ID.Identifier}
+	 *         (compensation-group settings this contract triggers), {@code OPT.C_Flatrate_Transition_ID.Identifier}
+	 *         (defaults to the seeded {@link StepDefConstants#FLATRATE_TRANSITION_ID}) (all optional)</li>
 	 *     <li>{@code REST.Context.C_Flatrate_Conditions_ID} (optional) — when present, its cell value is used as a
 	 *         REST-context variable name that is set to the created {@code C_Flatrate_Conditions_ID}, so that a later
 	 *         REST payload can reference the dynamically-allocated id via {@code @<name>@}</li>
@@ -200,7 +208,19 @@ public class C_Flatrate_Conditions_StepDef
 			flatrateConditions.setName(name);
 			flatrateConditions.setType_Conditions(conditionsType);
 			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
+			final String transitionIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Flatrate_Transition_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int transitionId;
+			if (Check.isNotBlank(transitionIdentifier))
+			{
+				final I_C_Flatrate_Transition transition = transitionTable.get(transitionIdentifier);
+				assertThat(transition).as("Missing C_Flatrate_Transition record for identifier " + transitionIdentifier).isNotNull();
+				transitionId = transition.getC_Flatrate_Transition_ID();
+			}
+			else
+			{
+				transitionId = StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId();
+			}
+			flatrateConditions.setC_Flatrate_Transition_ID(transitionId);
 			flatrateConditions.setInvoiceRule(invoiceRule.getCode());
 			flatrateConditions.setDocStatus(docStatus);
 			flatrateConditions.setProcessed(true);
@@ -217,6 +237,14 @@ public class C_Flatrate_Conditions_StepDef
 			if (Check.isNotBlank(onFlatrateTermExtend))
 			{
 				flatrateConditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
+			}
+
+			final String compensationGroupContractSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_CompensationGroup_ContractSettings_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(compensationGroupContractSettingsIdentifier))
+			{
+				final I_C_CompensationGroup_ContractSettings compensationGroupContractSettings = compensationGroupContractSettingsTable.get(compensationGroupContractSettingsIdentifier);
+				assertThat(compensationGroupContractSettings).as("Missing C_CompensationGroup_ContractSettings record for identifier " + compensationGroupContractSettingsIdentifier).isNotNull();
+				flatrateConditions.setC_CompensationGroup_ContractSettings_ID(compensationGroupContractSettings.getC_CompensationGroup_ContractSettings_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(flatrateConditions);

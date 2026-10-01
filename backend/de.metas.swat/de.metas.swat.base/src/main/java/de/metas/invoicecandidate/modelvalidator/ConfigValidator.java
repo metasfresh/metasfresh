@@ -113,7 +113,6 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		// engine.addModelValidator(new C_InvoiceSchedule()); is now a spring component
 		// engine.addModelValidator(new C_Invoice()); is now a spring component
 		engine.addModelValidator(new AD_Note());
-		engine.addModelValidator(new C_OrderLine());
 		engine.addModelValidator(new C_Order());
 		engine.addModelValidator(new M_InOut());
 		//engine.addModelValidator(new M_InOutLine()); is now a spring component

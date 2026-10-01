@@ -40,6 +40,12 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	void putOrReplace(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType record);
 
+	/**
+	 * @return the given identifier's record id read directly from what is already known, without loading or
+	 * refreshing the record; see {@code StepDefData.peekRecordRepoId} for the exact semantics.
+	 */
+	Optional<Integer> peekRecordRepoId(@NonNull final StepDefDataIdentifier identifier);
+
 	//
 	// Helper methods
 	default ID getId(@NonNull final StepDefDataIdentifier identifier)
@@ -90,8 +96,15 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 				continue;
 			}
 
-			final ID currentId = getId(identifier);
-			if (Objects.equals(currentId, id))
+			// Compare against the id already known for this identifier (no load/refresh of its record) where
+			// possible, so a since-deleted underlying row (e.g. a compensation line removed by application logic
+			// after being identified) can no longer break registering an unrelated, later identifier. Only
+			// identifiers whose item has nothing to peek at (a plain, non-model record -- never lazily loaded
+			// anyway) fall back to the normal id lookup.
+			final boolean matches = peekRecordRepoId(identifier)
+					.map(repoId -> repoId == id.getRepoId())
+					.orElseGet(() -> Objects.equals(getId(identifier), id));
+			if (matches)
 			{
 				return Optional.of(identifier);
 			}

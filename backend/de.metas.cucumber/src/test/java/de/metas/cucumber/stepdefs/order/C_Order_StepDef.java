@@ -113,6 +113,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -521,6 +522,17 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
+
+				// Force a fresh load for this identifier: orderTable's StepDefData caches the model per
+				// identifier (a fresh TableRecordReference still keeps its own SoftReference once loaded), so
+				// without this, a later doc action on the same identifier reuses THIS SAME MOrder instance —
+				// unlike a real WebUI/REST request, which always loads a fresh PO per doc action
+				// (DocumentInterfaceWrapperHelper.getPO). That matters because MOrder.completeIt0() only
+				// re-runs prepareIt() (and so TIMING_BEFORE_PREPARE) when its private m_justPrepared flag is
+				// still false; reactivation never resets that flag, so re-completing the SAME cached instance
+				// after reactivation silently skips prepareIt() — a cucumber-harness-only gap a genuinely
+				// fresh instance (as production always has) does not have.
+				orderTable.putOrReplace(orderIdentifier, order);
 				break;
 			case completed:
 				completeOrder(order);
@@ -585,11 +597,71 @@ public class C_Order_StepDef
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for a refusal
+	 * whose {@link AdempiereException} has no stable {@code AD_Message.ErrorCode} to assert against — e.g. a
+	 * composed, multi-part message such as {@code ProductNotOnPriceListException}'s. Asserts the thrown
+	 * exception's message CONTAINS the given text instead.
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be completed because the error message contains bonusWareDiscount
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because the error message contains (.*)$")
+	public void order_cannot_be_completed_because_message_contains(
+			@NonNull final String orderIdentifier,
+			@NonNull final String expectedMessagePart)
+	{
+		StepDefUtil.assertRefusedWithMessageContaining(expectedMessagePart, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
+	}
+
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for reactivation.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be reactivated because of error code ContractCompensationGroup_ReactivateInvoiced
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be reactivated because of error code (.*)$")
+	public void order_cannot_be_reactivated_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.reactivated.name()));
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
+	}
+
+	/**
+	 * Asserts the exact number of active {@code C_OrderLine} rows the given order has — e.g. to prove that NO
+	 * extra (e.g. a stray 0.00 discount) line was added beyond the expected ones.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the order identified by order1 has 2 order lines
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) has (\\d+) order lines$")
+	public void order_has_n_order_lines(@NonNull final String orderIdentifier, final int expectedLineCount)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final long actualLineCount = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+
+		assertThat(actualLineCount).as("Number of C_OrderLine records for order %s", orderIdentifier).isEqualTo(expectedLineCount);
 	}
 
 	/**
@@ -886,6 +958,8 @@ public class C_Order_StepDef
 	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
+	 *   <li>{@code InvoiceStatus} (optional) — expected invoice status: {@code O} = open, {@code PI} = partially invoiced, {@code CI} = completely invoiced;
+	 *       waits up to 60s for it, because it follows the asynchronous recompute of the order's invoice candidates</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -1017,6 +1091,40 @@ public class C_Order_StepDef
 	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
 	 * </pre>
 	 */
+	/**
+	 * The order's invoiced quantities are summed up when its order lines are updated by the (asynchronous) recompute of their
+	 * invoice candidates; waits up to 60s for them to reach the expected status.
+	 * <p>
+	 * {@code InvoiceStatus} is a virtual column that a refreshed model keeps from its first read, so every attempt queries the order anew.
+	 *
+	 * @return the last invoice status read, for the caller's assertion
+	 */
+	private String awaitInvoiceStatus(@NonNull final I_C_Order order, @NonNull final String expectedInvoiceStatus)
+	{
+		final String[] lastInvoiceStatus = { null };
+		try
+		{
+			StepDefUtil.tryAndWait(60, 500, () -> {
+				lastInvoiceStatus[0] = queryBL.createQueryBuilderOutOfTrx(I_C_Order.class)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+						.create()
+						.firstOnlyNotNull(I_C_Order.class)
+						.getInvoiceStatus();
+				return expectedInvoiceStatus.equals(lastInvoiceStatus[0]);
+			});
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		catch (final AssertionError ignored)
+		{
+			// not reached within the timeout: the caller's assertion reports the last status read
+		}
+		return lastInvoiceStatus[0];
+	}
+
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
@@ -1084,6 +1192,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceStatus)
+				.ifPresent(invoiceStatus -> softly.assertThat(awaitInvoiceStatus(order, invoiceStatus)).as("InvoiceStatus for Identifier=%s", identifierStr).isEqualTo(invoiceStatus));
 
 		row.getAsOptionalString(COLUMNNAME_BPartnerName)
 				.ifPresent(bpartnerName -> softly.assertThat(order.getBPartnerName()).as("BPartnerName for Identifier=%s", identifierStr).isEqualTo(bpartnerName));
@@ -1377,5 +1488,49 @@ public class C_Order_StepDef
 
 			restTestContext.setEndpointPath(endpointPath);
 		}
+	}
+
+	/**
+	 * Asserts the relative registration order of the {@code C_Order} model interceptors listed in the
+	 * given rows, using {@link ModelValidationEngine#getGlobalDocValidateListenerDescriptions}. Each row
+	 * is a substring expected to identify exactly one registered interceptor (e.g. a fully-qualified or
+	 * unique-suffix class name); row N must appear before row N+1 in the actual registration order.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then the C_Order model interceptors are registered in this order:
+	 *   | de.metas.handlingunits.model.validator.C_Order                        |
+	 *   | de.metas.contracts.compensationGroup.contract.interceptor.C_Order_ContractCompensationGroup |
+	 *   | de.metas.freighcost.interceptor.C_Order                               |
+	 * </pre>
+	 */
+	@Then("the C_Order model interceptors are registered in this order:")
+	public void the_C_Order_model_interceptors_are_registered_in_this_order(@NonNull final DataTable dataTable)
+	{
+		final List<String> expectedInOrder = dataTable.asList(String.class);
+
+		final List<String> actual = ModelValidationEngine.get().getGlobalDocValidateListenerDescriptions(I_C_Order.Table_Name);
+
+		int searchFromIndex = 0;
+		for (final String expected : expectedInOrder)
+		{
+			final int foundAtIndex = indexOfContaining(actual, expected, searchFromIndex);
+			assertThat(foundAtIndex)
+					.as("no C_Order model interceptor matching '%s' registered at or after index %s; actual registration order: %s", expected, searchFromIndex, actual)
+					.isGreaterThanOrEqualTo(0);
+			searchFromIndex = foundAtIndex + 1;
+		}
+	}
+
+	private static int indexOfContaining(@NonNull final List<String> list, @NonNull final String fragment, final int fromIndex)
+	{
+		for (int i = fromIndex; i < list.size(); i++)
+		{
+			if (list.get(i).contains(fragment))
+			{
+				return i;
+			}
+		}
+		return -1;
 	}
 }

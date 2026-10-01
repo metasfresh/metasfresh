@@ -32,14 +32,34 @@ import java.util.Map;
 /**
  * Replaces {@code {placeholder}} tokens in a filename pattern; unknown ones are left unchanged.
  *
- * <p>{@code {timestamp}} is built in, the rest are supplied by the caller: export-side
- * {@code {documentno}}, {@code {table}} and {@code {recordid}}, import-side {@code {filename}}
- * (see {@link ImportFileNameResolver}).
+ * <p>Built-in placeholders:
+ * <ul>
+ *   <li>{@code {timestamp}} — current local date/time in {@code yyyyMMdd_HHmmss} format (e.g. {@code 20260328_143022})</li>
+ * </ul>
+ *
+ * <p>Context-dependent placeholders, export-side (populated by {@link SftpDeliveryProcessor}):
+ * <ul>
+ *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
+ *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
+ *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ *   <li>{@code {index}} — 1-based index of the element in a split (fan-out) export; empty if the export is not split</li>
+ * </ul>
+ *
+ * <p>Import-side the caller supplies {@code {filename}} (see {@link ImportFileNameResolver}).
+ *
+ * <p>Unknown placeholders are left unchanged (except {@code {index}}, which resolves to the empty string when not supplied).
+ *
+ * <p>Example:
+ * <pre>
+ *   resolve("DESADV_{documentno}_{timestamp}.json", Map.of("documentno", "12345"))
+ *   // → "DESADV_12345_20260328_143022.json"
+ * </pre>
  */
 @UtilityClass
 public class FilenamePatternResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
+	private static final String INDEX_PLACEHOLDER = "{index}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
 	/**
@@ -62,6 +82,10 @@ public class FilenamePatternResolver
 			}
 		}
 
+		// {index} is only supplied for split exports; otherwise resolve it to empty
+		result = result.replace(INDEX_PLACEHOLDER, "");
+
+		// Replace the special {timestamp} placeholder
 		if (result.contains(TIMESTAMP_PLACEHOLDER))
 		{
 			final String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);

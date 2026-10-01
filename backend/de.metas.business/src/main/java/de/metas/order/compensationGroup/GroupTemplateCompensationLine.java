@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -47,19 +48,24 @@ public class GroupTemplateCompensationLine
 	@Nullable Percent percentage;
 	@NonNull GroupMatcher groupMatcher;
 
+	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	@Nullable ProductCategoryId appliesToProductCategoryId;
+
 	@Builder
 	private GroupTemplateCompensationLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final GroupCompensationType compensationType,
 			@Nullable final Percent percentage,
-			@Nullable final GroupMatcher groupMatcher)
+			@Nullable final GroupMatcher groupMatcher,
+			@Nullable final ProductCategoryId appliesToProductCategoryId)
 	{
 		this.id = id;
 		this.productId = productId;
 		this.compensationType = compensationType;
 		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
+		this.appliesToProductCategoryId = appliesToProductCategoryId;
 	}
 
 	public boolean isMatching(@NonNull final Group group)
