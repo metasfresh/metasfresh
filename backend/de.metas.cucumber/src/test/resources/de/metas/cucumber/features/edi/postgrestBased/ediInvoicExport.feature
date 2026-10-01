@@ -88,7 +88,7 @@ Feature: EDI INVOIC export via postgREST
       "CreditMemo_Reason": null,
       "CreditMemo_ReasonText": null,
       "Order_POReference": null,
-      "Order_Date": null,
+      "Order_Date": "2025-05-01T00:00:00",
       "Shipment_Date": null,
       "Shipment_DocumentNo": null,
       "DESADV_DocumentNo": null,
@@ -756,6 +756,69 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4055555000026"
         }
       ]
+    }
+  ]
+}
+    """
+
+  @Id:S32406_010
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: INVOIC of a credit memo without any order exports the invoice date as Order_Date
+  ## A return credit memo (e.g. one created manually for returned goods) has no C_Order, so neither the invoice,
+  ## an order header nor its lines can provide an order date; INVOIC then falls back to DateInvoiced.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier | Name                  |
+      | product    | creditMemoProductName |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | creditMemo | creditMemo_ID | customer1     | Gutschrift              | S32406_010 | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | creditMemo   | product      | 1 PCE       |
+    And the invoice identified by creditMemo is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@creditMemo_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @creditMemo_ID@,
+      "Invoice_DocumentNo": "S32406_010",
+      "DocType_Base": "ARC",
+      "Invoice_Date": "2025-05-01T00:00:00",
+      "Order_Date": "2025-05-01T00:00:00"
     }
   ]
 }
