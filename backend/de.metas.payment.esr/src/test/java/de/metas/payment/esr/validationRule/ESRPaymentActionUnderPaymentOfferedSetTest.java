@@ -10,9 +10,7 @@ import org.compiere.model.I_C_Payment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,36 +34,6 @@ public class ESRPaymentActionUnderPaymentOfferedSetTest
 	protected POJOLookupMap db = POJOLookupMap.get();
 	protected PlainValidationContext plainValidationCtx = new PlainValidationContext();
 
-	/**
-	 * Every action code the reference list defines, read off the generated model class rather than
-	 * listed by hand: a hand-written list silently stops being exhaustive the moment an action is
-	 * added to {@code ESR_Payment_Action}, which is exactly what this class claims not to be.
-	 */
-	private static final List<String> ALL_ACTIONS = allPaymentActionCodes();
-
-	private static List<String> allPaymentActionCodes()
-	{
-		final List<String> codes = new ArrayList<>();
-		for (final Field field : X_ESR_ImportLine.class.getDeclaredFields())
-		{
-			// ESR_PAYMENT_ACTION_AD_Reference_ID is the reference's own ID, not an action code.
-			if (field.getName().startsWith("ESR_PAYMENT_ACTION_")
-					&& field.getType() == String.class)
-			{
-				try
-				{
-					codes.add((String)field.get(null));
-				}
-				catch (final IllegalAccessException e)
-				{
-					throw new IllegalStateException("Cannot read " + field.getName(), e);
-				}
-			}
-		}
-		assertThat(codes).as("action codes found on X_ESR_ImportLine").isNotEmpty();
-		return codes;
-	}
-
 	private List<String> offeredFor(final String openAmt, final String currentAction)
 	{
 		final I_C_Payment payment = db.newInstance(I_C_Payment.class);
@@ -83,15 +51,7 @@ public class ESRPaymentActionUnderPaymentOfferedSetTest
 		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID, "1080178");
 		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, Integer.toString(line.getESR_ImportLine_ID()));
 
-		final List<String> offered = new ArrayList<>();
-		for (final String action : ALL_ACTIONS)
-		{
-			if (ESRValidationRuleTools.evaluatePaymentAction(action, plainValidationCtx))
-			{
-				offered.add(action);
-			}
-		}
-		return offered;
+		return ESRValidationRuleTools.offeredPaymentActions(plainValidationCtx);
 	}
 
 	/**

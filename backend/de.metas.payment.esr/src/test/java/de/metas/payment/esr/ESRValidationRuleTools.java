@@ -1,10 +1,15 @@
 package de.metas.payment.esr;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.validationRule.ESRPaymentActionValidationRule;
 import de.metas.util.Check;
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
 import org.compiere.util.NamePair;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -12,6 +17,49 @@ public final class ESRValidationRuleTools
 {
 	private ESRValidationRuleTools()
 	{
+	}
+
+	/**
+	 * Every action code the {@code ESR_Payment_Action} reference list defines, read off the generated
+	 * model class rather than listed by hand: a hand-written list silently stops being exhaustive the
+	 * moment an action is added, which is exactly what a caller asserting a COMPLETE offered set needs
+	 * not to happen.
+	 */
+	public static List<String> allPaymentActionCodes()
+	{
+		final List<String> codes = new ArrayList<>();
+		for (final Field field : X_ESR_ImportLine.class.getDeclaredFields())
+		{
+			// ESR_PAYMENT_ACTION_AD_Reference_ID is the reference's own ID, not an action code -- it is
+			// an int, so the type check already excludes it.
+			if (field.getName().startsWith("ESR_PAYMENT_ACTION_") && field.getType() == String.class)
+			{
+				try
+				{
+					codes.add((String)field.get(null));
+				}
+				catch (final IllegalAccessException e)
+				{
+					throw new IllegalStateException("Cannot read " + field.getName(), e);
+				}
+			}
+		}
+		assertThat(codes).as("action codes declared on X_ESR_ImportLine").isNotEmpty();
+		return codes;
+	}
+
+	/** The actions {@link ESRPaymentActionValidationRule} offers for the given context, out of all of them. */
+	public static List<String> offeredPaymentActions(final PlainValidationContext plainValidationCtx)
+	{
+		final List<String> offered = new ArrayList<>();
+		for (final String action : allPaymentActionCodes())
+		{
+			if (evaluatePaymentAction(action, plainValidationCtx))
+			{
+				offered.add(action);
+			}
+		}
+		return offered;
 	}
 
 	/**

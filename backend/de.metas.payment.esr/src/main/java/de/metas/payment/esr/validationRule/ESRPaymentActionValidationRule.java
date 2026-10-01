@@ -48,6 +48,15 @@ import java.util.Set;
  */
 public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 {
+	/**
+	 * Actions for a line whose payment has nothing left to settle against its invoice: the money is
+	 * sitting on the partner and the accountant has to say where it goes.
+	 */
+	private static final ImmutableSet<String> NO_ACTION_GROUP = ImmutableSet.of(
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
+
 	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(
 			I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt,
 			I_ESR_ImportLine.COLUMNNAME_C_Payment_ID,
@@ -116,17 +125,8 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		// Every handler behind these actions supports a line without an invoice: the refund one
 		// branches on it explicitly ("there is no invoice, so we transfer back all the money"),
 		// and the next-invoice one only needs the payment to set IsAutoAllocateAvailableAmt.
-		// A line the import flagged as a duplicate is the same situation as a line without an invoice:
-		// it carries its OWN payment, and that payment settles nothing, because the invoice on the line
-		// was already paid by an earlier one. Its ESR_Invoice_Openamt is therefore exactly ZERO -- the
-		// overpayment group needs it NEGATIVE, the underpayment group POSITIVE and the no-invoice group
-		// needs no invoice, so without this the accountant is offered NOTHING and cannot say what should
-		// happen to the money. Keyed on the flag rather than on "openAmt <= 0", which would also fire on
-		// a payment that settles its invoice exactly -- where there is nothing to decide.
-		final List<String> noActionGroup = new ArrayList<String>();
-		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
-		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
-		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
+		// A duplicate payment is the same situation WITH an invoice attached, which is why the group
+		// is NO_ACTION_GROUP above and the second way into it is isSettledInvoiceAwaitingDecision.
 
 		// Actions for when we have Payment < Open amount
 		final List<String> underPaymentGroup = new ArrayList<String>();
@@ -153,21 +153,45 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		{
 			acceptUnderPaymentItem = openAmt.signum() > 0;
 		}
-		if (noActionGroup.contains(item.getID()))
+		if (NO_ACTION_GROUP.contains(item.getID()))
 		{
-			// the duplicate flag is read here rather than up front because it costs a record load, and
-			// accept() runs once per action: only these three items can ever be accepted by it.
-			acceptNoActionItem = invoiceId <= 0 || isFlaggedDuplicatePayment(evalCtx);
+			// the line is read here rather than up front because it costs a record load, and accept()
+			// runs once per action: only these three items can ever be accepted by it.
+			acceptNoActionItem = invoiceId <= 0 || isSettledInvoiceAwaitingDecision(evalCtx, openAmt);
 		}
 
 		return (acceptOverpaymentItem || acceptUnderPaymentItem || acceptNoActionItem);
 	}
 
-	private boolean isFlaggedDuplicatePayment(final IValidationContext evalCtx)
+	/**
+	 * Whether this line's payment settles nothing on its invoice, leaving the accountant to say where
+	 * the money goes. Requires an EXACTLY zero open amount plus one of two marks on the line:
+	 * <ul>
+	 * <li>the import flagged it {@code Duplicate_Payment} -- the invoice was already paid by an earlier
+	 * payment, so this one settles nothing;
+	 * <li>or she has already chosen one of these actions. That choice OVERWRITES the flag, because the
+	 * flag and her choice are the same column; without this second way in, the menu would be one-shot
+	 * and reopening the line before processing it would offer her nothing.
+	 * </ul>
+	 * The open amount alone cannot key this: a payment that settles its invoice exactly has a zero open
+	 * amount too and carries neither mark, because there is nothing to decide there.
+	 */
+	private boolean isSettledInvoiceAwaitingDecision(final IValidationContext evalCtx, final BigDecimal openAmt)
 	{
+		if (openAmt.signum() != 0)
+		{
+			return false;
+		}
+
 		final I_ESR_ImportLine importLine = getImportLineOrNull(evalCtx);
-		return importLine != null
-				&& X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(importLine.getESR_Payment_Action());
+		if (importLine == null)
+		{
+			return false;
+		}
+
+		final String currentAction = importLine.getESR_Payment_Action();
+		return X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(currentAction)
+				|| NO_ACTION_GROUP.contains(currentAction);
 	}
 
 	/**
