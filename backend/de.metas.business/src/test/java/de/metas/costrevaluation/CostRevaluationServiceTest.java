@@ -704,44 +704,6 @@ public class CostRevaluationServiceTest
 		return CostDetailId.ofRepoId(record.getM_CostDetail_ID());
 	}
 
-	/**
-	 * Records that a cost revaluation with the given status, posted on {@code dateAcct}, restated the given cost detail
-	 * to {@code newAmt} at {@code newCostPrice} (its {@code CostDetailAdjustment} detail row).
-	 */
-	private void createRestatement(
-			@NonNull final ProductId productId,
-			@NonNull final CostDetailId costDetailId,
-			@NonNull final LocalDate dateAcct,
-			@NonNull final DocStatus docStatus,
-			@NonNull final String newAmt,
-			@NonNull final String newCostPrice)
-	{
-		final CostRevaluationId restatingRevaluationId = createHeader(dateAcct, dateAcct);
-		final CostRevaluationLineId restatingLineId = costRevaluationService.createLineForProduct(restatingRevaluationId, productId, new BigDecimal(newCostPrice));
-
-		final I_M_CostRevaluation_Detail detail = newInstance(I_M_CostRevaluation_Detail.class);
-		detail.setM_CostRevaluation_ID(restatingRevaluationId.getRepoId());
-		detail.setM_CostRevaluationLine_ID(restatingLineId.getRepoId());
-		detail.setSeqNo(20);
-		detail.setRevaluationType(CostRevaluationDetailType.CostDetailAdjustment.getCode());
-		detail.setM_Product_ID(productId.getRepoId());
-		detail.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-		detail.setM_CostElement_ID(costElementId.getRepoId());
-		detail.setC_UOM_ID(eachUOM.getC_UOM_ID());
-		detail.setC_Currency_ID(euroCurrencyId.getRepoId());
-		detail.setM_CostDetail_ID(costDetailId.getRepoId());
-		detail.setNewAmt(new BigDecimal(newAmt));
-		detail.setNewCostPrice(new BigDecimal(newCostPrice));
-		saveRecord(detail);
-
-		// status last: lines can only be added to a draft
-		final I_M_CostRevaluation header = InterfaceWrapperHelper.load(restatingRevaluationId.getRepoId(), I_M_CostRevaluation.class);
-		header.setDocStatus(docStatus.getCode());
-		header.setProcessed(docStatus.isCompleted());
-		header.setPosted(docStatus.isCompleted());
-		saveRecord(header);
-	}
-
 	/** Creates a completed revaluation of the product posted on {@code dateAcct}, with or without its posting done. */
 	private void createCompletedRevaluation(@NonNull final ProductId productId, @NonNull final LocalDate dateAcct, final boolean posted)
 	{
@@ -755,14 +717,34 @@ public class CostRevaluationServiceTest
 		saveRecord(header);
 	}
 
-	private I_M_CostRevaluation_Detail getSingleDetailRecord(@NonNull final CostRevaluationId costRevaluationId, @NonNull final CostRevaluationDetailType type)
+	private List<I_M_CostRevaluation_Detail> getDetailRecords(@NonNull final CostRevaluationId costRevaluationId, @NonNull final CostRevaluationDetailType type)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostRevaluation_Detail.class)
 				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, costRevaluationId)
 				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_RevaluationType, type.getCode())
 				.create()
-				.firstOnlyNotNull(I_M_CostRevaluation_Detail.class);
+				.list(I_M_CostRevaluation_Detail.class);
+	}
+
+	/** The revaluation is booked forward-only: one before-row of the stock on hand at the current price, no cost detail restated. */
+	private void assertBooksOnHandQtyTimesDelta(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final String expectedQty,
+			@NonNull final String expectedOldCostPrice,
+			@NonNull final String expectedNewCostPrice,
+			@NonNull final String expectedDeltaAmt)
+	{
+		final List<I_M_CostRevaluation_Detail> beforeRows = getDetailRecords(costRevaluationId, CostRevaluationDetailType.CurrentCostBeforeRevaluation);
+		assertThat(beforeRows).hasSize(1);
+		final I_M_CostRevaluation_Detail before = beforeRows.get(0);
+		assertThat(before.getQty()).isEqualByComparingTo(expectedQty);
+		assertThat(before.getOldCostPrice()).isEqualByComparingTo(expectedOldCostPrice);
+		assertThat(before.getNewCostPrice()).isEqualByComparingTo(expectedNewCostPrice);
+		assertThat(before.getDeltaAmt()).isEqualByComparingTo(expectedDeltaAmt);
+
+		assertThat(getDetailRecords(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment)).isEmpty();
+		assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo(expectedDeltaAmt);
 	}
 
 	private BigDecimal getSingleLineDeltaAmt(@NonNull final CostRevaluationId costRevaluationId)
@@ -777,11 +759,11 @@ public class CostRevaluationServiceTest
 	class CreateDetails
 	{
 		/**
-		 * A back-dated revaluation (posted on 03-04, before the stock movement of 03-05 its window replays) is accepted:
-		 * the movement is restated to the new price.
+		 * A posting date before a later stock movement is accepted (known limitation): the stock on hand is revalued,
+		 * the movement is not restated.
 		 */
 		@Test
-		public void replaysAStockMovementPostedAfterTheRevaluationDateAcct()
+		public void acceptsAPostingDateBeforeALaterMovement_booksOnHandQtyTimesDelta()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_movementAfterDateAcct");
@@ -793,125 +775,30 @@ public class CostRevaluationServiceTest
 
 			costRevaluationService.createDetails(costRevaluationId);
 
-			assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo("500"); // 100 x (15 - 10)
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500"); // 100 x (15 - 10)
 		}
 
 		/**
-		 * A movement already restated by a completed revaluation is replayed from its restated amount, so a later
-		 * revaluation books only its own step.
+		 * The evaluation start date plays no part: a cost detail between it and the posting date is not restated.
 		 */
 		@Test
-		public void usesRestatedAmountAsBaseline()
+		public void evaluationStartDateIsIgnored_andEqualsDateAcct()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_restatedBaseline");
-			seedCurrentCost(productId, "15", "100");
-			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1003, null);
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1500", "15");
-
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));
-
-			costRevaluationService.createDetails(costRevaluationId);
-
-			final I_M_CostRevaluation_Detail adjustment = getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment);
-			assertThat(adjustment.getOldAmt()).isEqualByComparingTo("1500");
-			assertThat(adjustment.getDeltaAmt()).isEqualByComparingTo("300"); // 100 x (18 - 15), not 800
-			assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo("300");
-		}
-
-		/**
-		 * The stock before the first replayed movement is rewound to the price that movement was restated at, not the
-		 * price recorded when it was posted.
-		 */
-		@Test
-		public void rewindsFromRestatedPriceOfFirstReplayedDetail()
-		{
-			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_restatedAnchor");
-			seedCurrentCost(productId, "12", "150");
-			// receipt of 50 @ 10 on a stock of 100 @ 10
-			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-10T00:00:00"), 1004, null, "500", "50", "100", "10");
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-06"), DocStatus.Completed, "600", "12");
-
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-11"), LocalDate.parse("2024-03-07"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("13"));
-
-			costRevaluationService.createDetails(costRevaluationId);
-
-			final I_M_CostRevaluation_Detail before = getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CurrentCostBeforeRevaluation);
-			assertThat(before.getOldCostPrice()).isEqualByComparingTo("12");
-			assertThat(before.getDeltaAmt()).isEqualByComparingTo("100"); // 100 x (13 - 12)
-			// + the receipt 50 x 13 - 600 = 50
-			assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo("150");
-		}
-
-		@Test
-		public void usesMostRecentCompletedRestatement()
-		{
-			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_latestRestatement");
-			seedCurrentCost(productId, "17", "100");
-			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1005, null);
-			// the later-dated restatement is created first, so the lower ID does not decide
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1700", "17");
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-03"), DocStatus.Completed, "1500", "15");
-
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));
-
-			costRevaluationService.createDetails(costRevaluationId);
-
-			final I_M_CostRevaluation_Detail adjustment = getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment);
-			assertThat(adjustment.getOldAmt()).isEqualByComparingTo("1700");
-			assertThat(adjustment.getDeltaAmt()).isEqualByComparingTo("100");
-		}
-
-		@Test
-		public void usesLatestCreatedRestatement_whenPostedOnTheSameDay()
-		{
-			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_sameDayRestatements");
-			seedCurrentCost(productId, "17", "100");
-			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1010, null);
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1500", "15");
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Completed, "1700", "17");
-
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));
-
-			costRevaluationService.createDetails(costRevaluationId);
-
-			assertThat(getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment).getOldAmt()).isEqualByComparingTo("1700");
-		}
-
-		/**
-		 * A revaluation that is not completed has booked nothing, so its detail rows are no restatement.
-		 */
-		@Test
-		public void ignoresRestatementsOfNotCompletedRevaluations()
-		{
-			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_draftRestatement");
+			final ProductId productId = createProduct("product_startDateIgnored");
 			seedCurrentCost(productId, "10", "100");
-			final CostDetailId costDetailId = createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1006, null);
-			createRestatement(productId, costDetailId, LocalDate.parse("2024-03-04"), DocStatus.Drafted, "1500", "15");
+			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1011, null);
 
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("18"));
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-01"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
 			costRevaluationService.createDetails(costRevaluationId);
 
-			final I_M_CostRevaluation_Detail adjustment = getSingleDetailRecord(costRevaluationId, CostRevaluationDetailType.CostDetailAdjustment);
-			assertThat(adjustment.getOldAmt()).isEqualByComparingTo("1000");
-			assertThat(adjustment.getDeltaAmt()).isEqualByComparingTo("800");
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500"); // 100 x (15 - 10)
 		}
 
-		/**
-		 * A revaluation posted on the evaluation start day counts as later: back-dating onto its day is refused.
-		 */
 		@Test
-		public void throws_whenAnotherRevaluationIsPostedOnTheEvaluationStartDay()
+		public void acceptsAnotherRevaluationPostedOnTheSameDay()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_revaluationOnStartDay");
@@ -921,21 +808,16 @@ public class CostRevaluationServiceTest
 			final CostRevaluationLineId otherLineId = costRevaluationService.createLineForProduct(otherRevaluationId, productId, new BigDecimal("12"));
 			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), -1, otherLineId);
 
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
-			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
-					.hasMessageContaining("05.03.2024");
+			costRevaluationService.createDetails(costRevaluationId);
+
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "12", "15", "300"); // 100 x (15 - 12)
 		}
 
-		/**
-		 * Posting runs asynchronously: a later revaluation that is completed but not yet posted has no cost detail yet,
-		 * and still blocks back-dating before it.
-		 */
 		@Test
-		public void throws_whenALaterCompletedRevaluationIsNotPostedYet()
+		public void acceptsALaterCompletedNotPostedRevaluation()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_laterNotPosted");
@@ -946,18 +828,13 @@ public class CostRevaluationServiceTest
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
 
-			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
-					.hasMessageContaining("10.03.2024");
+			costRevaluationService.createDetails(costRevaluationId);
+
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "12", "200"); // 100 x (12 - 10)
 		}
 
-		/**
-		 * An earlier revaluation that is completed but not yet posted has not updated the cost yet; its later posting
-		 * would overwrite this revaluation's cost price, so this one waits for it.
-		 */
 		@Test
-		public void throws_whenAnEarlierCompletedRevaluationIsNotPostedYet()
+		public void acceptsAnEarlierCompletedNotPostedRevaluation_computesFromTheCurrentPrice()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_earlierNotPosted");
@@ -967,10 +844,9 @@ public class CostRevaluationServiceTest
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
 
-			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("M_CostRevaluation.EarlierRevaluationNotPosted")
-					.hasMessageContaining("04.03.2024");
+			costRevaluationService.createDetails(costRevaluationId);
+
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "12", "200"); // 100 x (12 - 10)
 		}
 
 		@Test
@@ -1036,11 +912,10 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Only the posting DAY counts: a stock movement posted later on the revaluation's own posting day (time of day
-		 * after the day's start) is replayed normally.
+		 * A stock movement posted later on the revaluation's own posting day is not restated: the qty on hand is revalued.
 		 */
 		@Test
-		public void replaysAStockMovementPostedLaterOnTheRevaluationPostingDay()
+		public void acceptsASameDayMovement_booksOnHandQty()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_movementSameDay");
@@ -1052,61 +927,29 @@ public class CostRevaluationServiceTest
 
 			costRevaluationService.createDetails(costRevaluationId);
 
-			final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
-			assertThat(lines).hasSize(1);
-			InterfaceWrapperHelper.refresh(lines.get(0));
-			assertThat(lines.get(0).getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10), the movement replayed at 15
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500"); // 100 x (15 - 10)
 		}
 
 		/**
-		 * A later-dated earlier REVALUATION inside the window keeps its own, more specific refusal (it is not a stock
-		 * movement, so the posting-date advice would not help).
+		 * Another revaluation posted on a later day does not stop a back-dated one (known limitation): it books from the current price.
 		 */
 		@Test
-		public void throws_revaluatingAnotherRevaluation_evenWhenItIsPostedAfterTheRevaluationDateAcct()
+		public void acceptsAnotherRevaluationPostedOnALaterDay_booksFromTheCurrentPrice()
 		{
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_revaluationAfterDateAcct");
 			seedCurrentCost(productId, "10", "100");
 
-			final CostRevaluationId earlierRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
-			final CostRevaluationLineId earlierLineId = costRevaluationService.createLineForProduct(earlierRevaluationId, productId, new BigDecimal("12"));
-			createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), -1, earlierLineId);
+			final CostRevaluationId laterRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId laterLineId = costRevaluationService.createLineForProduct(laterRevaluationId, productId, new BigDecimal("12"));
+			createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), -1, laterLineId);
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-05"), LocalDate.parse("2024-03-05"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
-			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
-		}
+			costRevaluationService.createDetails(costRevaluationId);
 
-		/**
-		 * The refusal names the day of the other revaluation in the time zone of this revaluation's organization,
-		 * the same basis the posting-date check uses (not the time zone of the other cost detail's organization).
-		 */
-		@Test
-		public void revaluatingAnotherRevaluation_namesItsDayInTheRevaluationOrgTimeZone()
-		{
-			// the revaluations' org is in Pacific/Auckland (UTC+13 in March); the cost details are org-less
-			orgId = AdempiereTestHelper.createOrgWithTimeZone(ZoneId.of("Pacific/Auckland"));
-			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
-			final ProductId productId = createProduct("product_revaluationDayInOrgTimeZone");
-			seedCurrentCost(productId, "10", "100");
-
-			final CostRevaluationId earlierRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
-			final CostRevaluationLineId earlierLineId = costRevaluationService.createLineForProduct(earlierRevaluationId, productId, new BigDecimal("12"));
-			// 13:00 on 03-05 in Europe/Berlin is 01:00 on 03-06 in Pacific/Auckland
-			createCostDetail(productId, LocalDateTime.parse("2024-03-05T13:00:00"), -1, earlierLineId);
-
-			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-05"));
-			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
-
-			assertThatThrownBy(() -> costRevaluationService.createDetails(costRevaluationId))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported")
-					.hasMessageContaining("06.03.2024")
-					.hasMessageNotContaining("05.03.2024");
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500"); // 100 x (15 - 10)
 		}
 	}
 
