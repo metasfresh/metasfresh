@@ -417,9 +417,7 @@ public class CostRevaluationService
 	 */
 	public boolean hasAnyLineWithCostDetail(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		return costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
-				.map(lineRecord -> CostRevaluationLineId.ofRepoId(costRevaluationId, lineRecord.getM_CostRevaluationLine_ID()))
-				.anyMatch(lineId -> !costDetailRepository.listByDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId)).isEmpty());
+		return costDetailRepository.hasCostDetailsForCostRevaluation(costRevaluationId);
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)

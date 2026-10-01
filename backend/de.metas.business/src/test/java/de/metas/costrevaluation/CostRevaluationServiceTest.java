@@ -1210,6 +1210,17 @@ public class CostRevaluationServiceTest
 		}
 
 		@Test
+		public void findPresetCostElement_ignoresTheElementsOfAnotherClient()
+		{
+			final CostElementId otherClientElementId = createCostElement("AveragePO other client", CostingMethod.AveragePO);
+			final I_M_CostElement otherClientElement = InterfaceWrapperHelper.load(otherClientElementId.getRepoId(), I_M_CostElement.class);
+			InterfaceWrapperHelper.setValue(otherClientElement, I_M_CostElement.COLUMNNAME_AD_Client_ID, 4711);
+			saveRecord(otherClientElement);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, acctSchemaId)).contains(costElementId);
+		}
+
+		@Test
 		public void findPresetCostElement_none_whenTwoElementsMatch()
 		{
 			createCostElement("AveragePO 2", CostingMethod.AveragePO);
@@ -1277,6 +1288,57 @@ public class CostRevaluationServiceTest
 			assertThatThrownBy(() -> voidIt(costRevaluationId))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(CostRevaluationDocumentHandler.MSG_CannotVoidBookedRevaluation.toAD_Message());
+		}
+
+		@Test
+		public void void_refused_whenAnInactiveLineIsBooked()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_voidInactiveBooked");
+			final CostRevaluationId costRevaluationId = createCompletedNotPostedRevaluation(productId);
+			createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), 0, lineId, "500", "0", "100", "10");
+			final I_M_CostRevaluationLine line = InterfaceWrapperHelper.load(lineId.getRepoId(), I_M_CostRevaluationLine.class);
+			line.setIsActive(false);
+			saveRecord(line);
+
+			assertThatThrownBy(() -> voidIt(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationDocumentHandler.MSG_CannotVoidBookedRevaluation.toAD_Message());
+		}
+
+		@Test
+		public void void_allowed_forADraft()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_voidDraft");
+			seedCurrentCost(productId, "10", "100");
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+
+			final I_M_CostRevaluation record = voidIt(costRevaluationId);
+
+			assertThat(record.getDocAction()).isEqualTo(IDocument.ACTION_None);
+			assertThat(record.isProcessed()).isTrue();
+		}
+
+		@Test
+		public void void_refused_whenClosedReversedOrVoided()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_voidClosed");
+			final CostRevaluationId costRevaluationId = createCompletedNotPostedRevaluation(productId);
+
+			for (final DocStatus docStatus : new DocStatus[] { DocStatus.Closed, DocStatus.Reversed, DocStatus.Voided })
+			{
+				final I_M_CostRevaluation header = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+				header.setDocStatus(docStatus.getCode());
+				saveRecord(header);
+
+				assertThatThrownBy(() -> voidIt(costRevaluationId))
+						.as("Void of a %s revaluation", docStatus)
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining("Invalid document status");
+			}
 		}
 	}
 
@@ -2255,9 +2317,10 @@ public class CostRevaluationServiceTest
 				final I_M_CostRevaluation record = InterfaceWrapperHelper.load(secondSwitch.getRepoId(), I_M_CostRevaluation.class);
 				final DocumentTableFields docFields = InterfaceWrapperHelper.create(record, DocumentTableFields.class);
 				assertThatThrownBy(() -> new CostRevaluationDocumentHandler(costRevaluationService).voidIt(docFields))
-						.as("the default Void refusal, not the Manual rule")
-						.isInstanceOf(UnsupportedOperationException.class)
-						.hasMessageContaining("VoidIt is not implemented by default");
+						.as("the CopyFromCostElement Void refusal, not the Manual rule")
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining(CostRevaluationDocumentHandler.MSG_CopyFromCostElementCannotBeVoided.toAD_Message())
+						.hasMessageNotContaining(CostRevaluationDocumentHandler.MSG_CannotVoidBookedRevaluation.toAD_Message());
 			}
 		}
 

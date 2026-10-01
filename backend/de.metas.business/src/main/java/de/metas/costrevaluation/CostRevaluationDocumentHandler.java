@@ -41,6 +41,7 @@ import java.time.LocalDate;
 class CostRevaluationDocumentHandler implements DocumentHandler
 {
 	static final AdMessageKey MSG_CannotVoidBookedRevaluation = AdMessageKey.of("M_CostRevaluation.CannotVoidBookedRevaluation");
+	static final AdMessageKey MSG_CopyFromCostElementCannotBeVoided = AdMessageKey.of("M_CostRevaluation.CopyFromCostElementCannotBeVoided");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CostRevaluationService costRevaluationService;
@@ -116,8 +117,7 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
 		if (!costRevaluationService.getById(costRevaluationId).getRevaluationSource().isManual())
 		{
-			DocumentHandler.super.voidIt(docFields);
-			return;
+			throw new AdempiereException(MSG_CopyFromCostElementCannotBeVoided);
 		}
 
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
