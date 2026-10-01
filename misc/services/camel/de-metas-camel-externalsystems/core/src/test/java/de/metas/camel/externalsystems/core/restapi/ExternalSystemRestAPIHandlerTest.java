@@ -97,7 +97,7 @@ public class ExternalSystemRestAPIHandlerTest extends CamelTestSupport
 	@Test
 	void jsonNullServiceStatusResponse_noServiceEnabled_noError() throws Exception
 	{
-		// what UnpackV2 passes on for a JsonApiResponse without endpointResponse
+		// a body that unmarshals to null (e.g. what UnpackV2 yields for a JsonApiResponse without endpointResponse)
 		statusResponse = "null";
 
 		runRouteAndExpectInvocations(0);
