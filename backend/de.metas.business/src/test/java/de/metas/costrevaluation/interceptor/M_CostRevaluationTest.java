@@ -240,7 +240,7 @@ class M_CostRevaluationTest
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		saveRecord(record);
 
-		record.setRevaluationSource(RevaluationSource.Calculated.getCode());
+		record.setRevaluationSource(RevaluationSource.Manual.getCode());
 
 		assertThatCode(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE)).doesNotThrowAnyException();
 		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
@@ -476,7 +476,7 @@ class M_CostRevaluationTest
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
 
 				final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
-				record.setRevaluationSource(RevaluationSource.Calculated.getCode());
+				record.setRevaluationSource(RevaluationSource.Manual.getCode());
 
 				assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
 						.isInstanceOf(AdempiereException.class);

@@ -197,7 +197,7 @@ public class CostRevaluationRepository
 
 		final CostPrice costPrice = sourceCurrentCost.getCostPrice();
 		// Only the own price is copied here; the lower-level (components) cost is deliberately NOT persisted at line
-		// level (M_CostRevaluationLine has no LL column, as in the Calculated path) — it is re-read at complete time
+		// level (M_CostRevaluationLine has no LL column, as in the Manual path) — it is re-read at complete time
 		// (see CostRevaluationService.createDetailsForCopyFromCostElement).
 		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
 		// Always mirror the source's own price (value-neutral copy, not a user-adjustable revaluation).

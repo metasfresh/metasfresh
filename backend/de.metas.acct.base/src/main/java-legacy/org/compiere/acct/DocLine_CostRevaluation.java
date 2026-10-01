@@ -67,7 +67,7 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 							.date(getDateAcctAsInstant())
 							.build());
 
-			if (getDoc().isCopyFromCostElementSource())
+			if (!getDoc().isManualSource())
 			{
 				// Value-neutral switch: the target element (e.g. MovingAverageInvoice) is intentionally not yet the
 				// acct-schema's accountable method (seed first, activate later), so there is no accountable amount to

@@ -36,7 +36,7 @@ public class M_CostRevaluationLine
 	void updateDeltaAmt(@NonNull final I_M_CostRevaluationLine record, @NonNull final ModelChangeType changeType)
 	{
 		final CostRevaluation costRevaluation = costRevaluationService.getById(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()));
-		if (costRevaluation.getRevaluationSource().isCopyFromCostElement()
+		if (!costRevaluation.getRevaluationSource().isManual()
 				|| !costRevaluation.getDocStatus().isDraftedOrInProgress())
 		{
 			return;

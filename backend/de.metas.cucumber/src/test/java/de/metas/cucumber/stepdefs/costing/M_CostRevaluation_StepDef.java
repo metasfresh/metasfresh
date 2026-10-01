@@ -91,7 +91,7 @@ public class M_CostRevaluation_StepDef
 	 *   <b>Identifier</b> — (required) alias for later reference<br>
 	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema<br>
 	 *   <b>M_CostElement_ID</b> — (required) target cost element (costing-method name/code resolving to a single material cost element, e.g. AveragePO, MovingAverageInvoice)<br>
-	 *   <b>RevaluationSource</b> — (optional, default {@code Calculated}) e.g. CopyFromCostElement<br>
+	 *   <b>RevaluationSource</b> — (optional, default {@code Manual}) e.g. CopyFromCostElement<br>
 	 *   <b>CopyFrom_M_CostElement_ID</b> — (optional) source cost element (costing-method name, e.g. AveragePO)<br>
 	 *   <b>EvaluationStartDate</b> — (optional) revaluation cut-off date; when the column is omitted, the header's
 	 *   {@code beforeNew} interceptor defaults it to {@code DateAcct}<br>
@@ -129,7 +129,7 @@ public class M_CostRevaluation_StepDef
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(targetCostElementId.getRepoId());
 		record.setRevaluationSource(row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_RevaluationSource)
-				.orElse(X_M_CostRevaluation.REVALUATIONSOURCE_Calculated));
+				.orElse(X_M_CostRevaluation.REVALUATIONSOURCE_Manual));
 
 		row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_CopyFrom_M_CostElement_ID)
 				.map(costElementTable::getSingleId)

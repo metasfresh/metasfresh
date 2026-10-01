@@ -93,18 +93,18 @@ public class CostRevaluationService
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 
-		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
+			createLinesFromManual(costRevaluationId, costRevaluation);
 		}
 		else
 		{
-			createLinesFromCalculated(costRevaluationId, costRevaluation);
+			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
 		}
 	}
 
-	/** {@code Calculated}: seeds lines from the document's own (target) cost element's current costs. */
-	private void createLinesFromCalculated(
+	/** {@code Manual}: seeds lines from the document's own (target) cost element's current costs. */
+	private void createLinesFromManual(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final CostRevaluation costRevaluation)
 	{
@@ -154,7 +154,7 @@ public class CostRevaluationService
 
 	/**
 	 * Restates each given live {@link CurrentCost} as the cost its element carried as of {@code asOfDate}. Only the
-	 * {@code CopyFromCostElement} preview uses this; the {@code Calculated} source keeps revaluating the live cost.
+	 * {@code CopyFromCostElement} preview uses this; the {@code Manual} source keeps revaluating the live cost.
 	 */
 	private ImmutableList<CurrentCost> toCostsAsOf(
 			@NonNull final ImmutableList<CurrentCost> currentCosts,
@@ -399,7 +399,7 @@ public class CostRevaluationService
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 		// A CopyFromCostElement line is seeded once; it is never evaluated again.
-		final boolean reevaluateEvaluatedLines = includeEvaluatedLines && !costRevaluation.getRevaluationSource().isCopyFromCostElement();
+		final boolean reevaluateEvaluatedLines = includeEvaluatedLines && costRevaluation.getRevaluationSource().isManual();
 		final ImmutableList<CostRevaluationLine> linesToRevaluate = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId)
 				.stream()
 				.filter(line -> reevaluateEvaluatedLines || !line.isRevaluated())
@@ -421,8 +421,8 @@ public class CostRevaluationService
 		// element/product, not only a prior CopyFromCostElement switch), and that is the safer choice:
 		//  - In scope for this feature is the PRE-activation switch, which only ever writes cost details on the MAI
 		//    (target) element via CopyFromCostElement — so the broad signal and the narrow one coincide here.
-		//  - The only case where they diverge is a POST-activation Calculated-then-switch interleave (an ordinary
-		//    Calculated revaluation runs on the MAI element after the accounting method was activated, then a switch is
+		//  - The only case where they diverge is a POST-activation Manual-then-switch interleave (an ordinary
+		//    Manual revaluation runs on the MAI element after the accounting method was activated, then a switch is
 		//    attempted). That method-activation is a separate, decoupled feature and is OUT OF SCOPE here; in that
 		//    interleave a broad silent skip (leave the existing history untouched) is safer than a narrow re-seed that
 		//    would silently overwrite an in-use cost with a fresh zero-GL opening.
@@ -452,7 +452,7 @@ public class CostRevaluationService
 			@NonNull final CostRevaluation costRevaluation,
 			@NonNull final ImmutableList<CostRevaluationLine> linesToRevaluate)
 	{
-		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
 			return ImmutableSet.of();
 		}
@@ -475,9 +475,9 @@ public class CostRevaluationService
 	public void reverseDetails(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
-		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			// Reversal for the history-replay (Calculated) source is not implemented yet.
+			// Reversal for the Manual source is not implemented yet.
 			throw new AdempiereException("Reversal is only implemented for the CopyFromCostElement source: " + costRevaluationId);
 		}
 
@@ -492,21 +492,21 @@ public class CostRevaluationService
 
 	private void createDetails(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
-		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			createDetailsForCopyFromCostElement(costRevaluation, line);
+			createDetailsForManual(costRevaluation, line);
 		}
 		else
 		{
-			createDetailsForCalculated(costRevaluation, line);
+			createDetailsForCopyFromCostElement(costRevaluation, line);
 		}
 	}
 
 	/**
-	 * {@code Calculated}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row).
+	 * {@code Manual}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row).
 	 * The line shows the stock on hand and the current cost price of this evaluation.
 	 */
-	private void createDetailsForCalculated(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
+	private void createDetailsForManual(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
@@ -543,7 +543,7 @@ public class CostRevaluationService
 
 	/**
 	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from the source's
-	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of the {@code Calculated} history-replay.
+	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of a history replay.
 	 * <p>
 	 * The opening is the source's cost <b>as of the cut-off</b> ({@code EvaluationStartDate}) — not its live cost at
 	 * complete time. For a back-dated switch those differ: the live {@code M_Cost} row already reflects every movement

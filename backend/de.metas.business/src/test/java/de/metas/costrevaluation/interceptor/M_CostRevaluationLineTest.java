@@ -72,7 +72,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void newLine_deltaAmtEqualsQtyTimesPriceDifference()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		assertThat(line.getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10)
@@ -84,7 +84,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void newCostPriceEdit_recomputesDeltaAndResetsEvaluation()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		markEvaluatedWithDetail(line);
 
@@ -100,7 +100,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void qtyOrPriceRefresh_recomputesDeltaWithoutReset()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		createDetail(line);
 
@@ -116,7 +116,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void evaluatedLine_qtyAndPriceWrittenByTheEvaluation_keepsEvaluationAndDetails()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		markEvaluatedWithDetail(line);
 
@@ -150,7 +150,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void inProgressRevaluation_newCostPriceEdit_recomputesDeltaAndResetsEvaluation()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.InProgress);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.InProgress);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		assertThat(line.getDeltaAmt()).isEqualByComparingTo("500"); // 100 x (15 - 10)
 		markEvaluatedWithDetail(line);
@@ -167,7 +167,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void reversedRevaluation_lineIsLeftAsWritten()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		markEvaluatedWithDetail(line);
 
@@ -186,7 +186,7 @@ class M_CostRevaluationLineTest
 	@Test
 	void completedRevaluation_bookedValuesAreLeftAsWritten()
 	{
-		final I_M_CostRevaluation header = createHeader(RevaluationSource.Calculated, DocStatus.Drafted);
+		final I_M_CostRevaluation header = createHeader(RevaluationSource.Manual, DocStatus.Drafted);
 		final I_M_CostRevaluationLine line = createLine(header, "100", "10", "15");
 		markEvaluatedWithDetail(line);
 

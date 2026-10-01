@@ -45,7 +45,7 @@ public class M_CostRevaluation
 			record.setDateAcct(SystemTime.asDayTimestamp());
 		}
 
-		if (!isCopyFromCostElement(record) || record.getEvaluationStartDate() == null)
+		if (isManual(record) || record.getEvaluationStartDate() == null)
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
 		}
@@ -54,8 +54,8 @@ public class M_CostRevaluation
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	void beforeChange(@NonNull final I_M_CostRevaluation record, @NonNull final ModelChangeType type)
 	{
-		final boolean isCopyFromCostElement = isCopyFromCostElement(record);
-		if (!isCopyFromCostElement
+		final boolean isManual = isManual(record);
+		if (isManual
 				// RevaluationSource: a draft switched away from CopyFromCostElement must drop its cut-off date
 				&& InterfaceWrapperHelper.isValueChanged(record, I_M_CostRevaluation.COLUMNNAME_DateAcct, I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate, I_M_CostRevaluation.COLUMNNAME_RevaluationSource))
 		{
@@ -68,9 +68,9 @@ public class M_CostRevaluation
 		}
 
 		// the evaluation start date is the cut-off date only for CopyFromCostElement; otherwise it just follows the posting date
-		final ImmutableList<String> columnNamesRequiringNoLines = isCopyFromCostElement
-				? ImmutableList.<String>builder().addAll(COLUMNNAMES_RequireNoLines).add(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate).build()
-				: COLUMNNAMES_RequireNoLines;
+		final ImmutableList<String> columnNamesRequiringNoLines = isManual
+				? COLUMNNAMES_RequireNoLines
+				: ImmutableList.<String>builder().addAll(COLUMNNAMES_RequireNoLines).add(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate).build();
 		final ImmutableList<String> changedColumnNames = columnNamesRequiringNoLines.stream()
 				.filter(columnName -> InterfaceWrapperHelper.isValueChanged(record, columnName))
 				.collect(ImmutableList.toImmutableList());
@@ -84,10 +84,11 @@ public class M_CostRevaluation
 		}
 	}
 
-	private static boolean isCopyFromCostElement(@NonNull final I_M_CostRevaluation record)
+	/** An unset source counts as {@code Manual}, the column's default. */
+	private static boolean isManual(@NonNull final I_M_CostRevaluation record)
 	{
 		final RevaluationSource revaluationSource = RevaluationSource.ofNullableCode(record.getRevaluationSource());
-		return revaluationSource != null && revaluationSource.isCopyFromCostElement();
+		return revaluationSource == null || revaluationSource.isManual();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

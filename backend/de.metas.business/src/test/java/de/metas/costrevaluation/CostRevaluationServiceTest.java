@@ -374,7 +374,7 @@ public class CostRevaluationServiceTest
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(costElementId.getRepoId());
-		record.setRevaluationSource(RevaluationSource.Calculated.getCode()); // the column's DB default; POJO records have none
+		record.setRevaluationSource(RevaluationSource.Manual.getCode()); // the column's DB default; POJO records have none
 		record.setDocStatus(docStatus.getCode());
 
 		final Timestamp cutoff = Timestamp.from(Instant.parse("2025-12-31T00:00:00Z"));
@@ -680,7 +680,7 @@ public class CostRevaluationServiceTest
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(costElementId.getRepoId());
-		record.setRevaluationSource(RevaluationSource.Calculated.getCode()); // the column's DB default; POJO records have none
+		record.setRevaluationSource(RevaluationSource.Manual.getCode()); // the column's DB default; POJO records have none
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setDateAcct(Timestamp.from(dateAcct.atStartOfDay(ZONE_ID).toInstant()));
 		record.setEvaluationStartDate(Timestamp.from(evaluationStartDate.atStartOfDay(ZONE_ID).toInstant()));
@@ -1674,7 +1674,7 @@ public class CostRevaluationServiceTest
 				assertThat(lineZeroStock.getCurrentQty()).isEqualByComparingTo("0");
 
 				// The lower-level (LL/component) cost is intentionally not persisted on M_CostRevaluationLine (no such column;
-				// mirrors the existing Calculated path). It stays intact on the SOURCE element, read fresh by the complete-time
+				// mirrors the existing Manual path). It stays intact on the SOURCE element, read fresh by the complete-time
 				// direct-set when writing the target M_Cost.CurrentCostPriceLL.
 				final CostSegmentAndElement sourceSegment = CostSegmentAndElement.builder()
 						.costingLevel(CostingLevel.Client)
@@ -2074,7 +2074,7 @@ public class CostRevaluationServiceTest
 			 * costed on the SOURCE {@code AveragePO} element) is left byte-for-byte untouched by the
 			 * {@code CopyFromCostElement} switch: not deleted, not re-costed — same id, amt, qty, and dateAcct. The
 			 * value-neutral opening-balance approach was chosen precisely so this history is never replayed (unlike the
-			 * rejected {@code Calculated} history-replay path).
+			 * rejected history-replay path of the manual source).
 			 * <p>
 			 * Load-bearing: the switch's only detail deletion ({@code deleteDetailsByLineIds}) is scoped to THIS
 			 * revaluation's own line ids, and its only write is the opening anchor on the TARGET element; it never

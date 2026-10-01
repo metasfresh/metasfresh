@@ -87,7 +87,7 @@ public class M_CostRevaluation implements ITabCallout
 
 		final Timestamp dateAcct = costRevaluation.getDateAcct();
 		final RevaluationSource revaluationSource = RevaluationSource.ofNullableCode(costRevaluation.getRevaluationSource());
-		if (revaluationSource == null || !revaluationSource.isCopyFromCostElement())
+		if (revaluationSource == null || revaluationSource.isManual())
 		{
 			costRevaluation.setEvaluationStartDate(dateAcct);
 			return;
