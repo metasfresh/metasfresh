@@ -44,6 +44,9 @@ public final class ESRValidationRuleTools
 		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt, importLine.getESR_Invoice_Openamt().toPlainString());
 		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_C_Payment_ID, Integer.toString(importLine.getC_Payment_ID()));
 		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID, Integer.toString(importLine.getC_Invoice_ID()));
+		// the rule resolves the line itself to read ESR_Payment_Action; without this the duplicate
+		// branch can never fire here, so a caller would be testing a context the UI never produces.
+		plainValidationCtx.setValue(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, Integer.toString(importLine.getESR_ImportLine_ID()));
 
 		return plainValidationCtx;
 	}

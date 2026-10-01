@@ -51,7 +51,10 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(
 			I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt,
 			I_ESR_ImportLine.COLUMNNAME_C_Payment_ID,
-			I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID);
+			I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID,
+			// read below to recognise a line the import itself flagged as a duplicate; it was already
+			// read by the system-set-action branch without ever being declared here.
+			I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID);
 
 	@Override
 	public boolean accept(final IValidationContext evalCtx, final NamePair item)
@@ -91,15 +94,10 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 				|| X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts.equals(item.getID())
 				|| X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice.equals(item.getID()))
 		{
-			final String importLineIdStr = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID);
-			final int importLineId = StringUtils.toIntegerOrZero(importLineIdStr);
-			if (importLineId > 0)
+			final I_ESR_ImportLine importLine = getImportLineOrNull(evalCtx);
+			if (importLine != null && item.getID().equals(importLine.getESR_Payment_Action()))
 			{
-				final I_ESR_ImportLine importLine = InterfaceWrapperHelper.create(Env.getCtx(), importLineId, I_ESR_ImportLine.class, ITrx.TRXNAME_None);
-				if (item.getID().equals(importLine.getESR_Payment_Action()))
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 
@@ -118,13 +116,17 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		// Every handler behind these actions supports a line without an invoice: the refund one
 		// branches on it explicitly ("there is no invoice, so we transfer back all the money"),
 		// and the next-invoice one only needs the payment to set IsAutoAllocateAvailableAmt.
+		// A line the import flagged as a duplicate is the same situation as a line without an invoice:
+		// it carries its OWN payment, and that payment settles nothing, because the invoice on the line
+		// was already paid by an earlier one. Its ESR_Invoice_Openamt is therefore exactly ZERO -- the
+		// overpayment group needs it NEGATIVE, the underpayment group POSITIVE and the no-invoice group
+		// needs no invoice, so without this the accountant is offered NOTHING and cannot say what should
+		// happen to the money. Keyed on the flag rather than on "openAmt <= 0", which would also fire on
+		// a payment that settles its invoice exactly -- where there is nothing to decide.
 		final List<String> noActionGroup = new ArrayList<String>();
-		if (invoiceId <= 0)
-		{
-			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
-			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
-			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
-		}
+		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
+		noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 
 		// Actions for when we have Payment < Open amount
 		final List<String> underPaymentGroup = new ArrayList<String>();
@@ -149,10 +151,36 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		}
 		if (noActionGroup.contains(item.getID()))
 		{
-			acceptNoActionItem = invoiceId <= 0;
+			// the duplicate flag is read here rather than up front because it costs a record load, and
+			// accept() runs once per action: only these three items can ever be accepted by it.
+			acceptNoActionItem = invoiceId <= 0 || isFlaggedDuplicatePayment(evalCtx);
 		}
 
 		return (acceptOverpaymentItem || acceptUnderPaymentItem || acceptNoActionItem);
+	}
+
+	private boolean isFlaggedDuplicatePayment(final IValidationContext evalCtx)
+	{
+		final I_ESR_ImportLine importLine = getImportLineOrNull(evalCtx);
+		return importLine != null
+				&& X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(importLine.getESR_Payment_Action());
+	}
+
+	/**
+	 * @return the line this validation context is evaluated for, or {@code null} if the context carries
+	 *         no usable {@code ESR_ImportLine_ID}. The ID is a plain context value, so it can name a
+	 *         record that is gone, and {@code InterfaceWrapperHelper.create} returns {@code null} then.
+	 */
+	@Nullable
+	private I_ESR_ImportLine getImportLineOrNull(final IValidationContext evalCtx)
+	{
+		final int importLineId = StringUtils.toIntegerOrZero(evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID));
+		if (importLineId <= 0)
+		{
+			return null;
+		}
+
+		return InterfaceWrapperHelper.create(Env.getCtx(), importLineId, I_ESR_ImportLine.class, ITrx.TRXNAME_None);
 	}
 
 	@Override
