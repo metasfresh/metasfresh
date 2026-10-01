@@ -1,9 +1,10 @@
--- View: EDI_Cctop_INVOIC_v
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_v_view.sql
+-- EDI_Cctop_INVOIC_v.DateOrdered: fall back to C_Invoice.DateInvoiced when no order date can be resolved,
+-- so INVOIC (and every export built on this view) always carries an order date.
 
-DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v
-;
+DROP VIEW IF EXISTS edi_cctop_invoic_v$new;
 
-CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
+CREATE OR REPLACE VIEW edi_cctop_invoic_v$new AS
 SELECT i.C_Invoice_ID                                                                                       AS EDI_Cctop_INVOIC_v_ID
      , i.C_Invoice_ID
      , i.C_Order_ID
@@ -162,3 +163,12 @@ FROM C_Invoice i
                              WHERE c_invoice_id = i.c_invoice_id
                              GROUP BY C_Invoice_ID) taxAndSurchage ON TRUE
 ;
+
+SELECT public.db_alter_view(
+    'edi_cctop_invoic_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('edi_cctop_invoic_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_invoic_v$new;
