@@ -35,13 +35,18 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
+import lombok.Value;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 
@@ -53,6 +58,45 @@ public class C_AcctSchema_StepDef
 
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+
+	/**
+	 * {@code C_AcctSchema_ID} -> the settings the schema had before this scenario's first {@code update C_AcctSchema},
+	 * so {@link #restoreAcctSchemas()} can put them back.
+	 */
+	private final Map<Integer, AcctSchemaSettings> settingsBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * Restores the costing method, costing level and currency of every accounting schema this scenario updated.
+	 *
+	 * <p>The schema is shared by every scenario and feature that runs on the same database, so a setting left behind
+	 * would leak into whatever runs next: e.g. a feature that pins {@code CostingLevel=C} would make a later feature
+	 * that relies on the seed's level run under client-level costing. Steps that update the schema in a Background
+	 * set it again for every scenario.
+	 */
+	@After
+	public void restoreAcctSchemas()
+	{
+		settingsBeforeScenario.forEach((acctSchemaId, settings) -> {
+			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+			acctSchema.setCostingMethod(settings.getCostingMethod());
+			acctSchema.setCostingLevel(settings.getCostingLevel());
+			if (acctSchema.getC_Currency_ID() != settings.getCurrencyRepoId())
+			{
+				acctSchema.setC_Currency_ID(settings.getCurrencyRepoId());
+				DISABLE_CHECK_CURRENCY.setValue(acctSchema, Boolean.TRUE);
+			}
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+		});
+		settingsBeforeScenario.clear();
+	}
+
+	@Value
+	private static class AcctSchemaSettings
+	{
+		String costingMethod;
+		String costingLevel;
+		int currencyRepoId;
+	}
 
 	@And("load C_AcctSchema:")
 	public void load_C_AcctSchemas(@NonNull final DataTable dataTable)
@@ -88,6 +132,10 @@ public class C_AcctSchema_StepDef
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
+		settingsBeforeScenario.computeIfAbsent(acctSchema.getC_AcctSchema_ID(), acctSchemaId -> {
+			final I_C_AcctSchema current = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+			return new AcctSchemaSettings(current.getCostingMethod(), current.getCostingLevel(), current.getC_Currency_ID());
+		});
 
 		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> acctSchema.setCostingMethod(costingMethod.getCode()));
 		row.getAsOptionalString(I_C_AcctSchema.COLUMNNAME_CostingLevel)
