@@ -4,29 +4,39 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IPostingService;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.FactAcctBalanceValidator.FactAcctBalanceValidatorBuilder;
 import de.metas.cucumber.stepdefs.accounting.FactAcctValidator.FactAcctValidatorBuilder;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.acct.PostingStatus;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -57,6 +67,27 @@ public class AccountingCucumberHelper
 				.build();
 	}
 	
+	/**
+	 * The balance (debit minus credit, in the schema's currency) of the product's {@code P_Asset_Acct} fact lines of the given accounting schema,
+	 * over all documents and all locators (including fact lines without a locator, e.g. a cost revaluation's), up to and including {@code dateAcct}
+	 * (a date in the time zone of the main org).
+	 */
+	public static BigDecimal getProductAssetBalance(
+			@NonNull final ProductId productId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final LocalDate dateAcct)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, AccountConceptualName.P_Asset_Acct.getAsString())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId.getRepoId())
+				.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.LESS, java.sql.Timestamp.from(dateAcct.plusDays(1).atStartOfDay(Services.get(IOrgDAO.class).getTimeZone(StepDefConstants.ORG_ID)).toInstant()))
+				.create()
+				.stream()
+				.map(factAcct -> factAcct.getAmtAcctDr().subtract(factAcct.getAmtAcctCr()))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
 	public static void waitUtilPosted(final TableRecordReferenceSet recordRefs) throws InterruptedException
 	{
 		waitUtilPosted(recordRefs.toSet());

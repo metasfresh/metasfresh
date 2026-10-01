@@ -22,8 +22,6 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -37,8 +35,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -49,7 +45,6 @@ import org.compiere.model.I_M_CostRevaluation_Detail;
 import org.compiere.model.X_M_CostRevaluation;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +53,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -76,7 +70,6 @@ public class M_CostRevaluation_StepDef
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
@@ -304,71 +297,6 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
-	 * Tries to complete the given {@code M_CostRevaluation} document and expects the completion to be refused with the given
-	 * AD_Message. Asserts the message KEY carried by the exception, and that the key has a real (translated) text in German and
-	 * English, i.e. the user is not shown the raw key. The header is refreshed afterwards, so its state can be validated.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And completing the cost revaluation identified by revaluation2 is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
-	 * </pre>
-	 */
-	@And("^completing the cost revaluation identified by (.*) is refused with AD_Message \"(.*)\"$")
-	public void completeExpectingRefusal(@NonNull final String identifier, @NonNull final String adMessageKey)
-	{
-		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-
-		final Throwable thrown = catchThrowable(() -> documentBL.processEx(header, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
-		assertRefusedWithMessage(thrown, "Completing " + identifier, adMessageKey);
-
-		InterfaceWrapperHelper.refresh(header);
-		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
-	}
-
-	/**
-	 * Tries to evaluate ("Run") the given {@code M_CostRevaluation} and expects it to be refused with the given AD_Message.
-	 * Same message assertions as {@link #completeExpectingRefusal(String, String)}.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And evaluating the cost revaluation identified by revaluation2 is refused with AD_Message "CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported"
-	 * </pre>
-	 */
-	@And("^evaluating the cost revaluation identified by (.*) is refused with AD_Message \"(.*)\"$")
-	public void evaluateExpectingRefusal(@NonNull final String identifier, @NonNull final String adMessageKey)
-	{
-		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-		// in its own transaction, rolled back on failure, like the Run process
-		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> costRevaluationService.runRevaluation(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()))));
-		assertRefusedWithMessage(thrown, "Evaluating " + identifier, adMessageKey);
-	}
-
-	/**
-	 * Asserts that the given {@code M_CostRevaluation} has no {@code M_CostRevaluation_Detail} records.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And the cost revaluation identified by revaluation2 has no detail lines
-	 * </pre>
-	 */
-	@And("^the cost revaluation identified by (.*) has no detail lines$")
-	public void assertNoDetails(@NonNull final String identifier)
-	{
-		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-		final int count = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
-				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
-				.create()
-				.count();
-		assertThat(count).as("M_CostRevaluation_Detail count of %s", identifier).isZero();
-	}
-
-	/**
 	 * Voids the cost-revaluation document via the real DocAction pipeline ({@code voidIt}).
 	 *
 	 * @cucumber.stepdef
@@ -407,38 +335,6 @@ public class M_CostRevaluation_StepDef
 				.create()
 				.count();
 		assertThat(count).as("M_CostDetail count of %s", identifier).isZero();
-	}
-
-	private static void assertRefusedWithMessage(@Nullable final Throwable thrown, @NonNull final String action, @NonNull final String adMessageKey)
-	{
-		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
-		assertThat(thrown).as("%s must be refused", action).isNotNull();
-
-		final ITranslatableString message = extractMessageWithKey(thrown, expectedMessageKey);
-		assertThat(message)
-				.as("Refusal of: %s must carry AD_Message %s, but got: %s", action, adMessageKey, thrown)
-				.isNotNull();
-		for (final String adLanguage : new String[] { "de_DE", "en_US" })
-		{
-			assertThat(message.translate(adLanguage))
-					.as("AD_Message %s must be translated for %s (the user must not see the raw key)", adMessageKey, adLanguage)
-					.isNotBlank()
-					.doesNotContain(adMessageKey);
-		}
-	}
-
-	@Nullable
-	private static ITranslatableString extractMessageWithKey(@NonNull final Throwable thrown, @NonNull final AdMessageKey expectedMessageKey)
-	{
-		for (Throwable t = thrown; t != null; t = t.getCause())
-		{
-			final ITranslatableString message = AdempiereException.extractMessageTrl(t);
-			if (message.getAdMessageKey().filter(expectedMessageKey::equals).isPresent())
-			{
-				return message;
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -486,6 +382,7 @@ public class M_CostRevaluation_StepDef
 	 *   <b>CurrentQty</b> — (optional) expected stock on hand<br>
 	 *   <b>CurrentCostPrice</b> — (optional) expected current cost price<br>
 	 *   <b>DeltaAmt</b> — (optional) expected value difference<br>
+	 *   <b>IsRevaluated</b> — (optional) expected "evaluated" flag; {@code true} also requires the detail rows to add up to the value difference<br>
 	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -514,6 +411,8 @@ public class M_CostRevaluation_StepDef
 					.ifPresent(expected -> assertThat(line.getCurrentCostPrice()).as("CurrentCostPrice").isEqualByComparingTo(expected));
 			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_DeltaAmt)
 					.ifPresent(expected -> assertThat(line.getDeltaAmt()).as("DeltaAmt").isEqualByComparingTo(expected));
+			row.getAsOptionalBoolean(I_M_CostRevaluationLine.COLUMNNAME_IsRevaluated)
+					.ifPresent(expected -> assertThat(line.isRevaluated()).as("IsRevaluated").isEqualTo(expected));
 
 			if (line.isRevaluated())
 			{
