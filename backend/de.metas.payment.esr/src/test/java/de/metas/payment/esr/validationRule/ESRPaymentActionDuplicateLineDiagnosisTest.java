@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice;
@@ -156,7 +155,7 @@ public class ESRPaymentActionDuplicateLineDiagnosisTest
 		assertThat(acceptedActionsFor("0.00", "1000001",
 				X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner))
 				.as("actions still offered after the flag was overwritten by the accountant's choice")
-				.contains(ESR_PAYMENT_ACTION_Unable_To_Assign_Income,
+				.containsExactlyInAnyOrder(ESR_PAYMENT_ACTION_Unable_To_Assign_Income,
 						ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner,
 						ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 	}
