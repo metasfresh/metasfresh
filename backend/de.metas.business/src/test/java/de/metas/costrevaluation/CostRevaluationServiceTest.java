@@ -29,6 +29,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.costing.methods.AverageInvoiceCostingMethodHandler;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+import de.metas.costrevaluation.interceptor.M_CostRevaluation;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -44,6 +45,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -842,12 +844,16 @@ public class CostRevaluationServiceTest
 		@Test
 		public void evaluationStartDateIsIgnored_andEqualsDateAcct()
 		{
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new M_CostRevaluation(costRevaluationService));
 			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
 			final ProductId productId = createProduct("product_startDateIgnored");
 			seedCurrentCost(productId, "10", "100");
 			createCostDetail(productId, LocalDateTime.parse("2024-03-05T00:00:00"), 1011, null);
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-01"));
+			assertThat(costRevaluationRepository.getById(costRevaluationId).getEvaluationStartDate())
+					.as("the hand-set start date 2024-03-01 is replaced by the posting date")
+					.isEqualTo(LocalDate.parse("2024-03-06").atStartOfDay(ZONE_ID).toInstant());
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
 			costRevaluationService.createDetails(costRevaluationId);

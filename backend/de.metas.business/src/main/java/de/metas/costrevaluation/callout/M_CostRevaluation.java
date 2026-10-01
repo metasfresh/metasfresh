@@ -22,6 +22,7 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.costrevaluation.RevaluationSource;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -72,8 +73,8 @@ public class M_CostRevaluation implements ITabCallout
 	}
 
 	/**
-	 * On a UI change of DateAcct, moves a defaulted EvaluationStartDate (unset, or equal to the last saved DateAcct) along with it;
-	 * a hand-set EvaluationStartDate is kept. With lines present, the save is then refused by the "delete lines first" guard.
+	 * On a UI change of DateAcct in a draft, the EvaluationStartDate follows it. Only a CopyFromCostElement revaluation,
+	 * where EvaluationStartDate is the cut-off date, keeps a hand-set value and moves only a defaulted one (unset, or equal to the last saved DateAcct).
 	 */
 	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_DateAcct)
 	public void onDateAcctChanged(@NonNull final I_M_CostRevaluation costRevaluation, @NonNull final ICalloutField field)
@@ -85,6 +86,13 @@ public class M_CostRevaluation implements ITabCallout
 		}
 
 		final Timestamp dateAcct = costRevaluation.getDateAcct();
+		final RevaluationSource revaluationSource = RevaluationSource.ofNullableCode(costRevaluation.getRevaluationSource());
+		if (revaluationSource == null || !revaluationSource.isCopyFromCostElement())
+		{
+			costRevaluation.setEvaluationStartDate(dateAcct);
+			return;
+		}
+
 		if (dateAcct == null)
 		{
 			return;
