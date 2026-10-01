@@ -96,6 +96,17 @@ public class ContractCompensationGroupSettingsRepository
 		return settingsId != null ? getBySettingsId(settingsId) : null;
 	}
 
+	/** @return the take-over record's product category (active or not, so an own line keeps its category), or {@code null} if the record does not exist or has none */
+	@Nullable
+	public ProductCategoryId getTakeOverProductCategoryIdOrNull(@NonNull final ContractSettingsTakeOverId takeOverId)
+	{
+		final I_C_CompensationGroup_ContractSettings_TakeOver record = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverId)
+				.create()
+				.firstOnly(I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		return record != null ? ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()) : null;
+	}
+
 	/** @return the settings' active take-over records, each with its active listed customer products */
 	public List<TakeOverRecord> getTakeOverRecords(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
