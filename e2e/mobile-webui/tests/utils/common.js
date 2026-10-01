@@ -62,6 +62,7 @@ let currentErrorWatcherId = 0;
 export const resetErrorWatchers = () => {
     currentErrorWatcherId = 0;
 };
+
 const runAndWatchForErrors = async (func) => {
     if (currentErrorWatcherId > 0) {
         // console.log(`Already watching for errors (watcherId=${currentErrorWatcherId}), calling the function directly`);
