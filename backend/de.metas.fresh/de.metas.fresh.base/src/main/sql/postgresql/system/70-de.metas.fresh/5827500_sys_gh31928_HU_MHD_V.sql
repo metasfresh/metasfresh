@@ -1,7 +1,7 @@
 -- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/HU_MHD_V.sql
 -- Add "Letzter EK" (LastCostPrice) + "Standard EK" (AverageCostPrice) columns to the MHD Liste report (HU_MHD_V).
 -- Letzter EK  = getLastCostPrice(product)                     -- last completed-PO price, fallback M_Product.SeedCost
--- Standard EK = getAverageCostPrice(product, client, org)     -- average cost (M_Cost method 'A'), any schema
+-- Standard EK = getAverageCostPrice(product, client, org)     -- cost under the schema's costing method (schema resolved per client+org)
 -- Both numeric columns are DE-number-formatted (comma decimal, no thousand separator).
 -- HU_MHD_V is a leaf report view (no dependent views) read only by the HU_MHD_Report process via SELECT *,
 -- so it is recreated with DROP+CREATE like its original creation migration.
@@ -116,7 +116,7 @@ SELECT foo.hu_unittype,
        foo.SourceReleaseStatus,
        -- Letzter EK: last completed purchase-order price (fallback M_Product.SeedCost), DE-formatted
        REPLACE(TO_CHAR(ROUND(getLastCostPrice(foo.m_product_id), 2), 'FM999999990.00'), '.', ',')                            AS LastCostPrice,
-       -- Standard EK: average purchase cost (M_Cost method 'A'), independent of the schema's costing method, DE-formatted
+       -- Standard EK: maintained cost under the accounting schema's costing method (schema resolved per client+org), DE-formatted
        REPLACE(TO_CHAR(ROUND(getAverageCostPrice(foo.m_product_id, foo.ad_client_id, foo.ad_org_id), 2), 'FM999999990.00'), '.', ',') AS AverageCostPrice
 FROM foo
 ORDER BY order_no

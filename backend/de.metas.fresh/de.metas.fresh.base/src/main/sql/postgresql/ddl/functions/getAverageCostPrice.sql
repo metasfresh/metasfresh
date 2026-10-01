@@ -29,6 +29,9 @@ DROP FUNCTION IF EXISTS getAverageCostPrice(numeric, numeric, numeric)
  *     yields one consistent, single-currency figure per row -- never a sum across schemas.
  *   - Keep only cost elements whose method matches the schema's configured costing method
  *     (ce.CostingMethod = acs.CostingMethod).
+ *   - Match the cost to the given org (cost.AD_Org_ID = p_AD_Org_ID), same as getCostPrice. A client
+ *     that maintains costs at org '*' (client-level) instead of per-org would yield NULL here; this
+ *     follows the getCostPrice convention and is not special-cased.
  *   - SUM(CurrentCostPrice): in the standard setup exactly one row matches, so the sum is that value;
  *     it also combines multiple cost COMPONENTS (cost elements) into the total cost when more than one
  *     is configured. (Matches the aggregation semantics of getCostPrice.)

@@ -108,7 +108,7 @@ SELECT foo.hu_unittype,
        foo.SourceReleaseStatus,
        -- Letzter EK: last completed purchase-order price (fallback M_Product.SeedCost), DE-formatted
        REPLACE(TO_CHAR(ROUND(getLastCostPrice(foo.m_product_id), 2), 'FM999999990.00'), '.', ',')                            AS LastCostPrice,
-       -- Standard EK: average purchase cost (M_Cost method 'A'), independent of the schema's costing method, DE-formatted
+       -- Standard EK: maintained cost under the accounting schema's costing method (schema resolved per client+org), DE-formatted
        REPLACE(TO_CHAR(ROUND(getAverageCostPrice(foo.m_product_id, foo.ad_client_id, foo.ad_org_id), 2), 'FM999999990.00'), '.', ',') AS AverageCostPrice
 FROM foo
 ORDER BY order_no
