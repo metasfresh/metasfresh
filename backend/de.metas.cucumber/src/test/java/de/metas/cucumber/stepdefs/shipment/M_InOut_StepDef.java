@@ -200,6 +200,10 @@ public class M_InOut_StepDef
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
 	 * <b>ExternalId</b> — (optional) expected external ID<br>
+	 * <b>M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
+	 * <b>MovementType</b> — (optional) expected movement type code (e.g. {@code C+} for a customer return)<br>
+	 * <b>OPT.C_Order_ID</b> — (optional, identifier-ref, null-allowed) expected sales order; pass
+	 *   {@code null} to assert the shipment/receipt carries no order (e.g. a POS return, which is order-less)<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
@@ -275,6 +279,19 @@ public class M_InOut_StepDef
 				.ifPresent(projectIdentifier -> {
 					final I_C_Project project = projectTable.get(projectIdentifier);
 					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+				});
+
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getIdOrParse)
+				.ifPresent(expectedWarehouseId -> softly.assertThat(inout.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(expectedWarehouseId.getRepoId()));
+
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_MovementType)
+				.ifPresent(movementType -> softly.assertThat(inout.getMovementType()).as("MovementType").isEqualTo(movementType));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					final int expectedOrderId = orderIdentifier.isNullPlaceholder() ? 0 : orderTable.get(orderIdentifier.getAsString()).getC_Order_ID();
+					softly.assertThat(inout.getC_Order_ID()).as("C_Order_ID").isEqualTo(expectedOrderId);
 				});
 
 		softly.assertAll();
@@ -1289,19 +1306,39 @@ public class M_InOut_StepDef
 		});
 	}
 
-	@Then("process single receipt response")
-	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
+	/**
+	 * Reads a {@code POST /api/v2/receipts} response and loads the single created document — either
+	 * the {@code createdReceiptIdList} (the {@code receiptList} half of the payload) or the
+	 * {@code createdReturnIdList} (the {@code returnList} half), selected by the matched step text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier) alias to store the found receipt/return<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * Then process single receipt response
+	 *   | M_InOut_ID |
+	 *   | receipt_1  |
+	 *
+	 * Then process single return response
+	 *   | M_InOut_ID |
+	 *   | return_1   |
+	 * </pre>
+	 */
+	@Then("^process single (receipt|return) response$")
+	public void process_receipt_or_return_response(@NonNull final String receiptOrReturn, @NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
 		assertThat(receiptsResponse).isNotNull();
 
-		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
-		assertThat(createdReceiptIdList.size()).isEqualTo(1);
+		final List<JsonMetasfreshId> createdIdList = "receipt".equals(receiptOrReturn)
+				? receiptsResponse.getCreatedReceiptIdList()
+				: receiptsResponse.getCreatedReturnIdList();
+		assertThat(createdIdList.size()).isEqualTo(1);
 
-		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
-		assertThat(receiptRecord).isNotNull();
+		final I_M_InOut record = inOutDAO.getById(InOutId.ofRepoId(createdIdList.get(0).getValue()));
+		assertThat(record).isNotNull();
 
-		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), record);
 	}
 
 	/**

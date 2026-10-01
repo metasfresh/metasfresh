@@ -48,6 +48,21 @@ public class JsonPOSTerminalRequest
 	@Nullable Identifier walkInCustomer;
 
 	/**
+	 * Explicit {@code M_ProductPrice} to create on a SEPARATE, dedicated pricing system assigned to the
+	 * auto-created walk-in BPartner (ignored when {@link #getWalkInCustomer()} is set — an explicit walk-in
+	 * BPartner is expected to already carry its own pricing). Keyed by the request's top-level {@code products}
+	 * map identifier, same shape as {@link #getProducts()}.
+	 * <p>
+	 * An order-less POS return prices its invoice candidate from the walk-in BPartner's OWN pricing system
+	 * first, then overrides it with the till price ({@code POSReturnService#assertPriceUomMatchesCandidate}).
+	 * A return test that means to prove the till price wins over the walk-in price needs the returned product
+	 * priced HERE too — at a different price than {@link #getProducts()} — otherwise the candidate can't be
+	 * priced at all and the override has nothing to win against.
+	 */
+	@Builder.Default
+	@NonNull Map<String, ProductPrice> walkInProducts = ImmutableMap.of();
+
+	/**
 	 * Payment methods offered at this terminal. Only {@code CASH} is provisioned by
 	 * {@link CreatePOSTerminalCommand} so far; defaults to {@code ["CASH"]}.
 	 */
@@ -72,5 +87,14 @@ public class JsonPOSTerminalRequest
 		@NonNull BigDecimal price;
 		@Nullable X12DE355 uom;
 		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+
+		/**
+		 * Overrides the tax rate this product is priced under on the terminal (percentage, e.g. {@code 7} for
+		 * 7&nbsp;%). POS order lines need a LINE-level tax (see {@link CreatePOSTerminalCommand}'s own Javadoc on
+		 * {@code getTaxCategoryId}), so every rate used here gets its own dedicated line-level tax category —
+		 * created once per rate and reused across runs, the same find-or-create shape as the default 19&nbsp;%
+		 * category. {@code null} keeps the pre-existing default (19&nbsp;%).
+		 */
+		@Nullable BigDecimal taxRatePercent;
 	}
 }

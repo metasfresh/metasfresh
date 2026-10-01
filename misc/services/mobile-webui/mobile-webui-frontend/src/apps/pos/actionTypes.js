@@ -17,3 +17,6 @@ export const REMOVE_PAYMENT = 'pos/orders/removePayment';
 
 export const SHOW_MODAL = 'ui/showModal';
 export const CLOSE_MODAL = 'ui/closeModal';
+
+export const SHOW_PANEL = 'ui/showPanel';
+export const CLOSE_PANEL = 'ui/closePanel';

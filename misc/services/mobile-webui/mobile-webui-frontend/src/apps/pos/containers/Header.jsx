@@ -5,7 +5,14 @@ import { getUserFullnameFromState } from '../../../reducers/appHandler';
 import './Header.scss';
 
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_CashWithdrawal, MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
+import {
+  MODAL_CashWithdrawal,
+  MODAL_POSTerminalSelect,
+  MODAL_SelectOrders,
+  PANEL_Return,
+  showModalAction,
+  showPanelAction,
+} from '../actions/ui';
 import { useOpenOrdersArray } from '../actions/orders';
 import { trl } from '../../../utils/translations';
 import { useAuth } from '../../../hooks/useAuth';
@@ -27,6 +34,9 @@ const Header = ({ cashWithdrawalCategories }) => {
   };
   const onCashWithdrawalClicked = () => {
     dispatch(showModalAction({ modal: MODAL_CashWithdrawal }));
+  };
+  const onReturnClicked = () => {
+    dispatch(showPanelAction({ panel: PANEL_Return }));
   };
   const onOrdersClicked = () => {
     dispatch(showModalAction({ modal: MODAL_SelectOrders }));
@@ -57,6 +67,11 @@ const Header = ({ cashWithdrawalCategories }) => {
         {isCashJournalOpen && cashWithdrawalCategories.length > 0 && (
           <div className="pos-header-button" data-testid="pos-cash-withdrawal-button" onClick={onCashWithdrawalClicked}>
             <span className="text">{_('cashWithdrawal')}</span>
+          </div>
+        )}
+        {isCashJournalOpen && (
+          <div className="pos-header-button" data-testid="pos-return-button" onClick={onReturnClicked}>
+            <span className="text">{_('return')}</span>
           </div>
         )}
       </div>

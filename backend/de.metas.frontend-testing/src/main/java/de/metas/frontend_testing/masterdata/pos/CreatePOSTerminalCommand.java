@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.ChargeTypeId;
@@ -31,6 +32,7 @@ import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.CreateProductPriceRequest;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -58,7 +60,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
@@ -77,6 +82,7 @@ public class CreatePOSTerminalCommand
 {
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
 	static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
+	static final BigDecimal DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT = BigDecimal.valueOf(19);
 	static final String NO_CHARGE_TYPE_ID = "-1";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -85,6 +91,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -242,21 +249,20 @@ public class CreatePOSTerminalCommand
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final Map<String, JsonPOSTerminalRequest.ProductPrice> products)
 	{
-		final TaxCategoryId taxCategoryId = getTaxCategoryId();
-		products.forEach((productIdentifierStr, priceSpec) -> createProductPrice(priceListVersionId, Identifier.ofString(productIdentifierStr), priceSpec, taxCategoryId));
+		products.forEach((productIdentifierStr, priceSpec) -> createProductPrice(priceListVersionId, Identifier.ofString(productIdentifierStr), priceSpec));
 	}
 
 	private void createProductPrice(
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final Identifier productIdentifier,
-			@NonNull final JsonPOSTerminalRequest.ProductPrice priceSpec,
-			@NonNull final TaxCategoryId taxCategoryId)
+			@NonNull final JsonPOSTerminalRequest.ProductPrice priceSpec)
 	{
 		final ProductId productId = context.getId(productIdentifier, ProductId.class);
 		final UomId uomId = Optional.ofNullable(priceSpec.getUom())
 				.map(uomDAO::getUomIdByX12DE355)
 				.orElseGet(() -> productBL.getStockUOMId(productId));
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = CoalesceUtil.coalesceNotNull(priceSpec.getInvoicableQtyBasedOn(), InvoicableQtyBasedOn.NominalWeight);
+		final TaxCategoryId taxCategoryId = getTaxCategoryId(priceSpec.getTaxRatePercent());
 
 		productPriceRepository.createProductPrice(CreateProductPriceRequest.builder()
 				.orgId(orgId)
@@ -273,26 +279,33 @@ public class CreatePOSTerminalCommand
 	 * POS requires the product's applicable tax to be line-level (see
 	 * {@code POSOrderUpdateFromRemoteCommand#findTax}), but every tax under the seeded
 	 * {@link MasterdataContext#DEFAULT_TaxCategory_InternalName} category is document-level for this
-	 * org/country. Get-or-create a dedicated line-level tax category (created once, reused across runs)
-	 * instead of using the seeded default.
+	 * org/country. Get-or-create a dedicated line-level tax category for the requested rate (created once
+	 * per rate, reused across runs) instead of using the seeded default. {@code taxRatePercentRequested} is
+	 * {@link JsonPOSTerminalRequest.ProductPrice#getTaxRatePercent()}; {@code null} keeps the pre-existing
+	 * default rate ({@link #DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT}).
 	 */
-	private TaxCategoryId getTaxCategoryId()
+	private TaxCategoryId getTaxCategoryId(@Nullable final BigDecimal taxRatePercentRequested)
 	{
-		return taxBL.getTaxCategoryIdByInternalName(POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME)
-				.orElseGet(this::createLineLevelTaxCategory);
+		final BigDecimal taxRatePercent = CoalesceUtil.coalesceNotNull(taxRatePercentRequested, DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT);
+		final String internalName = taxRatePercent.compareTo(DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT) == 0
+				? POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME
+				: POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME + "_" + taxRatePercent.stripTrailingZeros().toPlainString();
+
+		return taxBL.getTaxCategoryIdByInternalName(internalName)
+				.orElseGet(() -> createLineLevelTaxCategory(internalName, taxRatePercent));
 	}
 
-	private TaxCategoryId createLineLevelTaxCategory()
+	private TaxCategoryId createLineLevelTaxCategory(@NonNull final String internalName, @NonNull final BigDecimal taxRatePercent)
 	{
 		final TaxCategoryId taxCategoryId = taxDAO.createTaxCategory(ITaxDAO.CreateTaxCategoryRequest.builder()
-				.internalName(POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME)
-				.name("POS testing (line level)")
+				.internalName(internalName)
+				.name("POS testing (line level, " + taxRatePercent + "%)")
 				.build());
 
 		taxDAO.createTax(ITaxDAO.CreateTaxRequest.builder()
 				.taxCategoryId(taxCategoryId)
-				.name("POS testing 19% (line level)")
-				.rate(Percent.of(19))
+				.name("POS testing " + taxRatePercent + "% (line level)")
+				.rate(Percent.of(taxRatePercent))
 				.documentLevel(false)
 				.validFrom(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(ZoneOffset.UTC).toInstant())
 				.countryId(MasterdataContext.COUNTRY_ID)
@@ -319,7 +332,44 @@ public class CreatePOSTerminalCommand
 				.identifier(identifier.getAsString() + "_walkIn")
 				.build()
 				.execute();
-		return response.getId();
+		final BPartnerId walkInBPartnerId = response.getId();
+
+		if (!request.getWalkInProducts().isEmpty())
+		{
+			assignWalkInPricing(walkInBPartnerId);
+		}
+
+		return walkInBPartnerId;
+	}
+
+	/**
+	 * {@link CreateBPartnerCommand} gives the auto-created walk-in BPartner its own pricing system, but an
+	 * empty one (no product prices) — see {@link JsonPOSTerminalRequest#getWalkInProducts()} for why an
+	 * order-less return needs the returned product actually priced there. Create a dedicated pricing system +
+	 * price list + product prices (mirroring the terminal's own {@link #createProductPrices}) and point the
+	 * BPartner at it instead of its empty default one.
+	 */
+	private void assignWalkInPricing(@NonNull final BPartnerId walkInBPartnerId)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrency());
+
+		final PricingSetupHelper.PricingSetupResult walkInPricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
+				priceListVersionRepository,
+				PricingSetupHelper.PricingSetupRequest.builder()
+						.orgId(orgId)
+						.value(identifier.toUniqueString() + "_walkIn")
+						.currencyId(currencyId)
+						.countryId(MasterdataContext.COUNTRY_ID)
+						.isTaxIncluded(request.isTaxIncluded())
+						.isSoPriceList(true)
+						.build());
+		createProductPrices(walkInPricingSetup.getPriceListVersionId(), request.getWalkInProducts());
+
+		// load+save via IBPartnerDAO (not InterfaceWrapperHelper directly): a *Command must not call the
+		// persistence primitives itself — the DAO layer owns them (ArchUnit: service-injection.md §4)
+		final I_C_BPartner walkInBPartner = bpartnerDAO.getById(walkInBPartnerId);
+		walkInBPartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(walkInPricingSetup.getPricingSystemId()));
+		bpartnerDAO.save(walkInBPartner);
 	}
 
 	private WarehouseId createShipFromWarehouse()

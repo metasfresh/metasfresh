@@ -106,6 +106,15 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getPos() != null)
+			{
+				AssertPOSExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectation(expectations.getPos())
+						.build()
+						.execute();
+			}
 
 			return newJsonExpectationsResponse().build().toResponseEntity();
 		}

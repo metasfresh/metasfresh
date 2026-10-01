@@ -2,7 +2,8 @@
   "header": {
     "closeCashJournal": "Close register",
     "orders": "Orders",
-    "cashWithdrawal": "Withdrawal"
+    "cashWithdrawal": "Withdrawal",
+    "return": "Return"
   },
   "openCashJournal": {
     "title": "Open register",
@@ -134,6 +135,33 @@
     "actions": {
       "close": "Close",
       "print": "Print receipt"
+    }
+  },
+  "return": {
+    "line": {
+      "at": "at"
+    },
+    "totalAmt": "Refund",
+    "actions": {
+      "payout": "Pay out",
+      "cancel": "Cancel"
+    },
+    "qtyModal": {
+      "title": "Quantity",
+      "actions": {
+        "ok": "OK",
+        "cancel": "Cancel"
+      }
+    },
+    "confirmModal": {
+      "title": "Confirm return",
+      "totalAmt": "Refund",
+      "payCash": "Pay cash",
+      "success": "Credit memo %(docNo)s · %(amount)s paid out",
+      "actions": {
+        "cancel": "Cancel",
+        "close": "Close"
+      }
     }
   }
 }
