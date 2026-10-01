@@ -53,4 +53,7 @@ public class GroupCompensationLineCreateRequest
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable
 	ProductCategoryId appliesToProductCategoryId;
+
+	/** Repo id of the contract take-over record this line stems from; 0 = none */
+	int takeOverId;
 }

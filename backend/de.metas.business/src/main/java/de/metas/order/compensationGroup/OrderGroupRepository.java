@@ -405,6 +405,7 @@ public class OrderGroupRepository implements GroupRepository
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
+				.takeOverId(groupOrderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID())
 				.build();
 	}
 
@@ -503,6 +504,10 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setDiscount(BigDecimal.ZERO);
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
+		if (compensationLine.getTakeOverId() > 0)
+		{
+			compensationLinePO.setC_CompensationGroup_ContractSettings_TakeOver_ID(compensationLine.getTakeOverId());
+		}
 
 		orderLineBL.updateLineNetAmtFromQtyEntered(compensationLinePO);
 	}
