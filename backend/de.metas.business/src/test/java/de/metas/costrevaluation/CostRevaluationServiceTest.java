@@ -1387,8 +1387,8 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
-		 * Re-evaluating an already evaluated line (Run, Run again, Complete, Complete again) replaces its before-row instead of
-		 * adding one, so posting finds exactly one before-row to write the booked values onto.
+		 * Only "Complete" re-evaluates an already evaluated line, replacing its before-row instead of adding one (a repeated "Run"
+		 * skips it), so posting finds exactly one before-row to write the booked values onto.
 		 */
 		@Test
 		public void repeatedRunAndComplete_keepOneBeforeRowPerLine_andPostingUpdatesIt()
@@ -1401,10 +1401,10 @@ public class CostRevaluationServiceTest
 			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 
 			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 100 x (15 - 10) = 500
-			costRevaluationService.runRevaluation(costRevaluationId); // "Run" again
+			updateCurrentCost(productId, "10", "90");
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run" again: the line is already evaluated, so it is skipped
 			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500");
 
-			updateCurrentCost(productId, "10", "90");
 			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete": 90 x (15 - 10) = 450
 			assertBooksOnHandQtyTimesDelta(costRevaluationId, "90", "10", "15", "450");
 
