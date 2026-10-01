@@ -787,7 +787,7 @@ public class CostRevaluationServiceTest
 		assertThat(getSingleLineDeltaAmt(costRevaluationId)).isEqualByComparingTo(expectedDeltaAmt);
 	}
 
-	/** The single line shows the stock on hand and the current cost price the evaluation used, and the value difference it computed. */
+	/** The single line is marked evaluated and shows the stock on hand and the current cost price the evaluation used, and the value difference it computed. */
 	private void assertSingleLineValues(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final String expectedCurrentQty,
@@ -798,6 +798,7 @@ public class CostRevaluationServiceTest
 		assertThat(lines).hasSize(1);
 		final I_M_CostRevaluationLine line = lines.get(0);
 		InterfaceWrapperHelper.refresh(line);
+		assertThat(line.isRevaluated()).isTrue();
 		assertThat(line.getCurrentQty()).isEqualByComparingTo(expectedCurrentQty);
 		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo(expectedCurrentCostPrice);
 		assertThat(line.getDeltaAmt()).isEqualByComparingTo(expectedDeltaAmt);

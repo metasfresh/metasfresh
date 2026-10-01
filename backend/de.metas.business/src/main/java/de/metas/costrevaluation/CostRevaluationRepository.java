@@ -416,15 +416,17 @@ public class CostRevaluationRepository
 	}
 
 	/**
-	 * Writes the stock on hand and the current cost price a line was evaluated with, and the value difference computed from them.
+	 * Marks a line as evaluated and writes, in one save, the stock on hand and the current cost price it was evaluated with
+	 * and the value difference computed from them.
 	 */
-	public void updateBookedValues(
+	public void saveEvaluated(
 			@NonNull final CostRevaluationLineId lineId,
 			@NonNull final Quantity currentQty,
 			@NonNull final CostAmount currentCostPrice,
 			@NonNull final CostAmount deltaAmt)
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
+		record.setIsRevaluated(true);
 		record.setCurrentQty(currentQty.toBigDecimal());
 		record.setCurrentCostPrice(currentCostPrice.toBigDecimal());
 		record.setDeltaAmt(deltaAmt.toBigDecimal());

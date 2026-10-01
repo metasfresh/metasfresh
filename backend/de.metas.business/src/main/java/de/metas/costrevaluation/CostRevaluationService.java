@@ -480,8 +480,7 @@ public class CostRevaluationService
 				//
 				.build());
 
-		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmount));
-		costRevaluationRepository.updateBookedValues(line.getId(), qty, costPriceOld, deltaAmount);
+		costRevaluationRepository.saveEvaluated(line.getId(), qty, costPriceOld, deltaAmount);
 	}
 
 	/**
