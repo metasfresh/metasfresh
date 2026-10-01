@@ -54,7 +54,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation
+    And create lines for cost revaluation revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 15           |
@@ -96,7 +96,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation
+    And create lines for cost revaluation revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 8            |
@@ -151,7 +151,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-10 |
-    And cost revaluation lines are created for revaluation
+    And create lines for cost revaluation revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 18           |
@@ -203,7 +203,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-01          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation
+    And create lines for cost revaluation revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 15           |
@@ -256,7 +256,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier      | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
       | revaluationZero | acctSchema      | MovingAverageInvoice | 2024-03-06 |
-    And cost revaluation lines are created for revaluationZero
+    And create lines for cost revaluation revaluationZero
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID     | NewCostPrice |
       | revaluationZero      | productZeroStock | 12           |
@@ -319,7 +319,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
       | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-10 |
-    And cost revaluation lines are created for revaluation
+    And create lines for cost revaluation revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 18           |
@@ -348,7 +348,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation1
+    And create lines for cost revaluation revaluation1
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation1         | product      | 15           |
@@ -363,7 +363,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation2
+    And create lines for cost revaluation revaluation2
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation2         | product      | 18           |
@@ -381,7 +381,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
-    And cost revaluation lines are created for revaluationBackDate
+    And create lines for cost revaluation revaluationBackDate
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationBackDate  | product      | 15           |
@@ -400,7 +400,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-05          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation2
+    And create lines for cost revaluation revaluation2
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation2         | product      | 18           |
@@ -423,7 +423,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation1 | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluation1
+    And create lines for cost revaluation revaluation1
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation1         | product      | 15           |
@@ -433,7 +433,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluation2 | acctSchema      | MovingAverageInvoice | 2024-03-07          | 2024-03-07 |
-    And cost revaluation lines are created for revaluation2
+    And create lines for cost revaluation revaluation2
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation2         | product      | 18           |
@@ -544,7 +544,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier           | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationYearStart | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluationYearStart
+    And create lines for cost revaluation revaluationYearStart
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationYearStart | product      | 12           |
@@ -564,7 +564,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-07          | 2024-05-01 |
-    And cost revaluation lines are created for revaluationLater
+    And create lines for cost revaluation revaluationLater
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationLater     | product      | 13           |
@@ -590,7 +590,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
-    And cost revaluation lines are created for revaluationLater
+    And create lines for cost revaluation revaluationLater
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationLater     | product      | 15           |
@@ -604,7 +604,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
-    And cost revaluation lines are created for revaluationBackDate
+    And create lines for cost revaluation revaluationBackDate
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationBackDate  | product      | 12           |
@@ -619,7 +619,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier         | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationMonthly | acctSchema      | MovingAverageInvoice | 2024-03-31          | 2024-03-31 |
-    And cost revaluation lines are created for revaluationMonthly
+    And create lines for cost revaluation revaluationMonthly
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationMonthly   | product      | 12           |
@@ -634,7 +634,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier           | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationYearStart | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
-    And cost revaluation lines are created for revaluationYearStart
+    And create lines for cost revaluation revaluationYearStart
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationYearStart | product      | 11           |
@@ -653,7 +653,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
-    And cost revaluation lines are created for revaluationBackDate
+    And create lines for cost revaluation revaluationBackDate
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationBackDate  | product      | 12           |
@@ -663,7 +663,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
-    And cost revaluation lines are created for revaluationLater
+    And create lines for cost revaluation revaluationLater
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationLater     | product      | 15           |
@@ -687,7 +687,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier       | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationLater | acctSchema      | MovingAverageInvoice | 2024-03-10          | 2024-03-10 |
-    And cost revaluation lines are created for revaluationLater
+    And create lines for cost revaluation revaluationLater
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationLater     | product      | 15           |
@@ -701,7 +701,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
-    And cost revaluation lines are created for revaluationBackDate
+    And create lines for cost revaluation revaluationBackDate
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluationBackDate  | product      | 12           |

@@ -3,11 +3,13 @@ package org.compiere.acct;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import lombok.NonNull;
@@ -36,14 +38,10 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 
 		if (isReversalLine())
 		{
-			throw new UnsupportedOperationException(); // TODO impl
-			// return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-			// 				.acctSchemaId(as.getId())
-			// 				.reversalDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(get_ID()))
-			// 				.initialDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(getReversalLine_ID()))
-			// 				.date(getDateAcctAsInstant())
-			// 				.build())
-			// 		.getTotalAmountToPost(as);
+			// Not reachable for this document type: M_CostRevaluationLine has no Reversal_ID, so no reversal line is
+			// ever posted. Reversal of a CopyFromCostElement switch is value-neutral and handled in-place by
+			// CostRevaluationDocumentHandler#reverseCorrectIt, not through posting. Fail fast if ever hit.
+			throw new UnsupportedOperationException("Posting a M_CostRevaluation reversal line is not supported");
 		}
 		else
 		{
@@ -63,6 +61,16 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 							.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 							.date(getDateAcctAsInstant())
 							.build());
+
+			if (getDoc().isCopyFromCostElementSource())
+			{
+				// Value-neutral switch: the target element (e.g. MovingAverageInvoice) is intentionally not yet the
+				// acct-schema's accountable method (seed first, activate later), so there is no accountable amount to
+				// post and the copy books nothing. Tolerating the empty result is scoped to this source ONLY.
+				return costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, as)
+						.map(CostAmountAndQty::getAmt)
+						.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
+			}
 
 			// A revaluation of a cost element which is not posted by the accounting schema changes that cost only, with no GL impact.
 			if (!costElement.isAccountable(as.getCosting()))

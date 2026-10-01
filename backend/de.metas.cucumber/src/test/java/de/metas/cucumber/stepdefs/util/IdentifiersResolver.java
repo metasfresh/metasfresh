@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.dunning.DunningDocId;
 import de.metas.inout.InOutId;
+import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.OrderId;
@@ -70,11 +71,11 @@ public class IdentifiersResolver
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
-	@NonNull private final M_Inventory_StepDefData inventoryTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -115,6 +116,9 @@ public class IdentifiersResolver
 		inOutTable.getIdOptional(identifier)
 				.map(InOutId::toRecordRef)
 				.ifPresent(result::add);
+		inventoryTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Inventory.Table_Name, id))
+				.ifPresent(result::add);
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
 				.ifPresent(result::add);
@@ -126,9 +130,6 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		costRevaluationTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_M_CostRevaluation.Table_Name, id))
-				.ifPresent(result::add);
-		inventoryTable.getIdOptional(identifier)
-				.map(id -> TableRecordReference.of(I_M_Inventory.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())
@@ -162,6 +163,8 @@ public class IdentifiersResolver
 				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
 			case I_M_InOut.Table_Name:
 				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
+			case I_M_Inventory.Table_Name:
+				return inventoryTable.getFirstIdentifierById(InventoryId.ofRepoId(recordId));
 			default:
 				return Optional.empty();
 		}

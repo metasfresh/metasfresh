@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -13,6 +14,8 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -37,6 +40,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -48,6 +52,7 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -126,6 +131,28 @@ public class CostingService implements ICostingService
 	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
 	{
 		return costElementsRepo.getById(costElementId);
+	}
+
+	@Override
+	public Optional<CurrentCost> getCurrentCost(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		return Optional.ofNullable(currentCostsRepo.getOrNull(costSegmentAndElement));
+	}
+
+	@Override
+	public Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		final Optional<CostDetail> firstDetailAfter = costDetailsService.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+		if (firstDetailAfter.isPresent())
+		{
+			// That detail's Prev_* IS the state as of asOfDate: the state right before the first movement booked after it.
+			return firstDetailAfter.map(CostDetail::getPreviousAmounts);
+		}
+
+		// Nothing moved after asOfDate, so the live M_Cost row still carries the state as of asOfDate.
+		return getCurrentCost(costSegmentAndElement).map(CostDetailPreviousAmounts::of);
 	}
 
 	@Override
@@ -503,5 +530,99 @@ public class CostingService implements ICostingService
 		return CostsRevaluationResult.builder()
 				.currentCostBeforeEvaluation(currentCostBeforeEvaluation)
 				.build();
+	}
+
+	/**
+	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
+	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
+	 * <p>
+	 * Canonical definition of the "anchor" term:
+	 * {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
+	 */
+	@Override
+	public void seedCurrentCostFromOpening(
+			@NonNull final CostSegmentAndElement targetSegmentAndElement,
+			@NonNull final CostDetailPreviousAmounts opening,
+			@NonNull final Instant anchorDate,
+			@NonNull final CostRevaluationLineId lineId)
+	{
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(targetSegmentAndElement);
+		currentCost.setFrom(opening);
+		currentCostsRepo.save(currentCost);
+
+		final CostElement targetCostElement = getCostElementById(targetSegmentAndElement.getCostElementId());
+
+		// The anchor carries the SAME `opening` as its Prev_*, so a later product_costs_recreate_from_date restores
+		// M_Cost from it and reproduces exactly this state when there are no in-range transactions (recompute-survival).
+		utils.createCostDetailRecordWithChangedCosts(
+				CostDetailCreateRequest.builder()
+						.costSegment(targetSegmentAndElement.toCostSegment())
+						.costElement(targetCostElement)
+						.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
+						.qty(opening.getQty().toZero())
+						.amt(opening.getCumulatedAmt().toZero())
+						.date(anchorDate)
+						.build(),
+				opening);
+	}
+
+	/**
+	 * Returns the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on the target {@code (acctSchemaId, costElementId)} — regardless of {@code RevaluationSource}. Broad,
+	 * source-agnostic signal (not restricted to a prior {@code CopyFromCostElement} switch); see
+	 * {@link de.metas.costing.impl.CostDetailRepository#retrieveProductIdsWithCostRevaluationSeed} for the query.
+	 */
+	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsAlreadySeededOnCostElement(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return costDetailsService.retrieveProductIdsWithCostRevaluationSeed(acctSchemaId, costElementId, productIds);
+	}
+
+	/**
+	 * Value-neutral, symmetric undo of {@link #seedCurrentCostFromOpening}: removes the opening-anchor
+	 * {@code M_CostDetail} and resets the target element's {@code M_Cost} to its pre-switch (absent/zero) state.
+	 * <p>
+	 * Refused when a cost event dated strictly AFTER the cut-off has already built on the seed — the moving
+	 * average has moved on, so restoring the opening would corrupt it. The seed's own anchor is dated AT the
+	 * cut-off, so it is excluded by the strictly-after filter and never counts as a forward event.
+	 */
+	@Override
+	public void reverseSeededCurrentCost(
+			@NonNull final CostSegmentAndElement targetSegmentAndElement,
+			@NonNull final Instant cutoffDate,
+			@NonNull final CostRevaluationLineId lineId)
+	{
+		final boolean hasPostCutoffCostEvents = costDetailsService.hasCostDetails(
+				CostDetailQuery.builderFrom(targetSegmentAndElement)
+						.dateAcctRage(Range.greaterThan(cutoffDate))
+						.build());
+		if (hasPostCutoffCostEvents)
+		{
+			throw new AdempiereException("Cost revaluation cannot be reversed: a cost event after the cut-off date has"
+					+ " already built on the seeded Moving Average Invoice opening balance for product "
+					+ targetSegmentAndElement.getProductId() + ".");
+		}
+
+		// Remove the opening-anchor cost detail(s). The anchor is a changing-costs detail, so voidCosts runs, but it
+		// is value-neutral here (anchor qty=0/amt=0 → addToCurrentQtyAndCumulate(0,0)); the explicit CurrentCost reset
+		// below supersedes it regardless. Net effect: the anchor is deleted and the target's value is reset.
+		voidAndDeleteForDocument(CostingDocumentRef.ofCostRevaluationLineId(lineId));
+
+		// Reset the target element's current cost back to absent/zero (the pre-switch state). The row is kept
+		// (not deleted), mirroring the seed which used getOrCreate.
+		final CurrentCost currentCost = currentCostsRepo.getOrNull(targetSegmentAndElement);
+		if (currentCost != null)
+		{
+			currentCost.setFrom(CostDetailPreviousAmounts.builder()
+					.costPrice(currentCost.getCostPrice().withZeroOwnCostPrice().withZeroComponentsCostPrice())
+					.qty(currentCost.getCurrentQty().toZero())
+					.cumulatedAmt(currentCost.getCumulatedAmt().toZero())
+					.cumulatedQty(currentCost.getCumulatedQty().toZero())
+					.build());
+			currentCostsRepo.save(currentCost);
+		}
 	}
 }
