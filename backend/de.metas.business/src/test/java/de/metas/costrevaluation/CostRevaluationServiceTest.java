@@ -1888,7 +1888,7 @@ public class CostRevaluationServiceTest
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
 				costRevaluationService.createLines(costRevaluationId);
 
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
 						.costingLevel(CostingLevel.Client)
@@ -1934,14 +1934,14 @@ public class CostRevaluationServiceTest
 			}
 
 			@Test
-			public void reevaluateAllLines_doesNotReseedOrDeactivateAnAlreadyEvaluatedLine()
+			public void reevaluateAllLines_doesNotReseedOrDeactivateAnAlreadyEvaluatedLine_legacyDraftAlreadySeeded()
 			{
 				final ProductId productWithStock = createProduct("productWithStock");
 				seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
 
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
 				costRevaluationService.createLines(costRevaluationId);
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.createDetails(costRevaluationId); // a draft Run by the code before Run only previewed CopyFromCostElement: its line is already seeded and evaluated
 
 				final CostDetailQuery targetDetailsQuery = CostDetailQuery.builder()
 						.acctSchemaId(acctSchemaId)
@@ -2004,7 +2004,7 @@ public class CostRevaluationServiceTest
 				// Source keeps moving (old costing method still active until the separate schema flip):
 				updateSourceCurrentCost(productWithStock, "20.00", "5.00", "200");
 
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
 						.costingLevel(CostingLevel.Client)
@@ -2076,7 +2076,7 @@ public class CostRevaluationServiceTest
 				assertThat(draftedLine.getNewCostPrice()).isEqualByComparingTo("10");
 				assertThat(draftedLine.getCurrentQty()).isEqualByComparingTo("100");
 
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
 						.costingLevel(CostingLevel.Client)
@@ -2278,7 +2278,7 @@ public class CostRevaluationServiceTest
 
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
 				costRevaluationService.createLines(costRevaluationId);
-				costRevaluationService.createDetails(costRevaluationId); // seeds the MAI opening (anchor dated AT the cut-off)
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				// A forward-MAI movement dated strictly AFTER the cut-off has built on the seeded opening.
 				createPostCutoffCostEventOnTarget(productWithStock);
@@ -2315,7 +2315,7 @@ public class CostRevaluationServiceTest
 				costRevaluationService.createLines(costRevaluationId);
 
 				// Must skip value-neutrally (no throw).
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				// The line for the already-seeded product is deactivated (skipped), not marked evaluated.
 				final List<I_M_CostRevaluationLine> lines = costRevaluationRepository
@@ -2367,7 +2367,7 @@ public class CostRevaluationServiceTest
 
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(); // cut-off = 2025-12-31
 				costRevaluationService.createLines(costRevaluationId);
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				// The pre-cut-off source detail is still present and unchanged (not deleted, not re-costed).
 				final List<CostDetail> sourceDetailsAfter = new CostDetailRepository()
@@ -2479,7 +2479,7 @@ public class CostRevaluationServiceTest
 				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(orgLevelAcctSchemaId, org1);
 				costRevaluationService.createLines(costRevaluationId);
 
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				final CurrentCost org1TargetCost = currentCostsRepo.getOrNull(
 						costSegmentAndElement(productId, targetCostElementId, orgLevelAcctSchemaId, CostingLevel.Organization, org1));
@@ -2536,7 +2536,7 @@ public class CostRevaluationServiceTest
 				assertThat(line.getNewCostPrice()).isEqualByComparingTo("12.50");
 				assertThat(line.getCurrentQty()).isEqualByComparingTo("-40");
 
-				costRevaluationService.createDetails(costRevaluationId);
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
 
 				final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(
 						costSegmentAndElement(productId, targetCostElementId, acctSchemaId, CostingLevel.Client, OrgId.ANY));

@@ -172,7 +172,7 @@ public class M_CostRevaluation_StepDef
 
 	/**
 	 * Completes the cost-revaluation document via the real DocAction pipeline
-	 * ({@code completeIt} → {@code createDetails} → seed target cost).
+	 * ({@code completeIt} → {@code reevaluateAllLines}; for {@code CopyFromCostElement} this seeds the target cost).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
@@ -286,7 +286,8 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
-	 * Evaluates the draft {@code M_CostRevaluation}, as the "Run" action does: creates the details of its not yet evaluated lines.
+	 * Evaluates the draft {@code M_CostRevaluation} through the service method the "Run" process delegates to ({@code runRevaluation}):
+	 * creates the details of its not yet evaluated lines; for {@code CopyFromCostElement} it writes nothing (Run only previews).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
@@ -299,7 +300,7 @@ public class M_CostRevaluation_StepDef
 	public void evaluate(@NonNull final String identifier)
 	{
 		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-		costRevaluationService.createDetails(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()));
+		costRevaluationService.runRevaluation(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()));
 	}
 
 	/**
@@ -342,7 +343,7 @@ public class M_CostRevaluation_StepDef
 	{
 		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
 		// in its own transaction, rolled back on failure, like the Run process
-		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> costRevaluationService.createDetails(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()))));
+		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> costRevaluationService.runRevaluation(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()))));
 		assertRefusedWithMessage(thrown, "Evaluating " + identifier, adMessageKey);
 	}
 
