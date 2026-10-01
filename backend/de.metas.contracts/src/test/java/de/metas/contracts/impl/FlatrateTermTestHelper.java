@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.callorder.CallOrderContractService;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupRepository;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -211,7 +212,8 @@ public class FlatrateTermTestHelper
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
 				new CallOrderContractService(),
-				new GLCategoryRepository());
+				new GLCategoryRepository(),
+				new ContractCompensationGroupRepository());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

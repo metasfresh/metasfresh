@@ -1,9 +1,11 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonInOutLineExpectation;
+import de.metas.frontend_testing.expectations.request.JsonOrderCompensationGroupExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -15,6 +17,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
@@ -32,7 +35,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
 /**
- * Asserts M_InOut (shipment) state per sales order.
+ * Asserts M_InOut (shipment) state and the compensation groups per sales order.
  *
  * <p>Consumer-side JSON shape:
  * <pre>
@@ -41,7 +44,9 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  *     // assert exactly one completed shipment
  *     'SO1': { shipments: [{ docStatus: 'CO' }] },
  *     // assert NO shipments (DO_NOT_CREATE policy)
- *     'SO2': { shipments: [] }
+ *     'SO2': { shipments: [] },
+ *     // assert the order's compensation groups (by record id, e.g. an order created in the UI)
+ *     '1000123': { compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }] }
  *   }
  * });
  * </pre>
@@ -80,6 +85,11 @@ class AssertSalesOrderExpectationsCommand
 		if (expectation.getShippedQty() != null)
 		{
 			assertShippedQty(orderId, expectation.getShippedQty());
+		}
+
+		if (expectation.getCompensationGroups() != null)
+		{
+			assertCompensationGroups(services.getOrderCompensationGroups(orderId), orderId, expectation.getCompensationGroups());
 		}
 
 		if (expectation.getShipments() == null)
@@ -124,6 +134,46 @@ class AssertSalesOrderExpectationsCommand
 		final Identifier identifier = Identifier.ofString(orderIdentifierStr);
 		return context.getOptionalId(identifier, OrderId.class)
 				.orElseGet(() -> identifier.toId(OrderId.class));
+	}
+
+	/**
+	 * Asserts the order's compensation groups, in id order, 1:1 against the expected ones (same count, then per group
+	 * the contract term and the schema, each only when expected).
+	 */
+	@VisibleForTesting
+	static void assertCompensationGroups(
+			@NonNull final List<I_C_Order_CompensationGroup> actualGroups,
+			@NonNull final OrderId orderId,
+			@NonNull final List<JsonOrderCompensationGroupExpectation> expectations)
+	{
+		softly(() -> {
+			softlyPutContext("orderId", orderId);
+			softlyPutContext("compensationGroupExpectations", expectations);
+
+			assertThat(actualGroups)
+					.as("compensation groups of order " + orderId)
+					.hasSameSize(expectations);
+
+			final int size = Math.min(expectations.size(), actualGroups.size());
+			for (int i = 0; i < size; i++)
+			{
+				final JsonOrderCompensationGroupExpectation expectation = expectations.get(i);
+				final I_C_Order_CompensationGroup actual = actualGroups.get(i);
+				final String groupDescription = "compensationGroup[" + i + "] C_Order_CompensationGroup_ID=" + actual.getC_Order_CompensationGroup_ID();
+				if (expectation.getFlatrateTermId() != null)
+				{
+					assertThat(actual.getC_Flatrate_Term_ID())
+							.as("C_Flatrate_Term_ID of " + groupDescription)
+							.isEqualTo(expectation.getFlatrateTermId());
+				}
+				if (expectation.getCompensationGroupSchemaId() != null)
+				{
+					assertThat(actual.getC_CompensationGroup_Schema_ID())
+							.as("C_CompensationGroup_Schema_ID of " + groupDescription)
+							.isEqualTo(expectation.getCompensationGroupSchemaId());
+				}
+			}
+		});
 	}
 
 	/**

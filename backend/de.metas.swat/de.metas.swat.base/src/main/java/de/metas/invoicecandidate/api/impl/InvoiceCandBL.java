@@ -73,6 +73,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.IsPartialInvoice;
@@ -96,6 +97,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -197,6 +199,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -294,6 +297,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -597,6 +602,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
 
+		// the percent discount candidate of a compensation group is repriced after each partial invoice,
+		// so its own current price does not tell what its earlier invoice lines were invoiced at
+		final boolean useInvoiceLinePrice = !ilas.isEmpty() && PercentCompensationLineInvoicing.isPercentCompensationLine(ic);
+
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
 			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
@@ -624,7 +633,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean isIlaInvoiceAnAdjInvoice = Services.get(IInvoiceBL.class)
 					.isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
 
-			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
+			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice || useInvoiceLinePrice ?
 					ila.getC_InvoiceLine().getPriceActual() :
 					ic.getPriceActual();
 
@@ -1637,10 +1646,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
-					assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
-
-					final StockQtyAndUOMQty qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					final StockQtyAndUOMQty qtyInvoicedForIc;
+					if (PercentCompensationLineInvoicing.isPercentCompensationLine(invoiceCandidate))
+					{
+						// The percent discount candidate of a compensation group carries one unit per partial invoice.
+						// Only what this invoice line still counts on the candidate may be taken back, not the units of the candidate's other invoices
+						qtyInvoicedForIc = sumupQtyStillInvoicedByInvoiceLineGroup(invoiceCandidate, il, reversalLine, productId);
+					}
+					else
+					{
+						final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
+						assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
+						qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					}
 
 					// examples:
 					// reversalQtyInvoiced = -5, qtyInvoicedForIc = 3 (because of partial reinvoicable credit memo with qty 2) => overlap=-2 => create Ila with qty -5-(-2)=-3
@@ -1652,6 +1670,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
+					//
 					if (isAdjustmentChargeInvoice)
 					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
@@ -1689,6 +1708,64 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				createUpdateIla(request);
 			}
+		}
+	}
+
+	/**
+	 * @return what the given invoice line's allocation group still counts on the given invoice candidate, before {@code reversalLine} is allocated.
+	 * <p>
+	 * The group is the credited invoice line (for a credit memo line: the line it credits), that line's reversal,
+	 * and the credit memo lines that credit it together with their reversals. Summing over the whole group makes the order of
+	 * reversals irrelevant: whether the credited invoice or its credit memo is reversed first, the reversal takes back only
+	 * what the group still counts, so each invoice's discount unit is counted once.
+	 */
+	private StockQtyAndUOMQty sumupQtyStillInvoicedByInvoiceLineGroup(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final I_C_InvoiceLine il,
+			@NonNull final I_C_InvoiceLine reversalLine,
+			@NonNull final ProductId productId)
+	{
+		final I_C_InvoiceLine creditedLine = invoiceBL.isCreditMemo(il.getC_Invoice()) && il.getRef_InvoiceLine_ID() > 0
+				? InterfaceWrapperHelper.create(il.getRef_InvoiceLine(), I_C_InvoiceLine.class)
+				: il;
+
+		final Set<Integer> groupLineIds = new HashSet<>();
+		addLineAndItsReversal(groupLineIds, creditedLine, invoiceDAO);
+		for (final I_C_InvoiceLine referringLine : invoiceDAO.retrieveReferringLines(InvoiceAndLineId.ofRepoId(creditedLine.getC_Invoice_ID(), creditedLine.getC_InvoiceLine_ID())))
+		{
+			if (invoiceBL.isCreditMemo(referringLine.getC_Invoice()))
+			{
+				addLineAndItsReversal(groupLineIds, referringLine, invoiceDAO);
+			}
+		}
+		groupLineIds.remove(reversalLine.getC_InvoiceLine_ID());
+
+		StockQtyAndUOMQty qtyStillInvoiced = StockQtyAndUOMQtys.createZero(productId, UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()));
+		for (final I_C_Invoice_Line_Alloc ila : invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(invoiceCandidate)))
+		{
+			if (groupLineIds.contains(ila.getC_InvoiceLine_ID()))
+			{
+				qtyStillInvoiced = StockQtyAndUOMQtys.add(
+						qtyStillInvoiced,
+						StockQtyAndUOMQtys.create(ila.getQtyInvoiced(), productId, ila.getQtyInvoicedInUOM(), UomId.ofRepoIdOrNull(ila.getC_UOM_ID())));
+			}
+		}
+		return qtyStillInvoiced;
+	}
+
+	private static void addLineAndItsReversal(
+			@NonNull final Set<Integer> lineIds,
+			@NonNull final I_C_InvoiceLine line,
+			@NonNull final IInvoiceDAO invoiceDAO)
+	{
+		lineIds.add(line.getC_InvoiceLine_ID());
+
+		final int reversalInvoiceId = line.getC_Invoice().getReversal_ID();
+		if (reversalInvoiceId > 0)
+		{
+			final I_C_InvoiceLine lineReversal = invoiceDAO.retrieveReversalLine(line, reversalInvoiceId);
+			Check.assumeNotNull(lineReversal, "C_InvoiceLine {} is expected to have a reversal line in C_Invoice_ID={}", line, reversalInvoiceId);
+			lineIds.add(lineReversal.getC_InvoiceLine_ID());
 		}
 	}
 
@@ -2435,6 +2512,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							}
 						}
 
+						if (PercentCompensationLineInvoicing.isPercentCompensationLine(candidate))
+						{
+							// one discount unit per partial invoice: its invoice line always carries a full unit, so it is never "partially invoiced";
+							// it stays open while its group's goods do (see PercentCompensationLineInvoicing)
+							logger.debug("percent compensation line; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+							continue;
+						}
+
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
@@ -2577,6 +2662,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			icRecord.setQtyDelivered(ZERO);
 			icRecord.setQtyToInvoiceInUOM(ZERO);
 		}
+	}
+
+	@Override
+	public BigDecimal computeNetAmtInvoiced(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return sumupQtyInvoicedAndNetAmtInvoiced(ic)
+				.map(IPair::getRight)
+				.map(Money::toBigDecimal)
+				.orElse(ZERO);
 	}
 
 	@Override

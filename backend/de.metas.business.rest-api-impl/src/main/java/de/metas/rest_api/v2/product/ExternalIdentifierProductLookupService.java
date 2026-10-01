@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
@@ -71,14 +72,15 @@ public class ExternalIdentifierProductLookupService
 			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId)
 	{
-		return resolveProductExternalIdentifier(productIdentifier, orgId, null);
+		return resolveProductExternalIdentifier(productIdentifier, orgId, null, null);
 	}
 
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
 			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId,
-			@Nullable final ZonedDateTime date)
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		switch (productIdentifier.getType())
 		{
@@ -102,7 +104,7 @@ public class ExternalIdentifierProductLookupService
 				return ProductAndHUPIItemProductId.opt(productId);
 
 			case GTIN:
-				return lookupProductByGTIN(productIdentifier, date);
+				return lookupProductByGTIN(productIdentifier, date, bpartnerId);
 			default:
 				throw new InvalidIdentifierException(productIdentifier.getRawValue());
 		}
@@ -112,13 +114,14 @@ public class ExternalIdentifierProductLookupService
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
 			@NonNull final ExternalIdentifier productIdentifier,
-			@Nullable final ZonedDateTime date)
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final GTIN gtin = GTIN.ofString(productIdentifier.asGTIN());
 
-		// Branch 1: M_HU_PI_Item_Product — validity-filtered (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
+		// Branch 1: M_HU_PI_Item_Product — scoped to the given partner (and partner-less rows) if bpartnerId is set; validity-filtered (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
 		// If no valid row exists for the given date, falls through to branch 2.
-		final Optional<ProductAndHUPIItemProductId> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, date);
+		final Optional<ProductAndHUPIItemProductId> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, bpartnerId, date);
 		if (hupiOpt.isPresent())
 		{
 			return hupiOpt;

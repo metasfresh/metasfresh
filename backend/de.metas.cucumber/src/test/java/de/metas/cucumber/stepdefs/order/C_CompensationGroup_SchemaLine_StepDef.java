@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.order;
 
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import io.cucumber.datatable.DataTable;
@@ -31,6 +32,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -52,6 +54,7 @@ public class C_CompensationGroup_SchemaLine_StepDef
 	private final @NonNull C_CompensationGroup_Schema_StepDefData schemaTable;
 	private final @NonNull C_CompensationGroup_SchemaLine_StepDefData schemaLineTable;
 	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull M_Product_Category_StepDefData productCategoryTable;
 
 	/**
 	 * Creates {@link I_C_CompensationGroup_SchemaLine} records that add a compensation (discount / surcharge)
@@ -66,6 +69,8 @@ public class C_CompensationGroup_SchemaLine_StepDef
 	 *     <li>{@code OPT.CompleteOrderDiscount} (optional) — the whole-order discount percentage (e.g. {@code 10})</li>
 	 *     <li>{@code OPT.SeqNo} (optional) — sequence number for ordering</li>
 	 *     <li>{@code OPT.Type} (optional) — matcher type; leave unset for an always-matching line</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier} (optional) — restricts this compensation line to
+	 *         order lines whose product is in the given category</li>
 	 * </ul>
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_SchemaLine:
@@ -94,6 +99,10 @@ public class C_CompensationGroup_SchemaLine_StepDef
 					.ifPresent(record::setSeqNo);
 			row.getAsOptionalString(I_C_CompensationGroup_SchemaLine.COLUMNNAME_Type)
 					.ifPresent(record::setType);
+			row.getAsOptionalIdentifier(I_C_CompensationGroup_SchemaLine.COLUMNNAME_M_Product_Category_ID)
+					.map(identifier -> identifier.lookupNotNullIn(productCategoryTable))
+					.map(I_M_Product_Category::getM_Product_Category_ID)
+					.ifPresent(record::setM_Product_Category_ID);
 
 			saveRecord(record);
 
