@@ -136,20 +136,22 @@ public class ProductASIDataRepository
 			return true; // wildcard — matches any ASI
 		}
 
-		if (lineKey.isNone())
-		{
-			return false; // line has no ASI, but candidate requires one
-		}
-
 		final AttributesKey candidateKey = AttributesKeys
 				.createAttributesKeyFromASIAllAttributes(AttributeSetInstanceId.ofRepoId(candidateAsiId))
 				.orElse(AttributesKey.NONE);
 
 		if (candidateKey.isNone())
 		{
-			// Candidate references an ASI record, but that ASI has no (storage-relevant) attributes → treat as wildcard.
+			// Candidate references an ASI record, but that ASI has no attributes → treat as wildcard.
 			// Consistent with the SQL-side behaviour of IsASIAttributesKeySubset (UnnestAttributesKey('-1002') returns 0 rows → NOT EXISTS is vacuously true).
 			return true;
+		}
+
+		if (lineKey.isNone())
+		{
+			// Redundant at this point (candidateKey is non-empty here, and AttributesKey.contains()/parts.containsAll()
+			// already returns false against an empty line key) — kept for clarity and to avoid building the contains() check for nothing.
+			return false; // line has no ASI, but candidate requires one
 		}
 
 		// Check if the line's ASI is a superset of (or equal to) the candidate's ASI

@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUServic
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.workflow.DisplayValueProviderService;
+import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
@@ -64,6 +65,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	@NonNull private final PickingJobRestService pickingJobRestService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull final DisplayValueProviderService displayValueProviderService;
+	@NonNull private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -116,6 +118,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.productService(productService)
 				.huService(huService)
 				.pickingJobRestService(pickingJobRestService)
+				.packedHUCarrierAdviseService(packedHUCarrierAdviseService)
 				.displayValueProviderService(displayValueProviderService)
 				//
 				.pickingJob(pickingJob)

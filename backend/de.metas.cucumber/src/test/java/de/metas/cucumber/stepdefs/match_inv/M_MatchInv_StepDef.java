@@ -9,13 +9,13 @@ import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvQuery;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.lang.SOTrx;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -24,8 +24,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MatchInv;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 public class M_MatchInv_StepDef
@@ -76,7 +74,7 @@ public class M_MatchInv_StepDef
 		final InvoiceAndLineId invoiceLineId = invoiceLineTable.getInvoiceAndLineId(row.getAsIdentifier(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID));
 		final InOutLineId inoutLineId = row.getAsIdentifier(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID).lookupNotNullIdIn(inoutLineTable);
 
-		final List<MatchInv> matchInvoices = matchInvoiceRepository.list(MatchInvQuery.builder()
+		final MatchInvCollection matchInvoices = matchInvoiceRepository.list(MatchInvQuery.builder()
 				.type(MatchInvType.Material)
 				.invoiceAndLineId(invoiceLineId)
 				.inoutLineId(inoutLineId)
@@ -90,6 +88,6 @@ public class M_MatchInv_StepDef
 			throw new AdempiereException("More than one M_MatchInv found for " + invoiceLineId + " and " + inoutLineId + ": " + matchInvoices);
 		}
 
-		return CollectionUtils.singleElement(matchInvoices);
+		return matchInvoices.singleElement();
 	}
 }

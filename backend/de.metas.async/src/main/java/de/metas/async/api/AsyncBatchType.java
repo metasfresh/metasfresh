@@ -39,4 +39,10 @@ public class AsyncBatchType
 	@NonNull Duration keepAlive;
 	@NonNull Duration skipTimeout;
 	int adBoilderPlateId;
+	boolean checkProcessed;
+
+	public boolean isCheckProcessedNeeded()
+	{
+		return checkProcessed || adBoilderPlateId > 0;
+	}
 }

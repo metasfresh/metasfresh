@@ -207,7 +207,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID = "ExternalSystem_Config_ScriptedExportConversion_ID";
 
 	/**
-	 * Set External System Endpoint.
+	 * Set External System Outbound Endpoint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -216,7 +216,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
 
 	/**
-	 * Get External System Endpoint.
+	 * Get External System Outbound Endpoint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

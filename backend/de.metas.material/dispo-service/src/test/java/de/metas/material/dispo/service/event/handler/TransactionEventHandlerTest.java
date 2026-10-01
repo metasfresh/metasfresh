@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler;
 
 import com.google.common.collect.ImmutableList;
@@ -17,46 +39,41 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.*;
-
-/*
- * #%L
- * metasfresh-material-dispo-service
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransactionEventHandlerTest
 {
 	private DimensionService dimensionService = Mockito.mock(DimensionService.class);
+
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+	}
 
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
@@ -118,7 +135,7 @@ public class TransactionEventHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
 		final CandidateChangeService candidateChangeHandler = Mockito.mock(CandidateChangeService.class);
 		final CandidateRepositoryRetrieval candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
@@ -128,17 +145,34 @@ public class TransactionEventHandlerTest
 				candidateRepository,
 				Mockito.mock(PostMaterialEventService.class));
 
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
+		final MaterialDescriptor descriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(excludedWarehouseId)
+				.customerId(BPARTNER_ID)
+				.quantity(BigDecimal.TEN)
+				.date(NOW)
+				.build();
+
 		final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(descriptor)
 				.transactionId(1)
-				.isDropShipWarehouse(true)
 				.build();
 
 		transactionEventHandler.handleEvent(event);
 
-		// dropship-warehouse transactions bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition (MRP_Exclude=Y) — no candidates of any type are created.
 		Mockito.verifyZeroInteractions(candidateChangeHandler);
 		Mockito.verifyZeroInteractions(candidateRepository);
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 }

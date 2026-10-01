@@ -1080,6 +1080,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public void save(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		InterfaceWrapperHelper.save(piItem);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_HU hu)
+	{
+		InterfaceWrapperHelper.save(hu);
+	}
+
+	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion,
 														  @Nullable final BPartnerId bpartnerId)
 	{

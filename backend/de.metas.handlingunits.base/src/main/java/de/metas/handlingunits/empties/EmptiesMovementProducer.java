@@ -186,11 +186,9 @@ public class EmptiesMovementProducer
 	{
 		final EmptiesMovementDirection movementDirection = extractEmptiesMovementDirection(candidate);
 
-		// To/From locator
 		final I_M_Locator locatorCandidate = candidate.getM_Locator();
-		final I_M_Warehouse warehouseCandidate = locatorCandidate.getM_Warehouse();
 
-		final MovementHeaderCandidate warehouseDirection = new MovementHeaderCandidate(movementDirection, warehouseCandidate.getM_Warehouse_ID());
+		final MovementHeaderCandidate warehouseDirection = new MovementHeaderCandidate(movementDirection, locatorCandidate.getM_Warehouse_ID());
 		return warehouseDirection;
 	}
 

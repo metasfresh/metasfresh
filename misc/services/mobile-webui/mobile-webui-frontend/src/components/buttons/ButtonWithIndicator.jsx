@@ -82,7 +82,9 @@ const ButtonWithIndicator = ({
         <div className="caption-btn">
           <div className="rows">
             <div className="row">
-              <span>{caption}</span>
+              <span className={cx({ 'caption-multiline': typeof caption === 'string' && caption.includes('\n') })}>
+                {caption}
+              </span>
             </div>
             {displayHazardsAndAllergens && (
               <div

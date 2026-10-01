@@ -1,9 +1,18 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -35,6 +44,17 @@ public interface ICostingService
 
 	ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
 
+	/**
+	 * The detailed amount to post for each product that has a {@code CostDetail} row on the given document, keyed by
+	 * product. Each product's rows form their own single cost segment, so this is safe where
+	 * {@link CostDetailCreateResultsList#toAggregatedCostAmount()} (which requires a single segment) is not - it is
+	 * how a document that posts several products (e.g. a manufacturing CostDifferenceDistribution with co-products)
+	 * gets each product's own amount without mixing segments.
+	 */
+	ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull CostingDocumentRef documentRef,
+			@NonNull AcctSchema as);
+
 	CostDetailCreateResultsList createReversalCostDetails(CostDetailReverseRequest request);
 
 	ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(CostDetailReverseRequest request);
@@ -48,4 +68,52 @@ public interface ICostingService
 			CostingMethod costingMethod);
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
+
+	Optional<CurrentCost> getCurrentCost(@NonNull CostSegmentAndElement costSegmentAndElement);
+
+	/**
+	 * Point-in-time read of a cost element's cost: the state it was in as of {@code asOfDate}.
+	 * <p>
+	 * The live {@code M_Cost} row only ever carries the LATEST state, so for a cut-off that lies in the past it yields the
+	 * cost AFTER every movement booked since — not the cost AT the cut-off. Therefore the state is reconstructed from the
+	 * {@code Prev_*} columns of the first changing-costs {@code M_CostDetail} dated after {@code asOfDate}: those columns
+	 * hold exactly the state the element was in immediately before that movement. With no such detail, nothing moved after
+	 * the cut-off and the live row IS the state as of {@code asOfDate}.
+	 * <p>
+	 * The boundary is strictly {@code >}, never {@code >=}: a {@code CopyFromCostElement} switch writes its own opening
+	 * anchor dated exactly AT the cut-off, and that anchor must never count as a forward event — otherwise the switch would
+	 * seed itself from its own anchor's {@code Prev_*} instead of from the source element's cost at the cut-off.
+	 *
+	 * @return the cost as of {@code asOfDate}, or empty if the cost element has neither a post-cut-off changing-costs
+	 * detail nor a live {@code M_Cost} row for the segment.
+	 */
+	Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
+
+	/**
+	 * Writes the {@code CopyFromCostElement} switch's opening anchor. For what the "anchor" IS and what it is for, see the
+	 * canonical definition on {@code de.metas.costrevaluation.CostRevaluationService#createDetailsForCopyFromCostElement}.
+	 */
+	void seedCurrentCostFromOpening(
+			@NonNull CostSegmentAndElement targetSegmentAndElement,
+			@NonNull CostDetailPreviousAmounts opening,
+			@NonNull Instant anchorDate,
+			@NonNull CostRevaluationLineId lineId);
+
+	void reverseSeededCurrentCost(
+			@NonNull CostSegmentAndElement targetSegmentAndElement,
+			@NonNull Instant cutoffDate,
+			@NonNull CostRevaluationLineId lineId);
+
+	/**
+	 * @return the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on the target {@code (acctSchemaId, costElementId)} — regardless of {@code RevaluationSource}. This is a
+	 * broad, source-agnostic signal (a prior {@code CopyFromCostElement} switch OR any other completed cost-revaluation
+	 * line on that element/product), NOT restricted to a prior {@code CopyFromCostElement} switch.
+	 */
+	ImmutableSet<ProductId> retrieveProductIdsAlreadySeededOnCostElement(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
 }

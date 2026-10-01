@@ -22,21 +22,28 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.pair.IPair;
+import de.metas.i18n.Language;
 import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
+import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -65,7 +72,7 @@ public final class DeliveryOrderUtil
 		}
 
 		return addressBuilder
-				.street2(location.getAddress2())
+				.street2(StringUtils.trimBlankToNull(location.getAddress2()))
 				.zipCode(location.getPostal())
 				.city(location.getCity())
 				.country(createShipperCountryCode(CountryId.ofRepoId(location.getC_Country_ID())));
@@ -77,6 +84,15 @@ public final class DeliveryOrderUtil
 				.companyName1(bpartner.getName())
 				.companyName2(bpartner.getName2())
 				.bpartnerId(bpartner.getC_BPartner_ID());
+	}
+
+	public Address.AddressBuilder prepareAddressFromLocationBP(
+			@NonNull final I_C_Location location,
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		return prepareAddressFromLocationBP(location, bpartner)
+				.attention(StringUtils.trimBlankToNull(bpartnerLocation.getAttention()));
 	}
 
 	public CountryCode createShipperCountryCode(final CountryId countryId)
@@ -92,10 +108,35 @@ public final class DeliveryOrderUtil
 	{
 		return packageInfos.stream()
 				.map(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
-				.map(de.metas.util.StringUtils::trimBlankToNull)
+				.map(StringUtils::trimBlankToNull)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.joining(", "));
+	}
+
+	@NonNull
+	public ContactPerson getContactPerson(@NonNull final I_C_BPartner bPartner,
+										  @NonNull final I_C_BPartner_Location bPLocation,
+										  @Nullable final User contact)
+	{
+		final String contactPersonName = contact != null ? contact.getName() : null;
+		final String name = CoalesceUtil.firstNotEmptyTrimmedNotNull(contactPersonName, bPartner.getName());
+
+		final String contactPersonPhoneNumber = contact != null ? contact.getPhone() : null;
+		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
+		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
+
+		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
+		final String emailAddress = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartner.getEMail());
+
+		final Language bpLanguage = Language.asLanguage(bPartner.getAD_Language());
+		return ContactPerson.builder()
+				.name(name)
+				.department(contact != null ? contact.getDepartment() : null)
+				.emailAddress(emailAddress)
+				.simplePhoneNumber(phoneNumber)
+				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
+				.build();
 	}
 
 }

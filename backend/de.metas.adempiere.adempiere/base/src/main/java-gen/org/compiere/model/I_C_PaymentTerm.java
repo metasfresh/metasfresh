@@ -416,6 +416,29 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow overriding due date.
+	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowOverrideDueDate (boolean IsAllowOverrideDueDate);
+
+	/**
+	 * Get Allow overriding due date.
+	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowOverrideDueDate();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsAllowOverrideDueDate = new ModelColumn<>(I_C_PaymentTerm.class, "IsAllowOverrideDueDate", null);
+	String COLUMNNAME_IsAllowOverrideDueDate = "IsAllowOverrideDueDate";
+
+	/**
 	 * Set Installment.
 	 * Indicates that this payment term defines multiple due dates or installment conditions.
 	 *

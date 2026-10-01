@@ -14,8 +14,10 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -462,5 +464,103 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(transactionDetailRecord).isNotNull();
 		assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
 		assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(33);
+	}
+
+	/**
+	 * Reproduces the FK violation
+	 * {@code MDCandidateRebookedFrom_MDCandidateTransactionDetail} that previously caused
+	 * the material event queue to back up when an MD_Candidate referenced via
+	 * {@code MD_Candidate_Transaction_Detail.MD_Candidate_RebookedFrom_ID} was deleted.
+	 * The delete must clear the rebooked-from references on OTHER transaction-detail rows
+	 * before removing the target candidate.
+	 */
+	@Test
+	public void deleteCandidatesAndDetailsByQuery_clears_RebookedFrom_reference_on_other_transactionDetails()
+	{
+		final java.sql.Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
+
+		final I_MD_Candidate candidateA = newInstance(I_MD_Candidate.class);
+		candidateA.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		candidateA.setDateProjected(now);
+		save(candidateA);
+		final CandidateId candidateAId = CandidateId.ofRepoId(candidateA.getMD_Candidate_ID());
+
+		final I_MD_Candidate candidateB = newInstance(I_MD_Candidate.class);
+		candidateB.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		candidateB.setDateProjected(now);
+		save(candidateB);
+
+		final I_MD_Candidate_Transaction_Detail detailB = newInstance(I_MD_Candidate_Transaction_Detail.class);
+		detailB.setMD_Candidate_ID(candidateB.getMD_Candidate_ID());
+		detailB.setMD_Candidate_RebookedFrom_ID(candidateA.getMD_Candidate_ID());
+		save(detailB);
+		final int detailBId = detailB.getMD_Candidate_Transaction_Detail_ID();
+
+		candidateRepositoryWriteService.deleteCandidatesAndDetailsByQuery(
+				DeleteCandidatesQuery.builder().candidateId(candidateAId).build());
+
+		final int remainingA = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateAId.getRepoId())
+				.create()
+				.count();
+		assertThat(remainingA).as("candidate A must be deleted").isZero();
+
+		final I_MD_Candidate_Transaction_Detail reloadedDetailB = load(detailBId, I_MD_Candidate_Transaction_Detail.class);
+		assertThat(reloadedDetailB).isNotNull();
+		assertThat(reloadedDetailB.getMD_Candidate_ID()).isEqualTo(candidateB.getMD_Candidate_ID());
+		assertThat(reloadedDetailB.getMD_Candidate_RebookedFrom_ID()).isZero();
+	}
+
+	/**
+	 * Reproduces a real drift case: a {@code TransactionDescriptor} can fan out into several
+	 * {@code TransactionCreatedEvent}s (one per distinct storage-attributes-key, e.g. distinct serial
+	 * numbers on the moved/issued HUs) that all carry the SAME shared {@code M_Transaction_ID}. This
+	 * method's lookup matched purely on {@code M_Transaction_ID}/{@code AD_PInstance_ResetStock_ID} with no
+	 * {@code MD_Candidate_ID} filter, so the second candidate's write silently took the UPDATE branch on
+	 * the FIRST candidate's existing row (never reassigning {@code MD_Candidate_ID}) instead of inserting
+	 * its own - leaving the second candidate with zero detail rows and corrupting the first candidate's row
+	 * with the second's qty/date.
+	 */
+	@Test
+	public void addOrReplaceTransactionDetail_doesNotStealDetailFromDifferentCandidate()
+	{
+		final int sharedTransactionId = 12345;
+
+		final Candidate candidateA = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(newMaterialDescriptor())
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(sharedTransactionId).transactionDate(NOW).complete(true).build())
+				.build();
+		final I_MD_Candidate candidateRecordA = newInstance(I_MD_Candidate.class);
+		save(candidateRecordA);
+		candidateRepositoryWriteService.addOrReplaceTransactionDetail(candidateA, candidateRecordA);
+
+		final Candidate candidateB = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(newMaterialDescriptor())
+				.transactionDetail(TransactionDetail.builder().quantity(TEN).storageAttributesKey(AttributesKey.ALL).transactionId(sharedTransactionId).transactionDate(NOW).complete(true).build())
+				.build();
+		final I_MD_Candidate candidateRecordB = newInstance(I_MD_Candidate.class);
+		save(candidateRecordB);
+		candidateRepositoryWriteService.addOrReplaceTransactionDetail(candidateB, candidateRecordB);
+
+		final List<I_MD_Candidate_Transaction_Detail> detailsForA = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateRecordA.getMD_Candidate_ID())
+				.create()
+				.list();
+		final List<I_MD_Candidate_Transaction_Detail> detailsForB = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateRecordB.getMD_Candidate_ID())
+				.create()
+				.list();
+
+		assertThat(detailsForA).as("candidate A must keep its own, uncorrupted transaction detail").hasSize(1);
+		assertThat(detailsForA.get(0).getMovementQty()).isEqualByComparingTo("1");
+
+		assertThat(detailsForB).as("candidate B must get its own transaction detail rather than being left orphaned").hasSize(1);
+		assertThat(detailsForB.get(0).getMovementQty()).isEqualByComparingTo("10");
 	}
 }

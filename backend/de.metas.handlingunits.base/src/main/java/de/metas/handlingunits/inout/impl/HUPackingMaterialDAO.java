@@ -26,6 +26,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -104,6 +105,12 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
 
+	@Override
+	public void save(@NonNull final I_M_HU_PackingMaterial packingMaterial)
+	{
+		InterfaceWrapperHelper.save(packingMaterial);
+	}
+
 	@Nullable
 	@Override
 	public I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull final I_M_HU_Item huItem)
@@ -116,7 +123,13 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
 	{
-		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
+		final UomId fromUomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+		if (fromUomId == null)
+		{
+			// A packing material with no dimension UOM has unknown (optional) dimensions;
+			// return UNSPECIFIED rather than letting UomId.ofRepoId(0) abort package creation.
+			return PackageDimensions.UNSPECIFIED;
+		}
 
 		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()

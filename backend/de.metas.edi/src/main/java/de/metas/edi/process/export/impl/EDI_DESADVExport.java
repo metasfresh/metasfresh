@@ -22,7 +22,7 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
@@ -108,9 +108,9 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 
 	@Override
 	@NonNull
-	public BPartnerId getBPartnerId()
+	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return desadvBL.getEffectiveDropshipPartnerId(getDesadvRecord());
+		return desadvBL.getEffectiveDropshipLocationId(getDesadvRecord());
 	}
 
 	@NonNull

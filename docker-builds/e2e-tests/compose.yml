@@ -88,7 +88,8 @@ services:
       retries: 30
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
-      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
+      # e2e stacks start on a fresh DB: start the async queue processors 10s after init instead of the SysConfig value (60000 ms; code default 3 min), so tests that create sales orders right after the app is healthy don't time out
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet -Dde.metas.async.Async_InitDelayMillis=10000"
       - PropertyFile=/opt/metasfresh/metasfresh.properties
       - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
       - "SPRING_RABBITMQ_HOST=rabbitmq"
@@ -100,6 +101,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1
@@ -173,11 +176,18 @@ services:
       - "FRONTEND_BASE_URL=http://webui:80"
       - "WEBAPI_BASE_URL=http://webui:80/rest/api"
       - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
+      # Reachable BY THE BACKEND, not only by this container: a spec may store this
+      # URL in configuration that the api/app service then calls out to (the VAT-ID
+      # check points its REST base URL at a WireMock stub this way), so it must be
+      # the docker-internal address. Same value the mobile runner already gets.
+      - "WIREMOCK_BASE_URL=http://wiremock:8080"
       - "CI=true"
       - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
     depends_on:
       webui:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1
@@ -214,10 +224,25 @@ services:
       - ./allure-results-mobile:/app/allure-results
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
-      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
+      - "WIREMOCK_BASE_URL=http://wiremock:8080"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile --disable-web-security --ignore-certificate-errors"
+      - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
     depends_on:
       mobile:
         condition: service_healthy
+      wiremock:
+        condition: service_started
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # WireMock — mock server for external API stubs (DHL, etc.)
+  # Stub mappings are baked into the image from misc/dev-support/docker/wiremock/
+  wiremock:
+    image: wiremock/wiremock:3.13.0
+    volumes:
+      - ../../misc/dev-support/docker/wiremock/mappings:/home/wiremock/mappings
+      - ../../misc/dev-support/docker/wiremock/__files:/home/wiremock/__files
     deploy:
       mode: replicated
       replicas: 1

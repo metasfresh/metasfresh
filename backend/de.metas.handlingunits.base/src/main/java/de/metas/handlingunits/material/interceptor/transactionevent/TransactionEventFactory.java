@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -83,34 +83,32 @@ public final class TransactionEventFactory
 
 	public List<MaterialEvent> createEventsForTransaction(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
 
 		if (transaction.getInoutLineId() != null)
 		{
-			result.addAll(inOutLineEventCreator.createEventsForInOutLine(transaction, deleted, isDropShipWarehouse));
+			result.addAll(inOutLineEventCreator.createEventsForInOutLine(transaction, deleted));
 		}
 		else if (transaction.getCostCollectorId() != null)
 		{
-			result.addAll(createEventForCostCollector(transaction, deleted, isDropShipWarehouse));
+			result.addAll(createEventForCostCollector(transaction, deleted));
 		}
 		else if (transaction.getMovementLineId() != null)
 		{
-			result.addAll(createEventForMovementLine(transaction, deleted, isDropShipWarehouse));
+			result.addAll(createEventForMovementLine(transaction, deleted));
 		}
 		else if (transaction.getInventoryLineId() != null)
 		{
-			result.add(createEventForInventoryLine(transaction, deleted, isDropShipWarehouse));
+			result.add(createEventForInventoryLine(transaction, deleted));
 		}
 		return result.build();
 	}
 
 	private List<MaterialEvent> createEventForCostCollector(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final I_PP_Cost_Collector costCollector = ppCostCollectorBL.getById(transaction.getCostCollectorId());
 
@@ -139,7 +137,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.ppOrderId(costCollector.getPP_Order_ID())
 						.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
 						.build();
@@ -170,7 +167,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptorEff)
 						.huOnHandQtyChangeDescriptors(huDescriptorsEff)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.ppOrderId(costCollector.getPP_Order_ID())
 						.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
 						.minMaxDescriptor(minMaxDescriptor)
@@ -183,8 +179,7 @@ public final class TransactionEventFactory
 
 	private List<MaterialEvent> createEventForMovementLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -217,7 +212,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(movementLine.getDD_OrderLine_ID())
 						.build();
@@ -232,7 +226,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(movementLine.getDD_OrderLine_ID())
 						.minMaxDescriptor(minMaxDescriptor)
@@ -246,8 +239,7 @@ public final class TransactionEventFactory
 	@NonNull
 	private MaterialEvent createEventForInventoryLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -283,7 +275,6 @@ public final class TransactionEventFactory
 					.transactionId(transaction.getTransactionId())
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
-					.isDropShipWarehouse(isDropShipWarehouse)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
@@ -298,7 +289,6 @@ public final class TransactionEventFactory
 					.transactionId(transaction.getTransactionId())
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
-					.isDropShipWarehouse(isDropShipWarehouse)
 					.minMaxDescriptor(minMaxDescriptor)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();

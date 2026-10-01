@@ -69,3 +69,24 @@
   display: flex;
   align-items: center;
 }
+
+// The toast container must paint ABOVE the dialogs, and must not depend on JSX/DOM ordering to do
+// it. ReactToastify.css gives .Toastify__toast-container z-index 9999 and prompt-dialog.scss gives
+// the generic .prompt-dialog the SAME 9999, so with equal z-index the winner is whichever comes
+// later in the DOM. That tie is what put an error toast underneath the full-screen dialog overlay:
+// present and selectable, but not hit-testable, so its close button could never be tapped.
+//
+// Mounting <ScreenToaster/> after <Switch/> resolves the tie today, but nothing enforces that
+// order - a future reorder would silently reintroduce it. An explicit z-index makes the layering
+// independent of DOM order:
+//   9999   generic .prompt-dialog        (below the toast)
+//   20000  toast container              <- here
+//   99999  .loading spinner             (above the toast, unchanged)
+//   100000 .prompt-dialog.yes-no-dialog (above the toast, unchanged - a Yes/No needs the operator
+//                                        to act, see prompt-dialog.scss)
+//
+// `body` prefix only to raise specificity above ReactToastify.css's own single-class rule, so this
+// wins regardless of stylesheet import order in the bundle.
+body .Toastify__toast-container {
+  z-index: 20000;
+}

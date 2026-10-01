@@ -26,6 +26,7 @@
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="displayhu" class="java.lang.String"/>
 	<field name="docstatus" class="java.lang.String"/>
+	<field name="isfactoringpartner" class="java.lang.String"/>
 	<background>
 		<band height="842">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -248,6 +249,12 @@
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsFactoringPartner">
+					<subreportParameterExpression><![CDATA[$F{isfactoringpartner}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
 			</subreport>
@@ -321,6 +328,12 @@
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsFactoringPartner">
+					<subreportParameterExpression><![CDATA[$F{isfactoringpartner}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>

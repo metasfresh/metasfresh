@@ -29,6 +29,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
@@ -62,4 +63,6 @@ public interface IPeriodBL extends ISingletonService
 	 * @return true if in period
 	 */
 	boolean isInPeriod(I_C_Period period, Date date);
+
+	LocalDate getEndDateById(int periodId);
 }

@@ -96,6 +96,31 @@
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--
+            The two delivery-planning generate processes (M_Delivery_Planning_GenerateReceipt /
+            _GenerateShipment) live in this module, and metasfresh-dist-serverRoot does not pull it in
+            (only metasfresh-webui-api does). Without it a scenario cannot drive the production generate
+            path at all, and would have to hand-build the M_InOut instead - which is how the
+            "M_Delivery_Planning_ID stamped BEFORE completion" ordering came to be asserted although
+            production stamps it AFTER.
+        -->
+        <dependency>
+            <groupId>de.metas.deliveryplanning</groupId>
+            <artifactId>de.metas.deliveryplanning.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <!--
+                    Not used by any source file of that module, and ServerBoot component-scans "de.metas",
+                    so putting de.metas.ui.web on the cucumber classpath would drag the WebUI's Spring
+                    components into the app-server context this test JVM boots.
+                -->
+                <exclusion>
+                    <groupId>de.metas.ui.web</groupId>
+                    <artifactId>de.metas.ui.web.base</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business</artifactId>
@@ -134,6 +159,18 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!--
+                Used by AD_Archive_StepDef to read the text out of an archived document PDF.
+                Pinned deliberately: it otherwise only arrives transitively and unversioned, and
+                PDDocument.load(byte[]) exists in PDFBox 2 but not in 3, so a transitive bump
+                would break those steps. This module skips the enforcer, so nothing else catches it.
+            -->
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.27</version>
             <scope>test</scope>
         </dependency>
 
@@ -220,6 +257,20 @@
         <dependency>
             <groupId>de.metas.banking</groupId>
             <artifactId>de.metas.banking.camt53</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ZUGFeRD E2E: Mustang validator for asserting factur-x.xml embedding in Mailpit PDFs -->
+        <dependency>
+            <groupId>org.mustangproject</groupId>
+            <artifactId>validator</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.einvoice</groupId>
+            <artifactId>de.metas.einvoice.base</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>

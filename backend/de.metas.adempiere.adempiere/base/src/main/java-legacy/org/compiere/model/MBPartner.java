@@ -734,6 +734,19 @@ public class MBPartner extends X_C_BPartner
 					+ getC_BPartner_ID(), get_TrxName());
 		}
 
+		// If BP Group has changed, then update the accounts
+		if (success && !newRecord && is_ValueChanged(I_C_BPartner.COLUMNNAME_C_BP_Group_ID))
+		{
+			update_Accounting(I_C_BP_Customer_Acct.Table_Name,
+					I_C_BP_Group_Acct.Table_Name,
+					"p.C_BP_Group_ID=" + getC_BP_Group_ID());
+
+			update_Accounting(I_C_BP_Vendor_Acct.Table_Name,
+					I_C_BP_Group_Acct.Table_Name,
+					"p.C_BP_Group_ID=" + getC_BP_Group_ID());
+
+		}
+
 		return success;
 	} // afterSave
 

@@ -75,6 +75,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -227,7 +228,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Simulation");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ManualRule");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Processed");
 	private static final AdMessageKey MSG_FixProblemDeleteWaitForRegeneration = AdMessageKey.of("FixProblemDeleteWaitForRegeneration");
@@ -281,6 +284,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
@@ -292,7 +296,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
-	
+
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
 	{
@@ -367,6 +371,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						return TimeUtil.asTimestamp(nextDateToInvoice, timeZone);
 					}
 				}
+			case Manual:
+				// User owns invoicing timing — there is no scheduled date. Return MAX_DATE so the column stays non-null
+				// (consistent with the other "wait" rules); isSkipCandidateFromInvoicing branches on the rule itself and
+				// only invoices Manual candidates when the dedicated IsInvoiceManualRule flag is set.
+				return Env.MAX_DATE;
 			default:
 				throw new AdempiereException("Unexpected invoicerule=" + invoiceRule);
 		}
@@ -746,15 +755,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Properties ctx,
 			final PInstanceId AD_PInstance_ID,
 			final boolean ignoreInvoiceSchedule,
+			@Nullable final Boolean isPartialInvoice,
 			final String trxName)
 	{
 		final Iterator<I_C_Invoice_Candidate> candidates =
 				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
-		return generateInvoices()
+		final IInvoiceGenerator generator = generateInvoices()
 				.setContext(ctx, trxName)
-				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
-				.generateInvoices(candidates);
+				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+
+		if (isPartialInvoice != null)
+		{
+			final PlainInvoicingParams params = new PlainInvoicingParams();
+			params.setIsPartialInvoice(isPartialInvoice);
+			params.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+			generator.setInvoicingParams(params);
+		}
+
+		return generator.generateInvoices(candidates);
 	}
 
 	@Override
@@ -800,7 +819,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule))
+		final boolean isInvoiceManualRule = true; // same rationale for Manual — display the candidate's amount, the user decides when to invoice.
+		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule, isInvoiceManualRule))
 		{
 			icRecord.setNetAmtToInvoice(ZERO);
 			icRecord.setSplitAmt(ZERO);
@@ -982,6 +1002,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public boolean isSkipCandidateFromInvoicing(final I_C_Invoice_Candidate ic, final boolean ignoreInvoiceSchedule)
 	{
+		return isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, /* isInvoiceManualRule */ false);
+	}
+
+	@Override
+	public boolean isSkipCandidateFromInvoicing(
+			final I_C_Invoice_Candidate ic,
+			final boolean ignoreInvoiceSchedule,
+			final boolean isInvoiceManualRule)
+	{
+		return getInvoicingSkipReasonOrNull(ic, ignoreInvoiceSchedule, isInvoiceManualRule) != null;
+	}
+
+	@Override
+	@Nullable
+	public String getInvoicingSkipReasonOrNull(
+			final I_C_Invoice_Candidate ic,
+			final boolean ignoreInvoiceSchedule,
+			final boolean isInvoiceManualRule)
+	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -990,7 +1029,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.INFO).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		// ignore "error" candidates
@@ -1000,7 +1039,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					+ ": "
 					+ ic.getErrorMsg();
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isToClear())
@@ -1009,7 +1048,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isInDispute())
@@ -1018,14 +1057,30 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isSimulation())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
-			return true;
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+			return msg;
+		}
+
+		// Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
+		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		if (invoiceRule.isManual())
+		{
+			if (!isInvoiceManualRule)
+			{
+				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE,
+						new Object[] { ic.getC_Invoice_Candidate_ID() });
+				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+				return msg;
+			}
+			// Manual is explicitly requested → don't apply the date gate (Manual has no schedule by design).
+			return null;
 		}
 
 		// flagged via field color
@@ -1037,10 +1092,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
-		return false; // Don't skip!
+		return null; // Don't skip!
 	}
 
 	@Override
@@ -2228,6 +2283,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public void openInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		invoiceCandidates.forEach(this::openInvoiceCandidate);
+	}
+
+	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
+	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
+	{
+		candidate.setProcessed_Override(null);
+
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return;
+		}
+
+		invoiceCandDAO.invalidateCand(candidate);
+		invoiceCandDAO.save(candidate);
+	}
+
+	@Override
 	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
@@ -2302,6 +2378,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
+		// me03 #29369: if the user explicitly marked this invoice as Partial (more invoices coming
+		// on the same order), skip the auto-close entirely. N or NULL = NA falls through to the
+		// legacy qty-based close logic below. See de.metas.invoice.IsPartialInvoice for the tri-state
+		// mapping and migration 5801950 for the schema redesign.
+		// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
+		// (when explicitly set via setValue); IsPartialInvoice.fromValue handles both.
+		final IsPartialInvoice invoiceIntent = IsPartialInvoice.fromValue(invoice.getIsPartialInvoice());
+		if (invoiceIntent.isYes())
+		{
+			logger.debug("Invoice IsPartialInvoice=Y (explicit Partial - more invoices coming); => not closing any invoice candidates");
+			return;
+		}
+
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
@@ -2326,7 +2415,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(candidate))
 					{
 
-						final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
+						// Use the effective rule (override-or-direct) so InvoiceRule_Override=Manual is honoured here too.
+						final InvoiceRule candidateInvoiceRule = getInvoiceRule(candidate);
 
 						if (!canCloseBasedOnInvoiceRule(candidateInvoiceRule))
 						{
@@ -2371,6 +2461,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			case CustomerScheduleAfterDelivery:
 			case OrderCompletelyDelivered:
 				return true;
+			case Manual:
+				// user owns invoicing timing — never auto-close on partial invoicing.
+				return false;
 			default:
 				return false;
 		}
@@ -2643,13 +2736,24 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	/**
+	 * SysConfig: max seconds {@link #waitForInvoiceCandidatesUpdated(InvoiceCandidateIdsSelection)} blocks while polling
+	 * for the selection's invoice candidates to be recomputed. Configurable so it can be lowered (e.g. in automated
+	 * tests, or on an instance whose recompute is wedged) to fail fast instead of blocking for the full default hour.
+	 */
+	private static final String SYSCONFIG_WaitForInvoiceCandidatesUpdatedTimeoutSeconds = "de.metas.invoicecandidate.api.impl.InvoiceCandBL.WaitForInvoiceCandidatesUpdatedTimeoutSeconds";
+	private static final int DEFAULT_WaitForInvoiceCandidatesUpdatedTimeoutSeconds = 3600; // a full hour (default preserves the previous hard-coded behaviour)
+
 	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+		// getPositiveIntValue (not getIntValue): TryAndWaitUtil treats maxWaitSeconds<=0 as an INFINITE wait, so a
+		// mistaken 0/negative config would hang forever instead of failing fast — fall back to the default on non-positive.
+		final int timeoutSeconds = sysConfigBL.getPositiveIntValue(SYSCONFIG_WaitForInvoiceCandidatesUpdatedTimeoutSeconds, DEFAULT_WaitForInvoiceCandidatesUpdatedTimeoutSeconds);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue (timeout={}s); Selection={}", timeoutSeconds, invoiceCandidateIdsSelection);
 		try
 		{
 			TryAndWaitUtil.tryAndWait(
-					3600 /*let's wait a full hour*/,
+					timeoutSeconds,
 					1000 /*check once a second*/,
 					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
 					null);

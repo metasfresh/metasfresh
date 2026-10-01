@@ -138,21 +138,27 @@ public class NShiftRestClient
 	private <T_Req> RuntimeException createApiException(
 			@NonNull final T_Req request, @NonNull final HttpStatus statusCode, @NonNull final String responseBody)
 	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("nShift API call failed with status code ").append(statusCode).append("\n");
-		sb.append("Additional information's:\n");
-		sb.append("Response body: ").append(responseBody).append("\n");
+		return new RuntimeException("nShift API call failed with status code " + statusCode + "\n"
+				+ "Additional information's:\n"
+				+ "Response body: " + responseBody + "\n"
+				+ "nShiftRequest: " + requestBodyAsJsonForError(request) + "\n");
+	}
 
+	/**
+	 * Serializes a request body to pretty JSON for an error message; never throws (returns a short marker, logging
+	 * the cause, if serialization fails). Must not be passed a credential-bearing object (e.g. a shipper config) —
+	 * its fields would land in the error output.
+	 */
+	String requestBodyAsJsonForError(@NonNull final Object requestBody)
+	{
 		try
 		{
-			final String requestAsJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(request);
-			sb.append("nShiftRequest: ").append(requestAsJson).append("\n");
-			return new RuntimeException(sb.toString());
+			return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestBody);
 		}
 		catch (final JsonProcessingException ex)
 		{
-			logger.warn("Failed to serialize nShift request for exception details", ex);
-			return new RuntimeException(sb.toString(), ex);
+			logger.warn("Failed to serialize nShift request for error details", ex);
+			return "<request could not be serialized to JSON: " + ex.getMessage() + ">";
 		}
 	}
 }

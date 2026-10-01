@@ -1,16 +1,19 @@
 package de.metas.impexp;
 
-import java.time.Duration;
-
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.parser.ImpDataLine;
 import de.metas.logging.LogManager;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import java.time.Duration;
+import java.util.HashMap;
 
 /*
  * #%L
@@ -45,9 +48,15 @@ class MockedInsertIntoImportTableService implements InsertIntoImportTableService
 		LogManager.setLoggerLevel(logger, Level.INFO);
 	}
 
+	private final HashMap<String, Class<?>> importModelClassByTableName = new HashMap<>();
 	private InsertIntoImportTableRequest lastRequest;
 	private ImmutableList<ImpDataLine> lastRequestLines;
 	private InsertIntoImportTableResult lastResult;
+
+	public void registerImportModelClass(@NonNull final String importTableName, @NonNull final Class<?> importModelClass)
+	{
+		importModelClassByTableName.put(importTableName, importModelClass);
+	}
 
 	@Override
 	public InsertIntoImportTableResult insertData(final InsertIntoImportTableRequest request)
@@ -59,6 +68,17 @@ class MockedInsertIntoImportTableService implements InsertIntoImportTableService
 				.collect(ImmutableList.toImmutableList());
 		this.lastRequestLines = lines;
 		logger.info("Got {} lines: {}", lines.size(), lines);
+
+		if (!lines.isEmpty())
+		{
+			final Class<?> importModelClass = getImportModelClass(request.getImportFormat().getImportTableName());
+			lines.forEach(line -> {
+				final Object importRecord = InterfaceWrapperHelper.newInstance(importModelClass);
+				InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_C_DataImport_Run_ID, request.getDataImportRunId().getRepoId());
+				// just set the essential
+				InterfaceWrapperHelper.save(importRecord);
+			});
+		}
 
 		final InsertIntoImportTableResult result = InsertIntoImportTableResult.builder()
 				.fromResource(null)
@@ -76,6 +96,17 @@ class MockedInsertIntoImportTableService implements InsertIntoImportTableService
 		logger.info("Returning: {}", result);
 
 		return result;
+	}
+
+	private Class<?> getImportModelClass(final String modelTableName)
+	{
+		final Class<?> importModelClass = importModelClassByTableName.get(modelTableName);
+		if (importModelClass == null)
+		{
+			throw new AdempiereException("No import model class found for importTableName=" + modelTableName + "."
+					+ " Registered tables are: " + importModelClassByTableName);
+		}
+		return importModelClass;
 	}
 
 }

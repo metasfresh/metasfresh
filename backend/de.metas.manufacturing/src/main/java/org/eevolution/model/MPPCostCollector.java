@@ -245,6 +245,10 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			completeIt_MethodChangedVariance();
 		}
+		else if (costCollectorType.isCostDifferenceDistribution())
+		{
+			// Nothing to do here: the costing method handler creates this collector's cost details when it is posted.
+		}
 
 		//
 		// Create Rate and Method Variances

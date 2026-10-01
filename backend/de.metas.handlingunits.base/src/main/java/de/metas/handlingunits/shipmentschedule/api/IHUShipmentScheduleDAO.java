@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
@@ -33,6 +34,8 @@ import java.util.List;
 
 public interface IHUShipmentScheduleDAO extends ISingletonService
 {
+	void saveQtyPicked(@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked);
+
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(I_M_HU hu);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveByTopLevelHUAndShipmentScheduleId(
@@ -41,9 +44,33 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(int shipmentScheduleId, int tuHUId, String trxName);
 
+	/** @return true if any active M_ShipmentSchedule_QtyPicked row is still keyed to the given top-level HU (LU/TU/VHU) — a shared HU can carry another schedule's active row. */
+	boolean hasActiveQtyPickedForTopLevelHU(@NonNull I_M_HU topLevelHU);
+
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(I_M_HU vhu);
 
 	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(I_M_HU vhu);
 
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull I_M_HU topLevelHU);
 	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(List<I_M_HU> hus);
+
+	/**
+	 * Active, un-shipped (M_InOutLine_ID IS NULL), non-job-schedule, non-anonymous-on-the-fly QtyPicked rows
+	 * for the given (schedule, VHU) pair. Used by {@code ShipmentScheduleHUTrxListener} to consolidate
+	 * sibling rows produced when an aggregate HU's snapshot is replayed and routes multiple HU-trx lines
+	 * through the same VHU.
+	 */
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveMergeableListenerQtyPickedForVHU(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull HuId vhuId);
+
+	/**
+	 * @return {@code true} if at least one active, not-yet-shipped ({@code M_InOutLine_ID IS NULL})
+	 * {@code M_ShipmentSchedule_QtyPicked} row exists for the given (shipment schedule, VHU).
+	 * Used by the shipment-reverse restore safety net to avoid re-creating a row the picking-job reopen
+	 * already restored.
+	 */
+	boolean existsActiveUnshippedQtyPickedForVHU(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull HuId vhuId);
 }

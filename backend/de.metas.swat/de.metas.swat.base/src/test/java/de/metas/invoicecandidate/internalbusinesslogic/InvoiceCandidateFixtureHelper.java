@@ -81,6 +81,7 @@ public class InvoiceCandidateFixtureHelper
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
+		currencyRecord.setDescription("EUR");
 		saveRecord(currencyRecord);
 	}
 

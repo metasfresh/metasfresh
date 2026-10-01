@@ -32,17 +32,24 @@ import java.util.Map;
 /**
  * Resolves filename patterns by replacing {@code {placeholder}} tokens with actual values.
  *
- * <p>Supported placeholders:
+ * <p>Built-in placeholders:
  * <ul>
- *   <li>{@code {timestamp}} — replaced with the current local date/time in {@code yyyyMMdd_HHmmss} format</li>
- *   <li>Any key in the supplied {@code variables} map — replaced with the corresponding value</li>
- *   <li>Unknown placeholders are left unchanged</li>
+ *   <li>{@code {timestamp}} — current local date/time in {@code yyyyMMdd_HHmmss} format (e.g. {@code 20260328_143022})</li>
  * </ul>
+ *
+ * <p>Context-dependent placeholders (populated by {@link SftpDeliveryProcessor}):
+ * <ul>
+ *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
+ *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
+ *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ * </ul>
+ *
+ * <p>Unknown placeholders are left unchanged.
  *
  * <p>Example:
  * <pre>
  *   resolve("DESADV_{documentno}_{timestamp}.json", Map.of("documentno", "12345"))
- *   // → "DESADV_12345_20250313_143022.json"
+ *   // → "DESADV_12345_20260328_143022.json"
  * </pre>
  */
 @UtilityClass
@@ -66,7 +73,10 @@ public class SftpFilenameResolver
 		// Replace variable placeholders first
 		for (final Map.Entry<String, String> entry : variables.entrySet())
 		{
-			result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+			if (entry.getValue() != null)
+			{
+				result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+			}
 		}
 
 		// Replace the special {timestamp} placeholder

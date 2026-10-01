@@ -50,7 +50,9 @@ BEGIN
                              INNER JOIN fact_acct fa ON (fa.openitemkey = sel.openitemkey
                         AND fa.c_acctschema_id = sel.c_acctschema_id
                         AND fa.postingtype = sel.postingtype)
-                    WHERE fa.docstatus IN ('CO', 'CL')
+                    -- IS NULL: M_MatchInv / M_MatchPO have no DocStatus column so their Fact_Acct rows store NULL.
+                    -- Without this, MatchInv clearing entries are dropped from the aggregate and openings stay un-reconciled.
+                    WHERE (fa.docstatus IN ('CO', 'CL') OR fa.docstatus IS NULL)
                     GROUP BY fa.openitemkey, fa.c_acctschema_id, fa.postingtype
                              -- , fa.account_id -- we shall not group by account, think about conversion gain/loss case where we clear the open item using the gain/loss account too
                     HAVING COUNT(1) > 0)

@@ -5,8 +5,8 @@
   overflow: hidden;
 
   .section {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    padding-top: 1rem;
+    padding-bottom: 5rem !important; /* 5rem important for small screens like 320x534 */ 
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -18,8 +18,7 @@
     }
 
     .section {
-      padding-top: 1rem;
-      padding-bottom: 1rem;
+      padding-top: 0;
     }
   }
 }

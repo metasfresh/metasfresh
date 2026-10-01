@@ -119,16 +119,72 @@ public final class CurrentCost
 	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
 	{
 		assertCostCurrency(previousAmounts.getCostPrice());
-		assertCostUOM(previousAmounts.getQty());
-
 		assertCostCurrency(previousAmounts.getCumulatedAmt());
-		assertCostUOM(previousAmounts.getCumulatedQty());
 
-		this.costPrice = previousAmounts.getCostPrice();
-		this.currentQty = previousAmounts.getQty();
+		// resolve both quantities BEFORE mutating anything, so a rejected one leaves this cost untouched
+		final Quantity qty = toCostUOM(previousAmounts.getQty());
+		final Quantity cumulatedQty = toCostUOM(previousAmounts.getCumulatedQty());
+
+		// The price's UOM tracks its own amounts — every producer of CostDetailPreviousAmounts builds price and
+		// quantity from the same product UOM — so it is re-labelled exactly when the quantities were, never on its
+		// own. A price tagged independently of its amounts is not something this method may silently rewrite.
+		this.costPrice = UomId.equals(previousAmounts.getCostPrice().getUomId(), previousAmounts.getQty().getUomId())
+				? relabelToCostUOM(previousAmounts.getCostPrice())
+				: previousAmounts.getCostPrice();
+		this.currentQty = qty;
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
-		this.cumulatedQty = previousAmounts.getCumulatedQty();
+		this.cumulatedQty = cumulatedQty;
+	}
+
+	/**
+	 * Returns {@code qty} expressed in this cost's own UOM.
+	 * <p>
+	 * A <b>zero</b> quantity carries no unit information — zero metres is zero pieces — so it is adopted into
+	 * this cost's UOM instead of being rejected, and needs no conversion rate. That matters because
+	 * {@code CostRevaluationService#toCostAsOf} restates a live cost from the amounts it carried at an as-of
+	 * date, and those historical amounts can predate a change of the product's stock UOM. Since
+	 * {@code createLines} maps over every product in one pass, rejecting such a zero aborts the entire
+	 * cost-revaluation seed for the client.
+	 * <p>
+	 * A <b>non-zero</b> mismatch is a real inconsistency — converting it would need a rate this class has no
+	 * converter for — so it still throws.
+	 */
+	private Quantity toCostUOM(@NonNull final Quantity qty)
+	{
+		if (UomId.equals(qty.getUomId(), getUomId()))
+		{
+			return qty;
+		}
+		else if (qty.isZero())
+		{
+			return this.currentQty.toZero();
+		}
+		else
+		{
+			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + getUomId());
+		}
+	}
+
+	/**
+	 * Returns {@code costPrice} labelled with this cost's own UOM. Unlike {@link #toCostUOM(Quantity)} this
+	 * never rejects a mismatch — it is a pure re-label, which is why it is deliberately NOT an overload of the
+	 * same name; the caller decides when re-labelling is legitimate.
+	 * <p>
+	 * {@code M_Cost} carries no separate UOM for its price: a current cost's price is <b>by definition</b>
+	 * expressed in the cost row's UOM, which is why the constructor stamps {@link #uomId} onto the price on
+	 * every load. A {@link CostDetailPreviousAmounts} however still carries the UOM its amounts were recorded
+	 * under, so the price is re-labelled here to preserve that invariant.
+	 * <p>
+	 * Without this, {@code CostRevaluationRepository.updateRecordFromCopySource} would stamp the stale UOM onto
+	 * {@code M_CostRevaluationLine.C_UOM_ID} while writing {@code CurrentQty} in this cost's UOM — a line
+	 * labelled with one unit and quantified in another.
+	 */
+	private CostPrice relabelToCostUOM(@NonNull final CostPrice costPrice)
+	{
+		return UomId.equals(costPrice.getUomId(), getUomId())
+				? costPrice
+				: costPrice.convertAmounts(getUomId(), amount -> amount);
 	}
 
 	public CostElementId getCostElementId()

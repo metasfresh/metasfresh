@@ -23,6 +23,17 @@ public class JsonNewLUTargetsList
 		return builder().values(values).debugMessages(debugMessages).build();
 	}
 
+	/**
+	 * Empty, but deliberately WITHOUT an {@code emptyReason}: the reason is the operator-facing
+	 * "no receiving Gebinde" guidance, and the frontend shows it whenever it is present. A structure
+	 * excluded by configuration must therefore stay silent, so the remaining structure's targets are
+	 * offered without an accompanying error.
+	 */
+	public static JsonNewLUTargetsList emptyWithoutReason()
+	{
+		return builder().build();
+	}
+
 	public static JsonNewLUTargetsList emptyBecause(@NonNull String emptyReason)
 	{
 		return emptyBecause(emptyReason, null);

@@ -10,6 +10,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+
 import java.time.Instant;
 
 /*
@@ -47,4 +49,8 @@ public class CostRevaluation
 	@NonNull InstantAndOrgId dateAcct;
 
 	@NonNull DocStatus docStatus;
+
+	@NonNull RevaluationSource revaluationSource;
+	/** Source cost element for {@link RevaluationSource#CopyFromCostElement}; {@code null} for {@link RevaluationSource#Calculated}. */
+	@Nullable CostElementId copyFromCostElementId;
 }

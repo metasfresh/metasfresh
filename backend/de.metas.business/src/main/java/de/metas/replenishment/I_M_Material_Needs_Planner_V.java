@@ -236,6 +236,27 @@ public interface I_M_Material_Needs_Planner_V
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Available Qty.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyATP (@Nullable BigDecimal QtyATP);
+
+	/**
+	 * Get Available Qty.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyATP();
+
+	ModelColumn<I_M_Material_Needs_Planner_V, Object> COLUMN_QtyATP = new ModelColumn<>(I_M_Material_Needs_Planner_V.class, "QtyATP", null);
+	String COLUMNNAME_QtyATP = "QtyATP";
+
+	/**
 	 * Set Onhand Quantity.
 	 *
 	 * <br>Type: Quantity

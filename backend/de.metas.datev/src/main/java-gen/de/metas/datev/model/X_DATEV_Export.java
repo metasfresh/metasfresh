@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1844434239L;
+	private static final long serialVersionUID = 24376071L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	}
 
 	@Override
-	public java.lang.String getAdvisorNumber() 
+	public java.lang.String getAdvisorNumber()
 	{
 		return get_ValueAsString(COLUMNNAME_AdvisorNumber);
 	}
@@ -53,7 +53,7 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	}
 
 	@Override
-	public java.lang.String getChartOfAccounts() 
+	public java.lang.String getChartOfAccounts()
 	{
 		return get_ValueAsString(COLUMNNAME_ChartOfAccounts);
 	}
@@ -65,7 +65,7 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	}
 
 	@Override
-	public int getChartOfAccountsNumberLength() 
+	public int getChartOfAccountsNumberLength()
 	{
 		return get_ValueAsInt(COLUMNNAME_ChartOfAccountsNumberLength);
 	}
@@ -77,9 +77,36 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	}
 
 	@Override
-	public java.lang.String getClientNumber() 
+	public java.lang.String getClientNumber()
 	{
 		return get_ValueAsString(COLUMNNAME_ClientNumber);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Period getC_Period()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
+	}
+
+	@Override
+	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
+	}
+
+	@Override
+	public void setC_Period_ID (final int C_Period_ID)
+	{
+		if (C_Period_ID < 1)
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Period_ID, C_Period_ID);
+	}
+
+	@Override
+	public int getC_Period_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
 	}
 
 	@Override
@@ -121,14 +148,14 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	@Override
 	public void setDATEV_Export_Config_ID (final int DATEV_Export_Config_ID)
 	{
-		if (DATEV_Export_Config_ID < 1) 
+		if (DATEV_Export_Config_ID < 1)
 			set_Value (COLUMNNAME_DATEV_Export_Config_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_DATEV_Export_Config_ID, DATEV_Export_Config_ID);
 	}
 
 	@Override
-	public int getDATEV_Export_Config_ID() 
+	public int getDATEV_Export_Config_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_DATEV_Export_Config_ID);
 	}
@@ -236,7 +263,7 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	}
 
 	@Override
-	public java.lang.String getOrigin() 
+	public java.lang.String getOrigin()
 	{
 		return get_ValueAsString(COLUMNNAME_Origin);
 	}

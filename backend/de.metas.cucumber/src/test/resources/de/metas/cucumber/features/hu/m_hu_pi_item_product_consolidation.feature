@@ -1,5 +1,7 @@
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5001_1_Consolidate_CU_TU_Allocation
 @from:cucumber
-@ignore
+@F5001_1
 Feature: M_HU_PI_Item_Product consolidation SQL function tests
   Verifies that the m_hu_pi_item_product_consolidate() and
   m_hu_pi_item_product_consolidate_report() SQL functions correctly:
@@ -85,6 +87,8 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     When M_HU_PI_Item_Product consolidation is called with p_normalize_gtin_ean='false' and p_consolidate='true'
     Then M_HU_PI_Item_Product identified by 'pip_qty_10' has IsActive='Y'
     And M_HU_PI_Item_Product identified by 'pip_qty_20' has IsActive='Y'
+    When M_HU_PI_Item_Product consolidation report is called
+    Then the consolidation report contains a conflict row for GTIN '4005808262151' with conflicting field 'Qty'
 
   @from:cucumber
   Scenario: Report — different PI conflict detected for same GTIN

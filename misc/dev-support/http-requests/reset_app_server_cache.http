@@ -1,0 +1,4 @@
+
+GET {{baseURL}}/api/v2/test/cacheReset
+Authorization: {{authToken}}
+accept: application/json

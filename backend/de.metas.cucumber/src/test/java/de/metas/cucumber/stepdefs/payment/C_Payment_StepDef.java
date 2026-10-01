@@ -110,6 +110,33 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 
+	/**
+	 * Creates one or more {@link I_C_Payment} records in Draft status.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
+	 *   <b>PayAmt</b> — (required) amount with currency code, e.g. {@code 5000 EUR}<br>
+	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
+	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
+	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
+	 *                                {@link org.compiere.model.MPayment} {@code beforeSave} auto-sets
+	 *                                {@code IsPrepayment=Y} when this is non-null, causing
+	 *                                {@link org.compiere.acct.Doc_Payment} to post to
+	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
+	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
+	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
+	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
+	 *                   {@link de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_Payment
+	 *   | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+	 *   | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_Payment")
 	public void createPayments(@NonNull final DataTable dataTable)
 	{
@@ -118,8 +145,14 @@ public class C_Payment_StepDef
 				.forEach(this::createPayment);
 	}
 
+	/**
+	 * Completes or reverses the payment referenced by {@code paymentIdentifier}.
+	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is (completed|reversed)$")
-	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action)
+	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
 		switch (StepDefDocAction.valueOf(action))
 		{
@@ -144,17 +177,36 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Reverses the payment referenced by {@code paymentIdentifierStr} and, if
+	 * {@code reversalIdentifierStr} is given, stores the created reversal under it.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is reversed with a reversal identified by (.*)")
-	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr)
+	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr) throws InterruptedException
 	{
 		reversePayment(StepDefDataIdentifier.ofString(paymentIdentifierStr), StepDefDataIdentifier.ofNullableString(reversalIdentifierStr));
 	}
 
-	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier)
+	/**
+	 * Fires {@code ACTION_Reverse_Correct} and then asserts {@code DocStatus=Reversed} via a bounded
+	 * refresh poll (tolerant of a transient stale read of the just-committed status; still fails loud
+	 * if the payment stays {@code Completed}).
+	 */
+	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier) throws InterruptedException
 	{
 		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
-		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		// expectedDocStatus is left unchecked here (2-arg overload); the reversal's committed status is
+		// asserted below via a bounded poll, tolerant of a transient stale read of that status.
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct);
+
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			InterfaceWrapperHelper.refresh(payment);
+			return DocStatus.Reversed.getCode().equals(payment.getDocStatus());
+		});
 
 		if (reversalIdentifier != null)
 		{
@@ -194,9 +246,18 @@ public class C_Payment_StepDef
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 
-		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.ifPresent(expectedInvoiceId -> softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId()));
+		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID should not be set").isZero();
+					}
+					else
+					{
+						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
 
 		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
 				.ifPresent(dateTrx -> {
@@ -222,6 +283,13 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(payment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
+				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
 
 		softly.assertAll();
 	}
@@ -306,6 +374,10 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
+		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -316,6 +388,7 @@ public class C_Payment_StepDef
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
+				.proformaInvoiceId(proformaInvoiceId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

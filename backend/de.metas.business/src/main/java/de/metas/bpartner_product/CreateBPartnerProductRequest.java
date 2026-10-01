@@ -52,4 +52,5 @@ public class CreateBPartnerProductRequest
 	@Nullable Boolean usedForCustomer;
 	@Nullable Boolean isExcludedFromPurchase;
 	@Nullable String exclusionFromPurchaseReason;
+	@Nullable Integer shelfLifeMinDays;
 }

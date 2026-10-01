@@ -137,10 +137,17 @@ public class DropshipPOFromSOService
 		// warehouses via the isDropShipWarehouse flag on receipt-schedule events (see
 		// M_ReceiptSchedule_PostMaterialEvent and the dispo-service ReceiptsSchedule*Handlers),
 		// so no MD_Candidate rows are created.
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-		for (final I_C_Order po : createdPOs)
+		//
+		// Guarded by SysConfig de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO (default Y):
+		// when N, the created dropship PO(s) are left in DocStatus=DR so procurement can review and
+		// complete them manually. Default Y preserves the original auto-complete behaviour.
+		if (orderCreatePOFromSOsBL.isCompleteDropshipPO())
 		{
-			documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+			for (final I_C_Order po : createdPOs)
+			{
+				documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
 		}
 	}
 

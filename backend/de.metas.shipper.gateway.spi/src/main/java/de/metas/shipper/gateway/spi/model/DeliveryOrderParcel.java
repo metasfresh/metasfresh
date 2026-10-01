@@ -52,6 +52,8 @@ public class DeliveryOrderParcel
 	@Nullable String trackingUrl;
 	@Nullable byte[] labelPdfBase64;
 	@NonNull ImmutableList<DeliveryOrderItem> items;
+	/** Wire-string for the top-level HU type: "LU", "TU", or "CU". Optional — absent for non-nShift gateways. */
+	@Nullable String topLevelType;
 
 	@Builder(toBuilder = true)
 	@Jacksonized
@@ -65,7 +67,8 @@ public class DeliveryOrderParcel
 			@Nullable final String awb,
 			@Nullable final String trackingUrl,
 			@Nullable final byte[] labelPdfBase64,
-			@Nullable final ImmutableList<DeliveryOrderItem> items)
+			@Nullable final ImmutableList<DeliveryOrderItem> items,
+			@Nullable final String topLevelType)
 	{
 		this.awb = awb;
 		this.trackingUrl = trackingUrl;
@@ -79,6 +82,7 @@ public class DeliveryOrderParcel
 		this.packageDimensions = packageDimensions;
 		this.customDeliveryLineData = customDeliveryLineData;
 		this.packageId = packageId;
+		this.topLevelType = topLevelType;
 	}
 
 	public DeliveryOrderParcel withCustomDeliveryData(@NonNull final CustomDeliveryLineData customDeliveryLineData)

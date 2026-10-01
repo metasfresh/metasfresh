@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import org.adempiere.exceptions.AdempiereException;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -46,6 +47,24 @@ public class ProductId implements RepoIdAware
 	public static ProductId ofRepoId(final int repoId)
 	{
 		return new ProductId(repoId);
+	}
+
+	@Nullable
+	public static ProductId ofNullableString(@Nullable final String repoIdStr)
+	{
+		if (Check.isBlank(repoIdStr))
+		{
+			return null;
+		}
+		try
+		{
+			return ofRepoId(Integer.parseInt(repoIdStr.trim()));
+		}
+		catch (final NumberFormatException ex)
+		{
+			throw new AdempiereException("Invalid productId value: " + repoIdStr, ex)
+					.markAsUserValidationError();
+		}
 	}
 
 	@Nullable

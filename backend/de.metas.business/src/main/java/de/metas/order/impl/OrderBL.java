@@ -27,7 +27,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -40,6 +44,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -140,6 +145,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -172,8 +178,11 @@ public class OrderBL implements IOrderBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
-	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerAddressEffectiveBL> bpartnerAddressEffectiveBL = SpringContextHolder.lazyBean(BPartnerAddressEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -653,16 +662,12 @@ public class OrderBL implements IOrderBL
 			order.setDeliveryViaRule(deliveryViaRule);
 		}
 
-		//
-		// Default Invoice/Payment Rule
-		final InvoiceRule invoiceRule = isSOTrx ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
-		{
-			order.setInvoiceRule(invoiceRule.getCode());
-		}
+		// Default InvoiceRule and IsAutoInvoice from the effective bill-partner
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(
+				Check.assumeNotNull(getEffectiveBillPartnerId(order), "billBPartnerId not null for order {}", order));
+		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
 
 		final String paymentRule = bp.getPaymentRule();
 		if (paymentRule != null)
@@ -941,6 +946,17 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_C_Order orderRecord)
+	{
+		// The ultimate consignee (UC): DropShip_BPartner_ID + DropShip_Location_ID if set, else the order's own C_BPartner location.
+		// IsDropShip is irrelevant here — the presence of the DropShip_* values alone decides (matches InOutBL/DesadvBL).
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID()));
+	}
+
+	@Override
+	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{
 		final BPartnerContactId contactIdOrNull = getBillToContactIdOrNull(order);
@@ -1102,6 +1118,14 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
+	@NonNull
+	public DocBaseAndSubType getDocBaseAndSubType(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = Check.assumeNotNull(getDocTypeIdEffectiveOrNull(order), "DocTypeId is not null for order {}", order);
+		return docTypeBL.getDocBaseAndSubTypeById(docTypeId);
+	}
+
 	@Nullable
 	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
@@ -1111,8 +1135,7 @@ public class OrderBL implements IOrderBL
 			return docTypeId;
 		}
 
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeTargetId;
+		return DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 	}
 
 	@Override
@@ -1120,14 +1143,6 @@ public class OrderBL implements IOrderBL
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
 		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
-				.map(docTypeBL::getById)
-				.orElse(null);
-	}
-
-	@Nullable
-	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
-	{
-		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
 				.map(docTypeBL::getById)
 				.orElse(null);
 	}
@@ -1333,6 +1348,22 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void setSalesRep(@NonNull final I_C_Order order)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final UserId salesRepId = bpartnerEffectiveBL.get().getById(bpartnerId).getSalesRepId();
+		if (salesRepId != null)
+		{
+			order.setSalesRep_ID(salesRepId.getRepoId());
+		}
+	}
+
+	@Override
 	public void setWeightFromLines(@NonNull final I_C_Order order)
 	{
 		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -1434,10 +1465,14 @@ public class OrderBL implements IOrderBL
 	@Nullable
 	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		return bPartnerBL.getEffectiveShipperId(
-				BPartnerLocationId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()),
-				BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID())
-		);
+		return bpartnerAddressEffectiveBL.get().getDeliveryEffective(orderRecord).getShipperId();
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		return getPaymentTermId(orderRecord);
 	}
 
 	@Override
@@ -1463,8 +1498,16 @@ public class OrderBL implements IOrderBL
 	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
 	{
 		final I_C_Order order = getById(orderId);
-		order.setBLDate(transportOrder.getBLDate());
-		order.setETA(transportOrder.getETA());
+		// each date is copied independently: a field the transport order genuinely has no value for must not
+		// wipe an already-set value on the order (e.g. only BLDate changed on this edit, ETA untouched)
+		if (transportOrder.getBLDate() != null)
+		{
+			order.setBLDate(transportOrder.getBLDate());
+		}
+		if (transportOrder.getETA() != null)
+		{
+			order.setETA(transportOrder.getETA());
+		}
 		save(order);
 	}
 
@@ -1510,9 +1553,36 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
+			if (!attributeSetInstanceBL.getImmutableAttributeSetById(asiId).hasAttribute(AttributeConstants.ATTR_Project))
+			{
+				// No ProjectValue instance on this ASI and no project on the line: nothing to clear.
+				// Creating one here would materialize an empty attribute (and clone the ASI)
+				// on every project-less order line.
+				return;
+			}
+
 			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
+	}
+
+	@Override
+	public int getMaxPurchaseTransportDays(@NonNull final I_C_Order order)
+	{
+		if(order.isSOTrx())
+		{
+			return 0;
+		}
+
+		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		return orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.mapToInt(productId -> bpartnerProductEffectiveBL.get().getPurchaseTransportDays(vendorId, productId, orgId))
+				.max()
+				.orElse(0);
 	}
 }

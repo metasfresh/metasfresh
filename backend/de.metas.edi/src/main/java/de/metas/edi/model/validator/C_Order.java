@@ -24,7 +24,7 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.impl.DesadvBL;
@@ -82,8 +82,8 @@ public class C_Order
 			return;
 		}
 
-		final BPartnerId bpartnerId = orderBL.getEffectiveDropshipPartnerId(order);
-		if (!ediBpartnerConfigService.isEdiDesadvRecipient(bpartnerId))
+		final BPartnerLocationId bPartnerLocationId = orderBL.getEffectiveDropshipLocationId(order);
+		if (!ediBpartnerConfigService.isEdiDesadvRecipient(bPartnerLocationId))
 		{
 			return;
 		}

@@ -25,6 +25,7 @@ package de.metas.externalsystem.endpoint;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.http.MediaType;
@@ -48,8 +49,8 @@ public class ExternalSystemEndpoint
 
 	@Nullable MediaType contentType;
 
-	// HTTP authentication fields
-	@NonNull EndpointAuthType authType;
+	// HTTP authentication fields (null when transportType == SFTP)
+	@Nullable EndpointAuthType authType;
 
 	@Nullable String clientId;
 
@@ -78,6 +79,31 @@ public class ExternalSystemEndpoint
 
 	@Nullable String sftpFilenamePattern;
 
+	// SFTP inbound-polling settings (poll interval -- SFTP-only).
+	@Nullable Integer sftpPollingIntervalMs;
+
+	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+	@Nullable String processedDirectory;
+
+	@Nullable String errorDirectory;
+
+	/**
+	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
+	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint
+	 * runs once with the whole payload, matching existing behaviour.
+	 * See me03#29231, PLAN_ARRAY_MODE.md §3.1.
+	 */
+	@Default boolean isArrayFanOut = false;
+
+	/** OAuth2 token endpoint URL the password-grant request is POSTed to. */
+	@Nullable String oauthTokenUrl;
+
+	/** Optional OAuth2 scope, e.g. "docuware.platform". */
+	@Nullable String oauthScope;
+
+	/** If TRUE the payload is uploaded as multipart/form-data. */
+	@Default boolean isFileUpload = false;
+
 	/**
 	 * Converts this endpoint to a JSON DTO.
 	 * Supports both HTTP and SFTP transport types.
@@ -90,7 +116,7 @@ public class ExternalSystemEndpoint
 				.transportType(transportType.getCode())
 				.endpointUrl(endpointUrl)
 				.method(method != null ? method.getCode() : null)
-				.authType(authType.toJson())
+				.authType(authType != null ? authType.toJson() : null)
 				.clientId(clientId)
 				.clientSecret(clientSecret)
 				.token(token)
@@ -105,6 +131,10 @@ public class ExternalSystemEndpoint
 				.sshPrivateKey(sshPrivateKey)
 				.sftpRemotePath(sftpRemotePath)
 				.sftpFilenamePattern(sftpFilenamePattern)
+				.arrayFanOut(isArrayFanOut ? Boolean.TRUE : null)
+				.oauthTokenUrl(oauthTokenUrl)
+				.oauthScope(oauthScope)
+				.isFileUpload(isFileUpload ? Boolean.TRUE : null)
 				.build();
 	}
 }

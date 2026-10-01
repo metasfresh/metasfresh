@@ -15,7 +15,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root
 	IsHidePackingMaterialInShipmentPrint Character (1),
 	email Character Varying(50),
 	displayhu text,
-	issourcesupplycert character(1)
+	issourcesupplycert character(1),
+	isFactoringPartner character(1)
 );
 
 
@@ -48,7 +49,8 @@ $$SELECT
 		THEN 'Y'
 		ELSE 'N'
 	END as displayhu,
-	bp.issourcesupplycert
+	bp.issourcesupplycert,
+	bp.IsFactoring AS isFactoringPartner
 FROM
 	M_InOut io
 	JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'

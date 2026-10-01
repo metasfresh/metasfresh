@@ -1,0 +1,263 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.product;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefListItemCreateRequest;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.TranslatableStrings;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import static de.metas.util.Services.get;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+/**
+ * Tests the central product life-cycle enforcement predicate: {@link IProductBL#isAllowed(ProductId, ProductLifeCycleAction)}
+ * and {@link IProductBL#assertAllowed(ProductId, ProductLifeCycleAction)}.
+ */
+class ProductBL_assertAllowed_Test
+{
+	private IProductBL productBL;
+	private ADReferenceService adReferenceService;
+
+	@BeforeEach
+	void setUp()
+	{
+		AdempiereTestHelper.get().init();
+		// assertAllowed resolves the blocked status' human-readable name via ADReferenceService; register a
+		// mocked one (auto-creates ref-lists on demand) so the guard's error path works in the POJO env.
+		adReferenceService = ADReferenceService.newMocked();
+		SpringContextHolder.registerJUnitBean(adReferenceService);
+		productBL = get(IProductBL.class);
+	}
+
+	private ProductId createProduct(final String productLifeCycleStatus)
+	{
+		return createProduct(productLifeCycleStatus, "P");
+	}
+
+	private ProductId createProduct(final String productLifeCycleStatus, final String value)
+	{
+		return createProduct(productLifeCycleStatus, value, true);
+	}
+
+	private ProductId createProduct(final String productLifeCycleStatus, final String value, final boolean isActive)
+	{
+		final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		p.setIsActive(isActive);
+		p.setValue(value);
+		p.setName("Test Product");
+		p.setProductLifeCycleStatus(productLifeCycleStatus);
+		InterfaceWrapperHelper.saveRecord(p);
+		return ProductId.ofRepoId(p.getM_Product_ID());
+	}
+
+	@Test
+	void nullStatus_isFullyPermissive()
+	{
+		final ProductId productId = createProduct(null);
+		for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
+			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
+		}
+	}
+
+	@Test
+	void ok_isFullyPermissive()
+	{
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+		for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
+			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
+		}
+	}
+
+	@Test
+	void phaseOut_blocksPurchaseAndManufacture()
+	{
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut);
+
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.MANUFACTURE })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+					.as("action=%s", action)
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
+
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.SELL, ProductLifeCycleAction.PICK, ProductLifeCycleAction.SHIP })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
+			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
+		}
+	}
+
+	@Test
+	void doNotDeliver_blocksShipAndPick()
+	{
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
+
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.SHIP, ProductLifeCycleAction.PICK })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+					.as("action=%s", action)
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
+
+		for (final ProductLifeCycleAction action : new ProductLifeCycleAction[] {
+				ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.SELL, ProductLifeCycleAction.MANUFACTURE })
+		{
+			assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isTrue();
+			assertThatCode(() -> productBL.assertAllowed(productId, action)).as("action=%s", action).doesNotThrowAnyException();
+		}
+	}
+
+	@Nested
+	class Blocked
+	{
+		@Test
+		void blocksAllActions()
+		{
+			final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
+
+			for (final ProductLifeCycleAction action : ProductLifeCycleAction.values())
+			{
+				assertThat(productBL.isAllowed(productId, action)).as("action=%s", action).isFalse();
+				assertThatThrownBy(() -> productBL.assertAllowed(productId, action))
+						.as("action=%s", action)
+						.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+			}
+		}
+
+		@Test
+		void error_resolvesHumanReadableStatusName()
+		{
+			// The action-blocked error must surface the human-readable, locale-resolved status name
+			// ("Gesperrt"), not the raw code "G". Register the ref-list item so the lookup resolves to a
+			// real name instead of falling back to the raw code — the item-found branch the other tests
+			// never exercise (the auto-created mock ref-list has no items).
+			adReferenceService.saveRefList(ADRefListItemCreateRequest.builder()
+					.referenceId(ReferenceId.ofRepoId(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID))
+					.value(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
+					.name(TranslatableStrings.constant("Gesperrt"))
+					.build());
+
+			// The exception hands this ITranslatableString to AdempiereException as a message param, so the
+			// blocked message renders "Gesperrt" once the AD_Message template is loaded (verified end-to-end
+			// against the real stack, not here — the POJO harness has no AD_Message so {0}/{1} don't
+			// interpolate; this asserts the resolution the guard relies on).
+			assertThat(adReferenceService
+					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked)
+					.translate("de_DE"))
+					.as("resolved status name")
+					.isEqualTo("Gesperrt");
+
+			final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked);
+			assertThatThrownBy(() -> productBL.assertAllowed(productId, ProductLifeCycleAction.PICK))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
+		}
+	}
+
+	@Test
+	void batch_emptySet_isNoOp()
+	{
+		assertThatCode(() -> productBL.assertAllowed(ImmutableSet.of(), ProductLifeCycleAction.SHIP))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void batch_noMemberBlocksTheAction_doesNotThrow()
+	{
+		final ProductId ok = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, "P_OK");
+		// Auslauf does not block SHIP, so it must not block a SHIP check
+		final ProductId phaseOut = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut, "P_PHASEOUT");
+
+		assertThatCode(() -> productBL.assertAllowed(ImmutableSet.of(ok, phaseOut), ProductLifeCycleAction.SHIP))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void batch_oneBlockedMember_throwsNamingThatProduct()
+	{
+		final ProductId ok = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, "P_OK");
+		final ProductId blocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, "P_BLOCKED");
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(ok, blocked), ProductLifeCycleAction.SHIP))
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+					assertThat(ex.isUserValidationError()).isTrue();
+					assertThat(ex.getParameter("product")).isEqualTo("P_BLOCKED");
+				});
+	}
+
+	@Test
+	void batch_severalBlockedMembers_alwaysNamesTheLowestIdOne()
+	{
+		// The batch load returns an unordered result against a real DB, so without a stable iteration order the
+		// reported product would vary between runs and the user would fix them one unpredictable step at a
+		// time. NOTE: this is a regression guard for the sorted iteration, not a reproduction of the
+		// non-determinism — the POJO test map happens to preserve insertion order, so only a real Postgres
+		// query plan can actually shuffle the result.
+		final ProductId firstBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, "P_BLOCKED_1");
+		final ProductId secondBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, "P_BLOCKED_2");
+		assertThat(firstBlocked.getRepoId()).isLessThan(secondBlocked.getRepoId());
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(secondBlocked, firstBlocked), ProductLifeCycleAction.SHIP))
+				.isInstanceOfSatisfying(AdempiereException.class,
+						ex -> assertThat(ex.getParameter("product")).isEqualTo("P_BLOCKED_1"));
+	}
+
+	@Test
+	void batch_inactiveBlockedMember_stillThrows()
+	{
+		// A product can be deactivated while documents still reference it. The batch load filters inactive
+		// records out, so without the single-load fallback the check would silently pass here while the
+		// single-product overload below still refuses — the two must not diverge.
+		final ProductId inactiveBlocked = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, "P_INACTIVE", false);
+
+		assertThatThrownBy(() -> productBL.assertAllowed(inactiveBlocked, ProductLifeCycleAction.SHIP))
+				.as("single-product overload")
+				.isInstanceOf(AdempiereException.class);
+
+		assertThatThrownBy(() -> productBL.assertAllowed(ImmutableSet.of(inactiveBlocked), ProductLifeCycleAction.SHIP))
+				.as("batch overload")
+				.isInstanceOfSatisfying(AdempiereException.class,
+						ex -> assertThat(ex.getParameter("product")).isEqualTo("P_INACTIVE"));
+	}
+}

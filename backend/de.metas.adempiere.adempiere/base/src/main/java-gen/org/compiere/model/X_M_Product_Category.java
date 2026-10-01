@@ -582,6 +582,60 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1)
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID (final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1)
+			set_Value (COLUMNNAME_WorkStation_ID, null);
+		else
+			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
+	}
+
+	@Override
 	public void setIsExcludeFromForecast (final boolean IsExcludeFromForecast)
 	{
 		set_Value (COLUMNNAME_IsExcludeFromForecast, IsExcludeFromForecast);

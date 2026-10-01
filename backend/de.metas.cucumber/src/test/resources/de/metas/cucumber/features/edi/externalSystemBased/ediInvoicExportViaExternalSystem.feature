@@ -38,9 +38,9 @@ Feature: EDI INVOIC export via External System
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | EdiINVOICSendingMode | EdiINVOIC_ExternalSystem_Config_ID |
-      | customer1  | true                 | 12345678              | E                    | externalSystemConfig_1             |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | EdiINVOICSendingMode | EdiINVOIC_ExternalSystem_Config_ID | Identifier                      |
+      | customer1     | true                 | 12345678              | E                    | externalSystemConfig_1             | edi_setting_invoic_extSys_cust1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |

@@ -10,6 +10,7 @@ import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -46,9 +47,11 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
+		@Nullable Boolean massPrinting;
 
 		@Nullable List<PickingJobFacetGroup> filters;
 	}
@@ -81,5 +84,15 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
 		@Nullable String receiveUnitType;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToLU;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToTU;
+		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
+		@Nullable Boolean isAllowReceiveWithoutPackingItem;
+
+		/** Ordered {@code M_Attribute.Value} codes - the CURRENT global editable-attribute list after this call. */
+		@Nullable List<AttributeCode> editableAttributes;
+		@Nullable Boolean isAllowEmptyingHUs;
+		@Nullable Boolean isConfirmEmptyingHU;
 	}
 }

@@ -36,8 +36,8 @@ Feature: Invoice Date can be taken from DeliveryDate
     And the order identified by so_1 is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | sol_1                     | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | sol_1                     | N             | 10           |
 
     And metasfresh has date and time 2021-04-20T08:00:00+01:00[Europe/Berlin]
 
@@ -47,7 +47,12 @@ Feature: Invoice Date can be taken from DeliveryDate
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-    And after not more than 60s, C_Invoice_Candidate are found:
+
+    # No queue-drain step: the drain checks only the queue's ready-message count and is blind to
+    # in-flight (unacked) cascade events, so it reports "empty" prematurely. The poll below waits
+    # for the committed QtyToInvoice, which only settles after the async recompute cascade completes;
+    # the `validate invoice candidate` step that follows further confirms the candidate is settled.
+    And after not more than 300s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | sol_1                     | 10           |
 

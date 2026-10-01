@@ -97,17 +97,69 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(paymentIdStr, paymentIDStr);
 		plainValidationCtx.setValue(invoiceIdStr, "-1");
 
+		// A line that has a payment but no invoice is money sitting on the partner with nothing to
+		// settle. The accountant faces the same three-way decision as on an overpayment, so all
+		// three overpayment actions must be offered -- see the comment in noActionGroup.
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
-		assertThat(accepted).as("accepted").isFalse();
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		assertThat(accepted).as("accepted").isFalse();
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
 		assertThat(accepted).as("accepted").isFalse();
+	}
+
+	/**
+	 * The production shape of a line without an invoice: {@code ESR_Invoice_Openamt} is ZERO, because
+	 * {@code ESRImportBL.updateOpenAmtAndStatusDontSave} only ever runs per invoice group and therefore
+	 * never touches such a line. With a zero open amount neither the over- nor the underpayment group
+	 * can fire, so the "no invoice" branch is the ONLY thing that can offer an action here.
+	 * <p>
+	 * Before the fix this left {@code Unable_To_Assign_Income} as the single choice, which cannot record
+	 * a refund -- even though {@code MoneyTransferedBackESRActionHandler} explicitly implements the
+	 * no-invoice case ("there is no invoice, so we transfer back all the money").
+	 */
+	@Test
+	public void esrPaymentActionValidationRule_noInvoice_zeroOpenAmt_offersAllOverpaymentActions()
+	{
+		final I_C_Payment payment = db.newInstance(I_C_Payment.class);
+		payment.setPayAmt(new BigDecimal("110"));
+		db.save(payment);
+
+		plainValidationCtx.setValue(openAmtStr, "0.00");
+		plainValidationCtx.setValue(paymentIdStr, Integer.toString(payment.getC_Payment_ID()));
+		plainValidationCtx.setValue(invoiceIdStr, "-1");
+
+		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
+		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
+		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
+
+		// unchanged: an underpayment action makes no sense without an invoice, and the import sets
+		// Duplicate_Payment itself -- it must never become manually selectable.
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Write_Off_Amount, plainValidationCtx);
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Keep_For_Dunning, plainValidationCtx);
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Duplicate_Payment, plainValidationCtx);
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
+	}
+
+	/**
+	 * A line with NO payment must stay locked down even without an invoice: nothing can be done with
+	 * money that was never booked.
+	 */
+	@Test
+	public void esrPaymentActionValidationRule_noInvoice_noPayment_offersNothing()
+	{
+		plainValidationCtx.setValue(openAmtStr, "0.00");
+		plainValidationCtx.setValue(paymentIdStr, "-1");
+		plainValidationCtx.setValue(invoiceIdStr, "-1");
+
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
+		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
 
 	@Test

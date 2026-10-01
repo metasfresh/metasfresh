@@ -62,6 +62,29 @@ public class M_DiscountSchema_StepDef
 		this.discountSchemaBreakTable = discountSchemaBreakTable;
 	}
 
+	/**
+	 * Creates {@code M_DiscountSchema} rows. No look-up / upsert is performed — re-running against an
+	 * existing row is not supported.
+	 * <p>
+	 * Required DataTable columns:
+	 * <ul>
+	 * <li>{@code Identifier} — stored in {@link M_DiscountSchema_StepDefData} for later reference</li>
+	 * <li>{@code DiscountType}</li>
+	 * <li>{@code Name}</li>
+	 * <li>{@code ValidFrom}</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 * <li>{@code ValidTo} — end of the validity window (inclusive); when absent or blank, the schema
+	 * is valid indefinitely from {@code ValidFrom} onward (identical to current/pre-existing behavior)</li>
+	 * </ul>
+	 * Example usage:
+	 * <pre>{@code
+	 * Given metasfresh contains M_DiscountSchemas:
+	 *   | Identifier | DiscountType | Name         | ValidFrom  | ValidTo    |
+	 *   | ds_1       | B            | ValidTo test | 2026-09-07 | 2026-09-11 |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_DiscountSchemas:")
 	public void create_discount_schema(@NonNull final DataTable dataTable)
 	{
@@ -72,6 +95,33 @@ public class M_DiscountSchema_StepDef
 		}
 	}
 
+	/**
+	 * Creates {@code M_DiscountSchemaBreak} rows (discount breaks attached to an existing {@code M_DiscountSchema}).
+	 * Each break is saved with {@code IsValid=true}; no look-up / upsert is performed — re-running against an
+	 * existing row is not supported.
+	 * <p>
+	 * Required DataTable columns:
+	 * <ul>
+	 * <li>{@code Identifier} — stored in {@link M_DiscountSchemaBreak_StepDefData} for later reference</li>
+	 * <li>{@code M_DiscountSchema_ID.Identifier} — parent schema (resolved from {@link M_DiscountSchema_StepDefData})</li>
+	 * <li>{@code M_Product_ID.Identifier} — product the break applies to (resolved from {@link M_Product_StepDefData})</li>
+	 * <li>{@code Base_PricingSystem_ID.Identifier} — base pricing system (resolved from {@link M_PricingSystem_StepDefData})</li>
+	 * <li>{@code SeqNo} — sequence within the schema</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 * <li>{@code OPT.IsBPartnerFlatDiscount} — defaults to {@code false}</li>
+	 * <li>{@code OPT.PriceBase}</li>
+	 * <li>{@code OPT.BreakValue}</li>
+	 * <li>{@code OPT.BreakDiscount} — defaults to {@code 0}</li>
+	 * </ul>
+	 * Example usage:
+	 * <pre>{@code
+	 * Given metasfresh contains M_DiscountSchemaBreaks:
+	 *   | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
+	 *   | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_DiscountSchemaBreaks:")
 	public void created_discount_schema_break(@NonNull final DataTable dataTable)
 	{
@@ -118,12 +168,14 @@ public class M_DiscountSchema_StepDef
 		final String discountType = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_DiscountType);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_Name);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidFrom);
+		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidTo);
 
 		final I_M_DiscountSchema discountSchemaRecord = InterfaceWrapperHelper.newInstance(I_M_DiscountSchema.class);
 
 		discountSchemaRecord.setDiscountType(discountType);
 		discountSchemaRecord.setName(name);
 		discountSchemaRecord.setValidFrom(validFrom);
+		discountSchemaRecord.setValidTo(validTo);
 
 		saveRecord(discountSchemaRecord);
 

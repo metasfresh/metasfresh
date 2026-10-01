@@ -4,6 +4,10 @@ AS
 SELECT
 	o.POReference as POReference,
 	bp.value as bpValue,
+    COALESCE(srgr.name, '') ||
+    COALESCE(' ' || srep.title, '') ||
+    COALESCE(' ' || srep.firstName, '') ||
+    COALESCE(' ' || srep.lastName, '')    AS sr_name,
 	trim( Coalesce(cogr.name,  '') ||
 	Coalesce(' ' || cont.title, '') ||
 	Coalesce(' ' || cont.firstName, '') ||
@@ -25,23 +29,25 @@ SELECT
 	report.M_Warehouse_ID,
 	report.PP_Plant_ID,
 	o.C_BPartner_ID,
-	o.DatePromised
+	o.DatePromised,
+    o.billtoaddress,
+    o.description
 FROM
 	C_Order_MFGWarehouse_Report report
-	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
+	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID)
 	--
-	LEFT OUTER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
-	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID
+	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID
+    LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
+	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID
 	-- HandOverLocation
-	LEFT OUTER JOIN C_BPartner_Location bpl	ON o.HandOver_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner_Location bpl	ON o.HandOver_Location_ID = bpl.C_BPartner_Location_ID
 	-- Translatables
-	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID
 	--
-	LEFT OUTER JOIN M_Warehouse wh on (wh.M_Warehouse_ID=report.M_Warehouse_ID) AND wh.isActive = 'Y'
-	LEFT OUTER JOIN S_Resource plant on (plant.S_Resource_ID=report.PP_Plant_ID) AND plant.isActive = 'Y'
+	LEFT OUTER JOIN M_Warehouse wh on (wh.M_Warehouse_ID=report.M_Warehouse_ID)
+	LEFT OUTER JOIN S_Resource plant on (plant.S_Resource_ID=report.PP_Plant_ID)
 WHERE true
-	AND report.IsActive='Y'
 ;
 
 

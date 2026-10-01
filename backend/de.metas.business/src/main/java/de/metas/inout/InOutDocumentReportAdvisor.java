@@ -28,6 +28,8 @@ import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -41,6 +43,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +53,7 @@ import javax.annotation.Nullable;
 public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final DocumentReportAdvisorUtil util;
 
 	public InOutDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
@@ -96,12 +100,17 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 
 		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
+		final I_C_Order order = getOrderOrNull(inout);
+		// a manual shipment has no order to inspect -> treat as NOT a drop-ship (do not suppress auto-print)
+		final boolean docIsDropShip = order != null && util.isDropShip(order);
+
 		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.adTableId(recordRef.getAdTableId())
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()))
 				.docTypeId(docTypeId)
 				.onlyCopiesGreaterZero(true)
+				.isDropShip(docIsDropShip)
 				.build();
 
 		return DocumentReportInfo.builder()
@@ -113,7 +122,15 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.docTypeId(docTypeId)
 				.language(language)
 				.poReference(inout.getPOReference())
+				.suppressAutoPrint(util.resolveSuppressAutoPrint(bpPrintFormatQuery))
 				.build();
+	}
+
+	@Nullable
+	private I_C_Order getOrderOrNull(@NonNull final I_M_InOut inout)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inout.getC_Order_ID());
+		return orderId != null ? orderDAO.getById(orderId) : null;
 	}
 
 	private DocTypeId extractDocTypeId(@NonNull final I_M_InOut inout)

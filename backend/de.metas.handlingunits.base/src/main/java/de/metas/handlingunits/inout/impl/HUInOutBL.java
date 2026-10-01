@@ -557,4 +557,16 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		return huInOutDAO.retrieveShippedHUsByShipmentLineId(shipmentLineIds);
 	}
+
+	@Override
+	public void save(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		huInOutDAO.save(inOutLineRecord);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOut inOutRecord)
+	{
+		huInOutDAO.save(inOutRecord);
+	}
 }

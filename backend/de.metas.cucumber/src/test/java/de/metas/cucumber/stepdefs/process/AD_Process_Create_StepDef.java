@@ -2,13 +2,19 @@ package de.metas.cucumber.stepdefs.process;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
+
+import java.util.List;
 
 /**
  * Step definitions for creating {@link I_AD_Process} records in tests.
@@ -38,6 +44,7 @@ import org.compiere.model.X_AD_Process;
 public class AD_Process_Create_StepDef
 {
 	@NonNull private final AD_Process_StepDefData processTable;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Creates one or more {@link I_AD_Process} records from the given data table.
@@ -61,5 +68,48 @@ public class AD_Process_Create_StepDef
 		InterfaceWrapperHelper.saveRecord(process);
 
 		row.getAsOptionalIdentifier().ifPresent(id -> processTable.putOrReplace(id, process));
+	}
+
+	/**
+	 * Sets {@code IsPdfA3Output = Y} on all {@link I_AD_Process} records whose {@code JasperReport}
+	 * path contains the given substring.  This is used by ZUGFeRD E2E tests to tell the mock report
+	 * service to return a valid PDF/A-3 fixture rather than the 4-byte stub, so that
+	 * {@code ZugferdAssembler.embed()} (which calls PDFBox) receives parseable PDF/A-3 bytes.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code JasperReport} — substring of {@code AD_Process.JasperReport} used to identify the process(es)</li>
+	 * </ul>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And set IsPdfA3Output for AD_Process with JasperReport containing:
+	 *   | JasperReport            |
+	 *   | de/metas/docs/sales/invoice |
+	 * </pre>
+	 */
+	@And("set IsPdfA3Output for AD_Process with JasperReport containing:")
+	public void setIsPdfA3OutputForJasperReport(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String jasperReportSubstring = row.getAsString(I_AD_Process.COLUMNNAME_JasperReport);
+
+			final List<I_AD_Process> processes = queryBL.createQueryBuilder(I_AD_Process.class)
+					.addStringLikeFilter(I_AD_Process.COLUMNNAME_JasperReport, jasperReportSubstring, true)
+					.create()
+					.list();
+
+			if (processes.isEmpty())
+			{
+				throw new AdempiereException("No AD_Process found with JasperReport containing: " + jasperReportSubstring);
+			}
+
+			for (final I_AD_Process process : processes)
+			{
+				process.setIsPdfA3Output(true);
+				InterfaceWrapperHelper.saveRecord(process);
+			}
+		});
 	}
 }

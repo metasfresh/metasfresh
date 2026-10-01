@@ -57,6 +57,27 @@ class JsonExternalSystemEndpointTest
 	}
 
 	@Test
+	void oauth2AndFileUpload_serializeDeserialize() throws Exception
+	{
+		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+				.value("oauth2-upload-test")
+				.authType(JsonEndpointAuthType.OAuth2)
+				.oauthTokenUrl("https://example.com/oauth/token")
+				.oauthScope("docuware.platform")
+				.clientId("example.client")
+				.user("user")
+				.password("password")
+				.endpointUrl("https://example.com/upload")
+				.method("POST")
+				.isFileUpload(true)
+				.build();
+
+		final String json = objectMapper.writeValueAsString(endpoint);
+		final JsonExternalSystemEndpoint deserialized = objectMapper.readValue(json, JsonExternalSystemEndpoint.class);
+		assertThat(deserialized).isEqualTo(endpoint);
+	}
+
+	@Test
 	void sftpEndpoint_serializeDeserialize() throws Exception
 	{
 		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
