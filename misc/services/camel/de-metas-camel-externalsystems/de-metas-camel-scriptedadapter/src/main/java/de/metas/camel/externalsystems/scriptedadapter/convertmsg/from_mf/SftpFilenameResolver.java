@@ -42,9 +42,10 @@ import java.util.Map;
  *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
  *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
  *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ *   <li>{@code {index}} — 1-based index of the element in a split (fan-out) export; empty if the export is not split</li>
  * </ul>
  *
- * <p>Unknown placeholders are left unchanged.
+ * <p>Unknown placeholders are left unchanged (except {@code {index}}, which resolves to the empty string when not supplied).
  *
  * <p>Example:
  * <pre>
@@ -56,6 +57,7 @@ import java.util.Map;
 public class SftpFilenameResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
+	private static final String INDEX_PLACEHOLDER = "{index}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
 	/**
@@ -78,6 +80,9 @@ public class SftpFilenameResolver
 				result = result.replace("{" + entry.getKey() + "}", entry.getValue());
 			}
 		}
+
+		// {index} is only supplied for split exports; otherwise resolve it to empty
+		result = result.replace(INDEX_PLACEHOLDER, "");
 
 		// Replace the special {timestamp} placeholder
 		if (result.contains(TIMESTAMP_PLACEHOLDER))
