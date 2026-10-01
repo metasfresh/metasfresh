@@ -15,7 +15,7 @@ import { getFieldData } from '../utils/WebAPIValidation';
  *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old).
  *
  * Runs at the accounting schema's costing level (organization level on the standard test DB);
- * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:37-39`.
+ * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:36-38`.
  */
 
 /** Masterdata: PSTK, a stocked Item with 10 on hand in a warehouse. */

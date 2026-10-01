@@ -24,7 +24,7 @@ import { SLOW_ACTION_TIMEOUT } from '../utils/common';
  *    provisional-price hint shown on the New cost price field.
  *
  * Runs at the accounting schema's costing level (organization level on the standard test DB);
- * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:37-39`.
+ * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:36-38`.
  */
 
 /**
