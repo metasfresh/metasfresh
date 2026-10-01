@@ -139,6 +139,28 @@ Feature: Switch to Moving Average Invoice
     #
     And no Fact_Acct records are found for documents costRevalMAI
 
+  @Id:S26253_ReverseThenRepost
+  Scenario: Reposting a reversed switch writes no cost detail, leaves the cost unchanged and posts nothing
+    Given update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | product      | AveragePO        | 10 CHF           |
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | costRevalMAI | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation costRevalMAI
+    And the cost revaluation identified by costRevalMAI is completed
+    And no Fact_Acct records are found for documents costRevalMAI
+    And the cost revaluation identified by costRevalMAI is reversed
+    #
+    # The reversal deleted the opening anchor, so a repost must not reach the costing engine again.
+    #
+    When the documents costRevalMAI are reposted
+    Then no M_CostDetails are found for product product and cost element MovingAverageInvoice
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 0 CHF            | 0 PCE      | 0 CHF        |
+    And no Fact_Acct records are found for documents costRevalMAI
+
   @Id:S26253_TC4
   Scenario: Re-running the switch skips an already-seeded product so a redundant reversal cannot disturb it
     #

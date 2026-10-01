@@ -944,7 +944,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
-			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (12 - 10) = 200
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 100 x (12 - 10) = 200
 
 			createCompletedRevaluation(productId, LocalDate.parse("2024-03-10"), true);
 			updateCurrentCost(productId, "11", "100"); // the posted revaluation set the current cost price to 11
@@ -968,7 +968,7 @@ public class CostRevaluationServiceTest
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 			updateCurrentCost(productId, "12", "80");
 
-			costRevaluationService.createDetails(costRevaluationId); // "Run"
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run"
 
 			assertSingleLineValues(costRevaluationId, "80", "12", "240"); // 80 x (15 - 12)
 			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "12", "15", "240");
@@ -1006,7 +1006,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
-			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (15 - 10) = 500
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 100 x (15 - 10) = 500
 
 			updateCurrentCost(productId, "10", "80");
 
@@ -1029,7 +1029,7 @@ public class CostRevaluationServiceTest
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
 			updateCurrentCost(productId, "12", "80");
-			costRevaluationService.createDetails(costRevaluationId); // "Run": 80 x (15 - 12) = 240
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 80 x (15 - 12) = 240
 
 			final I_M_CostRevaluationLine line = getLineRecords(costRevaluationId).get(0);
 			line.setNewCostPrice(new BigDecimal("16"));
@@ -1054,7 +1054,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-04"), LocalDate.parse("2024-03-04"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("12"));
-			costRevaluationService.createDetails(costRevaluationId); // "Run": 100 x (12 - 10) = 200
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 100 x (12 - 10) = 200
 
 			final I_M_CostRevaluationLine line = getLineRecords(costRevaluationId).get(0);
 			line.setNewCostPrice(new BigDecimal("15"));
@@ -1129,8 +1129,8 @@ public class CostRevaluationServiceTest
 			costRevaluationService.createLineForProduct(twoLineDoc, product1, new BigDecimal("12"));
 			costRevaluationService.createLineForProduct(twoLineDoc, product2, new BigDecimal("5.5"));
 
-			costRevaluationService.createDetails(oneLineDoc); // "Run"
-			costRevaluationService.createDetails(twoLineDoc); // "Run"
+			costRevaluationService.runRevaluation(oneLineDoc); // "Run"
+			costRevaluationService.runRevaluation(twoLineDoc); // "Run"
 			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(oneLineDoc, 1);
 			assertEvaluatedLinesDeltaAmtEqualsSumOfDetails(twoLineDoc, 2);
 
@@ -1274,7 +1274,7 @@ public class CostRevaluationServiceTest
 
 			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
 			costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
-			costRevaluationService.createDetails(costRevaluationId); // "Run"
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run"
 			updateCurrentCost(productId, "11", "80"); // stock and cost price moved between Run and Complete
 			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
 
@@ -1985,6 +1985,110 @@ public class CostRevaluationServiceTest
 				assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("100");
 				assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1000");
 				assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+			}
+		}
+
+		/**
+		 * "Run" of a {@code CopyFromCostElement} draft only previews: the seed ({@code M_Cost} + opening anchor) is written at Complete.
+		 */
+		@Nested
+		class RunRevaluation_CopyFromCostElement
+		{
+			private CostSegmentAndElement targetSegmentAndElement(@NonNull final ProductId productId)
+			{
+				return costSegmentAndElement(productId, targetCostElementId, acctSchemaId, CostingLevel.Client, OrgId.ANY);
+			}
+
+			private List<CostDetail> targetCostDetails(@NonNull final ProductId productId)
+			{
+				return new CostDetailRepository()
+						.stream(CostDetailQuery.builder()
+								.acctSchemaId(acctSchemaId)
+								.costElementId(targetCostElementId)
+								.productId(productId)
+								.build())
+						.collect(ImmutableList.toImmutableList());
+			}
+
+			private I_M_CostRevaluationLine getLine(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
+			{
+				return getLineForProduct(
+						costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluationId).collect(ImmutableList.toImmutableList()),
+						productId);
+			}
+
+			@Test
+			public void copyFromCostElement_run_keepsItsLinePreview()
+			{
+				final ProductId productId = createProduct("productWithStock");
+				seedSourceCurrentCost(productId, "12.50", "3.75", "100");
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(costRevaluationId);
+
+				costRevaluationService.runRevaluation(costRevaluationId);
+
+				final I_M_CostRevaluationLine line = getLine(costRevaluationId, productId);
+				assertThat(line.isActive()).isTrue();
+				assertThat(line.isRevaluated()).as("line not evaluated").isFalse();
+				assertThat(line.getCurrentQty()).isEqualByComparingTo("100");
+				assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("12.50");
+				assertThat(line.getNewCostPrice()).isEqualByComparingTo("12.50");
+				assertThat(line.getDeltaAmt()).isEqualByComparingTo("0");
+
+				assertThat(currentCostsRepo.getOrNull(targetSegmentAndElement(productId))).as("no target M_Cost").isNull();
+				assertThat(targetCostDetails(productId)).as("no target M_CostDetail").isEmpty();
+			}
+
+			@Test
+			public void copyFromCostElement_runThenComplete_seedsOnceAtComplete()
+			{
+				final ProductId productId = createProduct("productWithStock");
+				seedSourceCurrentCost(productId, "12.50", "3.75", "100");
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(costRevaluationId);
+
+				costRevaluationService.runRevaluation(costRevaluationId);
+				// The source moves between Run and Complete: the seed must show the source as read at Complete.
+				updateSourceCurrentCost(productId, "20.00", "5.00", "200");
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
+
+				final List<CostDetail> targetCostDetails = targetCostDetails(productId);
+				assertThat(targetCostDetails).as("one opening anchor").hasSize(1);
+				assertThat(targetCostDetails.get(0).getPreviousAmounts()).isNotNull();
+				assertThat(targetCostDetails.get(0).getPreviousAmounts().getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("20.00");
+
+				final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSegmentAndElement(productId));
+				assertThat(targetCurrentCost).isNotNull();
+				assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("20.00");
+				assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("5.00");
+				assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("200");
+
+				final I_M_CostRevaluationLine line = getLine(costRevaluationId, productId);
+				assertThat(line.isActive()).isTrue();
+				assertThat(line.isRevaluated()).isTrue();
+			}
+
+			/**
+			 * Posting a {@code CopyFromCostElement} revaluation writes nothing back: the line keeps its preview.
+			 */
+			@Test
+			public void copyFromCostElement_postsWithoutWriteBack()
+			{
+				final ProductId productId = createProduct("productWithStock");
+				seedSourceCurrentCost(productId, "12.50", "3.75", "100");
+				final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(costRevaluationId);
+				// the anchor is seeded from the source as read at Complete, so it differs from the line's preview
+				updateSourceCurrentCost(productId, "20.00", "5.00", "200");
+				costRevaluationService.reevaluateAllLines(costRevaluationId); // Complete
+
+				final CostRevaluationLine line = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId).get(0);
+				costRevaluationService.writeBookedValues(line);
+
+				final I_M_CostRevaluationLine lineRecord = getLine(costRevaluationId, productId);
+				assertThat(lineRecord.getCurrentQty()).isEqualByComparingTo("100");
+				assertThat(lineRecord.getCurrentCostPrice()).isEqualByComparingTo("12.50");
+				assertThat(lineRecord.getDeltaAmt()).isEqualByComparingTo("0");
 			}
 		}
 

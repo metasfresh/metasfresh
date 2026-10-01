@@ -334,10 +334,17 @@ public class CostRevaluationService
 	 * {@code M_CostDetail} was booked from (its previous amounts) and its amount. They differ from the values of Complete when stock
 	 * moved between Complete and posting.
 	 *
+	 * Does nothing for a {@code CopyFromCostElement} line: its cost detail is the opening anchor, which books nothing.
+	 *
 	 * @throws AdempiereException if the line has not exactly one main cost detail on its own cost element and accounting schema.
 	 */
 	public void writeBookedValues(@NonNull final CostRevaluationLine line)
 	{
+		if (!costRevaluationRepository.getById(line.getId().getCostRevaluationId()).getRevaluationSource().isManual())
+		{
+			return;
+		}
+
 		writeBookedValues(line.getId(), getRevaluationCostDetail(line));
 	}
 
@@ -380,7 +387,22 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * Evaluates the lines not evaluated yet ("Run").
+	 * "Run": evaluates the lines not evaluated yet.
+	 * <p>
+	 * A {@code CopyFromCostElement} revaluation is only previewed by its lines; Run writes nothing for it, and its seed is written at Complete.
+	 */
+	public void runRevaluation(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		if (!costRevaluationRepository.getById(costRevaluationId).getRevaluationSource().isManual())
+		{
+			return;
+		}
+
+		createDetails(costRevaluationId);
+	}
+
+	/**
+	 * Evaluates the lines not evaluated yet.
 	 */
 	public void createDetails(@NonNull final CostRevaluationId costRevaluationId)
 	{

@@ -27,6 +27,8 @@ import {
  *   2. Set RevaluationSource = CopyFromCostElement → CopyFrom field becomes visible AND is marked
  *      mandatory (empty mandatory List renders the language-invariant `.input-mandatory` marker).
  *   3. Set RevaluationSource back to Manual → CopyFrom field hides again.
+ *   EvaluationStartDate (ReadOnlyLogic @RevaluationSource@!'CopyFromCostElement') is read-only for
+ *   Manual and editable for CopyFromCostElement, where it is the cut-off date.
  *
  * Language-independence: every selector/assertion uses language-invariant identifiers — the DB
  * ColumnName (`.form-field-<Column>`), the ref-list VALUE as the option key
@@ -42,6 +44,8 @@ const REVALUATION_SOURCE_DROPDOWN = `${REVALUATION_SOURCE_WRAPPER} .input-dropdo
 const COPY_FROM_WRAPPER = '.form-field-CopyFrom_M_CostElement_ID';
 // Empty mandatory List/Lookup renders `.input-mandatory` (RawList / Lookup) — language-invariant.
 const COPY_FROM_MANDATORY = `${COPY_FROM_WRAPPER} .input-mandatory`;
+// EvaluationStartDate: read-only unless the source is CopyFromCostElement (its cut-off date).
+const EVALUATION_START_DATE_INPUT = '.form-field-EvaluationStartDate input';
 
 // SelectionDropdown option data-testid = `option-${key}`; the List option key is the ref-list
 // VALUE, which is language-invariant (the ref-list value doesn't change per language).
@@ -84,6 +88,8 @@ Verifies, on a NEW Cost Revaluation record (AD_Window_ID = ${COST_REVALUATION_WI
 - becomes visible AND mandatory when RevaluationSource = CopyFromCostElement,
 - hides again when RevaluationSource is set back to Manual.
 
+\`EvaluationStartDate\` is read-only for Manual and editable for CopyFromCostElement (its cut-off date).
+
 Language under test: ${language}.
       `);
 
@@ -115,6 +121,9 @@ Language under test: ${language}.
         // DisplayLogic-hidden fields are removed from the DOM (RawWidget renders nothing), so the
         // wrapper must be absent — not merely not-visible.
         await expect(page.locator(COPY_FROM_WRAPPER)).toHaveCount(0);
+        await expect(page.locator(EVALUATION_START_DATE_INPUT).first()).toBeDisabled({
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
       });
 
       // 4. Set RevaluationSource = CopyFromCostElement → CopyFrom becomes visible AND mandatory.
@@ -129,12 +138,18 @@ Language under test: ${language}.
         await expect(page.locator(COPY_FROM_MANDATORY).first()).toBeVisible({
           timeout: SLOW_ACTION_TIMEOUT,
         });
+        await expect(page.locator(EVALUATION_START_DATE_INPUT).first()).toBeEnabled({
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
       });
 
       // 5. Set RevaluationSource back to Manual → CopyFrom hides again.
       await test.step('Back to Manual: CopyFrom field hides again', async () => {
         await selectRevaluationSource(page, 'Manual');
         await expect(page.locator(COPY_FROM_WRAPPER)).toHaveCount(0, {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await expect(page.locator(EVALUATION_START_DATE_INPUT).first()).toBeDisabled({
           timeout: SLOW_ACTION_TIMEOUT,
         });
       });

@@ -48,6 +48,12 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 	private ImmutableList<DocLine_CostRevaluation> loadDocLines()
 	{
+		// A reversed revaluation has given back its cost changes; posting it again must not reach the costing engine.
+		if (costRevaluation.getDocStatus().isReversed())
+		{
+			return ImmutableList.of();
+		}
+
 		return costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluation.getCostRevaluationId())
 				.filter(I_M_CostRevaluationLine::isActive)
 				.sorted(Comparator.comparing(I_M_CostRevaluationLine::getM_CostRevaluationLine_ID))

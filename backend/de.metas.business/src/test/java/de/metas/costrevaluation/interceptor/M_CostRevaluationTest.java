@@ -246,6 +246,25 @@ class M_CostRevaluationTest
 		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2020, 1, 15));
 	}
 
+	/**
+	 * A CopyFromCostElement draft keeps its cut-off date when the posting date changes.
+	 */
+	@Test
+	void beforeChange_copyFromCostElement_keepsItsCutOffStartDate()
+	{
+		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+		record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
+		record.setDateAcct(day(2020, 1, 15));
+		record.setEvaluationStartDate(day(2019, 12, 1));
+		record.setDocStatus(DocStatus.Drafted.getCode());
+		saveRecord(record);
+
+		record.setDateAcct(day(2020, 2, 20));
+
+		assertThatCode(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE)).doesNotThrowAnyException();
+		assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
+	}
+
 	@Test
 	void beforeChange_costElementChanged_withActiveLines_failsWithDeleteLinesFirst_namingTheField()
 	{
