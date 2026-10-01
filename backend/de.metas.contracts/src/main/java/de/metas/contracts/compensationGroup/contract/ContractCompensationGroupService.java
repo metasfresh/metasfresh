@@ -219,7 +219,7 @@ public class ContractCompensationGroupService
 			final Percent vendorPercent = vendorLine.getPercentage(); // non-null by findMergeableLineIndex
 			lines.set(mergeIndex, vendorLine.toBuilder()
 					.percentage(vendorPercent.add(takenOverPercent))
-					.description(mergeDescription(vendorPercent, vendorLine.getProductId(), takenOverPercent, record))
+					.description(mergeDescription(vendorPercent, vendorLine.getProductId(), takeOver))
 					.build());
 		}
 		else
@@ -230,7 +230,7 @@ public class ContractCompensationGroupService
 					.percentage(takenOverPercent)
 					.appliesToProductCategoryId(categoryId)
 					.takeOverId(record.getTakeOverId().getRepoId())
-					.description(appendDescription(takenOverPercent, record))
+					.description(appendDescription(takeOver))
 					.build());
 		}
 	}
@@ -277,26 +277,25 @@ public class ContractCompensationGroupService
 		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
 	}
 
-	/** e.g. {@code "3% Bonus Salemfrucht + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the listed products. */
+	/** e.g. {@code "3% Bonus Salemfrucht + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the customer discount products taken over. */
 	private String mergeDescription(
 			@NonNull final Percent vendorPercent,
 			@NonNull final ProductId vendorProductId,
-			@NonNull final Percent takenOverPercent,
-			@NonNull final TakeOverRecord record)
+			@NonNull final TakeOverResult takeOver)
 	{
 		return formatPercent(vendorPercent) + " " + productBL.getProductName(vendorProductId)
-				+ " + " + appendDescription(takenOverPercent, record);
+				+ " + " + appendDescription(takeOver);
 	}
 
-	/** e.g. {@code "3% Bonus Ware"}: the taken-over percentage with the listed customer discount products. */
-	private String appendDescription(@NonNull final Percent takenOverPercent, @NonNull final TakeOverRecord record)
+	/** e.g. {@code "3% Bonus Ware"}: the taken-over percentage with the customer discount products that were actually taken over (not every product the record lists). */
+	private String appendDescription(@NonNull final TakeOverResult takeOver)
 	{
-		return formatPercent(takenOverPercent) + " " + listedProductNames(record);
+		return formatPercent(takeOver.getSummedPercent()) + " " + takenOverProductNames(takeOver);
 	}
 
-	private String listedProductNames(@NonNull final TakeOverRecord record)
+	private String takenOverProductNames(@NonNull final TakeOverResult takeOver)
 	{
-		return record.getListedCustomerProductIds().stream()
+		return takeOver.getTakenOverProductIds().stream()
 				.map(productBL::getProductName)
 				.sorted()
 				.collect(Collectors.joining(", "));

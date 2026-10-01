@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import de.metas.product.ProductId;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
@@ -91,6 +92,21 @@ class ContractCompensationGroupTakeOverServiceTest
 
 		assertThat(results).hasSize(1);
 		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("6");
+	}
+
+	@Test
+	void takenOverProducts_areOnlyTheListedProductsActuallyOnTheSalesOrder()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_LISTED_ID);
+		final I_C_Order salesOrder = createSalesOrderWithLines(
+				new LineSpec(BONUS_WARE_ID, "3"),
+				new LineSpec(BONUS_VERPACKUNG_ID, "7"));
+		final I_C_Order purchaseOrder = createPurchaseOrder(true, salesOrder.getC_Order_ID());
+
+		final List<TakeOverResult> results = service.computeTakeOvers(purchaseOrder, settings);
+
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getTakenOverProductIds()).containsExactly(ProductId.ofRepoId(BONUS_WARE_ID));
 	}
 
 	@Test

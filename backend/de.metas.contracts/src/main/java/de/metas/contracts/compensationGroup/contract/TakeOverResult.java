@@ -1,5 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
@@ -26,10 +28,14 @@ import lombok.Value;
  * #L%
  */
 
-/** A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero). */
+/**
+ * A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero)
+ * and the customer discount products that contributed to it.
+ */
 @Value
 public class TakeOverResult
 {
 	@NonNull TakeOverRecord record;
 	@NonNull Percent summedPercent;
+	@NonNull ImmutableSet<ProductId> takenOverProductIds;
 }

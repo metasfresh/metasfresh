@@ -1,7 +1,9 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -62,21 +64,23 @@ public class ContractCompensationGroupTakeOverService
 
 		return settingsRepository.getTakeOverRecords(settings.getSettingsId())
 				.stream()
-				.map(record -> new TakeOverResult(record, sumListedPercent(record, salesOrderLines)))
+				.map(record -> computeTakeOver(record, salesOrderLines))
 				.filter(result -> !result.getSummedPercent().isZero())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static Percent sumListedPercent(final TakeOverRecord record, final List<LinkedContractDiscountLine> salesOrderLines)
+	private static TakeOverResult computeTakeOver(final TakeOverRecord record, final List<LinkedContractDiscountLine> salesOrderLines)
 	{
 		Percent sum = Percent.ZERO;
+		final ImmutableSet.Builder<ProductId> takenOverProductIds = ImmutableSet.builder();
 		for (final LinkedContractDiscountLine line : salesOrderLines)
 		{
-			if (record.getListedCustomerProductIds().contains(line.getDiscountProductId()))
+			if (record.getListedCustomerProductIds().contains(line.getDiscountProductId()) && !line.getNominalPercentage().isZero())
 			{
 				sum = sum.add(line.getNominalPercentage());
+				takenOverProductIds.add(line.getDiscountProductId());
 			}
 		}
-		return sum;
+		return new TakeOverResult(record, sum, takenOverProductIds.build());
 	}
 }

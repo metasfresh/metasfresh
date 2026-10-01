@@ -135,6 +135,7 @@ public class M_Product_StepDef
 	 *         {@link I_C_CompensationGroup_Schema} (created via
 	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
 	 *         compensation-group schema.</li>
+	 *     <li>{@code GroupCompensationAmtType} (optional) — {@code P} (percent) or {@code Q} (fixed amount) of a compensation-group discount product.</li>
 	 *      <li>{@code ProductLifeCycleStatus} — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}</li>
 	 * </ul>
 	 * <pre>{@code
@@ -405,6 +406,9 @@ public class M_Product_StepDef
 		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
 				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
 				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
+
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_GroupCompensationAmtType)
+				.ifPresent(productRecord::setGroupCompensationAmtType);
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
