@@ -367,6 +367,47 @@ public class M_CostRevaluation_StepDef
 		assertThat(count).as("M_CostRevaluation_Detail count of %s", identifier).isZero();
 	}
 
+	/**
+	 * Voids the cost-revaluation document via the real DocAction pipeline ({@code voidIt}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the cost revaluation identified by revaluation is voided
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) is voided$")
+	public void costRevaluation_is_voided(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		header.setDocAction(IDocument.ACTION_Void);
+		documentBL.processEx(header, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		InterfaceWrapperHelper.refresh(header);
+		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	/**
+	 * Asserts that no line of the cost revaluation has a {@code M_CostDetail}, i.e. nothing was booked.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the cost revaluation identified by revaluation has no M_CostDetails
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) has no M_CostDetails$")
+	public void assertNoCostDetails(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		final int count = queryBL.createQueryBuilder(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+				.create()
+				.count();
+		assertThat(count).as("M_CostDetail count of %s", identifier).isZero();
+	}
+
 	private static void assertRefusedWithMessage(@Nullable final Throwable thrown, @NonNull final String action, @NonNull final String adMessageKey)
 	{
 		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);

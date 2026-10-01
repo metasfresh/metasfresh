@@ -48,8 +48,8 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 	private ImmutableList<DocLine_CostRevaluation> loadDocLines()
 	{
-		// A reversed revaluation has given back its cost changes; posting it again must not reach the costing engine.
-		if (costRevaluation.getDocStatus().isReversed())
+		// A reversed revaluation has given back its cost changes and a voided one has booked nothing; posting either must not reach the costing engine.
+		if (costRevaluation.getDocStatus().isReversedOrVoided())
 		{
 			return ImmutableList.of();
 		}

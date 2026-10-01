@@ -26,6 +26,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -39,6 +40,8 @@ import java.time.LocalDate;
 
 class CostRevaluationDocumentHandler implements DocumentHandler
 {
+	static final AdMessageKey MSG_CannotVoidBookedRevaluation = AdMessageKey.of("M_CostRevaluation.CannotVoidBookedRevaluation");
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CostRevaluationService costRevaluationService;
 
@@ -100,6 +103,36 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return DocStatus.Completed.getCode();
+	}
+
+	/**
+	 * Voids a {@code Manual} revaluation none of whose lines has its revaluation cost detail (nothing was booked, e.g. its posting failed).
+	 * A {@code CopyFromCostElement} revaluation cannot be voided; it is corrected by Reverse.
+	 */
+	@Override
+	public void voidIt(final DocumentTableFields docFields)
+	{
+		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
+		if (!costRevaluationService.getById(costRevaluationId).getRevaluationSource().isManual())
+		{
+			DocumentHandler.super.voidIt(docFields);
+			return;
+		}
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
+		if (docStatus.isClosedReversedOrVoided())
+		{
+			throw new AdempiereException("Invalid document status: " + docStatus);
+		}
+
+		if (costRevaluationService.hasAnyLineWithCostDetail(costRevaluationId))
+		{
+			throw new AdempiereException(MSG_CannotVoidBookedRevaluation);
+		}
+
+		costRevaluation.setProcessed(true);
+		costRevaluation.setDocAction(IDocument.ACTION_None);
 	}
 
 	@Override

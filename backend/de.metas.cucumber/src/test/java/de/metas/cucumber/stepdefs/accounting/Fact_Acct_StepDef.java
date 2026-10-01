@@ -17,10 +17,15 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.acct.PostingStatus;
+import org.compiere.model.I_Fact_Acct;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Fact_Acct_StepDef
 {
@@ -113,6 +118,59 @@ public class Fact_Acct_StepDef
 				.factAcctTabularStringConverter(factAcctTabularStringConverter)
 				.matchers(FactAcctMatchers.noRecords(recordRefs))
 				.validate();
+	}
+
+	/**
+	 * Posts the given documents again (forced), as the "Repost" action does, and expects each posting to fail with the given posting status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * When reposting the documents revaluation fails with posting status p
+	 * </pre>
+	 */
+	@And("^reposting the documents (.*) fails with posting status (.*)$")
+	public void repostExpectingPostingError(
+			@NonNull final String commaSeparatedIdentifiers,
+			@NonNull final String expectedPostingStatusCode) throws InterruptedException
+	{
+		final PostingStatus expectedPostingStatus = PostingStatus.ofCode(expectedPostingStatusCode);
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		try
+		{
+			AccountingCucumberHelper.repost(TableRecordReferenceSet.of(recordRefs));
+		}
+		catch (final AdempiereException ignored)
+		{
+			// expected: a document that is posted immediately throws its posting error; its posting status is asserted below
+		}
+
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			assertThat(AccountingCucumberHelper.waitUntilPostingDone(recordRef)).as("posting status of %s", recordRef).isEqualTo(expectedPostingStatus);
+		}
+	}
+
+	/**
+	 * Unlike {@code no Fact_Acct records are found for documents}, does not wait for the documents to be posted, so it also checks a document whose posting failed.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then no Fact_Acct records exist for documents revaluation
+	 * </pre>
+	 */
+	@And("^no Fact_Acct records exist for documents (.*)$")
+	public void assertNoFactAcctsWithoutWaiting(@NonNull final String commaSeparatedIdentifiers)
+	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final int count = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.create()
+					.count();
+			assertThat(count).as("Fact_Acct count of %s", recordRef).isZero();
+		}
 	}
 
 	@And("^Fact_Acct records balances for documents (.*) are matching$")

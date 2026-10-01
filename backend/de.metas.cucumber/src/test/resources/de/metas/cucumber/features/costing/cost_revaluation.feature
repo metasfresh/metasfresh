@@ -11,6 +11,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     # TC19 switches accounting off for a moment; switched back on here so a failed TC19 cannot leak into another scenario
     And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    # TC27 closes a period for a moment; the automatic period control is switched back on here so a failed TC27 cannot leak into another scenario
+    And the accounting periods are controlled automatically
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00[Europe/Berlin]
     And documents are accounted immediately
@@ -776,3 +778,52 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 70 PCE     |
+
+  @Id:CostRevaluation_TC27
+  Scenario: A revaluation whose posting failed because its period is closed can be voided, and the voided revaluation books nothing
+    # ── Complete a revaluation 10 -> 15 CHF on 03-06 while accounting is off: nothing is booked yet ──
+    Given set sys config boolean value false for sys config org.adempiere.acct.Enabled
+    When metasfresh contains M_CostRevaluation:
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
+    And create lines for cost revaluation revaluation
+    And update M_CostRevaluationLine:
+      | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+      | revaluation          | product      | 15           |
+    And the cost revaluation identified by revaluation is completed
+    And set sys config boolean value true for sys config org.adempiere.acct.Enabled
+    And validate M_CostRevaluation:
+      | Identifier  | DocStatus | Posted |
+      | revaluation | CO        | false  |
+
+    # ── The period of 03-06 is closed: the posting fails with the period-closed posting error and books nothing ──
+    And the period of 2024-03-06 is closed
+    When reposting the documents revaluation fails with posting status p
+    Then no Fact_Acct records exist for documents revaluation
+    And the cost revaluation identified by revaluation has no M_CostDetails
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
+
+    # ── The periods are open again (so a period check cannot interfere), then the revaluation is voided ──
+    And the accounting periods are controlled automatically
+    When the cost revaluation identified by revaluation is voided
+    Then validate M_CostRevaluation:
+      | Identifier  | DocStatus | Processed |
+      | revaluation | VO        | true      |
+    And no Fact_Acct records exist for documents revaluation
+    And the cost revaluation identified by revaluation has no M_CostDetails
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
+
+    # ── The voided revaluation is reposted: posted (it leaves the posting-error list), still no facts, no cost detail, M_Cost unchanged ──
+    When the documents revaluation are reposted
+    Then validate M_CostRevaluation:
+      | Identifier  | DocStatus | Posted |
+      | revaluation | VO        | true   |
+    And no Fact_Acct records are found for documents revaluation
+    And the cost revaluation identified by revaluation has no M_CostDetails
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |

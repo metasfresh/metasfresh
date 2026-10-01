@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 @UtilityClass
@@ -97,6 +98,25 @@ public class AccountingCucumberHelper
 				throw new AdempiereException("Document " + recordRef + " has posting error: " + postingInfo.getStackTrace());
 			}
 		});
+	}
+
+	/**
+	 * Waits until the document was posted or its posting failed, and returns its posting status (never {@link PostingStatus#NotPosted}).
+	 */
+	public static PostingStatus waitUntilPostingDone(@NonNull final TableRecordReference recordRef) throws InterruptedException
+	{
+		final AtomicReference<PostingStatus> postingStatusRef = new AtomicReference<>();
+		StepDefUtil.tryAndWait(60, 500, () -> {
+			final PostingInfo postingInfo = retrievePostingInfo(recordRef).orElse(null);
+			if (postingInfo == null || postingInfo.getStatus().isNotPosted())
+			{
+				return false;
+			}
+
+			postingStatusRef.set(postingInfo.getStatus());
+			return true;
+		});
+		return postingStatusRef.get();
 	}
 
 	private static Optional<PostingInfo> retrievePostingInfo(@NonNull final TableRecordReference recordRef)

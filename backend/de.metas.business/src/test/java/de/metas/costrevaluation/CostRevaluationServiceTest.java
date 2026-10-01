@@ -36,6 +36,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.DocumentTableFields;
+import de.metas.document.engine.IDocument;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
@@ -1168,6 +1170,74 @@ public class CostRevaluationServiceTest
 	}
 
 	@Nested
+	class VoidIt
+	{
+		private CostRevaluationLineId lineId;
+
+		/** A completed revaluation of 100 @ 10 to 15, not posted: Complete writes no cost detail. */
+		private CostRevaluationId createCompletedNotPostedRevaluation(@NonNull final ProductId productId)
+		{
+			seedCurrentCost(productId, "10", "100");
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete"
+			markCompleted(costRevaluationId);
+			return costRevaluationId;
+		}
+
+		@Test
+		public void void_allowed_whenNoLineHasItsCostDetail()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_voidNotBooked");
+			final CostRevaluationId costRevaluationId = createCompletedNotPostedRevaluation(productId);
+
+			final I_M_CostRevaluation record = voidIt(costRevaluationId);
+
+			assertThat(record.getDocAction()).isEqualTo(IDocument.ACTION_None);
+			assertThat(record.isProcessed()).isTrue();
+			assertThat(costDetailsRepo.listByDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))).as("no cost detail").isEmpty();
+			final List<I_M_Cost> costs = Services.get(IQueryBL.class).createQueryBuilder(I_M_Cost.class)
+					.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.list(I_M_Cost.class);
+			assertThat(costs).hasSize(1);
+			assertThat(costs.get(0).getCurrentCostPrice()).as("M_Cost unchanged").isEqualByComparingTo("10");
+			assertThat(costs.get(0).getCurrentQty()).isEqualByComparingTo("100");
+		}
+
+		@Test
+		public void void_refused_whenALineIsBooked()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_voidBooked");
+			final CostRevaluationId costRevaluationId = createCompletedNotPostedRevaluation(productId);
+			// the posting has written the line's revaluation cost detail
+			createCostDetail(productId, LocalDateTime.parse("2024-03-06T00:00:00"), 0, lineId, "500", "0", "100", "10");
+
+			assertThatThrownBy(() -> voidIt(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(CostRevaluationDocumentHandler.MSG_CannotVoidBookedRevaluation.toAD_Message());
+		}
+	}
+
+	private void markCompleted(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		final I_M_CostRevaluation header = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+		header.setDocStatus(DocStatus.Completed.getCode());
+		header.setProcessed(true);
+		saveRecord(header);
+	}
+
+	/** Runs the document handler's Void on the revaluation (the document engine then sets the status Voided). */
+	private I_M_CostRevaluation voidIt(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+		new CostRevaluationDocumentHandler(costRevaluationService).voidIt(InterfaceWrapperHelper.create(record, DocumentTableFields.class));
+		return record;
+	}
+
+	@Nested
 	class WriteBookedValues
 	{
 		/**
@@ -2089,6 +2159,46 @@ public class CostRevaluationServiceTest
 				assertThat(lineRecord.getCurrentQty()).isEqualByComparingTo("100");
 				assertThat(lineRecord.getCurrentCostPrice()).isEqualByComparingTo("12.50");
 				assertThat(lineRecord.getDeltaAmt()).isEqualByComparingTo("0");
+			}
+		}
+
+		@Nested
+		class VoidIt_CopyFromCostElement
+		{
+			/**
+			 * A completed {@code CopyFromCostElement} revaluation stays refused for Void (its correction is Reverse), also when none of
+			 * its lines has a cost detail: the product was already seeded by an earlier switch, so its line was skipped and deactivated.
+			 */
+			@Test
+			public void void_copyFromCostElement_isNotChangedByTheManualVoidRule()
+			{
+				final ProductId productId = createProduct("productWithStock");
+				seedSourceCurrentCost(productId, "12.50", "3.75", "100");
+
+				final CostRevaluationId firstSwitch = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(firstSwitch);
+				costRevaluationService.reevaluateAllLines(firstSwitch); // Complete: seeds the product
+				markCompleted(firstSwitch);
+
+				final CostRevaluationId secondSwitch = createCopyFromCostElementHeader();
+				costRevaluationService.createLines(secondSwitch);
+				costRevaluationService.reevaluateAllLines(secondSwitch); // Complete: the product is already seeded, its line is skipped
+				markCompleted(secondSwitch);
+
+				final I_M_CostRevaluationLine line = getLineForProduct(
+						costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(secondSwitch).collect(ImmutableList.toImmutableList()),
+						productId);
+				assertThat(line.isActive()).as("line skipped and deactivated").isFalse();
+				assertThat(new CostDetailRepository().listByDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(secondSwitch, line.getM_CostRevaluationLine_ID()))))
+						.as("no cost detail of the second switch")
+						.isEmpty();
+
+				final I_M_CostRevaluation record = InterfaceWrapperHelper.load(secondSwitch.getRepoId(), I_M_CostRevaluation.class);
+				final DocumentTableFields docFields = InterfaceWrapperHelper.create(record, DocumentTableFields.class);
+				assertThatThrownBy(() -> new CostRevaluationDocumentHandler(costRevaluationService).voidIt(docFields))
+						.as("the default Void refusal, not the Manual rule")
+						.isInstanceOf(UnsupportedOperationException.class)
+						.hasMessageContaining("VoidIt is not implemented by default");
 			}
 		}
 

@@ -381,6 +381,16 @@ public class CostRevaluationService
 		costRevaluationRepository.updateBeforeRevaluationDetail(lineId, qty, oldCostPrice, oldAmount, oldAmount.add(deltaAmount), deltaAmount);
 	}
 
+	/**
+	 * @return {@code true} if any line of the revaluation, active or not, has its revaluation {@code M_CostDetail}, i.e. something was booked.
+	 */
+	public boolean hasAnyLineWithCostDetail(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+				.map(lineRecord -> CostRevaluationLineId.ofRepoId(costRevaluationId, lineRecord.getM_CostRevaluationLine_ID()))
+				.anyMatch(lineId -> !costDetailRepository.listByDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId)).isEmpty());
+	}
+
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
 	{
 		costRevaluationRepository.deleteDetailsByLineId(lineId);
