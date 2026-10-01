@@ -96,22 +96,27 @@ public class ESRPaymentActionUnderPaymentOfferedSetTest
 
 	/**
 	 * Positive open amount, an invoice on the line, the import already set "keep for dunning":
-	 * exactly the three under-payment actions, and nothing else.
+	 * exactly the four under-payment actions, and nothing else.
+	 * <p>
+	 * The fourth is {@code Unable_To_Assign_Income} ("Zahlung offen lassen"). The customer's case is an
+	 * under-payment they must leave unallocated, because payment selection -- their refund route --
+	 * only works on a payment that is still open.
 	 */
 	@Test
-	public void underPayment_offersExactlyTheThreeUnderPaymentActions()
+	public void underPayment_offersExactlyTheFourUnderPaymentActions()
 	{
 		assertThat(offeredFor("35000.00", X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning))
 				.as("every action offered on an under-payment line")
 				.containsExactlyInAnyOrder(
 						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount,
 						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning,
-						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount);
+						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount,
+						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 	}
 
 	/**
-	 * The three the accountant might reach for are NOT among them: parking the income, refunding it,
-	 * and offsetting it against the next invoice are all gated on an OVER-payment.
+	 * Refunding the money and offsetting it against the next invoice stay gated on an OVER-payment:
+	 * only the parking action moves to the under-payment group.
 	 */
 	@Test
 	public void underPayment_doesNotOfferTheOverpaymentActions()
@@ -119,7 +124,6 @@ public class ESRPaymentActionUnderPaymentOfferedSetTest
 		assertThat(offeredFor("35000.00", X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning))
 				.as("over-payment actions on an under-payment line")
 				.doesNotContain(
-						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income,
 						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner,
 						X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 	}

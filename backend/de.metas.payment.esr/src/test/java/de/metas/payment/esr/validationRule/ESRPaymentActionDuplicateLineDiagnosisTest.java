@@ -2,10 +2,10 @@ package de.metas.payment.esr.validationRule;
 
 import de.metas.payment.esr.ESRValidationRuleTools;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.payment.esr.model.X_ESR_ImportLine;
 import org.compiere.model.I_C_Payment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

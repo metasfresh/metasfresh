@@ -133,8 +133,12 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
 		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning);
 		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount);
-		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
-		// underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+		// Offered here deliberately, reversing the earlier "only makes sense with overpayments".
+		// An under-payment can be one the accountant must leave unallocated: the money is theirs to
+		// return, and the refund runs through payment selection, which only picks up a payment that is
+		// still open. The other three under-payment actions all settle the invoice one way or another,
+		// so without this one the case cannot be recorded at all.
+		underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 
 		// Done like this so we can quickly add future actions to one (or both) groups.
 		boolean acceptOverpaymentItem = false;

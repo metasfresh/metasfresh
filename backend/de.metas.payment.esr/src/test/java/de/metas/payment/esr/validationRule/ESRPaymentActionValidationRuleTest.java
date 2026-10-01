@@ -242,9 +242,10 @@ public class ESRPaymentActionValidationRuleTest
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Keep_For_Dunning, plainValidationCtx);
 		assertThat(accepted).as("accepted").isTrue();
 
-		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
-		// accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		// assertThat(accepted).as("accepted").isTrue();
+		// Offered on an under-payment: the accountant may have to leave the payment unallocated so
+		// payment selection can refund it.
+		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
 		assertThat(accepted).as("accepted").isFalse();
@@ -328,7 +329,10 @@ public class ESRPaymentActionValidationRuleTest
 
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
+
+		// Accepted (it was rejected before): an under-payment the accountant must leave unallocated,
+		// so payment selection can still refund the money.
+		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
 
 	/**
@@ -353,7 +357,10 @@ public class ESRPaymentActionValidationRuleTest
 
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
+
+		// Accepted (it was rejected before): an under-payment the accountant must leave unallocated,
+		// so payment selection can still refund the money.
+		ESRValidationRuleTools.assertAccepted(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
 	}
 
 	@Test
