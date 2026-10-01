@@ -88,7 +88,7 @@ Feature: EDI INVOIC export via postgREST
       "CreditMemo_Reason": null,
       "CreditMemo_ReasonText": null,
       "Order_POReference": null,
-      "Order_Date": null,
+      "Order_Date": "2025-05-01T00:00:00",
       "Shipment_Date": null,
       "Shipment_DocumentNo": null,
       "DESADV_DocumentNo": null,
