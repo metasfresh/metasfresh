@@ -428,6 +428,40 @@ public class OrderTest
 	}
 
 	/**
+	 * On a non-UI location change where the bill partner was derived from the previous location's relation and the new
+	 * location resolves to nothing, the bill partner falls back to the order partner's own bill-to location.
+	 */
+	@Test
+	public void setBillBPartner_resetsToOwnBillTo_whenNewOrderLocationResolvesNothing()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberOwnBillToLoc = createBPartnerLocation(member);
+		memberOwnBillToLoc.setIsBillTo(true);
+		memberOwnBillToLoc.setIsBillToDefault(true);
+		save(memberOwnBillToLoc);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		createBillToRelation(memberLocA, billLocX1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocA.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+		Assertions.assertEquals(billPartnerX.getC_BPartner_ID(), order.getBill_BPartner_ID());
+
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(member.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(memberOwnBillToLoc.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
 	 * On a non-UI location change, a bill partner that was explicitly provided (not the previous location's resolution) is preserved.
 	 */
 	@Test

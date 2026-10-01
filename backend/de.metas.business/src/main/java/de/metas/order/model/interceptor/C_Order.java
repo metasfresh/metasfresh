@@ -787,6 +787,18 @@ public class C_Order
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(resolution.getBillLocationId()));
 			order.setBill_User_ID(UserId.toRepoId(resolution.getBillUserId()));
 		}
+		else if (isOnlyBPartnerLocationChanged(order))
+		{
+			// the new location resolves to nothing => don't keep the previous location's bill partner; use the partner's own bill-to
+			orderBL.setBillLocation(order);
+		}
+	}
+
+	private static boolean isOnlyBPartnerLocationChanged(@NonNull final I_C_Order order)
+	{
+		return !InterfaceWrapperHelper.isNew(order)
+				&& !InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_ID)
+				&& InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	/**
@@ -796,9 +808,7 @@ public class C_Order
 	 */
 	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order, @NonNull final BPartnerId bPartnerId)
 	{
-		if (InterfaceWrapperHelper.isNew(order)
-				|| InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_ID)
-				|| !InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID))
+		if (!isOnlyBPartnerLocationChanged(order))
 		{
 			return false;
 		}
