@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.scriptedadapter.filename.FilenamePatternResolver;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.common.util.Check;
@@ -100,7 +101,7 @@ public class SftpDeliveryProcessor implements Processor
 
 		final Integer fanOutIndex = exchange.getProperty(ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_FAN_OUT_INDEX, Integer.class);
 		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext, fanOutIndex);
-		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, filenameVariables);
+		final String resolvedFilename = FilenamePatternResolver.resolve(filenamePattern, filenameVariables);
 
 		final String body = msgFromMfContext.getScriptReturnValue();
 		if (body == null)

@@ -22,9 +22,7 @@
 
 package de.metas.externalsystem.endpoint.interceptor;
 
-import de.metas.externalsystem.endpoint.EndpointAuthType;
-import de.metas.externalsystem.endpoint.SftpAuthType;
-import de.metas.externalsystem.endpoint.TransportType;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointService;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -33,89 +31,25 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+/** Fires {@link ExternalSystemEndpointService#resetFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)}, which is where the reset itself lives. */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
 @RequiredArgsConstructor
 public class ExternalSystem_Endpoint
 {
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_AuthType)
-	public void resetHttpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
-	{
-		final EndpointAuthType newAuthType = EndpointAuthType.ofNullableCode(endpoint.getAuthType());
-		if (newAuthType == null)
-		{
-			return;
-		}
+	@NonNull private final ExternalSystemEndpointService externalSystemEndpointService;
 
-		switch (newAuthType)
-		{
-			case Basic:
-				endpoint.setAuthToken(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
-			case Token:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
-			case OAuth:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setAuthToken(null);
-				break;
-			case SAS:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setAuthToken(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_TransportType)
-	public void resetTransportSpecificFields(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	/**
+	 * One handler for all three governing columns on purpose: a save may change more than one of them at
+	 * once, and a condition such as {@code Password}'s spans all three -- a handler keyed on a single column
+	 * would decide that field's fate from part of the change only.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_ExternalSystem_Endpoint.COLUMNNAME_TransportType,
+			I_ExternalSystem_Endpoint.COLUMNNAME_AuthType,
+			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType })
+	public void resetFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
-		final String newTransportType = endpoint.getTransportType();
-		if (TransportType.HTTP.getCode().equals(newTransportType))
-		{
-			endpoint.setSftpHost(null);
-			endpoint.setSftpPort(0);
-			endpoint.setSftpUsername(null);
-			endpoint.setSftpAuthType(null);
-			endpoint.setSshPrivateKey(null);
-			endpoint.setSftpRemotePath(null);
-			endpoint.setSftpFilenamePattern(null);
-			endpoint.setSftpPollingIntervalMs(0);
-		}
-		else if (TransportType.SFTP.getCode().equals(newTransportType))
-		{
-			endpoint.setHttpEndPoint(null);
-			endpoint.setOutboundHttpMethod(null);
-			endpoint.setContentType(null);
-			endpoint.setAuthType(null);
-			endpoint.setAuthToken(null);
-			endpoint.setLoginUsername(null);
-			endpoint.setPassword(null);
-			endpoint.setClientId(null);
-			endpoint.setClientSecret(null);
-			endpoint.setSasSignature(null);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType)
-	public void resetSftpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
-	{
-		final String newSftpAuthType = endpoint.getSftpAuthType();
-		if (SftpAuthType.PASSWORD.getCode().equals(newSftpAuthType))
-		{
-			endpoint.setSshPrivateKey(null);
-		}
-		else if (SftpAuthType.SSH_KEY.getCode().equals(newSftpAuthType))
-		{
-			endpoint.setPassword(null);
-		}
+		externalSystemEndpointService.resetFieldsHiddenByTheNewConfiguration(endpoint);
 	}
 }

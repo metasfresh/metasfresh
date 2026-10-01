@@ -549,8 +549,8 @@ Feature: Explode a compensation-group-schema product into its component order li
     # first discount:  10% of 38.00           = -3.80
     # second discount:  5% of (38.00 - 3.80)  = -1.71 (on the reduced base; 5% of 38.00 would be -1.90)
     And validate the created order lines
-      | C_OrderLine_ID.Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | processed |
-      | orderLine_compound_subProductA  | order_compound        | subProductA             | 4          | false                       |                                 | 5     | true      |
-      | orderLine_compound_subProductB  | order_compound        | subProductB             | 6          | false                       |                                 | 3     | true      |
-      | orderLine_compound_discount1    | order_compound        | discountProduct1        | 1          | true                        | 10                              | -3.80 | true      |
-      | orderLine_compound_discount2    | order_compound        | discountProduct2        | 1          | true                        | 5                               | -1.71 | true      |
+      | C_OrderLine_ID.Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | processed |
+      | orderLine_compound_subProductA | order_compound        | subProductA             | 4          | false                       |                                 | 5     | true      |
+      | orderLine_compound_subProductB | order_compound        | subProductB             | 6          | false                       |                                 | 3     | true      |
+      | orderLine_compound_discount1   | order_compound        | discountProduct1        | 1          | true                        | 10                              | -3.80 | true      |
+      | orderLine_compound_discount2   | order_compound        | discountProduct2        | 1          | true                        | 5                               | -1.71 | true      |
