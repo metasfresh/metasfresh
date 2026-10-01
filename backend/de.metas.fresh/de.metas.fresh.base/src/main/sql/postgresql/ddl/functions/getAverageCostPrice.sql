@@ -16,15 +16,17 @@ DROP FUNCTION IF EXISTS getAverageCostPrice(numeric, numeric, numeric)
  *   already maintained -- this function reads it, it does not recompute it.
  *
  * Why a dedicated function (not getCostPrice):
- *   Same selection as getCostPrice (ce.CostingMethod = acs.CostingMethod, on the primary accounting
- *   schema), but with two report-specific differences:
+ *   Same selection as getCostPrice (ce.CostingMethod = acs.CostingMethod), but with two
+ *   report-specific differences:
  *     - returns NULL when no matching cost row exists (getCostPrice COALESCEs to 0), so the report
  *       leaves the cell blank instead of showing a misleading 0;
  *     - restricts to product-level cost (M_AttributeSetInstance_ID = 0) and active rows only.
  *
  * Logic:
- *   - Restrict to the client's PRIMARY accounting schema (AD_ClientInfo.C_AcctSchema1_ID) so the
- *     result is one consistent, single-currency figure and never a sum across multiple schemas.
+ *   - Resolve the accounting schema per client + org via getC_AcctSchema_ID(client, org): it returns
+ *     the schema whose AD_OrgOnly_ID matches this org, else the client's default schema. This covers
+ *     clients with multiple accounting schemas (an org-specific schema is used for its own org) and
+ *     yields one consistent, single-currency figure per row -- never a sum across schemas.
  *   - Keep only cost elements whose method matches the schema's configured costing method
  *     (ce.CostingMethod = acs.CostingMethod).
  *   - SUM(CurrentCostPrice): in the standard setup exactly one row matches, so the sum is that value;
@@ -53,7 +55,7 @@ WHERE cost.M_Product_ID = p_M_Product_ID
   AND cost.AD_Client_ID = p_AD_Client_ID
   AND cost.AD_Org_ID = p_AD_Org_ID
   AND cost.M_AttributeSetInstance_ID = 0
-  AND cost.C_AcctSchema_ID = (SELECT ci.C_AcctSchema1_ID FROM AD_ClientInfo ci WHERE ci.AD_Client_ID = p_AD_Client_ID)
+  AND cost.C_AcctSchema_ID = getC_AcctSchema_ID(p_AD_Client_ID, p_AD_Org_ID)
   AND ce.CostingMethod = acs.CostingMethod
   AND cost.IsActive = 'Y'
   AND ce.IsActive = 'Y'

@@ -1,7 +1,8 @@
 -- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/getAverageCostPrice.sql
--- Maintained purchase cost per unit using the primary accounting schema's costing method
--- (ce.CostingMethod = acs.CostingMethod). Returns NULL when none exists (so the report cell is blank,
--- not 0) and restricts to product-level active cost. Used by the MHD Liste report "Standard EK" column.
+-- Maintained purchase cost per unit using the costing method of the accounting schema resolved
+-- per client+org (getC_AcctSchema_ID, covering clients with multiple schemas). Returns NULL when none
+-- exists (so the report cell is blank, not 0) and restricts to product-level active cost.
+-- Used by the MHD Liste report "Standard EK" column.
 
 DROP FUNCTION IF EXISTS getAverageCostPrice(numeric, numeric, numeric)
 ;
@@ -20,7 +21,7 @@ WHERE cost.M_Product_ID = p_M_Product_ID
   AND cost.AD_Client_ID = p_AD_Client_ID
   AND cost.AD_Org_ID = p_AD_Org_ID
   AND cost.M_AttributeSetInstance_ID = 0
-  AND cost.C_AcctSchema_ID = (SELECT ci.C_AcctSchema1_ID FROM AD_ClientInfo ci WHERE ci.AD_Client_ID = p_AD_Client_ID)
+  AND cost.C_AcctSchema_ID = getC_AcctSchema_ID(p_AD_Client_ID, p_AD_Org_ID)
   AND ce.CostingMethod = acs.CostingMethod
   AND cost.IsActive = 'Y'
   AND ce.IsActive = 'Y'
