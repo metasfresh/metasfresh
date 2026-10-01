@@ -862,8 +862,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | revaluationLater | CO        | false  |
 
     # ── Run Revaluation on a back-dated revaluation is accepted: the line is evaluated against the current price 10
-    #    (the 03-10 revaluation is not posted, so M_Cost is unchanged): 100 PCE * (12 - 10) = 200 CHF,
-    #    and its detail lines add up to that value difference ──
+    #    (the 03-10 revaluation is not posted, so M_Cost is unchanged): 100 PCE * (12 - 10) = 200 CHF.
+    #    IsRevaluated=true also asserts the line's detail lines add up to that 200 CHF value difference ──
     When metasfresh contains M_CostRevaluation:
       | Identifier          | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
       | revaluationBackDate | acctSchema      | MovingAverageInvoice | 2024-03-04          | 2024-03-04 |
@@ -1068,33 +1068,34 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And the cost revaluation identified by revaluation is completed
     And Wait until documents revaluation are posted
     Then Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID     | DateAcct   |
-      | P_Asset_Acct          | 200 CHF     |             | 0   | revaluation | productPurchased | 2021-04-14 |
-      | P_CostAdjustment_Acct |             | 200 CHF     | 0   | revaluation | productPurchased | 2021-04-14 |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID     | DateAcct   | C_AcctSchema_ID |
+      | P_Asset_Acct          | 200 CHF     |             | 0   | revaluation | productPurchased | 2021-04-14 | acctSchema      |
+      | P_CostAdjustment_Acct |             | 200 CHF     | 0   | revaluation | productPurchased | 2021-04-14 | acctSchema      |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | productPurchased | MovingAverageInvoice | 12 CHF           | 100 PCE    | 1200 CHF     |
 
-    # ── The vendor invoice arrives at 12 CHF and is matched: Moving Average Invoice adds the invoice-vs-receipt variance
+    # ── The next day the vendor invoice arrives at 12 CHF and is matched: Moving Average Invoice adds the invoice-vs-receipt variance
     #    100 PCE * (12 - 10) = 200 CHF to the stock still on hand, on top of the revalued price: 100 PCE @ 14 CHF ──
+    Given metasfresh has date and time 2021-04-15T08:00:00+00:00[Europe/Berlin]
     When for costing, create completed invoice with one line
-      | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
-      | po_l1          | 12                    | matchInv      |
+      | C_OrderLine_ID | PriceEntered_Override | DateInvoiced | M_MatchInv_ID |
+      | po_l1          | 12                    | 2021-04-15   | matchInv      |
     And Wait until documents matchInv are posted
     Then validate current costs
       | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | productPurchased | MovingAverageInvoice | 14 CHF           | 100 PCE    | 1400 CHF     |
     And Fact_Acct records are matching
-      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | Qty      | Record_ID | M_Product_ID     |
-      | NotInvoicedReceipts_Acct | 1000 CHF    |             | 100 PCE  | matchInv  | productPurchased |
-      | P_Asset_Acct             | 200 CHF     |             | 0        | matchInv  | productPurchased |
-      | P_InventoryClearing_Acct |             | 1200 CHF    | -100 PCE | matchInv  | productPurchased |
-    # The revaluation and the receipt are dated 2021-04-14: 1000 + 200 = 1200 = 12 * 100.
-    # The invoice match is posted on its own (later) accounting date; from then on: 1200 + 200 (invoice variance) = 1400 = 14 * 100
+      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | Qty      | Record_ID | M_Product_ID     | DateAcct   | C_AcctSchema_ID |
+      | NotInvoicedReceipts_Acct | 1000 CHF    |             | 100 PCE  | matchInv  | productPurchased | 2021-04-15 | acctSchema      |
+      | P_Asset_Acct             | 200 CHF     |             | 0        | matchInv  | productPurchased | 2021-04-15 | acctSchema      |
+      | P_InventoryClearing_Acct |             | 1200 CHF    | -100 PCE | matchInv  | productPurchased | 2021-04-15 | acctSchema      |
+    # 2021-04-14: receipt 1000 + revaluation 200 = 1200 = 12 * 100
+    # 2021-04-15: + invoice match variance 200 = 1400 = 14 * 100
     And expect P_Asset balance for product
       | M_Product_ID     | DateAcct   | Balance |
       | productPurchased | 2021-04-14 | 1200    |
-      | productPurchased | 2099-12-31 | 1400    |
+      | productPurchased | 2021-04-15 | 1400    |
 
   @Id:CostRevaluation_TC29
   Scenario: Zero delta - a revaluation to the current price books nothing and leaves the cost unchanged

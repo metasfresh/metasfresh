@@ -36,8 +36,10 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
@@ -77,11 +79,14 @@ public class AccountingCucumberHelper
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final LocalDate dateAcct)
 	{
+		final ZoneId orgTimeZone = Services.get(IOrgDAO.class).getTimeZone(StepDefConstants.ORG_ID);
+		final Timestamp startOfNextDay = Timestamp.from(dateAcct.plusDays(1).atStartOfDay(orgTimeZone).toInstant());
+
 		return Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, AccountConceptualName.P_Asset_Acct.getAsString())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId.getRepoId())
-				.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.LESS, java.sql.Timestamp.from(dateAcct.plusDays(1).atStartOfDay(Services.get(IOrgDAO.class).getTimeZone(StepDefConstants.ORG_ID)).toInstant()))
+				.addCompareFilter(I_Fact_Acct.COLUMNNAME_DateAcct, CompareQueryFilter.Operator.LESS, startOfNextDay)
 				.create()
 				.stream()
 				.map(factAcct -> factAcct.getAmtAcctDr().subtract(factAcct.getAmtAcctCr()))

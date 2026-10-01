@@ -793,6 +793,28 @@ public class C_Invoice_Candidate_StepDef
 		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
+	/**
+	 * Like {@link #generateInvoices(ImmutableSet)}, but the invoices are dated {@code dateInvoiced}, as when the user sets the invoice date on invoicing.
+	 * The invoices are created asynchronously; the caller waits for them.
+	 */
+	public void generateInvoices(final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds, @NonNull final LocalDate dateInvoiced)
+	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
+		waitUntilValid(invoiceCandidateIds, 120);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setDateInvoiced(dateInvoiced);
+
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setFailIfNothingEnqueued(true)
+				.setInvoicingParams(invoicingParams)
+				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+	}
+
 	@And("invoice candidates are not billable")
 	public void check_not_billable(@NonNull final DataTable dataTable)
 	{
