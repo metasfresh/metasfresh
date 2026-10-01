@@ -24,7 +24,7 @@ const createMasterdata = () => {
             login: { user: { language: 'de_DE', firstname: 'Anna', lastname: 'Muster' } },
             products: {
                 P1: {
-                    name: 'Omas Maultaschen',
+                    name: 'Musterprodukt',
                     uom: 'KGM', // stock UOM must be KGM: a KGM price on an EACH-stocked product is rejected.
                     ean13ProductCode: code,
                 },

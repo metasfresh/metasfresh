@@ -31,8 +31,8 @@ public class POSTerminalRepository
 	// terminal's own C_POS_ID as the second key) — reserved so a lock taken here can never collide with the
 	// codebase's OTHER advisory-lock user: de.metas.acct.base's product_costs_recreate_all_from_date() (and its
 	// siblings run_identity/population_precheck/repost_all_from_date), which key pg_try_advisory_lock/unlock on
-	// c_AdvisoryLock_ClassId=26253 (backend/de.metas.acct.base/.../ddl/functions/product_costs_recreate_all_from_date.sql,
-	// from merged commit 59cd28bc933) — nowhere near this namespace's value, so no numeric collision either
+	// c_AdvisoryLock_ClassId=26253 (backend/de.metas.acct.base/.../ddl/functions/product_costs_recreate_all_from_date.sql)
+	// — nowhere near this namespace's value, so no numeric collision either
 	private static final int CROSS_TRX_LOCK_NAMESPACE = 0x504F5354; // "POST" in hex
 
 	// how often a caller blocked waiting for the lock re-polls pg_try_advisory_lock; short enough that the

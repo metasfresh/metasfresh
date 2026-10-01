@@ -319,18 +319,17 @@ public class POS_Return_StepDef
 	/**
 	 * Proves {@link POSTerminalService#runWithCrossTransactionLock} genuinely serializes two concurrent
 	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration — not just phase 1
-	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock}/TC15 above). Without this lock, a
+	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock} above). Without this lock, a
 	 * second caller could reach phase 3 (cash settlement) while a first caller's own phase 3 is still in flight,
 	 * double-refunding the same credit memo; this step proves a real {@code createReturn} call cannot even START
 	 * while the lock is held by a concurrent holder, and — once released well within
 	 * {@code de.metas.pos.Return.LockTimeoutMillis} — completes with exactly one credit memo, one settlement
 	 * payment and one journal line, never two.
 	 *
-	 * <p>Uses the SAME deterministic holder technique as TC15 (a lock taken directly, on a separate
-	 * thread/transaction, instead of racing two real {@code createReturn} calls and hoping they happen to overlap
-	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#runWithCrossTransactionLock}
-	 * itself (the same lock {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1
-	 * row lock, so the blocking window it proves covers all three phases, not just the first.
+	 * <p>Uses the same deterministic-holder technique as {@link #posProductReturnBlocksOnConcurrentLock}, but
+	 * holds {@link POSTerminalService#runWithCrossTransactionLock} itself (the same lock
+	 * {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1 row lock, so the
+	 * blocking window it proves covers all three phases, not just the first.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns same as {@link #posProductReturn} (incl. {@code OPT.M_InOut_ID}/{@code OPT.C_Invoice_ID}/
@@ -486,13 +485,10 @@ public class POS_Return_StepDef
 	/**
 	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#runWithCrossTransactionLock} and
 	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Passes a
-	 * generous acquire timeout (60s) since this holder is always the FIRST to contend for the lock in these
-	 * scenarios — it should acquire near-instantly, never itself hit a timeout (the {@code onTimeout} supplier
-	 * is therefore never expected to actually run). The action returns {@code null} (it is a pure hold-and-wait,
-	 * nothing for the real caller under test to read back) — safe under the current contract, which returns the
-	 * action's result verbatim rather than wrapping it, so no special-casing is needed here for that. Unlike
-	 * {@link #holdLockUntilReleased}, this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction
-	 * lock runs on its own dedicated JDBC connection, entirely independent of the thread-inherited transaction.
+	 * generous acquire timeout (60s) since this holder is always the FIRST to contend for the lock, so its
+	 * {@code onTimeout} supplier is never expected to run. Unlike {@link #holdLockUntilReleased}, needs no
+	 * {@code callInThreadInheritedTrx} wrapper — the cross-transaction lock runs on its own dedicated JDBC
+	 * connection, independent of the thread-inherited transaction.
 	 */
 	private void holdCrossTransactionLockUntilReleased(
 			@NonNull final POSTerminalId posTerminalId,

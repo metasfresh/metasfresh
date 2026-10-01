@@ -152,8 +152,6 @@ public class M_InOut_Line_StepDef
 					softly.assertThat(inoutLine.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 				});
 
-		// null-allowed: pass "null" to assert the line has no origin (e.g. a POS return line, which is a fresh
-		// receipt, never a match against a prior shipment line)
 		row.getAsOptionalIdentifier(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID)
 				.ifPresent(returnOriginIdentifier -> {
 					final de.metas.inout.model.I_M_InOutLine inoutLineExt = InterfaceWrapperHelper.create(inoutLine, de.metas.inout.model.I_M_InOutLine.class);

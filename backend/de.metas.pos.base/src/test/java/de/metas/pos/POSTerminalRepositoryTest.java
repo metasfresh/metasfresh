@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <p>
  * The central property under test: a timeout can NEVER be confused with the action's own (possibly null)
  * result — the design this replaced (an {@code Optional<T>} return, {@code empty()} meaning either) could not
- * make that guarantee, and briefly regressed into an {@code Optional.of(null)} NPE for exactly this reason.
+ * make that distinction.
  */
 class POSTerminalRepositoryTest
 {
