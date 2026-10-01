@@ -18,25 +18,25 @@
 
 INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description, EntityType, Help, IsActive, Name, PrintName, Updated, UpdatedBy)
 VALUES (0, 585500 /*From ID Server*/, 0, NULL, TO_TIMESTAMP('2026-10-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'D',
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'Y', 'Kostenpreis aktuell', 'Kostenpreis aktuell', TO_TIMESTAMP('2026-10-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description, EntityType, Help, IsActive, Name, PrintName, Updated, UpdatedBy)
 VALUES (0, 585501 /*From ID Server*/, 0, NULL, TO_TIMESTAMP('2026-10-01 14:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'D',
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'Y', 'Menge aktuell', 'Menge aktuell', TO_TIMESTAMP('2026-10-01 14:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description, EntityType, Help, IsActive, Name, PrintName, Updated, UpdatedBy)
 VALUES (0, 585502 /*From ID Server*/, 0, NULL, TO_TIMESTAMP('2026-10-01 14:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'D',
-        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+        'Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
         'Y', 'Differenzbetrag', 'Differenzbetrag', TO_TIMESTAMP('2026-10-01 14:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
@@ -110,24 +110,24 @@ WHERE AD_Element_ID = 585503 AND AD_Language = 'en_US'
 
 UPDATE AD_Field
 SET AD_Name_ID=585500, Name='Kostenpreis aktuell',
-    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
-    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
     Updated=TO_TIMESTAMP('2026-10-01 14:02:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID = 702162
 ;
 
 UPDATE AD_Field
 SET AD_Name_ID=585501, Name='Menge aktuell',
-    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
-    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
     Updated=TO_TIMESTAMP('2026-10-01 14:02:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID = 702163
 ;
 
 UPDATE AD_Field
 SET AD_Name_ID=585502, Name='Differenzbetrag',
-    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
-    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen''; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Description='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
+    Help='Werte zum Zeitpunkt der Zeilenerstellung oder des letzten ‚Neubewertung ausführen‘; beim Fertigstellen neu berechnet; nach dem Buchen die gebuchten Werte.',
     Updated=TO_TIMESTAMP('2026-10-01 14:02:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID = 705347
 ;
@@ -156,15 +156,15 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (702162, 702163, 705347, 702164
 -- ---------------------------------------------------------------------------------------------------------------------
 
 UPDATE AD_Message
-SET MsgText='Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kosten Neubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
+SET MsgText='Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kostenneubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
     Updated=TO_TIMESTAMP('2026-10-01 14:03:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Message_ID = 545864
 ;
 
 UPDATE AD_Message_Trl
-SET MsgText='Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kosten Neubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
+SET MsgText='Bei einem Produkt ohne Lagerbestand ist der eingegebene Einstandspreis vorläufig: Wird vor dem Buchen dieser Kostenneubewertung Ware eingebucht, bucht sie Bestand × (neu − aktuell); danach berechnet jeder Wareneingang den gleitenden Durchschnittspreis neu.',
     Updated=TO_TIMESTAMP('2026-10-01 14:03:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Message_ID = 545864 AND AD_Language IN ('de_DE', 'de_CH', 'fr_CH')
+WHERE AD_Message_ID = 545864 AND AD_Language <> 'en_US'
 ;
 
 UPDATE AD_Message_Trl
@@ -175,27 +175,21 @@ WHERE AD_Message_ID = 545864 AND AD_Language = 'en_US'
 ;
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- 4. German process names (de_DE, de_CH and fr_CH German; en_US unchanged), then the base row from the base-language translation
+-- 4. German process names (German in every language except en_US, IsTranslated only for de_*; en_US unchanged), then the base row from the base-language translation
 -- ---------------------------------------------------------------------------------------------------------------------
 
-UPDATE AD_Process_Trl SET Name='Neubewertung ausführen', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-01 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID = 585097 AND AD_Language IN ('de_DE', 'de_CH')
-;
-
-UPDATE AD_Process_Trl SET Name='Neubewertung ausführen', Updated=TO_TIMESTAMP('2026-10-01 14:04:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID = 585097 AND AD_Language = 'fr_CH'
+UPDATE AD_Process_Trl SET Name='Neubewertung ausführen', IsTranslated=CASE WHEN AD_Language LIKE 'de\_%' THEN 'Y' ELSE IsTranslated END,
+                          Updated=TO_TIMESTAMP('2026-10-01 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Process_ID = 585097 AND AD_Language <> 'en_US'
 ;
 
 UPDATE AD_Process_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-01 14:04:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Process_ID = 585097 AND AD_Language = 'en_US' -- stays "Run Revaluation"
 ;
 
-UPDATE AD_Process_Trl SET Name='Neubewertungspositionen erstellen', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-01 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID = 585085 AND AD_Language IN ('de_DE', 'de_CH')
-;
-
-UPDATE AD_Process_Trl SET Name='Neubewertungspositionen erstellen', Updated=TO_TIMESTAMP('2026-10-01 14:04:04', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Process_ID = 585085 AND AD_Language = 'fr_CH'
+UPDATE AD_Process_Trl SET Name='Neubewertungspositionen erstellen', IsTranslated=CASE WHEN AD_Language LIKE 'de\_%' THEN 'Y' ELSE IsTranslated END,
+                          Updated=TO_TIMESTAMP('2026-10-01 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Process_ID = 585085 AND AD_Language <> 'en_US'
 ;
 
 UPDATE AD_Process base
