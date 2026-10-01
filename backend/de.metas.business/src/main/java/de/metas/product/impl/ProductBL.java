@@ -116,6 +116,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return productsRepo.retrieveStockedProductIds(clientId);
+	}
+
+	@Override
 	public ProductId getProductIdByValue(
 			@NonNull final OrgId orgId,
 			@NonNull final String productValue)

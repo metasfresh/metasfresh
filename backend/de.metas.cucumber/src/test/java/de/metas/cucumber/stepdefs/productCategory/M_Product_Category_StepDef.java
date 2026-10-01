@@ -22,7 +22,10 @@
 
 package de.metas.cucumber.stepdefs.productCategory;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.CostingLevel;
+import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
@@ -36,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_Category_Acct;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +53,46 @@ public class M_Product_Category_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
+	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+
+	/**
+	 * Updates the accounting settings ({@code M_Product_Category_Acct}) of a product category for an accounting schema,
+	 * e.g. to cost the category's products at client level while the schema itself keeps its own costing level.
+	 * Meant for a category the scenario created itself, so no other scenario's products are affected.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_Category_ID</b> — (required, identifier-ref) the product category<br>
+	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) the accounting schema<br>
+	 *   <b>CostingLevel</b> — (optional) costing level code, e.g. {@code C} (client) or {@code O} (organization)<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData, C_AcctSchema_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_Product_Category_Acct:
+	 *   | M_Product_Category_ID | C_AcctSchema_ID | CostingLevel |
+	 *   | productCategory       | acctSchema      | C            |
+	 * </pre>
+	 */
+	@And("update M_Product_Category_Acct:")
+	public void update_M_Product_Category_Acct(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_Product_Category productCategory = row.getAsIdentifier(COLUMNNAME_M_Product_Category_ID).lookupNotNullIn(productCategoryTable);
+			final AcctSchemaId acctSchemaId = row.getAsIdentifier(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID).lookupIdIn(acctSchemaTable);
+
+			final I_M_Product_Category_Acct productCategoryAcct = queryBL.createQueryBuilder(I_M_Product_Category_Acct.class)
+					.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, productCategory.getM_Product_Category_ID())
+					.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId.getRepoId())
+					.create()
+					.firstOnlyNotNull(I_M_Product_Category_Acct.class);
+
+			row.getAsOptionalString(I_M_Product_Category_Acct.COLUMNNAME_CostingLevel)
+					.map(CostingLevel::ofCode)
+					.ifPresent(costingLevel -> productCategoryAcct.setCostingLevel(costingLevel.getCode()));
+
+			saveRecord(productCategoryAcct);
+		});
+	}
 
 	@And("load M_Product_Category:")
 	public void load_M_Product_Category(@NonNull final DataTable dataTable)
