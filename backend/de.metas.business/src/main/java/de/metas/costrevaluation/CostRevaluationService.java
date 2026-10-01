@@ -3,9 +3,11 @@ package de.metas.costrevaluation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -14,9 +16,11 @@ import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -52,19 +56,46 @@ public class CostRevaluationService
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostingService costingService;
 	private final ICostDetailRepository costDetailRepository;
+	private final ICostElementRepository costElementRepository;
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostingService costingService,
-			@NonNull final ICostDetailRepository costDetailRepository)
+			@NonNull final ICostDetailRepository costDetailRepository,
+			@NonNull final ICostElementRepository costElementRepository)
 	{
 		this.costRevaluationRepository = costRevaluationRepository;
 		this.currentCostsRepo = currentCostsRepo;
 		this.costingService = costingService;
 		this.costDetailRepository = costDetailRepository;
+		this.costElementRepository = costElementRepository;
+	}
+
+	/**
+	 * The cost element a new {@code Manual} revaluation is preset to: the active material cost element whose costing method is the costing method
+	 * of the given accounting schema, else of the client's primary schema. The {@code M_CostRevaluation.M_CostElement_ID} column default applies the same rule in SQL.
+	 *
+	 * @return empty unless exactly one element matches (the user chooses then).
+	 */
+	public Optional<CostElementId> findPresetCostElement(@NonNull final ClientId clientId, @Nullable final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchemaId acctSchemaIdToUse = acctSchemaId != null ? acctSchemaId : acctSchemaDAO.getPrimaryAcctSchemaId(clientId);
+		if (acctSchemaIdToUse == null)
+		{
+			return Optional.empty();
+		}
+
+		final CostingMethod costingMethod = acctSchemaDAO.getById(acctSchemaIdToUse).getCosting().getCostingMethod();
+		final ImmutableList<CostElementId> costElementIds = costElementRepository.getActiveMaterialCostingElements(clientId)
+				.stream()
+				.filter(costElement -> costElement.isMaterialCostingMethod(costingMethod))
+				.map(CostElement::getId)
+				.collect(ImmutableList.toImmutableList());
+		return costElementIds.size() == 1 ? Optional.of(costElementIds.get(0)) : Optional.empty();
 	}
 
 	@NonNull

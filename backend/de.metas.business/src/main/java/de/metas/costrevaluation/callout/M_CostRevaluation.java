@@ -22,6 +22,9 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costrevaluation.CostRevaluationId;
+import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.costrevaluation.RevaluationSource;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -39,6 +42,7 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +56,12 @@ import java.util.Objects;
 public class M_CostRevaluation implements ITabCallout
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final CostRevaluationService costRevaluationService;
+
+	public M_CostRevaluation(@NonNull final CostRevaluationService costRevaluationService)
+	{
+		this.costRevaluationService = costRevaluationService;
+	}
 
 	@PostConstruct
 	public void postConstruct()
@@ -124,6 +134,35 @@ public class M_CostRevaluation implements ITabCallout
 		{
 			costRevaluation.setEvaluationStartDate(costRevaluation.getDateAcct());
 		}
+	}
+
+	/**
+	 * On a UI change of the accounting schema of a draft {@code Manual} revaluation without lines, the cost element is preset to the one of the schema's costing method.
+	 * A CopyFromCostElement revaluation keeps its target element choice.
+	 */
+	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_C_AcctSchema_ID)
+	public void onAcctSchemaChanged(@NonNull final I_M_CostRevaluation costRevaluation)
+	{
+		final DocStatus docStatus = DocStatus.ofNullableCode(costRevaluation.getDocStatus());
+		if (docStatus != null && !docStatus.isDraftedOrInProgress())
+		{
+			return;
+		}
+
+		final RevaluationSource revaluationSource = RevaluationSource.ofNullableCode(costRevaluation.getRevaluationSource());
+		if (revaluationSource != null && !revaluationSource.isManual())
+		{
+			return;
+		}
+
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoIdOrNull(costRevaluation.getM_CostRevaluation_ID());
+		if (costRevaluationId != null && costRevaluationService.hasActiveLines(costRevaluationId))
+		{
+			return;
+		}
+
+		costRevaluationService.findPresetCostElement(ClientId.ofRepoId(costRevaluation.getAD_Client_ID()), AcctSchemaId.ofRepoIdOrNull(costRevaluation.getC_AcctSchema_ID()))
+				.ifPresent(costElementId -> costRevaluation.setM_CostElement_ID(costElementId.getRepoId()));
 	}
 
 	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)

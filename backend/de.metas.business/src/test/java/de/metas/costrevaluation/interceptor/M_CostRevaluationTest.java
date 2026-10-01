@@ -82,6 +82,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -91,6 +92,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -111,7 +113,7 @@ class M_CostRevaluationTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		// beforeNew never touches the service; a mock keeps the field initializer happy.
+		// the mock finds no preset cost element (empty Optional by default)
 		interceptor = new M_CostRevaluation(mock(CostRevaluationService.class));
 	}
 
@@ -170,6 +172,53 @@ class M_CostRevaluationTest
 			interceptor.beforeNew(record);
 
 			assertThat(record.getEvaluationStartDate()).isEqualTo(day(2019, 12, 1));
+		}
+
+		@Test
+		void beforeNew_presetsCostElementFromSchemaCostingMethod()
+		{
+			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
+			when(costRevaluationService.findPresetCostElement(any(), eq(AcctSchemaId.ofRepoId(1000000)))).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
+			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+			record.setC_AcctSchema_ID(1000000);
+			record.setDateAcct(day(2020, 1, 15));
+
+			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000008);
+		}
+
+		@Test
+		void beforeNew_keepsAnExplicitCostElement()
+		{
+			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
+			when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
+			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+			record.setC_AcctSchema_ID(1000000);
+			record.setM_CostElement_ID(1000000);
+			record.setDateAcct(day(2020, 1, 15));
+
+			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
+		}
+
+		/**
+		 * A CopyFromCostElement header keeps its target element choice: an empty element is not preset.
+		 */
+		@Test
+		void beforeNew_copyFromCostElement_keepsItsTargetElement()
+		{
+			final CostRevaluationService costRevaluationService = mock(CostRevaluationService.class);
+			when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
+			final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+			record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
+			record.setC_AcctSchema_ID(1000000);
+			record.setDateAcct(day(2020, 1, 15));
+
+			new M_CostRevaluation(costRevaluationService).beforeNew(record);
+
+			assertThat(record.getM_CostElement_ID()).isLessThanOrEqualTo(0);
 		}
 	}
 
@@ -328,7 +377,7 @@ class M_CostRevaluationTest
 					currentCostsRepo,
 					ImmutableList.of());
 
-			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
+			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo, costElementRepo);
 			interceptor = new M_CostRevaluation(costRevaluationService);
 
 			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();

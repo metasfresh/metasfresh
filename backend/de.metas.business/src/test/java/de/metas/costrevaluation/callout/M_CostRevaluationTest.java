@@ -22,6 +22,10 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.CostElementId;
+import de.metas.costrevaluation.CostRevaluationId;
+import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.costrevaluation.RevaluationSource;
 import de.metas.document.engine.DocStatus;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -34,10 +38,14 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -49,13 +57,16 @@ import static org.mockito.Mockito.when;
  */
 class M_CostRevaluationTest
 {
+	private CostRevaluationService costRevaluationService;
 	private M_CostRevaluation callout;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		callout = new M_CostRevaluation();
+		costRevaluationService = mock(CostRevaluationService.class);
+		when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.of(CostElementId.ofRepoId(1000008)));
+		callout = new M_CostRevaluation(costRevaluationService);
 	}
 
 	private static Timestamp day(final int year, final int month, final int dayOfMonth)
@@ -162,6 +173,74 @@ class M_CostRevaluationTest
 			callout.onDateAcctChanged(record, calloutFieldWithRecordBeforeChanges(recordBeforeChanges));
 
 			assertThat(record.getEvaluationStartDate()).isNull();
+		}
+	}
+
+	@Nested
+	class AcctSchemaChanged
+	{
+		private I_M_CostRevaluation draftWithAcctSchema(@Nullable final RevaluationSource revaluationSource)
+		{
+			final I_M_CostRevaluation record = record(day(2020, 1, 15), day(2020, 1, 15), DocStatus.Drafted);
+			record.setRevaluationSource(revaluationSource != null ? revaluationSource.getCode() : null);
+			record.setC_AcctSchema_ID(1000000);
+			record.setM_CostElement_ID(1000000); // the element of the previous schema
+			return record;
+		}
+
+		@Test
+		void callout_acctSchemaChanged_presetsCostElement()
+		{
+			final I_M_CostRevaluation record = draftWithAcctSchema(RevaluationSource.Manual);
+
+			callout.onAcctSchemaChanged(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000008);
+			verify(costRevaluationService).findPresetCostElement(any(), eq(AcctSchemaId.ofRepoId(1000000)));
+		}
+
+		@Test
+		void callout_acctSchemaChanged_keepsCostElement_whenThereIsNoPreset()
+		{
+			when(costRevaluationService.findPresetCostElement(any(), any())).thenReturn(Optional.empty());
+			final I_M_CostRevaluation record = draftWithAcctSchema(RevaluationSource.Manual);
+
+			callout.onAcctSchemaChanged(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
+		}
+
+		@Test
+		void callout_acctSchemaChanged_keepsCostElement_whenTheDraftHasLines()
+		{
+			final I_M_CostRevaluation record = draftWithAcctSchema(RevaluationSource.Manual);
+			record.setM_CostRevaluation_ID(4711);
+			when(costRevaluationService.hasActiveLines(CostRevaluationId.ofRepoId(4711))).thenReturn(true);
+
+			callout.onAcctSchemaChanged(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
+		}
+
+		@Test
+		void callout_acctSchemaChanged_keepsCostElement_whenDocumentIsNotDraft()
+		{
+			final I_M_CostRevaluation record = draftWithAcctSchema(RevaluationSource.Manual);
+			record.setDocStatus(DocStatus.Completed.getCode());
+
+			callout.onAcctSchemaChanged(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
+		}
+
+		@Test
+		void callout_copyFromCostElement_acctSchemaChanged_keepsItsTargetElement()
+		{
+			final I_M_CostRevaluation record = draftWithAcctSchema(RevaluationSource.CopyFromCostElement);
+
+			callout.onAcctSchemaChanged(record);
+
+			assertThat(record.getM_CostElement_ID()).isEqualTo(1000000);
 		}
 	}
 

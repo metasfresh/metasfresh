@@ -158,7 +158,7 @@ public class CostRevaluationServiceTest
 				currentCostsRepo,
 				ImmutableList.of(new AverageInvoiceCostingMethodHandler(handlerUtils)));
 
-		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
+		costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo, costElementRepo);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();
@@ -1170,6 +1170,65 @@ public class CostRevaluationServiceTest
 	}
 
 	@Nested
+	class FindPresetCostElement
+	{
+		@Test
+		public void findPresetCostElement_isTheActiveMaterialElementOfTheSchemasCostingMethod()
+		{
+			createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, acctSchemaId)).contains(costElementId); // schema: AveragePO
+		}
+
+		@Test
+		public void findPresetCostElement_usesThePrimarySchema_whenNoSchemaIsGiven()
+		{
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, null)).contains(costElementId);
+		}
+
+		@Test
+		public void findPresetCostElement_usesTheGivenSchema()
+		{
+			final AcctSchemaId otherSchemaId = createAcctSchemaRecord("Other AcctSchema");
+			final I_C_AcctSchema otherSchema = InterfaceWrapperHelper.load(otherSchemaId.getRepoId(), I_C_AcctSchema.class);
+			otherSchema.setCostingMethod(CostingMethod.AverageInvoice.getCode());
+			saveRecord(otherSchema);
+			final CostElementId averageInvoiceElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, otherSchemaId)).contains(averageInvoiceElementId);
+		}
+
+		@Test
+		public void findPresetCostElement_ignoresAnInactiveElement()
+		{
+			final CostElementId inactiveElementId = createCostElement("AveragePO inactive", CostingMethod.AveragePO);
+			final I_M_CostElement inactiveElement = InterfaceWrapperHelper.load(inactiveElementId.getRepoId(), I_M_CostElement.class);
+			inactiveElement.setIsActive(false);
+			saveRecord(inactiveElement);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, acctSchemaId)).contains(costElementId);
+		}
+
+		@Test
+		public void findPresetCostElement_none_whenTwoElementsMatch()
+		{
+			createCostElement("AveragePO 2", CostingMethod.AveragePO);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, acctSchemaId)).isEmpty();
+		}
+
+		@Test
+		public void findPresetCostElement_none_whenNoElementMatches()
+		{
+			final I_M_CostElement element = InterfaceWrapperHelper.load(costElementId.getRepoId(), I_M_CostElement.class);
+			element.setCostingMethod(CostingMethod.AverageInvoice.getCode());
+			saveRecord(element);
+
+			assertThat(costRevaluationService.findPresetCostElement(ClientId.METASFRESH, acctSchemaId)).isEmpty();
+		}
+	}
+
+	@Nested
 	class VoidIt
 	{
 		private CostRevaluationLineId lineId;
@@ -1477,7 +1536,7 @@ public class CostRevaluationServiceTest
 					currentCostsRepo,
 					ImmutableList.of());
 
-			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo);
+			costRevaluationService = new CostRevaluationService(costRevaluationRepository, currentCostsRepo, costingService, costDetailsRepo, costElementRepo);
 
 			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 			eachUOM = BusinessTestHelper.createUomEach();

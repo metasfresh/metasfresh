@@ -23,6 +23,7 @@
 package de.metas.costrevaluation.interceptor;
 
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costrevaluation.CostRevaluationDetailType;
@@ -65,7 +66,8 @@ class M_CostRevaluationLineTest
 				new CostRevaluationRepository(),
 				mock(ICurrentCostsRepository.class),
 				mock(ICostingService.class),
-				mock(ICostDetailRepository.class));
+				mock(ICostDetailRepository.class),
+				mock(ICostElementRepository.class));
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new M_CostRevaluationLine(costRevaluationService));
 	}
 

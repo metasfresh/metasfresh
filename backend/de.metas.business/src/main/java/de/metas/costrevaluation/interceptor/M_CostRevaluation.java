@@ -1,6 +1,7 @@
 package de.metas.costrevaluation.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationService;
@@ -15,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,13 @@ public class M_CostRevaluation
 		if (isManual(record) || record.getEvaluationStartDate() == null)
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
+		}
+
+		// a CopyFromCostElement revaluation keeps its target element choice
+		if (record.getM_CostElement_ID() <= 0 && isManual(record))
+		{
+			costRevaluationService.findPresetCostElement(ClientId.ofRepoId(record.getAD_Client_ID()), AcctSchemaId.ofRepoIdOrNull(record.getC_AcctSchema_ID()))
+					.ifPresent(costElementId -> record.setM_CostElement_ID(costElementId.getRepoId()));
 		}
 	}
 
