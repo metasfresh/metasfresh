@@ -68,8 +68,12 @@ const runAndWatchForErrors = async (func) => {
             ErrorToast.waitToPopup(
                 async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
-                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // The toast belongs to an INNER, expected-error watcher. Returning here would
+                        // RESOLVE this branch and settle the enclosing Promise.race, silently abandoning
+                        // the rest of func() — every remaining step and assertion of the caller would be
+                        // skipped and the test would pass vacuously. Never settle: hang this branch and
+                        // let the inner watcher consume the toast and func() decide the outcome.
+                        await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
@@ -83,8 +87,12 @@ const runAndWatchForErrors = async (func) => {
             }),
         ]);
     } finally {
-        currentErrorWatcherId = 0;
-        // console.log(`Stop watching for errors (watcherId=${watcherId}), set back previous watcher id (0)`);
+        // Only release the slot if we still own it. Promise.race does not cancel the losing branch, so an
+        // abandoned branch can run this finally long after the winner unwound — writing a stale id back
+        // over whatever the next caller (or the next TEST) had set.
+        if (currentErrorWatcherId === watcherId) {
+            currentErrorWatcherId = 0;
+        }
     }
 }
 
@@ -144,8 +152,12 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 executeFuncFailOnSuccess(),
                 ErrorToast.waitToPopup(async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
-                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // The toast belongs to a MORE DEEPLY NESTED expectErrorToast. Same reasoning as in
+                        // runAndWatchForErrors: returning would resolve this branch, settle our own
+                        // Promise.race and abandon executeFuncFailOnSuccess() — the caller would carry on
+                        // believing OUR expected error was validated, when the inner one consumed a
+                        // different toast. Hang instead; only our own toast or func() may settle this race.
+                        await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
@@ -159,7 +171,10 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 })
             ]);
         } finally {
-            currentErrorWatcherId = prevWatcherId;
+            // Same ownership check as runAndWatchForErrors: never restore over a newer owner.
+            if (currentErrorWatcherId === watcherId) {
+                currentErrorWatcherId = prevWatcherId;
+            }
             // console.log(`Stop expecting errors (watcherId=${watcherId}), set back previous watcher id (${prevWatcherId})`);
         }
     });
