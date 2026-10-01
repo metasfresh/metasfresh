@@ -47,6 +47,13 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
 
+	/**
+	 * Exchange PROPERTY (never a header, so it is never sent over the wire) holding a metasfresh API token for this exchange only.
+	 * When non-blank, it is sent as {@code Authorization} instead of camel's global service token, and a 401 for it
+	 * does not stop the routes nor re-request the global token. Used by the scripted import to call metasfresh as the configured Importeur.
+	 */
+	public static final String PROPERTY_MF_AUTH_TOKEN = "metasfresh.authToken";
+
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
