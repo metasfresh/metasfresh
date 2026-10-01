@@ -56,4 +56,8 @@ public class GroupCompensationLineCreateRequest
 
 	/** Repo id of the contract take-over record this line stems from; 0 = none */
 	int takeOverId;
+
+	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
+	@Nullable
+	String description;
 }

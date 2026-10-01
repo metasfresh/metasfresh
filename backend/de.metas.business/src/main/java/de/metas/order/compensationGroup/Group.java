@@ -247,6 +247,7 @@ public class Group
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.appliesToProductCategoryId(request.getAppliesToProductCategoryId())
 				.takeOverId(request.getTakeOverId())
+				.description(request.getDescription())
 				.build();
 
 		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getAppliesToProductCategoryId()));

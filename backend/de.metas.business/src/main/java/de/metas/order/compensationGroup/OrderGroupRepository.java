@@ -421,6 +421,7 @@ public class OrderGroupRepository implements GroupRepository
 						groupOrderLine.getC_CompensationGroup_SchemaLine_ID(),
 						groupOrderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()))
 				.takeOverId(groupOrderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID())
+				.description(groupOrderLine.getDescription())
 				.build();
 	}
 
@@ -532,6 +533,10 @@ public class OrderGroupRepository implements GroupRepository
 		if (compensationLine.getTakeOverId() > 0)
 		{
 			compensationLinePO.setC_CompensationGroup_ContractSettings_TakeOver_ID(compensationLine.getTakeOverId());
+		}
+		if (compensationLine.getDescription() != null)
+		{
+			compensationLinePO.setDescription(compensationLine.getDescription());
 		}
 
 		orderLineBL.updateLineNetAmtFromQtyEntered(compensationLinePO);

@@ -92,6 +92,11 @@ public final class GroupCompensationLine
 	@Getter
 	private final int takeOverId;
 
+	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
+	@Getter
+	@Nullable
+	private final String description;
+
 	@Builder
 	public GroupCompensationLine(
 			final RepoIdAware repoId,
@@ -107,12 +112,14 @@ public final class GroupCompensationLine
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
-			final int takeOverId)
+			final int takeOverId,
+			@Nullable final String description)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
 		this.takeOverId = takeOverId;
+		this.description = description;
 
 		this.seqNo = seqNo;
 
