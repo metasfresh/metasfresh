@@ -179,14 +179,20 @@ def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
 
 def test_a_tag_only_feature_is_published_with_a_null_uid(tmp_path):
     """It must appear in the index -- with nothing to deep-link to -- rather than
-    look absent. Previously such a feature was simply not in permalinks.json."""
+    look absent. Previously such a feature was simply not in permalinks.json.
+
+    It now ALSO carries `tests`: with no Behaviours node there is no node uid to
+    link at, so the per-test uids are the only way to reach the tests at all."""
     bdir = tmp_path / "allure" / "cucumber" / "data"
     bdir.mkdir(parents=True)
     (bdir / "behaviors.json").write_text(json.dumps({"children": [
         {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [
             _leaf("a".ljust(32, "0"), "F12345")]}]}), encoding="utf-8")
     feats, _ = gp.build_index(str(tmp_path))
-    assert feats["F12345"]["cucumber"] == {"uid": None, "count": 0, "tagged": 1}
+    assert feats["F12345"]["cucumber"] == {
+        "uid": None, "count": 0, "tagged": 1, "attributed": 1,
+        "tests": [{"uid": "a".ljust(32, "0"), "name": "t-" + "a".ljust(32, "0"),
+                   "status": "unknown"}]}
 
 
 def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path):
@@ -198,8 +204,11 @@ def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path
                 _leaf("a".ljust(32, "0"), "F00230"),
                 _leaf("b".ljust(32, "0"), "F00230")]}]}]}), encoding="utf-8")
     feats, _ = gp.build_index(str(tmp_path))
+    # `attributed` rides along on EVERY entry with coverage, including complete
+    # ones that need no test list -- it is the single number the page uses for
+    # "how big is this suite", so it must not be conditional.
     assert feats["F00230"]["cucumber"] == {
-        "uid": "f".ljust(32, "0"), "count": 2, "tagged": 2}
+        "uid": "f".ljust(32, "0"), "count": 2, "tagged": 2, "attributed": 2}
 
 
 def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
@@ -458,3 +467,308 @@ def test_the_parent_guard_requires_the_dot_not_a_bare_prefix():
     found = gp.extract_coverage(root)
     assert set(found) == {"F1200", "F12000"}, \
         "F12000 is a different feature, not a subfeature of F1200"
+
+
+# --- per-test deep links: published ONLY where the node link falls short -----
+
+def _behaviors(tmp_path, suite, root):
+    d = tmp_path / "allure" / suite / "data"
+    d.mkdir(parents=True)
+    (d / "behaviors.json").write_text(json.dumps(root), encoding="utf-8")
+    return tmp_path
+
+
+def test_no_node_at_all_publishes_every_tagged_test_as_a_link(tmp_path):
+    """The case the resolver could only answer with 'no linkable node'."""
+    base = _behaviors(tmp_path, "frontend-webui", {"children": [
+        {"name": "E0100: Sales", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "Complete Order-to-Cash", "uid": "s".ljust(32, "0"), "children": [
+                _leaf("1".ljust(16, "0"), "F00105"),
+                _leaf("2".ljust(16, "0"), "F00105")]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00105"]["frontend-webui"]
+    assert e["uid"] is None and e["tagged"] == 2
+    assert [t["uid"] for t in e["tests"]] == ["1".ljust(16, "0"), "2".ljust(16, "0")]
+
+
+def test_a_node_that_covers_everything_publishes_no_test_list(tmp_path):
+    """The node link already reaches every tagged test, so a list is pure weight —
+    attaching it unconditionally grew the published index by ~70%."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E0105 Picking", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00230 MobileUI Picking", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00230"),
+                _leaf("b".ljust(32, "0"), "F00230")]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00230"]["cucumber"]
+    assert e["uid"] == "f".ljust(32, "0") and e["count"] == 2 and e["tagged"] == 2
+    assert "tests" not in e
+
+
+def test_a_node_covering_fewer_than_tagged_publishes_the_list(tmp_path):
+    """Worse than having no node: the link LOOKS complete. Measured on the real
+    report, F00700/cucumber links to a node holding 1 test while 115 are tagged."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E1 Epic", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00700 Invoicing", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00700")]}]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            _leaf("b".ljust(32, "0"), "F00700"),
+            _leaf("c".ljust(32, "0"), "F00700")]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00700"]["cucumber"]
+    assert e["count"] == 1 and e["tagged"] == 3, "node shows fewer than carry the tag"
+    assert [t["uid"] for t in e["tests"]] == [
+        "a".ljust(32, "0"), "b".ljust(32, "0"), "c".ljust(32, "0")]
+
+
+def test_the_published_test_list_is_capped(tmp_path):
+    """`tagged` keeps the true total, so the page can say 'showing N of M'."""
+    leaves = [_leaf(str(i).rjust(32, "0"), "F00900") for i in range(gp.MAX_LINKED_TESTS + 7)]
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": leaves}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F00900"]["cucumber"]
+    assert e["tagged"] == gp.MAX_LINKED_TESTS + 7
+    assert len(e["tests"]) == gp.MAX_LINKED_TESTS
+
+
+def test_a_test_without_a_uid_is_not_published_as_a_link(tmp_path):
+    """It cannot be linked. `tagged` still counts it, so the page reports
+    'showing N of M' instead of implying the list is complete."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            {"name": "no-uid test", "tags": ["F01234"]},
+            _leaf("b".ljust(32, "0"), "F01234")]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F01234"]["cucumber"]
+    assert e["tagged"] == 2
+    assert [t["uid"] for t in e["tests"]] == ["b".ljust(32, "0")]
+
+
+def test_leaf_names_keys_only_real_uids(tmp_path):
+    """`_leaf_features` falls back to the NAME when a leaf has no uid. Publishing
+    that as a link would build `#testresult/<a test name>`, which resolves to
+    nothing — so this map keys on real uids only and doubles as the linkable set."""
+    root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
+        _leaf("a".ljust(32, "0"), "F00900"),
+        {"name": "leaf with no uid", "tags": ["F00900"]}]}]}
+    assert gp.leaf_names(root) == {"a".ljust(32, "0"): "t-" + "a".ljust(32, "0")}
+    # extract_coverage still credits both — the uid-less one just cannot be linked
+    assert len(gp.extract_coverage(root)["F00900"]) == 2
+
+
+def test_no_build_time_scratch_key_survives_into_the_published_file(tmp_path):
+    """Every `_`-prefixed key is build-time state. They are popped on the early
+    exits too — leaving one behind publishes internals (and a `set`, which is not
+    JSON-serialisable, so `main()` would simply crash)."""
+    base = _layout(tmp_path, "new-dawn-uat", "v1")
+    gp.main(["prog", "new-dawn-uat", "v1", str(base)])
+    out = json.loads((base / "branches" / "new-dawn-uat" / "permalinks.json").read_text(
+        encoding="utf-8"))
+    leaked = sorted({k for e in out["features"].values() for s in e.values() for k in s
+                     if k.startswith("_")})
+    assert leaked == [], f"build-time scratch leaked into permalinks.json: {leaked}"
+
+
+def test_a_long_test_name_is_truncated(tmp_path):
+    """Names are free text; one pathological name must not bloat the index."""
+    long_name = "x" * (gp.NAME_MAX + 50)
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            {"name": long_name, "uid": "a".ljust(32, "0"), "tags": ["F02222"]}]}]})
+    feats, _ = gp.build_index(str(base))
+    assert len(feats["F02222"]["cucumber"]["tests"][0]["name"]) == gp.NAME_MAX
+
+
+def test_a_node_reaching_every_attributed_test_publishes_nothing_even_when_it_holds_more(tmp_path):
+    """`count` is not the measure: a node can hold untagged siblings, so count >
+    attributed while still reaching all of them. Nothing to publish."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "F03333 Thing", "uid": "f".ljust(32, "0"), "children": [
+            _leaf("a".ljust(32, "0"), "F03333"),
+            {"name": "untagged sibling", "uid": "b".ljust(32, "0")}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F03333"]["cucumber"]
+    assert e["count"] == 2 and e["tagged"] == 1
+    assert "tests" not in e, "the node opens every attributed test"
+
+
+def test_a_node_that_does_not_reach_every_attributed_test_publishes_them(tmp_path):
+    """The case a `count >= tagged` rule would have hidden.
+
+    The node holds 3 leaves and only 2 tests carry the tag, so `count >= tagged`
+    is true and the old rule published nothing — while the node reaches NEITHER
+    tagged test. Note the three leaves under `F04444 Thing` are themselves
+    attributed to it by inheritance, so all five belong to the feature and the
+    node opens only three of them."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "F04444 Thing", "uid": "f".ljust(32, "0"), "children": [
+            {"name": "untagged 1", "uid": "p".ljust(32, "0")},
+            {"name": "untagged 2", "uid": "q".ljust(32, "0")},
+            {"name": "untagged 3", "uid": "r".ljust(32, "0")}]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            _leaf("a".ljust(32, "0"), "F04444"),
+            _leaf("b".ljust(32, "0"), "F04444")]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F04444"]["cucumber"]
+    assert e["count"] == 3 and e["tagged"] == 2, "count >= tagged, yet the node reaches neither"
+    assert e["attributed"] == 5
+    assert sorted(t["uid"] for t in e["tests"]) == sorted(
+        [c.ljust(32, "0") for c in "abpqr"]), \
+        "every attributed test is published, because the node opens only 3 of the 5"
+
+
+def test_failed_tests_survive_the_cap(tmp_path):
+    """A failure is what a reader follows the link for, so it must not be the
+    entry the cap discards."""
+    leaves = [{"name": "ok-" + str(i), "uid": str(i).rjust(32, "0"),
+               "status": "passed", "tags": ["F06666"]} for i in range(gp.MAX_LINKED_TESTS + 5)]
+    leaves.append({"name": "the failure", "uid": "f".ljust(32, "0"),
+                   "status": "failed", "tags": ["F06666"]})
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": leaves}]})
+    feats, _ = gp.build_index(str(base))
+    published = feats["F06666"]["cucumber"]["tests"]
+    assert len(published) == gp.MAX_LINKED_TESTS
+    assert published[0]["status"] == "failed", "failures are ordered first"
+    assert any(t["name"] == "the failure" for t in published)
+
+
+def test_a_group_whose_tests_all_lack_a_uid_publishes_an_empty_list(tmp_path):
+    """Nothing linkable -> an EMPTY `tests` list, not a missing key.
+
+    The key's presence is what tells the page the node does not reach everything.
+    Omitting it here made such an entry indistinguishable from a complete one, so
+    the page redirected into a node holding none of these tests."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            {"name": "no uid one", "tags": ["F07777"]},
+            {"name": "no uid two", "tags": ["F07777"]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F07777"]["cucumber"]
+    assert e["tagged"] == 2 and e["tests"] == []
+    assert e["attributed"] == 2, "nothing is linkable, but 2 tests DO carry the feature"
+    # the early-exit path must still drop BOTH scratch keys -- moving the pops
+    # below `if not tests: continue` would leak them here without failing the
+    # main()-based test, whose fixture never takes this path
+    assert [k for k in e if k.startswith("_")] == []
+
+
+def test_a_feature_whose_tests_are_all_unlinkable_still_reports_its_count(tmp_path):
+    """The generator publishes {uid: None, count: 0, tagged: N} here. The page
+    turns N == 0 into "not found" and N > 0 into an honest "N tests, no grouping
+    node" — so `tagged` must survive even when nothing can be linked."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "g.feature", "uid": "s".ljust(32, "0"), "children": [
+            {"name": "no uid", "tags": ["F09999"]}]}]})
+    feats, _ = gp.build_index(str(base))
+    assert feats["F09999"]["cucumber"] == {
+        "uid": None, "count": 0, "tagged": 1, "attributed": 1, "tests": []}
+
+
+def test_an_unlinkable_test_outside_the_node_keeps_the_node_incomplete(tmp_path):
+    """The reach check compares EVERY attributed test, not just the linkable ones.
+
+    Checking only linkable tests let a node count as complete by simply not
+    looking at a uid-less test it does not contain — and the page would then
+    redirect there as though it showed everything."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "F08888 Thing", "uid": "f".ljust(32, "0"), "children": [
+            _leaf("a".ljust(32, "0"), "F08888")]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            {"name": "uid-less, outside the node", "tags": ["F08888"]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F08888"]["cucumber"]
+    assert e["attributed"] == 2, "both tests carry the feature"
+    assert e["tests"], "the node does NOT reach the uid-less one, so publish what we can link"
+    assert [t["uid"] for t in e["tests"]] == ["a".ljust(32, "0")]
+
+
+def test_a_node_backed_entry_with_no_linkable_test_is_still_marked_short(tmp_path):
+    """The reach check must run BEFORE the "is anything linkable" check.
+
+    A node exists, but the tests carrying the feature are uid-less and live
+    OUTSIDE it. Bailing on "nothing linkable" first published {uid, attributed}
+    with no `tests` key — which the page reads as complete, and redirects into a
+    node that holds none of them."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        # every leaf under the node is uid-less too, so nothing here is linkable
+        {"name": "F06000 Thing", "uid": "f".ljust(32, "0"), "children": [
+            {"name": "inside, uid-less"}]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            {"name": "outside, uid-less, tagged", "tags": ["F06000"]}]}]})
+    feats, _ = gp.build_index(str(base))
+    e = feats["F06000"]["cucumber"]
+    assert e["uid"] == "f".ljust(32, "0"), "the node exists and would be linked"
+    assert e["tests"] == [], "nothing linkable — but the key marks the node short"
+
+
+def test_the_full_name_alias_gets_the_same_verdict_as_its_fcode_key(tmp_path):
+    """`extract_features` indexes one node under BOTH its full name and its
+    F-code alias, but `extract_coverage` is keyed by F-code alone.
+
+    Without propagation the name key carried no verdict, fell through to the
+    legacy `count >= tagged` guess (and `tagged` is 0 on a name key, so it is
+    always true) and redirected into the node its F-code twin knows is short."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E1 Epic", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00700 Invoicing", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00700")]}]},
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            _leaf("b".ljust(32, "0"), "F00700"),
+            _leaf("c".ljust(32, "0"), "F00700")]}]})
+    feats, _ = gp.build_index(str(base))
+    code, alias = feats["F00700"]["cucumber"], feats["F00700 Invoicing"]["cucumber"]
+    assert alias["uid"] == code["uid"], "same node"
+    assert alias["attributed"] == code["attributed"] == 3
+    assert [t["uid"] for t in alias["tests"]] == [t["uid"] for t in code["tests"]]
+
+
+def test_a_spec_file_node_is_not_treated_as_an_fcode_alias(tmp_path):
+    """`other.feature` carries no F-code, so there is no feature verdict to
+    inherit — asking for that node by name should still just open it."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "other.feature", "uid": "o".ljust(32, "0"), "children": [
+            _leaf("b".ljust(32, "0"), "F00700")]}]})
+    feats, _ = gp.build_index(str(base))
+    assert "tests" not in feats["other.feature"]["cucumber"]
+    assert "attributed" not in feats["other.feature"]["cucumber"]
+
+
+def test_two_nodes_sharing_an_fcode_prefix_each_get_their_own_reach_verdict(tmp_path):
+    """The attributed SET belongs to the F-code; the REACH belongs to the node.
+
+    Here the two nodes genuinely differ: "Invoicing" holds only the shared leaf,
+    while "Billing" holds that leaf AND a second one it credits by inheritance —
+    so Billing reaches everything and Invoicing does not. Handing the alias
+    twin's reach to both (rather than looking each node up) would mark Billing
+    short and make the page refuse to redirect to a node that does open all of
+    its tests."""
+    shared = _leaf("l1".ljust(32, "0"), "F00700")      # Allure lists one test twice
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "E1", "uid": "e1".ljust(32, "0"), "children": [
+            {"name": "F00700 Invoicing", "uid": "a".ljust(32, "0"), "children": [shared]}]},
+        {"name": "E2", "uid": "e2".ljust(32, "0"), "children": [
+            {"name": "F00700 Billing", "uid": "b".ljust(32, "0"), "children": [
+                shared, {"name": "also billing", "uid": "l2".ljust(32, "0")}]}]}]})
+    feats, _ = gp.build_index(str(base))
+    inv, bil = feats["F00700 Invoicing"]["cucumber"], feats["F00700 Billing"]["cucumber"]
+    assert inv["uid"] != bil["uid"] and inv["attributed"] == bil["attributed"] == 2
+    assert "tests" in inv, "Invoicing holds 1 of the 2 attributed tests -> short"
+    assert "tests" not in bil, "Billing holds BOTH -> complete, and must still redirect"
+
+
+def test_a_name_key_whose_fcode_has_no_coverage_is_left_alone(tmp_path):
+    """`F5002 Parent`'s only leaf is tagged with the SUBFEATURE `F5002.1`, which
+    `_leaf_features` deliberately does not credit to the parent. So `F5002` has
+    no attributed tests and no verdict to lend, and the propagation must not
+    reach for one — without its guard this raises KeyError, `main()` dies, and
+    the branch silently stops publishing an index at all."""
+    base = _behaviors(tmp_path, "cucumber", {"children": [
+        {"name": "F5002 Parent", "uid": "p".ljust(32, "0"), "children": [
+            _leaf("s".ljust(32, "0"), "F5002.1")]}]})
+    feats, _ = gp.build_index(str(base))          # must not raise
+    parent = feats["F5002 Parent"]["cucumber"]
+    assert "attributed" not in parent and "tests" not in parent
+    assert feats["F5002.1"]["cucumber"]["attributed"] == 1, "the subfeature keeps its own"
