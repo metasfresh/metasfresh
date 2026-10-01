@@ -1387,6 +1387,36 @@ public class CostRevaluationServiceTest
 		}
 
 		/**
+		 * Re-evaluating an already evaluated line (Run, Run again, Complete, Complete again) replaces its before-row instead of
+		 * adding one, so posting finds exactly one before-row to write the booked values onto.
+		 */
+		@Test
+		public void repeatedRunAndComplete_keepOneBeforeRowPerLine_andPostingUpdatesIt()
+		{
+			costElementId = createCostElement("AverageInvoice", CostingMethod.AverageInvoice);
+			final ProductId productId = createProduct("product_repeatedReevaluation");
+			seedCurrentCost(productId, "10", "100");
+
+			final CostRevaluationId costRevaluationId = createHeader(LocalDate.parse("2024-03-06"), LocalDate.parse("2024-03-06"));
+			final CostRevaluationLineId lineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("15"));
+
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run": 100 x (15 - 10) = 500
+			costRevaluationService.runRevaluation(costRevaluationId); // "Run" again
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "100", "10", "15", "500");
+
+			updateCurrentCost(productId, "10", "90");
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete": 90 x (15 - 10) = 450
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "90", "10", "15", "450");
+
+			updateCurrentCost(productId, "10", "85");
+			costRevaluationService.reevaluateAllLines(costRevaluationId); // "Complete" again: 85 x (15 - 10) = 425
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "85", "10", "15", "425");
+
+			costRevaluationService.writeBookedValues(lineId, revaluationCostDetail(lineId, productId, "80", "10", "400")); // posting
+			assertBooksOnHandQtyTimesDelta(costRevaluationId, "80", "10", "15", "400");
+		}
+
+		/**
 		 * Posting writes back the values of the line's own revaluation cost detail: the main one on the line's cost element and accounting schema.
 		 */
 		@Test
