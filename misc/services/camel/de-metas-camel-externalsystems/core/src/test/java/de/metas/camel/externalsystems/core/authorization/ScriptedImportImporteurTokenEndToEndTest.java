@@ -135,9 +135,16 @@ public class ScriptedImportImporteurTokenEndToEndTest extends CamelTestSupport
 	}
 
 	@AfterAll
-	static void clearScriptRepoBaseDirSystemProperty()
+	static void clearScriptRepoBaseDirSystemProperty() throws IOException
 	{
 		System.clearProperty(PROPERTY_SCRIPT_REPO_BASE_DIR);
+		try (var paths = Files.walk(SCRIPT_REPO_DIR))
+		{
+			for (final Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList())
+			{
+				Files.deleteIfExists(path);
+			}
+		}
 	}
 
 	@Override
@@ -262,7 +269,8 @@ public class ScriptedImportImporteurTokenEndToEndTest extends CamelTestSupport
 		// SFTP: the file lands in the error dir
 		enableSftpAndFeedFile();
 		final Path errorFile = localErrorDir.resolve(SFTP_FILE_NAME);
-		assertThat(waitFor(() -> Files.exists(errorFile))).as("SFTP payload archived to the LOCAL error dir").isTrue();
+		// the SFTP route runs synchronously over direct:, so the file is archived once sendBody returns
+		assertThat(errorFile).as("SFTP payload archived to the LOCAL error dir").exists();
 		assertThat(listFiles(localProcessedDir)).isEmpty();
 
 		// REST: the client gets an error response with the clear message
@@ -408,20 +416,5 @@ public class ScriptedImportImporteurTokenEndToEndTest extends CamelTestSupport
 		{
 			return files.map(p -> p.getFileName().toString()).toList();
 		}
-	}
-
-	@SuppressWarnings("BusyWait")
-	private static boolean waitFor(@NonNull final java.util.function.BooleanSupplier condition) throws InterruptedException
-	{
-		final long deadline = System.currentTimeMillis() + 10_000;
-		while (System.currentTimeMillis() < deadline)
-		{
-			if (condition.getAsBoolean())
-			{
-				return true;
-			}
-			Thread.sleep(100);
-		}
-		return condition.getAsBoolean();
 	}
 }

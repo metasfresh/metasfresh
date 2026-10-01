@@ -397,8 +397,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 
 	/**
 	 * A file whose transform succeeds but whose dispatched metasfresh call fails (here: metasfresh answers with an error body, as a
-	 * real HTTP call reports it) must not be archived as "processed". It goes to the LOCAL error dir. The failed call itself already
-	 * records its AD_Issue in metasfresh, so no extra error-route (AD_Issue) call is made for it.
+	 * real HTTP call reports it) must not be archived as "processed". It goes to the LOCAL error dir. By decision, no extra AD_Issue
+	 * (no error-route call) is made for it: the failure is logged as a warning and the file goes to the error dir.
 	 */
 	@Test
 	void sftpFileWithFailedDispatchedCallArchivedToLocalErrorDirWithoutExtraErrorRouteCall() throws Exception
@@ -446,7 +446,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// the remote file is still consumed
 		assertThat(inboundFile).doesNotExist();
 
-		// no extra AD_Issue via the error route: the failed metasfresh call already recorded its own
+		// by decision, no extra AD_Issue via the error route: the failure is only logged as a warning
 		errorRouteMockEndpoint.assertIsSatisfied(1_000);
 
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, buildDisableRequest());

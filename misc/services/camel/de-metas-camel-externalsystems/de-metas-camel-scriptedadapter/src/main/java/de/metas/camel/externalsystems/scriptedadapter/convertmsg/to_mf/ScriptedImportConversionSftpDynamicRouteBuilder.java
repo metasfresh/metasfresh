@@ -101,8 +101,8 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 	}
 
 	/**
-	 * A file with ANY failed dispatched call goes to the error dir, otherwise to processed. No error-route (AD_Issue) call here:
-	 * a failed metasfresh call already records its own AD_Issue.
+	 * A file with ANY failed dispatched call goes to the error dir, otherwise to processed. By decision, no extra AD_Issue
+	 * (no error-route call): the failure is logged as a warning and the file goes to the error dir.
 	 */
 	private void archiveByDispatchOutcome(@NonNull final Exchange exchange)
 	{
