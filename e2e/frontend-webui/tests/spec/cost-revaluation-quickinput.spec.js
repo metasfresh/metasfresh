@@ -23,7 +23,8 @@ import { SLOW_ACTION_TIMEOUT } from '../utils/common';
  *  - seed a cost for a stocked product that has NO cost record (seeded when the line is added), with the
  *    provisional-price hint shown on the New cost price field.
  *
- * Expects the accounting schema to use CLIENT-level costing.
+ * Runs at the accounting schema's costing level (organization level on the standard test DB);
+ * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:37-39`.
  */
 
 /**

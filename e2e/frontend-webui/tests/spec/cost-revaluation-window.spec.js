@@ -14,7 +14,8 @@ import { getFieldData } from '../utils/WebAPIValidation';
  *  - a second quick-input line for the same product is refused with a message naming the product, not framed as "Server error";
  *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old).
  *
- * Expects the accounting schema to use CLIENT-level costing.
+ * Runs at the accounting schema's costing level (organization level on the standard test DB);
+ * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:37-39`.
  */
 
 /** Masterdata: PSTK, a stocked Item with 10 on hand in a warehouse. */
