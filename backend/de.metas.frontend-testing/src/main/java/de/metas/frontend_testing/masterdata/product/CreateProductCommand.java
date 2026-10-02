@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -79,6 +80,7 @@ public class CreateProductCommand
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
+	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for isSkipDefaultCosts
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
@@ -96,6 +98,7 @@ public class CreateProductCommand
 		createPrices(productId, productUomId);
 		createBPartnerProducts(productId);
 		createBOM(productRecord);
+		deleteDefaultCostsIfRequested(productRecord);
 
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
@@ -502,6 +505,21 @@ public class CreateProductCommand
 		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
 		// which is the right behaviour for an invalid type — surface it to the caller.
 		return ProductType.ofCode(trimmed);
+	}
+
+	/**
+	 * When the request asks to skip default costs, leaves the product without any {@code M_Cost} row,
+	 * like a migrated product. Must run after the last product save, which would create them again.
+	 */
+	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		if (!Boolean.TRUE.equals(request.getIsSkipDefaultCosts()))
+		{
+			return;
+		}
+
+		currentCostsRepository.deleteForProduct(productRecord);
+		logger.info("Deleted default M_Cost rows for product {} (isSkipDefaultCosts=true)", productRecord.getValue());
 	}
 
 	private void renamePreviousEAN13ProductCodes()

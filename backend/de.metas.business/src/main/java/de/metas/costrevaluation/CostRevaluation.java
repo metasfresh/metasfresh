@@ -51,6 +51,6 @@ public class CostRevaluation
 	@NonNull DocStatus docStatus;
 
 	@NonNull RevaluationSource revaluationSource;
-	/** Source cost element for {@link RevaluationSource#CopyFromCostElement}; {@code null} for {@link RevaluationSource#Calculated}. */
+	/** Source cost element for {@link RevaluationSource#CopyFromCostElement}; {@code null} for {@link RevaluationSource#Manual}. */
 	@Nullable CostElementId copyFromCostElementId;
 }

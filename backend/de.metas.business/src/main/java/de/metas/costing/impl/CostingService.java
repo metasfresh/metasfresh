@@ -11,7 +11,6 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
@@ -556,63 +555,18 @@ public class CostingService implements ICostingService
 	@Override
 	public CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request)
 	{
-		final CostSegmentAndElement costSegmentAndElement = request.getCostSegmentAndElement();
-		final Instant evaluationStartDate = request.getEvaluationStartDate();
 		final CostAmount newCostPrice = request.getNewCostPrice();
 
-		//
-		// Fetch cost details for our cost segment, starting from evaluation start date
-		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
-						CostDetailQuery.builderFrom(costSegmentAndElement)
-								.dateAcctRage(Range.atLeast(evaluationStartDate))
-								.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
-								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
-								.build())
-				.collect(ImmutableList.toImmutableList());
-
-		//
-		// Restore current costs at the time before evaluation date
-		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
-		if (!costDetails.isEmpty())
-		{
-			final CostDetail firstCostDetail = costDetails.get(0);
-			currentCost.setFrom(firstCostDetail.getPreviousAmounts());
-		}
-		//
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(request.getCostSegmentAndElement());
 		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = CostsRevaluationResult.CurrentCostBeforeEvaluation.builder()
 				.qty(currentCost.getCurrentQty())
 				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
 				.costPriceNew(newCostPrice)
 				.build();
-		currentCost.setOwnCostPrice(newCostPrice);
-		result.currentCostBeforeEvaluation(currentCostBeforeEvaluation);
 
-		//
-		// Iterate all cost details, calculate adjustments and update the current costs
-		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
-		for (final CostDetail costDetail : costDetails)
-		{
-			// Cost details which were not changing the costs (so are there only for recording)
-			// are not relevant for cost adjustment.
-			if (!costDetail.isChangingCosts())
-			{
-				continue;
-			}
-
-			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
-			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
-			result.costDetailAdjustment(costDetailAdjustment);
-		}
-
-		//
-		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
-
-		//
-		return result.build();
+		return CostsRevaluationResult.builder()
+				.currentCostBeforeEvaluation(currentCostBeforeEvaluation)
+				.build();
 	}
 
 	/**

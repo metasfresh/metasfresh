@@ -15,6 +15,7 @@ import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.invoice.InvoiceId;
@@ -49,6 +50,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
+	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 
 	public FactAcctMatchers createLineMatchers(@NonNull final DataTable table)
 	{
@@ -106,6 +108,8 @@ public class FactAcctMatchersFactory
 				.invoiceId(extractInvoiceId(row))
 				.accountId(extractAccountId(row))
 				.locatorId(extractLocatorId(row))
+				.dateAcct(row.getAsOptionalLocalDate(I_Fact_Acct.COLUMNNAME_DateAcct).orElse(null))
+				.acctSchemaId(row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID).map(acctSchemaTable::getId).orElse(null))
 				.build();
 	}
 

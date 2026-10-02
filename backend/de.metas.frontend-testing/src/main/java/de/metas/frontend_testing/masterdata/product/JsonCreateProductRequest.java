@@ -69,6 +69,12 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSerialNoPicked;
 
+	/**
+	 * When {@code true}, the product is created without any {@code M_Cost} row, like a migrated product.
+	 * Defaults to {@code false}.
+	 */
+	@Nullable Boolean isSkipDefaultCosts;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
