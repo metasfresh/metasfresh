@@ -2,10 +2,14 @@ package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeTypeId;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -96,6 +100,7 @@ public class CreatePOSTerminalCommandTest
 	private CurrencyRepository currencyRepository;
 	private ProductRepository productRepository;
 	private ProductPriceRepository productPriceRepository;
+	private ICurrentCostsRepository currentCostsRepository;
 	private MobileApplicationInfoRepository mobileApplicationInfoRepository;
 	private MasterdataContext context;
 	private DocTypeId salesOrderDocTypeId;
@@ -109,6 +114,7 @@ public class CreatePOSTerminalCommandTest
 		currencyRepository = new CurrencyRepository();
 		productRepository = new ProductRepository();
 		productPriceRepository = new ProductPriceRepository(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		mobileApplicationInfoRepository = new MobileApplicationInfoRepository();
 		context = new MasterdataContext();
 		previousSysconfigs = new HashMap<>();
@@ -196,6 +202,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		final JsonCreateProductResponse response = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder().value(identifier).uom(uom).build())
 				.identifier(Identifier.ofString(identifier))
