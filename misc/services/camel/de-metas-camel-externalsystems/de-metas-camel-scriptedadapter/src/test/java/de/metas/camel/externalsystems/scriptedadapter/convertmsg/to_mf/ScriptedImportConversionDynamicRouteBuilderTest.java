@@ -25,16 +25,18 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -51,7 +54,6 @@ import java.util.Map;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -63,6 +65,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 	private static final String MOCK_ENDPOINT_NAME = "mock:endpointName";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
+	private static final String IMPORTEUR_TOKEN = "importeur-webui-token";
 
 	private static final String JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE = "1_OneValidItem_ScriptResponse.json";
 	private static final String JSON_ONE_VALID_ITEM_ENDPOINT_RESPONSE = "1_OneValidItem_EndpointResponse.json";
@@ -99,7 +102,55 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
+	}
+
+	/**
+	 * Stubs {@link ProducerTemplate#request(String, Processor)}: runs the route's item processor on a fresh exchange (as Camel would),
+	 * then answers with {@code response} as the reply body.
+	 */
+	private void stubDispatchReturning(final String response)
+	{
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					itemExchange.getMessage().setBody(response);
+					return itemExchange;
+				});
+	}
+
+	/** Stubs {@link ProducerTemplate#request(String, Processor)} so the dispatched call fails with {@code failure} (as Camel reports it: on the exchange). */
+	private void stubDispatchFailingWith(final Exception failure)
+	{
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					itemExchange.setException(failure);
+					return itemExchange;
+				});
+	}
+
+	/** Stubs {@link ProducerTemplate#request(String, Processor)} so the first dispatched call fails with {@code failure} and every later one answers {@code response}. */
+	private void stubDispatchFailingFirstThenReturning(final Exception failure, final String response)
+	{
+		final java.util.concurrent.atomic.AtomicInteger calls = new java.util.concurrent.atomic.AtomicInteger();
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					if (calls.getAndIncrement() == 0)
+					{
+						itemExchange.setException(failure);
+					}
+					else
+					{
+						itemExchange.getMessage().setBody(response);
+					}
+					return itemExchange;
+				});
 	}
 
 	@Test
@@ -123,8 +174,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		assertThat(jsonOneValidItemEndpointResponse).isNotNull();
 		final String jsonOneValidItemEndpointResponseAsString = new String(jsonOneValidItemEndpointResponse.readAllBytes(), StandardCharsets.UTF_8);
 
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenReturn(jsonOneValidItemEndpointResponseAsString);
+		stubDispatchReturning(jsonOneValidItemEndpointResponseAsString);
 
 		// when fire the route
 		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, jsonOneValidItemScriptResponseAsString);
@@ -132,11 +182,14 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		// then
 		MockEndpoint.assertIsSatisfied(context);
 
-		final ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+		final ArgumentCaptor<Processor> processorCaptor = ArgumentCaptor.forClass(Processor.class);
 		verify(producerTemplate, times(1))
-				.requestBody(anyString(), bodyCaptor.capture(), any());
+				.request(anyString(), processorCaptor.capture());
 
-		final Object capturedBody = bodyCaptor.getValue();
+		final Exchange dispatchedExchange = new DefaultExchange(context);
+		processorCaptor.getValue().process(dispatchedExchange);
+		final Object capturedBody = dispatchedExchange.getIn().getBody();
+		assertThat(dispatchedExchange.getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN)).isEqualTo(IMPORTEUR_TOKEN);
 		final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType =
 				CamelServiceRouteIdWithRequestType.ofRouteId(requests.get(0).getCamelServiceRouteID());
 
@@ -154,8 +207,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
 				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
 
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenReturn("{\"result\":1}");
+		stubDispatchReturning("{\"result\":1}");
 
 		@SuppressWarnings("unchecked") final List<Object> aggregatedResult =
 				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, "ignored", List.class);
@@ -186,8 +238,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
 				.thenReturn(jsonOneValidItemScriptResponseAsString);
 
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenThrow(new RuntimeCamelException("exception"));
+		stubDispatchFailingWith(new RuntimeCamelException("exception"));
 
 		@SuppressWarnings("unchecked") final List<Object> result =
 				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, jsonOneValidItemScriptResponseAsString, List.class);
@@ -226,15 +277,13 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
 				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
 
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenThrow(new RuntimeCamelException("first item rejected"))
-				.thenReturn("{\"result\":1}");
+		stubDispatchFailingFirstThenReturning(new RuntimeCamelException("first item rejected"), "{\"result\":1}");
 
 		@SuppressWarnings("unchecked") final List<Object> aggregatedResult =
 				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, "ignored", List.class);
 
 		// the second item was dispatched although the first one had already failed ...
-		verify(producerTemplate, times(2)).requestBody(anyString(), any(), any());
+		verify(producerTemplate, times(2)).request(anyString(), any(Processor.class));
 
 		// ... and both outcomes are reported per item: the failure as its extracted error message, the
 		// success as its parsed response.
@@ -262,9 +311,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
 				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
 
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenThrow(new RuntimeCamelException("first item rejected"))
-				.thenReturn("{\"result\":1}");
+		stubDispatchFailingFirstThenReturning(new RuntimeCamelException("first item rejected"), "{\"result\":1}");
 
 		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
 
@@ -280,6 +327,34 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		{
 			assertThat(processedFiles.findAny()).isEmpty();
 		}
+	}
+
+	@Test
+	void whenDispatchedCallIsRejectedWith401_clearImporteurTokenMessageIsReturned() throws IOException
+	{
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER))
+				.thenReturn(MOCK_SCRIPT);
+
+		final InputStream jsonOneValidItemScriptResponse = this.getClass().getResourceAsStream(JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE);
+		assertThat(jsonOneValidItemScriptResponse).isNotNull();
+		final String jsonOneValidItemScriptResponseAsString = new String(jsonOneValidItemScriptResponse.readAllBytes(), StandardCharsets.UTF_8);
+
+		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
+				.thenReturn(jsonOneValidItemScriptResponseAsString);
+
+		stubDispatchFailingWith(new HttpOperationFailedException("http://localhost:8282/api/v2/orders/sales/candidates/bulk", 401, "Unauthorized", null, null, ""));
+
+		@SuppressWarnings("unchecked") final List<Object> result =
+				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE, List.class);
+
+		assertThat(result).hasSize(1);
+		assertThat((String)result.get(0))
+				.startsWith("Exception - ")
+				.contains("HTTP 401")
+				.contains("Importeur")
+				.contains("re-enable");
 	}
 
 	@Test

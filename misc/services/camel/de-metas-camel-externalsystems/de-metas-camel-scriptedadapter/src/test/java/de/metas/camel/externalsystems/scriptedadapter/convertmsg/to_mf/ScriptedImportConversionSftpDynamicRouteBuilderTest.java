@@ -48,6 +48,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilderTest extends CamelTe
 {
 	private static final String MOCK_SFTP_URI = "direct:mockSftpIn";
 	private static final String MOCK_ENDPOINT_NAME = "mock:endpointName";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 
@@ -73,7 +74,8 @@ public class ScriptedImportConversionSftpDynamicRouteBuilderTest extends CamelTe
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 	}
 
 	@Test

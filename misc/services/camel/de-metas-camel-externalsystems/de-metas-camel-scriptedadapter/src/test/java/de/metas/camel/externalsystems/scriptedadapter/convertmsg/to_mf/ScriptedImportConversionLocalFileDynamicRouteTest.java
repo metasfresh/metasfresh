@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
@@ -29,6 +30,7 @@ import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.Cam
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportConversionFileInput;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.NotifyBuilder;
@@ -44,6 +46,7 @@ import org.mockito.Mockito;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
@@ -63,6 +66,7 @@ import static org.mockito.ArgumentMatchers.eq;
 public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTestSupport
 {
 	private static final String MOCK_ENDPOINT_NAME = "mock:endpointName";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 	private static final long FREQUENCY_MS = 100L;
@@ -104,7 +108,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 	}
 
 	@Test
@@ -172,8 +177,17 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
 		Mockito.when(javaScriptExecutorService.executeScript(eq(MOCK_SCRIPT_IDENTIFIER), eq(MOCK_SCRIPT), any()))
 				.thenReturn(ONE_VALID_ITEM_SCRIPT_RESPONSE);
-		Mockito.when(producerTemplate.requestBody(eq("direct:" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId()), any(), eq(String.class)))
-				.thenReturn("{\"result\":1}");
+		final List<Object> dispatchedBodies = new java.util.concurrent.CopyOnWriteArrayList<>();
+		final List<Object> dispatchedTokens = new java.util.concurrent.CopyOnWriteArrayList<>();
+		Mockito.when(producerTemplate.request(eq("direct:" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId()), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					dispatchedBodies.add(itemExchange.getIn().getBody());
+					dispatchedTokens.add(itemExchange.getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN));
+					itemExchange.getMessage().setBody("{\"result\":1}");
+					return itemExchange;
+				});
 
 		final byte[] pdfBytes = { (byte) 0x25, (byte) 0x50, (byte) 0x44, (byte) 0x46, 0x03, 0x04 };
 		final String originalFileName = "scan004.pdf";
@@ -187,12 +201,13 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 
 		// the dispatch actually happened -- the route's whole reason to exist -- against the resolved
 		// endpoint, with a payload of the declared request type (not the raw JSON string)
-		final ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
-		Mockito.verify(producerTemplate).requestBody(
+		Mockito.verify(producerTemplate).request(
 				eq("direct:" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId()),
-				bodyCaptor.capture(),
-				eq(String.class));
-		assertThat(bodyCaptor.getValue()).isInstanceOf(CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRequestType());
+				any(Processor.class));
+		assertThat(dispatchedBodies).hasSize(1);
+		assertThat(dispatchedBodies.get(0)).isInstanceOf(CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRequestType());
+		// ... and it is sent as the configured Importeur, not as camel's service user
+		assertThat(dispatchedTokens).containsExactly(IMPORTEUR_TOKEN);
 
 		// archived to the processed dir -- the dispatched item counts as a success
 		// the wait settles only on localProcessedDir holding exactly these bytes, so it IS the assertion; on failure it
@@ -239,7 +254,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 					javaScriptExecutorService,
 					producerTemplate,
 					localProcessedDir.toAbsolutePath().toString(),
-					localErrorDir.toAbsolutePath().toString());
+					localErrorDir.toAbsolutePath().toString(),
+					IMPORTEUR_TOKEN);
 
 			final String fileUri = routeBuilder.buildFileUri();
 
@@ -301,7 +317,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 					javaScriptExecutorService,
 					producerTemplate,
 					localProcessedDir.toAbsolutePath().toString(),
-					localErrorDir.toAbsolutePath().toString());
+					localErrorDir.toAbsolutePath().toString(),
+					IMPORTEUR_TOKEN);
 		}
 	}
 
@@ -383,7 +400,8 @@ public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTest
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 
 		final Exchange exchange = new DefaultExchange(context);
 		exchange.getIn().setBody(null);
