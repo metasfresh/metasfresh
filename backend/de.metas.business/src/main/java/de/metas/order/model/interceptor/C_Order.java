@@ -756,7 +756,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
@@ -768,22 +768,57 @@ public class C_Order
 		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory) —
 		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
 		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
-		// (re)resolved. On a UI action we always (re)resolve.
+		// (re)resolved, and neither is the bill partner resolved for the previous order location.
+		// On a UI action we always (re)resolve.
 		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
 		if (!InterfaceWrapperHelper.isUIAction(order)
 				&& providedBillBPartnerId != null
-				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId))
+				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId)
+				&& !isBillPartnerResolvedForPreviousLocation(order, bPartnerId))
 		{
 			return;
 		}
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(resolution.getBillLocationId()));
 			order.setBill_User_ID(UserId.toRepoId(resolution.getBillUserId()));
 		}
+		else if (isOnlyBPartnerLocationChanged(order))
+		{
+			// the new location resolves to nothing => don't keep the previous location's bill partner; use the partner's own bill-to
+			orderBL.setBillLocation(order);
+		}
+	}
+
+	private static boolean isOnlyBPartnerLocationChanged(@NonNull final I_C_Order order)
+	{
+		return !InterfaceWrapperHelper.isNew(order)
+				&& !InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_ID)
+				&& InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	/**
+	 * @return true if only the order's bpartner location changed and the current bill partner/location is exactly what
+	 * {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId, BPartnerLocationId)} resolves for the previous location,
+	 * i.e. it was derived from that location and not explicitly provided.
+	 */
+	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order, @NonNull final BPartnerId bPartnerId)
+	{
+		if (!isOnlyBPartnerLocationChanged(order))
+		{
+			return false;
+		}
+
+		final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+		final BPartnerLocationId previousLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, orderOld.getC_BPartner_Location_ID());
+		final BillBPartnerResolution previousResolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, previousLocationId);
+		return previousResolution != null
+				&& BPartnerId.equals(previousResolution.getBillBPartnerId(), BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()))
+				&& BPartnerLocationId.equals(previousResolution.getBillLocationId(), BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
