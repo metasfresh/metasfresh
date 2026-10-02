@@ -36,6 +36,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -110,6 +111,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// endpoint name/host — otherwise a later endpoint change orphans this poller (disable recomputes a
 		// different key and stops nothing). endpointName is kept only for display / the archive-file fallback.
 		final String routeKey = requireRouteKey(params);
+		final String mfAuthToken = requireImporteurToken(params);
 
 		// Idempotent replace: tear down any poller (and its in-memory ssh-key bean) already running under this
 		// stable key BEFORE (re)creating it — a re-enable after an endpoint/connection change must not leak the
@@ -131,7 +133,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
 				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
-				processedDir, errorDir));
+				processedDir, errorDir, mfAuthToken));
 
 		getCamelContext().getRouteController().startRoute(routeKey);
 		log.info("Dynamic SFTP polling route '{}' started successfully.", routeKey);
@@ -148,15 +150,15 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// Validate mandatory parameters
 		if (sftpHost == null || sftpHost.isBlank())
 		{
-			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST + "' is required!");
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST + "' is required!");
 		}
 		if (sftpUsername == null || sftpUsername.isBlank())
 		{
-			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME + "' is required!");
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME + "' is required!");
 		}
 		if (sftpAuthType == null || sftpAuthType.isBlank())
 		{
-			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE + "' is required!");
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE + "' is required!");
 		}
 		final String sftpRemotePath = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "/");
 		final String pollingIntervalMs = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "60000");
@@ -231,9 +233,25 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final String routeKey = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
 		if (routeKey == null || routeKey.isBlank())
 		{
-			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY + "' is required!");
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY + "' is required!");
 		}
 		return routeKey;
+	}
+
+	/**
+	 * The Importeur's WEBUI token ({@link ExternalSystemConstants#PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN}) is mandatory: every call the
+	 * import dispatches is sent with it. Without it the records would be authored by camel's service user, so fail loudly instead.
+	 */
+	@NonNull
+	private static String requireImporteurToken(@NonNull final Map<String, String> params)
+	{
+		final String token = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+		if (token == null || token.isBlank())
+		{
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN
+					+ "' (the Importeur's WEBUI token) is required!");
+		}
+		return token;
 	}
 
 	/**

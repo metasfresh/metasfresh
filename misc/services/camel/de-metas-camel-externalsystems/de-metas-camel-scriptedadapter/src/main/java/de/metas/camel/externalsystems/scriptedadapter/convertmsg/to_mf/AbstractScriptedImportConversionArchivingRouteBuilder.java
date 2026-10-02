@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
@@ -35,6 +36,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.AggregationStrategy;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
@@ -75,6 +77,13 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	/** LOCAL, transport-agnostic archive folder for the payload on failure. Never a remote path. */
 	@NonNull protected final String errorDir;
 
+	/**
+	 * The configured Importeur's metasfresh WEBUI token ({@code ExternalSystem_Config_ScriptedImportConversion.AD_User_Import_ID}).
+	 * Every call the script dispatches carries it as {@link ExternalSystemCamelConstants#PROPERTY_MF_AUTH_TOKEN}, so metasfresh records
+	 * are authored by the Importeur (in its org) and not by camel's service user.
+	 */
+	@NonNull protected final String mfAuthToken;
+
 	/** Derives the archive file name for {@code exchange} — the one difference between transports. */
 	protected abstract String archiveFileName(@NonNull Exchange exchange);
 
@@ -86,6 +95,16 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	protected void archiveLocallyOnError(@NonNull final Exchange exchange)
 	{
 		archiveLocally(exchange, errorDir);
+	}
+
+	/**
+	 * Whether one item's aggregated response (see {@link ResponseAggregationStrategy}) reports a failure: a metasfresh error body
+	 * ({@value de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#FIELD_ERROR_MESSAGE}) or a caught exception.
+	 */
+	static boolean isErrorResponse(@Nullable final Object response)
+	{
+		final String responseStr = String.valueOf(response);
+		return responseStr.contains(FIELD_ERROR_MESSAGE) || responseStr.startsWith(EXCEPTION_PREFIX);
 	}
 
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
@@ -110,8 +129,16 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 			final Object payload = JsonObjectMapperHolder.sharedJsonObjectMapper()
 					.readValue(request.getRequestBody(), camelRouteIdWithRequestType.getRequestType());
 
-			final String response = producerTemplate.requestBody(resolveCamelEndpointUri(camelRouteIdWithRequestType), payload, String.class);
-			exchange.getMessage().setBody(response);
+			final Exchange result = producerTemplate.request(resolveCamelEndpointUri(camelRouteIdWithRequestType), itemExchange -> {
+				itemExchange.getIn().setBody(payload);
+				itemExchange.setProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN, mfAuthToken);
+			});
+			if (result.getException() != null)
+			{
+				// same wrapping as ProducerTemplate.requestBody, so getErrorMessage sees the same exception shape
+				throw CamelExecutionException.wrapCamelExecutionException(result, result.getException());
+			}
+			exchange.getMessage().setBody(result.getMessage().getBody(String.class));
 		}
 		catch (final Exception e)
 		{
@@ -127,6 +154,12 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 				.map(root -> {
 					if (root instanceof HttpOperationFailedException httpOperationFailedException)
 					{
+						if (httpOperationFailedException.getStatusCode() == 401)
+						{
+							return EXCEPTION_PREFIX + "HTTP 401 - the call to " + httpOperationFailedException.getUri()
+									+ " was rejected with the Importeur's WEBUI token (ExternalSystem_Config_ScriptedImportConversion.AD_User_Import_ID);"
+									+ " check that user's token and re-enable the import " + endpointName;
+						}
 						return httpOperationFailedException.getResponseBody();
 					}
 					return EXCEPTION_PREFIX + root.getMessage();
