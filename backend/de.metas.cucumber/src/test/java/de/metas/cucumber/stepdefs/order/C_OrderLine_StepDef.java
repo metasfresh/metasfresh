@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -84,6 +85,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -99,6 +101,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.DB;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -652,6 +655,44 @@ public class C_OrderLine_StepDef
 				assertThat(exception.getMessage()).contains(expectedMessagePart);
 			}
 		}
+	}
+
+	/**
+	 * Sets {@code C_OrderLine.C_Project_ID} with a plain SQL {@code UPDATE}, so no model interceptor runs.
+	 *
+	 * <p>Use it to build the state that a missed interceptor push leaves behind: the order line has its new
+	 * project, but the push to the line's invoice candidates never happened. In production this happens when
+	 * the push runs before the invoice candidate is committed. Afterwards the cached order line is reset, the way
+	 * a regular save would do it.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
+	 *     <li>{@code C_Project_ID} — required, identifier of the project; {@code null} clears it</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | ol_1           | project_1    |
+	 * </pre>
+	 */
+	@And("update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:")
+	public void update_C_OrderLine_projectId_bypassingInterceptors(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+			final ProjectId projectId = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Project_ID).lookupIdIn(projectTable);
+
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE C_OrderLine SET C_Project_ID=? WHERE C_OrderLine_ID=?",
+					new Object[] { projectId != null ? projectId.getRepoId() : null, orderLine.getC_OrderLine_ID() },
+					ITrx.TRXNAME_None);
+
+			CacheMgt.get().reset(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
+			InterfaceWrapperHelper.refresh(orderLine);
+		});
 	}
 
 	private void updateOrderLine(@NonNull final Map<String, String> row, final boolean asUIAction)
