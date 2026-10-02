@@ -313,6 +313,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
 	 * <li>C_PaymentTerm_ID: C_OrderLine.C_PaymentTerm_ID/C_Order.C_PaymentTerm_ID
+	 * <li>C_Project_ID: C_OrderLine.C_Project_ID, only if the candidate is not processed
 	 * </ul>
 	 *
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
@@ -370,6 +371,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setPaymentRule(ic, orderLine);
 
+		setProjectIfNotProcessed(ic, orderLine);
+
 		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
 		// to the order line after IC creation also flow through.
 		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
@@ -415,6 +418,23 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 		}
+	}
+
+	/**
+	 * The order line owns the project: copy it on every update, also when it is empty.
+	 * This covers candidates that missed the push from {@link IInvoiceCandBL#updateProjectId(OrderLineId, de.metas.project.ProjectId)},
+	 * e.g. because they were created at the same time as the order line got its project.
+	 * Same rule as that push: a processed candidate keeps its project, so that it matches its invoice lines.
+	 */
+	private static void setProjectIfNotProcessed(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		if (ic.isProcessed())
+		{
+			return;
+		}
+		ic.setC_Project_ID(orderLine.getC_Project_ID());
 	}
 
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
