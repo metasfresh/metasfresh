@@ -168,31 +168,22 @@ public class POSInvoiceSettlementService
 	}
 
 	/**
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.NoLongerOpen}) if the invoice is no longer
-	 * open (e.g. already settled by a concurrent request) by the time this transaction re-reads it. The re-read
-	 * takes a {@code FOR NO KEY UPDATE} row lock on the {@code C_Invoice} first, so two concurrent settlement
-	 * requests for the same invoice are serialized: the second blocks until the first commits, then reads
-	 * {@code open <= 0} and fails here — the double-settle is prevented, not merely narrowed.
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.NotEligibleForSettlement}) if the
-	 * client-supplied invoice is not eligible for cash settlement (not a completed/closed, still-open,
-	 * non-credit-memo SALES invoice). {@code request.getInvoiceId()} is client-supplied and is NOT scoped by the
-	 * org-filtered {@link #findOpenInvoices} search, so this guard is re-applied here before any payment is created.
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.AllocationIncomplete}) if, after
-	 * auto-allocating the payment, the invoice is still not fully settled (open amount not zero) — e.g.
-	 * {@code autoAllocateSpecificPayment} silently no-ops on a non-financial invoice. Throwing rolls the whole
-	 * transaction back, so the cash payment and the journal line never survive an invoice that stayed unpaid.
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.CurrencyMismatch}) if the invoice's currency
-	 * differs from the terminal's — checked BEFORE the payment is created: a foreign-currency invoice would put a
-	 * wrongly-denominated amount into the till's own-currency cash journal, and {@link Money#assertCurrencyId} inside
-	 * {@link POSCashJournal#addCashInOut} would throw only after the payment had already been completed in this same
-	 * transaction, leaving a completed payment with no matching journal line.
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.WrongOrg}) if the invoice does not belong to
-	 * the terminal's org — see {@link #assertInvoiceBelongsToTerminalOrg} for the full rationale.
-	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.TenderedTooLow}) if
-	 * {@link POSInvoiceSettleRequest#getCashTenderedAmount()} is given (non-{@code null}) and is less than the open
-	 * amount — checked BEFORE {@code paymentBL.newInboundReceiptBuilder()...createAndProcess()} runs, so a rejected
-	 * tender never leaves an orphaned committed payment (nor a cash-journal line) behind. A {@code null} tendered
-	 * amount skips this check entirely and settles the exact open amount (e.g. the cucumber happy-path).
+	 * Settles the open invoice in its own transaction. Every guard — eligibility, open-amount, currency, tender, org —
+	 * fires BEFORE any payment is created, so a rejected settlement never leaves an orphaned payment or cash-journal
+	 * line behind. Rationale for each lives at the guard it names.
+	 * @throws AdempiereException {@code NoLongerOpen} — the open amount is already {@code <= 0} when re-read in-trx
+	 * (e.g. settled meanwhile by a concurrent request); see {@link #getByIdInTrxWithRowLock}.
+	 * @throws AdempiereException {@code NotEligibleForSettlement} — not a completed/closed, non-credit-memo SALES
+	 * invoice; see {@link #isCompletedSalesInvoice}.
+	 * @throws AdempiereException {@code AllocationIncomplete} — the invoice stayed open after auto-allocation; the
+	 * throw rolls the whole transaction back (post-condition check in {@link #settleInCashInTrx}).
+	 * @throws AdempiereException {@code CurrencyMismatch} — invoice currency differs from the terminal's; see
+	 * {@link #assertInvoiceCurrencyMatchesTerminal}.
+	 * @throws AdempiereException {@code WrongOrg} — the invoice belongs to another org; see
+	 * {@link #assertInvoiceBelongsToTerminalOrg}.
+	 * @throws AdempiereException {@code TenderedTooLow} — a non-{@code null}
+	 * {@link POSInvoiceSettleRequest#getCashTenderedAmount()} is less than the open amount (a {@code null} tendered
+	 * amount skips the check and settles the exact open amount).
 	 */
 	@NonNull
 	public POSInvoiceSettleResult settleInCash(@NonNull final POSInvoiceSettleRequest request)
@@ -221,7 +212,9 @@ public class POSInvoiceSettlementService
 
 	/**
 	 * Rejects settling an invoice whose currency differs from the terminal's — the cash drawer, cashbook and cash
-	 * journal all operate in the terminal's currency, so a foreign-currency invoice cannot be paid at this till.
+	 * journal all operate in the terminal's currency. Checked before the payment is created: otherwise
+	 * {@link Money#assertCurrencyId} inside {@link POSCashJournal#addCashInOut} would throw only after the payment was
+	 * already completed, leaving a completed payment with no matching journal line.
 	 */
 	@VisibleForTesting
 	void assertInvoiceCurrencyMatchesTerminal(
@@ -243,19 +236,15 @@ public class POSInvoiceSettlementService
 	{
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 
-		// re-read inside this transaction, holding a FOR NO KEY UPDATE row lock on the invoice: the amount looked
-		// up by the caller earlier (e.g. via findOpenInvoices, in its own transaction) may be stale by the time
-		// the cashier confirms, and the lock serializes two concurrent settlements of the same invoice so the
-		// loser reads open=0 below and fails with NoLongerOpen rather than double-booking cash.
+		// re-read in-trx under a row lock (see getByIdInTrxWithRowLock): the caller's earlier open amount may be
+		// stale, and the lock serializes concurrent settlements of the same invoice.
 		final I_C_Invoice invoice = getByIdInTrxWithRowLock(request.getInvoiceId());
 
 		assertInvoiceBelongsToTerminalOrg(invoice, terminal);
 
-		// re-apply the structural eligibility guard: invoiceId is client-supplied and this path is NOT scoped by the
-		// org-filtered findOpenInvoices query, so without this a same-org purchase / non-completed / credit-memo
-		// invoice would book cash that autoAllocateSpecificPayment could never allocate. IsPaid is intentionally NOT
-		// part of this guard — an already-paid invoice falls through to the open-amount check below and is reported
-		// as NoLongerOpen (the legitimate "paid on another till meanwhile" case), not as structurally ineligible.
+		// re-guard here: invoiceId is client-supplied and this path is not org-scoped by findOpenInvoices. See
+		// isCompletedSalesInvoice for why IsPaid is excluded (already-paid falls through to the open-amount check below
+		// as NoLongerOpen).
 		if (!isCompletedSalesInvoice(invoice))
 		{
 			throw new AdempiereException(MSG_NotEligibleForSettlement).setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());

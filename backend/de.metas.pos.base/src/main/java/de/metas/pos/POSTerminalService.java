@@ -100,8 +100,7 @@ public class POSTerminalService
 			@NonNull final Supplier<T> action,
 			@NonNull final Supplier<? extends RuntimeException> onTimeout)
 	{
-		// the repository owns the JDBC connection + the two advisory-lock SQL primitives (tryAcquire/release);
-		// the bounded poll/timeout policy — the clock and the sleep — lives HERE, not in the repository
+		// repository owns the connection + advisory-lock primitives; the poll/timeout policy lives here.
 		return posTerminalRepository.runWithAdvisoryLockConnection(
 				posTerminalId,
 				(tryAcquire, release) -> runWithBoundedAcquire(

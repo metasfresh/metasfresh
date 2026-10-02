@@ -203,14 +203,12 @@ public interface IInvoiceDAO extends ISingletonService
 
 	/**
 	 * Like {@link #getByDocumentNo(String, OrgId, Class)} but matches invoices whose {@code DocumentNo}
-	 * <b>ends with</b> {@code documentNoSuffix} (SQL {@code DocumentNo LIKE '%'||?}), scoped to {@code orgId}.
-	 * Used by the POS invoice-settlement search, whose numeric keypad enters only the trailing numeric part of
-	 * an alphanumeric-prefixed invoice number (e.g. keying {@code 170245} finds {@code AR-170245}).
+	 * <b>ends with</b> {@code documentNoSuffix} (SQL {@code DocumentNo LIKE '%'||?}), scoped to {@code orgId}
+	 * (e.g. {@code 170245} matches {@code AR-170245}). Used by the POS invoice-settlement suffix search.
 	 * <p>
-	 * POS-scoped filtering: only returns still-open ({@code IsPaid='N'}), completed/closed
-	 * ({@code DocStatus IN ('CO','CL')}) SALES ({@code IsSOTrx='Y'}) invoices, newest first
-	 * ({@code ORDER BY DateInvoiced DESC}), capped at 50 rows. The credit-memo exclusion is applied by the
-	 * caller in Java (it needs the doc-base-type), which also re-applies the full eligibility guard.
+	 * Returns only still-open ({@code IsPaid='N'}), completed/closed ({@code DocStatus IN ('CO','CL')}),
+	 * SALES ({@code IsSOTrx='Y'}) invoices, newest first ({@code ORDER BY DateInvoiced DESC}), capped at 50 rows.
+	 * The credit-memo exclusion stays caller-side (it needs the doc-base-type).
 	 */
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNoEndingWith(String documentNoSuffix, OrgId orgId, Class<T> modelClass);
 
