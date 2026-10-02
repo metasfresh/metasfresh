@@ -505,8 +505,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	}
 
 	/**
-	 * A file whose transform succeeds but whose dispatched metasfresh call fails (here: metasfresh answers with an error body, as a
-	 * real HTTP call reports it) must not be archived as "processed". It goes to the LOCAL error dir. By decision, no extra AD_Issue
+	 * A file whose transform succeeds but whose dispatched metasfresh call fails (here: the call fails with an HTTP 422, the
+	 * {@link HttpOperationFailedException} a real HTTP call raises) must not be archived as "processed". It goes to the LOCAL error dir. By decision, no extra AD_Issue
 	 * (no error-route call) is made for it: the failure is logged as a warning and the file goes to the error dir.
 	 */
 	@Test

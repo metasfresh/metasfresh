@@ -35,6 +35,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID = "mock:Core-storeExternalStatus";
+	private static final String MOCK_ERROR_ROUTE_URI = "mock:errorRoute";
 
 	private static final String ROUTE_KEY = "ScriptedImportConversion-540123";
 	private static final String ENDPOINT_NAME = "packzettelEndpoint";
@@ -213,6 +215,9 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 			captureErrorRoute();
 			context.start();
 
+			final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(MOCK_ERROR_ROUTE_URI);
+			errorRouteMockEndpoint.expectedMessageCount(1);
+
 			final Map<String, String> params = params();
 			params.remove(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
 
@@ -223,6 +228,7 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
 
 			assertThat(context.getRoute(ROUTE_KEY)).as("no poller started without the Importeur's token").isNull();
+			errorRouteMockEndpoint.assertIsSatisfied();
 		}
 	}
 
@@ -407,7 +413,8 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 			{
 				from("direct:" + MF_ERROR_ROUTE_ID)
 						.routeId("mock-" + MF_ERROR_ROUTE_ID)
-						.log("mock error route");
+						.log("mock error route")
+						.to(MOCK_ERROR_ROUTE_URI);
 			}
 		});
 	}
