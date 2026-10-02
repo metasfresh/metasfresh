@@ -97,7 +97,7 @@ BEGIN
              -- Get last period of previous year
              LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
              LEFT OUTER JOIN C_Period period_CurrentYearStart ON (period_CurrentYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, (p.PeriodNo - 1)::int)) AND period_CurrentYearStart.isActive = 'Y'
-             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, (period_LastYearEnd.PeriodNo - 1)::int)) AND period_PreviousYearStart.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, (period_LastYearEnd.PeriodNo - 1)::int)) AND period_PreviousYearStart.isActive = 'Y' 
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
