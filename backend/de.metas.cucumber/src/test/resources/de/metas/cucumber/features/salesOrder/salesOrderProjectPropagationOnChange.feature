@@ -144,6 +144,9 @@ Feature: C_Project_ID propagates when changed on existing order line
     And after not more than 60s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | ic_1                   | sol_1          |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_1                   |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID | C_Project_ID |
       | ic_1                   | project_1    |
@@ -186,6 +189,9 @@ Feature: C_Project_ID propagates when changed on existing order line
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_1                   |
 
     When update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:
       | C_OrderLine_ID | C_Project_ID |
@@ -200,3 +206,48 @@ Feature: C_Project_ID propagates when changed on existing order line
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Project_ID |
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | null         |
+
+  @from:cucumber
+  Scenario: purchase order line candidate takes the changed project of its order line on recompute
+    Given metasfresh contains M_PriceLists
+      | Identifier  | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_purchase | ps_1               | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier   | M_PriceList_ID |
+      | plv_purchase | pl_purchase    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_purchase           | p_1          | 5.0      | PCE      |
+    And metasfresh contains C_BPartners:
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | vendor_1   | Y        | N          | ps_1               |
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project_2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DocBaseType | DateOrdered |
+      | po_1       | false   | vendor_1      | POO         | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID |
+      | pol_1      | po_1       | p_1          | 10         | project_1    |
+    And the order identified by po_1 is completed
+    And after not more than 60s, C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | ic_1                   | pol_1          |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | ic_1                   |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | C_Project_ID |
+      | ic_1                   | project_1    |
+
+    When update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:
+      | C_OrderLine_ID | C_Project_ID |
+      | pol_1          | project_2    |
+    And after not more than 60s, C_Invoice_Candidates are invalidated and recomputed:
+      | C_Invoice_Candidate_ID |
+      | ic_1                   |
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | C_Project_ID |
+      | ic_1                   | project_2    |
