@@ -24,10 +24,13 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -72,6 +75,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 {
 	private static final String MOCK_ENDPOINT_NAME = "errorRoutingTestEndpoint";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 	private static final String MOCK_ERROR_ROUTE_URI = "mock:mfErrorRoute";
@@ -102,7 +106,8 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 	}
 
 	@Test
@@ -124,8 +129,13 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 				.thenReturn(scriptResponse);
 
 		// The downstream endpoint rejects the request (e.g. an HttpOperationFailedException wrapped by Camel)
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenThrow(new RuntimeCamelException("rejected by endpoint"));
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					itemExchange.setException(new RuntimeCamelException("rejected by endpoint"));
+					return itemExchange;
+				});
 
 		// A rejected item does not fail the exchange: it is recorded, so that the remaining items of a
 		// multi-item import still get dispatched.

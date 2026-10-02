@@ -56,6 +56,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCE
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -76,6 +77,7 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 	private static final String ROUTE_KEY = "ScriptedImportConversion-540123";
 	private static final String ENDPOINT_NAME = "packzettelEndpoint";
 	private static final String SCRIPT_IDENTIFIER = "packzettelScript";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String CHILD_CONFIG_VALUE = "packzettelChild";
 	private static final String ORG_CODE = "001";
 	private static final String ENABLE_COMMAND = "enableLocalFilePolling";
@@ -200,6 +202,28 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 					.rootCause()
 					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
 		}
+
+		/**
+		 * Without the Importeur's token every call the import dispatches would run as camel's service user, i.e. in the wrong org.
+		 * Refuse to start the poller, as the SFTP transport does.
+		 */
+		@Test
+		void withoutImporteurToken_failsNamingTheParameter_andStartsNoPoller() throws Exception
+		{
+			captureErrorRoute();
+			context.start();
+
+			final Map<String, String> params = params();
+			params.remove(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+
+			assertThatThrownBy(() -> template.sendBody(
+					"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
+					.isInstanceOf(CamelExecutionException.class)
+					.rootCause()
+					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+
+			assertThat(context.getRoute(ROUTE_KEY)).as("no poller started without the Importeur's token").isNull();
+		}
 	}
 
 	@Nested
@@ -317,6 +341,7 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, ROUTE_KEY);
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, ENDPOINT_NAME);
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, SCRIPT_IDENTIFIER);
+		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, IMPORTEUR_TOKEN);
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, localInputDir.toAbsolutePath().toString());
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN, "packzettel_{timestamp}");
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS, "250");

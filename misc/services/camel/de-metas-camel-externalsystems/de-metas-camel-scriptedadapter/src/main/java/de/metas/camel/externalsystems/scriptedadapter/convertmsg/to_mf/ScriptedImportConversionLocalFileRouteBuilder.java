@@ -131,6 +131,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends RouteBuilder 
 		// recomputes a different key and stops nothing). endpointName is kept only for display / the
 		// archive-file fallback.
 		final String routeKey = requireRouteKey(params);
+		final String mfAuthToken = AbstractScriptedImportConversionArchivingRouteBuilder.requireImporteurToken(params);
 
 		// Tear down any poller already running under this stable key BEFORE (re)creating it.
 		// addRoutes() below would replace a same-id route on its own (ModelCamelContext.addRouteDefinitions
@@ -158,7 +159,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends RouteBuilder 
 
 		getCamelContext().addRoutes(new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 				routeKey, endpointName, localRootLocation, importFileNamePattern, frequencyMs, scriptIdentifier,
-				javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir));
+				javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir, mfAuthToken));
 
 		getCamelContext().getRouteController().startRoute(routeKey);
 		log.info("Dynamic local-file polling route '{}' started successfully.", routeKey);
