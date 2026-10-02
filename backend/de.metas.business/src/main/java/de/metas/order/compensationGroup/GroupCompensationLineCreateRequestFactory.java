@@ -16,6 +16,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -54,11 +55,9 @@ public class GroupCompensationLineCreateRequestFactory
 		final I_M_Product product = productBL.getById(productId);
 		final I_C_UOM uom = productBL.getStockUOM(product);
 
-		final GroupCompensationType type = templateLine.getCompensationType() != null
-				? templateLine.getCompensationType()
-				: extractGroupCompensationType(product);
+		final GroupCompensationType type = resolveGroupCompensationType(templateLine.getCompensationType(), product);
 
-		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
+		final GroupCompensationAmtType amtType = resolveGroupCompensationAmtType(product);
 
 		final Percent percentage;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
@@ -80,7 +79,28 @@ public class GroupCompensationLineCreateRequestFactory
 				.price(BigDecimal.ZERO)
 				.groupTemplateLineId(templateLine.getId())
 				.appliesToProductCategoryId(templateLine.getAppliesToProductCategoryId())
+				.takeOverId(templateLine.getTakeOverId())
+				.description(templateLine.getDescription())
 				.build();
+	}
+
+	/**
+	 * Resolves the <b>effective</b> compensation type of a (template) line, exactly as a created line gets it: the template's
+	 * own type when set, else derived from the product ({@code M_Product.GroupCompensationType}, default Discount). A schema
+	 * line leaves the template type null, so its real type comes from the product — callers deciding a line's type must use
+	 * this, not the raw template type.
+	 */
+	public static GroupCompensationType resolveGroupCompensationType(
+			@Nullable final GroupCompensationType templateType,
+			@NonNull final I_M_Product product)
+	{
+		return templateType != null ? templateType : extractGroupCompensationType(product);
+	}
+
+	/** Resolves the effective compensation amount type from the product ({@code M_Product.GroupCompensationAmtType}, default Percent), as a created line gets it. */
+	public static GroupCompensationAmtType resolveGroupCompensationAmtType(@NonNull final I_M_Product product)
+	{
+		return extractGroupCompensationAmtType(product);
 	}
 
 	private static GroupCompensationType extractGroupCompensationType(final I_M_Product product)

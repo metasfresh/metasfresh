@@ -1,9 +1,8 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import lombok.Builder;
+import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,14 +29,13 @@ import lombok.Value;
  */
 
 /**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
+ * A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero)
+ * and the customer discount products that contributed to it.
  */
 @Value
-@Builder
-public class ContractCompensationGroupSettings
+public class TakeOverResult
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	@NonNull TakeOverRecord record;
+	@NonNull Percent summedPercent;
+	@NonNull ImmutableSet<ProductId> takenOverProductIds;
 }

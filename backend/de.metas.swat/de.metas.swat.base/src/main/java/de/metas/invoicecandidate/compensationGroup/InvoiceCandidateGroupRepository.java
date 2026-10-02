@@ -24,6 +24,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.TakeOverCategoryProvider;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -48,8 +49,10 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +102,20 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
+	@NonNull private final Optional<TakeOverCategoryProvider> takeOverCategoryProvider;
+
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
 	{
+		this(compensationLineCreateRequestFactory, Optional.empty());
+	}
+
+	@Autowired
+	public InvoiceCandidateGroupRepository(
+			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
+			@NonNull final Optional<TakeOverCategoryProvider> takeOverCategoryProvider)
+	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
+		this.takeOverCategoryProvider = takeOverCategoryProvider;
 	}
 
 	@Override
@@ -268,23 +282,22 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 			return ImmutableMap.of();
 		}
 
-		final ImmutableMap<OrderLineId, Integer> schemaLineIdByOrderLineId = queryBL.createQueryBuilder(I_C_OrderLine.class)
+		final ImmutableMap<OrderLineId, I_C_OrderLine> orderLinesById = queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLineIds)
 				.create()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()),
-						I_C_OrderLine::getC_CompensationGroup_SchemaLine_ID));
+						orderLine -> orderLine));
 
-		final ImmutableSet<Integer> schemaLineIds = schemaLineIdByOrderLineId.values().stream()
+		final ImmutableSet<Integer> schemaLineIds = orderLinesById.values().stream()
+				.map(I_C_OrderLine::getC_CompensationGroup_SchemaLine_ID)
 				.filter(schemaLineId -> schemaLineId > 0)
 				.collect(ImmutableSet.toImmutableSet());
-		if (schemaLineIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
 
-		final ImmutableMap<Integer, ProductCategoryId> productCategoryIdBySchemaLineId = queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+		final ImmutableMap<Integer, ProductCategoryId> productCategoryIdBySchemaLineId = schemaLineIds.isEmpty()
+				? ImmutableMap.of()
+				: queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
 				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
 				.create()
 				.stream()
@@ -297,14 +310,39 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		for (final I_C_Invoice_Candidate invoiceCandidate : compensationLineCandidates)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID());
-			final Integer schemaLineId = orderLineId != null ? schemaLineIdByOrderLineId.get(orderLineId) : null;
-			final ProductCategoryId productCategoryId = schemaLineId != null ? productCategoryIdBySchemaLineId.get(schemaLineId) : null;
+			final I_C_OrderLine orderLine = orderLineId != null ? orderLinesById.get(orderLineId) : null;
+			final ProductCategoryId productCategoryId = orderLine != null ? resolveAppliesToProductCategoryId(orderLine, productCategoryIdBySchemaLineId) : null;
 			if (productCategoryId != null)
 			{
 				result.put(extractLineId(invoiceCandidate), productCategoryId);
 			}
 		}
 		return result.build();
+	}
+
+	/**
+	 * Schema line's category first; only if the order line has no schema line but carries a take-over record id,
+	 * that record's category (an own take-over line).
+	 */
+	@Nullable
+	private ProductCategoryId resolveAppliesToProductCategoryId(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final Map<Integer, ProductCategoryId> productCategoryIdBySchemaLineId)
+	{
+		final int schemaLineId = orderLine.getC_CompensationGroup_SchemaLine_ID();
+		if (schemaLineId > 0)
+		{
+			return productCategoryIdBySchemaLineId.get(schemaLineId);
+		}
+
+		final int takeOverId = orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID();
+		if (takeOverId > 0)
+		{
+			return takeOverCategoryProvider
+					.flatMap(provider -> provider.getAppliesToCategory(takeOverId))
+					.orElse(null);
+		}
+		return null;
 	}
 
 	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)

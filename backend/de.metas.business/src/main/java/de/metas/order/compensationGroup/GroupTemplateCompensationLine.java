@@ -51,14 +51,22 @@ public class GroupTemplateCompensationLine
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable ProductCategoryId appliesToProductCategoryId;
 
-	@Builder
+	/** Repo id of the contract take-over record this line stems from; 0 = none (kept as plain int, like C_CompensationGroup_SchemaLine_ID, as the take-over id type lives in a higher module) */
+	int takeOverId;
+
+	/** Free-text description written onto the created {@code C_OrderLine} (e.g. how a taken-over discount percentage is composed); {@code null} = none */
+	@Nullable String description;
+
+	@Builder(toBuilder = true)
 	private GroupTemplateCompensationLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final GroupCompensationType compensationType,
 			@Nullable final Percent percentage,
 			@Nullable final GroupMatcher groupMatcher,
-			@Nullable final ProductCategoryId appliesToProductCategoryId)
+			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			final int takeOverId,
+			@Nullable final String description)
 	{
 		this.id = id;
 		this.productId = productId;
@@ -66,6 +74,8 @@ public class GroupTemplateCompensationLine
 		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
+		this.takeOverId = Math.max(takeOverId, 0);
+		this.description = description;
 	}
 
 	public boolean isMatching(@NonNull final Group group)

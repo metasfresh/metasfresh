@@ -546,7 +546,7 @@ public class OrderGroupRepositoryTest
 	 * Using a concrete class (not a Mockito proxy) avoids class-loader/proxy issues with
 	 * the Services/TestingClassInstanceProvider infrastructure.
 	 */
-	private static class StubOrderLineBL implements IOrderLineBL
+	static class StubOrderLineBL implements IOrderLineBL
 	{
 		private final I_C_Order order;
 

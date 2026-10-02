@@ -1,10 +1,11 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -30,14 +31,17 @@ import lombok.Value;
  */
 
 /**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
+ * One take-over record of a contract's compensation-group settings: for products of {@link #productCategoryId},
+ * the customer's contract discount lines for {@link #listedCustomerProductIds} are taken over onto the purchase order
+ * as a line of {@link #ownLineProductId}.
  */
 @Value
 @Builder
-public class ContractCompensationGroupSettings
+public class TakeOverRecord
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	@NonNull ContractSettingsTakeOverId takeOverId;
+	@NonNull ProductCategoryId productCategoryId;
+	/** the discount product of the purchase order's own take-over line */
+	@NonNull ProductId ownLineProductId;
+	@NonNull @Singular ImmutableSet<ProductId> listedCustomerProductIds;
 }

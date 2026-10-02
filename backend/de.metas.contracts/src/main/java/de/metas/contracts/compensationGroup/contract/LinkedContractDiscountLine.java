@@ -1,9 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import lombok.Builder;
+import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,15 +27,10 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
- */
+/** A contract-created percentage discount line of a sales order: its discount product and nominal percentage. */
 @Value
-@Builder
-public class ContractCompensationGroupSettings
+public class LinkedContractDiscountLine
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	@NonNull ProductId discountProductId;
+	@NonNull Percent nominalPercentage;
 }

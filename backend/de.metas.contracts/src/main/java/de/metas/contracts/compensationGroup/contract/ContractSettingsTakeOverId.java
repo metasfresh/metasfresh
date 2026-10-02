@@ -1,11 +1,12 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import lombok.Builder;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -29,15 +30,33 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
- */
+/** Typed id for {@code C_CompensationGroup_ContractSettings_TakeOver}. */
 @Value
-@Builder
-public class ContractCompensationGroupSettings
+public class ContractSettingsTakeOverId implements RepoIdAware
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	int repoId;
+
+	@JsonCreator
+	public static ContractSettingsTakeOverId ofRepoId(final int repoId)
+	{
+		return new ContractSettingsTakeOverId(repoId);
+	}
+
+	@Nullable
+	public static ContractSettingsTakeOverId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	private ContractSettingsTakeOverId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

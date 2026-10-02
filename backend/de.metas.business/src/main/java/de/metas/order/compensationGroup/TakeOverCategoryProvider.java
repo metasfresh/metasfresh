@@ -1,15 +1,12 @@
-package de.metas.contracts.compensationGroup.contract;
+package de.metas.order.compensationGroup;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.product.ProductCategoryId;
+
+import java.util.Optional;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -30,14 +27,12 @@ import lombok.Value;
  */
 
 /**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
+ * Dependency inversion for the contract take-over record: the compensation-group repositories (in modules below
+ * {@code de.metas.contracts}) need the take-over record's applies-to product category for an own compensation line
+ * that has no schema line; the implementation lives in {@code de.metas.contracts}.
  */
-@Value
-@Builder
-public class ContractCompensationGroupSettings
+public interface TakeOverCategoryProvider
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	/** @return the applies-to product category of the given take-over record, empty if the record is unknown or has none */
+	Optional<ProductCategoryId> getAppliesToCategory(int takeOverId);
 }

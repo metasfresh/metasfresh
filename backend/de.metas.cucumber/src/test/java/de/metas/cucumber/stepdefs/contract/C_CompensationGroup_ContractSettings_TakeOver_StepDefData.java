@@ -1,15 +1,6 @@
-package de.metas.contracts.compensationGroup.contract;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -29,15 +20,18 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.cucumber.stepdefs.contract;
+
+import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
+import de.metas.cucumber.stepdefs.StepDefData;
+
 /**
- * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
- * schema it triggers and the order document types it fires on.
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-@Value
-@Builder
-public class ContractCompensationGroupSettings
+public class C_CompensationGroup_ContractSettings_TakeOver_StepDefData extends StepDefData<I_C_CompensationGroup_ContractSettings_TakeOver>
 {
-	@NonNull ContractCompensationGroupSettingsId settingsId;
-	@NonNull GroupTemplateId schemaId;
-	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+	public C_CompensationGroup_ContractSettings_TakeOver_StepDefData()
+	{
+		super(I_C_CompensationGroup_ContractSettings_TakeOver.class);
+	}
 }
