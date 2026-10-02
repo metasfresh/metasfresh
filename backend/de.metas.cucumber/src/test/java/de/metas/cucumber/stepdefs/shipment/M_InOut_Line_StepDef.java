@@ -114,7 +114,8 @@ public class M_InOut_Line_StepDef
 	 * <b>Processed</b> — (optional) expected processed flag<br>
 	 * <b>ExternalId</b> — (optional) expected external id<br>
 	 * <b>C_Project_ID</b> — (optional, identifier-ref) expected project; {@code null} expects no project<br>
-	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
+	 * <b>Return_Origin_InOutLine_ID</b> — (optional, identifier-ref, null-allowed) expected origin shipment/receipt line; {@code null} expects none (e.g. a POS return line)<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, M_Product_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipment lines
 	 *   | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
@@ -144,6 +145,16 @@ public class M_InOut_Line_StepDef
 				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID()))
 						.as("C_Project_ID")
 						.isEqualTo(projectIdentifier.lookupIdIn(projectTable)));
+
+		row.getAsOptionalIdentifier(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID)
+				.ifPresent(returnOriginIdentifier -> {
+					final de.metas.inout.model.I_M_InOutLine inoutLineExt = InterfaceWrapperHelper.create(inoutLine, de.metas.inout.model.I_M_InOutLine.class);
+					final int expectedReturnOriginId = returnOriginIdentifier.isNullPlaceholder()
+							? 0
+							: inoutLineTable.get(returnOriginIdentifier.getAsString()).getM_InOutLine_ID();
+					softly.assertThat(inoutLineExt.getReturn_Origin_InOutLine_ID()).as("Return_Origin_InOutLine_ID").isEqualTo(expectedReturnOriginId);
+				});
+
 		softly.assertAll();
 	}
 

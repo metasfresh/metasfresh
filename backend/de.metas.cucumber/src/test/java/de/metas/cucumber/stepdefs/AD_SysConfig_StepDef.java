@@ -38,6 +38,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
@@ -55,6 +56,7 @@ public class AD_SysConfig_StepDef
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	/**
 	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url} or
@@ -64,8 +66,25 @@ public class AD_SysConfig_StepDef
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
+	/**
+	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
+	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
+	 * Prefer {@link #temporarily_set_sys_config_boolean_value} instead whenever the override must not outlive this
+	 * scenario, per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given set sys config boolean value true for sys config de.metas.pos.Return.SomeFlag
+	 * </pre>
+	 */
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		switch (sysconfigType)
 		{
@@ -197,6 +216,35 @@ public class AD_SysConfig_StepDef
 
 			setSysConfigIntValue(name, user.getAD_User_ID());
 		}
+	}
+
+	/**
+	 * Sets an AD_SysConfig value to a C_BPartner's repo id — for sysconfig keys that resolve a business
+	 * partner (e.g. the customer-return REST path's "unknown customer" fallback).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) business partner whose repo id is stored<br>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update AD_SysConfig with C_BPartner_ID:
+	 *   | Name                                      | C_BPartner_ID |
+	 *   | sysconfig.customerReturn.unknownBpartner  | bpartner_1    |
+	 * </pre>
+	 */
+	@And("update AD_SysConfig with C_BPartner_ID:")
+	public void set_sysConfig_bpartner(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String name = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final I_C_BPartner bpartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable);
+
+			setSysConfigIntValue(name, bpartner.getC_BPartner_ID());
+		});
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	@And("reset all cache")
