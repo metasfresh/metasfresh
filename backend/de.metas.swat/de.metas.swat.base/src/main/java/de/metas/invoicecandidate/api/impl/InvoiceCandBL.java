@@ -3008,4 +3008,28 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		invoiceCandDAO.saveAll(updatedInvoiceCandidates);
 		logger.debug("Updated C_Project_ID={} on {} C_Invoice_Candidates for C_OrderLine_ID={}", projectId, updatedInvoiceCandidates.size(), orderLineId);
 	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		return invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine);
+	}
+
+	@Override
+	public void save(final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		invoiceCandDAO.save(invoiceCandidate);
+	}
+
+	@Override
+	public void invalidateCand(final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		invoiceCandDAO.invalidateCand(invoiceCandidate);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_InvoiceLine> retrieveIlForIc(final InvoiceCandidateId invoiceCandidateId)
+	{
+		return invoiceCandDAO.retrieveIlForIc(invoiceCandidateId);
+	}
 }

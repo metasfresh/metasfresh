@@ -150,6 +150,29 @@ public class Fact_Acct_StepDef
 	}
 
 	/**
+	 * Waits until the posting of each given document has finished with a posting error (i.e. {@code Posted} is neither
+	 * pending nor {@code Y}); fails right away if a document gets posted. Assert the error itself afterwards, e.g. via
+	 * {@code validate payments}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then Wait until documents withdrawal fails to post
+	 * </pre>
+	 */
+	@And("^Wait until documents (.*) (fails|fail) to post$")
+	public void waitUntilPostingFailed(
+			@NonNull final String commaSeparatedIdentifiers,
+			@SuppressWarnings("unused") final String failsOrFail) throws InterruptedException
+	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			AccountingCucumberHelper.waitUntilPostingFailed(recordRef);
+		}
+	}
+
+	/**
 	 * Asserts the balance (debit minus credit) of the product's {@code P_Asset_Acct} fact lines up to and including {@code DateAcct},
 	 * over all documents and all locators, including the fact lines without a locator (e.g. a cost revaluation's, which the
 	 * inventory valuation report's warehouse rows do not contain). No fact lines means balance 0.

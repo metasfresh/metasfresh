@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Repository Tables: M_Warehouse, M_Locator
+ * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository
+ */
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -118,23 +122,19 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	@NonNull
 	public WarehouseId retrieveFirstQualityReturnWarehouseId()
 	{
-		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
-		return warehouseIds.iterator().next();
+		return retrieveQualityReturnWarehouseIdIfExists()
+				.orElseThrow(() -> new AdempiereException(MSG_NoQualityWarehouse));
 	}
 
-	private Set<WarehouseId> retrieveQualityReturnWarehouseIds()
+	@Override
+	@NonNull
+	public Optional<WarehouseId> retrieveQualityReturnWarehouseIdIfExists()
 	{
-		final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
+		return queryBL.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
 				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
 				.create()
-				.idsAsSet(WarehouseId::ofRepoId);
-
-		if (warehouseIds.isEmpty())
-		{
-			throw new AdempiereException(MSG_NoQualityWarehouse);
-		}
-
-		return warehouseIds;
+				.firstIdOptional(WarehouseId::ofRepoIdOrNull);
 	}
 }

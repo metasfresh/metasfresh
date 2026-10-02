@@ -498,4 +498,20 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
 	 */
 	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
+
+	/**
+	 * Retrieves the invoice candidates associated with the given inout line. Thin delegate to
+	 * {@code IInvoiceCandDAO#retrieveInvoiceCandidatesForInOutLine} so a caller that already collaborates with
+	 * {@link IInvoiceCandBL} routes through the BL instead of also injecting the DAO of the same aggregate.
+	 */
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(org.compiere.model.I_M_InOutLine inOutLine);
+
+	/** Saves the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#save} (see {@link #retrieveInvoiceCandidatesForInOutLine}). */
+	void save(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Flags the given invoice candidate for asynchronous recompute. Thin delegate to {@code IInvoiceCandDAO#invalidateCand}. */
+	void invalidateCand(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Retrieves the invoice lines generated from the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#retrieveIlForIc}. */
+	List<org.compiere.model.I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
 }

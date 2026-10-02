@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.order.InvoiceRule;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -51,6 +52,18 @@ public class JsonCreateBPartnerRequest
 	 * If null, the field is left unchanged.
 	 */
 	@Nullable String vatTaxId;
+
+	/**
+	 * Sets {@code C_BPartner.InvoiceRule} from an {@link InvoiceRule} reference-list code (e.g. {@code "I"} for
+	 * {@link InvoiceRule#Immediate}). {@code null} (the default) leaves the column unset, so the effective rule
+	 * ({@code BPartnerEffectiveBL}) falls through to the BP-group's own InvoiceRule and, since the "Standard" BP
+	 * group carries none either, to the system default — After Delivery. A flow that invoices this bpartner via the
+	 * ordinary invoice-candidate pipeline WITHOUT ever creating a shipment (e.g. settling an already-issued invoice
+	 * at the till) needs {@code "I"} here, since After Delivery leaves {@code C_Invoice_Candidate.QtyToInvoice=0}
+	 * until something is delivered. Carried as the raw code rather than the {@link InvoiceRule} enum so the domain
+	 * enum stays free of Jackson annotations (whose global serialization change would break other consumers).
+	 */
+	@Nullable String invoiceRule;
 
 	/**
 	 * Contacts (AD_User records) to create for this business partner.

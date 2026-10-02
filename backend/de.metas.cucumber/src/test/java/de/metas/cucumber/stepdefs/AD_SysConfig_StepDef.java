@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -35,15 +36,18 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -51,10 +55,12 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_SysConfig_StepDef
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	/**
 	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url} or
@@ -64,8 +70,85 @@ public class AD_SysConfig_StepDef
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
+	/** Populated only by {@link #temporarily_set_sys_config}; drained and restored by {@link #restoreTemporarilySetSysConfigs}. */
+	private final Map<String, Optional<String>> temporarilySetSysConfigPriorValues = new LinkedHashMap<>();
+
+	/**
+	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
+	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
+	 * Prefer {@link #temporarily_set_sys_config} instead whenever the override must not outlive this
+	 * scenario, per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given set sys config boolean value true for sys config de.metas.pos.Return.SomeFlag
+	 * </pre>
+	 */
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Same as {@link #enable_sys_config}, but captures the value the given SYSTEM-level AD_SysConfig had
+	 * BEFORE this call (present or absent) and restores exactly that — via {@link #restoreTemporarilySetSysConfigs},
+	 * a real {@code @After} hook, so the restore runs unconditionally at scenario end even if the scenario
+	 * itself fails — never a plain Gherkin step, which Cucumber skips once an earlier step in the same
+	 * scenario has already failed. Use this instead of {@code set sys config ...} whenever a scenario
+	 * needs a SHORT-LIVED override of a value other scenarios/features on the same executor also read,
+	 * per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config int value 2000 for sys config de.metas.pos.Return.LockTimeoutMillis
+	 * </pre>
+	 */
+	@And("^temporarily set sys config (String|boolean|int) value (.*) for sys config (.*)$")
+	public void temporarily_set_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		temporarilySetSysConfigPriorValues.computeIfAbsent(sysConfigName, name -> sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM));
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Restores every AD_SysConfig temporarily overridden via {@link #temporarily_set_sys_config} back to its
+	 * value from immediately before this scenario touched it — the prior value if one existed, or deletes the
+	 * row entirely if it didn't — so a scenario's short-lived override never leaks into a later scenario/feature
+	 * on the same executor, even when THIS scenario itself fails partway through (an ordinary Gherkin restore
+	 * step would simply never run in that case). Mirrors {@code M_ShipmentSchedule_StepDef#deleteSeededRecomputeSchedules}.
+	 */
+	@After
+	public void restoreTemporarilySetSysConfigs()
+	{
+		if (temporarilySetSysConfigPriorValues.isEmpty())
+		{
+			return;
+		}
+
+		temporarilySetSysConfigPriorValues.forEach((name, priorValue) -> {
+			if (priorValue.isPresent())
+			{
+				sysConfigBL.setValue(name, priorValue.get(), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			}
+			else
+			{
+				queryBL.createQueryBuilder(I_AD_SysConfig.class)
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM.getRepoId())
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM.getRepoId())
+						.create()
+						.deleteDirectly();
+			}
+		});
+		temporarilySetSysConfigPriorValues.clear();
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		switch (sysconfigType)
 		{
@@ -197,6 +280,35 @@ public class AD_SysConfig_StepDef
 
 			setSysConfigIntValue(name, user.getAD_User_ID());
 		}
+	}
+
+	/**
+	 * Sets an AD_SysConfig value to a C_BPartner's repo id — for sysconfig keys that resolve a business
+	 * partner (e.g. the customer-return REST path's "unknown customer" fallback).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) business partner whose repo id is stored<br>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update AD_SysConfig with C_BPartner_ID:
+	 *   | Name                                      | C_BPartner_ID |
+	 *   | sysconfig.customerReturn.unknownBpartner  | bpartner_1    |
+	 * </pre>
+	 */
+	@And("update AD_SysConfig with C_BPartner_ID:")
+	public void set_sysConfig_bpartner(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String name = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final I_C_BPartner bpartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable);
+
+			setSysConfigIntValue(name, bpartner.getC_BPartner_ID());
+		});
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	@And("reset all cache")
