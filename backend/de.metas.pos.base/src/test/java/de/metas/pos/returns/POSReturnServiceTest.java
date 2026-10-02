@@ -51,6 +51,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.ThrowableAssert;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,6 +78,7 @@ class POSReturnServiceTest
 	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
 	private static final AdMessageKey MSG_NoTillPrice = AdMessageKey.of("de.metas.pos.Return.NoTillPrice");
+	private static final AdMessageKey MSG_RetryContentMismatch = AdMessageKey.of("de.metas.pos.Return.RetryContentMismatch");
 
 	private static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(102);
 	private static final CurrencyId OTHER_CURRENCY_ID = CurrencyId.ofRepoId(103);
@@ -236,6 +238,78 @@ class POSReturnServiceTest
 
 		assertThat(line.getPriceUomId()).isEqualTo(UOM_ID);
 		assertThat(line.getQty().getUomId()).isEqualTo(UOM_ID);
+	}
+
+	/**
+	 * F1 (retry-content-mismatch): the till-price retry idempotency key ({@code externalId}) resolves an existing
+	 * return document; if the cashier edited the cart and paid out again under the same key, reusing that document
+	 * would refund the OLD amount. {@link POSReturnService#assertExistingReturnMatchesRequest} rejects a retry whose
+	 * resolved return no longer matches the request. Exercised directly (pure, no DB): the full commit→retry
+	 * round-trip needs the async credit-memo generation + DB-backed price lists that this plain unit fixture cannot
+	 * stand up — the same reason {@link #priceUomMismatch()} / {@link #currencyMismatch()} test their guard directly.
+	 */
+	@Test
+	void retryWithUnchangedCart_passes()
+	{
+		final POSReturnRequest request = newRetryRequest(PRODUCT_ID, UOM_ID, new BigDecimal("2"));
+		final List<I_M_InOutLine> existingReturnLines = ImmutableList.of(mockReturnLine(PRODUCT_ID, UOM_ID, new BigDecimal("2")));
+
+		// a genuine retry of the SAME cart must NOT be rejected (stays idempotent)
+		service.assertExistingReturnMatchesRequest(existingReturnLines, request);
+	}
+
+	@Test
+	void retryWithEditedQty_isRejected()
+	{
+		final POSReturnRequest request = newRetryRequest(PRODUCT_ID, UOM_ID, new BigDecimal("2"));
+		final List<I_M_InOutLine> existingReturnLines = ImmutableList.of(mockReturnLine(PRODUCT_ID, UOM_ID, new BigDecimal("3")));
+
+		assertThrowsWithKey(() -> service.assertExistingReturnMatchesRequest(existingReturnLines, request), MSG_RetryContentMismatch);
+	}
+
+	@Test
+	void retryWithSwappedProduct_isRejected()
+	{
+		final POSReturnRequest request = newRetryRequest(PRODUCT_ID, UOM_ID, new BigDecimal("2"));
+		final List<I_M_InOutLine> existingReturnLines = ImmutableList.of(mockReturnLine(ProductId.ofRepoId(999), UOM_ID, new BigDecimal("2")));
+
+		assertThrowsWithKey(() -> service.assertExistingReturnMatchesRequest(existingReturnLines, request), MSG_RetryContentMismatch);
+	}
+
+	@Test
+	void retryWithDifferentLineCount_isRejected()
+	{
+		final POSReturnRequest request = newRetryRequest(PRODUCT_ID, UOM_ID, new BigDecimal("2"));
+		final List<I_M_InOutLine> existingReturnLines = ImmutableList.of(
+				mockReturnLine(PRODUCT_ID, UOM_ID, new BigDecimal("2")),
+				mockReturnLine(PRODUCT_ID, UOM_ID, new BigDecimal("2")));
+
+		assertThrowsWithKey(() -> service.assertExistingReturnMatchesRequest(existingReturnLines, request), MSG_RetryContentMismatch);
+	}
+
+	private static POSReturnRequest newRetryRequest(@NonNull final ProductId productId, @NonNull final UomId uomId, @NonNull final BigDecimal qty)
+	{
+		return POSReturnRequest.builder()
+				.posTerminalId(TERMINAL_ID)
+				.externalId(UUID.randomUUID())
+				.cashierId(CASHIER_ID)
+				.lines(ImmutableList.of(POSReturnLine.builder()
+						.productId(productId)
+						.qty(Quantity.of(qty, mockUom(uomId)))
+						.price(Money.of(BigDecimal.TEN, CURRENCY_ID))
+						.priceUomId(uomId)
+						.build()))
+				.build();
+	}
+
+	/** Mirrors how {@code CustomerReturnInOutRecordFactory} persists a request line: product, entered UOM, entered qty. */
+	private static I_M_InOutLine mockReturnLine(@NonNull final ProductId productId, @NonNull final UomId uomId, @NonNull final BigDecimal qtyEntered)
+	{
+		final I_M_InOutLine returnLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+		returnLine.setM_Product_ID(productId.getRepoId());
+		returnLine.setC_UOM_ID(uomId.getRepoId());
+		returnLine.setQtyEntered(qtyEntered);
+		return returnLine;
 	}
 
 	@Test

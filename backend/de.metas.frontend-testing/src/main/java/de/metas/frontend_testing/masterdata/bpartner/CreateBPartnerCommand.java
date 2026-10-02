@@ -19,6 +19,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.pricing.PricingSystemId;
@@ -138,6 +139,11 @@ public class CreateBPartnerCommand
 		if (request.getVatTaxId() != null)
 		{
 			bpartner.setVATaxID(request.getVatTaxId());
+		}
+		if (request.getInvoiceRule() != null)
+		{
+			// validate the request's code maps to a real InvoiceRule, then store the normalized code
+			bpartner.setInvoiceRule(InvoiceRule.ofCode(request.getInvoiceRule()).getCode());
 		}
 
 		// Set pricing system based on vendor/customer flags

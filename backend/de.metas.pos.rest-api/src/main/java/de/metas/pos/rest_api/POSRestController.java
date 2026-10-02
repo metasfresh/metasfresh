@@ -18,12 +18,19 @@ import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalCategory;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPaymentCheckoutRequest;
@@ -76,6 +83,7 @@ public class POSRestController
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSCashWithdrawalService posCashWithdrawalService;
 	@NonNull private final POSReturnService posReturnService;
+	@NonNull private final POSInvoiceSettlementService posInvoiceSettlementService;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -335,5 +343,46 @@ public class POSRestController
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
 		return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/invoices")
+	public JsonPOSOpenInvoicesList getOpenInvoices(
+			@RequestParam("posTerminalId") @NonNull String posTerminalIdStr,
+			@RequestParam(value = "documentNo", required = false) final String documentNo)
+	{
+		final POSTerminalId posTerminalId = POSTerminalId.ofString(posTerminalIdStr);
+
+		if (documentNo == null || documentNo.trim().isEmpty())
+		{
+			return JsonPOSOpenInvoicesList.of(ImmutableList.of());
+		}
+
+		final List<POSOpenInvoice> invoices = posInvoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
+		return JsonPOSOpenInvoicesList.of(invoices);
+	}
+
+	/**
+	 * The tendered-amount guard (tendered &gt;= open amount) runs INSIDE {@code posInvoiceSettlementService.settleInCash}
+	 * (before the payment is created), not here: this method just passes the tendered amount through and returns the
+	 * typed response, letting any {@code AdempiereException} (currency mismatch, invoice no longer open, wrong org,
+	 * tendered too low, …) propagate unwrapped to the global {@code @ControllerAdvice} — same convention as
+	 * {@link #checkoutPayment} / {@link #refundPayment}.
+	 */
+	@PostMapping("/invoices/settle")
+	public JsonPOSInvoiceSettleResponse settleInvoice(@RequestBody final JsonPOSInvoiceSettleRequest request)
+	{
+		final UserId cashierId = getLoggedUserId();
+
+		final POSInvoiceSettleRequest serviceRequest = POSInvoiceSettleRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.invoiceId(request.getInvoiceId())
+				.cashierId(cashierId)
+				.cashTenderedAmount(request.getCashTenderedAmount())
+				.build();
+
+		final POSInvoiceSettleResult result = posInvoiceSettlementService.settleInCash(serviceRequest);
+
+		final JsonContext jsonContext = newJsonContext();
+		return JsonPOSInvoiceSettleResponse.of(result, request.getCashTenderedAmount(), jsonContext);
 	}
 }

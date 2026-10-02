@@ -7,6 +7,7 @@ import './Header.scss';
 import { usePOSTerminal } from '../actions/posTerminal';
 import {
   MODAL_CashWithdrawal,
+  MODAL_InvoiceSettlement,
   MODAL_POSTerminalSelect,
   MODAL_SelectOrders,
   PANEL_Return,
@@ -37,6 +38,9 @@ const Header = ({ cashWithdrawalCategories }) => {
   };
   const onReturnClicked = () => {
     dispatch(showPanelAction({ panel: PANEL_Return }));
+  };
+  const onInvoiceSettlementClicked = () => {
+    dispatch(showModalAction({ modal: MODAL_InvoiceSettlement }));
   };
   const onOrdersClicked = () => {
     dispatch(showModalAction({ modal: MODAL_SelectOrders }));
@@ -72,6 +76,15 @@ const Header = ({ cashWithdrawalCategories }) => {
         {isCashJournalOpen && (
           <div className="pos-header-button" data-testid="pos-return-button" onClick={onReturnClicked}>
             <span className="text">{_('return')}</span>
+          </div>
+        )}
+        {isCashJournalOpen && (
+          <div
+            className="pos-header-button"
+            data-testid="pos-invoice-settlement-button"
+            onClick={onInvoiceSettlementClicked}
+          >
+            <span className="text">{_('invoiceSettlement')}</span>
           </div>
         )}
       </div>

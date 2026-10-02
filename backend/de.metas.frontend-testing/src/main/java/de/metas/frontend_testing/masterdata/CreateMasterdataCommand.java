@@ -381,6 +381,7 @@ public class CreateMasterdataCommand
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.posTerminalRepository(services.posTerminalRepository)
 				.chargeRepository(services.chargeRepository)
+				.bankRepository(services.bankRepository)
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)
@@ -653,6 +654,7 @@ public class CreateMasterdataCommand
 		return InvoiceCreateCommand.builder()
 				.context(context)
 				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

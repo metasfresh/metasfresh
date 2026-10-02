@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeTypeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -180,6 +181,7 @@ public class CreatePOSTerminalCommandTest
 				.posTerminalRepository(new POSTerminalRepository())
 				.priceListVersionRepository(new PriceListVersionRepository())
 				.chargeRepository(new ChargeRepository())
+				.bankRepository(new BankRepository())
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs);
 	}

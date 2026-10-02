@@ -3,6 +3,7 @@ import { CLOSE_MODAL, CLOSE_PANEL, SHOW_MODAL, SHOW_PANEL } from '../actionTypes
 export const MODAL_POSTerminalSelect = 'POSTerminalSelect';
 export const MODAL_SelectOrders = 'SelectOrders';
 export const MODAL_CashWithdrawal = 'CashWithdrawal';
+export const MODAL_InvoiceSettlement = 'InvoiceSettlement';
 
 export const showModalAction = ({ modal }) => {
   return {

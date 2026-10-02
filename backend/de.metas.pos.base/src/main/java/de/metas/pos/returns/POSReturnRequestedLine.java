@@ -11,9 +11,8 @@ import java.math.BigDecimal;
 /**
  * One product+qty line as the REST client sends it: no price, no UOM. The client never sends a price — the
  * till's current price (and its price UOM) is resolved server-side, from {@link POSProductsService}, by
- * {@link POSReturnService#createReturnFromTillPrices}. Kept separate from {@link POSReturnLine} (which DOES
- * carry a price+UOM) so the cucumber-tested {@link POSReturnService#createReturn} — which prices a return
- * exactly as the caller instructs — keeps working unchanged.
+ * {@link POSReturnService#createReturnFromTillPrices}. Kept separate from {@link POSReturnLine}, which DOES
+ * carry a price+UOM (the already-priced line {@link POSReturnService#createReturn} works with).
  */
 @Value
 @Builder

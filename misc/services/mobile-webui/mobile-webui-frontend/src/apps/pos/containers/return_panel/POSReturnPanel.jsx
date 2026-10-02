@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
@@ -32,10 +32,21 @@ const POSReturnPanel = ({ disabled }) => {
   const pricePrecision = posTerminal?.pricePrecision ?? 2;
   const currencyPrecision = posTerminal?.currencyPrecision ?? 2;
 
-  const [externalId] = useState(() => uuidv4());
   const [lines, setLines] = useState([]);
   const [editingLineIndex, setEditingLineIndex] = useState(null);
   const [isConfirming, setConfirming] = useState(false);
+
+  // The externalId is the POS return's idempotency key. It is bound to the cart CONTENT (each line's product +
+  // qty, in order): a genuine retry of the UNCHANGED cart (e.g. after a failed pay-out) keeps the same key, so the
+  // backend no-ops instead of refunding twice; but any content edit (changed qty, swapped/added/removed product)
+  // mints a NEW key, so the edited cart becomes a NEW return rather than resolving back to — and refunding — the
+  // previously-recorded amount. Mirrors the server-side retry guard in POSReturnService.
+  const contentSignature = useMemo(() => JSON.stringify(lines.map(({ productId, qty }) => [productId, qty])), [lines]);
+  const [returnKey, setReturnKey] = useState(() => ({ signature: contentSignature, id: uuidv4() }));
+  if (returnKey.signature !== contentSignature) {
+    setReturnKey({ signature: contentSignature, id: uuidv4() });
+  }
+  const externalId = returnKey.id;
 
   const addLine = (product) => {
     const uom = extractPriceUom(product);

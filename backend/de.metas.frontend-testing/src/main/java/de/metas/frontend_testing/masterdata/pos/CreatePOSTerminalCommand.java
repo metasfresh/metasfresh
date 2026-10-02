@@ -1,7 +1,11 @@
 package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.banking.Bank;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -102,6 +106,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final POSTerminalRepository posTerminalRepository;
 	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 	@NonNull private final ChargeRepository chargeRepository;
+	@NonNull private final BankRepository bankRepository;
 
 	@NonNull private final MasterdataContext context;
 	/**
@@ -241,6 +246,18 @@ public class CreatePOSTerminalCommand
 		bankAccount.setAD_Org_ID(orgId.getRepoId());
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIsActive(true);
+
+		// A "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force
+		// TenderType=Cash on any payment booked against it; without a linked C_Bank flagged IsCashBank,
+		// TenderType silently defaults to DirectDeposit regardless of what the caller requests (same gap,
+		// same fix, as C_BP_BankAccount_StepDef's cucumber sibling).
+		final Bank cashBank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000") // mandatory column; a cash "bank" has no real routing number
+				.cashBank(true)
+				.build());
+		bankAccount.setC_Bank_ID(BankId.toRepoId(cashBank.getBankId()));
+
 		bpBankAccountDAO.save(bankAccount);
 		return BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID());
 	}

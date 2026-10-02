@@ -54,6 +54,7 @@ import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -93,6 +94,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_TenderType;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
 @RequiredArgsConstructor
@@ -234,7 +236,7 @@ public class C_Payment_StepDef
 	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
 	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
 	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, C_Invoice_ID, DateTrx, C_BPartner_ID,
-	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, IsPrepayment, Proforma_Invoice_ID)
+	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID)
 	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
 	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
 	 * @cucumber.example
@@ -311,6 +313,9 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(payment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+		row.getAsOptionalEnum(COLUMNNAME_TenderType, TenderType.class)
+				.ifPresent(tenderType -> softly.assertThat(payment.getTenderType()).as("TenderType").isEqualTo(tenderType.getCode()));
 
 		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
 				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));

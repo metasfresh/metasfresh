@@ -7,11 +7,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.costing.ChargeId;
+import de.metas.invoice.InvoiceId;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoice;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
@@ -34,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -363,6 +369,74 @@ class JsonSerializeDeserializeTest
 		testSerializeDeserialize(
 				JsonPOSOrderChangedWebSocketEvent.builder()
 						.posOrder(newJsonPOSOrder())
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSOpenInvoicesList() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSOpenInvoicesList.builder()
+						.list(ImmutableList.of(
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(1))
+										.documentNo("INV-001")
+										.bpartnerName("Customer Name")
+										.dateInvoiced(LocalDate.of(2026, 9, 24))
+										.grandTotal(new BigDecimal("100.00"))
+										.openAmt(new BigDecimal("75.50"))
+										.build(),
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(2))
+										.documentNo("INV-002")
+										.bpartnerName("Another Customer")
+										.dateInvoiced(LocalDate.of(2026, 9, 23))
+										.grandTotal(new BigDecimal("250.00"))
+										.openAmt(new BigDecimal("250.00"))
+										.build()
+						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceSettleRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceSettleRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.invoiceId(InvoiceId.ofRepoId(2))
+						.cashTenderedAmount(new BigDecimal("100.00"))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceSettleResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceSettleResponse.builder()
+						.documentNo("INV-001")
+						.amount(new BigDecimal("75.50"))
+						.change(new BigDecimal("24.50"))
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("175.50"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
 						.build()
 		);
 	}
