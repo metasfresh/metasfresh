@@ -37,8 +37,10 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
@@ -80,8 +82,16 @@ public class ReturnsServiceFacade
 
 	public MultiCustomerHUReturnsResult createCustomerReturnInOutForHUs(final Collection<I_M_HU> shippedHUsToReturn)
 	{
+		return createCustomerReturnInOutForHUs(shippedHUsToReturn, null);
+	}
+
+	public MultiCustomerHUReturnsResult createCustomerReturnInOutForHUs(
+			final Collection<I_M_HU> shippedHUsToReturn,
+			@Nullable final WarehouseId returnToWarehouseId)
+	{
 		return MultiCustomerHUReturnsInOutProducer.builder()
 				.shippedHUsToReturn(shippedHUsToReturn)
+				.returnToWarehouseId(returnToWarehouseId)
 				.build()
 				.create();
 	}

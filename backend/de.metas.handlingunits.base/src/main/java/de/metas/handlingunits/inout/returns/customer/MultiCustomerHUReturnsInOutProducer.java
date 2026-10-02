@@ -98,10 +98,13 @@ public class MultiCustomerHUReturnsInOutProducer
 
 	@Builder
 	private MultiCustomerHUReturnsInOutProducer(
-			@NonNull final Collection<I_M_HU> shippedHUsToReturn)
+			@NonNull final Collection<I_M_HU> shippedHUsToReturn,
+			@Nullable final WarehouseId returnToWarehouseId)
 	{
 		this.shippedHUsToReturn = ImmutableList.copyOf(shippedHUsToReturn);
-		this.returnToWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
+		this.returnToWarehouseId = returnToWarehouseId != null
+				? returnToWarehouseId
+				: huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 		this.inOutLineTableId = InterfaceWrapperHelper.getAdTableId(I_M_InOutLine.class);
 	}
 

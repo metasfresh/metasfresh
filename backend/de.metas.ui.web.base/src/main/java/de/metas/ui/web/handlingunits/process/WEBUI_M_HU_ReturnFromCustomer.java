@@ -8,6 +8,7 @@ import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResul
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -15,6 +16,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
 import java.util.HashSet;
@@ -52,6 +54,9 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 {
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
+	@Param(parameterName = "M_Warehouse_ID", mandatory = false)
+	private int p_M_Warehouse_ID;
+
 	private ImmutableList<I_M_HU> _selectedHUsToReturn = null;
 	private MultiCustomerHUReturnsResult result;
 
@@ -82,7 +87,8 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		this.result = returnsServiceFacade.createCustomerReturnInOutForHUs(husToReturn);
+		final WarehouseId returnToWarehouseId = WarehouseId.ofRepoIdOrNull(p_M_Warehouse_ID);
+		this.result = returnsServiceFacade.createCustomerReturnInOutForHUs(husToReturn, returnToWarehouseId);
 
 		return MSG_OK;
 	}
