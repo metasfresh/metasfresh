@@ -22,16 +22,22 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Order_CompensationGroup;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for creating {@link I_C_Order_CompensationGroup} records.
@@ -43,6 +49,9 @@ public class C_Order_CompensationGroup_StepDef
 {
 	private final @NonNull C_Order_CompensationGroup_StepDefData compGroupTable;
 	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_Flatrate_Term_StepDefData contractTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Creates {@link I_C_Order_CompensationGroup} records.
@@ -52,6 +61,8 @@ public class C_Order_CompensationGroup_StepDef
 	 *     <li>{@code Identifier} (required) — identifier for later reference</li>
 	 *     <li>{@code C_Order_ID} (required) — identifier of the parent order</li>
 	 *     <li>{@code Name} (required) — name of the compensation group (e.g., "Mischkarton")</li>
+	 *     <li>{@code OPT.C_Flatrate_Term_ID.Identifier} (optional) — the contract term that triggered this
+	 *         compensation group (set when a contract, not the "Mischkarton" quick-input, created the group)</li>
 	 * </ul>
 	 * <p>
 	 * Example usage in feature file:
@@ -73,9 +84,39 @@ public class C_Order_CompensationGroup_StepDef
 			record.setC_Order_ID(orderRecord.getC_Order_ID());
 			record.setName(row.getAsString(I_C_Order_CompensationGroup.COLUMNNAME_Name));
 
+			row.getAsOptionalIdentifier(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID)
+					.map(identifier -> identifier.lookupNotNullIn(contractTable))
+					.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+					.ifPresent(record::setC_Flatrate_Term_ID);
+
 			saveRecord(record);
 
 			compGroupTable.putOrReplace(row.getAsIdentifier(), record);
 		});
+	}
+
+	/**
+	 * Asserts that the given order has no active {@link I_C_Order_CompensationGroup} at all.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then no C_Order_CompensationGroup exists for order "order_1"
+	 * </pre>
+	 */
+	@Then("no C_Order_CompensationGroup exists for order {string}")
+	public void noCompensationGroupExistsForOrder(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		assertThat(orderRecord).as("Missing C_Order with identifier %s", orderIdentifier).isNotNull();
+
+		final boolean exists = queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.anyMatch();
+
+		assertThat(exists).as("C_Order_CompensationGroup exists for order %s", orderIdentifier).isFalse();
 	}
 }

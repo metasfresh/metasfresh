@@ -32,9 +32,11 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
@@ -63,7 +66,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * (deleted — no remote mkdir, no remote {@code .done}/{@code .error} move) and the payload archived to a
  * LOCAL processed/error folder. Finally disables the route and verifies clean shutdown.
  * <p>
- * Covers three scenarios:
+ * Covers these scenarios:
  * <ul>
  *     <li>{@link #sftpFilePolledConsumedAndArchivedLocally()} — a trivial (no-op) JavaScript transform
  *     that returns an empty array, focused on verifying the plain SFTP file lifecycle (consume by
@@ -76,6 +79,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  *     makes the same real transform throw, verifying the remote file is still consumed (deleted) and the
  *     payload archived to the LOCAL error folder instead of being silently lost, and that nothing is
  *     dispatched to the OLCand route.</li>
+ *     <li>{@link #oneRejectedItem_remainingItemStillDispatched_payloadArchivedToErrorDirNotProcessed()}
+ *     — a well-formed file whose transform emits TWO items, the first of which is rejected on dispatch,
+ *     verifying the surviving item is still dispatched and the payload is archived to the LOCAL error
+ *     folder rather than filed as processed. Distinct from the malformed-file case above: there the
+ *     transform itself throws, here the transform succeeds and an individual item is rejected.</li>
+ *     <li>{@link #endpointChanged_previousPollerTornDown_onlyNewPollerRemains()} — the endpoint of a
+ *     running poller is changed and the poller re-started, verifying the previous route is torn down so
+ *     only ONE poller remains.</li>
  * </ul>
  * The {@link ProducerTemplate} used by the routes under test is a real one (bound to this test's
  * {@link #context}), so that a dispatch to the OLCand route id ({@value ExternalSystemCamelConstants#MF_PUSH_OL_CANDIDATES_ROUTE_ID})
@@ -94,12 +105,17 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	private static final String ROUTE_KEY = "ScriptedImportConversion-100";
 	private static final String SCRIPT_IDENTIFIER = "inbound_sftp_test_noop";
 	private static final String SCRIPT_IDENTIFIER_OLCAND = "inbound_sftp_test_olcand";
+	private static final String SCRIPT_IDENTIFIER_OLCAND_TWO_ITEMS = "inbound_sftp_test_olcand_two_items";
 	private static final String TEST_FILE_NAME = "test_order.json";
 	private static final String TEST_FILE_CONTENT = "{\"orderId\": \"12345\", \"items\": [{\"sku\": \"ABC\", \"qty\": 10}]}";
 	private static final String MALFORMED_TEST_FILE_NAME = "malformed_order.json";
 	private static final String MALFORMED_TEST_FILE_CONTENT = "{ \"orderId\": \"12345\", this is not valid json !!";
 
 	private static final String OLCAND_MOCK_ROUTE_URI = "mock:olCandRoute";
+	private static final String ERROR_ROUTE_MOCK_URI = "mock:errorRoute";
+
+	/** The configured Importeur's WEBUI token, as the backend sends it under {@code PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN}. */
+	private static final String IMPORTEUR_TOKEN = "importeur-webui-token";
 
 	/**
 	 * The requestBody the {@code inbound_sftp_test_olcand.js} script produces for {@link #TEST_FILE_CONTENT}.
@@ -118,11 +134,19 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@TempDir
 	Path scriptRepoDir;
 
-	/** LOCAL processed-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	/**
+	 * Archive target for a successfully processed payload: a directory on the machine running the adapter,
+	 * handed to the route as {@code PARAM_PROCESSED_DIR}. Never a directory on the SFTP server — the remote
+	 * file is consumed by delete, and the route creates no remote {@code .done} folder.
+	 */
 	@TempDir
 	Path localProcessedDir;
 
-	/** LOCAL error-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	/**
+	 * Archive target for a payload the transform failed on, handed to the route as {@code PARAM_ERROR_DIR}.
+	 * Local for the same reason as {@link #localProcessedDir}, and the reason it exists at all: without it a
+	 * file that cannot be transformed would be deleted from the SFTP server and lost.
+	 */
 	@TempDir
 	Path localErrorDir;
 
@@ -176,6 +200,42 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				+ "    return JSON.stringify([{ camelServiceRouteID: \"" + MF_PUSH_OL_CANDIDATES_ROUTE_ID + "\", requestBody: requestBody }]);\n"
 				+ "}\n";
 		Files.writeString(scriptRepoDir.resolve(SCRIPT_IDENTIFIER_OLCAND + ".js"), olCandScript, StandardCharsets.UTF_8);
+
+		// Same as olCandScript, but emits TWO OLCand items for a single input file, so a run in which
+		// only ONE item is rejected can be exercised — see
+		// oneRejectedItem_remainingItemStillDispatched_payloadArchivedToErrorDirNotProcessed() below.
+		final String olCandTwoItemScript = "function transform(messageFromMetasfresh) {\n"
+				+ "    var order = JSON.parse(messageFromMetasfresh);\n"
+				+ "    function requestBodyFor(suffix) {\n"
+				+ "        return JSON.stringify({\n"
+				+ "            requests: [{\n"
+				+ "                orgCode: \"001\",\n"
+				+ "                externalHeaderId: String(order.orderId) + suffix,\n"
+				+ "                externalLineId: String(order.orderId) + suffix,\n"
+				+ "                externalSystemCode: \"Other\",\n"
+				+ "                dataSource: \"int-Shopware\",\n"
+				+ "                bpartner: { bpartnerIdentifier: \"2156425\", bpartnerLocationIdentifier: \"2205175\" },\n"
+				+ "                dateRequired: \"2022-12-12\",\n"
+				+ "                dateOrdered: \"2022-12-12\",\n"
+				+ "                orderDocType: \"SalesOrder\",\n"
+				+ "                paymentTerm: \"val-1000002\",\n"
+				+ "                productIdentifier: \"2005577\",\n"
+				+ "                qty: 1,\n"
+				+ "                currencyCode: \"EUR\",\n"
+				+ "                discount: 0,\n"
+				+ "                poReference: \"ref_12301\",\n"
+				+ "                deliveryViaRule: \"S\",\n"
+				+ "                deliveryRule: \"F\",\n"
+				+ "                bpartnerName: \"testName\"\n"
+				+ "            }]\n"
+				+ "        });\n"
+				+ "    }\n"
+				+ "    return JSON.stringify([\n"
+				+ "        { camelServiceRouteID: \"" + MF_PUSH_OL_CANDIDATES_ROUTE_ID + "\", requestBody: requestBodyFor(\"-1\") },\n"
+				+ "        { camelServiceRouteID: \"" + MF_PUSH_OL_CANDIDATES_ROUTE_ID + "\", requestBody: requestBodyFor(\"-2\") }\n"
+				+ "    ]);\n"
+				+ "}\n";
+		Files.writeString(scriptRepoDir.resolve(SCRIPT_IDENTIFIER_OLCAND_TWO_ITEMS + ".js"), olCandTwoItemScript, StandardCharsets.UTF_8);
 
 		// Start embedded SFTP server
 		sftpServer = new EmbeddedSftpServer(sftpRootDir, SFTP_USERNAME, SFTP_PASSWORD);
@@ -329,6 +389,10 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				.readValue(OLCAND_REQUEST_BODY_JSON, JsonOLCandCreateBulkRequest.class);
 		assertThat(actualDispatchedBody).isEqualTo(expectedDispatchedBody);
 
+		// And: the dispatched call carries the Importeur's token (exchange property, never a header) for the metasfresh API
+		assertThat(olCandMockEndpoint.getExchanges().get(0).getProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN)).isEqualTo(IMPORTEUR_TOKEN);
+		assertThat(olCandMockEndpoint.getExchanges().get(0).getIn().getHeaders()).doesNotContainValue(IMPORTEUR_TOKEN);
+
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
@@ -384,6 +448,140 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
 		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	/**
+	 * A run in which ONE of several items is rejected must archive the payload to the LOCAL error folder,
+	 * not the processed folder — while the remaining items are still dispatched. Filing a partially-failed
+	 * run under processed/ would tell the operator the payload was imported when part of it was not, and by
+	 * then the remote file has already been consumed.
+	 */
+	@Test
+	void oneRejectedItem_remainingItemStillDispatched_payloadArchivedToErrorDirNotProcessed() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+		final AtomicInteger dispatchAttempts = registerOlCandRouteRejectingFirstItem();
+
+		context.start();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(1);
+
+		// Place a well-formed file whose transform emits TWO items; the first dispatch will be rejected.
+		final Path inboundFile = sftpRootDir.resolve("inbound").resolve(TEST_FILE_NAME);
+		Files.writeString(inboundFile, TEST_FILE_CONTENT, StandardCharsets.UTF_8);
+		assertThat(inboundFile).exists();
+
+		// Act: fire the enable SFTP polling route
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND_TWO_ITEMS));
+		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY)).isNotNull();
+
+		final Path localErrorFile = localErrorDir.resolve(TEST_FILE_NAME);
+		final boolean archivedLocally = waitForCondition(() -> Files.exists(localErrorFile), 10_000, 250);
+		assertThat(archivedLocally)
+				.as("A run with one rejected item should be archived to the LOCAL error folder within 10 seconds")
+				.isTrue();
+		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+
+		// The surviving item must still have been dispatched — one rejection may not cancel the rest
+		olCandMockEndpoint.assertIsSatisfied(2_000);
+		assertThat(dispatchAttempts.get())
+				.as("Both items should have been attempted")
+				.isEqualTo(2);
+
+		// ... and the payload must NOT also be filed as processed
+		assertThat(localProcessedDir.resolve(TEST_FILE_NAME)).doesNotExist();
+
+		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
+		assertThat(inboundFile).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.error")).doesNotExist();
+
+		// Act: disable the polling route
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, buildDisableRequest());
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	/**
+	 * A file whose transform succeeds but whose dispatched metasfresh call fails (here: the call fails with an HTTP 422, the
+	 * {@link HttpOperationFailedException} a real HTTP call raises) must not be archived as "processed". It goes to the LOCAL error dir. By decision, no extra AD_Issue
+	 * (no error-route call) is made for it: the failure is logged as a warning and the file goes to the error dir.
+	 */
+	@Test
+	void sftpFileWithFailedDispatchedCallArchivedToLocalErrorDirWithoutExtraErrorRouteCall() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.to(OLCAND_MOCK_ROUTE_URI)
+						.process(exchange -> {
+							throw new HttpOperationFailedException("http://localhost:8282/api/v2/orders/sales/candidates/bulk", 422, "Unprocessable Entity", null, null,
+									"{\"errors\":[{\"message\":\"No BPartner found for identifier 2156425\"}]}");
+						});
+			}
+		});
+
+		context.start();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(1);
+		final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(ERROR_ROUTE_MOCK_URI);
+		errorRouteMockEndpoint.expectedMessageCount(0);
+
+		final Path inboundFile = sftpRootDir.resolve("inbound").resolve(TEST_FILE_NAME);
+		Files.writeString(inboundFile, TEST_FILE_CONTENT, StandardCharsets.UTF_8);
+
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND));
+
+		// the call was dispatched and failed ...
+		olCandMockEndpoint.assertIsSatisfied(10_000);
+
+		// ... so the payload is archived to the LOCAL error folder, not to processed
+		final Path localErrorFile = localErrorDir.resolve(TEST_FILE_NAME);
+		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
+		final boolean archived = waitForCondition(() -> Files.exists(localErrorFile) || Files.exists(localDoneFile), 10_000, 250);
+		assertThat(archived).as("Payload should be archived locally within 10 seconds").isTrue();
+		assertThat(localDoneFile).doesNotExist();
+		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+
+		// the remote file is still consumed
+		assertThat(inboundFile).doesNotExist();
+
+		// by decision, no extra AD_Issue via the error route: the failure is only logged as a warning
+		errorRouteMockEndpoint.assertIsSatisfied(1_000);
+
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, buildDisableRequest());
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	@Test
+	void enableWithoutImporteurToken_failsAndStartsNoPoller() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+
+		context.start();
+
+		final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(ERROR_ROUTE_MOCK_URI);
+		errorRouteMockEndpoint.expectedMessageCount(1);
+
+		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER, ENDPOINT_NAME, ROUTE_KEY, "inbound", false);
+
+		final org.apache.camel.Exchange result = template.send("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				exchange -> exchange.getIn().setBody(enableRequest));
+
+		// without the Importeur's token the import could only run as camel's service user: refuse to start it, loudly
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+		assertThat(result.getException()).hasMessageContaining(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+		errorRouteMockEndpoint.assertIsSatisfied();
 	}
 
 	/**
@@ -471,7 +669,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 			{
 				from("direct:" + MF_ERROR_ROUTE_ID)
 						.routeId(MF_ERROR_ROUTE_ID)
-						.log("Error route invoked (test): ${body}");
+						.log("Error route invoked (test): ${body}")
+						.to(ERROR_ROUTE_MOCK_URI);
 			}
 		});
 	}
@@ -496,6 +695,35 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		});
 	}
 
+	/**
+	 * Like {@link #registerOlCandMockRoute()}, but the FIRST dispatch is rejected and every later one
+	 * succeeds — the setup for a partially-failed run.
+	 *
+	 * @return the running count of dispatch ATTEMPTS, so a test can assert the later items were still tried.
+	 */
+	private AtomicInteger registerOlCandRouteRejectingFirstItem() throws Exception
+	{
+		final AtomicInteger dispatchAttempts = new AtomicInteger();
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.process(exchange -> {
+							if (dispatchAttempts.incrementAndGet() == 1)
+							{
+								throw new RuntimeCamelException("first item rejected (test)");
+							}
+						})
+						.to(OLCAND_MOCK_ROUTE_URI)
+						.setBody(constant("{}"));
+			}
+		});
+		return dispatchAttempts;
+	}
+
 	private JsonExternalSystemRequest buildEnableRequest(@NonNull final String scriptIdentifier)
 	{
 		return buildEnableRequest(scriptIdentifier, ENDPOINT_NAME, ROUTE_KEY, "inbound");
@@ -507,10 +735,24 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 			@NonNull final String routeKey,
 			@NonNull final String remotePath)
 	{
+		return buildEnableRequest(scriptIdentifier, endpointName, routeKey, remotePath, true);
+	}
+
+	private JsonExternalSystemRequest buildEnableRequest(
+			@NonNull final String scriptIdentifier,
+			@NonNull final String endpointName,
+			@NonNull final String routeKey,
+			@NonNull final String remotePath,
+			final boolean withImporteurToken)
+	{
 		final Map<String, String> params = new HashMap<>();
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpointName);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, routeKey);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, scriptIdentifier);
+		if (withImporteurToken)
+		{
+			params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, IMPORTEUR_TOKEN);
+		}
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST, "localhost");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(sftpServer.getPort()));
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME, SFTP_USERNAME);

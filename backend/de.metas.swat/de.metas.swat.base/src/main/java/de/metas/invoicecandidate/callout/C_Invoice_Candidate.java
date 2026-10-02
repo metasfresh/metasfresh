@@ -7,6 +7,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidatesStorage;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -143,6 +144,15 @@ public class C_Invoice_Candidate
 
 		final InvoiceCandidatesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(ic);
 		groupsRepo.saveGroup(group, orderLinesStorage);
+
+		// same basis as C_OrderLine_Handler#calculatePriceAndTax: the group's discount is on the goods invoiced so far and to invoice now,
+		// so what is open is that minus the discount invoiced so far
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
+		{
+			final BigDecimal openPrice = ic.getPriceActual().subtract(ic.getNetAmtInvoiced());
+			ic.setPriceEntered(openPrice);
+			ic.setPriceActual(openPrice);
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced )

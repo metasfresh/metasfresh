@@ -1049,15 +1049,37 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Nullable
 	@Override
-	public I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(@NonNull final BPartnerId bPartnerId)
+	public I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(
+			@NonNull final BPartnerId bPartnerId,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		if (bPartnerLocationId != null)
+		{
+			final I_C_BP_Relation locationRelation = retrieveBillToBPartnerRelationForLocationOrNull(bPartnerId, bPartnerLocationId.getRepoId());
+			if (locationRelation != null)
+			{
+				return locationRelation;
+			}
+		}
+		return retrieveBillToBPartnerRelationForLocationOrNull(bPartnerId, null);
+	}
+
+	/**
+	 * @param bPartnerLocationRepoId {@code null} means the partner-wide relation ({@code C_BPartner_Location_ID IS NULL})
+	 */
+	@Nullable
+	private I_C_BP_Relation retrieveBillToBPartnerRelationForLocationOrNull(
+			@NonNull final BPartnerId bPartnerId,
+			@Nullable final Integer bPartnerLocationRepoId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationRepoId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnly(I_C_BP_Relation.class);
+				.firstOnly(I_C_BP_Relation.class); // at most one row per (partner, location) - see unique index C_BP_Relation_UC_IsBillTo
 	}
 
 	private final CCache<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location> billToLocationCache = CCache.<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location>builder()
@@ -1110,7 +1132,16 @@ public class BPartnerDAO implements IBPartnerDAO
 			return ownBillToLocation;
 		}
 
-		final I_C_BP_Relation billtoRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId);
+		// no location context => partner-wide relation first, then the partner-only lookup as it was before the per-location resolution
+		final I_C_BP_Relation partnerWideRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId, null);
+		final I_C_BP_Relation billtoRelation = partnerWideRelation != null
+				? partnerWideRelation
+				: queryBL.createQueryBuilder(I_C_BP_Relation.class)
+						.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
+						.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstOnly(I_C_BP_Relation.class);
 		if (billtoRelation != null)
 		{
 			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartnerRelation_ID(), billtoRelation.getC_BPartnerRelation_Location_ID());
@@ -1563,6 +1594,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.glns(query.getGlns())
 				.glnLookupLabel(query.getGlnLookupLabel())
 				.onlyOrgIds(query.getOnlyOrgIds())
+				.onlyActive(query.isGlnLookupOnlyActive())
 				.build();
 	}
 

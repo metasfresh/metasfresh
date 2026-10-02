@@ -34,7 +34,6 @@ import org.apache.camel.ProducerTemplate;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
@@ -56,9 +55,10 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 			@NonNull final JavaScriptExecutorService javaScriptExecutorService,
 			@NonNull final ProducerTemplate producerTemplate,
 			@NonNull final String processedDir,
-			@NonNull final String errorDir)
+			@NonNull final String errorDir,
+			@NonNull final String mfAuthToken)
 	{
-		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir);
+		super(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate, processedDir, errorDir, mfAuthToken);
 		this.routeKey = routeKey;
 		this.sftpUri = sftpUri;
 	}
@@ -82,7 +82,8 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)
-				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
+				.process(this::captureOriginalPayloadAsUtf8Bytes)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())
@@ -94,7 +95,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
 	}
 

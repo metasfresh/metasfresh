@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -112,6 +113,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -520,6 +522,17 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
+
+				// Force a fresh load for this identifier: orderTable's StepDefData caches the model per
+				// identifier (a fresh TableRecordReference still keeps its own SoftReference once loaded), so
+				// without this, a later doc action on the same identifier reuses THIS SAME MOrder instance —
+				// unlike a real WebUI/REST request, which always loads a fresh PO per doc action
+				// (DocumentInterfaceWrapperHelper.getPO). That matters because MOrder.completeIt0() only
+				// re-runs prepareIt() (and so TIMING_BEFORE_PREPARE) when its private m_justPrepared flag is
+				// still false; reactivation never resets that flag, so re-completing the SAME cached instance
+				// after reactivation silently skips prepareIt() — a cucumber-harness-only gap a genuinely
+				// fresh instance (as production always has) does not have.
+				orderTable.putOrReplace(orderIdentifier, order);
 				break;
 			case completed:
 				completeOrder(order);
@@ -584,11 +597,71 @@ public class C_Order_StepDef
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for a refusal
+	 * whose {@link AdempiereException} has no stable {@code AD_Message.ErrorCode} to assert against — e.g. a
+	 * composed, multi-part message such as {@code ProductNotOnPriceListException}'s. Asserts the thrown
+	 * exception's message CONTAINS the given text instead.
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be completed because the error message contains bonusWareDiscount
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because the error message contains (.*)$")
+	public void order_cannot_be_completed_because_message_contains(
+			@NonNull final String orderIdentifier,
+			@NonNull final String expectedMessagePart)
+	{
+		StepDefUtil.assertRefusedWithMessageContaining(expectedMessagePart, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
+	}
+
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for reactivation.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be reactivated because of error code ContractCompensationGroup_ReactivateInvoiced
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be reactivated because of error code (.*)$")
+	public void order_cannot_be_reactivated_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.reactivated.name()));
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
+	}
+
+	/**
+	 * Asserts the exact number of active {@code C_OrderLine} rows the given order has — e.g. to prove that NO
+	 * extra (e.g. a stray 0.00 discount) line was added beyond the expected ones.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the order identified by order1 has 2 order lines
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) has (\\d+) order lines$")
+	public void order_has_n_order_lines(@NonNull final String orderIdentifier, final int expectedLineCount)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final long actualLineCount = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+
+		assertThat(actualLineCount).as("Number of C_OrderLine records for order %s", orderIdentifier).isEqualTo(expectedLineCount);
 	}
 
 	/**
@@ -744,85 +817,70 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Asserts that purchase order(s) are created.
+	 * Finds the order linked to the given order via {@code Link_Order_ID} (e.g. a purchase order created from a sales order) and validates it.
 	 *
-	 * <p><strong>Columns:</strong>
-	 * <ul>
-	 * <li>{@code Link_Order_ID.Identifier} (required) — identifies the SO; PO is found by Link_Order_ID
-	 * <li>{@code OPT.C_BPartner_ID} (optional) — filters the matched PO by vendor (disambiguates when multiple POs share the same Link_Order_ID)
-	 * <li>{@code OPT.DocStatus} (optional) — filters the matched PO by DocStatus (used when SO is re-completed and multiple POs share Link_Order_ID with different statuses, e.g. VO for old PO, CO for new one)
-	 * <li>{@code IsSOTrx} (required) — asserts whether the PO is a sales order
-	 * </ul>
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>Identifier</b> — (optional) alias to store the found order under, in C_Order_StepDefData<br>
+	 * <b>Link_Order_ID</b> — (required, identifier-ref) the order the searched order is linked to<br>
+	 * <b>C_BPartner_ID</b> — (optional, identifier-ref) the searched order's business partner, to tell apart several linked orders<br>
+	 * <b>IsSOTrx</b> — (required) expected sales/purchase flag<br>
+	 * <b>DocBaseType</b> — (required) expected doc base type<br>
+	 * <b>DocSubType</b> — (optional) expected doc sub type; when missing, the doc type must have none<br>
+	 * <b>DocStatus</b> — (optional) expected doc status<br>
+	 * <b>IsDropShip</b> — (optional, default false) expected dropship flag<br>
+	 * <b>DropShip_BPartner_ID</b> — (optional, identifier-ref) expected dropship partner<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example <pre>
+	 * Then the order is created:
+	 *   | Identifier | Link_Order_ID | C_BPartner_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
+	 *   | po_1       | so            | vendor_1      | false   | POO         | CO        | true       |
+	 * </pre>
 	 */
 	@Then("the order is created:")
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
-			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
+		DataTableRows.of(dataTable).forEach(this::validateLinkedOrderIsCreated);
+	}
 
-			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
-					.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
+	private void validateLinkedOrderIsCreated(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier linkedOrderIdentifier = row.getAsIdentifier(COLUMNNAME_Link_Order_ID);
+		final OrderId linkedOrderId = linkedOrderIdentifier.lookupNotNullIdIn(orderTable);
 
-			// Optional disambiguation by vendor — needed for multi-vendor SOs where N POs
-			// share the same Link_Order_ID but differ by C_BPartner_ID. Backward compatible:
-			// callers that omit the column get the original firstOnly behaviour.
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID);
-			if (EmptyUtil.isNotBlank(bpartnerIdentifier))
-			{
-				final int bpartnerRepoId = bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID();
-				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
-			}
+		// Optional disambiguation by vendor, for multi-vendor SOs whose POs share the same Link_Order_ID
+		final BPartnerId bpartnerId = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.orElse(null);
 
-			// Optional disambiguation by DocStatus — needed when SO is re-completed (e.g. after
-			// reactivation) and multiple POs share the same Link_Order_ID with different DocStatus
-			// values (e.g. VO for the old PO, CO for the new one). Backward compatible: callers
-			// that omit the column get the original firstOnly behaviour (no DocStatus filter).
-			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
-			if (EmptyUtil.isNotBlank(docStatus))
-			{
-				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, docStatus);
-			}
+		// Optional disambiguation by DocStatus: needed when the SO is re-completed (e.g. after reactivation)
+		// and several POs share the same Link_Order_ID with different DocStatus values (e.g. VO for the old PO, CO for the new one)
+		final String docStatusFilter = row.getAsOptionalString(COLUMNNAME_DocStatus).orElse(null);
 
-			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
+		final List<I_C_Order> purchaseOrders = orderBL.getByLinkOrderId(linkedOrderId)
+				.stream()
+				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
+				.filter(order -> docStatusFilter == null || docStatusFilter.equals(order.getDocStatus()))
+				.collect(ImmutableList.toImmutableList());
+		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
+		final I_C_Order purchaseOrder = purchaseOrders.get(0);
+		assertThat(purchaseOrder.isSOTrx()).isEqualTo(row.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
 
-			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
-			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
-			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
+		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(purchaseOrder.getC_DocTypeTarget_ID()));
+		assertThat(docType.getDocBaseType()).isEqualTo(row.getAsString(COLUMNNAME_DocBaseType));
+		assertThat(docType.getDocSubType()).isEqualTo(row.getAsOptionalString(COLUMNNAME_DocSubType).map(DataTableUtil::nullToken2Null).orElse(null));
 
-			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
+				.ifPresent(docStatus -> assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus));
 
-			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
-			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
+		assertThat(purchaseOrder.isDropShip()).isEqualTo(row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
 
-			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
-			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		row.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(dropShipId -> assertThat(BPartnerId.ofRepoIdOrNull(purchaseOrder.getDropShip_BPartner_ID()))
+						.as("DropShip_BPartner_ID")
+						.isEqualTo(dropShipId));
 
-			if (docStatus != null)
-			{
-				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
-			}
-
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
-			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
-			// TODO: introduce DataTableRows for this whole stepdef
-			final DataTableRow singleRow = DataTableRow.singleRow(tableRow);
-			singleRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
-					.map(bpartnerTable::getId)
-					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
-							.as("DropShip_BPartner_ID")
-							.isEqualTo(dropShipId.getRepoId()));
-
-			// Optional `Identifier` column: register the looked-up PO in orderTable so subsequent
-			// steps (validate the created orders, validate C_OrderLine:, etc.) can reference it by
-			// its feature-file identifier.
-			singleRow.getAsOptionalIdentifier()
-					.ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
-		}
+		row.getAsOptionalIdentifier().ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 	}
 
 	@Then("the sales order identified by {string} is closed")
@@ -900,6 +958,8 @@ public class C_Order_StepDef
 	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
+	 *   <li>{@code InvoiceStatus} (optional) — expected invoice status: {@code O} = open, {@code PI} = partially invoiced, {@code CI} = completely invoiced;
+	 *       waits up to 60s for it, because it follows the asynchronous recompute of the order's invoice candidates</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -1031,6 +1091,40 @@ public class C_Order_StepDef
 	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
 	 * </pre>
 	 */
+	/**
+	 * The order's invoiced quantities are summed up when its order lines are updated by the (asynchronous) recompute of their
+	 * invoice candidates; waits up to 60s for them to reach the expected status.
+	 * <p>
+	 * {@code InvoiceStatus} is a virtual column that a refreshed model keeps from its first read, so every attempt queries the order anew.
+	 *
+	 * @return the last invoice status read, for the caller's assertion
+	 */
+	private String awaitInvoiceStatus(@NonNull final I_C_Order order, @NonNull final String expectedInvoiceStatus)
+	{
+		final String[] lastInvoiceStatus = { null };
+		try
+		{
+			StepDefUtil.tryAndWait(60, 500, () -> {
+				lastInvoiceStatus[0] = queryBL.createQueryBuilderOutOfTrx(I_C_Order.class)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+						.create()
+						.firstOnlyNotNull(I_C_Order.class)
+						.getInvoiceStatus();
+				return expectedInvoiceStatus.equals(lastInvoiceStatus[0]);
+			});
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		catch (final AssertionError ignored)
+		{
+			// not reached within the timeout: the caller's assertion reports the last status read
+		}
+		return lastInvoiceStatus[0];
+	}
+
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
@@ -1098,6 +1192,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceStatus)
+				.ifPresent(invoiceStatus -> softly.assertThat(awaitInvoiceStatus(order, invoiceStatus)).as("InvoiceStatus for Identifier=%s", identifierStr).isEqualTo(invoiceStatus));
 
 		row.getAsOptionalString(COLUMNNAME_BPartnerName)
 				.ifPresent(bpartnerName -> softly.assertThat(order.getBPartnerName()).as("BPartnerName for Identifier=%s", identifierStr).isEqualTo(bpartnerName));
@@ -1391,5 +1488,49 @@ public class C_Order_StepDef
 
 			restTestContext.setEndpointPath(endpointPath);
 		}
+	}
+
+	/**
+	 * Asserts the relative registration order of the {@code C_Order} model interceptors listed in the
+	 * given rows, using {@link ModelValidationEngine#getGlobalDocValidateListenerDescriptions}. Each row
+	 * is a substring expected to identify exactly one registered interceptor (e.g. a fully-qualified or
+	 * unique-suffix class name); row N must appear before row N+1 in the actual registration order.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then the C_Order model interceptors are registered in this order:
+	 *   | de.metas.handlingunits.model.validator.C_Order                        |
+	 *   | de.metas.contracts.compensationGroup.contract.interceptor.C_Order_ContractCompensationGroup |
+	 *   | de.metas.freighcost.interceptor.C_Order                               |
+	 * </pre>
+	 */
+	@Then("the C_Order model interceptors are registered in this order:")
+	public void the_C_Order_model_interceptors_are_registered_in_this_order(@NonNull final DataTable dataTable)
+	{
+		final List<String> expectedInOrder = dataTable.asList(String.class);
+
+		final List<String> actual = ModelValidationEngine.get().getGlobalDocValidateListenerDescriptions(I_C_Order.Table_Name);
+
+		int searchFromIndex = 0;
+		for (final String expected : expectedInOrder)
+		{
+			final int foundAtIndex = indexOfContaining(actual, expected, searchFromIndex);
+			assertThat(foundAtIndex)
+					.as("no C_Order model interceptor matching '%s' registered at or after index %s; actual registration order: %s", expected, searchFromIndex, actual)
+					.isGreaterThanOrEqualTo(0);
+			searchFromIndex = foundAtIndex + 1;
+		}
+	}
+
+	private static int indexOfContaining(@NonNull final List<String> list, @NonNull final String fragment, final int fromIndex)
+	{
+		for (int i = fromIndex; i < list.size(); i++)
+		{
+			if (list.get(i).contains(fragment))
+			{
+				return i;
+			}
+		}
+		return -1;
 	}
 }

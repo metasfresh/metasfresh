@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.camel.externalsystems.scriptedadapter.filename;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -30,21 +30,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- * Resolves filename patterns by replacing {@code {placeholder}} tokens with actual values.
+ * Replaces {@code {placeholder}} tokens in a filename pattern; unknown ones are left unchanged.
  *
  * <p>Built-in placeholders:
  * <ul>
  *   <li>{@code {timestamp}} — current local date/time in {@code yyyyMMdd_HHmmss} format (e.g. {@code 20260328_143022})</li>
  * </ul>
  *
- * <p>Context-dependent placeholders (populated by {@link SftpDeliveryProcessor}):
+ * <p>Context-dependent placeholders, export-side (populated by {@link SftpDeliveryProcessor}):
  * <ul>
  *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
  *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
  *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ *   <li>{@code {index}} — 1-based index of the element in a split (fan-out) export; empty if the export is not split</li>
  * </ul>
  *
- * <p>Unknown placeholders are left unchanged.
+ * <p>Import-side the caller supplies {@code {filename}} (see {@link ImportFileNameResolver}).
+ *
+ * <p>Unknown placeholders are left unchanged (except {@code {index}}, which resolves to the empty string when not supplied).
  *
  * <p>Example:
  * <pre>
@@ -53,9 +56,10 @@ import java.util.Map;
  * </pre>
  */
 @UtilityClass
-public class SftpFilenameResolver
+public class FilenamePatternResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
+	private static final String INDEX_PLACEHOLDER = "{index}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
 	/**
@@ -70,7 +74,6 @@ public class SftpFilenameResolver
 	{
 		String result = pattern;
 
-		// Replace variable placeholders first
 		for (final Map.Entry<String, String> entry : variables.entrySet())
 		{
 			if (entry.getValue() != null)
@@ -78,6 +81,9 @@ public class SftpFilenameResolver
 				result = result.replace("{" + entry.getKey() + "}", entry.getValue());
 			}
 		}
+
+		// {index} is only supplied for split exports; otherwise resolve it to empty
+		result = result.replace(INDEX_PLACEHOLDER, "");
 
 		// Replace the special {timestamp} placeholder
 		if (result.contains(TIMESTAMP_PLACEHOLDER))

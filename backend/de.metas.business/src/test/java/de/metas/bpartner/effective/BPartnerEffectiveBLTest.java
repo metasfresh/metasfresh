@@ -449,7 +449,9 @@ public class BPartnerEffectiveBLTest
 		relation.setIsActive(true);
 		saveRecord(relation);
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(
+				memberBPId,
+				BPartnerLocationId.ofRepoId(memberBPId, memberBillToLoc.getC_BPartner_Location_ID()));
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(memberBillToBPId, memberBillToBPLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -479,7 +481,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -516,7 +518,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -536,9 +538,125 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		assertThat(resolution).isNull();
+	}
+
+	/**
+	 * One active bill-to relation is allowed per partner location (unique index C_BP_Relation_UC_IsBillTo),
+	 * so the relation is resolved for the given partner location.
+	 */
+	@Test
+	public void getEffectiveBillBPartner_perLocationRelations_resolvedByGivenLocation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId memberLocB = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocY1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, memberLocB, billLocY1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocA), billLocX1);
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocB), billLocY1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_givenLocationWithoutRelation_usesPartnerWideRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId memberLocC = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocC), billLocZ1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_noLocationGiven_usesPartnerWideRelationOnly()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null), billLocZ1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_noLocationGiven_ignoresPerLocationRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null)).isNull();
+	}
+
+	private static I_C_BP_Group createPlainBPGroup()
+	{
+		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		plainGroup.setIsDeviatingBillBPartner(false);
+		saveRecord(plainGroup);
+		return plainGroup;
+	}
+
+	private static I_C_BPartner createBPartner(@Nullable final I_C_BP_Group bpGroup)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		if (bpGroup != null)
+		{
+			bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		}
+		saveRecord(bpartner);
+		return bpartner;
+	}
+
+	private static BPartnerLocationId createLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(location);
+		return BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+	}
+
+	private static void createBillToRelation(
+			final I_C_BPartner bpartner,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationId billLocationId)
+	{
+		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		relation.setC_BPartnerRelation_ID(billLocationId.getBpartnerId().getRepoId());
+		relation.setC_BPartnerRelation_Location_ID(billLocationId.getRepoId());
+		relation.setIsBillTo(true);
+		relation.setIsActive(true);
+		saveRecord(relation);
+	}
+
+	private static void assertBillTo(@Nullable final BillBPartnerResolution resolution, final BPartnerLocationId expectedBillLocationId)
+	{
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(expectedBillLocationId.getBpartnerId());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocationId);
 	}
 
 	@Test

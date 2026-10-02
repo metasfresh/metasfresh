@@ -9,7 +9,7 @@ metric into a Google Sheet. Tracks https://github.com/metasfresh/me03/issues/300
 For each `cicd.yaml` run on `new_dawn_uat`:
 
 1. Downloads every JUnit artifact (`junit-results-cucumber-profile1..7` +
-   `-catchall`, `junit-results-playwright-mobile`,
+   `-catchall`, `junit-results-playwright-mobile-shard1..3` (legacy `junit-results-playwright-mobile` for older runs),
    `junit-results-playwright-frontend-shard1..3`).
 2. Parses each XML, keeps only FAILED testcases.
 3. Classifies each failure into a **bucket** via an ordered rule table

@@ -50,7 +50,8 @@ function junitArtifactNames() {
   const names = [];
   for (let p = 1; p <= 7; p++) names.push(`junit-results-cucumber-profile${p}`);
   names.push('junit-results-cucumber-catchall');
-  names.push('junit-results-playwright-mobile');
+  names.push('junit-results-playwright-mobile'); // runs from before mobile sharding
+  for (let s = 1; s <= 3; s++) names.push(`junit-results-playwright-mobile-shard${s}`);
   for (let s = 1; s <= 3; s++) names.push(`junit-results-playwright-frontend-shard${s}`);
   return names;
 }
