@@ -95,5 +95,6 @@ public class C_Flatrate_RefundConfig
 		allRefundConfigs.add(newRefundConfig);
 
 		RefundConfigs.assertValid(allRefundConfigs);
+		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
 	}
 }

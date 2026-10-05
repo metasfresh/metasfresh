@@ -52,6 +52,7 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 
+	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
@@ -91,6 +92,14 @@ public class RefundConfigs
 				.stream()
 				.min(Comparator.comparing(RefundConfig::getMinQty))
 				.get();
+	}
+
+	/**
+	 * The refund line is booked on the bonus product, or else on the config's product. A config that has neither would book it on whatever product was sold, with the wrong accounts and tax.
+	 */
+	public void assertRefundProductIsKnown(@NonNull final RefundConfig refundConfig)
+	{
+		// TODO
 	}
 
 	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
