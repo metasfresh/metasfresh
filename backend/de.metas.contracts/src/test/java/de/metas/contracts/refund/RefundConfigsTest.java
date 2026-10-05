@@ -10,6 +10,7 @@ import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -45,7 +46,12 @@ public class RefundConfigsTest
 	public void assertValid_configsWithDifferentBonusProducts_fails()
 	{
 		assertThatThrownBy(() -> RefundConfigs.assertValid(ImmutableList.of(config(null, 1, 0), config(null, 2, 10))))
-				.hasMessageContaining("Bonus");
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT.toAD_Message());
+				});
 	}
 
 	@Test
@@ -76,13 +82,15 @@ public class RefundConfigsTest
 	public void extractRefundProductId_withDifferentBonusProducts_fails()
 	{
 		assertThatThrownBy(() -> RefundConfigs.extractRefundProductId(ImmutableList.of(config(null, 1, 0), config(null, 2, 10))))
-				.isInstanceOf(RuntimeException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("exactly one 1 item");
 	}
 
 	@Test
 	public void extractRefundProductId_withDifferentProducts_fails()
 	{
 		assertThatThrownBy(() -> RefundConfigs.extractRefundProductId(ImmutableList.of(config(3, null, 0), config(4, null, 10))))
-				.isInstanceOf(RuntimeException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("exactly one 1 item");
 	}
 }

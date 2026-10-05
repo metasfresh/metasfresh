@@ -1,6 +1,7 @@
 package de.metas.contracts.refund;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
@@ -10,16 +11,15 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Comparator;
-import com.google.common.collect.ImmutableSet;
-
-import java.util.List;
-
 import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
-import static de.metas.util.collections.CollectionUtils.singleElement;
 import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 /*
  * #%L
@@ -50,6 +50,7 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameInvoiceSchedule");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{
@@ -117,11 +118,11 @@ public class RefundConfigs
 	@Nullable
 	private ProductId extractSingleNonNullOrNull(
 			@NonNull final List<RefundConfig> refundConfigs,
-			@NonNull final java.util.function.Function<RefundConfig, ProductId> productIdExtractor)
+			@NonNull final Function<RefundConfig, ProductId> productIdExtractor)
 	{
 		final ImmutableSet<ProductId> productIds = refundConfigs.stream()
 				.map(productIdExtractor)
-				.filter(java.util.Objects::nonNull)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (productIds.isEmpty())
 		{
@@ -148,13 +149,12 @@ public class RefundConfigs
 		}
 
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.
-		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(java.util.Objects::nonNull).distinct().count();
+		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(Objects::nonNull).distinct().count();
 		if (distinctBonusProducts > 1)
 		{
 			Loggables.addLog("The given refundConfigs need to all have the same bonus product; refundConfigs={}", refundConfigs);
 
-			throw new AdempiereException("All refund configurations of one contract condition need to have the same Bonus product / Bonusprodukt.")
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT).markAsUserValidationError();
 		}
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
