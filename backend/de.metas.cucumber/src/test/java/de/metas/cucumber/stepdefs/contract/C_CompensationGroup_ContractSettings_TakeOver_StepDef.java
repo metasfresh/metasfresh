@@ -27,14 +27,18 @@ import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -43,6 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, which of the
@@ -52,6 +57,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 {
+	/**
+	 * The partial unique index "one active take-over record per product category and settings" (= its {@code AD_Index_Table.Name}).
+	 */
+	private static final String CATEGORY_UNIQUE_INDEX_NAME = "c_compgroup_contractsettings_takeover_category_active_uq";
+
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
 	private final @NonNull C_CompensationGroup_ContractSettings_StepDefData settingsTable;
 	private final @NonNull C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
 	private final @NonNull M_Product_Category_StepDefData productCategoryTable;
@@ -83,22 +95,39 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	}
 
 	/**
-	 * Asserts that saving a take-over record is refused with the given {@code AD_Message.ErrorCode} — e.g. a second
-	 * take-over for a product category that already has one on the same settings.
+	 * Asserts that saving a take-over record is refused with the given error code AND with the given user-facing message
+	 * in German and English — e.g. a second take-over for a product category that already has one on the same settings
+	 * (error code {@code DBUniqueConstraint}, message from the unique index's {@code AD_Index_Table.ErrorMsg}).
 	 * <p>
-	 * DataTable columns: same as {@code metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:}, except {@code Identifier} (not stored).
+	 * DataTable columns: same as {@code metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:}, except {@code Identifier} (not stored), plus:
+	 * <ul>
+	 *     <li>{@code Message_de_DE} (required) — the exact expected message in German</li>
+	 *     <li>{@code Message_en_US} (required) — the exact expected message in English</li>
+	 * </ul>
 	 * <pre>
-	 * Then creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code DBUniqueConstraint:
-	 *   | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID    |
-	 *   | contractSettings                        | goodsCategory         | discountProduct |
+	 * Then creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code DBUniqueConstraint and messages:
+	 *   | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID    | Message_de_DE | Message_en_US |
+	 *   | contractSettings                        | goodsCategory         | discountProduct | Für diese ... | There is ...  |
 	 * </pre>
 	 */
-	@Then("creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code {word}:")
+	@Then("creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code {word} and messages:")
 	public void createTakeOverRefused(@NonNull final String errorCode, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_CompensationGroup_ContractSettings_TakeOver record = buildTakeOver(row);
-			StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> saveRecord(record));
+			assertThatThrownBy(() -> saveRecord(record))
+					.isInstanceOfSatisfying(AdempiereException.class, exception -> {
+						assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+
+						// In developer mode, DBUniqueConstraintException appends the violated index's name to its AD_Index_Table.ErrorMsg
+						final String developerModeSuffix = exception instanceof DBUniqueConstraintException && developerModeBL.isEnabled()
+								? " (AD_Index_Table:" + CATEGORY_UNIQUE_INDEX_NAME + ")"
+								: "";
+
+						final ITranslatableString message = AdempiereException.extractMessageTrl(exception);
+						assertThat(message.translate("de_DE")).as("de_DE message of %s", exception).isEqualTo(row.getAsString("Message_de_DE") + developerModeSuffix);
+						assertThat(message.translate("en_US")).as("en_US message of %s", exception).isEqualTo(row.getAsString("Message_en_US") + developerModeSuffix);
+					});
 		});
 	}
 

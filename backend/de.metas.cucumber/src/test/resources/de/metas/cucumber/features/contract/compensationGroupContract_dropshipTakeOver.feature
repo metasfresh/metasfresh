@@ -42,9 +42,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID       |
       | takeOver1  | settings                                | goodsCategory         | ownDiscountProduct |
 
-    Then creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code DBUniqueConstraint:
-      | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID       |
-      | settings                                | goodsCategory         | ownDiscountProduct |
+    Then creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code DBUniqueConstraint and messages:
+      | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID       | Message_de_DE                                                                                   | Message_en_US                                                                          |
+      | settings                                | goodsCategory         | ownDiscountProduct | Für diese Produktkategorie gibt es in diesen Einstellungen bereits eine aktive Übernahme-Zeile. | There is already an active take-over line for this product category in these settings. |
 
   # ##############################################################################################
   # A customer discount product is listed on at most one take-over record per settings.
