@@ -277,7 +277,7 @@ public class ContractCompensationGroupService
 		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
 	}
 
-	/** e.g. {@code "3% Bonus Salemfrucht + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the customer discount products taken over. */
+	/** e.g. {@code "3% Bonus Vendor + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the customer discount products taken over. */
 	private String mergeDescription(
 			@NonNull final Percent vendorPercent,
 			@NonNull final ProductId vendorProductId,
