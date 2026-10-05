@@ -39,8 +39,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver_Product} records — the customer's discount products
- * that a take-over record replaces with the contract's own discount product.
+ * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver_Product} records — the customer discount products whose
+ * percentages a take-over record takes over from the linked sales order.
  */
 @RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_Product_StepDef

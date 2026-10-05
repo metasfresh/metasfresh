@@ -50,9 +50,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, which of the
- * contract's own discount lines is taken over from the customer's sales order — and asserts the composition
- * description the take-over writes onto the resulting compensation order line.
+ * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, the discount product of
+ * the purchase order's own take-over line — and asserts the description the take-over writes onto the compensation order line.
  */
 @RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
@@ -62,7 +61,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	 */
 	private static final String CATEGORY_UNIQUE_INDEX_NAME = "c_compgroup_contractsettings_takeover_category_active_uq";
 
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final @NonNull IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private final @NonNull C_CompensationGroup_ContractSettings_StepDefData settingsTable;
 	private final @NonNull C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
