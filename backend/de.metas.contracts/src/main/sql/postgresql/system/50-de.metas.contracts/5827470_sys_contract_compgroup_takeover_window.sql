@@ -16,7 +16,7 @@
 --     inferred from the host's key column (C_CompensationGroup_ContractSettings_TakeOver_ID, same name on the junction).
 -- Modelled on 5806910 (Labels wiring) and the sibling "Belegarten" tab 549508 of 5826640.
 --
--- Mandated field descriptions (AC1), via AD_Element/AD_Element_Trl:
+-- Mandated field descriptions, via AD_Element/AD_Element_Trl:
 --   (a) take-over record: the taken-over percentage also applies to goods that were in a product-bundle group on the sales order
 --   (b) customer discount product sub-list: only discount products used exclusively for goods bonuses may be listed;
 --       packaging bonuses must use their own discount product

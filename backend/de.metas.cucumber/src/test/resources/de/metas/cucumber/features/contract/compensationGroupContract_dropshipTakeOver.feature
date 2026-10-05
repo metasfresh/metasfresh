@@ -12,8 +12,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
 
     And metasfresh contains M_Product_Category:
       | Identifier    | Name  | Value                  |
-      | goodsCategory | Ware | WareS32355TakeOver     |
-      | foodCategory  | Food  | FoodS32355TakeOver     |
+      | goodsCategory | Ware | WareCompGroupContractTakeOver     |
+      | foodCategory  | Food  | FoodCompGroupContractTakeOver     |
 
     And metasfresh contains M_Products:
       | Identifier              | OPT.M_Product_Category_ID.Identifier |
@@ -331,10 +331,10 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS2 | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS2 | discountCategory | Y | Y |
-      | bonusVerpackung | Bonus Verpackung TS2 | discountCategory | Y | Y |
-      | bonusWareSeven | Bonus Ware 7 Prozent TS2 | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_2 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_2 | discountCategory | Y | Y |
+      | bonusVerpackung | Bonus Verpackung_2 | discountCategory | Y | Y |
+      | bonusWareSeven | Bonus Ware 7 Prozent_2 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -516,9 +516,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS3 | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS3 | discountCategory | Y | Y |
-      | bonusVendorVerpackung | Bonus Vendor Verpackung TS3 | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_3 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_3 | discountCategory | Y | Y |
+      | bonusVendorVerpackung | Bonus Vendor Verpackung_3 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -667,7 +667,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 8 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poOwn | 3% Bonus Ware TS3 |
+      | ol_poOwn | 3% Bonus Ware_3 |
 
     # purchase invoice
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -740,9 +740,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS3b | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS3b | discountCategory | Y | Y |
-      | bonusVendorVerpackung | Bonus Vendor Verpackung TS3b | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_4 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_4 | discountCategory | Y | Y |
+      | bonusVendorVerpackung | Bonus Vendor Verpackung_4 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -890,7 +890,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 8 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poOwn | 3% Bonus Ware TS3b |
+      | ol_poOwn | 3% Bonus Ware_4 |
 
     # purchase invoice
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -963,9 +963,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS3c | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS3c | discountCategory | Y | Y |
-      | bonusVendorVerpackung | Bonus Vendor Verpackung TS3c | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_5 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_5 | discountCategory | Y | Y |
+      | bonusVendorVerpackung | Bonus Vendor Verpackung_5 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1113,7 +1113,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 8 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poOwn | 3% Bonus Ware TS3c |
+      | ol_poOwn | 3% Bonus Ware_5 |
 
     # purchase invoice
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -1185,8 +1185,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4a | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4a | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_6 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_6 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1339,8 +1339,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4b | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4b | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_7 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_7 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1506,8 +1506,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4c | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4c | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_8 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_8 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1667,8 +1667,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4d | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4d | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_9 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_9 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1835,8 +1835,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4e | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4e | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_10 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_10 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -1981,8 +1981,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS4f | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS4f | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_11 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_11 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -2139,10 +2139,10 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased | GroupCompensationAmtType |
-      | bonusWare | Bonus Ware TS5 | discountCategory | Y | Y | P |
-      | bonusVendorDropship | Bonus Vendor TS5 | discountCategory | Y | Y | P |
-      | bonusFixed | Bonus Fixed Amount TS5 | discountCategory | Y | Y | Q |
-      | bonusManual | Bonus Manual TS5 | discountCategory | Y | Y | P |
+      | bonusWare | Bonus Ware_12 | discountCategory | Y | Y | P |
+      | bonusVendorDropship | Bonus Vendor_12 | discountCategory | Y | Y | P |
+      | bonusFixed | Bonus Fixed Amount_12 | discountCategory | Y | Y | Q |
+      | bonusManual | Bonus Manual_12 | discountCategory | Y | Y | P |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -2298,7 +2298,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     # the description names only the customer discount products that were actually taken over, not every listed one
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor TS5 + 3% Bonus Ware TS5 |
+      | ol_poBonusVendorDropship | 3% Bonus Vendor_12 + 3% Bonus Ware_12 |
 
 
   # ##############################################################################################
@@ -2330,9 +2330,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware A TS6 | discountCategory | Y | Y |
-      | bonusWareB | Bonus Ware B TS6 | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS6 | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware A_13 | discountCategory | Y | Y |
+      | bonusWareB | Bonus Ware B_13 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_13 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -2477,7 +2477,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 6 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor TS6 + 4% Bonus Ware A TS6, Bonus Ware B TS6 |
+      | ol_poBonusVendorDropship | 3% Bonus Vendor_13 + 4% Bonus Ware A_13, Bonus Ware B_13 |
 
 
   # ##############################################################################################
@@ -2509,8 +2509,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS7a | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS7a | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_14 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_14 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -2662,7 +2662,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 6 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poBonusVendorDropship2 | 3% Bonus Vendor TS7a + 3% Bonus Ware TS7a |
+      | ol_poBonusVendorDropship2 | 3% Bonus Vendor_14 + 3% Bonus Ware_14 |
 
 
   # ##############################################################################################
@@ -2695,8 +2695,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
       | Identifier | Name | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare | Bonus Ware TS7b | discountCategory | Y | Y |
-      | bonusVendorDropship | Bonus Vendor TS7b | discountCategory | Y | Y |
+      | bonusWare | Bonus Ware_15 | discountCategory | Y | Y |
+      | bonusVendorDropship | Bonus Vendor_15 | discountCategory | Y | Y |
 
     And metasfresh contains C_TaxCategory
       | Identifier          |
@@ -2840,4 +2840,4 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the order identified by poDropship has 6 order lines
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID | Description |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor TS7b + 3% Bonus Ware TS7b |
+      | ol_poBonusVendorDropship | 3% Bonus Vendor_15 + 3% Bonus Ware_15 |

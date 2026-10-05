@@ -39,7 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The pure merge-vs-append decision for a take-over: which schema compensation line (if any) a take-over for a given
  * category merges into. Schema lines leave {@code compensationType} null; their real (effective) type/amt-type come from the
  * product at creation — here modelled by the injected {@code isEffectiveDiscountPercent} predicate. The percentage math,
- * description composition and end-to-end candidate wiring are proven by TS1 ({@code compensationGroupContract_dropshipTakeOver.feature}).
+ * description composition and end-to-end candidate wiring are covered by the cucumber feature
+ * {@code compensationGroupContract_dropshipTakeOver.feature}.
  */
 class ContractCompensationGroupServiceTakeOverInjectionTest
 {
@@ -107,7 +108,7 @@ class ContractCompensationGroupServiceTakeOverInjectionTest
 	@Test
 	void appendsWhenTheCategoryLineProductResolvesToSurcharge()
 	{
-		// I1: a schema line on the category with a percentage, but whose PRODUCT is configured as a Surcharge, would collapse
+		// A schema line on the category with a percentage, but whose PRODUCT is configured as a Surcharge, would collapse
 		// to 0% at creation -> it must NOT absorb the taken-over percentage; the take-over is appended as an own line instead.
 		final List<GroupTemplateCompensationLine> lines = ImmutableList.of(schemaLine(Percent.of(3), WARE, SURCHARGE_PRODUCT));
 

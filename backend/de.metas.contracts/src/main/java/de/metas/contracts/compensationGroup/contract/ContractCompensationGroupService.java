@@ -201,7 +201,8 @@ public class ContractCompensationGroupService
 	 * never compounded);</li>
 	 * <li><b>append</b> — else an own discount line with the record's discount product is appended on the record's category,
 	 * carrying only the taken-over percentage (computed on its own base) and the take-over record id, so the own line keeps
-	 * its category across reload / invoice-candidate rebuild (Task 8's fallback).</li>
+	 * its category across reload / invoice-candidate rebuild (the repositories resolve the category of a line without a schema
+	 * line from the take-over record, via {@code TakeOverCategoryProvider}).</li>
 	 * </ul>
 	 */
 	private void applyTakeOver(
