@@ -7,6 +7,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
@@ -17,6 +18,7 @@ import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,13 +32,17 @@ public class C_Flatrate_Term_Test
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(30);
 
 	private C_Flatrate_Term interceptor;
+	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
+	private RefundContractRepository refundContractRepository;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		saveRecord(newInstance(I_C_UOM.class));
-		interceptor = new C_Flatrate_Term(RefundInvoiceCandidateRepository.createInstanceForUnitTesting());
+		refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
+		refundContractRepository = Mockito.spy(refundInvoiceCandidateRepository.getRefundContractRepository());
+		interceptor = new C_Flatrate_Term(refundInvoiceCandidateRepository, refundContractRepository);
 	}
 
 	/**
@@ -73,6 +79,21 @@ public class C_Flatrate_Term_Test
 		assertThat(interceptor.createInvoiceCandidatesToInvalidQuery(term, LocalDate.of(2026, 7, 15)).list())
 				.extracting(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.containsExactly(julyAfterStart.getC_Invoice_Candidate_ID());
+	}
+
+	/**
+	 * What the refund contracts repository cached before the term was committed must not survive the commit,
+	 * or the flagged invoice candidates would find no contract and stay unassigned.
+	 */
+	@Test
+	public void flagInvoiceCandidates_resetsTheCachesOfTheRefundContracts()
+	{
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		// invoke the method under test
+		interceptor.flagInvoiceCandidates(interceptor.createInvoiceCandidatesToInvalidQuery(term, LocalDate.of(2026, 7, 15)));
+
+		Mockito.verify(refundContractRepository).resetCaches();
 	}
 
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)

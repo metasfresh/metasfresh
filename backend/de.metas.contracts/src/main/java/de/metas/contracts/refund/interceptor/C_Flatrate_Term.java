@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -52,10 +53,14 @@ import java.time.LocalDate;
 public class C_Flatrate_Term
 {
 	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
+	private final RefundContractRepository refundContractRepository;
 
-	/* package */ C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
+	/* package */ C_Flatrate_Term(
+			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
+			@NonNull final RefundContractRepository refundContractRepository)
 	{
 		this.invoiceCandidateRepository = refundInvoiceCandidateRepository;
+		this.refundContractRepository = refundContractRepository;
 	}
 
 	/**
@@ -84,7 +89,15 @@ public class C_Flatrate_Term
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query));
+				.registerHandlingMethod(trx -> flagInvoiceCandidates(query));
+	}
+
+	@VisibleForTesting
+	/* package */ void flagInvoiceCandidates(@NonNull final IQuery<I_C_Invoice_Candidate> query)
+	{
+		// the term is committed now; the contracts that were cached before are stale
+		refundContractRepository.resetCaches();
+		Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query);
 	}
 
 	/**
@@ -99,7 +112,7 @@ public class C_Flatrate_Term
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// only the current open period is picked up retroactively; the periods before it get no refund
-		final RefundContract refundContract = invoiceCandidateRepository.getRefundContractRepository().ofRecord(flatrateTerm);
+		final RefundContract refundContract = refundContractRepository.ofRecord(flatrateTerm);
 		final LocalDate firstDayToFlag = refundContract.computeCurrentPeriodStart(today);
 
 		final IQueryFilter<I_C_Invoice_Candidate> dateToInvoiceEffectiveFilter = invoiceCandidateRepository

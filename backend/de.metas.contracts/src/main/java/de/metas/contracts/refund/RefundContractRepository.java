@@ -96,6 +96,16 @@ public class RefundContractRepository
 	}
 
 	/**
+	 * Resets the caches of the refund contracts. Needed after a refund contract was completed: the cache invalidation of the table change
+	 * is sent before the transaction is committed, and this node ignores its own broadcast, so a read in between could cache the old state.
+	 */
+	public void resetCaches()
+	{
+		CACHE.reset();
+		ANY_REFUND_CONTRACT_CACHE.reset();
+	}
+
+	/**
 	 * @return {@code true} if there is any completed refund contract of any partner on the given date
 	 */
 	public boolean hasAnyRefundContract(@NonNull final LocalDate date)
