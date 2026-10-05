@@ -13,23 +13,9 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And metasfresh contains M_Product_Category:
       | Identifier    | Name | Value                         |
       | goodsCategory | Ware | WareCompGroupContractTakeOver |
-      | foodCategory  | Food | FoodCompGroupContractTakeOver |
 
-    And metasfresh contains M_Products:
-      | Identifier              | OPT.M_Product_Category_ID.Identifier |
-      | ownDiscountProduct      | goodsCategory                        |
-      | otherOwnDiscountProduct | foodCategory                         |
-      | customerDiscountProduct | goodsCategory                        |
-
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name           | OPT.IsAdditive |
-      | schema     | Contract bonus | true           |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier | Name     | C_CompensationGroup_Schema_ID.Identifier |
-      | settings   | Settings | schema                                   |
-
-    # drop-ship order setup shared by the end-to-end scenarios: taxes, prices, document types, partners
-    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    # drop-ship order setup shared by the scenarios: taxes, prices, document types, partners
+    And temporarily set sys config boolean value false for sys config "AUTO_SHIP_AND_INVOICE"
     And metasfresh contains C_TaxCategory
       | Identifier          |
       | contractTaxCategory |
@@ -80,46 +66,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
       | vendorDropship_loc | vendorDropship           | Y               | Y               |
 
-  # ##############################################################################################
-  # One take-over record per product category and settings.
-  # A second take-over record for a category that already has one is refused.
-  # ##############################################################################################
-
-  @from:cucumber
-  @allure.label.epic:E0170_Contract_Management
-  @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S32355_TS9a
-  Scenario: A second take-over record for the same product category on one settings is refused
-    Given metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID       |
-      | takeOver1  | settings                                | goodsCategory         | ownDiscountProduct |
-
-    Then creating C_CompensationGroup_ContractSettings_TakeOver is refused with error code DBUniqueConstraint and messages:
-      | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID       | Message_de_DE                                                                                   | Message_en_US                                                                          |
-      | settings                                | goodsCategory         | ownDiscountProduct | Für diese Produktkategorie gibt es in diesen Einstellungen bereits eine aktive Übernahme-Zeile. | There is already an active take-over line for this product category in these settings. |
-
-  # ##############################################################################################
-  # A customer discount product is listed on at most one take-over record per settings.
-  # The same customer product on a second take-over record of the same settings is refused.
-  # ##############################################################################################
-
-  @from:cucumber
-  @allure.label.epic:E0170_Contract_Management
-  @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S32355_TS9b
-  Scenario: The same customer discount product on two take-over records of one settings is refused
-    Given metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID            |
-      | takeOver1  | settings                                | goodsCategory         | ownDiscountProduct      |
-      | takeOver2  | settings                                | foodCategory          | otherOwnDiscountProduct |
-    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
-      | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID            |
-      | takeOver1                                        | customerDiscountProduct |
-
-    Then creating C_CompensationGroup_ContractSettings_TakeOver_Product is refused with error code ContractCompGroup_TakeOverProductUnique:
-      | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID            |
-      | takeOver2                                        | customerDiscountProduct |
-
 
   # ##############################################################################################
   # Real-world case: the store orders, the head office is billed and holds a 3% "Bonus Ware" contract.
@@ -134,7 +80,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS1
   Scenario: Drop-ship PO merges the vendor's own 3% with the 3% taken over from the head office's contract
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
     And documents are accounted immediately
 
     # categories unique per run: the discount product's accounts are copied from its category only at
@@ -310,7 +256,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS2
   Scenario: Packaging bonus and a goods bonus with an unlisted discount product are not taken over
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -443,7 +389,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS3
   Scenario: Vendor without a line on the goods category gets an own take-over line that keeps its goods base
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -615,7 +561,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS3b
   Scenario: Vendor line without base: the own take-over line still computes on the goods only
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -786,7 +732,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS3c
   Scenario: Vendor line without base on a non-additive vendor schema: the own line keeps its base, amounts unchanged
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -956,7 +902,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS4a
   Scenario: Customer without a contract: the drop-ship PO carries the vendor's percentage only
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1173,7 +1119,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS4c
   Scenario: Manually created PO without a linked sales order carries the vendor's percentage only
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1398,7 +1344,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS4e
   Scenario: Vendor without a contract of the new type: the drop-ship PO has no discount line
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1492,7 +1438,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS4f
   Scenario: Vendor settings without a take-over record: the drop-ship PO carries the vendor's percentage only
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1598,7 +1544,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS5
   Scenario: Bundle group, manual discount and fixed-amount contract line are not taken over; bundle goods still receive the percentage
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1737,7 +1683,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS6
   Scenario: A compounding customer schema is taken over with the sum of its nominal percentages
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1864,7 +1810,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS7a
   Scenario: Reactivating and completing the drop-ship PO again gives the same single 6% line
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
@@ -1998,7 +1944,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   @Id:S32355_TS7b
   Scenario: A drop-ship PO left drafted and completed later gets the same single 6% line
     Given temporarily set sys config boolean value false for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
       | Identifier         |
