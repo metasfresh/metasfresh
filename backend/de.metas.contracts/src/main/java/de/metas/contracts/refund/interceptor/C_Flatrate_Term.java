@@ -2,7 +2,14 @@ package de.metas.contracts.refund.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.time.SystemTime;
-import java.time.LocalDate;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -13,15 +20,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -87,7 +89,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * The invoice candidates (also the already invoiced ones) that might belong to the term: those of the term's partner, as invoice partner or as ordering/shipment partner,
-	 * within the term's dates. They are only flagged here; the invoice candidate update run decides which of them really match, and assigns them.
+	 * from the start of the current open period (but not before the term's start) to the term's end. They are only flagged here; the invoice candidate update run decides which of them really match, and assigns them.
 	 */
 	@VisibleForTesting
 	/* package */ IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(
@@ -96,9 +98,13 @@ public class C_Flatrate_Term
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		// only the current open period is picked up retroactively; the periods before it get no refund
+		final RefundContract refundContract = invoiceCandidateRepository.getRefundContractRepository().ofRecord(flatrateTerm);
+		final LocalDate firstDayToFlag = refundContract.computeCurrentPeriodStart(today);
+
 		final IQueryFilter<I_C_Invoice_Candidate> dateToInvoiceEffectiveFilter = invoiceCandidateRepository
 				.createDateToInvoiceEffectiveFilter(
-						flatrateTerm.getStartDate(),
+						TimeUtil.asTimestamp(firstDayToFlag),
 						flatrateTerm.getEndDate());
 
 		final IQuery<I_C_Order> ordersOfThePartnerQuery = queryBL.createQueryBuilder(I_C_Order.class)
