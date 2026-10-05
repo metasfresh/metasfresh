@@ -154,6 +154,37 @@ public class RefundConfigRepositoryTest
 		assertThat(result.getBonusProductId()).isEqualTo(ProductId.ofRepoId(41));
 	}
 
+	/**
+	 * Conditions that mix a product-specific config with a category-only config:
+	 * for the product of the specific config, only the specific config is returned (the category-only one is dropped);
+	 * for any other product, the category-only config is returned.
+	 */
+	@Test
+	public void getByQuery_productSpecificConfigWinsOverCategoryOnlyConfig()
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID());
+
+		final List<I_C_Flatrate_RefundConfig> configRecords = createThreeRefundConfigRecords(conditionsId);
+		final I_C_Flatrate_RefundConfig productConfig = configRecords.get(0);
+		productConfig.setM_Product_ID(5);
+		saveRecord(productConfig);
+		final I_C_Flatrate_RefundConfig categoryConfig = configRecords.get(1);
+		categoryConfig.setM_Product_Category_ID(40);
+		saveRecord(categoryConfig);
+		final I_C_Flatrate_RefundConfig thirdConfig = configRecords.get(2);
+		thirdConfig.setIsActive(false);
+		saveRecord(thirdConfig);
+
+		final List<RefundConfig> forProduct5 = refundConfigRepository.getByQuery(RefundConfigQuery.builder().conditionsId(conditionsId).productId(ProductId.ofRepoId(5)).build());
+		assertThat(forProduct5).extracting(config -> config.getId().getRepoId()).containsExactly(productConfig.getC_Flatrate_RefundConfig_ID());
+
+		final List<RefundConfig> forProduct6 = refundConfigRepository.getByQuery(RefundConfigQuery.builder().conditionsId(conditionsId).productId(ProductId.ofRepoId(6)).build());
+		assertThat(forProduct6).extracting(config -> config.getId().getRepoId()).containsExactly(categoryConfig.getC_Flatrate_RefundConfig_ID());
+	}
+
 	public static List<I_C_Flatrate_RefundConfig> createThreeRefundConfigRecords(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_InvoiceSchedule invoiceScheduleRecord = createInvoiceSchedule();

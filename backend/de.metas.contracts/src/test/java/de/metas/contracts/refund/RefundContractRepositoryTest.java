@@ -159,6 +159,36 @@ public class RefundContractRepositoryTest
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInOtherCategory, NOW))).isEmpty();
 	}
 
+	/**
+	 * A config with a product and a category requires both: the term's product is the config's product, and it has to be in the category.
+	 */
+	@Test
+	public void getByQuery_configWithProductAndCategory_requiresBoth()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(92);
+
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final I_M_Product_Category otherCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(otherCategory);
+		final ProductId productInCategory = createProduct(category);
+		final ProductId productInOtherCategory = createProduct(otherCategory);
+
+		for (final ProductId productId : new ProductId[] { productInCategory, productInOtherCategory })
+		{
+			final I_C_Flatrate_Term term = createRefundTerm(bpartnerId, productId.getRepoId());
+			for (final I_C_Flatrate_RefundConfig config : RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())))
+			{
+				config.setM_Product_ID(productId.getRepoId());
+				config.setM_Product_Category_ID(category.getM_Product_Category_ID());
+				saveRecord(config);
+			}
+		}
+
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInCategory, NOW))).hasSize(1);
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInOtherCategory, NOW))).isEmpty();
+	}
+
 	private ProductId createProduct(@NonNull final I_M_Product_Category category)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
