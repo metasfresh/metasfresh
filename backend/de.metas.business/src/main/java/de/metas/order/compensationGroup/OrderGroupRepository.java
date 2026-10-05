@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.lang.SOTrx;
@@ -275,47 +276,102 @@ public class OrderGroupRepository implements GroupRepository
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		Check.assumeNotEmpty(groupOrderLines, "groupOrderLines is not empty");
+		final I_C_Order order = groupOrderLines.get(0).getC_Order();
+		return createGroupsFromOrderLines(order, ImmutableList.of(groupOrderLines)).get(0);
+	}
 
-		final GroupId groupId = extractSingleGroupId(groupOrderLines);
+	/**
+	 * @param orderLinesOfEachGroup one non-empty list of order lines per group; all groups belong to {@code order}
+	 */
+	private ImmutableList<Group> createGroupsFromOrderLines(
+			@NonNull final I_C_Order order,
+			@NonNull final Collection<List<I_C_OrderLine>> orderLinesOfEachGroup)
+	{
+		final ImmutableList<I_C_OrderLine> allOrderLines = orderLinesOfEachGroup.stream()
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 
-		final I_C_OrderLine groupFirstOrderLine = groupOrderLines.get(0);
-		final I_C_Order order = groupFirstOrderLine.getC_Order();
-		final I_C_Order_CompensationGroup orderCompensationGroupPO = groupFirstOrderLine.getC_Order_CompensationGroup();
-
-		final GroupBuilder groupBuilder = Group.builder()
-				.groupId(groupId)
-				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
-				.activityId(ActivityId.ofRepoIdOrNull(orderCompensationGroupPO.getC_Activity_ID()))
-				.pricePrecision(orderBL.getPricePrecision(order))
-				.amountPrecision(orderBL.getAmountPrecision(order))
-				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.additive(isAdditive(orderCompensationGroupPO));
-
-		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
-		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(groupOrderLines.stream()
+		final ImmutableMap<GroupId, I_C_Order_CompensationGroup> groupRecordsById = retrieveGroupRecordsById(allOrderLines);
+		final ImmutableSet<GroupTemplateId> additiveGroupTemplateIds = retrieveAdditiveGroupTemplateIds(groupRecordsById.values());
+		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(allOrderLines);
+		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(allOrderLines.stream()
 				.filter(I_C_OrderLine::isGroupCompensationLine)
 				.collect(ImmutableList.toImmutableList()));
 
-		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
+		final CurrencyPrecision pricePrecision = orderBL.getPricePrecision(order);
+		final CurrencyPrecision amountPrecision = orderBL.getAmountPrecision(order);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+
+		final ImmutableList.Builder<Group> groups = ImmutableList.builder();
+		for (final List<I_C_OrderLine> groupOrderLines : orderLinesOfEachGroup)
 		{
-			if (!groupOrderLine.isGroupCompensationLine())
+			final GroupId groupId = extractSingleGroupId(groupOrderLines);
+			final I_C_Order_CompensationGroup groupRecord = Check.assumeNotNull(groupRecordsById.get(groupId), "group record exists for {}", groupId);
+			final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoIdOrNull(groupRecord.getC_CompensationGroup_Schema_ID());
+
+			final GroupBuilder groupBuilder = Group.builder()
+					.groupId(groupId)
+					.groupTemplateId(groupTemplateId)
+					.activityId(ActivityId.ofRepoIdOrNull(groupRecord.getC_Activity_ID()))
+					.pricePrecision(pricePrecision)
+					.amountPrecision(amountPrecision)
+					.bpartnerId(bpartnerId)
+					.soTrx(soTrx)
+					.additive(groupTemplateId != null && additiveGroupTemplateIds.contains(groupTemplateId));
+
+			for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 			{
-				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId);
-				groupBuilder.regularLine(regularLine);
+				if (!groupOrderLine.isGroupCompensationLine())
+				{
+					groupBuilder.regularLine(toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId));
+				}
+				else
+				{
+					groupBuilder.compensationLine(toGroupCompensationLine(
+							groupOrderLine,
+							appliesToProductCategoryIdsByOrderLineId.get(OrderLineId.ofRepoId(groupOrderLine.getC_OrderLine_ID()))));
+				}
 			}
-			else
-			{
-				final GroupCompensationLine compensationLine = toGroupCompensationLine(
-						groupOrderLine,
-						appliesToProductCategoryIdsByOrderLineId.get(OrderLineId.ofRepoId(groupOrderLine.getC_OrderLine_ID())));
-				groupBuilder.compensationLine(compensationLine);
-			}
+
+			advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
+
+			groups.add(groupBuilder.build());
+		}
+		return groups.build();
+	}
+
+	private ImmutableMap<GroupId, I_C_Order_CompensationGroup> retrieveGroupRecordsById(@NonNull final List<I_C_OrderLine> orderLines)
+	{
+		final ImmutableSet<Integer> groupRecordIds = orderLines.stream()
+				.map(I_C_OrderLine::getC_Order_CompensationGroup_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupRecordIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						groupRecord -> createGroupId(OrderId.ofRepoId(groupRecord.getC_Order_ID()), groupRecord.getC_Order_CompensationGroup_ID()),
+						Function.identity()));
+	}
+
+	private ImmutableSet<GroupTemplateId> retrieveAdditiveGroupTemplateIds(@NonNull final Collection<I_C_Order_CompensationGroup> groupRecords)
+	{
+		final ImmutableSet<GroupTemplateId> groupTemplateIds = groupRecords.stream()
+				.map(groupRecord -> GroupTemplateId.ofRepoIdOrNull(groupRecord.getC_CompensationGroup_Schema_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (groupTemplateIds.isEmpty())
+		{
+			return ImmutableSet.of();
 		}
 
-		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
-
-		return groupBuilder.build();
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_Schema.class)
+				.addInArrayFilter(I_C_CompensationGroup_Schema.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateIds)
+				.addEqualsFilter(I_C_CompensationGroup_Schema.COLUMNNAME_IsAdditive, true)
+				.create()
+				.idsAsSet(GroupTemplateId::ofRepoId);
 	}
 
 	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
@@ -343,7 +399,7 @@ public class OrderGroupRepository implements GroupRepository
 				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0);
 	}
 
-	/** @return the given order's contract-created groups, built from their active lines, which are loaded with one query */
+	/** @return the given order's contract-created groups, built from their active lines; loads in a fixed number of queries, however many groups there are */
 	public ImmutableList<Group> retrieveContractCreatedGroupsByOrderId(@NonNull final OrderId orderId)
 	{
 		final IQuery<I_C_Order_CompensationGroup> contractGroupsOfOrderQuery = createContractCreatedGroupsQueryBuilder()
@@ -360,10 +416,11 @@ public class OrderGroupRepository implements GroupRepository
 				.stream()
 				.collect(Collectors.groupingBy(OrderGroupRepository::extractGroupId, LinkedHashMap::new, Collectors.toList()));
 
-		return orderLinesByGroupId.values()
-				.stream()
-				.map(this::createGroupFromOrderLines)
-				.collect(ImmutableList.toImmutableList());
+		if (orderLinesByGroupId.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return createGroupsFromOrderLines(orderDAO.getById(orderId), orderLinesByGroupId.values());
 	}
 
 	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
