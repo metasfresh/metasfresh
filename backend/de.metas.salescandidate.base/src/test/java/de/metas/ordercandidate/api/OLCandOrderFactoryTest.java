@@ -87,7 +87,7 @@ class OLCandOrderFactoryTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		OrderGroupRepository.newInstanceForUnitTesting();
+		SpringContextHolder.registerJUnitBean(OrderGroupRepository.newInstanceForUnitTesting());
 
 
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
