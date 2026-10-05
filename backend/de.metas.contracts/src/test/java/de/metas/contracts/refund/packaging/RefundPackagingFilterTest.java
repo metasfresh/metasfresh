@@ -115,11 +115,12 @@ public class RefundPackagingFilterTest
 		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 	}
 
-	/** restricted, but no option listed: no line qualifies */
+	/** flagged, but no option listed: an empty set means all packaging */
 	@Test
-	public void restrictedConfigWithoutOptions_excludesEveryLine()
+	public void restrictedConfigWithoutOptions_includesEveryLine()
 	{
 		createConfig(CONDITIONS_ID, true);
-		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
+		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
+		assertThat(filter(null).isIncluded(CONDITIONS_ID, null, null)).isTrue();
 	}
 }
