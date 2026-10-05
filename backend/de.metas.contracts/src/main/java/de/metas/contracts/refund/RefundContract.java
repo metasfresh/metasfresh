@@ -147,7 +147,8 @@ public class RefundContract
 		LocalDate date = invoiceSchedule.calculateNextDateToInvoice(startDate);
 		while (date.isBefore(currentDate))
 		{
-			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date);
+			// the day after the period end: asking from the end itself shifts an end-of-month schedule to the 30th after a short month
+			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date.plusDays(1));
 
 			Check.assume(nextDate.isAfter(date), // make sure not to get stuck in an endless loop
 					"For the given date={}, invoiceSchedule.calculateNextDateToInvoice needs to return a nextDate that is later; nextDate={}",

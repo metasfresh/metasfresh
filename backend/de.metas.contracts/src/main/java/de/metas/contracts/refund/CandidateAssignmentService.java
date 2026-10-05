@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.refund.allqties.CandidateAssignServiceAllQties;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
@@ -98,11 +100,7 @@ public class CandidateAssignmentService
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
-		final RefundContractQuery refundContractQuery = RefundContractQuery.of(assignableCandidate);
-		final List<RefundContract> refundContracts = refundContractRepository.getByQuery(refundContractQuery)
-				.stream()
-				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getHuPIItemProductId(), assignableCandidate.getBpartnerLocationId().getBpartnerId()))
-				.collect(ImmutableList.toImmutableList());
+		final List<RefundContract> refundContracts = retrieveMatchingContracts(assignableCandidate);
 
 		if (refundContracts.isEmpty())
 		{
@@ -137,6 +135,47 @@ public class CandidateAssignmentService
 				result.isUpdateWasDone(),
 				candidateWithAllAssignments,
 				additionalChangedCandidates.build());
+	}
+
+	private ImmutableList<RefundContract> retrieveMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
+	{
+		return refundContractRepository.getByQuery(RefundContractQuery.of(assignableCandidate))
+				.stream()
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getHuPIItemProductId(), assignableCandidate.getBpartnerLocationId().getBpartnerId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Assigns the given candidate if it matches a refund contract that it is not assigned to yet, e.g. because the contract was completed afterwards.
+	 * The assignment only goes to the current open period of the contract or a later one: past periods get no refund retroactively.
+	 * Does nothing if the candidate is assigned to all contracts that match it.
+	 */
+	public void assignToNewlyMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
+	{
+		final ImmutableSet<FlatrateTermId> assignedContractIds = assignableCandidate.getAssignmentsToRefundCandidates().stream()
+				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final LocalDate today = SystemTime.asLocalDate();
+		final boolean hasContractToAssignTo = retrieveMatchingContracts(assignableCandidate).stream()
+				.filter(contract -> !assignedContractIds.contains(contract.getId()))
+				.anyMatch(contract -> isInCurrentOrLaterPeriod(contract, assignableCandidate.getInvoiceableFrom(), today));
+		if (!hasContractToAssignTo)
+		{
+			return;
+		}
+
+		updateAssignment(assignableCandidate);
+	}
+
+	private static boolean isInCurrentOrLaterPeriod(@NonNull final RefundContract contract, @NonNull final LocalDate invoiceableFrom, @NonNull final LocalDate today)
+	{
+		if (invoiceableFrom.isBefore(contract.getStartDate()) || invoiceableFrom.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		final LocalDate endOfCurrentPeriod = contract.computeNextInvoiceDate(today).getDateToInvoice();
+		return !contract.computeNextInvoiceDate(invoiceableFrom).getDateToInvoice().isBefore(endOfCurrentPeriod);
 	}
 
 	private void unassignFromContractsThatDontMatchAnymore(

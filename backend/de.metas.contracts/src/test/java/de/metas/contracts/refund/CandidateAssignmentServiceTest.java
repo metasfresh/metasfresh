@@ -13,6 +13,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import de.metas.common.util.time.SystemTime;
+import java.time.ZoneId;
+import java.time.LocalDate;
 import java.math.BigDecimal;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
@@ -261,6 +264,47 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignments)
 				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
 				.containsExactly(unrestrictedContract.getId());
+	}
+
+	/**
+	 * A candidate that matches a contract that it is not assigned to yet (e.g. because the contract was completed later) gets assigned in the current period, but not in a past one.
+	 */
+	@Test
+	public void assignToNewlyMatchingContracts_assignsOnlyFromTheCurrentPeriodOn()
+	{
+		final RefundContract contract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final AssignableInvoiceCandidate candidateInCurrentPeriod = refundTestTools.createAssignableCandidateStandlone();
+		final LocalDate invoiceableFrom = candidateInCurrentPeriod.getInvoiceableFrom();
+
+		// the contract's period of the candidate lies in the past
+		SystemTime.setFixedTimeSource(invoiceableFrom.plusYears(1).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(candidateInCurrentPeriod);
+			assertThat(assignableInvoiceCandidateRepository.getById(candidateInCurrentPeriod.getId()).isAssigned()).isFalse();
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		// the candidate's period is the current one
+		SystemTime.setFixedTimeSource(invoiceableFrom.atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(candidateInCurrentPeriod);
+			final AssignableInvoiceCandidate assigned = assignableInvoiceCandidateRepository.getById(candidateInCurrentPeriod.getId());
+			assertThat(assigned.getAssignmentsToRefundCandidates())
+					.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+					.containsExactly(contract.getId());
+
+			// already assigned to everything that matches: nothing to do
+			assertThat(invoiceCandidateAssignmentService.updateAssignment(assigned).getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates()).hasSize(1);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 
 	/**

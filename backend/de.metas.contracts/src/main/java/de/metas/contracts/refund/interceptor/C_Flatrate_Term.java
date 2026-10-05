@@ -6,7 +6,9 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -80,20 +82,38 @@ public class C_Flatrate_Term
 				.registerHandlingMethod(trx -> Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query));
 	}
 
+	/**
+	 * The invoice candidates (also the already invoiced ones) that might belong to the term: those of the term's partner, as invoice partner or as ordering/shipment partner,
+	 * within the term's dates. They are only flagged here; the invoice candidate update run decides which of them really match, and assigns them.
+	 */
 	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(
 			@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		final IQueryFilter<I_C_Invoice_Candidate> dateToInvoiceEffectiveFilter = invoiceCandidateRepository
 				.createDateToInvoiceEffectiveFilter(
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate());
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
+		final IQuery<I_C_Order> ordersOfThePartnerQuery = queryBL.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, flatrateTerm.getM_Product_ID())
+				.filter(queryBL.createCompositeQueryFilter(I_C_Order.class)
+						.setJoinOr()
+						.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, flatrateTerm.getBill_BPartner_ID())
+						.addEqualsFilter(I_C_Order.COLUMNNAME_DropShip_BPartner_ID, flatrateTerm.getBill_BPartner_ID()))
+				.create();
+
+		final IQueryFilter<I_C_Invoice_Candidate> partnerFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.setJoinOr()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, flatrateTerm.getBill_BPartner_ID())
+				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, ordersOfThePartnerQuery);
+
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				// not the refund candidates themselves
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class))
+				.filter(partnerFilter)
 				.filter(dateToInvoiceEffectiveFilter)
 				.create();
 	}

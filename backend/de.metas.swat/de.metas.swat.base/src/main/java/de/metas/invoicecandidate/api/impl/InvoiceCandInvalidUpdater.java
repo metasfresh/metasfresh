@@ -28,6 +28,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -411,6 +412,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		Services.get(IInvoiceCandidateListeners.class).onAfterUpdated(icRecord);
 	}
 
 	/**

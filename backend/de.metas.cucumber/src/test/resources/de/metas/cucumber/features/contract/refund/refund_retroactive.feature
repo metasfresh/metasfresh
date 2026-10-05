@@ -81,8 +81,9 @@ Feature: Refund contracts that are completed after the sales were invoiced
       | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | BonusRecipient |
       | cfgShip    | condShip                 | monthlySchedule      | 5             | goodsCategory         | bonusWare        | S              |
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
-      | termShip   | condShip                            | store                       | 2026-06-01 | 2026-12-31 |
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus |
+      | termShip   | condShip                            | store                       | 2026-06-01 | 2026-12-31 | DR            |
+    And the C_Flatrate_Term identified by termShip is completed
 
     # July is the current period: 5% of 2000. June is a past period: no refund candidate, so this finds exactly one.
     Then after not more than 60s, refund C_Invoice_Candidates are found:
