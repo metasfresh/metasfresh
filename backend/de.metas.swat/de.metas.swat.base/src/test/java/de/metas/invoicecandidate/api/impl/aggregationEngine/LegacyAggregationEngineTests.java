@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -188,6 +189,49 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		assertLineCorrect(invoiceLines.get(1));
 		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
+	}
+
+	/**
+	 * A refund candidate has a positive amount and the credit memo type of its refund document type;
+	 * the invoice stays a credit memo with that positive amount.
+	 */
+	@Test
+	public void test_refundCandidateWithPositiveAmount_isCreditMemoWithPositiveAmount()
+	{
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+
+		final I_C_DocType refundDocType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		refundDocType.setName("refund");
+		refundDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
+		refundDocType.setDocSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+		refundDocType.setIsSOTrx(true);
+		InterfaceWrapperHelper.save(refundDocType);
+
+		final I_C_Invoice_Candidate refundIc = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQtyOrdered(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+		refundIc.setC_DocTypeInvoice_ID(refundDocType.getC_DocType_ID());
+		InterfaceWrapperHelper.save(refundIc);
+
+		updateInvalidCandidates();
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
+		engine.addInvoiceCandidate(refundIc);
+
+		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
+		assertThat(invoices).hasSize(1);
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerCreditMemo);
+
+		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
+		assertThat(invoiceLines).hasSize(1);
+		assertThat(invoiceLines.get(0).getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100")); // positive, as for the credit memo of the existing test: price=10 times qtyInUom=10
 	}
 
 	@Test

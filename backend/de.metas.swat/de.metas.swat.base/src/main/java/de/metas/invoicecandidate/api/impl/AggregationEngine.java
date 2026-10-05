@@ -22,6 +22,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -826,6 +827,7 @@ public final class AggregationEngine
 		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 		final InvoiceDocBaseType docBaseType;
+		boolean isRefundDocType = false;
 
 		//
 		// Case: Invoice DocType was preset
@@ -835,7 +837,12 @@ public final class AggregationEngine
 
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 
-			docBaseType = flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
+			// A refund candidate carries the positive refund amount and its refund document type already says that this is a credit memo.
+			// Neither the sign of its amount may change that type, nor does a credit memo of it need negated amounts.
+			isRefundDocType = isRefundDocType(invoiceDocType);
+			docBaseType = isRefundDocType
+					? invoiceDocBaseType
+					: flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
 		}
 		//
 		// Case: no invoice DocType was set
@@ -870,13 +877,19 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amounts are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (docBaseType.isCreditMemo() && !isRefundDocType)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	private static boolean isRefundDocType(@NonNull final I_C_DocType docType)
+	{
+		final DocSubType docSubType = DocSubType.ofNullableCode(docType.getDocSubType());
+		return DocSubType.RefundInvoice.equals(docSubType) || DocSubType.RefundCreditMemo.equals(docSubType);
 	}
 
 	@NonNull
