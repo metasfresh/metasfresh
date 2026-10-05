@@ -42,6 +42,10 @@ public class CalculateProfitPriceActualRequest
 	@NonNull
 	BPartnerId bPartnerId;
 
+	/** The partner the goods are shipped to, if known: the drop-ship partner of the order, else the order's partner. {@code null} if there is no order. */
+	@Nullable
+	BPartnerId shipmentBPartnerId;
+
 	@NonNull
 	ProductId productId;
 

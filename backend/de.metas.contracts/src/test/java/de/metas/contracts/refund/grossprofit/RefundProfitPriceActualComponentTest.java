@@ -1,6 +1,7 @@
 package de.metas.contracts.refund.grossprofit;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.refund.BonusRecipient;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -28,6 +29,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -39,6 +41,7 @@ public class RefundProfitPriceActualComponentTest
 {
 	private static final LocalDate DATE = LocalDate.of(2026, 7, 15);
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(21);
+	private static final BPartnerId SHIPMENT_BPARTNER_ID = BPartnerId.ofRepoId(23);
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(22);
 
 	private RefundContractRepository refundContractRepository;
@@ -89,10 +92,40 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(result.toBigDecimal()).isEqualByComparingTo("100");
 	}
 
+	/**
+	 * A term of the partner that the goods are shipped to, whose bonus recipient is the shipment partner, reduces the profit price as well.
+	 */
+	@Test
+	public void applyToInput_subtractsTheTermsOfTheShipmentPartner()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithPercentageConfig(SHIPMENT_BPARTNER_ID, BonusRecipient.SHIPMENT_PARTNER, new BigDecimal("5"), true);
+		// not matching: the shipment partner's term is for its invoice partner, the invoice partner's term for its shipment partner
+		createTermWithPercentageConfig(SHIPMENT_BPARTNER_ID, BonusRecipient.INVOICE_PARTNER, new BigDecimal("20"), true);
+		createTermWithPercentageConfig(BPARTNER_ID, BonusRecipient.SHIPMENT_PARTNER, new BigDecimal("30"), true);
+
+		assertThat(applyToInput(Money.of(100, currencyId), SHIPMENT_BPARTNER_ID).toBigDecimal()).isEqualByComparingTo("85");
+	}
+
+	@Test
+	public void applyToInput_withoutShipmentPartner_ignoresTheTermsForTheShipmentPartner()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithPercentageConfig(SHIPMENT_BPARTNER_ID, BonusRecipient.SHIPMENT_PARTNER, new BigDecimal("5"), true);
+
+		assertThat(applyToInput(Money.of(100, currencyId), null).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
 	private Money applyToInput(@NonNull final Money input)
+	{
+		return applyToInput(input, null);
+	}
+
+	private Money applyToInput(@NonNull final Money input, @Nullable final BPartnerId shipmentBPartnerId)
 	{
 		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(BPARTNER_ID)
+				.shipmentBPartnerId(shipmentBPartnerId)
 				.productId(PRODUCT_ID)
 				.date(DATE)
 				.baseAmount(input)
@@ -103,6 +136,11 @@ public class RefundProfitPriceActualComponentTest
 	}
 
 	private void createTermWithPercentageConfig(@NonNull final BigDecimal percent, final boolean useInProfitCalculation)
+	{
+		createTermWithPercentageConfig(BPARTNER_ID, BonusRecipient.INVOICE_PARTNER, percent, useInProfitCalculation);
+	}
+
+	private void createTermWithPercentageConfig(@NonNull final BPartnerId termBPartnerId, @NonNull final BonusRecipient bonusRecipient, @NonNull final BigDecimal percent, final boolean useInProfitCalculation)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -116,6 +154,7 @@ public class RefundProfitPriceActualComponentTest
 		config.setRefundPercent(percent);
 		config.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		config.setMinQty(BigDecimal.ZERO);
+		config.setBonusRecipient(bonusRecipient.getCode());
 		config.setIsUseInProfitCalculation(useInProfitCalculation);
 		saveRecord(config);
 
@@ -123,7 +162,7 @@ public class RefundProfitPriceActualComponentTest
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
-		term.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		term.setBill_BPartner_ID(termBPartnerId.getRepoId());
 		term.setM_Product_ID(PRODUCT_ID.getRepoId());
 		term.setStartDate(TimeUtil.asTimestamp(DATE.minusDays(5)));
 		term.setEndDate(TimeUtil.asTimestamp(DATE.plusDays(5)));
