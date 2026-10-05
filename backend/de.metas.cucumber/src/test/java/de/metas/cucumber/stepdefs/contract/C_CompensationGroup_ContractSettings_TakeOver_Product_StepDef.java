@@ -45,8 +45,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_Product_StepDef
 {
-	private final @NonNull C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
-	private final @NonNull M_Product_StepDefData productTable;
+	@NonNull private final C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	/**
 	 * DataTable columns:

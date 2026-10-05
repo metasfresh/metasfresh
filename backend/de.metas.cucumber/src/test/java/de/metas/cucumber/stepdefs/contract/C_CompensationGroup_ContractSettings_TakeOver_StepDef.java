@@ -61,13 +61,13 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	 */
 	private static final String CATEGORY_UNIQUE_INDEX_NAME = "c_compgroup_contractsettings_takeover_category_active_uq";
 
-	private final @NonNull IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	@NonNull private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	private final @NonNull C_CompensationGroup_ContractSettings_StepDefData settingsTable;
-	private final @NonNull C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
-	private final @NonNull M_Product_Category_StepDefData productCategoryTable;
-	private final @NonNull M_Product_StepDefData productTable;
-	private final @NonNull C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final C_CompensationGroup_ContractSettings_StepDefData settingsTable;
+	@NonNull private final C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
 	/**
 	 * DataTable columns:
