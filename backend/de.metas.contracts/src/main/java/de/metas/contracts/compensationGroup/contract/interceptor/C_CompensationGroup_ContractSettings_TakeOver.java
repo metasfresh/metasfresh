@@ -36,7 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-/** The own-line product must be a percentage discount product: any other product would compute the appended own line as 0%. */
+/** The own-line product must be a percentage discount product by its own type: deliberately stricter than line creation, which forces the type to Discount and takes only the amount type from the product. */
 @Interceptor(I_C_CompensationGroup_ContractSettings_TakeOver.class)
 @Component
 @RequiredArgsConstructor
@@ -59,7 +59,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver
 			return;
 		}
 
-		if (!compensationLineCreateRequestFactory.isPercentDiscount(null, productId))
+		if (!compensationLineCreateRequestFactory.isPercentDiscountProduct(productId))
 		{
 			throw new AdempiereException(MSG_TakeOverOwnLineProductNotPercentDiscount, productBL.getProductValueAndName(productId));
 		}

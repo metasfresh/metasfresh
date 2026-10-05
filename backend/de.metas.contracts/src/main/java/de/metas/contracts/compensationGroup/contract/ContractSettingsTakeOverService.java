@@ -90,7 +90,7 @@ public class ContractSettingsTakeOverService
 		{
 			final GroupTemplateCompensationLine line = it.next();
 			final Percent linePercent = line.getPercentage();
-			if (linePercent != null && categoryId.equals(line.getAppliesToProductCategoryId()) && isPercentDiscount(line))
+			if (linePercent != null && categoryId.equals(line.getAppliesToProductCategoryId()) && isPercentDiscountLine(line))
 			{
 				it.set(line.toBuilder()
 						.percentage(linePercent.add(match.getSummedPercent()))
@@ -112,9 +112,9 @@ public class ContractSettingsTakeOverService
 	}
 
 	/** A line whose product makes it a surcharge or a non-percentage discount would compute 0%, losing the taken-over percentage. */
-	private boolean isPercentDiscount(@NonNull final GroupTemplateCompensationLine line)
+	private boolean isPercentDiscountLine(@NonNull final GroupTemplateCompensationLine line)
 	{
-		return compensationLineCreateRequestFactory.isPercentDiscount(line.getCompensationType(), line.getProductId());
+		return compensationLineCreateRequestFactory.isPercentDiscountLine(line.getCompensationType(), line.getProductId());
 	}
 
 	/** e.g. {@code "3% Bonus Vendor + 3% Bonus Ware"} */
