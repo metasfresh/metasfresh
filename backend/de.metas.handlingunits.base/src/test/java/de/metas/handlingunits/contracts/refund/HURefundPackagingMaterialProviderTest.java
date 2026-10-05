@@ -28,12 +28,8 @@ public class HURefundPackagingMaterialProviderTest
 		provider = new HURefundPackagingMaterialProvider();
 	}
 
-	@Test
-	public void orderLineWithPackingInstruction_hasThePackingMaterialOfItsPackingInstruction()
+	private OrderLineId createOrderLine(final int... packingMaterialIds)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
-		saveRecord(packingMaterial);
-
 		final I_M_HU_PI pi = newInstance(I_M_HU_PI.class);
 		saveRecord(pi);
 		final I_M_HU_PI_Version piVersion = newInstance(I_M_HU_PI_Version.class);
@@ -42,11 +38,14 @@ public class HURefundPackagingMaterialProviderTest
 		piVersion.setIsCurrent(true);
 		saveRecord(piVersion);
 
-		final I_M_HU_PI_Item packingMaterialItem = newInstance(I_M_HU_PI_Item.class);
-		packingMaterialItem.setM_HU_PI_Version_ID(piVersion.getM_HU_PI_Version_ID());
-		packingMaterialItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
-		packingMaterialItem.setM_HU_PackingMaterial_ID(packingMaterial.getM_HU_PackingMaterial_ID());
-		saveRecord(packingMaterialItem);
+		for (final int packingMaterialId : packingMaterialIds)
+		{
+			final I_M_HU_PI_Item packingMaterialItem = newInstance(I_M_HU_PI_Item.class);
+			packingMaterialItem.setM_HU_PI_Version_ID(piVersion.getM_HU_PI_Version_ID());
+			packingMaterialItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
+			packingMaterialItem.setM_HU_PackingMaterial_ID(packingMaterialId);
+			saveRecord(packingMaterialItem);
+		}
 
 		final I_M_HU_PI_Item materialItem = newInstance(I_M_HU_PI_Item.class);
 		materialItem.setM_HU_PI_Version_ID(piVersion.getM_HU_PI_Version_ID());
@@ -60,9 +59,34 @@ public class HURefundPackagingMaterialProviderTest
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setM_HU_PI_Item_Product_ID(piItemProduct.getM_HU_PI_Item_Product_ID());
 		saveRecord(orderLine);
+		return OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+	}
 
-		assertThat(provider.getPackingMaterialId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())))
-				.contains(packingMaterial.getM_HU_PackingMaterial_ID());
+	private int createPackingMaterial()
+	{
+		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
+		saveRecord(packingMaterial);
+		return packingMaterial.getM_HU_PackingMaterial_ID();
+	}
+
+	@Test
+	public void orderLineWithPackingInstruction_hasThePackingMaterialOfItsPackingInstruction()
+	{
+		final int packingMaterialId = createPackingMaterial();
+		assertThat(provider.getPackingMaterialId(createOrderLine(packingMaterialId))).contains(packingMaterialId);
+	}
+
+	/** a masterdata error must not abort the caller (the invoice candidate update): no packing material, no bonus */
+	@Test
+	public void packingInstructionWithTwoPackingMaterials_hasNoPackingMaterial()
+	{
+		assertThat(provider.getPackingMaterialId(createOrderLine(createPackingMaterial(), createPackingMaterial()))).isEmpty();
+	}
+
+	@Test
+	public void packingInstructionWithoutPackingMaterial_hasNoPackingMaterial()
+	{
+		assertThat(provider.getPackingMaterialId(createOrderLine())).isEmpty();
 	}
 
 	@Test
