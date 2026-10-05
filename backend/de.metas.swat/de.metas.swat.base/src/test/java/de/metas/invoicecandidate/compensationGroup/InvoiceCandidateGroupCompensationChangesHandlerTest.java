@@ -26,6 +26,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Optional;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -62,7 +64,7 @@ class InvoiceCandidateGroupCompensationChangesHandlerTest
 		orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
 
 		handler = InvoiceCandidateGroupCompensationChangesHandler.builder()
-				.groupsRepo(new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class)))
+				.groupsRepo(new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), new GroupTemplateRepository(Optional.empty()), Optional.empty()))
 				.build();
 	}
 

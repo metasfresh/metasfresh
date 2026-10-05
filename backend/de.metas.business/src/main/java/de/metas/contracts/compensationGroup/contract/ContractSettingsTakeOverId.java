@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -48,9 +48,14 @@ public class ContractSettingsTakeOverId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final ContractSettingsTakeOverId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
 	private ContractSettingsTakeOverId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CompensationGroup_ContractSettings_TakeOver_ID");
 	}
 
 	@Override

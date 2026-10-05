@@ -89,12 +89,14 @@ class OLCandOrderFactoryTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
+		final GroupTemplateRepository groupTemplateRepository = new GroupTemplateRepository(Optional.empty());
+		SpringContextHolder.registerJUnitBean(groupTemplateRepository);
 		SpringContextHolder.registerJUnitBean(new OrderGroupRepository(
 				new GroupCompensationLineCreateRequestFactory(),
-				Optional.empty()
-		));
+				Optional.empty(),
+				groupTemplateRepository,
+				Optional.empty()));
 
-		SpringContextHolder.registerJUnitBean(new GroupTemplateRepository(Optional.empty()));
 
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 

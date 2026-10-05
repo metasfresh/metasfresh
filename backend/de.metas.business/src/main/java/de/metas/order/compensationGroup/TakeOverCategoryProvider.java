@@ -1,8 +1,11 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.product.ProductCategoryId;
+import lombok.NonNull;
 
-import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -26,13 +29,9 @@ import java.util.Optional;
  * #L%
  */
 
-/**
- * Dependency inversion for the contract take-over record: the compensation-group repositories (in modules below
- * {@code de.metas.contracts}) need the take-over record's applies-to product category for an own compensation line
- * that has no schema line; the implementation lives in {@code de.metas.contracts}.
- */
+/** Provides the applies-to product category of contract take-over records, for compensation lines without a schema line. */
 public interface TakeOverCategoryProvider
 {
-	/** @return the applies-to product category of the given take-over record, empty if the record is unknown or has none */
-	Optional<ProductCategoryId> getAppliesToCategory(int takeOverId);
+	/** @return the applies-to product category of each given take-over record; a record that does not exist or has no category is absent */
+	ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToCategories(@NonNull Set<ContractSettingsTakeOverId> takeOverIds);
 }

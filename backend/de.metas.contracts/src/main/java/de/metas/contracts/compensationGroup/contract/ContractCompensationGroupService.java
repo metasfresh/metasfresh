@@ -230,7 +230,7 @@ public class ContractCompensationGroupService
 					.compensationType(GroupCompensationType.Discount)
 					.percentage(takenOverPercent)
 					.appliesToProductCategoryId(categoryId)
-					.takeOverId(record.getTakeOverId().getRepoId())
+					.takeOverId(record.getTakeOverId())
 					.description(appendDescription(takeOver))
 					.build());
 		}
@@ -266,7 +266,7 @@ public class ContractCompensationGroupService
 	/**
 	 * @return whether the line's <b>effective</b> compensation type/amt-type — resolved from its product exactly as at line
 	 * creation ({@link GroupCompensationLineCreateRequestFactory#resolveGroupCompensationType} /
-	 * {@link GroupCompensationLineCreateRequestFactory#resolveGroupCompensationAmtType}) — is a percentage discount, the only
+	 * {@link GroupCompensationLineCreateRequestFactory#extractGroupCompensationAmtType}) — is a percentage discount, the only
 	 * kind a take-over may merge into. A Surcharge-by-product or non-Percent line would be computed as 0% at creation, so
 	 * merging the take-over into it would silently lose the taken-over percentage.
 	 */
@@ -274,7 +274,7 @@ public class ContractCompensationGroupService
 	{
 		final I_M_Product product = productBL.getById(line.getProductId());
 		final GroupCompensationType type = GroupCompensationLineCreateRequestFactory.resolveGroupCompensationType(line.getCompensationType(), product);
-		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.resolveGroupCompensationAmtType(product);
+		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.extractGroupCompensationAmtType(product);
 		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
 	}
 

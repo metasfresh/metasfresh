@@ -1,12 +1,13 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.order.compensationGroup.TakeOverCategoryProvider;
 import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -38,9 +39,8 @@ public class ContractTakeOverCategoryProvider implements TakeOverCategoryProvide
 	@NonNull private final ContractCompensationGroupSettingsRepository settingsRepository;
 
 	@Override
-	public Optional<ProductCategoryId> getAppliesToCategory(final int takeOverId)
+	public ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToCategories(@NonNull final Set<ContractSettingsTakeOverId> takeOverIds)
 	{
-		final ContractSettingsTakeOverId id = ContractSettingsTakeOverId.ofRepoIdOrNull(takeOverId);
-		return id != null ? Optional.ofNullable(settingsRepository.getTakeOverProductCategoryIdOrNull(id)) : Optional.empty();
+		return settingsRepository.getTakeOverProductCategoryIds(takeOverIds);
 	}
 }

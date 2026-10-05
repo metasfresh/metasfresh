@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.product.ProductCategoryId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 /*
  * #%L
@@ -44,21 +46,30 @@ class ContractTakeOverCategoryProviderTest
 	}
 
 	@Test
-	void returnsCategoryOfTakeOverRecord()
+	void returnsCategoryOfEachTakeOverRecord_unknownIdsAbsent()
 	{
-		final I_C_CompensationGroup_ContractSettings_TakeOver record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
-		record.setM_Product_Category_ID(101);
-		record.setM_Product_ID(201);
-		saveRecord(record);
+		final ContractSettingsTakeOverId takeOverId1 = createTakeOver(ProductCategoryId.ofRepoId(101));
+		final ContractSettingsTakeOverId takeOverId2 = createTakeOver(ProductCategoryId.ofRepoId(102));
+		final ContractSettingsTakeOverId unknownTakeOverId = ContractSettingsTakeOverId.ofRepoId(999999);
 
-		assertThat(provider.getAppliesToCategory(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()))
-				.contains(ProductCategoryId.ofRepoId(101));
+		assertThat(provider.getAppliesToCategories(ImmutableSet.of(takeOverId1, takeOverId2, unknownTakeOverId)))
+				.containsOnly(
+						entry(takeOverId1, ProductCategoryId.ofRepoId(101)),
+						entry(takeOverId2, ProductCategoryId.ofRepoId(102)));
 	}
 
 	@Test
-	void unknownOrNonPositiveId_returnsEmpty()
+	void noIds_returnsEmpty()
 	{
-		assertThat(provider.getAppliesToCategory(999999)).isEmpty();
-		assertThat(provider.getAppliesToCategory(0)).isEmpty();
+		assertThat(provider.getAppliesToCategories(ImmutableSet.of())).isEmpty();
+	}
+
+	private static ContractSettingsTakeOverId createTakeOver(final ProductCategoryId productCategoryId)
+	{
+		final I_C_CompensationGroup_ContractSettings_TakeOver record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		record.setM_Product_Category_ID(productCategoryId.getRepoId());
+		record.setM_Product_ID(201);
+		saveRecord(record);
+		return ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 	}
 }

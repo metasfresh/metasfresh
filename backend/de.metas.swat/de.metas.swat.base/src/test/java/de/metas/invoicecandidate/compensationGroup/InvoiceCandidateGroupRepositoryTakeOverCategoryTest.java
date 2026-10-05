@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.compensationGroup;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
@@ -7,10 +11,14 @@ import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.GroupTemplateLineId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.TakeOverCategoryProvider;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -22,8 +30,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -57,18 +69,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 {
-	private static final int TAKE_OVER_ID = 540123;
-	private static final int TAKE_OVER_CATEGORY_ID = 777;
+	private static final ContractSettingsTakeOverId TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540123);
+	private static final ProductCategoryId TAKE_OVER_CATEGORY_ID = ProductCategoryId.ofRepoId(777);
 	/** a take-over record on the goods candidate's own category */
-	private static final int GOODS_TAKE_OVER_ID = 540124;
+	private static final ContractSettingsTakeOverId GOODS_TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540124);
 
-	private int uomId;
-	private int discountProductId;
+	private UomId uomId;
+	private ProductId discountProductId;
 	private I_C_Order order;
-	private int orderCompensationGroupId;
 	private GroupId groupId;
 	private InvoiceCandidateGroupRepository repo;
 	private ProductCategoryId goodsCategoryId;
+	private final List<Set<ContractSettingsTakeOverId>> takeOverCategoryProviderCalls = new ArrayList<>();
 
 	@BeforeEach
 	void beforeEach()
@@ -77,12 +89,12 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
-		uomId = uom.getC_UOM_ID();
+		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 
 		final I_M_Product discountProduct = newInstance(I_M_Product.class);
-		discountProduct.setC_UOM_ID(uomId);
+		discountProduct.setC_UOM_ID(uomId.getRepoId());
 		saveRecord(discountProduct);
-		discountProductId = discountProduct.getM_Product_ID();
+		discountProductId = ProductId.ofRepoId(discountProduct.getM_Product_ID());
 
 		order = newInstance(I_C_Order.class);
 		order.setC_BPartner_ID(1);
@@ -91,56 +103,66 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
 		groupHeader.setC_Order_ID(order.getC_Order_ID());
 		saveRecord(groupHeader);
-		orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
-		groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), groupHeader.getC_Order_CompensationGroup_ID());
 
 		// a regular candidate, so the group is valid
 		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
 		saveRecord(category);
 		goodsCategoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 		final I_M_Product goodsProduct = newInstance(I_M_Product.class);
-		goodsProduct.setC_UOM_ID(uomId);
+		goodsProduct.setC_UOM_ID(uomId.getRepoId());
 		goodsProduct.setM_Product_Category_ID(category.getM_Product_Category_ID());
 		saveRecord(goodsProduct);
 		final I_C_Invoice_Candidate goodsIc = newInstance(I_C_Invoice_Candidate.class);
 		goodsIc.setC_Order_ID(order.getC_Order_ID());
-		goodsIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		goodsIc.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		goodsIc.setM_Product_ID(goodsProduct.getM_Product_ID());
 		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
 		saveRecord(goodsIc);
 
-		final TakeOverCategoryProvider provider = takeOverId -> {
-			if (takeOverId == TAKE_OVER_ID)
-			{
-				return Optional.of(ProductCategoryId.ofRepoId(TAKE_OVER_CATEGORY_ID));
-			}
-			if (takeOverId == GOODS_TAKE_OVER_ID)
-			{
-				return Optional.of(goodsCategoryId);
-			}
-			return Optional.empty();
+		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = ImmutableMap.of(
+				TAKE_OVER_ID, TAKE_OVER_CATEGORY_ID,
+				GOODS_TAKE_OVER_ID, goodsCategoryId);
+		final TakeOverCategoryProvider provider = takeOverIds -> {
+			takeOverCategoryProviderCalls.add(ImmutableSet.copyOf(takeOverIds));
+			return ImmutableMap.copyOf(Maps.filterKeys(categoryIdsByTakeOverId, takeOverIds::contains));
 		};
 		repo = new InvoiceCandidateGroupRepository(
 				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
+				new GroupTemplateRepository(Optional.empty()),
 				Optional.of(provider));
 	}
 
 	@Test
 	void ownTakeOverLine_resolvesCategoryFromTakeOverRecord()
 	{
-		createDiscountCandidate(0, TAKE_OVER_ID);
+		createDiscountCandidate(null, TAKE_OVER_ID);
 
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines()).hasSize(1);
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId())
-				.isEqualTo(ProductCategoryId.ofRepoId(TAKE_OVER_CATEGORY_ID));
+				.isEqualTo(TAKE_OVER_CATEGORY_ID);
+	}
+
+	@Test
+	void severalOwnTakeOverLines_resolveCategoriesWithOneProviderCall()
+	{
+		createDiscountCandidate(null, TAKE_OVER_ID);
+		createDiscountCandidate(null, GOODS_TAKE_OVER_ID);
+
+		final Group group = repo.retrieveGroup(groupId);
+
+		assertThat(group.getCompensationLines())
+				.extracting(GroupCompensationLine::getAppliesToProductCategoryId)
+				.containsExactlyInAnyOrder(TAKE_OVER_CATEGORY_ID, goodsCategoryId);
+		assertThat(takeOverCategoryProviderCalls).containsExactly(ImmutableSet.of(TAKE_OVER_ID, GOODS_TAKE_OVER_ID));
 	}
 
 	@Test
 	void ownTakeOverLine_carriesTakeOverId()
 	{
-		createDiscountCandidate(0, TAKE_OVER_ID);
+		createDiscountCandidate(null, TAKE_OVER_ID);
 
 		final Group group = repo.retrieveGroup(groupId);
 
@@ -155,7 +177,7 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 	@Test
 	void ownTakeOverLine_notAdditiveGroup_onFullBase_notCompoundedWithFixedAmountLine()
 	{
-		final I_C_Invoice_Candidate fixedAmountIc = createDiscountCandidate(0, 0);
+		final I_C_Invoice_Candidate fixedAmountIc = createDiscountCandidate(null, null);
 		fixedAmountIc.setLine(10);
 		fixedAmountIc.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_PriceAndQty);
 		fixedAmountIc.setPriceEntered(new BigDecimal("-50"));
@@ -164,12 +186,12 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		// the fixed-amount line is on the goods category, like the own line
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setM_Product_Category_ID(goodsCategoryId.getRepoId());
-		schemaLine.setM_Product_ID(discountProductId);
+		schemaLine.setM_Product_ID(discountProductId.getRepoId());
 		saveRecord(schemaLine);
 		fixedAmountOrderLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
 		saveRecord(fixedAmountOrderLine);
 
-		final I_C_Invoice_Candidate ownLineIc = createDiscountCandidate(0, GOODS_TAKE_OVER_ID);
+		final I_C_Invoice_Candidate ownLineIc = createDiscountCandidate(null, GOODS_TAKE_OVER_ID);
 		ownLineIc.setLine(20);
 		ownLineIc.setGroupCompensationPercentage(new BigDecimal("3"));
 		saveRecord(ownLineIc);
@@ -189,9 +211,9 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 	{
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setM_Product_Category_ID(888);
-		schemaLine.setM_Product_ID(discountProductId);
+		schemaLine.setM_Product_ID(discountProductId.getRepoId());
 		saveRecord(schemaLine);
-		createDiscountCandidate(schemaLine.getC_CompensationGroup_SchemaLine_ID(), TAKE_OVER_ID);
+		createDiscountCandidate(GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()), TAKE_OVER_ID);
 
 		final Group group = repo.retrieveGroup(groupId);
 
@@ -202,33 +224,33 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 	@Test
 	void ownLine_withoutTakeOverId_hasNoCategory()
 	{
-		createDiscountCandidate(0, 0);
+		createDiscountCandidate(null, null);
 
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId()).isNull();
 	}
 
-	private I_C_Invoice_Candidate createDiscountCandidate(final int schemaLineId, final int takeOverId)
+	private I_C_Invoice_Candidate createDiscountCandidate(@Nullable final GroupTemplateLineId schemaLineId, @Nullable final ContractSettingsTakeOverId takeOverId)
 	{
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setM_Product_ID(discountProductId);
-		orderLine.setC_UOM_ID(uomId);
-		orderLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		orderLine.setM_Product_ID(discountProductId.getRepoId());
+		orderLine.setC_UOM_ID(uomId.getRepoId());
+		orderLine.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		orderLine.setIsGroupCompensationLine(true);
-		orderLine.setC_CompensationGroup_SchemaLine_ID(schemaLineId);
-		orderLine.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOverId);
+		orderLine.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(schemaLineId));
+		orderLine.setC_CompensationGroup_ContractSettings_TakeOver_ID(ContractSettingsTakeOverId.toRepoId(takeOverId));
 		saveRecord(orderLine);
 
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setC_Order_ID(order.getC_Order_ID());
-		ic.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		ic.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		ic.setM_Product_ID(discountProductId);
+		ic.setM_Product_ID(discountProductId.getRepoId());
 		ic.setIsGroupCompensationLine(true);
-		ic.setC_UOM_ID(uomId);
-		ic.setPrice_UOM_ID(uomId);
+		ic.setC_UOM_ID(uomId.getRepoId());
+		ic.setPrice_UOM_ID(uomId.getRepoId());
 		ic.setQtyToInvoice(BigDecimal.ONE);
 		ic.setPriceEntered(BigDecimal.ZERO);
 		ic.setLineNetAmt(BigDecimal.ZERO);

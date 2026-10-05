@@ -120,6 +120,8 @@ public class OrderGroupRepositoryTest
 		// Build repo (no advisors needed for this test).
 		repo = new OrderGroupRepository(
 				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
+				Optional.empty(),
+				new GroupTemplateRepository(Optional.empty()),
 				Optional.empty());
 	}
 

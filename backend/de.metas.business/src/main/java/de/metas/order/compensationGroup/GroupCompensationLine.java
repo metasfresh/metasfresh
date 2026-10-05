@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.exceptions.AdempiereException;
@@ -88,9 +89,10 @@ public final class GroupCompensationLine
 	@Nullable
 	private final ProductCategoryId appliesToProductCategoryId;
 
-	/** Repo id of the contract take-over record this line stems from; 0 = none */
+	/** Contract take-over record this line stems from; {@code null} = none */
 	@Getter
-	private final int takeOverId;
+	@Nullable
+	private final ContractSettingsTakeOverId takeOverId;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
 	@Getter
@@ -112,7 +114,7 @@ public final class GroupCompensationLine
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
-			final int takeOverId,
+			@Nullable final ContractSettingsTakeOverId takeOverId,
 			@Nullable final String description)
 	{
 		this.repoId = repoId;
@@ -194,12 +196,12 @@ public final class GroupCompensationLine
 	}
 
 	/**
-	 * @return {@code true} if this is an own take-over line (it stems from a contract take-over record); such a line is always
-	 * computed on its applies-to category's full regular-lines base and never compounds with other lines
+	 * @return {@code true} if this line was added by a contract take-over. Its base is always the full regular-lines amount
+	 * of its category, even if the group is not additive.
 	 */
 	public boolean isTakeOverOwnLine()
 	{
-		return takeOverId > 0;
+		return takeOverId != null;
 	}
 
 }

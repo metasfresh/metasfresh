@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -26,7 +27,7 @@ import lombok.Value;
  */
 
 @Value
-public class GroupTemplateLineId
+public class GroupTemplateLineId implements RepoIdAware
 {
 	int repoId;
 
@@ -47,6 +48,6 @@ public class GroupTemplateLineId
 
 	private GroupTemplateLineId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CompensationGroup_SchemaLine_ID");
 	}
 }

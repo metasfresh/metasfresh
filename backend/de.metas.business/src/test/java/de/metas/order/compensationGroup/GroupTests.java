@@ -17,6 +17,7 @@ import lombok.NonNull;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
@@ -206,7 +207,7 @@ public class GroupTests
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
 				.appliesToProductCategoryId(appliesToProductCategoryId)
-				.takeOverId(540001)
+				.takeOverId(ContractSettingsTakeOverId.ofRepoId(540001))
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)
@@ -368,7 +369,7 @@ public class GroupTests
 	}
 
 	/**
-	 * An own take-over line (takeOverId &gt; 0) is always computed on its category's full regular-lines base, even in a
+	 * An own take-over line (takeOverId set) is always computed on its category's full regular-lines base, even in a
 	 * non-additive (compounding) group with an earlier fixed-amount line on the same category, and it is left out of that
 	 * category's running total, so a later compounding line does not compound with it.
 	 */

@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
@@ -33,11 +34,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class OrderGroupRepository_TakeOver_Test
 {
-	private static final int TAKE_OVER_ID = 540123;
+	private static final ContractSettingsTakeOverId TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540123);
 
 	private ProductId productId;
 	private I_C_Order order;
-	private int orderCompensationGroupId;
 	private GroupId groupId;
 	private OrderGroupRepository repo;
 	private GroupCompensationLineCreateRequestFactory requestFactory;
@@ -62,13 +62,12 @@ public class OrderGroupRepository_TakeOver_Test
 		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
 		groupHeader.setC_Order_ID(order.getC_Order_ID());
 		saveRecord(groupHeader);
-		orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
-		groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), groupHeader.getC_Order_CompensationGroup_ID());
 
 		Services.registerService(IOrderLineBL.class, new OrderGroupRepositoryTest.StubOrderLineBL(order));
 
 		requestFactory = new GroupCompensationLineCreateRequestFactory();
-		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty());
+		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), new GroupTemplateRepository(Optional.empty()), Optional.empty());
 	}
 
 	@Test
@@ -77,7 +76,7 @@ public class OrderGroupRepository_TakeOver_Test
 		final I_C_OrderLine orderLine = createAndSaveCompensationLine(
 				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).takeOverId(TAKE_OVER_ID).build());
 
-		assertThat(orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()).isEqualTo(TAKE_OVER_ID);
+		assertThat(orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()).isEqualTo(TAKE_OVER_ID.getRepoId());
 	}
 
 	@Test

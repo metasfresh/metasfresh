@@ -57,7 +57,7 @@ public class GroupCompensationLineCreateRequestFactory
 
 		final GroupCompensationType type = resolveGroupCompensationType(templateLine.getCompensationType(), product);
 
-		final GroupCompensationAmtType amtType = resolveGroupCompensationAmtType(product);
+		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
 		final Percent percentage;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
@@ -84,12 +84,7 @@ public class GroupCompensationLineCreateRequestFactory
 				.build();
 	}
 
-	/**
-	 * Resolves the <b>effective</b> compensation type of a (template) line, exactly as a created line gets it: the template's
-	 * own type when set, else derived from the product ({@code M_Product.GroupCompensationType}, default Discount). A schema
-	 * line leaves the template type null, so its real type comes from the product — callers deciding a line's type must use
-	 * this, not the raw template type.
-	 */
+	/** @return the template line's type if set, else the product's; i.e. the type a created compensation line gets */
 	public static GroupCompensationType resolveGroupCompensationType(
 			@Nullable final GroupCompensationType templateType,
 			@NonNull final I_M_Product product)
@@ -97,20 +92,16 @@ public class GroupCompensationLineCreateRequestFactory
 		return templateType != null ? templateType : extractGroupCompensationType(product);
 	}
 
-	/** Resolves the effective compensation amount type from the product ({@code M_Product.GroupCompensationAmtType}, default Percent), as a created line gets it. */
-	public static GroupCompensationAmtType resolveGroupCompensationAmtType(@NonNull final I_M_Product product)
-	{
-		return extractGroupCompensationAmtType(product);
-	}
-
-	private static GroupCompensationType extractGroupCompensationType(final I_M_Product product)
+	/** @return the product's {@code GroupCompensationType}, Discount if not set */
+	public static GroupCompensationType extractGroupCompensationType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationType())
 						.orElse(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private static GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
+	/** @return the product's {@code GroupCompensationAmtType}, Percent if not set */
+	public static GroupCompensationAmtType extractGroupCompensationAmtType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationAmtType())

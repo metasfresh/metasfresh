@@ -30,6 +30,7 @@ import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,7 +52,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver
 {
 	private static final AdMessageKey MSG_TakeOverOwnLineProductNotPercentDiscount = AdMessageKey.of("ContractCompensationGroup_TakeOverOwnLineProductNotPercentDiscount");
 
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -59,18 +60,16 @@ public class C_CompensationGroup_ContractSettings_TakeOver
 					I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_IsActive })
 	public void assertOwnLineProductIsPercentDiscount(final I_C_CompensationGroup_ContractSettings_TakeOver record)
 	{
-		if (!record.isActive() || record.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (!record.isActive() || productId == null)
 		{
 			return;
 		}
 
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final I_M_Product product = productBL.getById(productId);
 
-		// Pass null so the product's OWN type is resolved: this validation is intentionally stricter than line
-		// creation (which forces Discount), rejecting a non-Discount product rather than silently treating it as one.
-		final GroupCompensationType type = GroupCompensationLineCreateRequestFactory.resolveGroupCompensationType(null, product);
-		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.resolveGroupCompensationAmtType(product);
+		final GroupCompensationType type = GroupCompensationLineCreateRequestFactory.extractGroupCompensationType(product);
+		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.extractGroupCompensationAmtType(product);
 
 		if (type != GroupCompensationType.Discount || amtType != GroupCompensationAmtType.Percent)
 		{
