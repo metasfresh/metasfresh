@@ -13,10 +13,12 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -109,6 +111,11 @@ public class RefundContract
 
 		Check.fail("This contract has no config with id={}; this={}", refundConfigId, this);
 		return null;
+	}
+
+	public ConditionsId getConditionsId()
+	{
+		return CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getConditionsId);
 	}
 
 	public BonusRecipient extractBonusRecipient()

@@ -1,9 +1,13 @@
 package de.metas.contracts.refund.packaging;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -29,6 +33,35 @@ public class RefundPackagingFilter
 	 */
 	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final OrderLineId orderLineId)
 	{
-		return true; // TODO
+		final ImmutableSet<Integer> packingMaterialIds = retrievePackingMaterialIds(conditionsId);
+		if (packingMaterialIds.isEmpty())
+		{
+			return true;
+		}
+
+		if (orderLineId == null)
+		{
+			return false;
+		}
+
+		return providers.stream()
+				.map(provider -> provider.getPackingMaterialId(orderLineId))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.findFirst()
+				.map(packingMaterialIds::contains)
+				.orElse(false);
+	}
+
+	private static ImmutableSet<Integer> retrievePackingMaterialIds(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.create()
+				.listDistinct(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_M_HU_PackingMaterial_ID, Integer.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

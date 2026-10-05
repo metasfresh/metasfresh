@@ -13,6 +13,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -61,6 +62,10 @@ public class AssignableInvoiceCandidate
 	@Nullable
 	BPartnerId shipmentBPartnerId;
 
+	/** The sales order line the candidate stems from; {@code null} if it has none. */
+	@Nullable
+	OrderLineId orderLineId;
+
 	ProductId productId;
 	LocalDate invoiceableFrom;
 
@@ -83,6 +88,7 @@ public class AssignableInvoiceCandidate
 			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@Nullable final BPartnerId shipmentBPartnerId,
+			@Nullable final OrderLineId orderLineId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
@@ -94,6 +100,7 @@ public class AssignableInvoiceCandidate
 		this.id = id;
 		this.bpartnerLocationId = bpartnerLocationId;
 		this.shipmentBPartnerId = shipmentBPartnerId;
+		this.orderLineId = orderLineId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;

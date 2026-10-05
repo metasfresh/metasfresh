@@ -31,6 +31,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.CandidateAssignServiceAllQties;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -69,6 +70,7 @@ public class CandidateAssignmentService
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private final RefundConfigChangeService refundConfigChangeService;
+	private final RefundPackagingFilter refundPackagingFilter;
 
 	public CandidateAssignmentService(
 			@NonNull final RefundContractRepository refundContractRepository,
@@ -76,7 +78,8 @@ public class CandidateAssignmentService
 			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
 			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
-			@NonNull final RefundConfigChangeService refundConfigChangeService)
+			@NonNull final RefundConfigChangeService refundConfigChangeService,
+			@NonNull final RefundPackagingFilter refundPackagingFilter)
 	{
 		this.refundContractRepository = refundContractRepository;
 		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
@@ -84,17 +87,22 @@ public class CandidateAssignmentService
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 		this.refundConfigChangeService = refundConfigChangeService;
+		this.refundPackagingFilter = refundPackagingFilter;
 	}
 
 	/**
 	 * Assigns the given candidate to <b>every</b> refund contract that matches it; each contract gets the candidate's full amount.
+	 * A contract whose conditions are restricted to some packaging options only matches a candidate whose order line is delivered in one of them.
 	 * The assignments to contracts that don't match anymore are removed.
 	 */
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
 		final RefundContractQuery refundContractQuery = RefundContractQuery.of(assignableCandidate);
-		final List<RefundContract> refundContracts = refundContractRepository.getByQuery(refundContractQuery);
+		final List<RefundContract> refundContracts = refundContractRepository.getByQuery(refundContractQuery)
+				.stream()
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getOrderLineId()))
+				.collect(ImmutableList.toImmutableList());
 
 		if (refundContracts.isEmpty())
 		{

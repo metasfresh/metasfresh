@@ -14,6 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.order.OrderShipmentBPartners;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -115,6 +116,7 @@ public class AssignableInvoiceCandidateFactory
 		return AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
+				.orderLineId(OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID()))
 				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID())))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)

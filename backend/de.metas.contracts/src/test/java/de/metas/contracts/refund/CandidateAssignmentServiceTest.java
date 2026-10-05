@@ -14,6 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,7 +143,8 @@ public class CandidateAssignmentServiceTest
 				assignableInvoiceCandidateRepository,
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
-				refundConfigChangeService);
+				refundConfigChangeService,
+				new RefundPackagingFilter(Optional.empty()));
 
 		refundTestTools = RefundTestTools.newInstance();
 

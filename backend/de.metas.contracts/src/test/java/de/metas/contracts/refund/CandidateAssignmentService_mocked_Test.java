@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
+import java.util.Optional;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -125,7 +127,8 @@ public class CandidateAssignmentService_mocked_Test
 				assignableInvoiceCandidateRepository,
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
-				refundConfigChangeService);
+				refundConfigChangeService,
+				new RefundPackagingFilter(Optional.empty()));
 	}
 
 	@Test
