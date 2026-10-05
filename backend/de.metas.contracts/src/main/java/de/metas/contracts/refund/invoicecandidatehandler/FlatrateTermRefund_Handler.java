@@ -1,26 +1,25 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.CandidateAssignmentService;
-import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
+import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.contracts.refund.RefundConfigs;
-import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
+import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -28,16 +27,17 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.lang.SOTrx;
-import org.compiere.util.TimeUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -134,7 +134,7 @@ public class FlatrateTermRefund_Handler
 		final RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
 		final RefundContract refundContract = refundContractRepository.getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
 		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundContract.getRefundConfigs());
-		if (refundProductId == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0)
+		if (refundProductId == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
 		{
 			return PriceAndTax.NONE;
 		}

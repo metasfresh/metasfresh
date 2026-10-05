@@ -48,6 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -121,7 +122,7 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	{
 		final ProductId bonusProductId = createProduct();
 		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
-		when(pricingBL.createInitialContext(eq(ORG_ID), eq(bonusProductId), eq(BILL_BPARTNER_ID), any(), eq(SOTrx.SALES))).thenReturn(pricingContext);
+		when(pricingBL.createInitialContext(eq(ORG_ID), eq(bonusProductId), eq(BILL_BPARTNER_ID), argThat(quantity -> quantity.toBigDecimal().compareTo(BigDecimal.ONE) == 0 && quantity.getUomId().getRepoId() == uom.getC_UOM_ID()), eq(SOTrx.SALES))).thenReturn(pricingContext);
 
 		final PriceAndTax result = handler.calculatePriceAndTax(ic);
 
@@ -194,6 +195,18 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 
 		assertThat(handler.calculatePriceAndTax(ic)).isSameAs(PriceAndTax.NONE);
 		verify(pricingBL, never()).calculatePrice(any());
+	}
+
+	@Test
+	public void withoutBillLocation_taxRemainsUnchanged()
+	{
+		final ProductId bonusProductId = createProduct();
+		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
+		ic.setBill_Location_ID(0);
+		saveRecord(ic);
+		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
+
+		assertThat(handler.calculatePriceAndTax(ic)).isSameAs(PriceAndTax.NONE);
 	}
 
 	/**
