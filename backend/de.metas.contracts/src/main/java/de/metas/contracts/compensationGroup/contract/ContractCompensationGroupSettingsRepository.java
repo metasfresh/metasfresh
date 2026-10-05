@@ -16,6 +16,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -114,6 +115,34 @@ public class ContractCompensationGroupSettingsRepository
 				.collect(ImmutableMap.toImmutableMap(
 						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
 						record -> ProductCategoryId.ofRepoId(record.getM_Product_Category_ID())));
+	}
+
+	/**
+	 * @return whether the product is listed on an active take-over product record of any active take-over record of the given
+	 * take-over record's settings, other than {@code excludeTakeOverProductId}
+	 */
+	public boolean isProductListedInSameSettings(
+			@NonNull final ContractSettingsTakeOverId takeOverId,
+			@NonNull final ProductId productId,
+			@Nullable final ContractSettingsTakeOverProductId excludeTakeOverProductId)
+	{
+		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = load(takeOverId, I_C_CompensationGroup_ContractSettings_TakeOver.class);
+
+		final ImmutableList<ContractSettingsTakeOverId> takeOverIdsOfSettings = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, takeOver.getC_CompensationGroup_ContractSettings_ID())
+				.create()
+				.listIds(ContractSettingsTakeOverId::ofRepoId);
+
+		final IQueryBuilder<I_C_CompensationGroup_ContractSettings_TakeOver_Product> queryBuilder = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_M_Product_ID, productId)
+				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIdsOfSettings);
+		if (excludeTakeOverProductId != null)
+		{
+			queryBuilder.addNotEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_Product_ID, excludeTakeOverProductId);
+		}
+		return queryBuilder.create().anyMatch();
 	}
 
 	/** @return the settings' active take-over records, each with its active listed customer products */

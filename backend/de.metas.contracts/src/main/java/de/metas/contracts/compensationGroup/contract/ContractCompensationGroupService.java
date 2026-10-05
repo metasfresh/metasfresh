@@ -220,7 +220,7 @@ public class ContractCompensationGroupService
 			final Percent vendorPercent = vendorLine.getPercentage(); // non-null by findMergeableLineIndex
 			lines.set(mergeIndex, vendorLine.toBuilder()
 					.percentage(vendorPercent.add(takenOverPercent))
-					.description(mergeDescription(vendorPercent, vendorLine.getProductId(), takeOver))
+					.description(createMergedLineDescription(vendorPercent, vendorLine.getProductId(), takeOver))
 					.build());
 		}
 		else
@@ -231,7 +231,7 @@ public class ContractCompensationGroupService
 					.percentage(takenOverPercent)
 					.appliesToProductCategoryId(categoryId)
 					.takeOverId(record.getTakeOverId())
-					.description(appendDescription(takeOver))
+					.description(createAppendedLineDescription(takeOver))
 					.build());
 		}
 	}
@@ -279,25 +279,26 @@ public class ContractCompensationGroupService
 	}
 
 	/** e.g. {@code "3% Bonus Vendor + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the customer discount products taken over. */
-	private String mergeDescription(
+	private String createMergedLineDescription(
 			@NonNull final Percent vendorPercent,
 			@NonNull final ProductId vendorProductId,
 			@NonNull final TakeOverResult takeOver)
 	{
 		return formatPercent(vendorPercent) + " " + productBL.getProductName(vendorProductId)
-				+ " + " + appendDescription(takeOver);
+				+ " + " + createAppendedLineDescription(takeOver);
 	}
 
 	/** e.g. {@code "3% Bonus Ware"}: the taken-over percentage with the customer discount products that were actually taken over (not every product the record lists). */
-	private String appendDescription(@NonNull final TakeOverResult takeOver)
+	private String createAppendedLineDescription(@NonNull final TakeOverResult takeOver)
 	{
-		return formatPercent(takeOver.getSummedPercent()) + " " + takenOverProductNames(takeOver);
+		return formatPercent(takeOver.getSummedPercent()) + " " + getTakenOverProductNames(takeOver);
 	}
 
-	private String takenOverProductNames(@NonNull final TakeOverResult takeOver)
+	private String getTakenOverProductNames(@NonNull final TakeOverResult takeOver)
 	{
-		return takeOver.getTakenOverProductIds().stream()
-				.map(productBL::getProductName)
+		return productBL.getProductNames(takeOver.getTakenOverProductIds())
+				.values()
+				.stream()
 				.sorted()
 				.collect(Collectors.joining(", "));
 	}

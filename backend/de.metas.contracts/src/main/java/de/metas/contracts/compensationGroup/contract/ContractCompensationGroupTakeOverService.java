@@ -55,13 +55,13 @@ public class ContractCompensationGroupTakeOverService
 			@NonNull final I_C_Order purchaseOrder,
 			@NonNull final ContractCompensationGroupSettings settings)
 	{
-		if (purchaseOrder.isSOTrx() || !purchaseOrder.isDropShip() || purchaseOrder.getLink_Order_ID() <= 0)
+		final OrderId linkedSalesOrderId = OrderId.ofRepoIdOrNull(purchaseOrder.getLink_Order_ID());
+		if (purchaseOrder.isSOTrx() || !purchaseOrder.isDropShip() || linkedSalesOrderId == null)
 		{
 			return ImmutableList.of();
 		}
 
-		final List<LinkedContractDiscountLine> salesOrderLines = contractGroupRepository
-				.linkedSalesOrderContractDiscountLines(OrderId.ofRepoId(purchaseOrder.getLink_Order_ID()));
+		final List<LinkedContractDiscountLine> salesOrderLines = contractGroupRepository.getContractPercentDiscountLines(linkedSalesOrderId);
 
 		return settingsRepository.getTakeOverRecords(settings.getSettingsId())
 				.stream()

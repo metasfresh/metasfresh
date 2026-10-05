@@ -138,7 +138,7 @@ public class ContractCompensationGroupRepository
 	 * {@code GroupCompensationPercentage}). Amount ({@code PriceAndQty}) lines, surcharges and lines of manually
 	 * created groups are excluded; the contract-created predicate is {@link #createContractCompensationLineMatcher()}.
 	 */
-	public List<LinkedContractDiscountLine> linkedSalesOrderContractDiscountLines(@NonNull final OrderId salesOrderId)
+	public List<LinkedContractDiscountLine> getContractPercentDiscountLines(@NonNull final OrderId salesOrderId)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()

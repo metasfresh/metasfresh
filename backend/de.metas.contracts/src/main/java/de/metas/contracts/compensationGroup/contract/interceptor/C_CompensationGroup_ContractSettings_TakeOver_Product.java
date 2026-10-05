@@ -22,20 +22,21 @@
 
 package de.metas.contracts.compensationGroup.contract.interceptor;
 
-import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverProductId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Within one compensation-group contract settings, a customer discount product may be listed on at most one take-over
@@ -44,12 +45,13 @@ import java.util.List;
  */
 @Interceptor(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
 @Component
+@RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver_Product
 {
 	private static final AdMessageKey MSG_TakeOverProductNotUnique = AdMessageKey.of("ContractCompensationGroup_TakeOverProductNotUnique");
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ContractCompensationGroupSettingsRepository settingsRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -63,30 +65,15 @@ public class C_CompensationGroup_ContractSettings_TakeOver_Product
 			return;
 		}
 
-		// Load the parent take-over record via IQueryBL, not InterfaceWrapperHelper.load: the architecture rule
-		// (service-injection.md §4) restricts direct InterfaceWrapperHelper.save/saveRecord/load to *Repository/*DAO classes.
-		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, record.getC_CompensationGroup_ContractSettings_TakeOver_ID())
-				.create()
-				.firstOnlyNotNull(I_C_CompensationGroup_ContractSettings_TakeOver.class);
-
-		final List<Integer> takeOverIdsOfSettings = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, takeOver.getC_CompensationGroup_ContractSettings_ID())
-				.create()
-				.listIds();
-
-		final boolean productAlreadyListed = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_M_Product_ID, record.getM_Product_ID())
-				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIdsOfSettings)
-				.addNotEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_Product_ID, record.getC_CompensationGroup_ContractSettings_TakeOver_Product_ID())
-				.create()
-				.anyMatch();
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final boolean productAlreadyListed = settingsRepository.isProductListedInSameSettings(
+				ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
+				productId,
+				ContractSettingsTakeOverProductId.ofRepoIdOrNull(record.getC_CompensationGroup_ContractSettings_TakeOver_Product_ID()));
 
 		if (productAlreadyListed)
 		{
-			throw new AdempiereException(MSG_TakeOverProductNotUnique, productBL.getProductValueAndName(ProductId.ofRepoId(record.getM_Product_ID())))
+			throw new AdempiereException(MSG_TakeOverProductNotUnique, productBL.getProductValueAndName(productId))
 					.markAsUserValidationError();
 		}
 	}
