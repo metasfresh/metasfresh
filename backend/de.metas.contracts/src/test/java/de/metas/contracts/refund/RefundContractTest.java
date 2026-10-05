@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,8 @@ public class RefundContractTest
 	@BeforeEach
 	public void init()
 	{
+		AdempiereTestHelper.get().init();
+
 		final InvoiceSchedule invoiceSchedule = InvoiceSchedule.builder()
 				.id(InvoiceScheduleId.ofRepoId(5))
 				.frequency(Frequency.MONTLY)
@@ -113,5 +116,47 @@ public class RefundContractTest
 		final RefundConfig result = refundContract.getRefundConfig(FIVE);
 
 		assertThat(result).isEqualTo(refundConfig2);
+	}
+
+	/**
+	 * The invoice day 31 means the end of the month, also after a shorter month: June 30 must not shift every following period end to the 30th.
+	 */
+	@Test
+	public void computeNextInvoiceDate_endOfMonthScheduleDoesNotDrift()
+	{
+		final RefundContract contract = contractWithSchedule(1, LocalDate.of(2026, 6, 1));
+
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 6, 10)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 6, 30));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 7, 5)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 7, 31));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 8, 5)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 8, 31));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 10, 5)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 10, 31));
+	}
+
+	@Test
+	public void computeNextInvoiceDate_quarterlyEndOfMonthScheduleDoesNotDrift()
+	{
+		final RefundContract contract = contractWithSchedule(3, LocalDate.of(2026, 7, 1));
+
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 7, 15)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 9, 30));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 10, 15)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 12, 31));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2027, 1, 15)).getDateToInvoice()).isEqualTo(LocalDate.of(2027, 3, 31));
+	}
+
+	private RefundContract contractWithSchedule(final int invoiceDistance, final LocalDate startDate)
+	{
+		final InvoiceSchedule endOfMonthSchedule = InvoiceSchedule.builder()
+				.id(InvoiceScheduleId.ofRepoId(6))
+				.frequency(Frequency.MONTLY)
+				.invoiceDayOfMonth(31)
+				.invoiceDistance(invoiceDistance)
+				.build();
+
+		return RefundContract.builder()
+				.id(FlatrateTermId.ofRepoId(101))
+				.bPartnerId(BPartnerId.ofRepoId(200))
+				.startDate(startDate)
+				.endDate(startDate.plusYears(2))
+				.refundConfig(refundConfig1.toBuilder().invoiceSchedule(endOfMonthSchedule).build())
+				.build();
 	}
 }
