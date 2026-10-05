@@ -27,6 +27,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.document.DocTypeId;
@@ -62,6 +63,7 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	@NonNull private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_Tax_StepDefData taxTable;
 
 	/**
 	 * Waits for the refund invoice candidate of a refund term and checks its values.
@@ -74,6 +76,7 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	 *   <b>PriceActual</b> — (optional) refund amount<br>
 	 *   <b>NetAmtToInvoice</b> — (optional) refund amount to invoice<br>
 	 *   <b>DateToInvoice</b> — (optional, yyyy-MM-dd) date the refund can be invoiced from<br>
+	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) expected tax of the refund<br>
 	 *   <b>DocBaseType</b>, <b>DocSubType</b> — (optional) type of the document the refund is invoiced with<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData, M_Product_StepDefData, C_Invoice_Candidate_StepDefData
 	 * @cucumber.example
@@ -166,6 +169,11 @@ public class C_Invoice_Candidate_Assignment_StepDef
 		row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice)
 				.filter(expected -> !expected.equals(TimeUtil.asLocalDate(candidate.getDateToInvoice())))
 				.ifPresent(expected -> mismatch.append("DateToInvoice expected=").append(expected).append(" actual=").append(candidate.getDateToInvoice()).append("; "));
+
+		row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
+				.map(identifier -> taxTable.getId(identifier).getRepoId())
+				.filter(expectedTaxId -> expectedTaxId != candidate.getC_Tax_ID())
+				.ifPresent(expectedTaxId -> mismatch.append("C_Tax_ID expected=").append(expectedTaxId).append(" actual=").append(candidate.getC_Tax_ID()).append("; "));
 
 		final String expectedDocBaseType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType).orElse(null);
 		final String expectedDocSubType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType).orElse(null);

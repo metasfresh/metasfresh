@@ -88,9 +88,9 @@ Feature: The tax of a refund follows its bonus product
       | olHigh     | order1                | highGoods               | 10         |
     And the order identified by order1 is completed
     And after not more than 60s, refund C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | M_Product_ID | NetAmtToInvoice |
-      | refundOfLow            | termLow            | highBonus    | 30              |
-      | refundOfHigh           | termHigh           | lowBonus     | 30              |
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | M_Product_ID | NetAmtToInvoice | C_Tax_ID |
+      | refundOfLow            | termLow            | highBonus    | 30              | highTax  |
+      | refundOfHigh           | termHigh           | lowBonus     | 30              | lowTax   |
 
     And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule |
@@ -109,11 +109,11 @@ Feature: The tax of a refund follows its bonus product
     Then Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID    | C_Tax_ID |
       | C_Receivable_Acct     |             | 35.70 EUR   | customerBP    | invoiceOfLow | -        |
-      | P_Revenue_Acct        | 30 EUR      |             | customerBP    | invoiceOfLow | -        |
+      | P_Revenue_Acct        | 30 EUR      |             | customerBP    | invoiceOfLow | highTax  |
       | T_Due_Acct            | 5.70 EUR    |             | customerBP    | invoiceOfLow | highTax  |
     # 30 net: 7 % of the bonus product = 2.10 (the sold goods have 19 %)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID     | C_Tax_ID |
       | C_Receivable_Acct     |             | 32.10 EUR   | customerBP    | invoiceOfHigh | -        |
-      | P_Revenue_Acct        | 30 EUR      |             | customerBP    | invoiceOfHigh | -        |
+      | P_Revenue_Acct        | 30 EUR      |             | customerBP    | invoiceOfHigh | lowTax   |
       | T_Due_Acct            | 2.10 EUR    |             | customerBP    | invoiceOfHigh | lowTax   |
