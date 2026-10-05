@@ -80,6 +80,12 @@ public class RefundConfigRepository
 				.anyMatch();
 	}
 
+	/**
+	 * Note on the product: if the query has a product, then configs of that product or without product are candidates;
+	 * as soon as there is a candidate with a product, only the product-specific candidates are returned and the ones without product are dropped
+	 * (so a product-specific config wins over a category-only config of the same conditions).
+	 * A config's product category is not considered here; it is a condition of the contract match, see {@link RefundContractRepository#getByQuery(RefundContractQuery)}.
+	 */
 	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)
 	{
 		final IQueryBuilder<I_C_Flatrate_RefundConfig> builder = Services.get(IQueryBL.class)

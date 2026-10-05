@@ -11,12 +11,14 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Comparator;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
-import static de.metas.util.collections.CollectionUtils.extractSingleElementOrDefault;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
 
 /*
@@ -99,16 +101,33 @@ public class RefundConfigs
 	/**
 	 * @return the product that the refund line is booked on: the configs' bonus product, or else their product.
 	 *         {@code null} if the configs have neither, e.g. because their base is a product category.
+	 * @throws RuntimeException if the configs have more than one bonus product, or more than one product
 	 */
 	@Nullable
 	public ProductId extractRefundProductId(@NonNull final List<RefundConfig> refundConfigs)
 	{
-		final ProductId bonusProductId = extractSingleElementOrDefault(refundConfigs, RefundConfig::getBonusProductId, null);
+		final ProductId bonusProductId = extractSingleNonNullOrNull(refundConfigs, RefundConfig::getBonusProductId);
 		if (bonusProductId != null)
 		{
 			return bonusProductId;
 		}
-		return extractSingleElementOrDefault(refundConfigs, RefundConfig::getProductId, null);
+		return extractSingleNonNullOrNull(refundConfigs, RefundConfig::getProductId);
+	}
+
+	@Nullable
+	private ProductId extractSingleNonNullOrNull(
+			@NonNull final List<RefundConfig> refundConfigs,
+			@NonNull final java.util.function.Function<RefundConfig, ProductId> productIdExtractor)
+	{
+		final ImmutableSet<ProductId> productIds = refundConfigs.stream()
+				.map(productIdExtractor)
+				.filter(java.util.Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (productIds.isEmpty())
+		{
+			return null;
+		}
+		return singleElement(productIds);
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)
@@ -126,6 +145,16 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
+		}
+
+		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.
+		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(java.util.Objects::nonNull).distinct().count();
+		if (distinctBonusProducts > 1)
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same bonus product; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException("All refund configurations of one contract condition need to have the same Bonus product / Bonusprodukt.")
+					.markAsUserValidationError();
 		}
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))

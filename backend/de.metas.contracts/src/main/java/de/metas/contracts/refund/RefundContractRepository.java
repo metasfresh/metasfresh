@@ -128,6 +128,7 @@ public class RefundContractRepository
 	/**
 	 * @return all refund contracts that match the query. They are additive: every one of them applies.
 	 *         A contract whose configs have a product category base only matches a product of that category or of one of its sub-categories.
+	 *         A config with both a product and a category requires both: the term's product is the config's product, and the product has to be in the category.
 	 */
 	public ImmutableList<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
 	{
