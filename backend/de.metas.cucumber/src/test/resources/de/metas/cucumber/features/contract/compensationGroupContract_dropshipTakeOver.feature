@@ -69,7 +69,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
 
   # ##############################################################################################
   # Real-world case: the store orders, the head office is billed and holds a 3% "Bonus Ware" contract.
-  # The drop-ship vendor has its own 3% "Ware" contract plus a take-over record on "Ware" listing "Bonus Ware".
+  # The drop-ship vendor has its own 3% "Ware" contract plus a take-over record on "Ware" with "Bonus Ware" as customer discount product.
   # SO completes -> drop-ship PO: ONE "Bonus Vendor" line of 3% own + 3% taken over = 6% of the goods
   # (3 goods lines = 2155.20 -> 129.31); no discount on the 2 Pfand lines; the line description names both parts;
   # the purchase invoice posts the discount to the discount product's own expense account.
@@ -247,15 +247,15 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   # ##############################################################################################
   # Exclusion is by discount PRODUCT, not by category:
   # a packaging bonus ("Bonus Verpackung" 0.6%) and a goods-based bonus with its OWN discount product
-  # ("Bonus Ware 7 Prozent" 0.6% on goods) that the take-over record does not list are not taken over.
-  # Only the listed "Bonus Ware" (3%) is added to the vendor's own 3% -> one 6% line = -129.31.
+  # ("Bonus Ware 7 Prozent" 0.6% on goods) that is not a customer discount product of the take-over record are not taken over.
+  # Only the customer discount product "Bonus Ware" (3%) is added to the vendor's own 3% -> one 6% line = -129.31.
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS2
-  Scenario: Packaging bonus and a goods bonus with an unlisted discount product are not taken over
+  Scenario: Packaging bonus and a goods bonus with a non-customer discount product are not taken over
     Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
@@ -365,7 +365,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # only "Bonus Ware" is listed: 3% own + 3% taken over = 6% of the goods = 129.31; the 0.6% packaging bonus and the 0.6% goods bonus with its own discount product are NOT taken over
+    # only "Bonus Ware" is a customer discount product: 3% own + 3% taken over = 6% of the goods = 129.31; the 0.6% packaging bonus and the 0.6% goods bonus with its own discount product are NOT taken over
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
       | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
@@ -1535,7 +1535,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
 
   # ##############################################################################################
   # Not taken over: a product-bundle group, a manual discount and a fixed-amount contract line on the sales order
-  # (all use LISTED discount products). Only the contract's 3% is taken over;
+  # (all use customer discount products). Only the contract's 3% is taken over;
   # the bundle's goods on the purchase order still receive it: 6% of 4 goods lines (2255.20) = -135.31.
   # ##############################################################################################
 
@@ -1645,13 +1645,13 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_elstar2  | orderDropship         | elstar2                 | 1          | vendorDropship                  |
       | ol_gala     | orderDropship         | gala                    | 1          | vendorDropship                  |
       | ol_braeburn | orderDropship         | braeburn                | 1          | vendorDropship                  |
-    # the manual groups use a LISTED discount product with high percentages: taking them over would show in the amount
+    # the manual groups use a customer discount product with high percentages: taking them over would show in the amount
     And create compensation group from order lines:
       | C_OrderLine_ID        | M_Product_ID | Name            | CompensationLine  | OPT.GroupCompensationPercentage | OPT.C_BPartner_Vendor_ID |
       | ol_elstar1,ol_elstar2 | bonusManual  | Product bundle  | ol_bundleDiscount | 10                              | vendorDropship           |
       | ol_gala               | bonusManual  | Manual discount | ol_manualDiscount | 5                               | vendorDropship           |
     And the order identified by orderDropship is completed
-    # the contract covers the one remaining goods line: 3% of 100.00 = 3.00; its fixed-amount contract line (listed, but a fixed amount) carries no percentage
+    # the contract covers the one remaining goods line: 3% of 100.00 = 3.00; its fixed-amount contract line (a customer discount product, but a fixed amount) carries no percentage
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price |
       | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 3                               | -3.00 |
@@ -1667,7 +1667,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
       | ol_poBraeburn             | poDropship            | braeburn                | 1          | false                       |                                 |         |
       | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -135.31 |
-    # the description names only the customer discount products that were actually taken over, not every listed one
+    # the description names only the customer discount products that were actually taken over, not every customer discount product of the take-over record
     And validate the take-over composition description of the order lines:
       | C_OrderLine_ID           | Description                           |
       | ol_poBonusVendorDropship | 3% Bonus Vendor_12 + 3% Bonus Ware_12 |
