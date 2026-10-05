@@ -38,11 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-/**
- * Within one compensation-group contract settings, a customer discount product may be listed on at most one take-over
- * record. A single database index cannot express this, because the settings reference sits on the parent take-over
- * record while the product sits on its child.
- */
+/** A customer discount product is listed on at most one take-over of the same settings (no DB index can span parent and child). */
 @Interceptor(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
 @Component
 @RequiredArgsConstructor
@@ -73,8 +69,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver_Product
 
 		if (productAlreadyListed)
 		{
-			throw new AdempiereException(MSG_TakeOverProductNotUnique, productBL.getProductValueAndName(productId))
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_TakeOverProductNotUnique, productBL.getProductValueAndName(productId));
 		}
 	}
 }

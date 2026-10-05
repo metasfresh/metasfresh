@@ -33,5 +33,5 @@ import java.util.Set;
 public interface ContractSettingsTakeOverCategoryProvider
 {
 	/** @return the applies-to product category of each given take-over record; a record that does not exist or has no category is absent */
-	ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToCategories(@NonNull Set<ContractSettingsTakeOverId> takeOverIds);
+	ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToProductCategoryIds(@NonNull Set<ContractSettingsTakeOverId> takeOverIds);
 }

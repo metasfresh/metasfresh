@@ -1,15 +1,22 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -51,10 +58,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-/** The take-over computation: drop-ship detection and the per-record nominal percentage sum. */
+/** The take-over: drop-ship detection, the per-take-over nominal percentage sum, and the merge into / append to the schema's compensation lines. */
 class ContractSettingsTakeOverServiceTest
 {
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
+	private static final ProductCategoryId OTHER_CATEGORY_ID = ProductCategoryId.ofRepoId(102);
 	private static final ProductId OWN_PRODUCT_ID = ProductId.ofRepoId(201); // own-line discount product
 	private static final ProductId BONUS_WARE_ID = ProductId.ofRepoId(202); // listed
 	private static final ProductId BONUS_VERPACKUNG_ID = ProductId.ofRepoId(203); // not listed
@@ -64,13 +72,14 @@ class ContractSettingsTakeOverServiceTest
 	private ContractSettingsTakeOverService service;
 	private UomId uomId;
 	private ProductId goodsProductId;
+	private ContractSettingsTakeOverId takeOverId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		settingsRepository = new ContractCompensationGroupSettingsRepository();
-		service = new ContractSettingsTakeOverService(new ContractSettingsTakeOverRepository(), OrderGroupRepository.newInstanceForUnitTesting());
+		service = new ContractSettingsTakeOverService(new ContractSettingsTakeOverRepository(), OrderGroupRepository.newInstanceForUnitTesting(), new GroupCompensationLineCreateRequestFactory());
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -92,12 +101,12 @@ class ContractSettingsTakeOverServiceTest
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3.0"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7.0"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
 
 		assertThat(results).hasSize(1);
-		assertThat(results.get(0).getTakeOver().getListedCustomerProductIds()).hasSize(1);
+		assertThat(results.get(0).getTakeOver().getCustomerDiscountProductIds()).hasSize(1);
 		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("3.0");
 	}
 
@@ -108,7 +117,7 @@ class ContractSettingsTakeOverServiceTest
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(OTHER_LISTED_ID, "3"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
 
@@ -123,7 +132,7 @@ class ContractSettingsTakeOverServiceTest
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
 
@@ -140,7 +149,7 @@ class ContractSettingsTakeOverServiceTest
 				new LineSpec(BONUS_VERPACKUNG_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_PriceAndQty, "0"),
 				new LineSpec(OTHER_LISTED_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent, "2"));
 		addManualGroupWithDiscountLine(salesOrder, new LineSpec(OTHER_LISTED_ID, "9"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
 
@@ -154,7 +163,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(false, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(false, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		assertThat(service.computeMatches(purchaseOrder, settings)).isEmpty();
 	}
@@ -164,9 +173,11 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
 		final I_C_Order linkedSalesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
-		final I_C_Order dropShipSalesOrder = createPurchaseOrder(true, OrderId.ofRepoId(linkedSalesOrder.getC_Order_ID()));
-		dropShipSalesOrder.setIsSOTrx(true);
-		saveRecord(dropShipSalesOrder);
+		final OrderDropShipInfo dropShipSalesOrder = OrderDropShipInfo.builder()
+				.soTrx(SOTrx.SALES)
+				.dropShip(true)
+				.linkedOrderId(OrderId.ofRepoId(linkedSalesOrder.getC_Order_ID()))
+				.build();
 
 		assertThat(service.computeMatches(dropShipSalesOrder, settings)).isEmpty();
 	}
@@ -175,7 +186,7 @@ class ContractSettingsTakeOverServiceTest
 	void dropShipWithoutLinkedOrder_returnsEmpty()
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, null);
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, null);
 
 		assertThat(service.computeMatches(purchaseOrder, settings)).isEmpty();
 	}
@@ -187,9 +198,165 @@ class ContractSettingsTakeOverServiceTest
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3.0"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7.0"));
-		final I_C_Order purchaseOrder = createPurchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		assertThat(service.computeMatches(purchaseOrder, settings)).isEmpty();
+	}
+
+	@Test
+	void applyToSchema_nothingTakenOver_returnsTheSameSchema()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3"));
+		final GroupTemplate schema = schema(schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", null, null)));
+
+		assertThat(service.applyToSchema(schema, purchaseOrder(false, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)).isSameAs(schema);
+	}
+
+	@Test
+	void applyToSchema_mergesIntoThePercentDiscountLineOfTheSameCategory()
+	{
+		final ProductId vendorBonusId = product("Bonus Vendor", null, null);
+
+		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(schemaLine(Percent.of(3), CATEGORY_ID, vendorBonusId));
+
+		assertThat(lines).containsExactly(GroupTemplateCompensationLine.builder()
+				.productId(vendorBonusId)
+				.percentage(Percent.of(6))
+				.appliesToProductCategoryId(CATEGORY_ID)
+				.description("3% Bonus Vendor + 3% Bonus Ware")
+				.build());
+	}
+
+	@Test
+	void applyToSchema_mergesIntoALineWhoseTemplateTypeOverridesASurchargeProduct()
+	{
+		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, null))
+				.toBuilder()
+				.compensationType(GroupCompensationType.Discount)
+				.build();
+
+		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(vendorLine);
+
+		assertThat(lines).extracting(GroupTemplateCompensationLine::getPercentage).containsExactly(Percent.of(6));
+	}
+
+	@Test
+	void applyToSchema_appendsAnOwnLineWhenTheSchemaHasNoCompensationLine()
+	{
+		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo();
+
+		assertThat(lines).containsExactly(expectedOwnLine());
+	}
+
+	@Test
+	void applyToSchema_appendsWhenTheCategoryLineHasNoPercentage()
+	{
+		final GroupTemplateCompensationLine vendorLine = schemaLine(null, CATEGORY_ID, product("Bonus Vendor", null, null));
+
+		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
+	}
+
+	@Test
+	void applyToSchema_appendsWhenThePercentLineIsOnAnotherCategory()
+	{
+		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), OTHER_CATEGORY_ID, product("Bonus Vendor", null, null));
+
+		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
+	}
+
+	@Test
+	void applyToSchema_appendsWhenTheCategoryLineProductIsASurcharge()
+	{
+		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Surcharge Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+
+		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
+	}
+
+	@Test
+	void applyToSchema_appendsWhenTheCategoryLineProductIsNotAPercentage()
+	{
+		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Fixed Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_PriceAndQty));
+
+		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
+	}
+
+	@Test
+	void applyToSchema_mergesIntoTheFirstPercentDiscountLineOfTheCategoryOnly()
+	{
+		final ProductId vendorBonusId = product("Bonus Vendor", null, null);
+		final GroupTemplateCompensationLine otherCategoryLine = schemaLine(Percent.of(1), OTHER_CATEGORY_ID, vendorBonusId);
+		final GroupTemplateCompensationLine noPercentageLine = schemaLine(null, CATEGORY_ID, vendorBonusId);
+		final GroupTemplateCompensationLine surchargeLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Surcharge Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, null));
+		final GroupTemplateCompensationLine firstPercentDiscountLine = schemaLine(Percent.of(3), CATEGORY_ID, vendorBonusId);
+		final GroupTemplateCompensationLine laterPercentDiscountLine = schemaLine(Percent.of(5), CATEGORY_ID, vendorBonusId);
+
+		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(
+				otherCategoryLine, noPercentageLine, surchargeLine, firstPercentDiscountLine, laterPercentDiscountLine);
+
+		assertThat(lines).containsExactly(
+				otherCategoryLine,
+				noPercentageLine,
+				surchargeLine,
+				firstPercentDiscountLine.toBuilder().percentage(Percent.of(6)).description("3% Bonus Vendor + 3% Bonus Ware").build(),
+				laterPercentDiscountLine);
+	}
+
+	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */
+	private List<GroupTemplateCompensationLine> applyBonusWareTakeOverOf3PercentTo(final GroupTemplateCompensationLine... schemaLines)
+	{
+		final ProductId bonusWareId = product("Bonus Ware", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+		return service.applyToSchema(schema(schemaLines), purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)
+				.getCompensationLines();
+	}
+
+	private GroupTemplateCompensationLine expectedOwnLine()
+	{
+		return GroupTemplateCompensationLine.builder()
+				.productId(OWN_PRODUCT_ID)
+				.compensationType(GroupCompensationType.Discount)
+				.percentage(Percent.of(3))
+				.appliesToProductCategoryId(CATEGORY_ID)
+				.takeOverId(takeOverId)
+				.description("3% Bonus Ware")
+				.build();
+	}
+
+	private static GroupTemplate schema(final GroupTemplateCompensationLine... compensationLines)
+	{
+		return GroupTemplate.builder()
+				.name("vendor schema")
+				.regularLinesToAdd(ImmutableList.of())
+				.compensationLines(ImmutableList.copyOf(compensationLines))
+				.build();
+	}
+
+	/** A schema line as loaded from the schema: its compensation type is left to the product. */
+	private static GroupTemplateCompensationLine schemaLine(
+			@Nullable final Percent percentage,
+			final ProductCategoryId categoryId,
+			final ProductId productId)
+	{
+		return GroupTemplateCompensationLine.builder()
+				.productId(productId)
+				.percentage(percentage)
+				.appliesToProductCategoryId(categoryId)
+				.build();
+	}
+
+	private ProductId product(final String name, @Nullable final String compensationType, @Nullable final String amtType)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setValue(name);
+		product.setName(name);
+		product.setC_UOM_ID(uomId.getRepoId());
+		product.setGroupCompensationType(compensationType);
+		product.setGroupCompensationAmtType(amtType);
+		saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	private ContractCompensationGroupSettings createSettings(final ProductId... listedProductIds)
@@ -205,6 +372,7 @@ class ContractSettingsTakeOverServiceTest
 		takeOver.setM_Product_Category_ID(CATEGORY_ID.getRepoId());
 		takeOver.setM_Product_ID(OWN_PRODUCT_ID.getRepoId());
 		saveRecord(takeOver);
+		takeOverId = ContractSettingsTakeOverId.ofRepoId(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 
 		for (final ProductId productId : listedProductIds)
 		{
@@ -217,14 +385,13 @@ class ContractSettingsTakeOverServiceTest
 		return settingsRepository.getBySettingsId(ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID()));
 	}
 
-	private static I_C_Order createPurchaseOrder(final boolean dropShip, @Nullable final OrderId linkOrderId)
+	private static OrderDropShipInfo purchaseOrder(final boolean dropShip, @Nullable final OrderId linkedOrderId)
 	{
-		final I_C_Order po = newInstance(I_C_Order.class);
-		po.setIsSOTrx(false);
-		po.setIsDropShip(dropShip);
-		po.setLink_Order_ID(OrderId.toRepoId(linkOrderId));
-		saveRecord(po);
-		return po;
+		return OrderDropShipInfo.builder()
+				.soTrx(SOTrx.PURCHASE)
+				.dropShip(dropShip)
+				.linkedOrderId(linkedOrderId)
+				.build();
 	}
 
 	private I_C_Order createSalesOrderWithLines(final LineSpec... lines)

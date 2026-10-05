@@ -1,12 +1,13 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
+import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -30,18 +31,18 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * One take-over record of a contract's compensation-group settings: for products of {@link #productCategoryId},
- * the customer's contract discount lines for {@link #customerDiscountProductIds} are taken over onto the purchase order
- * as a line of {@link #ownLineProductId}.
- */
+/** The drop-ship facts of an order that decide whether it takes over the contract discounts of a linked sales order. */
 @Value
 @Builder
-public class ContractSettingsTakeOver
+public class OrderDropShipInfo
 {
-	@NonNull ContractSettingsTakeOverId id;
-	@NonNull ProductCategoryId productCategoryId;
-	/** the discount product of the purchase order's own take-over line */
-	@NonNull ProductId ownLineProductId;
-	@NonNull @Singular ImmutableSet<ProductId> customerDiscountProductIds;
+	@NonNull SOTrx soTrx;
+	boolean dropShip;
+	@Nullable OrderId linkedOrderId;
+
+	/** @return the linked sales order, if this is a drop-ship purchase order */
+	public Optional<OrderId> getDropShipLinkedSalesOrderId()
+	{
+		return soTrx.isPurchase() && dropShip ? Optional.ofNullable(linkedOrderId) : Optional.empty();
+	}
 }

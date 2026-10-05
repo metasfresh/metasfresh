@@ -41,11 +41,13 @@ public class OrderGroupRepository_TakeOver_Test
 	private GroupId groupId;
 	private OrderGroupRepository repo;
 	private GroupCompensationLineCreateRequestFactory requestFactory;
+	private IQueryBL queryBL;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -67,7 +69,7 @@ public class OrderGroupRepository_TakeOver_Test
 		Services.registerService(IOrderLineBL.class, new OrderGroupRepositoryTest.StubOrderLineBL(order));
 
 		requestFactory = new GroupCompensationLineCreateRequestFactory();
-		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), new GroupTemplateRepository(Optional.empty()), Optional.empty());
+		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), GroupTemplateRepository.newInstanceForUnitTesting(), Optional.empty());
 	}
 
 	@Test
@@ -106,7 +108,7 @@ public class OrderGroupRepository_TakeOver_Test
 				.build();
 		repo.saveGroup(group, storage);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
 				.create()
 				.firstOnlyNotNull(I_C_OrderLine.class);

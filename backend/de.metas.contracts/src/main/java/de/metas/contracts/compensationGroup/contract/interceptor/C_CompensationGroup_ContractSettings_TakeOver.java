@@ -24,35 +24,28 @@ package de.metas.contracts.compensationGroup.contract.interceptor;
 
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.i18n.AdMessageKey;
-import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-/**
- * A take-over record's own-line product becomes an appended compensation line (its type is forced to Discount at line
- * creation; only its amount type is taken from the product). This guard requires the own-line product to be a percentage
- * discount product and refuses anything else where it is entered, for two reasons: a non-Percent amount type would
- * silently collapse the appended line to 0% and lose the take-over; and a non-Discount (e.g. Surcharge) product is a
- * misconfiguration for what is, by design, a discount own line. The guard is therefore deliberately STRICTER than line
- * creation on the type dimension (line creation forces Discount and never inspects the product's own type).
- */
+/** The own-line product must be a percentage discount product: any other product would compute the appended own line as 0%. */
 @Interceptor(I_C_CompensationGroup_ContractSettings_TakeOver.class)
 @Component
+@RequiredArgsConstructor
 public class C_CompensationGroup_ContractSettings_TakeOver
 {
 	private static final AdMessageKey MSG_TakeOverOwnLineProductNotPercentDiscount = AdMessageKey.of("ContractCompensationGroup_TakeOverOwnLineProductNotPercentDiscount");
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -66,15 +59,9 @@ public class C_CompensationGroup_ContractSettings_TakeOver
 			return;
 		}
 
-		final I_M_Product product = productBL.getById(productId);
-
-		final GroupCompensationType type = GroupCompensationLineCreateRequestFactory.extractGroupCompensationType(product);
-		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.extractGroupCompensationAmtType(product);
-
-		if (type != GroupCompensationType.Discount || amtType != GroupCompensationAmtType.Percent)
+		if (!compensationLineCreateRequestFactory.isPercentDiscount(null, productId))
 		{
-			throw new AdempiereException(MSG_TakeOverOwnLineProductNotPercentDiscount, productBL.getProductValueAndName(productId))
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_TakeOverOwnLineProductNotPercentDiscount, productBL.getProductValueAndName(productId));
 		}
 	}
 }

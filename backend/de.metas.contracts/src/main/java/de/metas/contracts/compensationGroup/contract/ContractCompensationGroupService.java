@@ -1,6 +1,5 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -11,42 +10,33 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
-import de.metas.order.compensationGroup.GroupCompensationAmtType;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -103,8 +93,6 @@ public class ContractCompensationGroupService
 	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
 	@NonNull private final ContractSettingsTakeOverService takeOverService;
 
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
 	/**
@@ -133,11 +121,8 @@ public class ContractCompensationGroupService
 
 		final GroupTemplate schema = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
 
-		// Drop-ship take-over: fold the vendor's take-over records (the percentages taken over from the linked sales
-		// order's contract discount lines) into the schema's compensation lines BEFORE candidate selection, so the
-		// take-over category joins candidate selection and an appended own line computes on its own base.
-		// A no-op (same schema) for the sales-order path and the non-drop-ship purchase-order path.
-		final GroupTemplate schemaWithTakeOvers = applyTakeOvers(schema, order, termMatch.getSettings());
+		// before candidate selection, so that a take-over category joins it
+		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
 
 		final CandidateSelection candidateSelection = findCandidateLines(orderId, schemaWithTakeOvers);
 		if (candidateSelection.getLineIds().isEmpty())
@@ -162,150 +147,13 @@ public class ContractCompensationGroupService
 				.createGroup(candidateSelection.getLineIds());
 	}
 
-	/**
-	 * Folds the vendor's take-over records into the schema's compensation lines. Each record whose listed customer discount
-	 * products were discounted on the linked sales order (nonzero summed percentage) either merges into, or is appended to,
-	 * the schema's lines (see {@link #applyTakeOver}).
-	 * <p>
-	 * Returns the <b>unchanged</b> schema when nothing is taken over — i.e. the sales-order path, the non-drop-ship
-	 * purchase-order path, and the drop-ship path with no matching listed product — so those paths behave exactly as before.
-	 */
-	private GroupTemplate applyTakeOvers(
-			@NonNull final GroupTemplate schema,
-			@NonNull final I_C_Order order,
-			@NonNull final ContractCompensationGroupSettings settings)
+	private static OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
 	{
-		final List<ContractSettingsTakeOverMatch> matches = takeOverService.computeMatches(order, settings);
-		if (matches.isEmpty())
-		{
-			return schema;
-		}
-
-		final List<GroupTemplateCompensationLine> adjustedLines = new ArrayList<>(schema.getCompensationLines());
-		for (final ContractSettingsTakeOverMatch match : matches)
-		{
-			applyTakeOver(adjustedLines, match);
-		}
-
-		return schema.toBuilder()
-				.clearCompensationLines()
-				.compensationLines(adjustedLines)
+		return OrderDropShipInfo.builder()
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.dropShip(order.isDropShip())
+				.linkedOrderId(OrderId.ofRepoIdOrNull(order.getLink_Order_ID()))
 				.build();
-	}
-
-	/**
-	 * Applies one take-over to the (mutable) compensation-line list:
-	 * <ul>
-	 * <li><b>merge</b> — if the schema has a percentage discount line on the record's category, the first such line (by order)
-	 * is replaced with one summed line (vendor percentage + taken-over percentage, a nominal add — 3% + 3% &rarr; one 6% line,
-	 * never compounded);</li>
-	 * <li><b>append</b> — else an own discount line with the record's discount product is appended on the record's category,
-	 * carrying only the taken-over percentage (computed on its own base) and the take-over record id, so the own line keeps
-	 * its category across reload / invoice-candidate rebuild (the repositories resolve the category of a line without a schema
-	 * line from the take-over record, via {@code ContractSettingsTakeOverCategoryProvider}).</li>
-	 * </ul>
-	 */
-	private void applyTakeOver(
-			@NonNull final List<GroupTemplateCompensationLine> lines,
-			@NonNull final ContractSettingsTakeOverMatch match)
-	{
-		final ContractSettingsTakeOver takeOver = match.getTakeOver();
-		final ProductCategoryId categoryId = takeOver.getProductCategoryId();
-		final Percent takenOverPercent = match.getSummedPercent();
-
-		final int mergeIndex = findMergeableLineIndex(lines, categoryId, this::isEffectiveDiscountPercentLine);
-		if (mergeIndex >= 0)
-		{
-			final GroupTemplateCompensationLine vendorLine = lines.get(mergeIndex);
-			final Percent vendorPercent = vendorLine.getPercentage(); // non-null by findMergeableLineIndex
-			lines.set(mergeIndex, vendorLine.toBuilder()
-					.percentage(vendorPercent.add(takenOverPercent))
-					.description(createMergedLineDescription(vendorPercent, vendorLine.getProductId(), match))
-					.build());
-		}
-		else
-		{
-			lines.add(GroupTemplateCompensationLine.builder()
-					.productId(takeOver.getOwnLineProductId())
-					.compensationType(GroupCompensationType.Discount)
-					.percentage(takenOverPercent)
-					.appliesToProductCategoryId(categoryId)
-					.takeOverId(takeOver.getId())
-					.description(createAppendedLineDescription(match))
-					.build());
-		}
-	}
-
-	/**
-	 * @return the index of the first <b>effective</b> percentage discount line on {@code categoryId} (the merge target), or
-	 * {@code -1} when the schema has none. A line qualifies when it carries a percentage, is on the category, and
-	 * {@code isEffectiveDiscountPercent} holds for it. "Effective" is essential: a schema line leaves {@code compensationType}
-	 * null and its real type/amt-type come from the product at line creation, so a line whose product is a Surcharge or a
-	 * non-Percent amt-type (which would collapse to 0% at creation and silently drop the take-over) must NOT be a merge target
-	 * and falls through to APPEND. Keyed strictly off the completing purchase order's own vendor schema line for that category.
-	 */
-	@VisibleForTesting
-	static int findMergeableLineIndex(
-			@NonNull final List<GroupTemplateCompensationLine> lines,
-			@NonNull final ProductCategoryId categoryId,
-			@NonNull final Predicate<GroupTemplateCompensationLine> isEffectiveDiscountPercent)
-	{
-		for (int i = 0; i < lines.size(); i++)
-		{
-			final GroupTemplateCompensationLine line = lines.get(i);
-			if (line.getPercentage() != null
-					&& categoryId.equals(line.getAppliesToProductCategoryId())
-					&& isEffectiveDiscountPercent.test(line))
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	/**
-	 * @return whether the line's <b>effective</b> compensation type/amt-type — resolved from its product exactly as at line
-	 * creation ({@link GroupCompensationLineCreateRequestFactory#resolveGroupCompensationType} /
-	 * {@link GroupCompensationLineCreateRequestFactory#extractGroupCompensationAmtType}) — is a percentage discount, the only
-	 * kind a take-over may merge into. A Surcharge-by-product or non-Percent line would be computed as 0% at creation, so
-	 * merging the take-over into it would silently lose the taken-over percentage.
-	 */
-	private boolean isEffectiveDiscountPercentLine(@NonNull final GroupTemplateCompensationLine line)
-	{
-		final I_M_Product product = productBL.getById(line.getProductId());
-		final GroupCompensationType type = GroupCompensationLineCreateRequestFactory.resolveGroupCompensationType(line.getCompensationType(), product);
-		final GroupCompensationAmtType amtType = GroupCompensationLineCreateRequestFactory.extractGroupCompensationAmtType(product);
-		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
-	}
-
-	/** e.g. {@code "3% Bonus Vendor + 3% Bonus Ware"}: the vendor's own percentage with its discount product, then the taken-over percentage with the customer discount products taken over. */
-	private String createMergedLineDescription(
-			@NonNull final Percent vendorPercent,
-			@NonNull final ProductId vendorProductId,
-			@NonNull final ContractSettingsTakeOverMatch match)
-	{
-		return formatPercent(vendorPercent) + " " + productBL.getProductName(vendorProductId)
-				+ " + " + createAppendedLineDescription(match);
-	}
-
-	/** e.g. {@code "3% Bonus Ware"}: the taken-over percentage with the customer discount products that were actually taken over (not every product the record lists). */
-	private String createAppendedLineDescription(@NonNull final ContractSettingsTakeOverMatch match)
-	{
-		return formatPercent(match.getSummedPercent()) + " " + getTakenOverProductNames(match);
-	}
-
-	private String getTakenOverProductNames(@NonNull final ContractSettingsTakeOverMatch match)
-	{
-		return productBL.getProductNames(match.getTakenOverProductIds())
-				.values()
-				.stream()
-				.sorted()
-				.collect(Collectors.joining(", "));
-	}
-
-	private static String formatPercent(@NonNull final Percent percent)
-	{
-		return percent.toBigDecimal().toPlainString() + "%";
 	}
 
 	/**

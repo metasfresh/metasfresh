@@ -568,7 +568,7 @@ public class OrderGroupRepository implements GroupRepository
 				.collect(ImmutableSet.toImmutableSet());
 		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = takeOverIdsWithoutSchemaLine.isEmpty()
 				? ImmutableMap.of()
-				: takeOverCategoryProvider.map(provider -> provider.getAppliesToCategories(takeOverIdsWithoutSchemaLine)).orElseGet(ImmutableMap::of);
+				: takeOverCategoryProvider.map(provider -> provider.getAppliesToProductCategoryIds(takeOverIdsWithoutSchemaLine)).orElseGet(ImmutableMap::of);
 
 		final ImmutableMap.Builder<OrderLineId, ProductCategoryId> result = ImmutableMap.builder();
 		for (final I_C_OrderLine line : compensationLines)

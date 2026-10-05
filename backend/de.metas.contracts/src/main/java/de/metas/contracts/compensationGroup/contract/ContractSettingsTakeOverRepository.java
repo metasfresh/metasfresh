@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.order.compensationGroup.ContractSettingsTakeOverCategoryProvider;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -49,12 +50,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * Repository Cluster: ContractSettingsTakeOverRepository
  */
 @Repository
-public class ContractSettingsTakeOverRepository
+public class ContractSettingsTakeOverRepository implements ContractSettingsTakeOverCategoryProvider
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/** @return the product category of each given take-over record (active or not, so an own line keeps its category); a record that does not exist or has no category is absent */
-	public ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getProductCategoryIds(@NonNull final Set<ContractSettingsTakeOverId> takeOverIds)
+	@Override
+	public ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToProductCategoryIds(@NonNull final Set<ContractSettingsTakeOverId> takeOverIds)
 	{
 		if (takeOverIds.isEmpty())
 		{
@@ -99,7 +101,7 @@ public class ContractSettingsTakeOverRepository
 		return queryBuilder.create().anyMatch();
 	}
 
-	/** @return the settings' active take-overs, each with its active listed customer products */
+	/** @return the settings' active take-overs, each with its active customer discount products */
 	public ImmutableList<ContractSettingsTakeOver> getBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		final List<I_C_CompensationGroup_ContractSettings_TakeOver> takeOverRecords = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
@@ -116,7 +118,7 @@ public class ContractSettingsTakeOverRepository
 		final ImmutableSet<ContractSettingsTakeOverId> takeOverIds = takeOverRecords.stream()
 				.map(ContractSettingsTakeOverRepository::extractTakeOverId)
 				.collect(ImmutableSet.toImmutableSet());
-		final Map<ContractSettingsTakeOverId, ImmutableSet<ProductId>> listedProductIdsByTakeOverId = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
+		final Map<ContractSettingsTakeOverId, ImmutableSet<ProductId>> customerDiscountProductIdsByTakeOverId = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIds)
 				.create()
@@ -130,7 +132,7 @@ public class ContractSettingsTakeOverRepository
 						.id(extractTakeOverId(record))
 						.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 						.ownLineProductId(ProductId.ofRepoId(record.getM_Product_ID()))
-						.listedCustomerProductIds(listedProductIdsByTakeOverId.getOrDefault(extractTakeOverId(record), ImmutableSet.of()))
+						.customerDiscountProductIds(customerDiscountProductIdsByTakeOverId.getOrDefault(extractTakeOverId(record), ImmutableSet.of()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}

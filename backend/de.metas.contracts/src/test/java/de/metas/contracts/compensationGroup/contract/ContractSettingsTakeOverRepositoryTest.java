@@ -16,6 +16,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 /*
  * #%L
@@ -44,8 +45,8 @@ class ContractSettingsTakeOverRepositoryTest
 {
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
 	private static final ProductId PRODUCT_P_ID = ProductId.ofRepoId(201); // own-line discount product
-	private static final ProductId PRODUCT_Q_ID = ProductId.ofRepoId(202); // listed customer discount product
-	private static final ProductId PRODUCT_R_ID = ProductId.ofRepoId(203); // not listed
+	private static final ProductId PRODUCT_Q_ID = ProductId.ofRepoId(202); // customer discount product of the take-over
+	private static final ProductId PRODUCT_R_ID = ProductId.ofRepoId(203); // not a customer discount product of the take-over
 
 	private ContractSettingsTakeOverRepository takeOverRepository;
 
@@ -57,12 +58,12 @@ class ContractSettingsTakeOverRepositoryTest
 	}
 
 	@Test
-	void getBySettingsId_returnsActiveTakeOverWithListedCustomerProducts()
+	void getBySettingsId_returnsActiveTakeOverWithActiveCustomerDiscountProducts()
 	{
 		final ContractCompensationGroupSettingsId settingsId = createSettings();
 		final ContractSettingsTakeOverId takeOverId = createTakeOver(settingsId, true);
 		createListedProduct(takeOverId, PRODUCT_Q_ID, true);
-		createListedProduct(takeOverId, PRODUCT_R_ID, false); // inactive -> not listed
+		createListedProduct(takeOverId, PRODUCT_R_ID, false); // inactive -> not a customer discount product
 		createTakeOver(settingsId, false); // inactive record -> not returned
 
 		final List<ContractSettingsTakeOver> records = takeOverRepository.getBySettingsId(settingsId);
@@ -71,7 +72,7 @@ class ContractSettingsTakeOverRepositoryTest
 				.id(takeOverId)
 				.productCategoryId(CATEGORY_ID)
 				.ownLineProductId(PRODUCT_P_ID)
-				.listedCustomerProductIds(ImmutableSet.of(PRODUCT_Q_ID))
+				.customerDiscountProductIds(ImmutableSet.of(PRODUCT_Q_ID))
 				.build());
 	}
 
@@ -99,6 +100,25 @@ class ContractSettingsTakeOverRepositoryTest
 		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverOfSettings2, PRODUCT_Q_ID, null)).isFalse();
 	}
 
+	@Test
+	void getAppliesToProductCategoryIds_returnsCategoryOfEachTakeOverRecord_unknownIdsAbsent()
+	{
+		final ContractSettingsTakeOverId takeOverId1 = createTakeOver(createSettings(), ProductCategoryId.ofRepoId(101));
+		final ContractSettingsTakeOverId takeOverId2 = createTakeOver(createSettings(), ProductCategoryId.ofRepoId(102));
+		final ContractSettingsTakeOverId unknownTakeOverId = ContractSettingsTakeOverId.ofRepoId(999999);
+
+		assertThat(takeOverRepository.getAppliesToProductCategoryIds(ImmutableSet.of(takeOverId1, takeOverId2, unknownTakeOverId)))
+				.containsOnly(
+						entry(takeOverId1, ProductCategoryId.ofRepoId(101)),
+						entry(takeOverId2, ProductCategoryId.ofRepoId(102)));
+	}
+
+	@Test
+	void getAppliesToProductCategoryIds_noIds_returnsEmpty()
+	{
+		assertThat(takeOverRepository.getAppliesToProductCategoryIds(ImmutableSet.of())).isEmpty();
+	}
+
 	private static ContractCompensationGroupSettingsId createSettings()
 	{
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
@@ -111,9 +131,22 @@ class ContractSettingsTakeOverRepositoryTest
 
 	private static ContractSettingsTakeOverId createTakeOver(final ContractCompensationGroupSettingsId settingsId, final boolean active)
 	{
+		return createTakeOver(settingsId, CATEGORY_ID, active);
+	}
+
+	private static ContractSettingsTakeOverId createTakeOver(final ContractCompensationGroupSettingsId settingsId, final ProductCategoryId productCategoryId)
+	{
+		return createTakeOver(settingsId, productCategoryId, true);
+	}
+
+	private static ContractSettingsTakeOverId createTakeOver(
+			final ContractCompensationGroupSettingsId settingsId,
+			final ProductCategoryId productCategoryId,
+			final boolean active)
+	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 		record.setC_CompensationGroup_ContractSettings_ID(settingsId.getRepoId());
-		record.setM_Product_Category_ID(CATEGORY_ID.getRepoId());
+		record.setM_Product_Category_ID(productCategoryId.getRepoId());
 		record.setM_Product_ID(PRODUCT_P_ID.getRepoId());
 		record.setIsActive(active);
 		saveRecord(record);

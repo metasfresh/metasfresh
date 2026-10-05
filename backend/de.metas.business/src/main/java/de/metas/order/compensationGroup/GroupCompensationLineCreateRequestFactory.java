@@ -60,7 +60,7 @@ public class GroupCompensationLineCreateRequestFactory
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
 		final Percent percentage;
-		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
+		if (isPercentDiscount(type, amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
 		}
@@ -84,24 +84,33 @@ public class GroupCompensationLineCreateRequestFactory
 				.build();
 	}
 
-	/** @return the template line's type if set, else the product's; i.e. the type a created compensation line gets */
-	public static GroupCompensationType resolveGroupCompensationType(
+	/** @return whether a compensation line created for the given template type ({@code null}: the product's own type) and product is a percentage discount */
+	public boolean isPercentDiscount(@Nullable final GroupCompensationType templateType, @NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		return isPercentDiscount(resolveGroupCompensationType(templateType, product), extractGroupCompensationAmtType(product));
+	}
+
+	public static boolean isPercentDiscount(@NonNull final GroupCompensationType type, @NonNull final GroupCompensationAmtType amtType)
+	{
+		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
+	}
+
+	private static GroupCompensationType resolveGroupCompensationType(
 			@Nullable final GroupCompensationType templateType,
 			@NonNull final I_M_Product product)
 	{
 		return templateType != null ? templateType : extractGroupCompensationType(product);
 	}
 
-	/** @return the product's {@code GroupCompensationType}, Discount if not set */
-	public static GroupCompensationType extractGroupCompensationType(@NonNull final I_M_Product product)
+	private static GroupCompensationType extractGroupCompensationType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationType())
 						.orElse(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	/** @return the product's {@code GroupCompensationAmtType}, Percent if not set */
-	public static GroupCompensationAmtType extractGroupCompensationAmtType(@NonNull final I_M_Product product)
+	private static GroupCompensationAmtType extractGroupCompensationAmtType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationAmtType())
