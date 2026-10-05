@@ -23,6 +23,8 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -36,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.cache.CacheMgt;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
@@ -221,6 +224,61 @@ public class CandidateAssignmentServiceTest
 					assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the full 10
 					assertThat(assignment.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
 				});
+	}
+
+	/**
+	 * Unassigning a candidate that is assigned to two contracts removes both assignments
+	 * and takes back from each contract's refund candidate the amount of its own assignment.
+	 */
+	@Test
+	public void unassignCandidate_assignedToTwoContracts()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundInvoiceCandidate refundCandidate1 = refundTestTools.createRefundCandidate(contract1);
+		final RefundInvoiceCandidate refundCandidate2 = refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+		final AssignableInvoiceCandidate assignedCandidate = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId());
+		assertThat(assignedCandidate.getAssignmentsToRefundCandidates()).hasSize(2); // guard
+
+		// invoke the method under test
+		final UnassignResult result = invoiceCandidateAssignmentService.unassignCandidate(assignedCandidate);
+
+		assertThat(result.getUnassignedPairs()).hasSize(2);
+		assertThat(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).isAssigned()).isFalse();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate1.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate2.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+	}
+
+	/**
+	 * A candidate that moves out of one contract's period loses only that contract's assignment.
+	 */
+	@Test
+	public void updateAssignment_candidateMovesOutOfOneContractsPeriod()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundInvoiceCandidate refundCandidate1 = refundTestTools.createRefundCandidate(contract1);
+		final RefundInvoiceCandidate refundCandidate2 = refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		// contract1 ends before the candidate's invoiceable-from date
+		final I_C_Flatrate_Term contract1Record = InterfaceWrapperHelper.load(contract1.getId(), I_C_Flatrate_Term.class);
+		contract1Record.setStartDate(TimeUtil.asTimestamp(contract1.getStartDate().minusDays(10)));
+		contract1Record.setEndDate(TimeUtil.asTimestamp(contract1.getStartDate().minusDays(5)));
+		InterfaceWrapperHelper.saveRecord(contract1Record);
+		CacheMgt.get().reset(); // the repository caches the matching contracts
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()));
+
+		final List<AssignmentToRefundCandidate> assignments = result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates();
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.get(0).getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate2.getId());
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate1.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate2.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("102");
 	}
 
 	@Test
