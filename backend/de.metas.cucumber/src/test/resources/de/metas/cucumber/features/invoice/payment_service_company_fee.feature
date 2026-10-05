@@ -16,15 +16,18 @@ Feature: service company fee at payment allocation
       | Identifier    |
       | pricingSystem |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | salesPriceList | pricingSystem      | DE           | EUR           | true  |
+      | Identifier        | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceList    | pricingSystem      | DE           | EUR           | true  |
+      | purchasePriceList | pricingSystem      | DE           | EUR           | false |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID |
-      | salesPLV   | salesPriceList |
+      | Identifier  | M_PriceList_ID    |
+      | salesPLV    | salesPriceList    |
+      | purchasePLV | purchasePriceList |
     # IsTaxIncluded=Y, so that the invoice GrandTotal == line amount
     And update M_PriceLists:
-      | Identifier     | IsTaxIncluded |
-      | salesPriceList | Y             |
+      | Identifier        | IsTaxIncluded |
+      | salesPriceList    | Y             |
+      | purchasePriceList | Y             |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier      | IsCustomer | IsVendor | M_PricingSystem_ID |
@@ -47,8 +50,9 @@ Feature: service company fee at payment allocation
       | goodsProduct   |
       | serviceProduct |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | salesPLV               | goodsProduct | 100.00   | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID |
+      | salesPLV               | goodsProduct   | 100.00   | PCE      |
+      | purchasePLV            | serviceProduct | 0        | PCE      |
 
     And load C_DocType:
       | C_DocType_ID.Identifier | Name                         |
@@ -91,3 +95,17 @@ Feature: service company fee at payment allocation
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment_1    | true        |
+    And validate C_AllocationLines
+      | C_Invoice_ID     | C_Payment_ID | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      # the service fee: customer invoice is settled against the service invoice
+      | inv_1            | -            | 2.60   | 0           | 97.40        | alloc_fee          |
+      | serviceInvoice_1 | -            | -2.60  | 0           | 0            | alloc_fee          |
+      # the payment settles the rest
+      | inv_1            | payment_1    | 97.40  | 0           | 0            | alloc_payment      |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID   | Record_ID     |
+      | C_Receivable_Acct      |             | 2.60 EUR    | customer1       | alloc_fee     |
+      | V_Liability_Acct       | 2.60 EUR    |             | serviceCompany1 | alloc_fee     |
+      # ----------------------------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 97.40 EUR   |             | customer1       | alloc_payment |
+      | C_Receivable_Acct      |             | 97.40 EUR   | customer1       | alloc_payment |
