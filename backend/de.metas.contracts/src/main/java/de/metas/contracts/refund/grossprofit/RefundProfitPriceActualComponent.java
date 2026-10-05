@@ -1,5 +1,6 @@
 package de.metas.contracts.refund.grossprofit;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundContract;
@@ -12,6 +13,9 @@ import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.util.lang.Percent;
 
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -51,28 +55,45 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 		this.moneyService = moneyService;
 	}
 
+	/**
+	 * All matching refund contracts apply: their percentages are summed up and subtracted in one step (and not one after the other, which would compound them), then their amounts per unit are subtracted.
+	 */
 	@Override
 	public Money applyToInput(@NonNull final Money input)
 	{
 		final RefundContractQuery query = RefundContractQuery.of(request);
 
-		final RefundConfig refundConfig = refundContractRepository
+		final List<RefundConfig> refundConfigs = refundContractRepository
 				.getByQuery(query)
-				.flatMap(RefundContract::getRefundConfigToUseProfitCalculation)
-				.orElse(null);
+				.stream()
+				.map(RefundContract::getRefundConfigToUseProfitCalculation)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
 
-		if (refundConfig == null)
+		Percent totalPercent = Percent.ZERO;
+		Money amountsPerUnit = null;
+		for (final RefundConfig refundConfig : refundConfigs)
 		{
-			return input;
+			if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
+			{
+				amountsPerUnit = amountsPerUnit == null ? refundConfig.getAmount() : amountsPerUnit.add(refundConfig.getAmount());
+			}
+			else
+			{
+				totalPercent = totalPercent.add(refundConfig.getPercent());
+			}
 		}
 
-		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
+		Money result = input;
+		if (!totalPercent.isZero())
 		{
-			final Money amountPerUnit = refundConfig.getAmount();
-			return input.subtract(amountPerUnit);
+			result = moneyService.subtractPercent(totalPercent, result);
 		}
-
-		final Percent percent = refundConfig.getPercent();
-		return moneyService.subtractPercent(percent, input);
+		if (amountsPerUnit != null)
+		{
+			result = result.subtract(amountsPerUnit);
+		}
+		return result;
 	}
 }

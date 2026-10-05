@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.product.ProductId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -97,6 +98,48 @@ public class RefundContractRepositoryTest
 		assertThat(contract.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(contract.getRefundConfigs()).hasSize(4); // we expect a 4th "artificial" config with qty=zero
 		assertThat(contract.getRefundConfig(ZERO).getPercent().isZero()).isTrue();
+	}
+
+	/**
+	 * All matching terms are returned, a term with the queried product before a term without product.
+	 */
+	@Test
+	public void getByQuery_returnsAllMatchingContracts()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(77);
+		final ProductId productId = ProductId.ofRepoId(78);
+
+		final I_C_Flatrate_Term termWithoutProduct = createRefundTerm(bpartnerId, 0);
+		final I_C_Flatrate_Term termWithProduct1 = createRefundTerm(bpartnerId, productId.getRepoId());
+		final I_C_Flatrate_Term termWithProduct2 = createRefundTerm(bpartnerId, productId.getRepoId());
+		createRefundTerm(bpartnerId, 79); // another product
+		createRefundTerm(BPartnerId.ofRepoId(80), productId.getRepoId()); // another partner
+
+		// invoke the method under test
+		final List<FlatrateTermId> ids = refundContractRepository.getIdsByQuery(new RefundContractQuery(bpartnerId, productId, NOW));
+
+		assertThat(ids).containsExactly(
+				FlatrateTermId.ofRepoId(termWithProduct1.getC_Flatrate_Term_ID()),
+				FlatrateTermId.ofRepoId(termWithProduct2.getC_Flatrate_Term_ID()),
+				FlatrateTermId.ofRepoId(termWithoutProduct.getC_Flatrate_Term_ID()));
+	}
+
+	private I_C_Flatrate_Term createRefundTerm(@NonNull final BPartnerId bpartnerId, final int productRepoId)
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+
+		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
+		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		contractRecord.setC_Flatrate_Conditions(conditionsRecord);
+		contractRecord.setM_Product_ID(productRepoId);
+		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));
+		contractRecord.setEndDate(TimeUtil.asTimestamp(NOW.plusDays(10)));
+		contractRecord.setBill_BPartner_ID(bpartnerId.getRepoId());
+		saveRecord(contractRecord);
+		return contractRecord;
 	}
 
 	private static I_C_Flatrate_Term createContractRecord(@NonNull final I_C_Flatrate_Conditions conditionsRecord)

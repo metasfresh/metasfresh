@@ -8,7 +8,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -19,6 +18,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -62,8 +62,8 @@ import lombok.NonNull;
 @Repository
 public class RefundContractRepository
 {
-	private static final CCache<ArrayKey, I_C_Flatrate_Term> CACHE = //
-			CCache.<ArrayKey, I_C_Flatrate_Term> newCache(
+	private static final CCache<ArrayKey, ImmutableList<FlatrateTermId>> CACHE = //
+			CCache.<ArrayKey, ImmutableList<FlatrateTermId>> newCache(
 					I_C_Flatrate_Term.Table_Name + "#by"
 							+ I_C_Flatrate_Term.COLUMNNAME_Type_Conditions + "#"
 							+ I_C_Flatrate_Term.COLUMNNAME_DocStatus + "#"
@@ -83,36 +83,27 @@ public class RefundContractRepository
 		this.refundConfigRepository = refundConfigRepository;
 	}
 
-	public Optional<FlatrateTermId> getIdByQuery(@NonNull final RefundContractQuery query)
-	{
-		final I_C_Flatrate_Term contractRecord = retrieveRecordOrNull(query);
-
-		if (contractRecord != null)
-		{
-			return Optional.of(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
-		}
-		return Optional.empty();
-	}
-
-	private I_C_Flatrate_Term retrieveRecordOrNull(@NonNull final RefundContractQuery query)
+	/**
+	 * @return the ids of all refund terms that match the query; a term with the queried product comes before a term without product.
+	 */
+	public ImmutableList<FlatrateTermId> getIdsByQuery(@NonNull final RefundContractQuery query)
 	{
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(query.getDate());
 		final int billPartnerId = query.getBPartnerId().getRepoId();
 		final int productId = query.getProductId().getRepoId();
 
 		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
-		final I_C_Flatrate_Term contractRecord = CACHE.getOrLoad(
+		return CACHE.getOrLoad(
 				key,
-				() -> retrieveRecordForCache(invoicableFromTimestamp, billPartnerId, productId));
-		return contractRecord;
+				() -> retrieveIdsForCache(invoicableFromTimestamp, billPartnerId, productId));
 	}
 
-	private static I_C_Flatrate_Term retrieveRecordForCache(
+	private static ImmutableList<FlatrateTermId> retrieveIdsForCache(
 			@NonNull final Timestamp invoicableFromTimestamp,
 			final int billPartnerId,
 			final int productId)
 	{
-		final I_C_Flatrate_Term contractRecord = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
@@ -123,15 +114,21 @@ public class RefundContractRepository
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, null, productId)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.endOrderBy()
 				.create()
-				.first();
-		return contractRecord;
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	public Optional<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
+	/**
+	 * @return all refund contracts that match the query. They are additive: every one of them applies.
+	 */
+	public ImmutableList<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
 	{
-		return getIdByQuery(query).map(this::getById);
+		return getIdsByQuery(query)
+				.stream()
+				.map(this::getById)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public RefundContract getById(@NonNull final FlatrateTermId flatrateTermId)

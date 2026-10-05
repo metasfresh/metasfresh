@@ -1,0 +1,132 @@
+package de.metas.contracts.refund.grossprofit;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_InvoiceSchedule;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class RefundProfitPriceActualComponentTest
+{
+	private static final LocalDate DATE = LocalDate.of(2026, 7, 15);
+	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(21);
+	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(22);
+
+	private RefundContractRepository refundContractRepository;
+	private MoneyService moneyService;
+	private CurrencyId currencyId;
+	private I_C_InvoiceSchedule invoiceSchedule;
+	private I_C_UOM uom;
+
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+
+		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+		moneyService = new MoneyService(new CurrencyRepository());
+		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
+
+		invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
+		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
+		invoiceSchedule.setInvoiceDay(28);
+		invoiceSchedule.setInvoiceDistance(1);
+		saveRecord(invoiceSchedule);
+
+		uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
+	}
+
+	/**
+	 * The percentages of the parallel terms are summed up: 100 - (10% + 5%) = 85, and not 100 * 0.9 * 0.95 = 85.5
+	 */
+	@Test
+	public void applyToInput_subtractsTheSumOfAllMatchingPercentages()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithPercentageConfig(new BigDecimal("5"), true);
+		createTermWithPercentageConfig(new BigDecimal("50"), false); // not used in the profit calculation
+
+		final Money result = applyToInput(Money.of(100, currencyId));
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("85");
+	}
+
+	@Test
+	public void applyToInput_withoutMatchingTerm_returnsTheInput()
+	{
+		final Money result = applyToInput(Money.of(100, currencyId));
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("100");
+	}
+
+	private Money applyToInput(@NonNull final Money input)
+	{
+		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
+				.bPartnerId(BPARTNER_ID)
+				.productId(PRODUCT_ID)
+				.date(DATE)
+				.baseAmount(input)
+				.quantity(Quantity.of(BigDecimal.ONE, uom))
+				.build();
+
+		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService).applyToInput(input);
+	}
+
+	private void createTermWithPercentageConfig(@NonNull final BigDecimal percent, final boolean useInProfitCalculation)
+	{
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditions);
+
+		final I_C_Flatrate_RefundConfig config = newInstance(I_C_Flatrate_RefundConfig.class);
+		config.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		config.setC_InvoiceSchedule_ID(invoiceSchedule.getC_InvoiceSchedule_ID());
+		config.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		config.setRefundPercent(percent);
+		config.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+		config.setMinQty(BigDecimal.ZERO);
+		config.setIsUseInProfitCalculation(useInProfitCalculation);
+		saveRecord(config);
+
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		term.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		term.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		term.setM_Product_ID(PRODUCT_ID.getRepoId());
+		term.setStartDate(TimeUtil.asTimestamp(DATE.minusDays(5)));
+		term.setEndDate(TimeUtil.asTimestamp(DATE.plusDays(5)));
+		saveRecord(term);
+	}
+}
