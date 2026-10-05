@@ -70,6 +70,7 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 		final List<RefundConfig> refundConfigs = refundContractRepository
 				.getByQuery(query)
 				.stream()
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), request.getOrderLineId()))
 				.map(RefundContract::getRefundConfigToUseProfitCalculation)
 				.filter(Optional::isPresent)
 				.map(Optional::get)

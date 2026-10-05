@@ -2,6 +2,7 @@ package de.metas.contracts.refund.packaging;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.order.OrderLineId;
@@ -20,6 +21,12 @@ import java.util.Optional;
 @Service
 public class RefundPackagingFilter
 {
+	/** Reset whenever a packing option changes, because the cache's name starts with the options' table name. */
+	private static final CCache<ConditionsId, ImmutableSet<Integer>> PACKING_MATERIAL_IDS_CACHE = CCache.newCache(
+			I_C_Flatrate_RefundConfig_PackingOption.Table_Name + "#by#" + I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_Conditions_ID,
+			0,
+			CCache.EXPIREMINUTES_Never);
+
 	private final ImmutableList<RefundPackagingMaterialProvider> providers;
 
 	public RefundPackagingFilter(@NonNull final Optional<List<RefundPackagingMaterialProvider>> providers)
@@ -33,7 +40,7 @@ public class RefundPackagingFilter
 	 */
 	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final OrderLineId orderLineId)
 	{
-		final ImmutableSet<Integer> packingMaterialIds = retrievePackingMaterialIds(conditionsId);
+		final ImmutableSet<Integer> packingMaterialIds = PACKING_MATERIAL_IDS_CACHE.getOrLoad(conditionsId, RefundPackagingFilter::retrievePackingMaterialIds);
 		if (packingMaterialIds.isEmpty())
 		{
 			return true;

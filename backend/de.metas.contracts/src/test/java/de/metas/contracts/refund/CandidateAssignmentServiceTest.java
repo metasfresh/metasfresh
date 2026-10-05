@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -227,6 +228,33 @@ public class CandidateAssignmentServiceTest
 					assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the full 10
 					assertThat(assignment.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
 				});
+	}
+
+	/**
+	 * A contract whose conditions are restricted to packaging options does not get a candidate that has no packing material; the unrestricted contract does.
+	 */
+	@Test
+	public void updateAssignment_skipsTheContractWhosePackagingOptionsDontMatch()
+	{
+		final RefundContract unrestrictedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract restrictedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(unrestrictedContract);
+		refundTestTools.createRefundCandidate(restrictedContract);
+
+		final I_C_Flatrate_RefundConfig_PackingOption packingOption = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
+		packingOption.setC_Flatrate_Conditions_ID(restrictedContract.getConditionsId().getRepoId());
+		packingOption.setM_HU_PackingMaterial_ID(301);
+		saveRecord(packingOption);
+
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final List<AssignmentToRefundCandidate> assignments = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).getAssignmentsToRefundCandidates();
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactly(unrestrictedContract.getId());
 	}
 
 	/**
