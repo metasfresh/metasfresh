@@ -46,6 +46,9 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
@@ -54,6 +57,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -327,12 +331,26 @@ public class AllocatePayments_StepDef
 		}
 
 
+		//
+		// Service company fee (same computation as the WebUI payment allocation, see PaymentAndInvoiceRowsRepo)
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = row.getAsOptionalIdentifier("InvoiceProcessing.C_BPartner_ID").isPresent()
+				? computeInvoiceProcessingFee(invoiceToAllocate, getServiceCompanyBPartnerId(row))
+				: null;
+		Money invoiceProcessingFee = null;
+		if (invoiceProcessingFeeCalculation != null)
+		{
+			invoiceProcessingFee = moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax());
+			payAmt = payAmt.subtract(invoiceProcessingFee);
+		}
+
 		final AllocationAmounts amounts = AllocationAmounts.builder()
 				.payAmt(payAmt)
 				.discountAmt(discountAmt)
+				.invoiceProcessingFee(invoiceProcessingFee)
 				.build();
 
 		return PayableDocument.builder()
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.bpartnerId(invoiceToAllocate.getBpartnerId())
 				.documentNo(invoiceToAllocate.getDocumentNo())
@@ -344,6 +362,36 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
+	}
+
+	@NonNull
+	private InvoiceProcessingFeeCalculation computeInvoiceProcessingFee(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final BPartnerId serviceCompanyBPartnerId)
+	{
+		final ZoneId timeZone = orgDAO.getTimeZone(invoiceToAllocate.getClientAndOrgId().getOrgId());
+		final ZonedDateTime evaluationDate = invoiceToAllocate.getDateInvoiced().atStartOfDay(timeZone);
+
+		final InvoiceProcessingFeeCalculation computedFee = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+						.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+						.evaluationDate(evaluationDate)
+						.customerId(invoiceToAllocate.getBpartnerId())
+						.docTypeId(invoiceToAllocate.getDocTypeId())
+						.invoiceId(invoiceToAllocate.getInvoiceId())
+						.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+						.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.FALSE)
+						.build())
+				.orElseThrow(() -> new AdempiereException("No service company fee configured for customer " + invoiceToAllocate.getBpartnerId() + " and invoice " + invoiceToAllocate.getInvoiceId()));
+
+		return invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+						.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+						.paymentDate(evaluationDate)
+						.customerId(invoiceToAllocate.getBpartnerId())
+						.invoiceId(invoiceToAllocate.getInvoiceId())
+						.feeAmountIncludingTax(computedFee.getFeeAmountIncludingTax())
+						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
+						.build())
+				.orElseThrow(() -> new AdempiereException("Cannot find service company " + serviceCompanyBPartnerId + " for customer " + invoiceToAllocate.getBpartnerId()));
 	}
 
 	@NonNull
