@@ -78,10 +78,10 @@ Feature: service company fee at payment allocation
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | invl_1     | inv_1        | goodsProduct | 1 PCE       |
     And the invoice identified by inv_1 is completed
-    # invoice GrandTotal = 100.00; fee = 2.6% = 2.60; the customer pays 100.00 - 2.60 = 97.40
+    # invoice GrandTotal = 100.00; fee = 2.6% = 2.60; the service company pays on behalf of its customer: 100.00 - 2.60 = 97.40
     And metasfresh contains C_Payment
-      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
-      | payment_1  | customer1     | 97.40 EUR | true      | org_EUR_account     |
+      | Identifier | C_BPartner_ID   | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | payment_1  | serviceCompany1 | 97.40 EUR | true      | org_EUR_account     |
     And the payment identified by payment_1 is completed
 
     When allocate payments to invoices
@@ -107,5 +107,5 @@ Feature: service company fee at payment allocation
       | C_Receivable_Acct      |             | 2.60 EUR    | customer1       | alloc_fee     |
       | V_Liability_Acct       | 2.60 EUR    |             | serviceCompany1 | alloc_fee     |
       # ----------------------------------------------------------------------------------
-      | B_UnallocatedCash_Acct | 97.40 EUR   |             | customer1       | alloc_payment |
+      | B_UnallocatedCash_Acct | 97.40 EUR   |             | serviceCompany1 | alloc_payment |
       | C_Receivable_Acct      |             | 97.40 EUR   | customer1       | alloc_payment |
