@@ -44,7 +44,7 @@ const CashPaymentDetailsModal = ({
   const changeBackAmountStr = formatAmountToHumanReadableStr({ amount: changeBackAmount, currency, precision });
 
   return (
-    <div className="modal is-active payment-details-modal">
+    <div className="modal is-active payment-details-modal" data-testid="pos-cash-payment-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
@@ -71,7 +71,12 @@ const CashPaymentDetailsModal = ({
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            <button className="button is-large" disabled={!isValid} onClick={fireOK}>
+            <button
+              className="button is-large"
+              data-testid="pos-cash-payment-ok-button"
+              disabled={!isValid}
+              onClick={fireOK}
+            >
               {_('actions.ok')}
             </button>
             {isAllowCancel && (

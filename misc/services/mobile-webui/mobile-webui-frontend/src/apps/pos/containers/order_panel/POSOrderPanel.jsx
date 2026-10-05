@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 const POSOrderPanel = ({ disabled }) => {
   return (
-    <div className="pos-content pos-order-panel">
+    <div className="pos-content pos-order-panel" data-testid="pos-order-panel">
       <CurrentOrder disabled={disabled} />
       <Products disabled={disabled} />
     </div>

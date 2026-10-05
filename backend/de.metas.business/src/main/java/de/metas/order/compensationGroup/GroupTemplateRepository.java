@@ -7,6 +7,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -90,6 +91,7 @@ public class GroupTemplateRepository
 				.name(schemaRecord.getName())
 				.isInheritPackingInstruction(schemaRecord.isInheritPackingInstruction())
 				.activityId(ActivityId.ofRepoIdOrNull(schemaRecord.getC_Activity_ID()))
+				.additive(schemaRecord.isAdditive())
 				.regularLinesToAdd(mainLines)
 				.compensationLines(compensationLines)
 				.build();
@@ -154,6 +156,7 @@ public class GroupTemplateRepository
 				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))
 				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
 				.percentage(extractPercentage(compensationLineRecord))
+				.appliesToProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_ID()))
 				.build();
 	}
 

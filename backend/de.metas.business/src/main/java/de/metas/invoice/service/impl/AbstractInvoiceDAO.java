@@ -570,6 +570,30 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public <T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNoEndingWith(final String documentNoSuffix, final OrgId orgId, final Class<T> modelClass)
+	{
+		return queryBL
+				.createQueryBuilder(modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEndsWithQueryFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNoSuffix)
+				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				// POS cash settlement only ever offers still-open, completed/closed SALES invoices; push those
+				// predicates into SQL so an ineligible invoice (purchase, drafted, already paid) that happens to
+				// share the keyed suffix is never even loaded. The credit-memo exclusion stays BL-side (it needs
+				// the doc-base-type) — see POSInvoiceSettlementService#isEligibleForCashSettlement, which re-applies
+				// the full guard in Java as defence in depth.
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, true)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed.getCode(), DocStatus.Closed.getCode())
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
+				// newest first + a bound: a suffix match is not unique, and without an ORDER BY the UI order is
+				// nondeterministic; the limit caps the worst case (keying a single digit) at a sane page size.
+				.orderByDescending(I_C_Invoice.COLUMNNAME_DateInvoiced)
+				.setLimit(50)
+				.create()
+				.list(modelClass);
+	}
+
+	@Override
 	public ImmutableList<I_C_Invoice> retrieveUnpaid(@NonNull final UnpaidInvoiceQuery query)
 	{
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL

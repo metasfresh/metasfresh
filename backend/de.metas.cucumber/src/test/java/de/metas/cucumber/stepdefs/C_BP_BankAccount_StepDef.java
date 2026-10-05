@@ -93,6 +93,27 @@ public class C_BP_BankAccount_StepDef
 		DataTableRows.of(dataTable).forEach(row -> createOrUpdateBankAccount(row, false));
 	}
 
+	/**
+	 * Creates/updates the org's own {@code C_BP_BankAccount} (e.g. a POS till's cashbook).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>C_Currency_ID</b> — (required) ISO currency code<br>
+	 *   <b>AccountNo</b> — (optional) account number<br>
+	 *   <b>C_Bank_ID</b> — (optional, identifier-ref) links an existing {@code C_Bank}<br>
+	 *   <b>IBAN</b> — (optional) IBAN<br>
+	 *   <b>IsCashBank</b> — (optional) when {@code Y} and no {@code C_Bank_ID} is given, links a freshly-created
+	 *   {@code C_Bank} flagged {@code IsCashBank=Y} — the source of truth {@code MPayment#beforeSave} reads to
+	 *   force a payment's {@code TenderType} to Cash rather than DirectDeposit<br>
+	 * @cucumber.depends StepDefData: C_BP_BankAccount_StepDefData, C_Bank_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains organization bank accounts
+	 *   | Identifier | C_Currency_ID | IsCashBank |
+	 *   | cashbook   | EUR           | Y          |
+	 * </pre>
+	 */
 	@And("metasfresh contains organization bank accounts")
 	public void addOrUpdateOrgBankAccount(@NonNull final DataTable dataTable)
 	{
@@ -222,6 +243,21 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setIBAN);
+
+		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force TenderType=Cash
+		// on any payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType defaults to
+		// DirectDeposit regardless of what the caller requests. Auto-creates a minimal C_Bank when none is linked
+		// yet, rather than requiring every cash-till scenario to set one up via the (unrelated) bank-statement-import
+		// "metasfresh contains C_Bank:" step.
+		if (row.getAsOptionalBoolean(I_C_Bank.COLUMNNAME_IsCashBank).orElseFalse() && bpBankAccount.getC_Bank_ID() <= 0)
+		{
+			final I_C_Bank cashBank = newInstance(I_C_Bank.class);
+			cashBank.setName("Cash");
+			cashBank.setRoutingNo("000000"); // mandatory column; a cash "bank" has no real routing number
+			cashBank.setIsCashBank(true);
+			saveRecord(cashBank);
+			bpBankAccount.setC_Bank_ID(cashBank.getC_Bank_ID());
+		}
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 

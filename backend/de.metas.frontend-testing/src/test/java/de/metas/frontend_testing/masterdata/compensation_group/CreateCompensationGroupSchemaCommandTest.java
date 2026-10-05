@@ -1,6 +1,10 @@
 package de.metas.frontend_testing.masterdata.compensation_group;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
@@ -38,6 +42,7 @@ public class CreateCompensationGroupSchemaCommandTest
 {
 	private MasterdataContext context;
 	private ProductRepository productRepository;
+	private ICurrentCostsRepository currentCostsRepository;
 
 	@BeforeEach
 	public void init()
@@ -45,6 +50,7 @@ public class CreateCompensationGroupSchemaCommandTest
 		AdempiereTestHelper.get().init();
 		context = new MasterdataContext();
 		productRepository = new ProductRepository();
+		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 	}
 
 	@Test
@@ -160,6 +166,7 @@ public class CreateCompensationGroupSchemaCommandTest
 
 		return CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

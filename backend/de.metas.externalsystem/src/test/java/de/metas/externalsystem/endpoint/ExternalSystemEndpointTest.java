@@ -22,15 +22,31 @@
 
 package de.metas.externalsystem.endpoint;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class ExternalSystemEndpointTest
 {
+	private ExternalSystemEndpointRepository externalSystemEndpointRepository;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		externalSystemEndpointRepository = new ExternalSystemEndpointRepository();
+	}
 
 	@Test
 	void toJson_withAllFields()
@@ -92,7 +108,7 @@ class ExternalSystemEndpointTest
 		assertThat(endpoint.getSftpAuthType()).isEqualTo(SftpAuthType.PASSWORD);
 		assertThat(endpoint.getSftpRemotePath()).isEqualTo("/upload/edi");
 		assertThat(endpoint.getSftpFilenamePattern()).isEqualTo("order_{date}.edi");
-		// HTTP fields are null for SFTP endpoints
+		// the HTTP fields were never set on this builder -- TransportType.SFTP does not null them
 		assertThat(endpoint.getEndpointUrl()).isNull();
 		assertThat(endpoint.getMethod()).isNull();
 		assertThat(endpoint.getContentType()).isNull();
@@ -128,9 +144,61 @@ class ExternalSystemEndpointTest
 		assertThat(json.getPassword()).isEqualTo("secret");
 		assertThat(json.getSftpRemotePath()).isEqualTo("/outbound");
 		assertThat(json.getSftpFilenamePattern()).isEqualTo("DESADV_{documentno}.json");
-		// HTTP-specific fields are null
+		// the HTTP fields were never set on the source builder -- toJson copies them through unconditionally
 		assertThat(json.getEndpointUrl()).isNull();
 		assertThat(json.getMethod()).isNull();
 		assertThat(json.getAuthType()).isNull();
+	}
+
+	@Test
+	void getById_localFileEndpoint_roundTripsLocalFileFields()
+	{
+		// given
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("LocalFileEndpoint");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
+		endpointRecord.setLocalRootLocation("/data/in");
+		endpointRecord.setFrequency(5000);
+		endpointRecord.setImportFileNamePattern("{filename}_{timestamp}");
+		saveRecord(endpointRecord);
+
+		final ExternalSystemEndpointId id = ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID());
+
+		// when
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(id);
+
+		// then
+		assertThat(endpoint.getTransportType()).isEqualTo(TransportType.LOCAL_FILE);
+		assertThat(endpoint.getLocalRootLocation()).isEqualTo("/data/in");
+		assertThat(endpoint.getFrequency()).isEqualTo(5000);
+		assertThat(endpoint.getImportFileNamePattern()).isEqualTo("{filename}_{timestamp}");
+	}
+
+	/**
+	 * A zero port must never reach the wire: {@code JsonExternalSystemEndpoint.sftpPort} is
+	 * {@code @JsonInclude(NON_NULL)}, so a {@code 0} would be serialized as {@code "sftpPort": 0} -- a wrong
+	 * value on the wire and in the delivery log. Camel happens to discard a zero port and keep 22, but no
+	 * consumer is obliged to.
+	 */
+	@Test
+	void toJson_sftpPortZero_isNotSerialized() throws Exception
+	{
+		// given
+		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(4))
+				.value("SftpEndpointWithoutPort")
+				.transportType(TransportType.SFTP)
+				.sftpHost("sftp.example.com")
+				.sftpPort(0)
+				.build();
+
+		// when
+		final JsonExternalSystemEndpoint json = endpoint.toJson();
+
+		// then
+		assertThat(json.getSftpPort()).isNull();
+
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		assertThat(objectMapper.writeValueAsString(json)).doesNotContain("sftpPort");
 	}
 }

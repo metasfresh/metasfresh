@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_I_Flatrate_Term;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -75,7 +76,12 @@ public class FlatrateTermImportTableSqlUpdater
 						+ "\n AND " + sqlImportWhereClause);
 		markAsError("Flatrate conditions not found", I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID + " IS NULL"
 				+ "\n AND " + sqlImportWhereClause);
+		// CompensationGroup-type rows are product-less by design; they never get a "Product not found" error.
+		final String sqlNotCompensationGroup = "NOT EXISTS (SELECT 1 FROM " + I_C_Flatrate_Conditions.Table_Name + " fc"
+				+ " WHERE fc." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID
+				+ " AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + "='" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup + "')";
 		markAsError("Product not found", I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL"
+				+ "\n AND " + sqlNotCompensationGroup
 				+ "\n AND " + sqlImportWhereClause);
 	}
 

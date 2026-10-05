@@ -46,6 +46,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 
+import de.metas.shipper.client.nshift.json.JsonAddressKind;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -183,5 +187,48 @@ public class NShiftOrderAdvisorServiceTest
 				ADVISOR_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
 		assertNotNull(response);
 		assertFalse(response.isError());
+	}
+
+	@Test
+	void buildRequest_testModeOn_replacesBothAttentions()
+	{
+		final JsonDeliveryAdvisorRequest request = ADVISOR_REQUEST.toBuilder()
+				.shipperConfig(ADVISOR_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipAdvisorRequest advisorRequest = NShiftOrderAdvisorService.buildRequest(request);
+
+		assertEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.SENDER),
+				"Sender Attention must be the configured test text, not the mapping-resolved one");
+		assertEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.RECEIVER),
+				"Receiver Attention must be the configured test text, not the mapping-resolved one");
+	}
+
+	@Test
+	void buildRequest_testModeOff_keepsMappedAttentions()
+	{
+		final JsonDeliveryAdvisorRequest request = ADVISOR_REQUEST.toBuilder()
+				.shipperConfig(ADVISOR_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "N")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipAdvisorRequest advisorRequest = NShiftOrderAdvisorService.buildRequest(request);
+
+		assertNotEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.SENDER),
+				"With test mode off the sender Attention must stay the mapping-resolved value");
+		assertNotEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.RECEIVER),
+				"With test mode off the receiver Attention must stay the mapping-resolved value");
+	}
+
+	private static String attentionOf(final JsonShipAdvisorRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getAttention();
 	}
 }

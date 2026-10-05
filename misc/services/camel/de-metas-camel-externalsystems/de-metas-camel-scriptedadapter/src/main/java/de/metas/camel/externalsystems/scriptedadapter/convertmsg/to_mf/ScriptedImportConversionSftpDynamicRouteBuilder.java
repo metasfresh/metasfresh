@@ -31,11 +31,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
 
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
@@ -84,7 +82,8 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)
-				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
+				.process(this::captureOriginalPayloadAsUtf8Bytes)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())
@@ -96,27 +95,8 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveByDispatchOutcome);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
-	}
-
-	/**
-	 * A file with ANY failed dispatched call goes to the error dir, otherwise to processed. By decision, no extra AD_Issue
-	 * (no error-route call): the failure is logged as a warning and the file goes to the error dir.
-	 */
-	private void archiveByDispatchOutcome(@NonNull final Exchange exchange)
-	{
-		final List<?> responses = exchange.getIn().getBody(List.class); // null when there was nothing to dispatch
-		final long errorCount = responses == null ? 0 : responses.stream().filter(AbstractScriptedImportConversionArchivingRouteBuilder::isErrorResponse).count();
-		if (errorCount > 0)
-		{
-			log.warn("{} of {} dispatched calls failed for file {}; archiving it to the error dir", errorCount, responses.size(), archiveFileName(exchange));
-			archiveLocallyOnError(exchange);
-		}
-		else
-		{
-			archiveLocallyOnSuccess(exchange);
-		}
 	}
 
 	@Override

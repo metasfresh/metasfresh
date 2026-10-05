@@ -25,11 +25,24 @@ package de.metas.cucumber.stepdefs.workflow;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.workflow.WorkflowId;
+import lombok.NonNull;
 import org.compiere.model.I_AD_Workflow;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class AD_Workflow_StepDefData extends StepDefData<I_AD_Workflow>
 		implements StepDefDataGetIdAware<PPRoutingId, I_AD_Workflow>
 {
+	/**
+	 * Every {@code AD_Workflow} that {@code AD_Workflow_StepDef} itself created (directly or via {@code clone
+	 * AD_Workflow:}) -- as opposed to one merely registered here via {@code load AD_Workflow:} (masterdata).
+	 * {@code AD_WF_Node_StepDef}'s own teardown reads this (through {@link #isCreated(WorkflowId)}) to scope its
+	 * first-node-pointer clearing to workflows the fixture owns, never a loaded one.
+	 */
+	private final Set<WorkflowId> createdWorkflowIds = new HashSet<>();
+
 	public AD_Workflow_StepDefData()
 	{
 		super(I_AD_Workflow.class);
@@ -39,5 +52,15 @@ public class AD_Workflow_StepDefData extends StepDefData<I_AD_Workflow>
 	public PPRoutingId extractIdFromRecord(final I_AD_Workflow record)
 	{
 		return PPRoutingId.ofRepoId(record.getAD_Workflow_ID());
+	}
+
+	public void markCreated(@NonNull final WorkflowId workflowId)
+	{
+		createdWorkflowIds.add(workflowId);
+	}
+
+	public boolean isCreated(@NonNull final WorkflowId workflowId)
+	{
+		return createdWorkflowIds.contains(workflowId);
 	}
 }

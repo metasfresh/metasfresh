@@ -17,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -33,7 +38,7 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    Qty: 'Qty',
+    Qty: 'Menge',
     QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
     PackingItemName: 'Packvorschrift',
@@ -126,6 +131,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
+    },
     picking: {
       PickingLine: 'Packzeile',
       PickFromManufacturingOrder: 'Produzieren',
@@ -148,6 +156,7 @@ const translations = {
       scanSerialNoAgain: 'Erneut scannen',
       serialNoCount: '%(scanned)s von %(total)s gescannt',
       serialNoCountExtra: '(%(extra)s zu viele)',
+      serialNoAlreadyScanned: 'Seriennummer bereits gescannt',
       serialNoScanDone: 'Fertig',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',

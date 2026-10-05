@@ -357,6 +357,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
 
+	/** Id-based twin of {@link #retrieveIncludedHUs(I_M_HU)}, for callers that hold only the {@link HuId}. */
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
+	/**
+	 * The product of the FIRST packing material carried by the given HU (e.g. the crate/pallet product an
+	 * {@code M_HU_PackingMaterial} attaches to a packing-instruction-produced TU), or empty if the HU carries
+	 * no packing material or that packing material has no product.
+	 */
+	Optional<ProductId> getFirstPackingMaterialProductId(@NonNull HuId huId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

@@ -251,6 +251,7 @@ class TableQuickInput extends PureComponent {
             dataId={docId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
+            description={item.description}
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
             propagateEnterKeyEvent={true} // make sure Enter key is propagated, so onSubmit is called

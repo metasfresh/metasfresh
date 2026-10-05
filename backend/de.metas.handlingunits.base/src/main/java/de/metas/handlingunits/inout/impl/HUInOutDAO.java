@@ -207,4 +207,16 @@ public class HUInOutDAO implements IHUInOutDAO
 				.filter(hu -> X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus()))
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public void save(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		inOutDAO.save(inOutLineRecord);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOut inOutRecord)
+	{
+		inOutDAO.save(inOutRecord);
+	}
 }

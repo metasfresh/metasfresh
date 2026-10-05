@@ -52,20 +52,17 @@ public class GenerateIncomingDeliveryPlanningCommand
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	@NonNull private final I_M_ReceiptSchedule receiptSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
 	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateIncomingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette,
 			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.receiptSchedule = receiptSchedule;
-		this.colorPalette = colorPalette;
 		this.dimensionService = dimensionService;
 	}
 
@@ -84,8 +81,6 @@ public class GenerateIncomingDeliveryPlanningCommand
 
 		final Quantity qtyOrdered = Quantity.of(receiptScheduleQtysBL.getQtyOrdered(receiptSchedule), uom);
 
-		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptSchedule), uom);
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(receiptSchedule.getM_AttributeSetInstance_ID());
 
 		final CountryId originCountryId = getOriginCountryId(asiId);
@@ -101,7 +96,6 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.orgId(OrgId.ofRepoId(receiptSchedule.getAD_Org_ID()))
 				.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()))
-				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
 				.transportDirection(TransportDirection.Incoming)
 				.orderId(orderId)
 				.orderLineId(orderLineId)
@@ -110,10 +104,15 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.partnerId(BPartnerId.ofRepoId(receiptSchedule.getC_BPartner_ID()))
 				.bPartnerLocationId(destinationBPLocationId)
 				.qtyOrdered(qtyOrdered)
-				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
-				.actualLoadedQty(Quantity.zero(uom))
+				// on a planning with no C_OrderLine_ID the AFTER_NEW recompute returns early - there is no line to sum over -
+				// so this seed is the FINAL value there and has to be right on its own. The receipt schedule's QtyMoved is
+				// deliberately not subtracted: a receipt booked before this planning existed belongs to no planning.
+				.qtyTotalOpen(qtyOrdered)
+				// D22: nothing ever reports the vendor's load, so an inbound (or dropship) planning's actual load starts equal
+				// to the planned load - never zero
+				.actualLoadedQty(qtyOrdered)
 				.plannedLoadedQty(qtyOrdered)
-				.plannedDischargeQty(Quantity.zero(uom))
+				.plannedDischargeQty(qtyOrdered)
 				.actualDischargeQty(Quantity.zero(uom))
 				.uom(uom)
 				.plannedDeliveryDate(TimeUtil.asInstant(receiptSchedule.getMovementDate()))

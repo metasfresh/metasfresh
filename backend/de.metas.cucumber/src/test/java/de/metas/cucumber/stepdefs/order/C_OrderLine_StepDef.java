@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -84,6 +85,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -99,6 +101,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.DB;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -434,8 +437,14 @@ public class C_OrderLine_StepDef
 	 * Required DataTable columns: {@code C_Order_ID.Identifier}, {@code M_Product_ID.Identifier}, {@code QtyOrdered}.
 	 * All other columns are optional per-row assertions handled by {@code validateOrderLine} — among them
 	 * {@code OPT.C_Flatrate_Conditions_ID.Identifier} (the threaded contract conditions),
-	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}) and
-	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage).
+	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}),
+	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage) and
+	 * {@code OPT.C_Order_CompensationGroup_ID.Identifier} (asserts the line is still in — or was moved into —
+	 * this specific compensation group; a record created earlier via {@code metasfresh contains C_Order_CompensationGroups:};
+	 * the literal value {@code null} instead of an identifier asserts the line is in NO compensation group at all)
+	 * and {@code OPT.C_Flatrate_Term_ID.Identifier} (asserts the {@code C_Flatrate_Term_ID} of the line's OWN
+	 * compensation group — resolved via the line itself, so it also works for an auto-created, e.g.
+	 * contract-triggered, group that was never registered under its own identifier).
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -484,6 +493,42 @@ public class C_OrderLine_StepDef
 					InterfaceWrapperHelper.refresh(orderLine);
 					validateOrderLine(orderLine, row);
 
+				});
+	}
+
+	/**
+	 * Asserts that a {@code C_OrderLine} still points to the exact same {@code M_AttributeSetInstance} row
+	 * it was assigned (identity, not just equal attribute values).
+	 * <p>
+	 * Unlike {@code validate C_OrderLine:}'s {@code OPT.M_AttributeSetInstance_ID} column — which only compares
+	 * the two ASIs' {@code AttributesKeys} (equal attribute *values*, e.g. an attribute-price-template ASI vs. the
+	 * order line's own, distinct, DB row) — this step asserts id-equality: the line must NOT have been silently
+	 * re-pointed to a cloned ASI row.
+	 * <p>
+	 * Required columns: {@code C_OrderLine_ID} (identifier-ref), {@code M_AttributeSetInstance_ID} (identifier-ref).
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_OrderLine keeps its own M_AttributeSetInstance:
+	 *   | C_OrderLine_ID | M_AttributeSetInstance_ID |
+	 *   | orderLine      | asi                       |
+	 * </pre>
+	 */
+	@And("validate C_OrderLine keeps its own M_AttributeSetInstance:")
+	public void validate_C_OrderLine_keeps_own_M_AttributeSetInstance(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(row -> {
+					final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier());
+					InterfaceWrapperHelper.refresh(orderLine);
+
+					final StepDefDataIdentifier attributeSetInstanceIdentifier = row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID);
+					final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+
+					assertThat(orderLine.getM_AttributeSetInstance_ID())
+							.as("M_AttributeSetInstance_ID for C_OrderLine Identifier=%s must not have been cloned", row.getAsIdentifier().getAsString())
+							.isEqualTo(expectedASI.getM_AttributeSetInstance_ID());
 				});
 	}
 
@@ -610,6 +655,44 @@ public class C_OrderLine_StepDef
 				assertThat(exception.getMessage()).contains(expectedMessagePart);
 			}
 		}
+	}
+
+	/**
+	 * Sets {@code C_OrderLine.C_Project_ID} with a plain SQL {@code UPDATE}, so no model interceptor runs.
+	 *
+	 * <p>Use it to build the state that a missed interceptor push leaves behind: the order line has its new
+	 * project, but the push to the line's invoice candidates never happened. In production this happens when
+	 * the push runs before the invoice candidate is committed. Afterwards the cached order line is reset, the way
+	 * a regular save would do it.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
+	 *     <li>{@code C_Project_ID} — required, identifier of the project; {@code null} clears it</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | ol_1           | project_1    |
+	 * </pre>
+	 */
+	@And("update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:")
+	public void update_C_OrderLine_projectId_bypassingInterceptors(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+			final ProjectId projectId = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Project_ID).lookupIdIn(projectTable);
+
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE C_OrderLine SET C_Project_ID=? WHERE C_OrderLine_ID=?",
+					new Object[] { projectId != null ? projectId.getRepoId() : null, orderLine.getC_OrderLine_ID() },
+					ITrx.TRXNAME_None);
+
+			CacheMgt.get().reset(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
+			InterfaceWrapperHelper.refresh(orderLine);
+		});
 	}
 
 	private void updateOrderLine(@NonNull final Map<String, String> row, final boolean asUIAction)
@@ -973,6 +1056,38 @@ public class C_OrderLine_StepDef
 			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
 			softly.assertThat(orderLine.getC_Flatrate_Conditions_ID()).isEqualTo(flatrateConditions.getC_Flatrate_Conditions_ID());
 		}
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.ifPresent(compGroupIdentifier -> {
+					if (compGroupIdentifier.isNullPlaceholder())
+					{
+						// explicit "null" marker: asserts the line is NOT in any compensation group
+						softly.assertThat(orderLine.getC_Order_CompensationGroup_ID())
+								.as("C_Order_CompensationGroup_ID for Identifier=%s (expected: ungrouped)", identifierStr)
+								.isLessThanOrEqualTo(0);
+						return;
+					}
+
+					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+					softly.assertThat(orderLine.getC_Order_CompensationGroup_ID())
+							.as("C_Order_CompensationGroup_ID for Identifier=%s", identifierStr)
+							.isEqualTo(compGroup.getC_Order_CompensationGroup_ID());
+				});
+
+		// asserts the C_Flatrate_Term_ID of the order line's OWN compensation group, resolved via the order line
+		// itself (not via compGroupTable) — an auto-created (e.g. contract-triggered) group is never registered
+		// under its own identifier, so this is the only way to assert it carries the expected term
+		row.getAsOptionalIdentifier(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID)
+				.ifPresent(termIdentifier -> {
+					final I_C_Flatrate_Term expectedTerm = contractTable.get(termIdentifier);
+					softly.assertThat(orderLine.getC_Order_CompensationGroup_ID())
+							.as("C_Order_CompensationGroup_ID for Identifier=%s (needed to assert its C_Flatrate_Term_ID)", identifierStr)
+							.isGreaterThan(0);
+					final I_C_Order_CompensationGroup compGroup = InterfaceWrapperHelper.load(orderLine.getC_Order_CompensationGroup_ID(), I_C_Order_CompensationGroup.class);
+					softly.assertThat(compGroup.getC_Flatrate_Term_ID())
+							.as("C_Flatrate_Term_ID of the compensation group of Identifier=%s", identifierStr)
+							.isEqualTo(expectedTerm.getC_Flatrate_Term_ID());
+				});
 
 		final String x12de355StockCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(x12de355StockCode))

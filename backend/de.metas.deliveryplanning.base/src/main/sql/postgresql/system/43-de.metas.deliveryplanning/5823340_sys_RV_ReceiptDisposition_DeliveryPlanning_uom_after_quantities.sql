@@ -1,0 +1,21 @@
+-- The grid showed the UOM next to only one of three quantities. metasfresh-window-design-rules
+-- § "UOM Display Rules" requires it next to every quantity, and § "Window Review Checklist" puts the
+-- grid in scope; the form already complies (QtyOrdered 70, Planned 72, Actual 73, C_UOM_ID 75).
+--
+-- Grid before: QtyOrdered(50), C_UOM_ID(55), PlannedDischargeQuantity(57), ActualDischargeQuantity(58).
+-- Grid after:  QtyOrdered(50), PlannedDischargeQuantity(57), ActualDischargeQuantity(58), C_UOM_ID(59).
+--
+-- SeqNoGrid only - the form's SeqNo 75 already sits after all three and is left untouched. Slot 59 was
+-- free, so no other element renumbers. RV_ReceiptDisposition_DeliveryPlanning is AccessLevel 3
+-- (WebUI-only), so AD_Field.SeqNoGrid carries no Swing grid to keep in parity.
+--
+-- Correction to 5823320's header, which claimed 5822680 had "deliberately" left ActualDischargeQuantity
+-- out of the filter set: 5822680 predates that column's existence and cannot have decided anything about
+-- it. The column stays non-filterable on its own merits - metasfresh-window-design-rules
+-- § "Filter Design Principles" and § "Filter Ordering" list document no., partner, date, status and org
+-- as the filter candidates, a quantity in none of them, and REQUIREMENTS.md asks for no quantity filter.
+-- For the same reason PlannedDischargeQuantity keeps FilterOperator 'E': § "Default Filters" scopes the
+-- From/To range recommendation to DATE filters, which is what 5822680 already reasoned.
+
+-- 2026-09-09T09:00:00.000Z
+UPDATE AD_UI_Element SET SeqNoGrid=59,Updated=TO_TIMESTAMP('2026-09-09 09:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=654711 /* C_UOM_ID */;

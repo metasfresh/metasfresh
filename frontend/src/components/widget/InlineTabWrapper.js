@@ -33,6 +33,7 @@ import {
   setInlineTabAddNew,
   setInlineTabShowMore,
 } from '../../actions/InlineTabActions';
+import { getIncludedTabCreateNewDisabledReason } from '../../reducers/windowHandler';
 import SectionGroup from '../SectionGroup';
 
 class InlineTabWrapper extends PureComponent {
@@ -188,6 +189,11 @@ class InlineTabWrapper extends PureComponent {
     const allowCreateNew =
       includedTabsInfo && includedTabsInfo.allowCreateNew ? true : false;
 
+    // set when creation is refused for a reason the user shall see: the button is then rendered
+    // disabled with that reason instead of being hidden
+    const createNewDisabled =
+      getIncludedTabCreateNewDisabledReason(includedTabsInfo);
+
     // flag used to show or not the delete button, also doing some extra safety check to make sure the correct boolean value is set
     const allowDelete =
       includedTabsInfo && includedTabsInfo.allowDelete ? true : false;
@@ -255,6 +261,24 @@ class InlineTabWrapper extends PureComponent {
                 >
                   {counterpart.translate('window.addNew.caption')}
                 </button>
+                <div className="clearfix" />
+              </div>
+            )}
+            {!addNewFormVisible && !allowCreateNew && createNewDisabled && (
+              <div className="inlinetab-action-button">
+                <button
+                  className="btn btn-meta-outline-secondary btn-distance btn-sm subheader-item-disabled"
+                  onClick={null}
+                  disabled
+                  data-testid={`disabledReasonKey-${createNewDisabled.reasonKey}`}
+                >
+                  {counterpart.translate('window.addNew.caption')}
+                </button>
+                {createNewDisabled.reason && (
+                  <p className="one-line">
+                    <small>({createNewDisabled.reason})</small>
+                  </p>
+                )}
                 <div className="clearfix" />
               </div>
             )}

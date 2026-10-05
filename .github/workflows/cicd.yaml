@@ -1881,10 +1881,22 @@ jobs:
           docker compose down
 
   mobile_test:
-    name: mobile test
+    name: mobile test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        shard: [ "1/3", "2/3", "3/3" ]
+        include:
+          - shard: "1/3"
+            shard_label: shard1
+          - shard: "2/3"
+            shard_label: shard2
+          - shard: "3/3"
+            shard_label: shard3
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1902,71 +1914,109 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          # Capture infrastructure logs separately for debugging
-          docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
-          docker compose --profile mobile down
-      # ===== ALLURE REPORT GENERATION =====
-      - name: Generate Allure Report for Mobile
-        uses: ./.github/actions/generate-allure-report
-        with:
-          results-dir: docker-builds/e2e-tests/allure-results-mobile
-          output-dir: e2e/mobile-webui/allure-report
-          artifact-name: allure-report-mobile-webui
-          history-artifact-name: allure-history-mobile-webui
-          report-title: 'Playwright (Mobile WebUI)'
-      - name: Upload Mobile Allure report to server
+      # Own step with `if: always()`: when `run test` is cancelled at the job-level
+      # `timeout-minutes`, only `always()` steps still run, so a capture chained behind the
+      # blocking `docker compose up` inside `run test` was unreachable in exactly the case
+      # that needs it - a stack container going unresponsive mid-suite, every remaining test
+      # burning its full timeout, and the job killed at the cap. `!cancelled()` cannot be
+      # used here: it is false on a cancelled job, which is the case being captured.
+      # `wiremock` is included (no `profiles:` key, so it starts in both profiles); the
+      # playwright container is not - its stdout is already `playwright.log`. Service
+      # prefixes are kept and `--timestamps` added so that a merged multi-service log stays
+      # attributable and correlatable with the test-side failure times.
+      - name: capture stack logs
         if: always()
-        uses: ./.github/actions/upload-report-to-server
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          timeout 120 docker compose --profile mobile logs --timestamps db rabbitmq search app wiremock mobile > infra.log 2>&1 || true
+      - name: commit post-test db image
+        run: |
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3, once per parallel mobile shard, like the frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile mobile down
+      # The merged mobile Allure report is built by the mobile_allure_report job from all shards
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: always()
         with:
-          report-dir: e2e/mobile-webui/allure-report
-          report-type: allure/mobile-webui
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
-      # ===== END ALLURE REPORT GENERATION =====
+          name: allure-results-mobile-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/allure-results-mobile/
+          if-no-files-found: ignore
+          retention-days: 1
 
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      # `always()`, not `success() || failure()`: `failure()` is false on a job that
+      # concluded `cancelled` (job-level timeout), so the old guard skipped this upload
+      # precisely when `infra.log` was the only remaining evidence. Upload the artifact
+      # even on success too, because it can contain valuable information about how to
+      # improve, optimize etc.
       - uses: actions/upload-artifact@v6
-        if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
+        if: always()
         with:
-          name: playwright-mobile-report
+          name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
             docker-builds/e2e-tests/infra.log
+          # a cancelled run may not have flushed the playwright report; a missing path
+          # must warn, never fail the step
+          if-no-files-found: warn
           retention-days: 30
       - name: Upload Playwright Mobile JUnit results
         uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: junit-results-playwright-mobile
+          name: junit-results-playwright-mobile-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
-      # Allure reports uploaded by publish-test-reports job
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile mobile down
 
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
@@ -2006,9 +2056,40 @@ jobs:
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          # Capture infrastructure logs separately for debugging
-          docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
+      # Own step with `if: always()`: when `run test` is cancelled at the job-level
+      # `timeout-minutes`, only `always()` steps still run, so a capture chained behind the
+      # blocking `docker compose up` inside `run test` was unreachable in exactly the case
+      # that needs it - a stack container going unresponsive mid-suite, every remaining test
+      # burning its full timeout, and the job killed at the cap. `!cancelled()` cannot be
+      # used here: it is false on a cancelled job, which is the case being captured.
+      # `wiremock` is included (no `profiles:` key, so it starts in both profiles); the
+      # playwright container is not - its stdout is already `playwright.log`. Service
+      # prefixes are kept and `--timestamps` added so that a merged multi-service log stays
+      # attributable and correlatable with the test-side failure times.
+      - name: capture stack logs
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app wiremock webapi webui > infra.log 2>&1 || true
+      - name: commit post-test db image
+        run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3 for the parallel frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
           docker compose --profile frontend down
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
@@ -2035,14 +2116,20 @@ jobs:
         working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      # `always()`, not `success() || failure()`: `failure()` is false on a job that
+      # concluded `cancelled` (job-level timeout), so the old guard skipped this upload
+      # precisely when `infra.log` was the only remaining evidence.
       - uses: actions/upload-artifact@v6
-        if: success() || failure()
+        if: always()
         with:
           name: playwright-frontend-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
             docker-builds/e2e-tests/infra.log
+          # a cancelled run may not have flushed the playwright report; a missing path
+          # must warn, never fail the step
+          if-no-files-found: warn
           retention-days: 30
       - name: Upload Playwright Frontend JUnit results
         uses: actions/upload-artifact@v6
@@ -2052,6 +2139,19 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
 
   # =============================================================================
   # Merge Frontend Playwright Allure Results from Sharded Runners
@@ -2107,12 +2207,65 @@ jobs:
 
 
   # =============================================================================
+  # Merge Mobile Playwright Allure Results from Sharded Runners
+  # =============================================================================
+  mobile_allure_report:
+    name: mobile allure report
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    needs: [ init, mobile_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all shard Allure results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: allure-results-mobile-*
+          path: allure-results-mobile-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-mobile-merged" ] && [ "$(ls -A allure-results-mobile-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-mobile-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate Allure Report for Mobile
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: allure-results-mobile-merged
+          output-dir: e2e/mobile-webui/allure-report
+          artifact-name: allure-report-mobile-webui
+          history-artifact-name: allure-history-mobile-webui
+          report-title: 'Playwright (Mobile WebUI)'
+      - name: Upload Mobile Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: e2e/mobile-webui/allure-report
+          report-type: allure/mobile-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
+
+  # =============================================================================
   # Publish Allure HTML Reports to test-reports.metasfresh.com
   # =============================================================================
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report, junit, test-frontend ]
+    needs: [ init, cucumber-allure-report, mobile_allure_report, frontend_allure_report, junit, test-frontend ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write       # trigger reports-cleanup workflow when disk space is low
@@ -2472,7 +2625,66 @@ jobs:
           # deploy the static resolver (identical content per branch)
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
+          # server ROOT rather than per branch: it takes ?branch= and reads that branch's
+          # permalinks.json. Content is identical for every branch, so whichever build
+          # publishes last simply rewrites it with the same bytes.
+          # Ship ONE self-contained file. coverage.js stays a separate source file so node can
+          # unit-test it, but it is inlined here for two reasons:
+          #   1. this host serves .js as `public, immutable, max-age=604800` (verified 2026-09-12)
+          #      while .html carries no cache header -- so a separate script would freeze for a
+          #      week and could pair a stale script with a fresh page;
+          #   2. one file is one atomic rename. Two files have a window where the page and its
+          #      script disagree, which matters more here than for the per-branch resolver
+          #      because EVERY branch's build rewrites this root path.
+          # mktemp gives a unique name, so two branches publishing at once cannot collide on it.
+          # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
+          # and a fixed /tmp name would let two branches' builds clobber each other.
+          INLINED=$(mktemp)
+          python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
+          import re, sys, pathlib
+          d = pathlib.Path(sys.argv[1])
+          js = (d / "coverage.js").read_text(encoding="utf-8")
+          html = (d / "coverage.html").read_text(encoding="utf-8")
+          needle = '<script src="coverage.js"></script>'
+          if needle not in html:
+              sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
+          # No user data flows through here -- both files are repo content -- but a literal
+          # </script> inside the JS would still close the tag early.
+          # Escape anything the HTML tokenizer treats as ending or nesting a script
+          # element: </script in any case or with trailing space/slash, and <!-- / <script
+          # (which put the tokenizer in a state where a later </script> does NOT close).
+          safe = re.sub(r"(?i)<(/?script|!--)", r"<\\\g<1>", js)
+          sys.stdout.write(html.replace(needle, "<script>\n" + safe + "\n</script>"))
+          INLINEEOF
+          # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
+          # (this whole step is continue-on-error, so a half-write is silent). The age
+          # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
+          # `coverage.js` is removed because it was briefly deployed as a separate file
+          # and nothing references it any more; leaving it would serve week-cached dead code.
+          # The size check is the load-bearing guard, not the rename. `cat` cannot tell
+          # "stdin ended" from "stdin was cut": on a mid-transfer disconnect it exits 0,
+          # chmod succeeds, and the rename atomically publishes a TRUNCATED page --
+          # verified locally, a 4000-byte cut of a 12847-byte page published with the
+          # whole chain reporting success. Inlining makes that worse, because the cut
+          # now lands inside the page's own <script>. Compare byte counts before renaming.
+          SIZE=$(wc -c < "$INLINED")
+          ssh reports-server "
+            find /var/www/test-reports -maxdepth 1 -name '.coverage.*' -mmin +60 -delete 2>/dev/null
+            T=\$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+            cat > \"\$T\" && chmod 644 \"\$T\" &&
+            [ \"\$(wc -c < \"\$T\")\" -eq $SIZE ] &&
+            mv \"\$T\" /var/www/test-reports/coverage.html &&
+            rm -f /var/www/test-reports/coverage.js ||
+            { rm -f \"\$T\"; echo 'coverage deploy FAILED (incomplete transfer)' >&2; exit 1; }
+          " < "$INLINED" && COVERAGE_OK=1 || echo "::warning::coverage.html was not updated this build"
+          rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+          # Print the coverage URL only if the page actually got published. A banner
+          # that prints either way is a claim the step has not verified.
+          if [ -n "$COVERAGE_OK" ]; then
+            echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          fi
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2504,6 +2716,7 @@ jobs:
           <body>
               <div class="container">
                   <h1>📊 Test Reports</h1>
+                  <p><a href="coverage.html">Automated test coverage by feature</a> — which tests cover a feature on a given branch, and did they pass.</p>
                   <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
               <script>

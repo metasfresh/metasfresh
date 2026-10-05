@@ -125,6 +125,8 @@ public class ExternallyReferencedCandidate
 
 	private final TaxId taxId;
 
+	@Nullable private final TaxId taxOverrideId;
+
 	private Percent discountOverride;
 
 	private DocTypeId invoiceDocTypeId;
@@ -160,6 +162,7 @@ public class ExternallyReferencedCandidate
 			@Nullable final Percent discountOverride,
 			@NonNull final ProductPrice priceActual,
 			@NonNull final TaxId taxId,
+			@Nullable final TaxId taxOverrideId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
 			@NonNull final PaymentTermId paymentTermId,
@@ -188,6 +191,7 @@ public class ExternallyReferencedCandidate
 		this.discountOverride = discountOverride;
 		this.priceActual = priceActual;
 		this.taxId = taxId;
+		this.taxOverrideId = taxOverrideId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.paymentTermId = paymentTermId;

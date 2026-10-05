@@ -307,8 +307,11 @@ Feature: nShift Shipment
       | Identifier | M_InOut_ID |
       | cso_ac6    | inout_ac6  |
     Then validate the captured nShift shipment request options:
-      | IsManual | IsSelectionRules | ServiceLevel |
-      | N        | Y                | STANDARD     |
+      # IsTestMode / TestMode_Attention are not set on the Carrier_Config above: they assert that the column
+      # defaults ('Y' / 'TEST SHIPMENT') travel all the way into the outgoing request's shipper config, which
+      # is the one part of the test-mode chain the unit tests cannot reach (they build JsonShipperConfig by hand).
+      | IsManual | IsSelectionRules | ServiceLevel | IsTestMode | TestMode_Attention |
+      | N        | Y                | STANDARD     | Y          | TEST SHIPMENT      |
 
   @Id:S0355_DeliveryOrder_180
   Scenario: nShift Delivery Order — IsSelectionRules=false when shipper has IsSelectionRules and schedules have any manual

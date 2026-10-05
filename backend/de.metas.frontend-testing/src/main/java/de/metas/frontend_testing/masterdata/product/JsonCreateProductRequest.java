@@ -69,6 +69,12 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSerialNoPicked;
 
+	/**
+	 * When {@code true}, the product is created without any {@code M_Cost} row, like a migrated product.
+	 * Defaults to {@code false}.
+	 */
+	@Nullable Boolean isSkipDefaultCosts;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -93,6 +99,18 @@ public class JsonCreateProductRequest
 	 * Example values: "Lot", "Serial", "LotSerial"
 	 */
 	@Nullable String attributeSetName;
+
+	/**
+	 * Identifier of a {@link JsonProductCategoryRequest} created in the same request (the {@code productCategories}
+	 * map key). When set, the product is placed in that per-run category
+	 * ({@code M_Product.M_Product_Category_ID}); when omitted, it defaults to
+	 * {@link de.metas.frontend_testing.masterdata.MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID}.
+	 * <p>
+	 * This is the field that makes the mobile mfg editable-attributes feature testable: that feature resolves a
+	 * product's attribute set from its CATEGORY, so a product must sit in a category whose set carries the
+	 * configured attributes - not merely have {@link #attributeSetName} set (a different consumer).
+	 */
+	@Nullable Identifier productCategory;
 
 	/**
 	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}

@@ -17,7 +17,9 @@ CREATE VIEW de_metas_endcustomer_fresh_reports.HU_MHD_V
              LotNumber,
              SupplierLotNumber,
              MHD,
-             SourceReleaseStatus)
+             SourceReleaseStatus,
+             LastCostPrice,
+             AverageCostPrice)
 AS
 WITH foo AS (SELECT CASE
                         WHEN hu_p1.m_hu_id IS NOT NULL AND hu_p2.m_hu_id IS NULL THEN 'TU'
@@ -50,6 +52,9 @@ WITH foo AS (SELECT CASE
                     charge_vendor.value       AS SupplierLotNumber,
                     mhd.valuedate::date       AS MHD,
                     hulu_clearancestatus.name AS SourceReleaseStatus,
+                    mp.m_product_id           AS m_product_id,
+                    hu.ad_client_id           AS ad_client_id,
+                    hu.ad_org_id              AS ad_org_id,
                     hu.m_hu_item_parent_id,
                     CASE
                         WHEN hu_p2.m_hu_id IS NOT NULL THEN hu_p2.m_hu_id * 100 + 2
@@ -100,7 +105,11 @@ SELECT foo.hu_unittype,
        foo.LotNumber,
        foo.SupplierLotNumber,
        foo.MHD,
-       foo.SourceReleaseStatus
+       foo.SourceReleaseStatus,
+       -- Letzter EK: last completed purchase-order price (fallback M_Product.SeedCost), DE-formatted
+       REPLACE(TO_CHAR(ROUND(getLastCostPrice(foo.m_product_id), 2), 'FM999999990.00'), '.', ',')                            AS LastCostPrice,
+       -- Standard EK: maintained cost under the accounting schema's costing method (schema resolved per client+org), DE-formatted
+       REPLACE(TO_CHAR(ROUND(getAverageCostPrice(foo.m_product_id, foo.ad_client_id, foo.ad_org_id), 2), 'FM999999990.00'), '.', ',') AS AverageCostPrice
 FROM foo
 ORDER BY order_no
 ;
