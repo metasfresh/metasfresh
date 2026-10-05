@@ -292,7 +292,6 @@ public class OrderGroupRepository implements GroupRepository
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableMap<GroupId, I_C_Order_CompensationGroup> groupRecordsById = retrieveGroupRecordsById(allOrderLines);
-		final ImmutableSet<GroupTemplateId> additiveGroupTemplateIds = retrieveAdditiveGroupTemplateIds(groupRecordsById.values());
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(allOrderLines);
 		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(allOrderLines.stream()
 				.filter(I_C_OrderLine::isGroupCompensationLine)
@@ -318,7 +317,7 @@ public class OrderGroupRepository implements GroupRepository
 					.amountPrecision(amountPrecision)
 					.bpartnerId(bpartnerId)
 					.soTrx(soTrx)
-					.additive(groupTemplateId != null && additiveGroupTemplateIds.contains(groupTemplateId));
+					.additive(isAdditive(groupTemplateId));
 
 			for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 			{
@@ -356,34 +355,18 @@ public class OrderGroupRepository implements GroupRepository
 						Function.identity()));
 	}
 
-	private ImmutableSet<GroupTemplateId> retrieveAdditiveGroupTemplateIds(@NonNull final Collection<I_C_Order_CompensationGroup> groupRecords)
+	/** @return the {@code IsAdditive} flag of the group's schema; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	public boolean isAdditive(@NonNull final GroupId groupId)
 	{
-		final ImmutableSet<GroupTemplateId> groupTemplateIds = groupRecords.stream()
-				.map(groupRecord -> GroupTemplateId.ofRepoIdOrNull(groupRecord.getC_CompensationGroup_Schema_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (groupTemplateIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_CompensationGroup_Schema.class)
-				.addInArrayFilter(I_C_CompensationGroup_Schema.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateIds)
-				.addEqualsFilter(I_C_CompensationGroup_Schema.COLUMNNAME_IsAdditive, true)
-				.create()
-				.idsAsSet(GroupTemplateId::ofRepoId);
+		assertOrderGroupId(groupId);
+		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
+		return isAdditive(GroupTemplateId.ofRepoIdOrNull(groupRecord.getC_CompensationGroup_Schema_ID()));
 	}
 
-	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
-	public static boolean isAdditive(@NonNull final I_C_Order_CompensationGroup groupRecord)
+	/** Read from the cached schema, so building groups does not query the schema again for each group. */
+	private boolean isAdditive(@Nullable final GroupTemplateId groupTemplateId)
 	{
-		final int compensationGroupSchemaId = groupRecord.getC_CompensationGroup_Schema_ID();
-		if (compensationGroupSchemaId <= 0)
-		{
-			return false;
-		}
-
-		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
+		return groupTemplateId != null && groupTemplateRepository.getById(groupTemplateId).isAdditive();
 	}
 
 	/**
@@ -399,7 +382,7 @@ public class OrderGroupRepository implements GroupRepository
 				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0);
 	}
 
-	/** @return the given order's contract-created groups, built from their active lines; loads in a fixed number of queries, however many groups there are */
+	/** @return the given order's contract-created groups, built from their active lines; the number of queries does not grow with the number of groups (schemas come from the schema cache) */
 	public ImmutableList<Group> retrieveContractCreatedGroupsByOrderId(@NonNull final OrderId orderId)
 	{
 		final IQuery<I_C_Order_CompensationGroup> contractGroupsOfOrderQuery = createContractCreatedGroupsQueryBuilder()

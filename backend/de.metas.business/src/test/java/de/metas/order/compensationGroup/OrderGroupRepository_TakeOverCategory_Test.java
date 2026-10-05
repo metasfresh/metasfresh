@@ -197,6 +197,9 @@ public class OrderGroupRepository_TakeOverCategory_Test
 	{
 		final OrderId orderWithOneGroupId = createOrderWithContractCreatedGroups(1);
 		final OrderId orderWithThreeGroupsId = createOrderWithContractCreatedGroups(3);
+		// the schemas are cached by GroupTemplateRepository; load them once so both counts below see the same cache state
+		repo.retrieveContractCreatedGroupsByOrderId(orderWithOneGroupId);
+		repo.retrieveContractCreatedGroupsByOrderId(orderWithThreeGroupsId);
 
 		Mockito.clearInvocations(queryBLSpy, groupTemplateRepository);
 		takeOverCategoryProviderCalls.clear();
@@ -214,6 +217,8 @@ public class OrderGroupRepository_TakeOverCategory_Test
 				.extracting(GroupCompensationLine::getAppliesToProductCategoryId)
 				.containsExactly(SCHEMA_LINE_CATEGORY_ID, TAKE_OVER_CATEGORY_ID));
 		assertThat(countCreatedQueryBuilders()).isEqualTo(queriesForOneGroup);
+		// IsAdditive comes from the cached schema of each group with a schema, never from a per-group schema load
+		Mockito.verify(groupTemplateRepository, Mockito.times(2)).getById(Mockito.any());
 		Mockito.verify(groupTemplateRepository, Mockito.times(1)).getAppliesToProductCategoryIds(Mockito.any());
 		assertThat(takeOverCategoryProviderCalls).hasSize(1);
 	}
@@ -259,6 +264,7 @@ public class OrderGroupRepository_TakeOverCategory_Test
 	private static GroupTemplateId createSchema(final boolean additive)
 	{
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		schema.setIsAdditive(additive);
 		saveRecord(schema);
 		return GroupTemplateId.ofRepoId(schema.getC_CompensationGroup_Schema_ID());

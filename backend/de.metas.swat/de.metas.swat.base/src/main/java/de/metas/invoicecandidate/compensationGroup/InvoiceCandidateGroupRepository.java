@@ -51,7 +51,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Order_CompensationGroup;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -61,8 +60,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -163,7 +160,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.additive(isAdditive(groupId));
+				.additive(orderGroupRepository.isAdditive(groupId));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId =
 				retrieveProductCategoryIdAndAncestorsByProductId(invoiceCandidates);
@@ -189,13 +186,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		}
 
 		return groupBuilder.build();
-	}
-
-	/** @return the schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
-	private static boolean isAdditive(@NonNull final GroupId groupId)
-	{
-		final I_C_Order_CompensationGroup groupRecord = load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
-		return OrderGroupRepository.isAdditive(groupRecord);
 	}
 
 	/**

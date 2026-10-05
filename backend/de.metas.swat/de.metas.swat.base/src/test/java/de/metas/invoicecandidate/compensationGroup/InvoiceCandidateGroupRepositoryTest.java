@@ -111,6 +111,7 @@ class InvoiceCandidateGroupRepositoryTest
 		// schema (IsAdditive=N, i.e. compounding -- irrelevant here, single compensation line) with a schema
 		// line whose base = goodsCategory
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		schema.setIsAdditive(false);
 		saveRecord(schema);
 
@@ -229,6 +230,7 @@ class InvoiceCandidateGroupRepositoryTest
 
 		// one additive schema with TWO schema lines, one per base category
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		schema.setIsAdditive(true);
 		saveRecord(schema);
 
@@ -362,6 +364,7 @@ class InvoiceCandidateGroupRepositoryTest
 		saveRecord(discountProduct);
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);

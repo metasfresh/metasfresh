@@ -220,6 +220,7 @@ public class OrderGroupRepositoryTest
 
 		// schema (IsAdditive=Y) with a schema line whose base = parentCategory
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		schema.setIsAdditive(true);
 		saveRecord(schema);
 
@@ -380,6 +381,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId categoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
