@@ -64,9 +64,9 @@ class ContractSettingsTakeOverServiceTest
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
 	private static final ProductCategoryId OTHER_CATEGORY_ID = ProductCategoryId.ofRepoId(102);
 	private static final ProductId OWN_PRODUCT_ID = ProductId.ofRepoId(201); // own-line discount product
-	private static final ProductId BONUS_WARE_ID = ProductId.ofRepoId(202); // listed
-	private static final ProductId BONUS_VERPACKUNG_ID = ProductId.ofRepoId(203); // not listed
-	private static final ProductId OTHER_LISTED_ID = ProductId.ofRepoId(204); // listed, on no SO line
+	private static final ProductId BONUS_WARE_ID = ProductId.ofRepoId(202); // customer discount product
+	private static final ProductId BONUS_VERPACKUNG_ID = ProductId.ofRepoId(203); // not a customer discount product
+	private static final ProductId OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID = ProductId.ofRepoId(204); // customer discount product, on no SO line
 
 	private ContractCompensationGroupSettingsRepository settingsRepository;
 	private ContractSettingsTakeOverService service;
@@ -95,7 +95,7 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
-	void dropShipPurchaseOrder_sumsOnlyListedProductsOfLinkedSalesOrder()
+	void dropShipPurchaseOrder_sumsOnlyCustomerDiscountProductsOfLinkedSalesOrder()
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
@@ -113,10 +113,10 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void sumIsNominalArithmeticSum()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_LISTED_ID);
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
-				new LineSpec(OTHER_LISTED_ID, "3"));
+				new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, "3"));
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
@@ -126,9 +126,9 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
-	void takenOverProducts_areOnlyTheListedProductsActuallyOnTheSalesOrder()
+	void takenOverProducts_areOnlyTheCustomerDiscountProductsActuallyOnTheSalesOrder()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_LISTED_ID);
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7"));
@@ -143,12 +143,12 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void onlyPercentDiscountLinesOfContractCreatedGroupsAreTakenOver()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, BONUS_VERPACKUNG_ID, OTHER_LISTED_ID);
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, BONUS_VERPACKUNG_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(BONUS_VERPACKUNG_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_PriceAndQty, "0"),
-				new LineSpec(OTHER_LISTED_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent, "2"));
-		addManualGroupWithDiscountLine(salesOrder, new LineSpec(OTHER_LISTED_ID, "9"));
+				new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent, "2"));
+		addManualGroupWithDiscountLine(salesOrder, new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, "9"));
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
 		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
@@ -192,9 +192,9 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
-	void recordWhoseListedProductsAreNotOnTheSalesOrder_isDropped()
+	void recordWhoseCustomerDiscountProductsAreNotOnTheSalesOrder_isDropped()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(OTHER_LISTED_ID);
+		final ContractCompensationGroupSettings settings = createSettings(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3.0"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7.0"));
@@ -359,7 +359,7 @@ class ContractSettingsTakeOverServiceTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private ContractCompensationGroupSettings createSettings(final ProductId... listedProductIds)
+	private ContractCompensationGroupSettings createSettings(final ProductId... customerDiscountProductIds)
 	{
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
 		saveRecord(schema);
@@ -374,12 +374,12 @@ class ContractSettingsTakeOverServiceTest
 		saveRecord(takeOver);
 		takeOverId = ContractSettingsTakeOverId.ofRepoId(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 
-		for (final ProductId productId : listedProductIds)
+		for (final ProductId productId : customerDiscountProductIds)
 		{
-			final I_C_CompensationGroup_ContractSettings_TakeOver_Product listed = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
-			listed.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
-			listed.setM_Product_ID(productId.getRepoId());
-			saveRecord(listed);
+			final I_C_CompensationGroup_ContractSettings_TakeOver_Product takeOverProduct = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
+			takeOverProduct.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
+			takeOverProduct.setM_Product_ID(productId.getRepoId());
+			saveRecord(takeOverProduct);
 		}
 
 		return settingsRepository.getBySettingsId(ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID()));

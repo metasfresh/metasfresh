@@ -77,27 +77,27 @@ class ContractSettingsTakeOverRepositoryTest
 	}
 
 	@Test
-	void isProductListedInSameSettings_otherTakeOverOfSameSettings()
+	void isCustomerDiscountProductOfSameSettings_otherTakeOverOfSameSettings()
 	{
 		final ContractCompensationGroupSettingsId settingsId = createSettings();
 		final ContractSettingsTakeOverId takeOverId1 = createTakeOver(settingsId, true);
 		final ContractSettingsTakeOverId takeOverId2 = createTakeOver(settingsId, true);
-		final ContractSettingsTakeOverProductId listingId = createCustomerDiscountProduct(takeOverId1, PRODUCT_Q_ID, true);
+		final ContractSettingsTakeOverProductId takeOverProductId = createCustomerDiscountProduct(takeOverId1, PRODUCT_Q_ID, true);
 		createCustomerDiscountProduct(takeOverId1, PRODUCT_R_ID, false);
 
-		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverId2, PRODUCT_Q_ID, null)).isTrue();
-		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverId1, PRODUCT_Q_ID, listingId)).isFalse(); // the record itself
-		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverId2, PRODUCT_R_ID, null)).isFalse(); // inactive listing
+		assertThat(takeOverRepository.isCustomerDiscountProductOfSameSettings(takeOverId2, PRODUCT_Q_ID, null)).isTrue();
+		assertThat(takeOverRepository.isCustomerDiscountProductOfSameSettings(takeOverId1, PRODUCT_Q_ID, takeOverProductId)).isFalse(); // the record itself
+		assertThat(takeOverRepository.isCustomerDiscountProductOfSameSettings(takeOverId2, PRODUCT_R_ID, null)).isFalse(); // inactive take-over product record
 	}
 
 	@Test
-	void isProductListedInSameSettings_otherSettingsIgnored()
+	void isCustomerDiscountProductOfSameSettings_otherSettingsIgnored()
 	{
 		final ContractSettingsTakeOverId takeOverOfSettings1 = createTakeOver(createSettings(), true);
 		final ContractSettingsTakeOverId takeOverOfSettings2 = createTakeOver(createSettings(), true);
 		createCustomerDiscountProduct(takeOverOfSettings1, PRODUCT_Q_ID, true);
 
-		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverOfSettings2, PRODUCT_Q_ID, null)).isFalse();
+		assertThat(takeOverRepository.isCustomerDiscountProductOfSameSettings(takeOverOfSettings2, PRODUCT_Q_ID, null)).isFalse();
 	}
 
 	@Test

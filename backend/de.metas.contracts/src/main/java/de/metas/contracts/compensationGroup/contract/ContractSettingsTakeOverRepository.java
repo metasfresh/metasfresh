@@ -74,10 +74,10 @@ public class ContractSettingsTakeOverRepository implements ContractSettingsTakeO
 	}
 
 	/**
-	 * @return whether the product is listed on an active take-over product record of any active take-over record of the given
-	 * take-over record's settings, other than {@code excludeTakeOverProductId}
+	 * @return whether the product is a customer discount product of an active take-over product record of any active take-over
+	 * record of the given take-over record's settings, other than {@code excludeTakeOverProductId}
 	 */
-	public boolean isProductListedInSameSettings(
+	public boolean isCustomerDiscountProductOfSameSettings(
 			@NonNull final ContractSettingsTakeOverId takeOverId,
 			@NonNull final ProductId productId,
 			@Nullable final ContractSettingsTakeOverProductId excludeTakeOverProductId)
