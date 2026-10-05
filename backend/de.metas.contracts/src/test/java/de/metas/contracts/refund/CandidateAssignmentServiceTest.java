@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import java.util.Optional;
@@ -241,8 +242,13 @@ public class CandidateAssignmentServiceTest
 		refundTestTools.createRefundCandidate(unrestrictedContract);
 		refundTestTools.createRefundCandidate(restrictedContract);
 
+		final RefundConfigId restrictedConfigId = restrictedContract.getRefundConfigs().get(0).getId();
+		final I_C_Flatrate_RefundConfig restrictedConfig = load(restrictedConfigId, I_C_Flatrate_RefundConfig.class);
+		restrictedConfig.setIsPackingOptionFiltered(true);
+		saveRecord(restrictedConfig);
 		final I_C_Flatrate_RefundConfig_PackingOption packingOption = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
 		packingOption.setC_Flatrate_Conditions_ID(restrictedContract.getConditionsId().getRepoId());
+		packingOption.setC_Flatrate_RefundConfig_ID(restrictedConfigId.getRepoId());
 		packingOption.setM_HU_PackingMaterial_ID(301);
 		saveRecord(packingOption);
 

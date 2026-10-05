@@ -25,6 +25,8 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -140,8 +142,12 @@ public class RefundProfitPriceActualComponentTest
 	{
 		createTermWithPercentageConfig(new BigDecimal("10"), true);
 		final ConditionsId cartonConditionsId = createTermWithPercentageConfig(BPARTNER_ID, BonusRecipient.INVOICE_PARTNER, new BigDecimal("5"), true);
+		final I_C_Flatrate_RefundConfig cartonConfig = retrieveConfig(cartonConditionsId);
+		cartonConfig.setIsPackingOptionFiltered(true);
+		saveRecord(cartonConfig);
 		final I_C_Flatrate_RefundConfig_PackingOption option = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
 		option.setC_Flatrate_Conditions_ID(cartonConditionsId.getRepoId());
+		option.setC_Flatrate_RefundConfig_ID(cartonConfig.getC_Flatrate_RefundConfig_ID());
 		option.setM_HU_PackingMaterial_ID(CARTON);
 		saveRecord(option);
 
@@ -149,6 +155,14 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(applyToInput(Money.of(100, currencyId), null, CRATE_LINE).toBigDecimal()).isEqualByComparingTo("90");
 		assertThat(applyToInput(Money.of(100, currencyId), null, LINE_WITHOUT_PACKING_INSTRUCTION).toBigDecimal()).isEqualByComparingTo("90");
 		assertThat(applyToInput(Money.of(100, currencyId), null, null).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
+	private static I_C_Flatrate_RefundConfig retrieveConfig(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.create()
+				.firstOnlyNotNull(I_C_Flatrate_RefundConfig.class);
 	}
 
 	private Money applyToInput(@NonNull final Money input)
