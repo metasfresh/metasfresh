@@ -32,8 +32,6 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -93,13 +91,7 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-		final GroupTemplateRepository groupTemplateRepository = new GroupTemplateRepository(Optional.empty());
-		SpringContextHolder.registerJUnitBean(groupTemplateRepository);
-		SpringContextHolder.registerJUnitBean(new OrderGroupRepository(
-				new GroupCompensationLineCreateRequestFactory(),
-				Optional.empty(),
-				groupTemplateRepository,
-				Optional.empty()));
+		OrderGroupRepository.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 

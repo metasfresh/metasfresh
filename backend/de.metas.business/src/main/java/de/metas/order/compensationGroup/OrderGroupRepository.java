@@ -39,6 +39,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.MutableInt;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -89,9 +91,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 /**
- * Repository Tables: C_Order_CompensationGroup, C_OrderLine
+ * Repository Tables: C_Order_CompensationGroup, C_OrderLine, C_CompensationGroup_Schema (read)
  * <p>
- * Repository Cluster: OrderGroupRepository, ContractCompensationGroupRepository, InvoiceCandidateGroupRepository
+ * Repository Cluster: OrderGroupRepository, GroupTemplateRepository, ContractCompensationGroupRepository, InvoiceCandidateGroupRepository
  */
 @Component
 public class OrderGroupRepository implements GroupRepository
@@ -119,6 +121,20 @@ public class OrderGroupRepository implements GroupRepository
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
 		this.groupTemplateRepository = groupTemplateRepository;
 		this.takeOverCategoryProvider = takeOverCategoryProvider;
+	}
+
+	@VisibleForTesting
+	public static OrderGroupRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				OrderGroupRepository.class,
+				() -> new OrderGroupRepository(
+						new GroupCompensationLineCreateRequestFactory(),
+						Optional.empty(),
+						GroupTemplateRepository.newInstanceForUnitTesting(),
+						Optional.empty()));
 	}
 
 	@Nullable

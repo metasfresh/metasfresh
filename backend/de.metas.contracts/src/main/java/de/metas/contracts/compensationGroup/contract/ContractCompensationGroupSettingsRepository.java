@@ -111,7 +111,7 @@ public class ContractCompensationGroupSettingsRepository
 				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIds)
 				.create()
 				.stream()
-				.filter(record -> record.getM_Product_Category_ID() > 0)
+				.filter(record -> ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()) != null)
 				.collect(ImmutableMap.toImmutableMap(
 						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
 						record -> ProductCategoryId.ofRepoId(record.getM_Product_Category_ID())));

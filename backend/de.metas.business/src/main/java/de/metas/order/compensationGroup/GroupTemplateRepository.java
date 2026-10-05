@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -20,6 +21,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
 
@@ -55,7 +58,7 @@ import java.util.Set;
 /**
  * Repository Tables: C_CompensationGroup_Schema, C_CompensationGroup_Schema_TemplateLine, C_CompensationGroup_SchemaLine
  * <p>
- * Repository Cluster: GroupTemplateRepository
+ * Repository Cluster: GroupTemplateRepository, OrderGroupRepository
  */
 @Repository
 public class GroupTemplateRepository
@@ -81,6 +84,16 @@ public class GroupTemplateRepository
 				GroupMatcherFactory::getAppliesToLineType);
 	}
 
+	@VisibleForTesting
+	public static GroupTemplateRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				GroupTemplateRepository.class,
+				() -> new GroupTemplateRepository(Optional.empty()));
+	}
+
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
 	{
 		return groupTemplatesById.getOrLoad(groupTemplateId, this::retrieveById);
@@ -98,7 +111,7 @@ public class GroupTemplateRepository
 				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
 				.create()
 				.stream()
-				.filter(schemaLine -> schemaLine.getM_Product_Category_ID() > 0)
+				.filter(schemaLine -> ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()) != null)
 				.collect(ImmutableMap.toImmutableMap(
 						schemaLine -> GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()),
 						schemaLine -> ProductCategoryId.ofRepoId(schemaLine.getM_Product_Category_ID())));

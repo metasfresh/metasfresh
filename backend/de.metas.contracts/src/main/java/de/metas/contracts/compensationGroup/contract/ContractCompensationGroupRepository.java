@@ -51,7 +51,7 @@ import java.util.List;
  * schema), this one is scoped to contract-created groups (see {@link OrderGroupRepository#createContractCreatedGroupsQueryBuilder}),
  * except for {@link #retrieveActiveRegularOrderLines}, which reads every regular line
  * of the order regardless of group. The groups' invoice candidates are handled by
- * {@code InvoiceCandidateGroupRepository} (de.metas.swat.base).
+ * {@code InvoiceCandidateGroupRepository}.
  * <p>
  * Persistence primitives for a contract-created {@code C_Order_CompensationGroup}: stamping the term it came
  * from, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.

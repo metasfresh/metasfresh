@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-/** Typed id for {@code C_CompensationGroup_ContractSettings_TakeOver}. */
+/** Typed id for {@code C_CompensationGroup_ContractSettings_TakeOver_Product}. */
 @Value
 public class ContractSettingsTakeOverProductId implements RepoIdAware
 {

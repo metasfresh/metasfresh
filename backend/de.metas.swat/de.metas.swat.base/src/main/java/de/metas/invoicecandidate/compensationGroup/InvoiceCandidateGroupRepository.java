@@ -122,7 +122,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				InvoiceCandidateGroupRepository.class,
 				() -> new InvoiceCandidateGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
-						new GroupTemplateRepository(Optional.empty()),
+						GroupTemplateRepository.newInstanceForUnitTesting(),
 						Optional.empty()));
 	}
 
