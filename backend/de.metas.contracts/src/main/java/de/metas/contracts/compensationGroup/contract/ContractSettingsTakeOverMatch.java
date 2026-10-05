@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -27,10 +28,14 @@ import lombok.Value;
  * #L%
  */
 
-/** A contract-created percentage discount line of a sales order: its discount product and nominal percentage. */
+/**
+ * A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero)
+ * and the customer discount products that contributed to it.
+ */
 @Value
-public class LinkedContractDiscountLine
+public class ContractSettingsTakeOverMatch
 {
-	@NonNull ProductId discountProductId;
-	@NonNull Percent nominalPercentage;
+	@NonNull ContractSettingsTakeOver takeOver;
+	@NonNull Percent summedPercent;
+	@NonNull ImmutableSet<ProductId> takenOverProductIds;
 }

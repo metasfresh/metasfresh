@@ -1,14 +1,15 @@
-package de.metas.contracts.compensationGroup.contract;
+package de.metas.order.compensationGroup;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
+import com.google.common.collect.ImmutableMap;
+import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
+import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
-import lombok.Value;
+
+import java.util.Set;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -28,14 +29,9 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero)
- * and the customer discount products that contributed to it.
- */
-@Value
-public class TakeOverResult
+/** Provides the applies-to product category of contract take-over records, for compensation lines without a schema line. */
+public interface ContractSettingsTakeOverCategoryProvider
 {
-	@NonNull TakeOverRecord record;
-	@NonNull Percent summedPercent;
-	@NonNull ImmutableSet<ProductId> takenOverProductIds;
+	/** @return the applies-to product category of each given take-over record; a record that does not exist or has no category is absent */
+	ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToCategories(@NonNull Set<ContractSettingsTakeOverId> takeOverIds);
 }

@@ -34,15 +34,15 @@ import static org.assertj.core.api.Assertions.entry;
  * #L%
  */
 
-class ContractTakeOverCategoryProviderTest
+class ContractSettingsTakeOverCategoryProviderImplTest
 {
-	private ContractTakeOverCategoryProvider provider;
+	private ContractSettingsTakeOverCategoryProviderImpl provider;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		provider = new ContractTakeOverCategoryProvider(new ContractCompensationGroupSettingsRepository());
+		provider = new ContractSettingsTakeOverCategoryProviderImpl(new ContractSettingsTakeOverRepository());
 	}
 
 	@Test

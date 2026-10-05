@@ -1,7 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.order.compensationGroup.TakeOverCategoryProvider;
+import de.metas.order.compensationGroup.ContractSettingsTakeOverCategoryProvider;
 import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +31,16 @@ import java.util.Set;
  * #L%
  */
 
-/** Contracts-side implementation of {@link TakeOverCategoryProvider}: reads the category off the take-over record. */
+/** Contracts-side implementation of {@link ContractSettingsTakeOverCategoryProvider}: reads the category off the take-over record. */
 @Component
 @RequiredArgsConstructor
-public class ContractTakeOverCategoryProvider implements TakeOverCategoryProvider
+public class ContractSettingsTakeOverCategoryProviderImpl implements ContractSettingsTakeOverCategoryProvider
 {
-	@NonNull private final ContractCompensationGroupSettingsRepository settingsRepository;
+	@NonNull private final ContractSettingsTakeOverRepository takeOverRepository;
 
 	@Override
 	public ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getAppliesToCategories(@NonNull final Set<ContractSettingsTakeOverId> takeOverIds)
 	{
-		return settingsRepository.getTakeOverProductCategoryIds(takeOverIds);
+		return takeOverRepository.getProductCategoryIds(takeOverIds);
 	}
 }

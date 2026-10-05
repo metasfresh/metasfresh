@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -17,6 +16,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.order.compensationGroup.CompensationLineOrigin;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -25,11 +25,7 @@ import de.metas.order.compensationGroup.GroupCreator;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
-import de.metas.order.compensationGroup.GroupTemplateLineId;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.compensationGroup.TakeOverCategoryProvider;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -41,7 +37,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -59,7 +54,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +87,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 /**
- * Repository Tables: C_Invoice_Candidate, C_Order_CompensationGroup (read), C_OrderLine (read)
+ * Repository Tables: C_Invoice_Candidate, C_Order_CompensationGroup (read)
  * <p>
  * Repository Cluster: InvoiceCandidateGroupRepository, {@code IInvoiceCandDAO}/{@code InvoiceCandDAO}, {@link OrderGroupRepository} —
  * {@code InvoiceCandDAO} is the generic invoice-candidate DAO; this one handles the candidates of a compensation group
@@ -110,8 +104,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	@NonNull private final GroupTemplateRepository groupTemplateRepository;
-	@NonNull private final Optional<TakeOverCategoryProvider> takeOverCategoryProvider;
+	@NonNull private final OrderGroupRepository orderGroupRepository;
 
 	@VisibleForTesting
 	public static InvoiceCandidateGroupRepository newInstanceForUnitTesting()
@@ -122,8 +115,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				InvoiceCandidateGroupRepository.class,
 				() -> new InvoiceCandidateGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
-						GroupTemplateRepository.newInstanceForUnitTesting(),
-						Optional.empty()));
+						OrderGroupRepository.newInstanceForUnitTesting()));
 	}
 
 	@Override
@@ -272,82 +264,27 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** What a compensation invoice candidate's order line says about the compensation line: its applies-to category and its take-over record id */
-	@Value
-	private static class CompensationLineOrigin
-	{
-		static final CompensationLineOrigin NONE = new CompensationLineOrigin(null, null);
-
-		/** {@code null} = computed on the whole group's regular lines */
-		@Nullable ProductCategoryId appliesToProductCategoryId;
-		@Nullable ContractSettingsTakeOverId takeOverId;
-	}
-
-	/**
-	 * Resolves each compensation invoice candidate's order line's applies-to product category (the schema line's,
-	 * else the take-over record's) and take-over record id with one bulk load per table.
-	 *
-	 * @return invoice candidate id -> origin; a candidate without an order line is absent
-	 */
+	/** @return invoice candidate id -> origin of its order line; a candidate without an order line is absent */
 	private ImmutableMap<InvoiceCandidateId, CompensationLineOrigin> retrieveCompensationLineOriginsByInvoiceCandidateId(
 			@NonNull final List<I_C_Invoice_Candidate> compensationLineCandidates)
 	{
-		final ImmutableSet<OrderLineId> orderLineIds = compensationLineCandidates.stream()
-				.map(invoiceCandidate -> OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (orderLineIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap<OrderLineId, I_C_OrderLine> orderLinesById = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLineIds)
-				.create()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()),
-						orderLine -> orderLine));
-
-		final ImmutableMap<GroupTemplateLineId, ProductCategoryId> categoryIdsBySchemaLineId = groupTemplateRepository.getAppliesToProductCategoryIds(
-				orderLinesById.values().stream()
-						.map(OrderGroupCompensationUtils::extractGroupTemplateLineId)
+		final ImmutableMap<OrderLineId, CompensationLineOrigin> originsByOrderLineId = orderGroupRepository.retrieveCompensationLineOrigins(
+				compensationLineCandidates.stream()
+						.map(invoiceCandidate -> OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID()))
 						.filter(Objects::nonNull)
 						.collect(ImmutableSet.toImmutableSet()));
-
-		final ImmutableSet<ContractSettingsTakeOverId> takeOverIdsWithoutSchemaLine = orderLinesById.values().stream()
-				.filter(orderLine -> OrderGroupCompensationUtils.extractGroupTemplateLineId(orderLine) == null)
-				.map(InvoiceCandidateGroupRepository::extractTakeOverId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = takeOverIdsWithoutSchemaLine.isEmpty()
-				? ImmutableMap.of()
-				: takeOverCategoryProvider.map(provider -> provider.getAppliesToCategories(takeOverIdsWithoutSchemaLine)).orElseGet(ImmutableMap::of);
 
 		final ImmutableMap.Builder<InvoiceCandidateId, CompensationLineOrigin> result = ImmutableMap.builder();
 		for (final I_C_Invoice_Candidate invoiceCandidate : compensationLineCandidates)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID());
-			final I_C_OrderLine orderLine = orderLineId != null ? orderLinesById.get(orderLineId) : null;
-			if (orderLine == null)
+			final CompensationLineOrigin origin = orderLineId != null ? originsByOrderLineId.get(orderLineId) : null;
+			if (origin != null)
 			{
-				continue;
+				result.put(extractLineId(invoiceCandidate), origin);
 			}
-
-			final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(orderLine);
-			final ContractSettingsTakeOverId takeOverId = extractTakeOverId(orderLine);
-			final ProductCategoryId appliesToProductCategoryId = schemaLineId != null
-					? categoryIdsBySchemaLineId.get(schemaLineId)
-					: (takeOverId != null ? categoryIdsByTakeOverId.get(takeOverId) : null);
-			result.put(extractLineId(invoiceCandidate), new CompensationLineOrigin(appliesToProductCategoryId, takeOverId));
 		}
 		return result.build();
-	}
-
-	@Nullable
-	private static ContractSettingsTakeOverId extractTakeOverId(@NonNull final I_C_OrderLine orderLine)
-	{
-		return ContractSettingsTakeOverId.ofRepoIdOrNull(orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 	}
 
 	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)

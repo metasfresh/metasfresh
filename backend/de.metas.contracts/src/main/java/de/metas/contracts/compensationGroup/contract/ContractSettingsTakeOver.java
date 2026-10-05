@@ -37,9 +37,9 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class TakeOverRecord
+public class ContractSettingsTakeOver
 {
-	@NonNull ContractSettingsTakeOverId takeOverId;
+	@NonNull ContractSettingsTakeOverId id;
 	@NonNull ProductCategoryId productCategoryId;
 	/** the discount product of the purchase order's own take-over line */
 	@NonNull ProductId ownLineProductId;

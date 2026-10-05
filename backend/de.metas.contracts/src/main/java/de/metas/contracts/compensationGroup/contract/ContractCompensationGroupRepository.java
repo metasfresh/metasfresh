@@ -2,13 +2,9 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.GroupCompensationAmtType;
-import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -131,29 +127,6 @@ public class ContractCompensationGroupRepository
 						I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID,
 						I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID,
 						contractGroupsQuery);
-	}
-
-	/**
-	 * @return the given sales order's contract-created percentage discount lines (product + nominal
-	 * {@code GroupCompensationPercentage}). Amount ({@code PriceAndQty}) lines, surcharges and lines of manually
-	 * created groups are excluded; the contract-created predicate is {@link #createContractCompensationLineMatcher()}.
-	 */
-	public List<LinkedContractDiscountLine> getContractPercentDiscountLines(@NonNull final OrderId salesOrderId)
-	{
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, salesOrderId)
-				.filter(createContractCompensationLineMatcher())
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_GroupCompensationType, GroupCompensationType.Discount.getAdRefListValue())
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType.Percent.getAdRefListValue())
-				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
-				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
-				.create()
-				.stream()
-				.map(line -> new LinkedContractDiscountLine(
-						ProductId.ofRepoId(line.getM_Product_ID()),
-						Percent.of(line.getGroupCompensationPercentage())))
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**

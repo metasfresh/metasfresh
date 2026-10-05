@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
@@ -25,7 +24,6 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
@@ -75,7 +73,7 @@ class InvoiceCandidateGroupRepositoryTest
 		saveRecord(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
-		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), new GroupTemplateRepository(Optional.empty()), Optional.empty());
+		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), OrderGroupRepository.newInstanceForUnitTesting());
 	}
 
 	@Test

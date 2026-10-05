@@ -1,29 +1,18 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
-import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
-import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
 import de.metas.document.DocTypeId;
 import de.metas.order.compensationGroup.GroupTemplateId;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -50,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 /**
- * Repository Tables: C_CompensationGroup_ContractSettings, C_CompensationGroup_ContractSettings_DocType, C_CompensationGroup_ContractSettings_TakeOver, C_CompensationGroup_ContractSettings_TakeOver_Product, C_Flatrate_Conditions
+ * Repository Tables: C_CompensationGroup_ContractSettings, C_CompensationGroup_ContractSettings_DocType, C_Flatrate_Conditions
  * <p>
  * Repository Cluster: sole owner of these tables within this scope (no other class declares a
  * {@code Repository Tables:} line for them; {@code C_Flatrate_Conditions} is only read here, via
@@ -97,93 +86,6 @@ public class ContractCompensationGroupSettingsRepository
 	{
 		final ContractCompensationGroupSettingsId settingsId = getSettingsIdByConditionsId(conditionsId);
 		return settingsId != null ? getBySettingsId(settingsId) : null;
-	}
-
-	/** @return the product category of each given take-over record (active or not, so an own line keeps its category); a record that does not exist or has no category is absent */
-	public ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> getTakeOverProductCategoryIds(@NonNull final Set<ContractSettingsTakeOverId> takeOverIds)
-	{
-		if (takeOverIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
-				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIds)
-				.create()
-				.stream()
-				.filter(record -> ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()) != null)
-				.collect(ImmutableMap.toImmutableMap(
-						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
-						record -> ProductCategoryId.ofRepoId(record.getM_Product_Category_ID())));
-	}
-
-	/**
-	 * @return whether the product is listed on an active take-over product record of any active take-over record of the given
-	 * take-over record's settings, other than {@code excludeTakeOverProductId}
-	 */
-	public boolean isProductListedInSameSettings(
-			@NonNull final ContractSettingsTakeOverId takeOverId,
-			@NonNull final ProductId productId,
-			@Nullable final ContractSettingsTakeOverProductId excludeTakeOverProductId)
-	{
-		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = load(takeOverId, I_C_CompensationGroup_ContractSettings_TakeOver.class);
-
-		final ImmutableList<ContractSettingsTakeOverId> takeOverIdsOfSettings = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, takeOver.getC_CompensationGroup_ContractSettings_ID())
-				.create()
-				.listIds(ContractSettingsTakeOverId::ofRepoId);
-
-		final IQueryBuilder<I_C_CompensationGroup_ContractSettings_TakeOver_Product> queryBuilder = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIdsOfSettings);
-		if (excludeTakeOverProductId != null)
-		{
-			queryBuilder.addNotEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_Product_ID, excludeTakeOverProductId);
-		}
-		return queryBuilder.create().anyMatch();
-	}
-
-	/** @return the settings' active take-over records, each with its active listed customer products */
-	public List<TakeOverRecord> getTakeOverRecords(@NonNull final ContractCompensationGroupSettingsId settingsId)
-	{
-		final List<I_C_CompensationGroup_ContractSettings_TakeOver> takeOverRecords = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, settingsId)
-				.orderBy(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID)
-				.create()
-				.list();
-		if (takeOverRecords.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final ImmutableSet<ContractSettingsTakeOverId> takeOverIds = takeOverRecords.stream()
-				.map(ContractCompensationGroupSettingsRepository::extractTakeOverId)
-				.collect(ImmutableSet.toImmutableSet());
-		final Map<ContractSettingsTakeOverId, ImmutableSet<ProductId>> listedProductIdsByTakeOverId = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIds)
-				.create()
-				.stream()
-				.collect(Collectors.groupingBy(
-						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
-						Collectors.mapping(record -> ProductId.ofRepoId(record.getM_Product_ID()), ImmutableSet.toImmutableSet())));
-
-		return takeOverRecords.stream()
-				.map(record -> TakeOverRecord.builder()
-						.takeOverId(extractTakeOverId(record))
-						.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
-						.ownLineProductId(ProductId.ofRepoId(record.getM_Product_ID()))
-						.listedCustomerProductIds(listedProductIdsByTakeOverId.getOrDefault(extractTakeOverId(record), ImmutableSet.of()))
-						.build())
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private static ContractSettingsTakeOverId extractTakeOverId(@NonNull final I_C_CompensationGroup_ContractSettings_TakeOver record)
-	{
-		return ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 	}
 
 	private ImmutableSet<DocTypeId> retrieveDocTypeIds(@NonNull final ContractCompensationGroupSettingsId settingsId)

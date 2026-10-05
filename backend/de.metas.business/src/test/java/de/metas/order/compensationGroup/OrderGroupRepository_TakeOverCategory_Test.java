@@ -115,7 +115,7 @@ public class OrderGroupRepository_TakeOverCategory_Test
 		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = ImmutableMap.of(
 				TAKE_OVER_ID, TAKE_OVER_CATEGORY_ID,
 				OTHER_TAKE_OVER_ID, OTHER_TAKE_OVER_CATEGORY_ID);
-		final TakeOverCategoryProvider provider = takeOverIds -> {
+		final ContractSettingsTakeOverCategoryProvider provider = takeOverIds -> {
 			takeOverCategoryProviderCalls.add(ImmutableSet.copyOf(takeOverIds));
 			return ImmutableMap.copyOf(Maps.filterKeys(categoryIdsByTakeOverId, takeOverIds::contains));
 		};

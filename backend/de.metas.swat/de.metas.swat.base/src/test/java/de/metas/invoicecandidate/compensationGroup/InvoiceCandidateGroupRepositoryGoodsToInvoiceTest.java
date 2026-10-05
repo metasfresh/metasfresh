@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.compensationGroup;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.math.BigDecimal.ONE;
@@ -66,7 +64,7 @@ class InvoiceCandidateGroupRepositoryGoodsToInvoiceTest
 		saveRecord(groupHeader);
 		groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), groupHeader.getC_Order_CompensationGroup_ID());
 
-		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), new GroupTemplateRepository(Optional.empty()), Optional.empty());
+		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), OrderGroupRepository.newInstanceForUnitTesting());
 	}
 
 	private I_C_Invoice_Candidate createGoodsToInvoice(final Consumer<I_C_Invoice_Candidate> customizer)

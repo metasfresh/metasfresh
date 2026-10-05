@@ -14,7 +14,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateLineId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.compensationGroup.TakeOverCategoryProvider;
+import de.metas.order.compensationGroup.ContractSettingsTakeOverCategoryProvider;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -123,14 +123,16 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = ImmutableMap.of(
 				TAKE_OVER_ID, TAKE_OVER_CATEGORY_ID,
 				GOODS_TAKE_OVER_ID, goodsCategoryId);
-		final TakeOverCategoryProvider provider = takeOverIds -> {
+		final ContractSettingsTakeOverCategoryProvider provider = takeOverIds -> {
 			takeOverCategoryProviderCalls.add(ImmutableSet.copyOf(takeOverIds));
 			return ImmutableMap.copyOf(Maps.filterKeys(categoryIdsByTakeOverId, takeOverIds::contains));
 		};
-		repo = new InvoiceCandidateGroupRepository(
+		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
 				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
+				Optional.empty(),
 				new GroupTemplateRepository(Optional.empty()),
 				Optional.of(provider));
+		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), orderGroupRepository);
 	}
 
 	@Test

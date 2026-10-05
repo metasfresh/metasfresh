@@ -41,6 +41,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -109,13 +111,13 @@ public class OrderGroupRepository implements GroupRepository
 	@NonNull private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
-	@NonNull private final Optional<TakeOverCategoryProvider> takeOverCategoryProvider;
+	@NonNull private final Optional<ContractSettingsTakeOverCategoryProvider> takeOverCategoryProvider;
 
 	public OrderGroupRepository(
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			@NonNull final Optional<List<OrderGroupRepositoryAdvisor>> advisors,
 			@NonNull final GroupTemplateRepository groupTemplateRepository,
-			@NonNull final Optional<TakeOverCategoryProvider> takeOverCategoryProvider)
+			@NonNull final Optional<ContractSettingsTakeOverCategoryProvider> takeOverCategoryProvider)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
@@ -291,7 +293,9 @@ public class OrderGroupRepository implements GroupRepository
 				.additive(isAdditive(orderCompensationGroupPO));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
-		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(groupOrderLines);
+		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(groupOrderLines.stream()
+				.filter(I_C_OrderLine::isGroupCompensationLine)
+				.collect(ImmutableList.toImmutableList()));
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
@@ -337,6 +341,29 @@ public class OrderGroupRepository implements GroupRepository
 				.createQueryBuilder(I_C_Order_CompensationGroup.class)
 				.addNotNull(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID) // SQL-redundant; the in-memory (unit test) compare sorts null above 0
 				.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0);
+	}
+
+	/** @return the given order's contract-created groups, built from their active lines, which are loaded with one query */
+	public ImmutableList<Group> retrieveContractCreatedGroupsByOrderId(@NonNull final OrderId orderId)
+	{
+		final IQuery<I_C_Order_CompensationGroup> contractGroupsOfOrderQuery = createContractCreatedGroupsQueryBuilder()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_ID, orderId)
+				.create();
+
+		final Map<GroupId, List<I_C_OrderLine>> orderLinesByGroupId = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, contractGroupsOfOrderQuery)
+				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
+				.create()
+				.stream()
+				.collect(Collectors.groupingBy(OrderGroupRepository::extractGroupId, LinkedHashMap::new, Collectors.toList()));
+
+		return orderLinesByGroupId.values()
+				.stream()
+				.map(this::createGroupFromOrderLines)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
@@ -443,16 +470,34 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
+	/** @return the origin of each given compensation order line; an order line that does not exist is absent */
+	public ImmutableMap<OrderLineId, CompensationLineOrigin> retrieveCompensationLineOrigins(@NonNull final Set<OrderLineId> compensationOrderLineIds)
+	{
+		if (compensationOrderLineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_C_OrderLine> compensationLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, compensationOrderLineIds)
+				.create()
+				.list();
+		final ImmutableMap<OrderLineId, ProductCategoryId> appliesToProductCategoryIds = retrieveAppliesToProductCategoryIds(compensationLines);
+
+		return compensationLines.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()),
+						line -> new CompensationLineOrigin(
+								appliesToProductCategoryIds.get(OrderLineId.ofRepoId(line.getC_OrderLine_ID())),
+								ContractSettingsTakeOverId.ofRepoIdOrNull(line.getC_CompensationGroup_ContractSettings_TakeOver_ID()))));
+	}
+
 	/**
 	 * @return the applies-to product category of each given compensation line: its schema line's category; for a line
 	 * without schema line, its take-over record's category. A line without category is absent.
 	 */
-	private ImmutableMap<OrderLineId, ProductCategoryId> retrieveAppliesToProductCategoryIds(@NonNull final List<I_C_OrderLine> groupOrderLines)
+	private ImmutableMap<OrderLineId, ProductCategoryId> retrieveAppliesToProductCategoryIds(@NonNull final List<I_C_OrderLine> compensationLines)
 	{
-		final List<I_C_OrderLine> compensationLines = groupOrderLines.stream()
-				.filter(I_C_OrderLine::isGroupCompensationLine)
-				.collect(ImmutableList.toImmutableList());
-
 		final ImmutableMap<GroupTemplateLineId, ProductCategoryId> categoryIdsBySchemaLineId = groupTemplateRepository.getAppliesToProductCategoryIds(
 				compensationLines.stream()
 						.map(OrderGroupCompensationUtils::extractGroupTemplateLineId)

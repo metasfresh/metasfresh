@@ -101,7 +101,7 @@ public class ContractCompensationGroupService
 	@NonNull private final ContractCompensationGroupRepository contractGroupRepository;
 	@NonNull private final OrderFreightCostsService orderFreightCostService;
 	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
-	@NonNull private final ContractCompensationGroupTakeOverService takeOverService;
+	@NonNull private final ContractSettingsTakeOverService takeOverService;
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -175,16 +175,16 @@ public class ContractCompensationGroupService
 			@NonNull final I_C_Order order,
 			@NonNull final ContractCompensationGroupSettings settings)
 	{
-		final List<TakeOverResult> takeOvers = takeOverService.computeTakeOvers(order, settings);
-		if (takeOvers.isEmpty())
+		final List<ContractSettingsTakeOverMatch> matches = takeOverService.computeMatches(order, settings);
+		if (matches.isEmpty())
 		{
 			return schema;
 		}
 
 		final List<GroupTemplateCompensationLine> adjustedLines = new ArrayList<>(schema.getCompensationLines());
-		for (final TakeOverResult takeOver : takeOvers)
+		for (final ContractSettingsTakeOverMatch match : matches)
 		{
-			applyTakeOver(adjustedLines, takeOver);
+			applyTakeOver(adjustedLines, match);
 		}
 
 		return schema.toBuilder()
@@ -202,16 +202,16 @@ public class ContractCompensationGroupService
 	 * <li><b>append</b> — else an own discount line with the record's discount product is appended on the record's category,
 	 * carrying only the taken-over percentage (computed on its own base) and the take-over record id, so the own line keeps
 	 * its category across reload / invoice-candidate rebuild (the repositories resolve the category of a line without a schema
-	 * line from the take-over record, via {@code TakeOverCategoryProvider}).</li>
+	 * line from the take-over record, via {@code ContractSettingsTakeOverCategoryProvider}).</li>
 	 * </ul>
 	 */
 	private void applyTakeOver(
 			@NonNull final List<GroupTemplateCompensationLine> lines,
-			@NonNull final TakeOverResult takeOver)
+			@NonNull final ContractSettingsTakeOverMatch match)
 	{
-		final TakeOverRecord record = takeOver.getRecord();
-		final ProductCategoryId categoryId = record.getProductCategoryId();
-		final Percent takenOverPercent = takeOver.getSummedPercent();
+		final ContractSettingsTakeOver takeOver = match.getTakeOver();
+		final ProductCategoryId categoryId = takeOver.getProductCategoryId();
+		final Percent takenOverPercent = match.getSummedPercent();
 
 		final int mergeIndex = findMergeableLineIndex(lines, categoryId, this::isEffectiveDiscountPercentLine);
 		if (mergeIndex >= 0)
@@ -220,18 +220,18 @@ public class ContractCompensationGroupService
 			final Percent vendorPercent = vendorLine.getPercentage(); // non-null by findMergeableLineIndex
 			lines.set(mergeIndex, vendorLine.toBuilder()
 					.percentage(vendorPercent.add(takenOverPercent))
-					.description(createMergedLineDescription(vendorPercent, vendorLine.getProductId(), takeOver))
+					.description(createMergedLineDescription(vendorPercent, vendorLine.getProductId(), match))
 					.build());
 		}
 		else
 		{
 			lines.add(GroupTemplateCompensationLine.builder()
-					.productId(record.getOwnLineProductId())
+					.productId(takeOver.getOwnLineProductId())
 					.compensationType(GroupCompensationType.Discount)
 					.percentage(takenOverPercent)
 					.appliesToProductCategoryId(categoryId)
-					.takeOverId(record.getTakeOverId())
-					.description(createAppendedLineDescription(takeOver))
+					.takeOverId(takeOver.getId())
+					.description(createAppendedLineDescription(match))
 					.build());
 		}
 	}
@@ -282,21 +282,21 @@ public class ContractCompensationGroupService
 	private String createMergedLineDescription(
 			@NonNull final Percent vendorPercent,
 			@NonNull final ProductId vendorProductId,
-			@NonNull final TakeOverResult takeOver)
+			@NonNull final ContractSettingsTakeOverMatch match)
 	{
 		return formatPercent(vendorPercent) + " " + productBL.getProductName(vendorProductId)
-				+ " + " + createAppendedLineDescription(takeOver);
+				+ " + " + createAppendedLineDescription(match);
 	}
 
 	/** e.g. {@code "3% Bonus Ware"}: the taken-over percentage with the customer discount products that were actually taken over (not every product the record lists). */
-	private String createAppendedLineDescription(@NonNull final TakeOverResult takeOver)
+	private String createAppendedLineDescription(@NonNull final ContractSettingsTakeOverMatch match)
 	{
-		return formatPercent(takeOver.getSummedPercent()) + " " + getTakenOverProductNames(takeOver);
+		return formatPercent(match.getSummedPercent()) + " " + getTakenOverProductNames(match);
 	}
 
-	private String getTakenOverProductNames(@NonNull final TakeOverResult takeOver)
+	private String getTakenOverProductNames(@NonNull final ContractSettingsTakeOverMatch match)
 	{
-		return productBL.getProductNames(takeOver.getTakenOverProductIds())
+		return productBL.getProductNames(match.getTakenOverProductIds())
 				.values()
 				.stream()
 				.sorted()
