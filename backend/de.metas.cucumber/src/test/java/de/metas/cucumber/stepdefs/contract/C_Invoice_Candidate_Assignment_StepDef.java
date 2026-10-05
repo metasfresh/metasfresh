@@ -75,6 +75,7 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	 *   <b>C_Invoice_Candidate_ID</b> — (required) alias the found refund invoice candidate is registered under<br>
 	 *   <b>C_Flatrate_Term_ID</b> — (required, identifier-ref) the refund term<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) selects the refund invoice candidate booked on this product<br>
+	 *   <b>IsSOTrx</b> — (optional) selects the refund invoice candidate of the sales (Y) or purchase (N) side<br>
 	 *   <b>PriceActual</b> — (optional) refund amount<br>
 	 *   <b>NetAmtToInvoice</b> — (optional) refund amount to invoice<br>
 	 *   <b>DateToInvoice</b> — (optional, yyyy-MM-dd) date the refund can be invoiced from<br>
@@ -127,6 +128,9 @@ public class C_Invoice_Candidate_Assignment_StepDef
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID());
 		row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID)
 				.ifPresent(productIdentifier -> queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, productTable.getId(productIdentifier)));
+
+		row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
+				.ifPresent(isSOTrx -> queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, isSOTrx));
 
 		final StringBuilder lastMismatch = new StringBuilder();
 		try
