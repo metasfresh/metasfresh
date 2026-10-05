@@ -12,9 +12,8 @@ import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.order.IOrderDAO;
+import de.metas.order.OrderShipmentBPartners;
 import de.metas.order.OrderId;
-import org.compiere.model.I_C_Order;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -116,7 +115,7 @@ public class AssignableInvoiceCandidateFactory
 		return AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
-				.shipmentBPartnerId(extractShipmentBPartnerId(assignableRecord))
+				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID())))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision.toInt())
@@ -125,21 +124,6 @@ public class AssignableInvoiceCandidateFactory
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
-	}
-
-	/** @return the partner the goods are shipped to: the order's drop-ship partner, else the order's partner; {@code null} if the candidate has no order. */
-	@Nullable
-	private static BPartnerId extractShipmentBPartnerId(@NonNull final I_C_Invoice_Candidate assignableRecord)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID());
-		if (orderId == null)
-		{
-			return null;
-		}
-
-		final I_C_Order order = Services.get(IOrderDAO.class).getById(orderId);
-		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(order.getDropShip_BPartner_ID());
-		return dropShipBPartnerId != null ? dropShipBPartnerId : BPartnerId.ofRepoId(order.getC_BPartner_ID());
 	}
 
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)

@@ -51,7 +51,7 @@ public class RefundContractQuery
 	{
 		return new RefundContractQuery(
 				request.getBPartnerId(),
-				null,
+				request.getShipmentBPartnerId(),
 				request.getProductId(),
 				request.getDate());
 	}
