@@ -168,6 +168,21 @@ public class RefundContract
 	}
 
 	/**
+	 * @return the first day of the period that contains the given date; the contract's start date if that is the first period
+	 */
+	public LocalDate computeCurrentPeriodStart(@NonNull final LocalDate date)
+	{
+		LocalDate periodStart = startDate;
+		LocalDate periodEnd = computeNextInvoiceDate(periodStart).getDateToInvoice();
+		while (periodEnd.isBefore(date))
+		{
+			periodStart = periodEnd.plusDays(1);
+			periodEnd = computeNextInvoiceDate(periodStart).getDateToInvoice();
+		}
+		return periodStart;
+	}
+
+	/**
 	 * Every period end is computed from the first one: its month plus a multiple of the schedule's distance, with the invoice day clamped to that month's length.
 	 * Stepping from one end to the next would carry a clamped day (e.g. the 30th after a short month) into the following periods.
 	 */

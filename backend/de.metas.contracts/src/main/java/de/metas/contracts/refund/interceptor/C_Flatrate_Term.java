@@ -1,5 +1,8 @@
 package de.metas.contracts.refund.interceptor;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.time.SystemTime;
+import java.time.LocalDate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -48,7 +51,7 @@ public class C_Flatrate_Term
 {
 	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
 
-	private C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
+	/* package */ C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
 	{
 		this.invoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
@@ -74,7 +77,7 @@ public class C_Flatrate_Term
 			return; // this MI only deals with "refund" terms
 		}
 
-		final IQuery<I_C_Invoice_Candidate> query = createInvoiceCandidatesToInvalidQuery(flatrateTerm);
+		final IQuery<I_C_Invoice_Candidate> query = createInvoiceCandidatesToInvalidQuery(flatrateTerm, SystemTime.asLocalDate());
 
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
@@ -86,8 +89,10 @@ public class C_Flatrate_Term
 	 * The invoice candidates (also the already invoiced ones) that might belong to the term: those of the term's partner, as invoice partner or as ordering/shipment partner,
 	 * within the term's dates. They are only flagged here; the invoice candidate update run decides which of them really match, and assigns them.
 	 */
-	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(
-			@NonNull final I_C_Flatrate_Term flatrateTerm)
+	@VisibleForTesting
+	/* package */ IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(
+			@NonNull final I_C_Flatrate_Term flatrateTerm,
+			@NonNull final LocalDate today)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
