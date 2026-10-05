@@ -470,7 +470,7 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** @return the origin of each given compensation order line; an order line that does not exist is absent */
+	/** @return the origin of each given compensation order line (active or not); an order line that does not exist is absent */
 	public ImmutableMap<OrderLineId, CompensationLineOrigin> retrieveCompensationLineOrigins(@NonNull final Set<OrderLineId> compensationOrderLineIds)
 	{
 		if (compensationOrderLineIds.isEmpty())
