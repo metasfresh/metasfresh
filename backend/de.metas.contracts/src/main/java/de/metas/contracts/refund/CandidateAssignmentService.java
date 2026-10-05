@@ -100,8 +100,13 @@ public class CandidateAssignmentService
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
-		final List<RefundContract> refundContracts = retrieveMatchingContracts(assignableCandidate);
+		return updateAssignment(assignableCandidate, retrieveMatchingContracts(assignableCandidate));
+	}
 
+	private UpdateAssignmentResult updateAssignment(
+			@NonNull final AssignableInvoiceCandidate assignableCandidate,
+			@NonNull final List<RefundContract> refundContracts)
+	{
 		if (refundContracts.isEmpty())
 		{
 			if (!assignableCandidate.isAssigned())
@@ -157,15 +162,17 @@ public class CandidateAssignmentService
 				.collect(ImmutableSet.toImmutableSet());
 
 		final LocalDate today = SystemTime.asLocalDate();
-		final boolean hasContractToAssignTo = retrieveMatchingContracts(assignableCandidate).stream()
-				.filter(contract -> !assignedContractIds.contains(contract.getId()))
-				.anyMatch(contract -> isInCurrentOrLaterPeriod(contract, assignableCandidate.getInvoiceableFrom(), today));
-		if (!hasContractToAssignTo)
+		final ImmutableList<RefundContract> contractsToAssignTo = retrieveMatchingContracts(assignableCandidate).stream()
+				// the contracts that the candidate already has stay as they are; the new ones count only if their period for the candidate is not over
+				.filter(contract -> assignedContractIds.contains(contract.getId())
+						|| isInCurrentOrLaterPeriod(contract, assignableCandidate.getInvoiceableFrom(), today))
+				.collect(ImmutableList.toImmutableList());
+		if (contractsToAssignTo.stream().allMatch(contract -> assignedContractIds.contains(contract.getId())))
 		{
-			return;
+			return; // nothing new
 		}
 
-		updateAssignment(assignableCandidate);
+		updateAssignment(assignableCandidate, contractsToAssignTo);
 	}
 
 	private static boolean isInCurrentOrLaterPeriod(@NonNull final RefundContract contract, @NonNull final LocalDate invoiceableFrom, @NonNull final LocalDate today)
