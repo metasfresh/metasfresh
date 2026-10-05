@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
@@ -46,6 +47,7 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
@@ -399,33 +401,26 @@ public class AllocatePayments_StepDef
 				.docTypeId(invoiceToAllocate.getDocTypeId())
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
-				.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.FALSE)
+				.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.UNKNOWN) // like production: let computeFee check for an existing service invoice
 				.build());
 		if (!computedFee.isPresent() || computedFee.get().getFeeAmountIncludingTax().isZero())
 		{
 			return Optional.empty();
 		}
 
-		// service company + payment date, like PaymentsViewAllocateCommand#extractInvoiceProcessingContext
-		final BPartnerId serviceCompanyBPartnerId;
-		final ZonedDateTime paymentDate;
-		if (paymentDocuments.isEmpty())
-		{
-			serviceCompanyBPartnerId = invoiceProcessingServiceCompanyService.getByCustomerId(invoiceToAllocate.getBpartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("No service company config found for customer " + invoiceToAllocate.getBpartnerId()))
-					.getServiceCompanyBPartnerId();
-			paymentDate = evaluationDate;
-		}
-		else
-		{
-			assertThat(paymentDocuments).as("exactly 1 payment is expected for an invoice with service fee").hasSize(1);
-			serviceCompanyBPartnerId = paymentDocuments.get(0).getBpartnerId();
-			paymentDate = TimeUtil.asZonedDateTime(paymentDocuments.get(0).getDateTrx());
-		}
+		// same derivation as PaymentsViewAllocateCommand
+		final BPartnerId customerId = invoiceToAllocate.getBpartnerId();
+		final InvoiceProcessingContext context = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+				customerId,
+				paymentDocuments.stream()
+						.map(payment -> InvoiceProcessingContext.of(payment.getBpartnerId(), TimeUtil.asZonedDateTime(payment.getDateTrx())))
+						.collect(ImmutableList.toImmutableList()),
+				() -> new AdempiereException("No service company config found for customer " + customerId));
+		final BPartnerId serviceCompanyBPartnerId = context.getServiceCompanyId();
 
 		return Optional.of(invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 						.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-						.paymentDate(paymentDate)
+						.paymentDate(context.getPaymentDate())
 						.customerId(invoiceToAllocate.getBpartnerId())
 						.invoiceId(invoiceToAllocate.getInvoiceId())
 						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())

@@ -25,6 +25,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
@@ -57,6 +58,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
@@ -122,6 +124,34 @@ public class InvoiceProcessingServiceCompanyService
 				.feeAmountIncludingTax(feeAmountIncludingTax)
 				//
 				.build());
+	}
+
+	/**
+	 * Derives the context for the service fee of an invoice that is allocated against the given payments.
+	 *
+	 * @param paymentContexts one context per selected payment (payment partner = service company, payment date); may be empty
+	 * @param noConfigError   the error to throw if there are no payments and the customer has no service company config
+	 * @return with payments: their single common context; without payments: the customer's configured service company and now
+	 */
+	public InvoiceProcessingContext extractInvoiceProcessingContext(
+			@NonNull final BPartnerId customerId,
+			@NonNull final Collection<InvoiceProcessingContext> paymentContexts,
+			@NonNull final Supplier<AdempiereException> noConfigError)
+	{
+		if (paymentContexts.isEmpty())
+		{
+			final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+			final InvoiceProcessingServiceCompanyConfig config = getByCustomerId(customerId, evaluationDate)
+					.orElseThrow(noConfigError);
+			return InvoiceProcessingContext.of(config.getServiceCompanyBPartnerId(), evaluationDate);
+		}
+
+		final ImmutableSet<InvoiceProcessingContext> distinctContexts = ImmutableSet.copyOf(paymentContexts);
+		if (distinctContexts.size() != 1)
+		{
+			throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
+		}
+		return distinctContexts.iterator().next();
 	}
 
 	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
