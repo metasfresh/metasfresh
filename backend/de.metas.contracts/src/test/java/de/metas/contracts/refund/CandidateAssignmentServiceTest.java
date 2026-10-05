@@ -195,6 +195,34 @@ public class CandidateAssignmentServiceTest
 		assertThat(unAssignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo("98");
 	}
 
+	/**
+	 * Two parallel contracts of the same partner: the candidate is assigned to both, each gets its full amount, and a further update doesn't change that.
+	 */
+	@Test
+	public void updateAssignment_assigns_to_every_matching_contract()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(contract1);
+		refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()));
+
+		final List<AssignmentToRefundCandidate> assignments = result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates();
+		assertThat(assignments).hasSize(2);
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactlyInAnyOrder(contract1.getId(), contract2.getId());
+		assertThat(assignments)
+				.allSatisfy(assignment -> {
+					assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the full 10
+					assertThat(assignment.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
+				});
+	}
+
 	@Test
 	public void updateAssignment_not_yet_assigned()
 	{
