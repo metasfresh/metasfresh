@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -79,6 +80,12 @@ public class RefundContractRepository
 					0,
 					CCache.EXPIREMINUTES_Never);
 
+	private static final CCache<LocalDate, Boolean> ANY_REFUND_CONTRACT_CACHE = //
+			CCache.<LocalDate, Boolean> newCache(
+					I_C_Flatrate_Term.Table_Name + "#anyRefundContractOn",
+					0,
+					CCache.EXPIREMINUTES_Never);
+
 	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
@@ -86,6 +93,27 @@ public class RefundContractRepository
 	public RefundContractRepository(@NonNull final RefundConfigRepository refundConfigRepository)
 	{
 		this.refundConfigRepository = refundConfigRepository;
+	}
+
+	/**
+	 * @return {@code true} if there is any completed refund contract of any partner on the given date
+	 */
+	public boolean hasAnyRefundContract(@NonNull final LocalDate date)
+	{
+		return ANY_REFUND_CONTRACT_CACHE.getOrLoad(date, () -> anyRefundContractExists(TimeUtil.asTimestamp(date)));
+	}
+
+	private static boolean anyRefundContractExists(@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.create()
+				.anyMatch();
 	}
 
 	/**
