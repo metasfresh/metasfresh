@@ -1,41 +1,8 @@
--- Contract compensation groups: take-over tab on the settings window.
---
--- Adds, to the "Kompensationsgruppen-Vertragseinstellungen" window (AD_Window_ID=542194):
---   * a tab "Übernahme aus dem Verkaufsauftrag" / "Take over from the sales order" (TabLevel=1, child of the
---     settings tab 549507) over C_CompensationGroup_ContractSettings_TakeOver (AD_Table_ID=542652, from
---     migration 5827430): category + own-line discount product + the customer discount products.
---   * the customer discount products (junction C_CompensationGroup_ContractSettings_TakeOver_Product,
---     AD_Table_ID=542653) are a multi-value association of the take-over record. They are surfaced as an inline
---     multi-select via a Labels UI element (AD_UI_ElementType='L') on the take-over tab, backed by a hidden labels
---     tab + selector field on the junction table -- NOT as a (grand)child tab: the WebUI supports only one child
---     level (GridWindowVO.getChildTabs ignores grandchildren; LayoutFactory.getIncludedTabLayouts is empty for non-root tabs).
---   * The hidden labels tab is TabLevel=2 because its host (the take-over tab) is itself a child tab: the root layout
---     only instantiates TabLevel=1 children, so a TabLevel=1 backing tab would be rendered as a stray visible tab (the root
---     LayoutFactory skips only the labels tabs of its OWN labels elements). Precedent: displayed Labels elements 585705 / 588403
---     (window 123, host tab 496 TabLevel=1) use a TabLevel=2 labels tab (544008 / 544281). With no Parent_Column_ID the link column is
---     inferred from the host's key column (C_CompensationGroup_ContractSettings_TakeOver_ID, same name on the junction).
--- Modelled on 5806910 (Labels wiring) and the sibling "Belegarten" tab 549508 of 5826640.
---
--- Mandated field descriptions, via AD_Element/AD_Element_Trl:
---   (a) take-over record: the taken-over percentage also applies to goods that were in a product-bundle group on the sales order
---   (b) customer discount product sub-list: only discount products used exclusively for goods bonuses may be listed;
---       packaging bonuses must use their own discount product
--- Both M_Product_ID columns share the generic element label "Produkt"; the own-line discount product field and the customer
--- discount products widget therefore carry their own label elements (AD_Field.AD_Name_ID / AD_UI_Element.AD_Name_ID).
--- German term for "product-bundle": the system's established term is "Handelsstückliste" (AD_Ref_List "Bestandteil
--- Handelsstückliste" = "Component of bundle", OrderLineReasonForWithoutCharge.BundleComponent).
---
--- IDs allocated from idserver.metas.de on 2026-10-01:
---   AD_MigrationScript  5827470 (this script)
---   AD_Element   585507 (take-over tab title + description (a)), 585508 (customer discount products title + description (b);
---                caption of the hidden labels tab and of the Labels widget),
---                585509 (field label "Rabattprodukt (eigene Zeile)" + description (a)),
---                585510 (field label "Kundenrabattprodukt" of the labels selector field + description (b))
---   AD_Tab       549509 (take-over, TabLevel=1), 549511 (hidden labels backing tab, TabLevel=2)
---   AD_UI_Section 548002; AD_UI_Column 549771; AD_UI_ElementGroup 555798
---   AD_Field     785594 (M_Product_Category_ID), 785595 (M_Product_ID own line), 785596 (IsActive) -- take-over tab
---                785599 (M_Product_ID customer = labels selector) -- hidden labels tab
---   AD_UI_Element 654922 (category), 654923 (own-line product), 654927 (Labels: customer discount products), 654924 (IsActive)
+-- Contract compensation groups: take-over tab "Übernahme aus dem Verkaufsauftrag" on the settings window (AD_Window_ID=542194):
+-- product category + own-line discount product + the customer discount products.
+-- The customer discount products (junction C_CompensationGroup_ContractSettings_TakeOver_Product) are an inline Labels
+-- multi-select, not a grandchild tab: the WebUI renders only one child tab level. Its hidden backing tab is TabLevel=2,
+-- because a TabLevel=1 one would be rendered as a stray tab of the root (precedent: Labels elements 585705 / 588403 on window 123).
 -- ============================================================================
 -- 1) AD_Element: take-over tab title (+ description (a))
 -- ============================================================================
