@@ -52,6 +52,8 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
+
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		// we need to look at the lowest minQty first, in order to "fill" it; only the "biggest" config is does not have the next config's minQty as ceiling
@@ -89,6 +91,11 @@ public class RefundConfigs
 				.stream()
 				.min(Comparator.comparing(RefundConfig::getMinQty))
 				.get();
+	}
+
+	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		return BonusRecipient.INVOICE_PARTNER; // TODO
 	}
 
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)

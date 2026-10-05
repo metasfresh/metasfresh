@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
@@ -55,6 +56,11 @@ public class AssignableInvoiceCandidate
 	InvoiceCandidateId id;
 
 	BPartnerLocationId bpartnerLocationId;
+
+	/** The partner the goods are shipped to: the order's drop-ship partner, else the order's partner. {@code null} if the candidate has no order. */
+	@Nullable
+	BPartnerId shipmentBPartnerId;
+
 	ProductId productId;
 	LocalDate invoiceableFrom;
 
@@ -76,6 +82,7 @@ public class AssignableInvoiceCandidate
 	private AssignableInvoiceCandidate(
 			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@Nullable final BPartnerId shipmentBPartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
@@ -86,6 +93,7 @@ public class AssignableInvoiceCandidate
 	{
 		this.id = id;
 		this.bpartnerLocationId = bpartnerLocationId;
+		this.shipmentBPartnerId = shipmentBPartnerId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;

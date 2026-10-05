@@ -16,12 +16,14 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -131,5 +133,37 @@ public class AssignableInvoiceCandidateFactoryTest
 		// assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		assertThat(ofRecord.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
+	}
+
+	@Test
+	public void ofRecord_withoutOrder_hasNoShipmentPartner()
+	{
+		assertThat(assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord).getShipmentBPartnerId()).isNull();
+	}
+
+	@Test
+	public void ofRecord_shipmentPartnerIsThePartnerOfTheOrder()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(20);
+		save(order);
+		assignableIcRecord.setC_Order_ID(order.getC_Order_ID());
+		save(assignableIcRecord);
+
+		assertThat(assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord).getShipmentBPartnerId()).isEqualTo(BPartnerId.ofRepoId(20));
+	}
+
+	@Test
+	public void ofRecord_shipmentPartnerOfADropShipOrderIsTheDropShipPartner()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(20);
+		order.setIsDropShip(true);
+		order.setDropShip_BPartner_ID(21);
+		save(order);
+		assignableIcRecord.setC_Order_ID(order.getC_Order_ID());
+		save(assignableIcRecord);
+
+		assertThat(assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord).getShipmentBPartnerId()).isEqualTo(BPartnerId.ofRepoId(21));
 	}
 }

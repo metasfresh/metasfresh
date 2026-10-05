@@ -11,6 +11,8 @@ import de.metas.invoice.InvoiceScheduleId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -27,7 +29,18 @@ public class RefundConfigsTest
 			.invoiceDayOfMonth(1)
 			.build();
 
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	private static RefundConfig config(@Nullable final Integer productId, @Nullable final Integer bonusProductId, final int minQty)
+	{
+		return config(productId, bonusProductId, minQty, null);
+	}
+
+	private static RefundConfig config(@Nullable final Integer productId, @Nullable final Integer bonusProductId, final int minQty, @Nullable final BonusRecipient bonusRecipient)
 	{
 		return RefundConfig.builder()
 				.conditionsId(ConditionsId.ofRepoId(20))
@@ -39,6 +52,7 @@ public class RefundConfigsTest
 				.percent(Percent.of(10))
 				.productId(productId == null ? null : ProductId.ofRepoId(productId))
 				.bonusProductId(bonusProductId == null ? null : ProductId.ofRepoId(bonusProductId))
+				.bonusRecipient(bonusRecipient)
 				.build();
 	}
 
@@ -82,7 +96,7 @@ public class RefundConfigsTest
 	public void extractRefundProductId_withDifferentBonusProducts_fails()
 	{
 		assertThatThrownBy(() -> RefundConfigs.extractRefundProductId(ImmutableList.of(config(null, 1, 0), config(null, 2, 10))))
-				.isInstanceOf(AdempiereException.class)
+				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("exactly one 1 item");
 	}
 
@@ -90,7 +104,34 @@ public class RefundConfigsTest
 	public void extractRefundProductId_withDifferentProducts_fails()
 	{
 		assertThatThrownBy(() -> RefundConfigs.extractRefundProductId(ImmutableList.of(config(3, null, 0), config(4, null, 10))))
-				.isInstanceOf(AdempiereException.class)
+				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("exactly one 1 item");
+	}
+
+	@Test
+	public void extractBonusRecipient()
+	{
+		assertThat(RefundConfigs.extractBonusRecipient(ImmutableList.of(config(null, 1, 0, BonusRecipient.SHIPMENT_PARTNER), config(null, 1, 10, BonusRecipient.SHIPMENT_PARTNER))))
+				.isEqualTo(BonusRecipient.SHIPMENT_PARTNER);
+	}
+
+	@Test
+	public void extractBonusRecipient_defaultsToTheInvoicePartner()
+	{
+		assertThat(RefundConfigs.extractBonusRecipient(ImmutableList.of(config(null, 1, 0)))).isEqualTo(BonusRecipient.INVOICE_PARTNER);
+	}
+
+	@Test
+	public void assertValid_configsWithDifferentBonusRecipients_fails()
+	{
+		assertThatThrownBy(() -> RefundConfigs.assertValid(ImmutableList.of(
+				config(null, 1, 0, BonusRecipient.INVOICE_PARTNER),
+				config(null, 1, 10, BonusRecipient.SHIPMENT_PARTNER))))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT.toAD_Message());
+				});
 	}
 }

@@ -154,6 +154,23 @@ public class RefundConfigRepositoryTest
 		assertThat(result.getBonusProductId()).isEqualTo(ProductId.ofRepoId(41));
 	}
 
+	@Test
+	public void ofRecord_and_save_mapBonusRecipient()
+	{
+		final I_C_Flatrate_RefundConfig configRecord = createThreeRefundConfigRecords(conditionsId).get(0);
+		assertThat(refundConfigRepository.ofRecord(configRecord).getBonusRecipient()).isEqualTo(BonusRecipient.INVOICE_PARTNER);
+
+		configRecord.setBonusRecipient(X_C_Flatrate_RefundConfig.BONUSRECIPIENT_ShipmentPartner);
+		saveRecord(configRecord);
+		final RefundConfig config = refundConfigRepository.ofRecord(configRecord);
+		assertThat(config.getBonusRecipient()).isEqualTo(BonusRecipient.SHIPMENT_PARTNER);
+
+		// invoke the method under test
+		final RefundConfig saved = refundConfigRepository.save(config.toBuilder().bonusRecipient(BonusRecipient.INVOICE_PARTNER).build());
+
+		assertThat(refundConfigRepository.getById(saved.getId()).getBonusRecipient()).isEqualTo(BonusRecipient.INVOICE_PARTNER);
+	}
+
 	/**
 	 * Conditions that mix a product-specific config with a category-only config:
 	 * for the product of the specific config, only the specific config is returned (the category-only one is dropped);
