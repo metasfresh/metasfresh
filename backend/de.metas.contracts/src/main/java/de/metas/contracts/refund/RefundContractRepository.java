@@ -89,23 +89,26 @@ public class RefundContractRepository
 	}
 
 	/**
-	 * @return the ids of all refund terms that match the query; a term with the queried product comes before a term without product.
+	 * @return the ids of all refund terms of the query's invoice partner or shipment partner (whether a term really applies depends on its bonus recipient, see {@link #getByQuery(RefundContractQuery)});
+	 *         a term with the queried product comes before a term without product.
 	 */
 	public ImmutableList<FlatrateTermId> getIdsByQuery(@NonNull final RefundContractQuery query)
 	{
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(query.getDate());
 		final int billPartnerId = query.getBPartnerId().getRepoId();
+		final int shipmentPartnerId = BPartnerId.toRepoId(query.getShipmentBPartnerId());
 		final int productId = query.getProductId().getRepoId();
 
-		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
+		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, shipmentPartnerId, productId);
 		return CACHE.getOrLoad(
 				key,
-				() -> retrieveIdsForCache(invoicableFromTimestamp, billPartnerId, productId));
+				() -> retrieveIdsForCache(invoicableFromTimestamp, billPartnerId, shipmentPartnerId, productId));
 	}
 
 	private static ImmutableList<FlatrateTermId> retrieveIdsForCache(
 			@NonNull final Timestamp invoicableFromTimestamp,
 			final int billPartnerId,
+			final int shipmentPartnerId,
 			final int productId)
 	{
 		return Services.get(IQueryBL.class)
@@ -115,7 +118,7 @@ public class RefundContractRepository
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, invoicableFromTimestamp)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, invoicableFromTimestamp)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, billPartnerId, shipmentPartnerId > 0 ? shipmentPartnerId : billPartnerId)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, null, productId)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
@@ -127,6 +130,8 @@ public class RefundContractRepository
 
 	/**
 	 * @return all refund contracts that match the query. They are additive: every one of them applies.
+	 *         A contract is the query's if its partner is the query's invoice partner and its bonus recipient is the invoice partner,
+	 *         or if its partner is the query's shipment partner and its bonus recipient is the shipment partner.
 	 *         A contract whose configs have a product category base only matches a product of that category or of one of its sub-categories.
 	 *         A config with both a product and a category requires both: the term's product is the config's product, and the product has to be in the category.
 	 */
@@ -138,8 +143,17 @@ public class RefundContractRepository
 		return getIdsByQuery(query)
 				.stream()
 				.map(this::getById)
+				.filter(contract -> isRecipientOf(contract, query))
 				.filter(contract -> contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors)))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static boolean isRecipientOf(@NonNull final RefundContract contract, @NonNull final RefundContractQuery query)
+	{
+		final BPartnerId recipientBPartnerId = contract.extractBonusRecipient() == BonusRecipient.SHIPMENT_PARTNER
+				? query.getShipmentBPartnerId()
+				: query.getBPartnerId();
+		return contract.getBPartnerId().equals(recipientBPartnerId);
 	}
 
 	private static ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)

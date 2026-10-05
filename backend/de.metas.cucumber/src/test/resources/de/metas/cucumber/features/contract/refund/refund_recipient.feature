@@ -153,8 +153,8 @@ Feature: Refund contracts with a configurable recipient
         "items": [
           {
             "orgCode": "001",
-            "externalHeaderId": "refundRecipient_TC3_H",
-            "externalLineId": "refundRecipient_TC3_L1",
+            "externalHeaderId": "@goodsValue@_H",
+            "externalLineId": "@goodsValue@_L1",
             "billPartnerIdentifier": "val-@headOfficeValue@",
             "productIdentifier": "val-@goodsValue@",
             "dateOrdered": "2026-07-01",
@@ -165,10 +165,7 @@ Feature: Refund contracts with a configurable recipient
         ]
       }
       """
-    And after not more than 60s, locate C_Invoice_Candidates by externalHeaderId
-      | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId      |
-      | ic1                               | refundRecipient_TC3_H |
-
+    # (the header id derives from the product's random value, so that a rerun on a persistent DB does not hit the candidate of an earlier run)
     Then after not more than 60s, refund C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | Bill_BPartner_ID |
       | refundHead             | termHeadInvoice    | 30              | headOffice       |

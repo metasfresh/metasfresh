@@ -95,7 +95,7 @@ public class RefundConfigs
 
 	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
 	{
-		return BonusRecipient.INVOICE_PARTNER; // TODO
+		return extractSingleElement(refundConfigs, RefundConfig::getBonusRecipient);
 	}
 
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
@@ -153,6 +153,14 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
+		}
+
+		// the refund of a contract is issued to one partner
+		if (hasDifferentValues(refundConfigs, RefundConfig::getBonusRecipient))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same BonusRecipient; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT).markAsUserValidationError();
 		}
 
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.

@@ -200,27 +200,27 @@ public class RefundContractRepositoryTest
 		final BPartnerId store = BPartnerId.ofRepoId(102);
 		final ProductId productId = ProductId.ofRepoId(103);
 
-		final FlatrateTermId headOfficeTermId = FlatrateTermId.ofRepoId(createRefundTermForRecipient(headOffice, BonusRecipient.INVOICE_PARTNER).getC_Flatrate_Term_ID());
-		final FlatrateTermId storeTermId = FlatrateTermId.ofRepoId(createRefundTermForRecipient(store, BonusRecipient.SHIPMENT_PARTNER).getC_Flatrate_Term_ID());
-		// the same partners with the respective other recipient: they must not match
-		createRefundTermForRecipient(headOffice, BonusRecipient.SHIPMENT_PARTNER);
-		createRefundTermForRecipient(store, BonusRecipient.INVOICE_PARTNER);
+		final FlatrateTermId headInvoiceTerm = createRefundTermForRecipient(headOffice, BonusRecipient.INVOICE_PARTNER);
+		final FlatrateTermId storeShipTerm = createRefundTermForRecipient(store, BonusRecipient.SHIPMENT_PARTNER);
+		final FlatrateTermId headShipTerm = createRefundTermForRecipient(headOffice, BonusRecipient.SHIPMENT_PARTNER);
+		final FlatrateTermId storeInvoiceTerm = createRefundTermForRecipient(store, BonusRecipient.INVOICE_PARTNER);
 
+		// the head office is invoiced, the store receives the goods
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(headOffice, store, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactlyInAnyOrder(headOfficeTermId, storeTermId);
+				.extracting(RefundContract::getId).containsExactlyInAnyOrder(headInvoiceTerm, storeShipTerm);
 
 		// no shipment partner (the candidate has no order): no refund for a shipment partner term
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(headOffice, null, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactly(headOfficeTermId);
+				.extracting(RefundContract::getId).containsExactly(headInvoiceTerm);
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(store, null, productId, NOW)))
-				.extracting(RefundContract::getId).isEmpty();
+				.extracting(RefundContract::getId).containsExactly(storeInvoiceTerm);
 
-		// the invoice partner is the store, too, and the shipment partner is the head office: the store's invoice-partner term only
+		// the store is invoiced, the head office receives the goods
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(store, headOffice, productId, NOW)))
-				.extracting(RefundContract::getId).hasSize(2).doesNotContain(headOfficeTermId, storeTermId);
+				.extracting(RefundContract::getId).containsExactlyInAnyOrder(storeInvoiceTerm, headShipTerm);
 	}
 
-	private I_C_Flatrate_Term createRefundTermForRecipient(@NonNull final BPartnerId bpartnerId, @NonNull final BonusRecipient bonusRecipient)
+	private FlatrateTermId createRefundTermForRecipient(@NonNull final BPartnerId bpartnerId, @NonNull final BonusRecipient bonusRecipient)
 	{
 		final I_C_Flatrate_Term term = createRefundTerm(bpartnerId, 0);
 		for (final I_C_Flatrate_RefundConfig config : RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())))
@@ -228,7 +228,7 @@ public class RefundContractRepositoryTest
 			config.setBonusRecipient(bonusRecipient.getCode());
 			saveRecord(config);
 		}
-		return term;
+		return FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 	}
 
 	private ProductId createProduct(@NonNull final I_M_Product_Category category)

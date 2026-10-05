@@ -111,6 +111,11 @@ public class RefundContract
 		return null;
 	}
 
+	public BonusRecipient extractBonusRecipient()
+	{
+		return RefundConfigs.extractBonusRecipient(refundConfigs);
+	}
+
 	public RefundMode extractRefundMode()
 	{
 		return RefundConfigs.extractRefundMode(refundConfigs);
