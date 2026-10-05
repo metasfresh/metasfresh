@@ -32,6 +32,7 @@
 	<field name="month" class="java.sql.Timestamp"/>
 	<field name="iso_code" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="delivery_bp_name" class="java.lang.String"/>
 	<variable name="IsPMinvoiced" class="java.math.BigDecimal" resetType="Group" resetGroup="ProductOrHU" calculation="Sum">
 		<variableExpression><![CDATA[$F{totalinvoiced}]]></variableExpression>
 	</variable>
@@ -149,7 +150,7 @@
 					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-106" x="96" y="0" width="139" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
+					<reportElement key="textField-106" x="96" y="0" width="89" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
