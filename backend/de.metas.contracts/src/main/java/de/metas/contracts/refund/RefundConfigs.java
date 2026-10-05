@@ -13,7 +13,10 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static de.metas.util.collections.CollectionUtils.extractSingleElementOrDefault;
 import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
 
 /*
@@ -93,12 +96,19 @@ public class RefundConfigs
 		return refundMode;
 	}
 
-	public ProductId extractProductId(@NonNull final List<RefundConfig> refundConfigs)
+	/**
+	 * @return the product that the refund line is booked on: the configs' bonus product, or else their product.
+	 *         {@code null} if the configs have neither, e.g. because their base is a product category.
+	 */
+	@Nullable
+	public ProductId extractRefundProductId(@NonNull final List<RefundConfig> refundConfigs)
 	{
-		final ProductId productId = extractSingleElement(
-				refundConfigs,
-				RefundConfig::getProductId);
-		return productId;
+		final ProductId bonusProductId = extractSingleElementOrDefault(refundConfigs, RefundConfig::getBonusProductId, null);
+		if (bonusProductId != null)
+		{
+			return bonusProductId;
+		}
+		return extractSingleElementOrDefault(refundConfigs, RefundConfig::getProductId, null);
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)

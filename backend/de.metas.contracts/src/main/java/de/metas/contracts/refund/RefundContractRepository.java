@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -18,7 +19,9 @@ import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -29,6 +32,8 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -122,13 +127,32 @@ public class RefundContractRepository
 
 	/**
 	 * @return all refund contracts that match the query. They are additive: every one of them applies.
+	 *         A contract whose configs have a product category base only matches a product of that category or of one of its sub-categories.
 	 */
 	public ImmutableList<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
 	{
+		// only needed (and looked up) if a contract has a category base
+		final Supplier<ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestors = Suppliers.memoize(() -> retrieveProductCategoryIdAndAncestors(query.getProductId()));
+
 		return getIdsByQuery(query)
 				.stream()
 				.map(this::getById)
+				.filter(contract -> contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors)))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)
+	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productDAO.getProductCategoryIdAndAncestors(productCategoryId)
+				: ImmutableSet.of();
+	}
+
+	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestors)
+	{
+		return config.getProductCategoryId() == null || productCategoryIdAndAncestors.get().contains(config.getProductCategoryId());
 	}
 
 	public RefundContract getById(@NonNull final FlatrateTermId flatrateTermId)

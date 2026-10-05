@@ -14,13 +14,15 @@ Feature: Refund contracts on a product category base
     And documents are accounted immediately
 
     And metasfresh contains M_Product_Categories:
-      | Identifier       | OPT.M_Product_Category_Parent_ID.Identifier |
-      | goodsCategory    |                                             |
-      | subGoodsCategory | goodsCategory                               |
-      | packCategory     |                                             |
-      | pfandCategory    |                                             |
-      | emptyCategory    |                                             |
-      | bonusCategory    |                                             |
+      | Identifier    |
+      | goodsCategory |
+      | packCategory  |
+      | pfandCategory |
+      | emptyCategory |
+      | bonusCategory |
+    And metasfresh contains M_Product_Category:
+      | Identifier       | Name                | Value               | OPT.M_Product_Category_Parent_ID.Identifier |
+      | subGoodsCategory | refund sub-category | refundSubGoodsCateg | goodsCategory                               |
 
     # the bonus products post on their own revenue account
     # (applied before the products exist: a product copies its category's accounts when it is created)

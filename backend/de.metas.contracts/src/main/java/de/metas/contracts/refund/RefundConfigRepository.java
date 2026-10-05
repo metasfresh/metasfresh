@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -190,6 +191,8 @@ public class RefundConfigRepository
 				.minQty(record.getMinQty())
 				.refundBase(extractRefundBase(record))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.bonusProductId(ProductId.ofRepoIdOrNull(record.getBonus_Product_ID()))
 				.refundMode(extractRefundMode(record))
 				.useInProfitCalculation(record.isUseInProfitCalculation());
 
@@ -281,6 +284,8 @@ public class RefundConfigRepository
 		configRecord.setMinQty(refundConfig.getMinQty());
 
 		configRecord.setM_Product_ID(ProductId.toRepoId(refundConfig.getProductId()));
+		configRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(refundConfig.getProductCategoryId()));
+		configRecord.setBonus_Product_ID(ProductId.toRepoId(refundConfig.getBonusProductId()));
 
 		switch (refundConfig.getRefundInvoiceType())
 		{

@@ -147,9 +147,11 @@ public class RefundContractRepositoryTest
 		final ProductId productInOtherCategory = createProduct(otherCategory);
 
 		final I_C_Flatrate_Term term = createRefundTerm(bpartnerId, 0);
-		final I_C_Flatrate_RefundConfig config = RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())).get(0);
-		config.setM_Product_Category_ID(category.getM_Product_Category_ID());
-		saveRecord(config);
+		for (final I_C_Flatrate_RefundConfig config : RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())))
+		{
+			config.setM_Product_Category_ID(category.getM_Product_Category_ID());
+			saveRecord(config);
+		}
 		final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInCategory, NOW))).extracting(RefundContract::getId).containsExactly(termId);
