@@ -20,8 +20,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePackingInstructions;
-import de.metas.order.OrderShipmentBPartners;
+import de.metas.order.grossprofit.OrderLineProfitPriceActualRequests;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.OrderLineRepository;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -527,16 +526,7 @@ final class OrderLinePriceCalculator
 
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
 
-		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
-				.bPartnerId(orderLine.getBPartnerId())
-				.huPIItemProductId(OrderLinePackingInstructions.extractHUPIItemProductId(orderLineRecord))
-				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(orderLine.getOrderId()))
-				.productId(orderLine.getProductId())
-				.date(orderLine.getDatePromised().toLocalDate())
-				.baseAmount(orderLine.getPriceActual().toMoney())
-				.paymentTermId(orderLine.getPaymentTermId())
-				.quantity(orderLine.getOrderedQty())
-				.build();
+		final CalculateProfitPriceActualRequest request = OrderLineProfitPriceActualRequests.of(orderLine);
 
 		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
 
