@@ -528,6 +528,7 @@ final class OrderLinePriceCalculator
 
 		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(orderLine.getBPartnerId())
+				.orderLineId(orderLine.getId())
 				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(orderLine.getOrderId()))
 				.productId(orderLine.getProductId())
 				.date(orderLine.getDatePromised().toLocalDate())

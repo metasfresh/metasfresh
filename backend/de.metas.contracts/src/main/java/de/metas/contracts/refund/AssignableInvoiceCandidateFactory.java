@@ -1,42 +1,39 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.order.OrderShipmentBPartners;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderShipmentBPartners;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import javax.annotation.Nullable;
+
+import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
 /*
  * #%L

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -45,6 +46,10 @@ public class CalculateProfitPriceActualRequest
 	/** The partner the goods are shipped to, if known: the drop-ship partner of the order, else the order's partner. {@code null} if there is no order. */
 	@Nullable
 	BPartnerId shipmentBPartnerId;
+
+	/** The order line the price is calculated for, if any. */
+	@Nullable
+	OrderLineId orderLineId;
 
 	@NonNull
 	ProductId productId;

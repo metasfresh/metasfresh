@@ -1,15 +1,20 @@
 package de.metas.contracts.refund.grossprofit;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.refund.BonusRecipient;
-import de.metas.contracts.refund.RefundConfigRepository;
-import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.BonusRecipient;
+import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -18,6 +23,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -29,9 +35,11 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -42,10 +50,17 @@ public class RefundProfitPriceActualComponentTest
 	private static final LocalDate DATE = LocalDate.of(2026, 7, 15);
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(21);
 	private static final BPartnerId SHIPMENT_BPARTNER_ID = BPartnerId.ofRepoId(23);
+	private static final OrderLineId CARTON_LINE = OrderLineId.ofRepoId(31);
+	private static final OrderLineId CRATE_LINE = OrderLineId.ofRepoId(32);
+	private static final OrderLineId LINE_WITHOUT_PACKING_INSTRUCTION = OrderLineId.ofRepoId(33);
+	private static final int CARTON = 201;
+	private static final int CRATE = 202;
+	private static final Map<OrderLineId, Integer> PACKING_MATERIAL_BY_ORDER_LINE = ImmutableMap.of(CARTON_LINE, CARTON, CRATE_LINE, CRATE);
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(22);
 
 	private RefundContractRepository refundContractRepository;
 	private MoneyService moneyService;
+	private RefundPackagingFilter refundPackagingFilter;
 	private CurrencyId currencyId;
 	private I_C_InvoiceSchedule invoiceSchedule;
 	private I_C_UOM uom;
@@ -57,6 +72,7 @@ public class RefundProfitPriceActualComponentTest
 
 		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
 		moneyService = new MoneyService(new CurrencyRepository());
+		refundPackagingFilter = new RefundPackagingFilter(Optional.of(ImmutableList.of(orderLineId -> Optional.ofNullable(PACKING_MATERIAL_BY_ORDER_LINE.get(orderLineId)))));
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
 		invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
@@ -116,6 +132,25 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(applyToInput(Money.of(100, currencyId), null).toBigDecimal()).isEqualByComparingTo("90");
 	}
 
+	/**
+	 * A term that is restricted to cartons does not reduce the profit price of a line on a crate, or of a line without packing instruction.
+	 */
+	@Test
+	public void applyToInput_skipsTheTermsWhosePackagingDoesNotMatch()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		final ConditionsId cartonConditionsId = createTermWithPercentageConfig(BPARTNER_ID, BonusRecipient.INVOICE_PARTNER, new BigDecimal("5"), true);
+		final I_C_Flatrate_RefundConfig_PackingOption option = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
+		option.setC_Flatrate_Conditions_ID(cartonConditionsId.getRepoId());
+		option.setM_HU_PackingMaterial_ID(CARTON);
+		saveRecord(option);
+
+		assertThat(applyToInput(Money.of(100, currencyId), null, CARTON_LINE).toBigDecimal()).isEqualByComparingTo("85");
+		assertThat(applyToInput(Money.of(100, currencyId), null, CRATE_LINE).toBigDecimal()).isEqualByComparingTo("90");
+		assertThat(applyToInput(Money.of(100, currencyId), null, LINE_WITHOUT_PACKING_INSTRUCTION).toBigDecimal()).isEqualByComparingTo("90");
+		assertThat(applyToInput(Money.of(100, currencyId), null, null).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
 	private Money applyToInput(@NonNull final Money input)
 	{
 		return applyToInput(input, null);
@@ -123,16 +158,22 @@ public class RefundProfitPriceActualComponentTest
 
 	private Money applyToInput(@NonNull final Money input, @Nullable final BPartnerId shipmentBPartnerId)
 	{
+		return applyToInput(input, shipmentBPartnerId, null);
+	}
+
+	private Money applyToInput(@NonNull final Money input, @Nullable final BPartnerId shipmentBPartnerId, @Nullable final OrderLineId orderLineId)
+	{
 		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(BPARTNER_ID)
 				.shipmentBPartnerId(shipmentBPartnerId)
+				.orderLineId(orderLineId)
 				.productId(PRODUCT_ID)
 				.date(DATE)
 				.baseAmount(input)
 				.quantity(Quantity.of(BigDecimal.ONE, uom))
 				.build();
 
-		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService).applyToInput(input);
+		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService, refundPackagingFilter).applyToInput(input);
 	}
 
 	private void createTermWithPercentageConfig(@NonNull final BigDecimal percent, final boolean useInProfitCalculation)
@@ -140,7 +181,7 @@ public class RefundProfitPriceActualComponentTest
 		createTermWithPercentageConfig(BPARTNER_ID, BonusRecipient.INVOICE_PARTNER, percent, useInProfitCalculation);
 	}
 
-	private void createTermWithPercentageConfig(@NonNull final BPartnerId termBPartnerId, @NonNull final BonusRecipient bonusRecipient, @NonNull final BigDecimal percent, final boolean useInProfitCalculation)
+	private ConditionsId createTermWithPercentageConfig(@NonNull final BPartnerId termBPartnerId, @NonNull final BonusRecipient bonusRecipient, @NonNull final BigDecimal percent, final boolean useInProfitCalculation)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -167,5 +208,7 @@ public class RefundProfitPriceActualComponentTest
 		term.setStartDate(TimeUtil.asTimestamp(DATE.minusDays(5)));
 		term.setEndDate(TimeUtil.asTimestamp(DATE.plusDays(5)));
 		saveRecord(term);
+
+		return ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
 	}
 }

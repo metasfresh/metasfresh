@@ -5,6 +5,7 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractQuery;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -44,15 +45,18 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 	private final CalculateProfitPriceActualRequest request;
 	private final RefundContractRepository refundContractRepository; // TODO: take out the repo/service from here !
 	private final MoneyService moneyService;
+	private final RefundPackagingFilter refundPackagingFilter;
 
 	public RefundProfitPriceActualComponent(
 			@NonNull final CalculateProfitPriceActualRequest request,
 			@NonNull final RefundContractRepository refundContractRepository,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final RefundPackagingFilter refundPackagingFilter)
 	{
 		this.request = request;
 		this.refundContractRepository = refundContractRepository;
 		this.moneyService = moneyService;
+		this.refundPackagingFilter = refundPackagingFilter;
 	}
 
 	/**
