@@ -25,6 +25,7 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.lang.SOTrx;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -131,6 +132,31 @@ public class RefundInvoiceCandidateRepositoryTest
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isEqualTo(refundCandidate);
+	}
+
+	/**
+	 * The refund candidate of a sale is not the one of a purchase: the amounts of both sides must never be merged.
+	 */
+	@Test
+	public void getRefundInvoiceCandidates_respectsSOTrx()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate refundRecord = RefundTestTools.retrieveRecord(refundCandidate.getId());
+		refundRecord.setIsSOTrx(true);
+		saveRecord(refundRecord);
+
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES))).hasSize(1);
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.PURCHASE))).isEmpty();
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, null))).hasSize(1);
+	}
+
+	private static RefundInvoiceCandidateQuery queryOf(final RefundInvoiceCandidate refundCandidate, final SOTrx soTrx)
+	{
+		return RefundInvoiceCandidateQuery.builder()
+				.refundContract(refundCandidate.getRefundContract())
+				.invoicableFrom(refundCandidate.getInvoiceableFrom())
+				.soTrx(soTrx)
+				.build();
 	}
 
 	@Test

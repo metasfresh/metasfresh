@@ -14,6 +14,7 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -198,6 +199,11 @@ public class RefundInvoiceCandidateRepository
 				asTimestamp(invoicableFrom),
 				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		}
+
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
@@ -294,11 +300,17 @@ public class RefundInvoiceCandidateRepository
 
 		LocalDate invoicableFrom;
 
+		/** If set, only the refund candidates of this side (sales or purchase) match; the refund of a purchase is never merged into the refund of a sale. */
+		@Nullable
+		SOTrx soTrx;
+
 		@Builder
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
-				@NonNull final LocalDate invoicableFrom)
+				@NonNull final LocalDate invoicableFrom,
+				@Nullable final SOTrx soTrx)
 		{
+			this.soTrx = soTrx;
 			this.refundContract = refundContract;
 			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}

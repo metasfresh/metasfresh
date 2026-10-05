@@ -10,6 +10,7 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -113,6 +114,7 @@ public class AssignableInvoiceCandidateFactory
 		return AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
+				.soTrx(SOTrx.ofBoolean(assignableRecord.isSOTrx()))
 				.orderLineId(OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID()))
 				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID())))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))

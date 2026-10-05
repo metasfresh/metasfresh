@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -66,6 +67,10 @@ public class AssignableInvoiceCandidate
 	@Nullable
 	OrderLineId orderLineId;
 
+	/** The side the candidate is on, sales or purchase. {@code null} if not known: it then matches the refund candidates of both sides. */
+	@Nullable
+	SOTrx soTrx;
+
 	ProductId productId;
 	LocalDate invoiceableFrom;
 
@@ -89,6 +94,7 @@ public class AssignableInvoiceCandidate
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@Nullable final BPartnerId shipmentBPartnerId,
 			@Nullable final OrderLineId orderLineId,
+			@Nullable final SOTrx soTrx,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
@@ -101,6 +107,7 @@ public class AssignableInvoiceCandidate
 		this.bpartnerLocationId = bpartnerLocationId;
 		this.shipmentBPartnerId = shipmentBPartnerId;
 		this.orderLineId = orderLineId;
+		this.soTrx = soTrx;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;

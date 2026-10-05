@@ -123,3 +123,44 @@ Feature: Refund contracts on the sales and on the purchase side
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID       | C_BPartner_ID | Record_ID             | M_Product_ID |
       | P_Expense_Acct        |             | 60 EUR      | bonusExpenseAcct | dualBP        | purchaseRefundInvoice | bonusWare    |
       | *                     |             |             |                  |               | purchaseRefundInvoice |              |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:refundBothWays_TC2
+  Scenario Outline: The refund candidate of a term is invoiceable at the end of its first period, counted from the start date: <months> months
+    Given metasfresh contains C_BPartners:
+      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | quarterBP  | Y              | refundPS                      | I               |
+    And metasfresh contains C_InvoiceSchedules:
+      | Identifier        | InvoiceDay | InvoiceDistance |
+      | periodSchedule | 31         | <months>        |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier  | Type_Conditions |
+      | condQuarter | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier  | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
+      | cfgQuarter  | condQuarter              | periodSchedule    | 10            | goodsCategory         | bonusWare        |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termQuarter | condQuarter                         | quarterBP                   | 2026-07-01 | 2027-12-31 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | quarterBP                | 2026-07-01  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | line1      | order1                | goodsProduct            | 10         |
+    And the order identified by order1 is completed
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | line1          | ic1                    |
+
+    Then after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DateToInvoice |
+      | refundIC               | termQuarter        | 100             | <end of period> |
+
+    Examples:
+      | months | end of period |
+      | 3      | 2026-09-30    |
+      | 6      | 2026-12-31    |
+      | 12     | 2027-06-30    |
