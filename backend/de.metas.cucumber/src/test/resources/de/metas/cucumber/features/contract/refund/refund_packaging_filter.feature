@@ -72,9 +72,9 @@ Feature: Refund contracts restricted to packaging options
       | condCarton   | Refund          |
       | condEveryone | Refund          |
     And metasfresh contains C_Flatrate_RefundConfigs:
-      | Identifier   | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
-      | cfgCarton    | condCarton               | monthlySchedule      | 6             | goodsCategory         | bonusWare        |
-      | cfgEveryone  | condEveryone             | monthlySchedule      | 2             | goodsCategory         | bonusWare        |
+      | Identifier   | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsPackingOptionFiltered |
+      | cfgCarton    | condCarton               | monthlySchedule      | 6             | goodsCategory         | bonusWare        | Y                           |
+      | cfgEveryone  | condEveryone             | monthlySchedule      | 2             | goodsCategory         | bonusWare        | N                           |
     # the carton contract only applies to goods that are delivered in a carton
     And metasfresh contains C_Flatrate_RefundConfig_PackingOptions:
       | C_Flatrate_RefundConfig_ID | M_HU_PackingMaterial_ID |
