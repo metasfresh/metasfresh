@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Responsible for the refund invoice candidates of refund terms and for their {@link I_C_Invoice_Candidate_Assignment}s
@@ -86,6 +87,28 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	public void refund_C_Invoice_Candidates_are_found(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> waitForRefundInvoiceCandidate(timeoutSec, row));
+	}
+
+	/**
+	 * Asserts that a refund term has no refund invoice candidate (e.g. because no sale is in its base).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Flatrate_Term identified by refundTerm has no refund C_Invoice_Candidate
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has no refund C_Invoice_Candidate$")
+	public void C_Flatrate_Term_has_no_refund_C_Invoice_Candidate(@NonNull final String termIdentifier)
+	{
+		final I_C_Flatrate_Term term = contractTable.get(termIdentifier);
+		final int count = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
+				.create()
+				.count();
+		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s", term.getC_Flatrate_Term_ID()).isZero();
 	}
 
 	private void waitForRefundInvoiceCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

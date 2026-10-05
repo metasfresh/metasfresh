@@ -19,10 +19,13 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.product.ProductId;
+import de.metas.product.ProductCategoryId;
 import lombok.NonNull;
 
 /*
@@ -128,6 +131,27 @@ public class RefundConfigRepositoryTest
 		final List<RefundConfig> result = refundConfigRepository.getByQuery(query);
 
 		assertThat(result.isEmpty());
+	}
+
+	@Test
+	public void ofRecord_mapsCategoryAndBonusProduct()
+	{
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsRecord);
+
+		final I_C_Flatrate_RefundConfig configRecord = createThreeRefundConfigRecords(ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID())).get(0);
+		configRecord.setM_Product_ID(0);
+		configRecord.setM_Product_Category_ID(40);
+		configRecord.setBonus_Product_ID(41);
+		saveRecord(configRecord);
+
+		// invoke the method under test
+		final RefundConfig result = refundConfigRepository.ofRecord(configRecord);
+
+		assertThat(result.getProductId()).isNull();
+		assertThat(result.getProductCategoryId()).isEqualTo(ProductCategoryId.ofRepoId(40));
+		assertThat(result.getBonusProductId()).isEqualTo(ProductId.ofRepoId(41));
 	}
 
 	public static List<I_C_Flatrate_RefundConfig> createThreeRefundConfigRecords(@NonNull final ConditionsId conditionsId)

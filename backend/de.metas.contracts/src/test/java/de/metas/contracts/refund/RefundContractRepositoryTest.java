@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,6 +124,45 @@ public class RefundContractRepositoryTest
 				FlatrateTermId.ofRepoId(termWithProduct1.getC_Flatrate_Term_ID()),
 				FlatrateTermId.ofRepoId(termWithProduct2.getC_Flatrate_Term_ID()),
 				FlatrateTermId.ofRepoId(termWithoutProduct.getC_Flatrate_Term_ID()));
+	}
+
+	/**
+	 * A term whose config has a category base matches the products of that category and of its sub-categories, and no others.
+	 */
+	@Test
+	public void getByQuery_categoryBase()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(91);
+
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final I_M_Product_Category subCategory = newInstance(I_M_Product_Category.class);
+		subCategory.setM_Product_Category_Parent_ID(category.getM_Product_Category_ID());
+		saveRecord(subCategory);
+		final I_M_Product_Category otherCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(otherCategory);
+
+		final ProductId productInCategory = createProduct(category);
+		final ProductId productInSubCategory = createProduct(subCategory);
+		final ProductId productInOtherCategory = createProduct(otherCategory);
+
+		final I_C_Flatrate_Term term = createRefundTerm(bpartnerId, 0);
+		final I_C_Flatrate_RefundConfig config = RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())).get(0);
+		config.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		saveRecord(config);
+		final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInCategory, NOW))).extracting(RefundContract::getId).containsExactly(termId);
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInSubCategory, NOW))).extracting(RefundContract::getId).containsExactly(termId);
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInOtherCategory, NOW))).isEmpty();
+	}
+
+	private ProductId createProduct(@NonNull final I_M_Product_Category category)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final BPartnerId bpartnerId, final int productRepoId)

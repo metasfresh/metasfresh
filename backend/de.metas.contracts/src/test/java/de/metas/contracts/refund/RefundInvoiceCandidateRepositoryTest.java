@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.product.ProductCategoryId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -76,6 +77,44 @@ public class RefundInvoiceCandidateRepositoryTest
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,
 				refundInvoiceCandidateFactory);
+	}
+
+	/**
+	 * The refund line is booked on the bonus product of the refund config, not on the sold product.
+	 */
+	@Test
+	public void save_booksOnBonusProduct()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final RefundConfig config = refundCandidate.getRefundConfigs().get(0).toBuilder()
+				.productId(null)
+				.productCategoryId(ProductCategoryId.ofRepoId(40))
+				.bonusProductId(ProductId.ofRepoId(41))
+				.build();
+
+		// invoke the method under test
+		final RefundInvoiceCandidate saved = refundInvoiceCandidateRepository.save(refundCandidate.toBuilder().clearRefundConfigs().refundConfig(config).build());
+
+		assertThat(RefundTestTools.retrieveRecord(saved.getId()).getM_Product_ID()).isEqualTo(41);
+	}
+
+	/**
+	 * A refund config with a category base has no product; saving the candidate must not fail and keeps the candidate's product.
+	 */
+	@Test
+	public void save_categoryBaseWithoutProductAndBonusProduct()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final int productId = RefundTestTools.retrieveRecord(refundCandidate.getId()).getM_Product_ID();
+		final RefundConfig config = refundCandidate.getRefundConfigs().get(0).toBuilder()
+				.productId(null)
+				.productCategoryId(ProductCategoryId.ofRepoId(40))
+				.build();
+
+		// invoke the method under test
+		final RefundInvoiceCandidate saved = refundInvoiceCandidateRepository.save(refundCandidate.toBuilder().clearRefundConfigs().refundConfig(config).build());
+
+		assertThat(RefundTestTools.retrieveRecord(saved.getId()).getM_Product_ID()).isEqualTo(productId);
 	}
 
 	@Test
