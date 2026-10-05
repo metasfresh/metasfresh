@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -13,8 +14,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLinePackingInstructions;
 import de.metas.order.OrderShipmentBPartners;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -115,7 +118,7 @@ public class AssignableInvoiceCandidateFactory
 				.id(invoiceCandidateId)
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
 				.soTrx(SOTrx.ofBoolean(assignableRecord.isSOTrx()))
-				.orderLineId(OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID()))
+				.huPIItemProductId(extractHUPIItemProductId(assignableRecord))
 				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID())))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
@@ -125,6 +128,15 @@ public class AssignableInvoiceCandidateFactory
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
+	}
+
+	@Nullable
+	private static HUPIItemProductId extractHUPIItemProductId(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID());
+		return orderLineId != null
+				? OrderLinePackingInstructions.extractHUPIItemProductId(Services.get(IOrderDAO.class).getOrderLineById(orderLineId))
+				: null;
 	}
 
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)

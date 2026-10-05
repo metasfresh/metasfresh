@@ -30,6 +30,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -338,6 +339,7 @@ public class RefundTestTools
 
 		return AssignableInvoiceCandidate
 				.builder()
+				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerLocationId(billBPartnerLocationId)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))

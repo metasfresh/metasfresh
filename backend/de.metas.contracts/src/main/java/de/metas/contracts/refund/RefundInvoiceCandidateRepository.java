@@ -199,10 +199,7 @@ public class RefundInvoiceCandidateRepository
 				asTimestamp(invoicableFrom),
 				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
-		if (query.getSoTrx() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
-		}
+		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
 
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
@@ -300,15 +297,15 @@ public class RefundInvoiceCandidateRepository
 
 		LocalDate invoicableFrom;
 
-		/** If set, only the refund candidates of this side (sales or purchase) match; the refund of a purchase is never merged into the refund of a sale. */
-		@Nullable
+		/** Only the refund candidates of this side (sales or purchase) match; the refund of a purchase is never merged into the refund of a sale. */
+		@NonNull
 		SOTrx soTrx;
 
 		@Builder
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
 				@NonNull final LocalDate invoicableFrom,
-				@Nullable final SOTrx soTrx)
+				@NonNull final SOTrx soTrx)
 		{
 			this.soTrx = soTrx;
 			this.refundContract = refundContract;

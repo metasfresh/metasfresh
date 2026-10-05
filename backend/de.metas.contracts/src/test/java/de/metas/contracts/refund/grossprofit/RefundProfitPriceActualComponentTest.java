@@ -23,7 +23,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
-import de.metas.order.OrderLineId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,12 +52,12 @@ public class RefundProfitPriceActualComponentTest
 	private static final LocalDate DATE = LocalDate.of(2026, 7, 15);
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(21);
 	private static final BPartnerId SHIPMENT_BPARTNER_ID = BPartnerId.ofRepoId(23);
-	private static final OrderLineId CARTON_LINE = OrderLineId.ofRepoId(31);
-	private static final OrderLineId CRATE_LINE = OrderLineId.ofRepoId(32);
-	private static final OrderLineId LINE_WITHOUT_PACKING_INSTRUCTION = OrderLineId.ofRepoId(33);
+	private static final HUPIItemProductId CARTON_PI = HUPIItemProductId.ofRepoId(31);
+	private static final HUPIItemProductId CRATE_PI = HUPIItemProductId.ofRepoId(32);
+	private static final HUPIItemProductId PI_WITHOUT_PACKING_MATERIAL = HUPIItemProductId.ofRepoId(33);
 	private static final int CARTON = 201;
 	private static final int CRATE = 202;
-	private static final Map<OrderLineId, Integer> PACKING_MATERIAL_BY_ORDER_LINE = ImmutableMap.of(CARTON_LINE, CARTON, CRATE_LINE, CRATE);
+	private static final Map<HUPIItemProductId, Integer> PACKING_MATERIAL_BY_PI = ImmutableMap.of(CARTON_PI, CARTON, CRATE_PI, CRATE);
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(22);
 
 	private RefundContractRepository refundContractRepository;
@@ -74,7 +74,7 @@ public class RefundProfitPriceActualComponentTest
 
 		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
 		moneyService = new MoneyService(new CurrencyRepository());
-		refundPackagingFilter = new RefundPackagingFilter(Optional.of(ImmutableList.of(orderLineId -> Optional.ofNullable(PACKING_MATERIAL_BY_ORDER_LINE.get(orderLineId)))));
+		refundPackagingFilter = new RefundPackagingFilter(Optional.of(ImmutableList.of((piItemProductId, bpartnerId) -> Optional.ofNullable(PACKING_MATERIAL_BY_PI.get(piItemProductId)))));
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
 		invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
@@ -151,9 +151,9 @@ public class RefundProfitPriceActualComponentTest
 		option.setM_HU_PackingMaterial_ID(CARTON);
 		saveRecord(option);
 
-		assertThat(applyToInput(Money.of(100, currencyId), null, CARTON_LINE).toBigDecimal()).isEqualByComparingTo("85");
-		assertThat(applyToInput(Money.of(100, currencyId), null, CRATE_LINE).toBigDecimal()).isEqualByComparingTo("90");
-		assertThat(applyToInput(Money.of(100, currencyId), null, LINE_WITHOUT_PACKING_INSTRUCTION).toBigDecimal()).isEqualByComparingTo("90");
+		assertThat(applyToInput(Money.of(100, currencyId), null, CARTON_PI).toBigDecimal()).isEqualByComparingTo("85");
+		assertThat(applyToInput(Money.of(100, currencyId), null, CRATE_PI).toBigDecimal()).isEqualByComparingTo("90");
+		assertThat(applyToInput(Money.of(100, currencyId), null, PI_WITHOUT_PACKING_MATERIAL).toBigDecimal()).isEqualByComparingTo("90");
 		assertThat(applyToInput(Money.of(100, currencyId), null, null).toBigDecimal()).isEqualByComparingTo("90");
 	}
 
@@ -175,12 +175,12 @@ public class RefundProfitPriceActualComponentTest
 		return applyToInput(input, shipmentBPartnerId, null);
 	}
 
-	private Money applyToInput(@NonNull final Money input, @Nullable final BPartnerId shipmentBPartnerId, @Nullable final OrderLineId orderLineId)
+	private Money applyToInput(@NonNull final Money input, @Nullable final BPartnerId shipmentBPartnerId, @Nullable final HUPIItemProductId huPIItemProductId)
 	{
 		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(BPARTNER_ID)
 				.shipmentBPartnerId(shipmentBPartnerId)
-				.orderLineId(orderLineId)
+				.huPIItemProductId(huPIItemProductId)
 				.productId(PRODUCT_ID)
 				.date(DATE)
 				.baseAmount(input)

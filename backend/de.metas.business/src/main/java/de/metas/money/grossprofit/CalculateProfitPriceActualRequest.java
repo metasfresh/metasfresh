@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.money.Money;
-import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -47,9 +47,9 @@ public class CalculateProfitPriceActualRequest
 	@Nullable
 	BPartnerId shipmentBPartnerId;
 
-	/** The order line the price is calculated for, if any. */
+	/** The packing instruction of the order line the price is calculated for, as it currently is on that line (which may be not yet saved); {@code null} if there is none. */
 	@Nullable
-	OrderLineId orderLineId;
+	HUPIItemProductId huPIItemProductId;
 
 	@NonNull
 	ProductId productId;

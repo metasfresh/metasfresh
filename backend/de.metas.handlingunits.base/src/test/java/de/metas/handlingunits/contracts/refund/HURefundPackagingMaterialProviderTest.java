@@ -1,6 +1,6 @@
 package de.metas.handlingunits.contracts.refund;
 
-import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.order.OrderLineId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ public class HURefundPackagingMaterialProviderTest
 		provider = new HURefundPackagingMaterialProvider();
 	}
 
-	private OrderLineId createOrderLine(final int... packingMaterialIds)
+	private HUPIItemProductId createPIItemProduct(final int... packingMaterialIds)
 	{
 		final I_M_HU_PI pi = newInstance(I_M_HU_PI.class);
 		saveRecord(pi);
@@ -56,10 +55,7 @@ public class HURefundPackagingMaterialProviderTest
 		piItemProduct.setM_HU_PI_Item_ID(materialItem.getM_HU_PI_Item_ID());
 		saveRecord(piItemProduct);
 
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setM_HU_PI_Item_Product_ID(piItemProduct.getM_HU_PI_Item_Product_ID());
-		saveRecord(orderLine);
-		return OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		return HUPIItemProductId.ofRepoId(piItemProduct.getM_HU_PI_Item_Product_ID());
 	}
 
 	private int createPackingMaterial()
@@ -70,31 +66,22 @@ public class HURefundPackagingMaterialProviderTest
 	}
 
 	@Test
-	public void orderLineWithPackingInstruction_hasThePackingMaterialOfItsPackingInstruction()
+	public void piItemProductWithPackingInstruction_hasThePackingMaterialOfItsPackingInstruction()
 	{
 		final int packingMaterialId = createPackingMaterial();
-		assertThat(provider.getPackingMaterialId(createOrderLine(packingMaterialId))).contains(packingMaterialId);
+		assertThat(provider.getPackingMaterialId(createPIItemProduct(packingMaterialId), null)).contains(packingMaterialId);
 	}
 
 	/** a masterdata error must not abort the caller (the invoice candidate update): no packing material, no bonus */
 	@Test
 	public void packingInstructionWithTwoPackingMaterials_hasNoPackingMaterial()
 	{
-		assertThat(provider.getPackingMaterialId(createOrderLine(createPackingMaterial(), createPackingMaterial()))).isEmpty();
+		assertThat(provider.getPackingMaterialId(createPIItemProduct(createPackingMaterial(), createPackingMaterial()), null)).isEmpty();
 	}
 
 	@Test
 	public void packingInstructionWithoutPackingMaterial_hasNoPackingMaterial()
 	{
-		assertThat(provider.getPackingMaterialId(createOrderLine())).isEmpty();
-	}
-
-	@Test
-	public void orderLineWithoutPackingInstruction_hasNoPackingMaterial()
-	{
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		saveRecord(orderLine);
-
-		assertThat(provider.getPackingMaterialId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))).isEmpty();
+		assertThat(provider.getPackingMaterialId(createPIItemProduct(), null)).isEmpty();
 	}
 }

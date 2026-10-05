@@ -5,8 +5,8 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractQuery;
-import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
@@ -70,7 +70,7 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 		final List<RefundConfig> refundConfigs = refundContractRepository
 				.getByQuery(query)
 				.stream()
-				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), request.getOrderLineId()))
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), request.getHuPIItemProductId(), request.getBPartnerId()))
 				.map(RefundContract::getRefundConfigToUseProfitCalculation)
 				.filter(Optional::isPresent)
 				.map(Optional::get)

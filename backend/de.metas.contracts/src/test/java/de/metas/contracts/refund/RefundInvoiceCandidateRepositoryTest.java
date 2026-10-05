@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductCategoryId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -25,7 +26,6 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
-import de.metas.lang.SOTrx;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -35,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -126,6 +127,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(refundCandidate.getInvoiceableFrom())
+				.soTrx(SOTrx.SALES)
 				.build();
 
 		// invoke the method under test
@@ -147,10 +149,9 @@ public class RefundInvoiceCandidateRepositoryTest
 
 		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES))).hasSize(1);
 		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.PURCHASE))).isEmpty();
-		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, null))).hasSize(1);
 	}
 
-	private static RefundInvoiceCandidateQuery queryOf(final RefundInvoiceCandidate refundCandidate, final SOTrx soTrx)
+	private static RefundInvoiceCandidateQuery queryOf(final RefundInvoiceCandidate refundCandidate, @NonNull final SOTrx soTrx)
 	{
 		return RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
@@ -171,6 +172,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
+				.soTrx(SOTrx.SALES)
 				.build();
 
 		// invoke the method under test
@@ -192,6 +194,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
+				.soTrx(SOTrx.SALES)
 				.build();
 
 		// invoke the method under test

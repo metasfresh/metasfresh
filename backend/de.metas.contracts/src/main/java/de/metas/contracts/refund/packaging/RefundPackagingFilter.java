@@ -6,7 +6,8 @@ import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
-import de.metas.order.OrderLineId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -22,7 +23,6 @@ import java.util.Optional;
 @Service
 public class RefundPackagingFilter
 {
-	/** Reset whenever a packing option changes, because the cache's name starts with the options' table name. */
 	/** The packing materials that a conditions' lines are restricted to; empty if the conditions are not restricted. Reset when a config or a packing option changes. */
 	private static final CCache<ConditionsId, Optional<ImmutableSet<Integer>>> PACKING_MATERIAL_IDS_CACHE = CCache.<ConditionsId, Optional<ImmutableSet<Integer>>>builder()
 			.cacheName(I_C_Flatrate_RefundConfig_PackingOption.Table_Name + "#by#" + I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_Conditions_ID)
@@ -38,10 +38,10 @@ public class RefundPackagingFilter
 	}
 
 	/**
-	 * @return {@code true} if no config of the conditions is restricted to packaging options (every line is in), or if the packing material of the order line is one of the restricted configs' options.
-	 *         {@code false} otherwise, in particular if the line has no order line or no packing instruction.
+	 * @return {@code true} if no config of the conditions is restricted to packaging options (every line is in), or if the packing material of the packing instruction is one of the restricted configs' options.
+	 *         {@code false} otherwise, in particular if there is no packing instruction.
 	 */
-	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final OrderLineId orderLineId)
+	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final HUPIItemProductId huPIItemProductId, @Nullable final BPartnerId bpartnerId)
 	{
 		final Optional<ImmutableSet<Integer>> restrictedToPackingMaterialIds = PACKING_MATERIAL_IDS_CACHE.getOrLoad(conditionsId, RefundPackagingFilter::retrieveRestrictedToPackingMaterialIds);
 		if (!restrictedToPackingMaterialIds.isPresent())
@@ -50,13 +50,13 @@ public class RefundPackagingFilter
 		}
 
 		final ImmutableSet<Integer> packingMaterialIds = restrictedToPackingMaterialIds.get();
-		if (orderLineId == null || packingMaterialIds.isEmpty())
+		if (huPIItemProductId == null || packingMaterialIds.isEmpty())
 		{
 			return false;
 		}
 
 		return providers.stream()
-				.map(provider -> provider.getPackingMaterialId(orderLineId))
+				.map(provider -> provider.getPackingMaterialId(huPIItemProductId, bpartnerId))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.findFirst()

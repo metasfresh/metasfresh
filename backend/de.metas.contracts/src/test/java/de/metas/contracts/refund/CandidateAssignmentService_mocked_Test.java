@@ -33,6 +33,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -197,6 +198,7 @@ public class CandidateAssignmentService_mocked_Test
 
 		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(assignableCandidateId)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
@@ -309,6 +311,7 @@ public class CandidateAssignmentService_mocked_Test
 		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(assignableCandidateId)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)

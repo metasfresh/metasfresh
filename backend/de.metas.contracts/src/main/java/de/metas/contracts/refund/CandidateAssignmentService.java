@@ -101,7 +101,7 @@ public class CandidateAssignmentService
 		final RefundContractQuery refundContractQuery = RefundContractQuery.of(assignableCandidate);
 		final List<RefundContract> refundContracts = refundContractRepository.getByQuery(refundContractQuery)
 				.stream()
-				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getOrderLineId()))
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getHuPIItemProductId(), assignableCandidate.getBpartnerLocationId().getBpartnerId()))
 				.collect(ImmutableList.toImmutableList());
 
 		if (refundContracts.isEmpty())

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
-import de.metas.order.OrderLineId;
+import de.metas.handlingunits.HUPIItemProductId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ public class RefundPackagingFilterTest
 	private static final ConditionsId CONDITIONS_ID = ConditionsId.ofRepoId(10);
 	private static final int CARTON = 101;
 	private static final int PFANDSTEIGE = 102;
-	private static final OrderLineId ORDER_LINE_ID = OrderLineId.ofRepoId(50);
+	private static final HUPIItemProductId PI_ITEM_PRODUCT_ID = HUPIItemProductId.ofRepoId(50);
 
 	@BeforeEach
 	public void init()
@@ -34,35 +34,35 @@ public class RefundPackagingFilterTest
 	public void filteredConditions_packingMaterialInTheSet_isIncluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isTrue();
+		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 	}
 
 	@Test
 	public void filteredConditions_packingMaterialNotInTheSet_isExcluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isFalse();
+		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
 	}
 
 	@Test
 	public void filteredConditions_lineWithoutPackingInstruction_isExcluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(filter(null).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isFalse();
+		assertThat(filter(null).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
 	}
 
 	@Test
-	public void filteredConditions_withoutOrderLine_isExcluded()
+	public void filteredConditions_withoutPackingInstructionId_isExcluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, null)).isFalse();
+		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, null, null)).isFalse();
 	}
 
 	@Test
 	public void filteredConditions_withoutAnyProvider_isExcluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isFalse();
+		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
 	}
 
 	@Test
@@ -71,14 +71,14 @@ public class RefundPackagingFilterTest
 		createPackingOption(ConditionsId.ofRepoId(11), CARTON); // the options of other conditions don't count
 		createConfig(CONDITIONS_ID, false);
 
-		assertThat(filter(null).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isTrue();
-		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, null)).isTrue();
-		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isTrue();
+		assertThat(filter(null).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
+		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, null, null)).isTrue();
+		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 	}
 
 	private static RefundPackagingFilter filter(@Nullable final Integer packingMaterialId)
 	{
-		final RefundPackagingMaterialProvider provider = orderLineId -> Optional.ofNullable(packingMaterialId);
+		final RefundPackagingMaterialProvider provider = (piItemProductId, bpartnerId) -> Optional.ofNullable(packingMaterialId);
 		return new RefundPackagingFilter(Optional.of(ImmutableList.of(provider)));
 	}
 
@@ -112,7 +112,7 @@ public class RefundPackagingFilterTest
 	public void optionsOfAnUnrestrictedConfig_areIgnored()
 	{
 		createPackingOption(createConfig(CONDITIONS_ID, false), CARTON);
-		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isTrue();
+		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 	}
 
 	/** restricted, but no option listed: no line qualifies */
@@ -120,6 +120,6 @@ public class RefundPackagingFilterTest
 	public void restrictedConfigWithoutOptions_excludesEveryLine()
 	{
 		createConfig(CONDITIONS_ID, true);
-		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, ORDER_LINE_ID)).isFalse();
+		assertThat(filter(CARTON).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
 	}
 }

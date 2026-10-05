@@ -133,14 +133,14 @@ Feature: Refund contracts on the sales and on the purchase side
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | quarterBP  | Y              | refundPS                      | I               |
     And metasfresh contains C_InvoiceSchedules:
-      | Identifier        | InvoiceDay | InvoiceDistance |
+      | Identifier     | InvoiceDay | InvoiceDistance |
       | periodSchedule | 31         | <months>        |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier  | Type_Conditions |
       | condQuarter | Refund          |
     And metasfresh contains C_Flatrate_RefundConfigs:
-      | Identifier  | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
-      | cfgQuarter  | condQuarter              | periodSchedule    | 10            | goodsCategory         | bonusWare        |
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
+      | cfgQuarter | condQuarter              | periodSchedule       | 10            | goodsCategory         | bonusWare        |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
       | termQuarter | condQuarter                         | quarterBP                   | 2026-07-01 | 2027-12-31 |

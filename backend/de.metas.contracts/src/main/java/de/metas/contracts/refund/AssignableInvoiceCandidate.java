@@ -11,10 +11,10 @@ import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -63,12 +63,12 @@ public class AssignableInvoiceCandidate
 	@Nullable
 	BPartnerId shipmentBPartnerId;
 
-	/** The sales order line the candidate stems from; {@code null} if it has none. */
+	/** The packing instruction of the order line the candidate stems from; {@code null} if it has none. */
 	@Nullable
-	OrderLineId orderLineId;
+	HUPIItemProductId huPIItemProductId;
 
-	/** The side the candidate is on, sales or purchase. {@code null} if not known: it then matches the refund candidates of both sides. */
-	@Nullable
+	/** The side the candidate is on, sales or purchase; it only goes into the refund candidates of the same side. */
+	@NonNull
 	SOTrx soTrx;
 
 	ProductId productId;
@@ -93,8 +93,8 @@ public class AssignableInvoiceCandidate
 			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@Nullable final BPartnerId shipmentBPartnerId,
-			@Nullable final OrderLineId orderLineId,
-			@Nullable final SOTrx soTrx,
+			@Nullable final HUPIItemProductId huPIItemProductId,
+			@NonNull final SOTrx soTrx,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
@@ -106,7 +106,7 @@ public class AssignableInvoiceCandidate
 		this.id = id;
 		this.bpartnerLocationId = bpartnerLocationId;
 		this.shipmentBPartnerId = shipmentBPartnerId;
-		this.orderLineId = orderLineId;
+		this.huPIItemProductId = huPIItemProductId;
 		this.soTrx = soTrx;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
