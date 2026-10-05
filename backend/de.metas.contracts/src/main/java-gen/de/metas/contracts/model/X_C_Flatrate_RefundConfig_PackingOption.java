@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_RefundConfig_PackingOption extends org.compiere.model.PO implements I_C_Flatrate_RefundConfig_PackingOption, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1084744326L;
+	private static final long serialVersionUID = 1500422952L;
 
     /** Standard Constructor */
     public X_C_Flatrate_RefundConfig_PackingOption (final Properties ctx, final int C_Flatrate_RefundConfig_PackingOption_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_C_Flatrate_RefundConfig_PackingOption extends org.compiere.model.
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Flatrate_Conditions_ID (final int C_Flatrate_Conditions_ID)
+	{
+		if (C_Flatrate_Conditions_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, C_Flatrate_Conditions_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Conditions_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_ID);
 	}
 
 	@Override

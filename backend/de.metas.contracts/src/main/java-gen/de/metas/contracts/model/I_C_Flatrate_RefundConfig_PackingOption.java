@@ -50,6 +50,27 @@ public interface I_C_Flatrate_RefundConfig_PackingOption
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Contract Terms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
+
+	/**
+	 * Get Contract Terms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Conditions_ID();
+
+	ModelColumn<I_C_Flatrate_RefundConfig_PackingOption, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(I_C_Flatrate_RefundConfig_PackingOption.class, "C_Flatrate_Conditions_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
+	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
+
+	/**
 	 * Set Flatrate Refund Configuration.
 	 *
 	 * <br>Type: TableDir
