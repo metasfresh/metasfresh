@@ -36,6 +36,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -171,8 +172,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final List<I_C_Invoice_Candidate> compensationLineCandidates = invoiceCandidates.stream()
 				.filter(I_C_Invoice_Candidate::isGroupCompensationLine)
 				.collect(ImmutableList.toImmutableList());
-		final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId =
-				retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(compensationLineCandidates);
+		final Map<InvoiceCandidateId, CompensationLineOrigin> originByInvoiceCandidateId =
+				retrieveCompensationLineOriginsByInvoiceCandidateId(compensationLineCandidates);
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
@@ -183,7 +184,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 			}
 			else
 			{
-				final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, appliesToProductCategoryIdByInvoiceCandidateId);
+				final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, originByInvoiceCandidateId);
 				groupBuilder.compensationLine(compensationLine);
 			}
 		}
@@ -229,7 +230,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	 */
 	private GroupCompensationLine createCompensationLine(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
-			@NonNull final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId)
+			@NonNull final Map<InvoiceCandidateId, CompensationLineOrigin> originByInvoiceCandidateId)
 	{
 		// invoiced and to invoice now, like the regular lines: a compounding percent line's base deducts the whole amount of the lines before it
 		final BigDecimal qtyInvoicedAndToInvoice = invoiceCandidate.getQtyInvoiced().add(invoiceCandidate.getQtyToInvoice());
@@ -246,6 +247,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final BigDecimal lineNetAmt = price.multiply(qtyInPriceUom);
 
 		final InvoiceCandidateId invoiceCandidateId = extractLineId(invoiceCandidate);
+		final CompensationLineOrigin origin = originByInvoiceCandidateId.getOrDefault(invoiceCandidateId, CompensationLineOrigin.NONE);
 		return GroupCompensationLine.builder()
 				.repoId(invoiceCandidateId)
 				.seqNo(invoiceCandidate.getLine())
@@ -258,19 +260,31 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.price(price)
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
-				.appliesToProductCategoryId(appliesToProductCategoryIdByInvoiceCandidateId.get(invoiceCandidateId))
+				.appliesToProductCategoryId(origin.getAppliesToProductCategoryId())
+				.takeOverId(origin.getTakeOverId())
 				.build();
 	}
 
+	/** What a compensation invoice candidate's order line says about the compensation line: its applies-to category and its take-over record id */
+	@Value
+	private static class CompensationLineOrigin
+	{
+		static final CompensationLineOrigin NONE = new CompensationLineOrigin(null, 0);
+
+		/** {@code null} = computed on the whole group's regular lines */
+		@Nullable ProductCategoryId appliesToProductCategoryId;
+		/** 0 = not an own take-over line */
+		int takeOverId;
+	}
+
 	/**
-	 * Batch-resolves each compensation invoice candidate's order line's schema line's applies-to product category in
-	 * two queries (one for the order lines, one for the schema lines), instead of one uncached order-line load plus
-	 * one uncached schema-line load per compensation line.
+	 * Batch-resolves each compensation invoice candidate's order line's applies-to product category (the schema line's,
+	 * else the take-over record's) and take-over record id in two queries (one for the order lines, one for the schema lines),
+	 * instead of one uncached order-line load plus one uncached schema-line load per compensation line.
 	 *
-	 * @return invoice candidate id -> applies-to product category id; a candidate with no resolvable category (no
-	 * order line, no schema line, or no category on the schema line) is simply absent
+	 * @return invoice candidate id -> origin; a candidate without an order line is simply absent
 	 */
-	private ImmutableMap<InvoiceCandidateId, ProductCategoryId> retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(
+	private ImmutableMap<InvoiceCandidateId, CompensationLineOrigin> retrieveCompensationLineOriginsByInvoiceCandidateId(
 			@NonNull final List<I_C_Invoice_Candidate> compensationLineCandidates)
 	{
 		final ImmutableSet<OrderLineId> orderLineIds = compensationLineCandidates.stream()
@@ -306,15 +320,16 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 						I_C_CompensationGroup_SchemaLine::getC_CompensationGroup_SchemaLine_ID,
 						schemaLine -> ProductCategoryId.ofRepoId(schemaLine.getM_Product_Category_ID())));
 
-		final ImmutableMap.Builder<InvoiceCandidateId, ProductCategoryId> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<InvoiceCandidateId, CompensationLineOrigin> result = ImmutableMap.builder();
 		for (final I_C_Invoice_Candidate invoiceCandidate : compensationLineCandidates)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID());
 			final I_C_OrderLine orderLine = orderLineId != null ? orderLinesById.get(orderLineId) : null;
-			final ProductCategoryId productCategoryId = orderLine != null ? resolveAppliesToProductCategoryId(orderLine, productCategoryIdBySchemaLineId) : null;
-			if (productCategoryId != null)
+			if (orderLine != null)
 			{
-				result.put(extractLineId(invoiceCandidate), productCategoryId);
+				result.put(extractLineId(invoiceCandidate), new CompensationLineOrigin(
+						resolveAppliesToProductCategoryId(orderLine, productCategoryIdBySchemaLineId),
+						orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()));
 			}
 		}
 		return result.build();
@@ -463,9 +478,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		InvoiceCandidateCompensationGroupUtils.assertCompensationLine(invoiceCandidate);
 
-		final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId =
-				retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(ImmutableList.of(invoiceCandidate));
-		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, appliesToProductCategoryIdByInvoiceCandidateId);
+		final Map<InvoiceCandidateId, CompensationLineOrigin> originByInvoiceCandidateId =
+				retrieveCompensationLineOriginsByInvoiceCandidateId(ImmutableList.of(invoiceCandidate));
+		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, originByInvoiceCandidateId);
 		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())

@@ -193,4 +193,13 @@ public final class GroupCompensationLine
 		return !isGeneratedLine();
 	}
 
+	/**
+	 * @return {@code true} if this is an own take-over line (it stems from a contract take-over record); such a line is always
+	 * computed on its applies-to category's full regular-lines base and never compounds with other lines
+	 */
+	public boolean isTakeOverOwnLine()
+	{
+		return takeOverId > 0;
+	}
+
 }

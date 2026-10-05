@@ -199,6 +199,20 @@ public class GroupTests
 				.build();
 	}
 
+	private GroupCompensationLineCreateRequest newOwnTakeOverLineRequest(final double discountPerc, @NonNull final ProductCategoryId appliesToProductCategoryId)
+	{
+		return GroupCompensationLineCreateRequest.builder()
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.Percent)
+				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
+				.appliesToProductCategoryId(appliesToProductCategoryId)
+				.takeOverId(540001)
+				// does not matter but needs to be filled
+				.productId(productId)
+				.uomId(uomId)
+				.build();
+	}
+
 	private GroupCompensationLineCreateRequest newFixedAmountRequest(
 			@NonNull final BigDecimal price,
 			@NonNull final BigDecimal qtyEntered,
@@ -351,5 +365,62 @@ public class GroupTests
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
 				.containsExactly(new BigDecimal("-30.00"), new BigDecimal("-3.00"));
+	}
+
+	/**
+	 * An own take-over line (takeOverId &gt; 0) is always computed on its category's full regular-lines base, even in a
+	 * non-additive (compounding) group with an earlier fixed-amount line on the same category, and it is left out of that
+	 * category's running total, so a later compounding line does not compound with it.
+	 */
+	@Test
+	void notAdditive_ownTakeOverLine_onFullBase_andNotInRunningTotal()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.PURCHASE)
+				.additive(false)
+				.regularLine(regularLine(1000, goods))
+				.regularLine(regularLine(200, ProductCategoryId.ofRepoId(20))) // outside the base
+				.build();
+
+		group.addNewCompensationLine(newFixedAmountRequest(new BigDecimal("-50.00"), BigDecimal.ONE, goods));
+		group.addNewCompensationLine(newOwnTakeOverLineRequest(3.0, goods));
+		// provisional amount right after adding: 3 % of the full 1000, not of 1000 - 50
+		assertThat(group.getCompensationLines().get(1).getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-30.00"));
+		assertThat(group.getCompensationLines().get(1).getBaseAmt()).isEqualByComparingTo(new BigDecimal("1000"));
+
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, goods));
+		// provisional: compounds with the fixed-amount line only (1000 - 50), not with the own line
+		assertThat(group.getCompensationLines().get(2).getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-95.00"));
+
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-50.00"), new BigDecimal("-30.00"), new BigDecimal("-95.00"));
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getBaseAmt)
+				.usingElementComparator(BigDecimal::compareTo)
+				.containsExactly(new BigDecimal("1000"), new BigDecimal("1000"), new BigDecimal("950"));
+	}
+
+	@Test
+	void notAdditive_ownTakeOverLine_afterSameCategoryPercentLine_onFullBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.PURCHASE)
+				.additive(false)
+				.regularLine(regularLine(1000, goods))
+				.build();
+
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, goods));
+		group.addNewCompensationLine(newOwnTakeOverLineRequest(3.0, goods));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-30.00"));
 	}
 }

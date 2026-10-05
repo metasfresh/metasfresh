@@ -77,7 +77,7 @@ public class Group
 	@Getter
 	private final ConditionsId contractConditionsId;
 
-	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other */
+	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other, except own take-over lines (see {@link GroupCompensationLine#isTakeOverOwnLine()}), which are always computed additively */
 	@Getter
 	private final boolean additive;
 
@@ -191,8 +191,9 @@ public class Group
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
 			final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
+			final boolean compounding = isCompounding(compensationLine);
 			final BigDecimal baseAmt;
-			if (additive)
+			if (!compounding)
 			{
 				baseAmt = getRegularLinesNetAmt(appliesToProductCategoryId);
 			}
@@ -203,7 +204,7 @@ public class Group
 
 			updateCompensationLine(compensationLine, baseAmt);
 
-			if (!additive)
+			if (compounding)
 			{
 				runningNetAmtsByAppliesToProductCategory.put(Optional.ofNullable(appliesToProductCategoryId), baseAmt.add(compensationLine.getLineNetAmt()));
 			}
@@ -250,21 +251,32 @@ public class Group
 				.description(request.getDescription())
 				.build();
 
-		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getAppliesToProductCategoryId()));
+		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine));
 
 		compensationLines.add(compensationLine);
 	}
 
-	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-matching-category running total, for one new line */
-	private BigDecimal computeInitialBaseAmt(@Nullable final ProductCategoryId appliesToProductCategoryId)
+	/**
+	 * @return {@code true} if the given line is computed on its category's running total and adds to it (non-additive mode);
+	 * an own take-over line never is: it is always computed on its category's full base, whatever the additive flag
+	 */
+	private boolean isCompounding(@NonNull final GroupCompensationLine compensationLine)
 	{
+		return !additive && !compensationLine.isTakeOverOwnLine();
+	}
+
+	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-matching-category running total, for one new line */
+	private BigDecimal computeInitialBaseAmt(@NonNull final GroupCompensationLine newLine)
+	{
+		final ProductCategoryId appliesToProductCategoryId = newLine.getAppliesToProductCategoryId();
 		BigDecimal baseAmt = getRegularLinesNetAmt(appliesToProductCategoryId);
 
-		if (!additive)
+		if (isCompounding(newLine))
 		{
 			for (final GroupCompensationLine existingLine : compensationLines)
 			{
-				if (Objects.equals(existingLine.getAppliesToProductCategoryId(), appliesToProductCategoryId))
+				if (isCompounding(existingLine)
+						&& Objects.equals(existingLine.getAppliesToProductCategoryId(), appliesToProductCategoryId))
 				{
 					baseAmt = baseAmt.add(existingLine.getLineNetAmt());
 				}
