@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.entry;
  * #L%
  */
 
-/** Reads of the settings' take-overs and their listed customer products. */
+/** Reads of the settings' take-overs and their customer discount products. */
 class ContractSettingsTakeOverRepositoryTest
 {
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
@@ -62,8 +62,8 @@ class ContractSettingsTakeOverRepositoryTest
 	{
 		final ContractCompensationGroupSettingsId settingsId = createSettings();
 		final ContractSettingsTakeOverId takeOverId = createTakeOver(settingsId, true);
-		createListedProduct(takeOverId, PRODUCT_Q_ID, true);
-		createListedProduct(takeOverId, PRODUCT_R_ID, false); // inactive -> not a customer discount product
+		createCustomerDiscountProduct(takeOverId, PRODUCT_Q_ID, true);
+		createCustomerDiscountProduct(takeOverId, PRODUCT_R_ID, false); // inactive -> not a customer discount product
 		createTakeOver(settingsId, false); // inactive record -> not returned
 
 		final List<ContractSettingsTakeOver> records = takeOverRepository.getBySettingsId(settingsId);
@@ -82,8 +82,8 @@ class ContractSettingsTakeOverRepositoryTest
 		final ContractCompensationGroupSettingsId settingsId = createSettings();
 		final ContractSettingsTakeOverId takeOverId1 = createTakeOver(settingsId, true);
 		final ContractSettingsTakeOverId takeOverId2 = createTakeOver(settingsId, true);
-		final ContractSettingsTakeOverProductId listingId = createListedProduct(takeOverId1, PRODUCT_Q_ID, true);
-		createListedProduct(takeOverId1, PRODUCT_R_ID, false);
+		final ContractSettingsTakeOverProductId listingId = createCustomerDiscountProduct(takeOverId1, PRODUCT_Q_ID, true);
+		createCustomerDiscountProduct(takeOverId1, PRODUCT_R_ID, false);
 
 		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverId2, PRODUCT_Q_ID, null)).isTrue();
 		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverId1, PRODUCT_Q_ID, listingId)).isFalse(); // the record itself
@@ -95,7 +95,7 @@ class ContractSettingsTakeOverRepositoryTest
 	{
 		final ContractSettingsTakeOverId takeOverOfSettings1 = createTakeOver(createSettings(), true);
 		final ContractSettingsTakeOverId takeOverOfSettings2 = createTakeOver(createSettings(), true);
-		createListedProduct(takeOverOfSettings1, PRODUCT_Q_ID, true);
+		createCustomerDiscountProduct(takeOverOfSettings1, PRODUCT_Q_ID, true);
 
 		assertThat(takeOverRepository.isProductListedInSameSettings(takeOverOfSettings2, PRODUCT_Q_ID, null)).isFalse();
 	}
@@ -153,7 +153,7 @@ class ContractSettingsTakeOverRepositoryTest
 		return ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 	}
 
-	private static ContractSettingsTakeOverProductId createListedProduct(final ContractSettingsTakeOverId takeOverId, final ProductId productId, final boolean active)
+	private static ContractSettingsTakeOverProductId createCustomerDiscountProduct(final ContractSettingsTakeOverId takeOverId, final ProductId productId, final boolean active)
 	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver_Product record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
 		record.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOverId.getRepoId());

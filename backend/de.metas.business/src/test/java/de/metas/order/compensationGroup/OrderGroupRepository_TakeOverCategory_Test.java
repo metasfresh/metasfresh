@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -208,7 +209,7 @@ public class OrderGroupRepository_TakeOverCategory_Test
 
 		final List<Group> groups = repo.retrieveContractCreatedGroupsByOrderId(orderWithThreeGroupsId);
 
-		assertThat(groups).hasSize(3);
+		assertThat(groups).extracting(Group::isAdditive).containsExactly(true, false, false);
 		assertThat(groups).allSatisfy(group -> assertThat(group.getCompensationLines())
 				.extracting(GroupCompensationLine::getAppliesToProductCategoryId)
 				.containsExactly(SCHEMA_LINE_CATEGORY_ID, TAKE_OVER_CATEGORY_ID));
@@ -237,6 +238,7 @@ public class OrderGroupRepository_TakeOverCategory_Test
 			final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
 			groupHeader.setC_Order_ID(contractOrderId.getRepoId());
 			groupHeader.setC_Flatrate_Term_ID(1);
+			groupHeader.setC_CompensationGroup_Schema_ID(GroupTemplateId.toRepoId(i < 2 ? createSchema(i == 0) : null));
 			saveRecord(groupHeader);
 			final GroupId contractGroupId = OrderGroupRepository.createGroupId(contractOrderId, groupHeader.getC_Order_CompensationGroup_ID());
 
@@ -252,6 +254,14 @@ public class OrderGroupRepository_TakeOverCategory_Test
 			saveCompensationLine(contractGroupId, null, TAKE_OVER_ID, 30);
 		}
 		return contractOrderId;
+	}
+
+	private static GroupTemplateId createSchema(final boolean additive)
+	{
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setIsAdditive(additive);
+		saveRecord(schema);
+		return GroupTemplateId.ofRepoId(schema.getC_CompensationGroup_Schema_ID());
 	}
 
 	private GroupTemplateLineId createSchemaLine(final ProductCategoryId productCategoryId)
