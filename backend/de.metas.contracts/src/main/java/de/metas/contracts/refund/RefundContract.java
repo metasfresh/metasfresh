@@ -17,6 +17,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -144,10 +145,17 @@ public class RefundContract
 	{
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 
-		LocalDate date = invoiceSchedule.calculateNextDateToInvoice(startDate);
+		final LocalDate firstPeriodEnd = invoiceSchedule.calculateNextDateToInvoice(startDate);
+
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
+		{
+			return new NextInvoiceDate(invoiceSchedule, computeMonthlyPeriodEnd(invoiceSchedule, firstPeriodEnd, currentDate));
+		}
+
+		LocalDate date = firstPeriodEnd;
 		while (date.isBefore(currentDate))
 		{
-			// the day after the period end: asking from the end itself shifts an end-of-month schedule to the 30th after a short month
+			// ask from the day after the period end, because from the end itself, the schedule might return the same date again
 			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date.plusDays(1));
 
 			Check.assume(nextDate.isAfter(date), // make sure not to get stuck in an endless loop
@@ -157,6 +165,27 @@ public class RefundContract
 			date = nextDate;
 		}
 		return new NextInvoiceDate(invoiceSchedule, date);
+	}
+
+	/**
+	 * Every period end is computed from the first one: its month plus a multiple of the schedule's distance, with the invoice day clamped to that month's length.
+	 * Stepping from one end to the next would carry a clamped day (e.g. the 30th after a short month) into the following periods.
+	 */
+	private static LocalDate computeMonthlyPeriodEnd(
+			@NonNull final InvoiceSchedule invoiceSchedule,
+			@NonNull final LocalDate firstPeriodEnd,
+			@NonNull final LocalDate currentDate)
+	{
+		final LocalDate firstPeriodEndMonth = firstPeriodEnd.withDayOfMonth(1);
+		for (int periodIndex = 0;; periodIndex++)
+		{
+			final LocalDate month = firstPeriodEndMonth.plusMonths((long)periodIndex * invoiceSchedule.getInvoiceDistance());
+			final LocalDate periodEnd = month.withDayOfMonth(Math.min(invoiceSchedule.getInvoiceDayOfMonth(), month.lengthOfMonth()));
+			if (!periodEnd.isBefore(currentDate))
+			{
+				return periodEnd;
+			}
+		}
 	}
 
 	@Value
