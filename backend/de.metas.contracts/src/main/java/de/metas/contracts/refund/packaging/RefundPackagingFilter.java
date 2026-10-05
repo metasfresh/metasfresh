@@ -23,7 +23,7 @@ import java.util.Optional;
 @Service
 public class RefundPackagingFilter
 {
-	/** The packing materials that a conditions' lines are restricted to; empty if the conditions are not restricted. Reset when a config or a packing option changes. */
+	/** The packing materials that a conditions' lines are restricted to; empty if they are not restricted, which includes a restriction without any option (an empty set means all packaging). Reset when a config or a packing option changes. */
 	private static final CCache<ConditionsId, Optional<ImmutableSet<Integer>>> PACKING_MATERIAL_IDS_CACHE = CCache.<ConditionsId, Optional<ImmutableSet<Integer>>>builder()
 			.cacheName(I_C_Flatrate_RefundConfig_PackingOption.Table_Name + "#by#" + I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_Conditions_ID)
 			.tableName(I_C_Flatrate_RefundConfig_PackingOption.Table_Name)
@@ -38,7 +38,7 @@ public class RefundPackagingFilter
 	}
 
 	/**
-	 * @return {@code true} if no config of the conditions is restricted to packaging options (every line is in), or if the packing material of the packing instruction is one of the restricted configs' options.
+	 * @return {@code true} if the conditions have no packaging options (every line is in; a config that is flagged but lists none accepts all packaging), or if the packing material of the packing instruction is one of them.
 	 *         {@code false} otherwise, in particular if there is no packing instruction.
 	 */
 	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final HUPIItemProductId huPIItemProductId, @Nullable final BPartnerId bpartnerId)
@@ -50,7 +50,7 @@ public class RefundPackagingFilter
 		}
 
 		final ImmutableSet<Integer> packingMaterialIds = restrictedToPackingMaterialIds.get();
-		if (huPIItemProductId == null || packingMaterialIds.isEmpty())
+		if (huPIItemProductId == null)
 		{
 			return false;
 		}
@@ -64,7 +64,7 @@ public class RefundPackagingFilter
 				.orElse(false);
 	}
 
-	/** @return the packing options of the conditions' configs that are restricted to packaging options; empty if no config is */
+	/** @return the packing options of the conditions' configs that are restricted to packaging options; empty if there are none, i.e. if all packaging is accepted */
 	private static Optional<ImmutableSet<Integer>> retrieveRestrictedToPackingMaterialIds(@NonNull final ConditionsId conditionsId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -82,12 +82,15 @@ public class RefundPackagingFilter
 			return Optional.empty();
 		}
 
-		return Optional.of(queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
+		final ImmutableSet<Integer> packingMaterialIds = queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_RefundConfig_ID, restrictedConfigIds)
 				.create()
 				.listDistinct(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_M_HU_PackingMaterial_ID, Integer.class)
 				.stream()
-				.collect(ImmutableSet.toImmutableSet()));
+				.collect(ImmutableSet.toImmutableSet());
+
+		// an empty set means all packaging
+		return packingMaterialIds.isEmpty() ? Optional.empty() : Optional.of(packingMaterialIds);
 	}
 }
