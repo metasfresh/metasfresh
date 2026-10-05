@@ -22,6 +22,10 @@
 
 package de.metas.camel.externalsystems.core.to_mf;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
@@ -35,17 +39,24 @@ import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_SEND_LOG_MESSAGE;
+import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_WRITE_TO_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ErrorReportBuilderTest extends CamelTestSupport
 {
 	private final static String MOCK_LOG_MESSAGE = "mock:logMessage";
+	private final static String MOCK_AD_ISSUE = "mock:adIssue";
+	private final static String MOCK_ERROR_FILE = "mock:errorFile";
 	private final static String JSON_LOG_MESSAGE_REQUEST = "0_LogMessageRequest.json";
 
 	@Override
@@ -116,6 +127,158 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithoutPInstanceId_isWrittenToFile_andSkipsLogMessage() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint fileMock = getMockEndpoint(MOCK_ERROR_FILE);
+		fileMock.expectedMessageCount(1);
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(0);
+
+		final Exchange exchange = newErrorExchange(null);
+
+		template.send("direct:" + MF_ERROR_ROUTE_ID, exchange);
+
+		assertThat(exchange.getException()).isNull();
+		assertThat(fileMock.getReceivedExchanges().get(0).getIn().getBody(String.class)).contains("startup failure");
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void logMessageLegHandlesMissingPInstanceIdWithoutThrowing() throws Exception
+	{
+		this.prepareRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(0);
+
+		final Exchange exchange = newErrorExchange(null);
+
+		template.send("direct:" + ERROR_SEND_LOG_MESSAGE, exchange);
+
+		assertThat(exchange.getException()).isNull();
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithoutPInstanceId_isLoggedAsWarning() throws Exception
+	{
+		this.prepareRouteForTesting();
+
+		context.start();
+
+		final Logger rootLogger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		final ListAppender<ILoggingEvent> appender = new ListAppender<>();
+		appender.start();
+		rootLogger.addAppender(appender);
+		try
+		{
+			template.send("direct:" + ERROR_SEND_LOG_MESSAGE, newErrorExchange(null));
+		}
+		finally
+		{
+			rootLogger.detachAppender(appender);
+		}
+
+		assertThat(appender.list)
+				.filteredOn(event -> event.getLevel() == Level.WARN)
+				.filteredOn(event -> event.getFormattedMessage().contains("No PInstanceId available; reporting error without pInstance linkage"))
+				.singleElement()
+				.satisfies(event -> assertThat(event.getFormattedMessage()).contains("startup failure"));
+	}
+
+	@Test
+	void errorWithPInstanceId_isSentAsLogMessage() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+		this.prepareADIssueRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint fileMock = getMockEndpoint(MOCK_ERROR_FILE);
+		fileMock.expectedMessageCount(1);
+		final MockEndpoint logMessageMock = getMockEndpoint(MOCK_LOG_MESSAGE);
+		logMessageMock.expectedMessageCount(1);
+
+		final Exchange exchange = newErrorExchange(1);
+
+		template.send("direct:" + MF_ERROR_ROUTE_ID, exchange);
+
+		assertMockEndpointsSatisfied();
+	}
+
+	@Test
+	void errorWithPInstanceId_isAlsoWrittenToADIssue() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+		this.prepareADIssueRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint adIssueMock = getMockEndpoint(MOCK_AD_ISSUE);
+		adIssueMock.expectedMessageCount(1);
+
+		template.send("direct:" + MF_ERROR_ROUTE_ID, newErrorExchange(1));
+
+		adIssueMock.assertIsSatisfied();
+		assertThat(adIssueMock.getExchanges().get(0).getIn().getBody(String.class)).contains("startup failure");
+	}
+
+	@Test
+	void errorWithoutPInstanceId_isNotWrittenToADIssue() throws Exception
+	{
+		this.prepareRouteForTesting();
+		this.prepareErrorFileRouteForTesting();
+		this.prepareADIssueRouteForTesting();
+
+		context.start();
+
+		final MockEndpoint adIssueMock = getMockEndpoint(MOCK_AD_ISSUE);
+		adIssueMock.expectedMessageCount(0);
+
+		final Exchange exchange = newErrorExchange(null);
+		template.send("direct:" + MF_ERROR_ROUTE_ID, exchange);
+
+		assertThat(exchange.getException()).isNull();
+		adIssueMock.assertIsSatisfied();
+	}
+
+	private void prepareADIssueRouteForTesting() throws Exception
+	{
+		AdviceWith.adviceWith(context, ERROR_WRITE_TO_ADISSUE,
+							  advice -> advice.interceptSendToEndpoint("http://localhost:8282/*")
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_AD_ISSUE));
+	}
+
+	private Exchange newErrorExchange(final Integer pInstanceId)
+	{
+		final Exchange exchange = new DefaultExchange(context);
+		exchange.setProperty(Exchange.EXCEPTION_CAUGHT, new RuntimeException("startup failure"));
+		if (pInstanceId != null)
+		{
+			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, pInstanceId);
+		}
+		return exchange;
+	}
+
+	private void prepareErrorFileRouteForTesting() throws Exception
+	{
+		AdviceWith.adviceWith(context, ERROR_WRITE_TO_FILE,
+							  advice -> advice.interceptSendToEndpoint("file:*")
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_ERROR_FILE));
 	}
 
 	private void prepareRouteForTesting() throws Exception

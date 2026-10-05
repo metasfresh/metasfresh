@@ -24,6 +24,8 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.common.externalsystem.status.JsonExternalStatus;
+import de.metas.common.externalsystem.status.JsonExternalStatusResponse;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -37,7 +39,7 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE_PROCESSOR_ID;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UnpackV2ResponseRouteBuilderTest extends CamelTestSupport
 {
@@ -116,6 +118,56 @@ public class UnpackV2ResponseRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + UNPACK_V2_API_RESPONSE, cachedInputStream);
 
 		assertThat(unpackV2ApiResponseEP.getReceivedCounter()).isEqualTo(0);
+	}
+
+	@Test
+	void givenUnwrappedResponse_whenFireRoute_thenRawBodyIsPreserved() throws Exception
+	{
+		prepareRouteForTesting();
+
+		context.start();
+
+		final String unwrappedResponse = "{\"statusInfoList\":[{"
+				+ "\"externalSystemChildValue\":\"child1\","
+				+ "\"externalSystemConfigType\":\"Shopware6\","
+				+ "\"serviceValue\":\"defaultRestAPIBPartner\","
+				+ "\"expectedStatus\":\"Active\"}]}";
+
+		// fire the route
+		final Object result = template.requestBody("direct:" + UNPACK_V2_API_RESPONSE, unwrappedResponse);
+
+		assertThat(result).isNotNull();
+
+		final JsonExternalStatusResponse statusResponse = new ObjectMapper().readValue(context.getTypeConverter().convertTo(String.class, result), JsonExternalStatusResponse.class);
+		assertThat(statusResponse).isNotNull();
+		assertThat(statusResponse.getExternalStatusResponses()).hasSize(1);
+		assertThat(statusResponse.getExternalStatusResponses().get(0).getExpectedStatus()).isEqualTo(JsonExternalStatus.Active);
+		assertThat(statusResponse.getExternalStatusResponses().get(0).getServiceValue()).isEqualTo("defaultRestAPIBPartner");
+	}
+
+	@Test
+	void givenUnwrappedResponseWithDecimals_whenFireRoute_thenDecimalsAreNotAltered() throws Exception
+	{
+		prepareRouteForTesting();
+
+		context.start();
+
+		final Object result = template.requestBody("direct:" + UNPACK_V2_API_RESPONSE, "{\"price\":0.10,\"qty\":12345678901234567890.123456789}");
+
+		assertThat(context.getTypeConverter().convertTo(String.class, result)).isEqualTo("{\"price\":0.10,\"qty\":12345678901234567890.123456789}");
+	}
+
+	@Test
+	void givenWrappedResponseWithoutEndpointResponse_whenFireRoute_thenNullIsPassedOn() throws Exception
+	{
+		prepareRouteForTesting();
+
+		context.start();
+
+		// a genuine JsonApiResponse whose endpointResponse is absent, e.g. because API_Audit_Config.IsInvokerWaitsForResult='N'
+		final Object result = template.requestBody("direct:" + UNPACK_V2_API_RESPONSE, "{\"requestId\":123}");
+
+		assertThat(context.getTypeConverter().convertTo(String.class, result)).isEqualTo("null");
 	}
 
 	private void prepareRouteForTesting() throws Exception
