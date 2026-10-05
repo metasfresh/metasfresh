@@ -48,13 +48,14 @@ public class ContractCompensationGroupTakeOverService
 	/**
 	 * @return one result per take-over record of {@code settings} whose listed customer products appear on the linked
 	 * sales order's contract discount lines (summedPercent = arithmetic sum of their nominal percentages, not compounded);
-	 * empty unless {@code purchaseOrder} is a drop-ship order linked to a sales order. Records summing to 0 are dropped.
+	 * empty unless {@code purchaseOrder} is a drop-ship <b>purchase</b> order linked to a sales order (a drop-ship sales order
+	 * takes nothing over). Records summing to 0 are dropped.
 	 */
 	public List<TakeOverResult> computeTakeOvers(
 			@NonNull final I_C_Order purchaseOrder,
 			@NonNull final ContractCompensationGroupSettings settings)
 	{
-		if (!purchaseOrder.isDropShip() || purchaseOrder.getLink_Order_ID() <= 0)
+		if (purchaseOrder.isSOTrx() || !purchaseOrder.isDropShip() || purchaseOrder.getLink_Order_ID() <= 0)
 		{
 			return ImmutableList.of();
 		}

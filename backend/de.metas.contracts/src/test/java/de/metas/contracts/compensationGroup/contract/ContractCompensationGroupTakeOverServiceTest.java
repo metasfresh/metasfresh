@@ -120,6 +120,18 @@ class ContractCompensationGroupTakeOverServiceTest
 	}
 
 	@Test
+	void dropShipSalesOrder_returnsEmpty()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final I_C_Order linkedSalesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
+		final I_C_Order dropShipSalesOrder = createPurchaseOrder(true, linkedSalesOrder.getC_Order_ID());
+		dropShipSalesOrder.setIsSOTrx(true);
+		saveRecord(dropShipSalesOrder);
+
+		assertThat(service.computeTakeOvers(dropShipSalesOrder, settings)).isEmpty();
+	}
+
+	@Test
 	void dropShipWithoutLinkedOrder_returnsEmpty()
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
