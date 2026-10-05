@@ -295,8 +295,8 @@ public class RefundTestTools
 		saveRecord(conditions);
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_RefundConfig.class);
-		refundConfigRecord.setC_Flatrate_Conditions(conditions);
-		refundConfigRecord.setM_Product(productRecord);
+		refundConfigRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		refundConfigRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice); // keep in sync with the C_DocType's subType that we set up in the constructor.
 		refundConfigRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
 		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);

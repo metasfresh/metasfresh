@@ -98,7 +98,7 @@ public class RefundConfigRepository
 		if (query.getProductId() != null)
 		{
 			builder.addInArrayFilter(
-					I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
+					I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
 					null,
 					query.getProductId());
 		}
