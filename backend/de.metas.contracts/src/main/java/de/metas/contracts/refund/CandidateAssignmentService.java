@@ -252,7 +252,36 @@ public class CandidateAssignmentService
 	 */
 	public UnassignResult unassignCandidate(@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
-		final UnassignResult result = unassignSingleCandidate(assignableInvoiceCandidate);
+		// each refund contract is handled on its own: it has its own refund candidates, configs and quantities
+		final ImmutableList<FlatrateTermId> contractIds = assignableInvoiceCandidate.getAssignmentsToRefundCandidates().stream()
+				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		if (contractIds.isEmpty())
+		{
+			return unassignCandidate(assignableInvoiceCandidate, null); // fails, because there is nothing to unassign
+		}
+
+		final UnassignResultBuilder resultBuilder = UnassignResult.builder()
+				.assignableCandidate(assignableInvoiceCandidate.withoutRefundInvoiceCandidates());
+		for (final FlatrateTermId contractId : contractIds)
+		{
+			final UnassignResult contractResult = unassignCandidate(onlyAssignmentsToContract(assignableInvoiceCandidate, contractId), contractId);
+			resultBuilder.unassignedPairs(contractResult.getUnassignedPairs());
+			resultBuilder.additionalChangedCandidates(contractResult.getAdditionalChangedCandidates());
+		}
+		return resultBuilder.build();
+	}
+
+	/**
+	 * @param onlyContractId the refund contract whose assignments are removed; {@code null} to remove all of them.
+	 */
+	private UnassignResult unassignCandidate(
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@Nullable final FlatrateTermId onlyContractId)
+	{
+		final UnassignResult result = unassignSingleCandidate(assignableInvoiceCandidate, onlyContractId);
 
 		final List<UnassignedPairOfCandidates> unassignedPairs = result.getUnassignedPairs();
 
