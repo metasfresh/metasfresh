@@ -517,6 +517,32 @@ public class OrderGroupRepositoryTest
 		assertThat(compensationLinePO.isManualDiscount()).isTrue();
 	}
 
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 10 — IsAdditive is read from the cached schema; saving the schema must reset that cache,
+	// so a changed IsAdditive is seen by the next read instead of the stale cached value.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void isAdditive_changedOnSchema_isSeenByNextRead()
+	{
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
+		schema.setIsAdditive(true);
+		saveRecord(schema);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), groupHeader.getC_Order_CompensationGroup_ID());
+
+		assertThat(repo.isAdditive(groupId)).isTrue();
+
+		schema.setIsAdditive(false);
+		saveRecord(schema);
+
+		assertThat(repo.isAdditive(groupId)).isFalse();
+	}
+
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────
 
 	private GroupTemplateRegularLine buildTemplateLine(final boolean isWithoutCharge)
