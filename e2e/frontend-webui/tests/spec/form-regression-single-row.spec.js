@@ -12,15 +12,16 @@ import { createMasterdata, gotoOrderList, createNewOrder, selectOrderCustomer } 
  * Form-regression guard (BF-F2, TC6) — proves the grid-only scoping of this milestone's changes
  * by construction AND by a real-flow assertion, not by claim alone.
  *
- * BY CONSTRUCTION (code audit): every production file this milestone touched is grid-table-layer
- * only — `frontend/src/components/table/{Table,TableCell,TableHeader,TableRow}.js`,
+ * BY CONSTRUCTION (code audit): the grid fixes of this milestone are grid-table-layer only —
+ * `frontend/src/components/table/{Table,TableCell,TableHeader,TableRow}.js`,
  * `frontend/src/utils/{columnWidthStorage,tableHelpers}.js`, and `frontend/src/assets/css/table.scss`.
- * None of them is `RawWidget.js` / `RawLookup.js` — the SHARED widget components a single-row
- * detail (Master) form actually renders (`frontend/src/components/widget/`). A single-row form
- * field's `<input>` is never a descendant of `Table`/`TableRow`/`TableCell`, so the object-valued
- * type-guard (grid `Tab`/`Enter` handlers), the numpad-0 activation gate, the layout-jump CSS
- * (scoped to the in-grid editor box), and the combobox width floor (grid `td-*` header/cell
- * classes) have no code path into a form field at all.
+ * A single-row form field's `<input>` is never a descendant of `Table`/`TableRow`/`TableCell`, so
+ * the object-valued type-guard (grid `Tab`/`Enter` handlers), the numpad-0 activation gate, the
+ * layout-jump CSS (scoped to the in-grid editor box), and the combobox width floor (grid `td-*`
+ * header/cell classes) have no code path into a form field at all. The ONE deliberate exception is
+ * the shared `RawLookup.js` (Enter on a Lookup text that matches nothing keeps the previous value,
+ * in grid AND forms alike) — covered by `lookup-enter-no-match.spec.js`, and not touching the plain
+ * text field driven below.
  *
  * BY REAL-FLOW ASSERTION (this spec): drives the order HEADER (a single-row/detail form, not a
  * grid) exactly as a user would — type into an empty field, press Enter, type into an
@@ -54,10 +55,10 @@ test.describe('Single-row detail form regression guard', () => {
 3. Type into the now-filled field again — the edit must apply in place (append), not replace/
    clear the field.
 
-Grounded in a code audit (see the header comment in this file): every file this milestone
-touched is grid-table-layer only (\`Table\`/\`TableRow\`/\`TableCell\`/\`TableHeader\` +
-\`columnWidthStorage\`/\`tableHelpers\` + \`table.scss\`) — \`RawWidget\`/\`RawLookup\`, which a
-single-row form actually renders, were not touched.
+Grounded in a code audit (see the header comment in this file): the grid fixes are grid-table-layer
+only (\`Table\`/\`TableRow\`/\`TableCell\`/\`TableHeader\` + \`columnWidthStorage\`/\`tableHelpers\` +
+\`table.scss\`); \`RawWidget\`, which renders the text field driven here, was not touched (the one
+shared change, in \`RawLookup\`, is covered by \`lookup-enter-no-match.spec.js\`).
     `);
 
     test.setTimeout(120000);
