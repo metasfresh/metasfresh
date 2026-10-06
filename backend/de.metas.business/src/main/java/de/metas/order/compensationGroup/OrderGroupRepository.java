@@ -266,7 +266,18 @@ public class OrderGroupRepository implements GroupRepository
 				.additive(isAdditive(orderCompensationGroupPO));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
-		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId = retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(groupOrderLines);
+
+		final List<GroupCompensationLine> compensationLines = groupOrderLines.stream()
+				.filter(I_C_OrderLine::isGroupCompensationLine)
+				.map(OrderGroupRepository::toGroupCompensationLine)
+				.collect(ImmutableList.toImmutableList());
+
+		// the packing is needed only when a discount line is restricted to a packing-material category
+		final boolean packingMaterialCategoryNeeded = compensationLines.stream()
+				.anyMatch(compensationLine -> compensationLine.getBase().getPackingMaterialProductCategoryId() != null);
+		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId = packingMaterialCategoryNeeded
+				? retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(groupOrderLines)
+				: ImmutableMap.of();
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
@@ -275,12 +286,8 @@ public class OrderGroupRepository implements GroupRepository
 				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId);
 				groupBuilder.regularLine(regularLine);
 			}
-			else
-			{
-				final GroupCompensationLine compensationLine = toGroupCompensationLine(groupOrderLine);
-				groupBuilder.compensationLine(compensationLine);
-			}
 		}
+		compensationLines.forEach(groupBuilder::compensationLine);
 
 		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
 

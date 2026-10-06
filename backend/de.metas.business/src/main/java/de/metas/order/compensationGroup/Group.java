@@ -135,14 +135,6 @@ public class Group
 	}
 
 	/**
-	 * @param appliesToProductCategoryId {@code null} = the whole group's regular lines; else only the regular lines whose {@link GroupRegularLine#getProductCategoryIds()} contains it
-	 */
-	BigDecimal getRegularLinesNetAmt(@Nullable final ProductCategoryId appliesToProductCategoryId)
-	{
-		return getRegularLinesNetAmt(GroupCompensationBase.of(appliesToProductCategoryId, null));
-	}
-
-	/**
 	 * @param base {@link GroupCompensationBase#NONE} = the whole group's regular lines; else only the regular lines matching it
 	 */
 	BigDecimal getRegularLinesNetAmt(@NonNull final GroupCompensationBase base)

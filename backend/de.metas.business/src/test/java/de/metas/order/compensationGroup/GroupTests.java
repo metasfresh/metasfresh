@@ -295,7 +295,7 @@ public class GroupTests
 				.regularLine(regularLine(1000, child, parent))
 				.build();
 
-		assertThat(group.getRegularLinesNetAmt(parent)).isEqualByComparingTo(BigDecimal.valueOf(1000));
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(parent, null))).isEqualByComparingTo(BigDecimal.valueOf(1000));
 	}
 
 	@Test
@@ -356,7 +356,7 @@ public class GroupTests
 				.regularLine(regularLine(1000, parent)) // only the parent category, not the child
 				.build();
 
-		assertThat(group.getRegularLinesNetAmt(child)).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(child, null))).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 	@Test

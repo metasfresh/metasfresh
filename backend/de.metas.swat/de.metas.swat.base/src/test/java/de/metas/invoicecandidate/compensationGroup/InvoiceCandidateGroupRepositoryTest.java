@@ -343,7 +343,7 @@ class InvoiceCandidateGroupRepositoryTest
 	// C_Invoice_Candidate.onGroupCompensationPercentageChanged) must recompute a BASED discount
 	// invoice candidate against its stored base amount, not zero. Before the fix, the synthetic
 	// aggregated regular line had an empty productCategoryIds while the compensation line now
-	// carries a non-null appliesToProductCategoryId, so Group#getRegularLinesNetAmt(appliesToProductCategoryId)
+	// carries a non-null appliesToProductCategoryId, so Group#getRegularLinesNetAmt(GroupCompensationBase)
 	// filtered it out entirely.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
