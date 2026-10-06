@@ -65,16 +65,27 @@ import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
+import de.metas.ui.web.payment_allocation.InvoiceRows;
+import de.metas.ui.web.payment_allocation.InvoicesViewFactory;
+import de.metas.ui.web.payment_allocation.PaymentAndInvoiceRowsRepo;
 import de.metas.ui.web.payment_allocation.PaymentBonusRowValues;
 import de.metas.ui.web.payment_allocation.PaymentRow;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.JSONViewChanges;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.event.ViewChangesCollectorAutoCloseable;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -98,12 +109,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -719,6 +733,57 @@ public class PaymentsViewAllocateCommandTest
 			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, BigDecimal.ZERO)));
 
 			assertThat(changedRow.getPaymentBonusNote()).isNull();
+		}
+	}
+
+	/**
+	 * The allocate action of the payments view checks the invoice rows' bonus; after an invoice row is changed, the invoices view is reported as changed,
+	 * so that the WebUI fetches its rows and the actions of both the invoices view and the payments view again.
+	 */
+	@Nested
+	public class InvoiceRows_patchRow
+	{
+		@Test
+		public void reportsTheInvoicesViewAsChanged()
+		{
+			final ArrayList<JSONViewChanges> sentChanges = new ArrayList<>();
+			final WebsocketSender websocketSender = Mockito.mock(WebsocketSender.class);
+			Mockito.doAnswer(args -> {
+						final Collection<?> events = args.getArgument(0);
+						events.forEach(event -> sentChanges.add((JSONViewChanges)event));
+						return null;
+					})
+					.when(websocketSender)
+					.convertAndSend(Mockito.anyCollection());
+			SpringContextHolder.registerJUnitBean(WebsocketSender.class, websocketSender);
+
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(10))
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			final InvoiceRows rows = InvoiceRows.builder()
+					.repository(Mockito.mock(PaymentAndInvoiceRowsRepo.class))
+					.initialRows(ImmutableList.of(row))
+					.evaluationDate(ZonedDateTime.now())
+					.build();
+			final ViewId invoicesViewId = ViewId.random(InvoicesViewFactory.WINDOW_ID);
+
+			try (final ViewChangesCollectorAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector(invoicesViewId))
+			{
+				rows.patchRow(
+						RowEditingContext.builder()
+								.viewId(invoicesViewId)
+								.rowId(row.getId())
+								.documentsCollection(Mockito.mock(DocumentCollection.class))
+								.userRolePermissions(Mockito.mock(IUserRolePermissions.class))
+								.build(),
+						ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("2.78"))));
+			}
+
+			assertThat(sentChanges)
+					.filteredOn(changes -> invoicesViewId.getViewId().equals(changes.getViewId()))
+					.extracting(JSONViewChanges::getFullyChanged)
+					.containsExactly(Boolean.TRUE);
 		}
 	}
 
