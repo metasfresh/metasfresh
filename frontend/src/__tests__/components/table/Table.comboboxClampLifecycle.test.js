@@ -124,4 +124,13 @@ describe('Table — combobox load-time clamp survives async columns []->populate
 
     wrapper.unmount();
   });
+
+  it('clamps a stored sub-90 combobox width on mount when the columns are already known', () => {
+    const wrapper = mount(<Host columns={populatedColumns} />);
+    const instance = wrapper.find('Table').instance();
+
+    expect(instance.state.columnWidths[COMBOBOX_FIELD]).toBe(90);
+
+    wrapper.unmount();
+  });
 });
