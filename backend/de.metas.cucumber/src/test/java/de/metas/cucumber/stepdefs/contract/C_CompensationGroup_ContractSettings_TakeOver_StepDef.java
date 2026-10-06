@@ -31,9 +31,11 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -50,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Creates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, the discount product of
+ * Creates and updates {@link I_C_CompensationGroup_ContractSettings_TakeOver} records — per product category, the discount product of
  * the purchase order's own take-over line — and asserts the description the take-over writes onto the compensation order line.
  */
 @RequiredArgsConstructor
@@ -88,6 +90,37 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_CompensationGroup_ContractSettings_TakeOver record = buildTakeOver(row);
+			saveRecord(record);
+			takeOverTable.putOrReplace(row.getAsIdentifier(), record);
+		});
+	}
+
+	/**
+	 * Changes the product category of an existing take-over record (the record is registered under its {@code Identifier}
+	 * by {@code metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:}).
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code Identifier} (required, identifier-ref) — the take-over record</li>
+	 *     <li>{@code OPT.M_Product_Category_ID} (optional, identifier-ref) — the new product category</li>
+	 * </ul>
+	 * <pre>
+	 * When update C_CompensationGroup_ContractSettings_TakeOver:
+	 *   | Identifier | OPT.M_Product_Category_ID |
+	 *   | takeOver1  | otherCategory             |
+	 * </pre>
+	 */
+	@When("update C_CompensationGroup_ContractSettings_TakeOver:")
+	public void updateTakeOvers(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_CompensationGroup_ContractSettings_TakeOver record = row.getAsIdentifier().lookupNotNullIn(takeOverTable);
+			refresh(record);
+
+			row.getAsOptionalIdentifier(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_M_Product_Category_ID)
+					.map(identifier -> identifier.lookupNotNullIn(productCategoryTable))
+					.ifPresent(category -> record.setM_Product_Category_ID(category.getM_Product_Category_ID()));
+
 			saveRecord(record);
 			takeOverTable.putOrReplace(row.getAsIdentifier(), record);
 		});
@@ -137,7 +170,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	 * DataTable columns:
 	 * <ul>
 	 *     <li>{@code C_OrderLine_ID} (required, identifier-ref) — the order line</li>
-	 *     <li>{@code Description} (required) — the exact expected description</li>
+	 *     <li>{@code Description} (required column; a blank cell means the line has no description) — the exact expected description</li>
 	 * </ul>
 	 * <pre>
 	 * Then validate the take-over composition description of the order lines:
@@ -151,9 +184,9 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 			refresh(orderLine);
-			assertThat(orderLine.getDescription())
+			assertThat(StringUtils.trimBlankToNull(orderLine.getDescription()))
 					.as("Description of C_OrderLine %s", row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).getAsString())
-					.isEqualTo(row.getAsString(I_C_OrderLine.COLUMNNAME_Description));
+					.isEqualTo(StringUtils.trimBlankToNull(row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description).orElse(null)));
 		});
 	}
 

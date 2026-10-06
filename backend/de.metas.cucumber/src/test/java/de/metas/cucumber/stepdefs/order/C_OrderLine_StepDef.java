@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -146,6 +147,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
 	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
 	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_Attribute_StepDefData attributeTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
@@ -877,7 +879,7 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensation_Product_Category_ID (identifier-ref to an M_Product_Category))</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -911,6 +913,10 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
+				.map(productCategoryTable::getId)
+				.ifPresent(categoryId -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID()).as("GroupCompensation_Product_Category_ID").isEqualTo(categoryId.getRepoId()));
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))

@@ -70,16 +70,16 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   # ##############################################################################################
   # Real-world case: the store orders, the head office is billed and holds a 3% "Bonus Ware" contract.
   # The drop-ship vendor has its own 3% "Ware" contract plus a take-over record on "Ware" with "Bonus Ware" as customer discount product.
-  # SO completes -> drop-ship PO: ONE "Bonus Vendor" line of 3% own + 3% taken over = 6% of the goods
-  # (3 goods lines = 2155.20 -> 129.31); no discount on the 2 Pfand lines; the line description names both parts;
-  # the purchase invoice posts the discount to the discount product's own expense account.
+  # SO completes -> drop-ship PO: the vendor's own "Bonus Vendor" line of 3% (-64.66) AND a separate 3% take-over line (-64.66)
+  # (3 goods lines = 2155.20 -> 64.66 + 64.66 = 129.32); no discount on the 2 Pfand lines; the take-over line's description names the taken-over discount;
+  # the purchase invoice carries both lines and posts both discounts to the discount product's own expense account.
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS1
-  Scenario: Drop-ship PO merges the vendor's own 3% with the 3% taken over from the head office's contract
+  Scenario: Drop-ship PO keeps the vendor's own 3% line and adds a separate 3% take-over line for the 3% taken over from the head office's contract
     Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
     And documents are accounted immediately
 
@@ -98,32 +98,35 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | discountCategory      | discountRevenueAcct | discountExpenseAcct |
 
     And metasfresh contains M_Products:
-      | Identifier          | Name         | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1     | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2     | goodsCategory                        | Y      | Y           |
-      | gala                | Gala         | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1      | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2      | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware   | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor | discountCategory                     | Y      | Y           |
+      | Identifier          | Name           | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1             | Elstar 1       | goodsCategory                        | Y      | Y           |
+      | elstar2             | Elstar 2       | goodsCategory                        | Y      | Y           |
+      | gala                | Gala           | goodsCategory                        | Y      | Y           |
+      | pfand1              | Pfand 1        | pfandCategory                        | Y      | Y           |
+      | pfand2              | Pfand 2        | pfandCategory                        | Y      | Y           |
+      | bonusWare           | Bonus Ware     | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor   | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1       | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2       | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala          | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_pfand1        | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2        | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare     | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendor   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOver | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1       | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2       | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala          | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_pfand1        | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2        | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare     | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendor   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOver | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains C_CompensationGroup_Schema:
       | Identifier     | Name         | OPT.IsAdditive |
@@ -144,8 +147,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
 
     # VendorDropship takes over the head office's "Bonus Ware" on the goods category into its own "Bonus Vendor"
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -193,21 +196,23 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | C_Order_ID | C_BPartner_ID  |
       | poDropship | vendorDropship |
 
-    # PO side: ONE discount line "Bonus Vendor" = 3% own + 3% taken over = 6% of 2155.20 = 129.312 -> -129.31
+    # PO side: the vendor's own 3% line and a separate 3% take-over line (the take-over record's discount product), each 3% of 2155.20 = 64.656 -> -64.66, together -129.32
     # (the SO's "Bonus Ware" line is not copied; nothing is discounted on the Pfand lines)
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |                                   |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |                                   |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |                                   |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |                                   |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |                                   |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -129.31 | vendorTerm                        |
-    # exactly 6 lines (3 goods + 2 Pfand + ONE merged discount line) -- no separate "Bonus Ware" line
-    And the order identified by poDropship has 6 order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier | OPT.GroupCompensation_Product_Category_ID |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |                                   |                                           |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |                                   |                                           |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |                                   |                                           |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |                                   |                                           |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |                                   |                                           |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | vendorTerm                        |                                           |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 | vendorTerm                        | goodsCategory                             |
+    # exactly 7 lines (3 goods + 2 Pfand + the vendor's own discount line + the take-over line) -- no separate copy of the SO's "Bonus Ware" line
+    And the order identified by poDropship has 7 order lines
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID           | Description                     |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor + 3% Bonus Ware |
+      | C_OrderLine_ID           | Description   |
+      | ol_poBonusVendorDropship |               |
+      | ol_poTakeOver            | 3% Bonus Ware |
 
     # purchase invoice: the discount posts to the discount product's own expense account
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -218,6 +223,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poPfand1              | ic_poPfand1              |
       | ol_poPfand2              | ic_poPfand2              |
       | ol_poBonusVendorDropship | ic_poBonusVendorDropship |
+      | ol_poTakeOver            | ic_poTakeOver            |
     # the past DateToInvoice_Override clears the date gate: the auto-created PO's DateOrdered is the real wall clock
     And update invoice candidates
       | C_Invoice_Candidate_ID   | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
@@ -227,6 +233,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ic_poPfand1              | I                        | 2026-07-01                 |
       | ic_poPfand2              | I                        | 2026-07-01                 |
       | ic_poBonusVendorDropship | I                        | 2026-07-01                 |
+      | ic_poTakeOver            | I                        | 2026-07-01                 |
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_poElstar1                      |
@@ -235,12 +242,14 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ic_poPfand1                       |
       | ic_poPfand2                       |
       | ic_poBonusVendorDropship          |
+      | ic_poTakeOver                     |
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invPO                   | ic_poBonusVendorDropship          |
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID          | C_BPartner_ID  | Record_ID | M_Product_ID        | C_Tax_ID    | C_VAT_Code_ID |
-      | P_Expense_Acct        | -129.31 EUR |             | discountExpenseAcct | vendorDropship | invPO     | bonusVendorDropship | discountTax | purchase7_N   |
+      | P_Expense_Acct        | -64.66 EUR  |             | discountExpenseAcct | vendorDropship | invPO     | bonusVendorDropship | discountTax | purchase7_N   |
+      | P_Expense_Acct        | -64.66 EUR  |             | discountExpenseAcct | vendorDropship | invPO     | bonusTakeOver       | discountTax | purchase7_N   |
       | *                     |             |             |                     |                | invPO     |                     |             |               |
 
 
@@ -248,14 +257,14 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   # Exclusion is by discount PRODUCT, not by category:
   # a packaging bonus ("Bonus Verpackung" 0.6%) and a goods-based bonus with its OWN discount product
   # ("Bonus Ware 7 Prozent" 0.6% on goods) that is not a customer discount product of the take-over record are not taken over.
-  # Only the customer discount product "Bonus Ware" (3%) is added to the vendor's own 3% -> one 6% line = -129.31.
+  # Only the customer discount product "Bonus Ware" (3%) is taken over, as a separate 3% line next to the vendor's own 3% line -> -64.66 each.
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS2
-  Scenario: Packaging bonus and a goods bonus with a non-customer discount product are not taken over
+  Scenario: Packaging bonus and a goods bonus with a non-customer discount product are not taken over: the vendor's own 3% line plus a separate 3% take-over line
     Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
@@ -276,34 +285,37 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier          | Name                   | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
       | bonusWare           | Bonus Ware_2           | discountCategory                     | Y      | Y           |
       | bonusVendorDropship | Bonus Vendor_2         | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover_2       | discountCategory                     | Y      | Y           |
       | bonusVerpackung     | Bonus Verpackung_2     | discountCategory                     | Y      | Y           |
       | bonusWareSeven      | Bonus Ware 7 Prozent_2 | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1             | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2             | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala                | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_braeburn            | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_pfand1              | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2              | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_verpackung          | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVerpackung     | soPLV                             | bonusVerpackung         | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusWareSeven      | soPLV                             | bonusWareSeven          | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1             | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2             | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala                | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_braeburn            | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_pfand1              | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2              | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_verpackung          | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVerpackung     | poPLV                             | bonusVerpackung         | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusWareSeven      | poPLV                             | bonusWareSeven          | 1        | PCE               | discountTaxCategory |
+      | Identifier                  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1               | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2               | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala                  | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_braeburn              | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_pfand1                | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2                | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_verpackung            | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare             | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOverDropship | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVerpackung       | soPLV                             | bonusVerpackung         | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusWareSeven        | soPLV                             | bonusWareSeven          | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1               | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2               | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                  | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_braeburn              | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_pfand1                | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2                | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_verpackung            | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare             | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOverDropship | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVerpackung       | poPLV                             | bonusVerpackung         | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusWareSeven        | poPLV                             | bonusWareSeven          | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
@@ -329,8 +341,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | customerSettings                                   | docTypeSalesOrder       |
       | vendorSettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -365,17 +377,21 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # only "Bonus Ware" is a customer discount product: 3% own + 3% taken over = 6% of the goods = 129.31; the 0.6% packaging bonus and the 0.6% goods bonus with its own discount product are NOT taken over
+    # only "Bonus Ware" is a customer discount product: the vendor's own 3% line (-64.66) plus a separate 3% take-over line (-64.66) on the goods; the 0.6% packaging bonus and the 0.6% goods bonus with its own discount product are NOT taken over
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |
-      | ol_poVerpackung           | poDropship            | verpackung              | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -129.31 |
-    And the order identified by poDropship has 7 order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |
+      | ol_poVerpackung           | poDropship            | verpackung              | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 |
+    And the order identified by poDropship has 8 order lines
+    And validate the take-over composition description of the order lines:
+      | C_OrderLine_ID | Description     |
+      | ol_poTakeOver  | 3% Bonus Ware_2 |
 
 
   # ##############################################################################################
@@ -986,7 +1002,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over it would be 6% = 55.30
+    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over there would be a second 3% line of 27.65 in addition
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
       | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
@@ -1327,7 +1343,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | DR            | false          |
     And the order identified by poDropship is completed
-    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over it would be 6% = 55.30
+    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over there would be a second 3% line of 27.65 in addition
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
       | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
@@ -1525,7 +1541,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over it would be 6% = 55.30
+    # vendor's own 3% of 921.60 = 27.648 -> 27.65 only; with a take-over there would be a second 3% line of 27.65 in addition
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
       | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
@@ -1536,7 +1552,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
   # ##############################################################################################
   # Not taken over: a product-bundle group, a manual discount and a fixed-amount contract line on the sales order
   # (all use customer discount products). Only the contract's 3% is taken over;
-  # the bundle's goods on the purchase order still receive it: 6% of 4 goods lines (2255.20) = -135.31.
+  # the bundle's goods on the purchase order still receive it: the vendor's own 3% line and the 3% take-over line of 4 goods lines (2255.20) = -67.66 each.
   # ##############################################################################################
 
   @from:cucumber
@@ -1564,34 +1580,37 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier          | Name                  | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased | GroupCompensationAmtType |
       | bonusWare           | Bonus Ware_12         | discountCategory                     | Y      | Y           | P                        |
       | bonusVendorDropship | Bonus Vendor_12       | discountCategory                     | Y      | Y           | P                        |
+      | bonusTakeOver       | Bonus Takeover_12     | discountCategory                     | Y      | Y           | P                        |
       | bonusFixed          | Bonus Fixed Amount_12 | discountCategory                     | Y      | Y           | Q                        |
       | bonusManual         | Bonus Manual_12       | discountCategory                     | Y      | Y           | P                        |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1             | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2             | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala                | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_braeburn            | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_pfand1              | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2              | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_verpackung          | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusFixed          | soPLV                             | bonusFixed              | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusManual         | soPLV                             | bonusManual             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1             | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2             | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala                | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_braeburn            | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_pfand1              | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2              | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_verpackung          | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusFixed          | poPLV                             | bonusFixed              | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusManual         | poPLV                             | bonusManual             | 1        | PCE               | discountTaxCategory |
+      | Identifier                  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1               | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2               | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala                  | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_braeburn              | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_pfand1                | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2                | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_verpackung            | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare             | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOverDropship | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusFixed            | soPLV                             | bonusFixed              | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusManual           | soPLV                             | bonusManual             | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1               | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2               | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                  | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_braeburn              | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_pfand1                | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2                | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_verpackung            | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare             | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOverDropship | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusFixed            | poPLV                             | bonusFixed              | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusManual           | poPLV                             | bonusManual             | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
@@ -1616,8 +1635,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | customerSettings                                   | docTypeSalesOrder       |
       | vendorSettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -1659,30 +1678,31 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # only the contract's 3% is taken over: 3% own + 3% = 6% of ALL 4 goods lines (incl. the bundle's goods) = 2255.20 -> 135.312 -> 135.31
+    # only the contract's 3% is taken over: the vendor's own 3% line and a separate 3% take-over line, each 3% of ALL 4 goods lines (incl. the bundle's goods) = 2255.20 -> 67.656 -> 67.66
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poBraeburn             | poDropship            | braeburn                | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -135.31 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poBraeburn             | poDropship            | braeburn                | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -67.66 |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -67.66 |
     # the description names only the customer discount products that were actually taken over, not every customer discount product of the take-over record
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID           | Description                           |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor_12 + 3% Bonus Ware_12 |
+      | C_OrderLine_ID | Description      |
+      | ol_poTakeOver  | 3% Bonus Ware_12 |
 
 
   # ##############################################################################################
   # The customer's schema is NOT additive (3% + 1% compound on the sales order).
-  # The take-over sums the NOMINAL percentages: 4% taken over, 3% + 4% = 7% on the purchase order = -150.86.
+  # The take-over sums the NOMINAL percentages: 4% taken over as a separate line (-86.21) next to the vendor's own 3% line (-64.66).
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS6
-  Scenario: A compounding customer schema is taken over with the sum of its nominal percentages
+  Scenario: A compounding customer schema is taken over as a separate line with the sum of its nominal percentages
     Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
@@ -1700,34 +1720,37 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | pfand2     | pfandCategory                        | Y      | Y           |
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name            | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare           | Bonus Ware A_13 | discountCategory                     | Y      | Y           |
-      | bonusWareB          | Bonus Ware B_13 | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor_13 | discountCategory                     | Y      | Y           |
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusWare           | Bonus Ware A_13   | discountCategory                     | Y      | Y           |
+      | bonusWareB          | Bonus Ware B_13   | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor_13   | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover_13 | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1             | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2             | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala                | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_braeburn            | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_pfand1              | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2              | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_verpackung          | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusWareB          | soPLV                             | bonusWareB              | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1             | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2             | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala                | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_braeburn            | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_pfand1              | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2              | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_verpackung          | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusWareB          | poPLV                             | bonusWareB              | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | Identifier                  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1               | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2               | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala                  | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_braeburn              | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_pfand1                | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2                | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_verpackung            | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare             | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusWareB            | soPLV                             | bonusWareB              | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOverDropship | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1               | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2               | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                  | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_braeburn              | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_pfand1                | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2                | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_verpackung            | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare             | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusWareB            | poPLV                             | bonusWareB              | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOverDropship | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
@@ -1752,8 +1775,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | customerSettings                                   | docTypeSalesOrder       |
       | vendorSettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -1785,31 +1808,32 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
-    # the customer's compounding 3% + 1% are summed NOMINALLY to 4%: 3% own + 4% = 7% of 2155.20 = 150.864 -> 150.86
+    # the customer's compounding 3% + 1% are summed NOMINALLY to 4% on a separate take-over line (the vendor's own 3% line stays): 3% of 2155.20 = 64.656 -> -64.66, 4% = 86.208 -> -86.21
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 7                               | -150.86 |
-    And the order identified by poDropship has 6 order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 4                               | -86.21 |
+    And the order identified by poDropship has 7 order lines
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID           | Description                                              |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor_13 + 4% Bonus Ware A_13, Bonus Ware B_13 |
+      | C_OrderLine_ID | Description                         |
+      | ol_poTakeOver  | 4% Bonus Ware A_13, Bonus Ware B_13 |
 
 
   # ##############################################################################################
   # Reactivating and completing the drop-ship purchase order again re-computes the take-over:
-  # same 6% (-129.31), still ONE discount line, same composition.
+  # same two 3% lines (-64.66 each: the vendor's own and the take-over line), same description.
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS7a
-  Scenario: Reactivating and completing the drop-ship PO again gives the same single 6% line
+  Scenario: Reactivating and completing the drop-ship PO again gives the same vendor line and take-over line
     Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
     And metasfresh contains M_Product_Categories:
@@ -1827,31 +1851,34 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | pfand2     | pfandCategory                        | Y      | Y           |
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name            | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare           | Bonus Ware_14   | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor_14 | discountCategory                     | Y      | Y           |
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusWare           | Bonus Ware_14     | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor_14   | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover_14 | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1             | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2             | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala                | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_braeburn            | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_pfand1              | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2              | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_verpackung          | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1             | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2             | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala                | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_braeburn            | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_pfand1              | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2              | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_verpackung          | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | Identifier                  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1               | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2               | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala                  | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_braeburn              | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_pfand1                | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2                | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_verpackung            | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare             | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOverDropship | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1               | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2               | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                  | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_braeburn              | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_pfand1                | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2                | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_verpackung            | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare             | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOverDropship | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
@@ -1875,8 +1902,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | customerSettings                                   | docTypeSalesOrder       |
       | vendorSettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -1908,41 +1935,43 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -129.31 |
-    # reactivating and completing the purchase order again re-computes the take-over from the sales order: same 6%, still ONE discount line
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 |
+    # reactivating and completing the purchase order again re-computes the take-over from the sales order: same two 3% lines (the vendor's own and the take-over line)
     And the order identified by poDropship is reactivated
     And the order identified by poDropship is completed
-    # the discount line is re-created by the completion: it gets a new id, so it is identified anew
+    # the discount lines are re-created by the completion: they get new ids, so it is identified anew
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship2 | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -129.31 |
-    And the order identified by poDropship has 6 order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship2 | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |
+      | ol_poTakeOver2            | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 |
+    And the order identified by poDropship has 7 order lines
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID            | Description                           |
-      | ol_poBonusVendorDropship2 | 3% Bonus Vendor_14 + 3% Bonus Ware_14 |
+      | C_OrderLine_ID | Description      |
+      | ol_poTakeOver2 | 3% Bonus Ware_14 |
 
 
   # ##############################################################################################
   # A drop-ship purchase order left drafted (CompleteDropshipPO = N) and completed later
-  # gets the same single 6% line (-129.31) as when it is completed together with the sales order.
+  # gets the same two 3% lines (-64.66 each) as when it is completed together with the sales order.
   # ##############################################################################################
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32355_TS7b
-  Scenario: A drop-ship PO left drafted and completed later gets the same single 6% line
+  Scenario: A drop-ship PO left drafted and completed later gets the same vendor line and take-over line
     Given temporarily set sys config boolean value false for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
     And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
@@ -1961,31 +1990,34 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | pfand2     | pfandCategory                        | Y      | Y           |
       | verpackung | verpackungCategory                   | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name            | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | bonusWare           | Bonus Ware_15   | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor_15 | discountCategory                     | Y      | Y           |
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusWare           | Bonus Ware_15     | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor_15   | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover_15 | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1             | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2             | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala                | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_braeburn            | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_pfand1              | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2              | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_verpackung          | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1             | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2             | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala                | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_braeburn            | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_pfand1              | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2              | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_verpackung          | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | Identifier                  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1               | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2               | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala                  | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_braeburn              | soPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_pfand1                | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2                | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_verpackung            | soPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare             | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOverDropship | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1               | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2               | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                  | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_braeburn              | poPLV                             | braeburn                | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_pfand1                | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2                | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_verpackung            | poPLV                             | verpackung              | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare             | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOverDropship | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
 
     And metasfresh contains M_Warehouse:
       | Identifier        | IsDropShipWarehouse |
@@ -2009,8 +2041,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | customerSettings                                   | docTypeSalesOrder       |
       | vendorSettings                                     | docTypePurchaseOrder    |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
-      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
-      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
       | takeOver                                         | bonusWare    |
@@ -2046,14 +2078,198 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     # completed later: same result as when it is completed together with the sales order
     And the order identified by poDropship is completed
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price   |
-      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |         |
-      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |         |
-      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |         |
-      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |         |
-      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |         |
-      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 6                               | -129.31 |
-    And the order identified by poDropship has 6 order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 |
+    And the order identified by poDropship has 7 order lines
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID           | Description                           |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor_15 + 3% Bonus Ware_15 |
+      | C_OrderLine_ID | Description      |
+      | ol_poTakeOver  | 3% Bonus Ware_15 |
+
+  # ##############################################################################################
+  # The take-over line keeps its own base on the order line: after the purchase order was completed the take-over record's
+  # category is changed; the order line still carries the old category, so the invoice candidate rebuild
+  # (triggered by the invoice-candidate update) and the purchase invoice still compute the line on the old category's goods: -64.66.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32355_TS11
+  Scenario: Changing the take-over record's category after the purchase order was completed keeps the take-over line's base
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
+
+    # "otherCategory" is the category the take-over record is switched to after the purchase order was completed (no product in it)
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | pfandCategory    |
+      | discountCategory |
+      | otherCategory    |
+
+    And metasfresh contains M_Products:
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1             | Elstar 1          | goodsCategory                        | Y      | Y           |
+      | elstar2             | Elstar 2          | goodsCategory                        | Y      | Y           |
+      | gala                | Gala              | goodsCategory                        | Y      | Y           |
+      | pfand1              | Pfand 1           | pfandCategory                        | Y      | Y           |
+      | pfand2              | Pfand 2           | pfandCategory                        | Y      | Y           |
+      | bonusWare           | Bonus Ware_11     | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor_11   | discountCategory                     | Y      | Y           |
+      | bonusTakeOver       | Bonus Takeover_11 | discountCategory                     | Y      | Y           |
+
+    # purchase price = sales price
+    And metasfresh contains M_ProductPrices
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1       | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2       | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala          | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_pfand1        | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2        | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare     | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendor   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusTakeOver | soPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1       | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2       | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala          | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_pfand1        | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2        | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare     | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendor   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusTakeOver | poPLV                             | bonusTakeOver           | 1        | PCE               | discountTaxCategory |
+
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name         | OPT.IsAdditive |
+      | customerSchema | Bonus Ware   | true           |
+      | vendorSchema   | Bonus Vendor | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
+      | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
+      | customerSettings | Customer settings | customerSchema                           |
+      | vendorSettings   | Vendor settings   | vendorSchema                             |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | customerSettings                                   | docTypeSalesOrder       |
+      | vendorSettings                                     | docTypePurchaseOrder    |
+
+    # VendorDropship takes over the head office's "Bonus Ware" on the goods category into its own "Bonus Vendor"
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID  |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusTakeOver |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
+      | takeOver                                         | bonusWare    |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
+      | vendorConditions   | Vendor conditions   | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
+    # open-ended vendor term: the auto-created PO's DateOrdered is the real wall clock, not the simulated date
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | vendorTerm   | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by customerTerm is completed
+    And the C_Flatrate_Term identified by vendorTerm is completed
+
+    And metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | dropshipWarehouse | Y                   |
+
+    # SO: 3 goods lines + 2 Pfand lines
+    When metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
+      | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
+      | ol_elstar1 | orderDropship         | elstar1                 | 1          | vendorDropship                  |
+      | ol_elstar2 | orderDropship         | elstar2                 | 1          | vendorDropship                  |
+      | ol_gala    | orderDropship         | gala                    | 1          | vendorDropship                  |
+      | ol_pfand1  | orderDropship         | pfand1                  | 1          | vendorDropship                  |
+      | ol_pfand2  | orderDropship         | pfand2                  | 1          | vendorDropship                  |
+    And the order identified by orderDropship is completed
+
+    # SO side: the head office's own 3% "Bonus Ware" on the goods only: 3% of 2155.20 = 64.656 -> -64.66
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 3                               | -64.66 | customerTerm                      |
+    And the order identified by orderDropship has 6 order lines
+
+    # drop-ship PO for VendorDropship
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | poDropship     | orderDropship            | false   | POO         | CO            | true           |
+    And validate the created orders
+      | C_Order_ID | C_BPartner_ID  |
+      | poDropship | vendorDropship |
+
+    # PO side: the vendor's own 3% line and the take-over line, each 3% of the goods (2155.20) = 64.656 -> -64.66;
+    # the take-over line stores its own base (the take-over record's category "Ware") on the order line
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.GroupCompensation_Product_Category_ID |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |                                           |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                 |        |                                           |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                 |        |                                           |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                 |        |                                           |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                 |        |                                           |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 |                                           |
+      | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 3                               | -64.66 | goodsCategory                             |
+    And the order identified by poDropship has 7 order lines
+    And validate the take-over composition description of the order lines:
+      | C_OrderLine_ID | Description      |
+      | ol_poTakeOver  | 3% Bonus Ware_11 |
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID           | C_Invoice_Candidate_ID   |
+      | ol_poElstar1             | ic_poElstar1             |
+      | ol_poElstar2             | ic_poElstar2             |
+      | ol_poGala                | ic_poGala                |
+      | ol_poPfand1              | ic_poPfand1              |
+      | ol_poPfand2              | ic_poPfand2              |
+      | ol_poBonusVendorDropship | ic_poBonusVendorDropship |
+      | ol_poTakeOver            | ic_poTakeOver            |
+
+    # the take-over record's category is changed AFTER the purchase order was completed: now a category without any product
+    When update C_CompensationGroup_ContractSettings_TakeOver:
+      | Identifier | OPT.M_Product_Category_ID |
+      | takeOver   | otherCategory             |
+
+    # the invoice-candidate update recomputes the candidates (the past DateToInvoice_Override also clears the date gate:
+    # the auto-created PO's DateOrdered is the real wall clock)
+    And update invoice candidates
+      | C_Invoice_Candidate_ID   | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
+      | ic_poElstar1             | I                        | 2026-07-01                 |
+      | ic_poElstar2             | I                        | 2026-07-01                 |
+      | ic_poGala                | I                        | 2026-07-01                 |
+      | ic_poPfand1              | I                        | 2026-07-01                 |
+      | ic_poPfand2              | I                        | 2026-07-01                 |
+      | ic_poBonusVendorDropship | I                        | 2026-07-01                 |
+      | ic_poTakeOver            | I                        | 2026-07-01                 |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_poElstar1                      |
+      | ic_poElstar2                      |
+      | ic_poGala                         |
+      | ic_poPfand1                       |
+      | ic_poPfand2                       |
+      | ic_poBonusVendorDropship          |
+      | ic_poTakeOver                     |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invPO                   | ic_poTakeOver                     |
+
+    # the take-over line keeps the OLD category as its base: the order line, its invoice candidate and the invoiced amount are unchanged (-64.66)
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.GroupCompensation_Product_Category_ID | price  |
+      | ol_poTakeOver  | goodsCategory                             | -64.66 |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | NetAmtInvoiced |
+      | ic_poTakeOver                     | -64.66         |
+      | ic_poBonusVendorDropship          | -64.66         |
