@@ -78,6 +78,7 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>M_Product_Category_ID</b> — (optional, identifier-ref) product category the refund is based on<br>
 	 *   <b>BonusRecipient</b> — (optional) I = invoice partner, S = shipment partner<br>
 	 *   <b>IsPackingOptionFiltered</b> — (optional) only lines of the configured packaging options count<br>
+	 *   <b>IsDeductedAtPayment</b> — (optional) the customer deducts the bonus when paying the invoice<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Conditions_StepDefData, C_InvoiceSchedule_StepDefData, M_Product_StepDefData, M_Product_Category_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -111,6 +112,8 @@ public class C_Flatrate_RefundConfig_StepDef
 			row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_BonusRecipient).ifPresent(config::setBonusRecipient);
 			row.getAsOptionalBoolean(I_C_Flatrate_RefundConfig.COLUMNNAME_IsPackingOptionFiltered)
 					.ifPresent(config::setIsPackingOptionFiltered);
+			row.getAsOptionalBoolean(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment)
+					.ifPresent(config::setIsDeductedAtPayment);
 
 			assignIdBeforeSaving(config);
 			saveRecord(config);

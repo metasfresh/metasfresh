@@ -35,7 +35,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 /**
  * Creates the internal sales credit memo (document sub type "Zahlungsbonus-Gutschrift") that books the bonus a customer deducted when paying a sales invoice.
  * The credit memo has one line per bonus product, with the bonus product's tax; the VAT comes on top of the net bonus.
- * It references the sales invoice, and there is at most one completed such credit memo per sales invoice.
+ * It references the sales invoice, so its completion allocates it against the invoice (like every credit memo that references an invoice).
+ * There is at most one completed such credit memo per sales invoice.
  */
 @Service
 public class PaymentBonusCreditMemoService
