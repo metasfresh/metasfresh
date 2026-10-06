@@ -46,11 +46,6 @@ import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.jupiter.api.Assertions;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -60,7 +55,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.metas.cucumber.stepdefs.order.ExpectedErrorMessageKeyAssert.assertFailsWithMessageKey;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -106,7 +101,6 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final @NonNull M_Product_StepDefData productTable;
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CompensationGroupCalibrationService calibrationService = SpringContextHolder.instance.getBean(CompensationGroupCalibrationService.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -144,30 +138,13 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 			final Optional<String> expectedErrorMessageKey = row.getAsOptionalString("ErrorMessageKey");
 			if (expectedErrorMessageKey.isPresent())
 			{
-				assertRefusedWith(expectedErrorMessageKey.get(), () -> createGroupFromSchemaTemplate(row));
+				assertFailsWithMessageKey(expectedErrorMessageKey.get(), () -> createGroupFromSchemaTemplate(row));
 			}
 			else
 			{
 				createGroupFromSchemaTemplate(row);
 			}
 		});
-	}
-
-	private void assertRefusedWith(@NonNull final String messageKey, @NonNull final Runnable action)
-	{
-		final AdMessageKey expectedKey = AdMessageKey.of(messageKey);
-		final String expectedErrorCode = msgBL.getErrorCode(expectedKey);
-		final String expectedErrorCodeEffective = expectedErrorCode != null ? expectedErrorCode : expectedKey.toAD_Message();
-
-		try
-		{
-			action.run();
-			Assertions.fail("An exception with message key " + expectedKey + " should have been thrown");
-		}
-		catch (final AdempiereException exception)
-		{
-			assertThat(exception.getErrorCode()).isEqualTo(expectedErrorCodeEffective);
-		}
 	}
 
 	private void createGroupFromSchemaTemplate(@NonNull final DataTableRow row)

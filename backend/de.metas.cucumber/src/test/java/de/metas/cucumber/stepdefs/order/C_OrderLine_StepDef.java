@@ -936,6 +936,24 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/** {@code expected} is a number, or the literal {@code null} / {@code -} for "no value". */
+	private static void assertNullableBigDecimal(
+			@NonNull final SoftAssertions softly,
+			@Nullable final BigDecimal actual,
+			@NonNull final String expected,
+			@NonNull final String columnName,
+			@NonNull final String identifierStr)
+	{
+		if ("null".equals(expected) || "-".equals(expected))
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s (expected: null)", columnName, identifierStr).isNull();
+		}
+		else
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s", columnName, identifierStr).isEqualByComparingTo(expected);
+		}
+	}
+
 	/**
 	 * Validates a single {@link I_C_OrderLine} record against expected values from the DataTable row.
 	 * Called per row by {@link #validate_created_order_lines(DataTable)}.
@@ -970,24 +988,6 @@ public class C_OrderLine_StepDef
 	 *   | orderLine_S30235_1 | order_S30235 | product_S30235 | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH                     |
 	 * </pre>
 	 */
-	/** {@code expected} is a number, or the literal {@code null} / {@code -} for "no value". */
-	private static void assertNullableBigDecimal(
-			@NonNull final SoftAssertions softly,
-			@Nullable final BigDecimal actual,
-			@NonNull final String expected,
-			@NonNull final String columnName,
-			@NonNull final String identifierStr)
-	{
-		if ("null".equals(expected) || "-".equals(expected))
-		{
-			softly.assertThat(actual).as("%s for Identifier=%s (expected: null)", columnName, identifierStr).isNull();
-		}
-		else
-		{
-			softly.assertThat(actual).as("%s for Identifier=%s", columnName, identifierStr).isEqualByComparingTo(expected);
-		}
-	}
-
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
 		final String identifierStr = row.getAsIdentifier().getAsString();

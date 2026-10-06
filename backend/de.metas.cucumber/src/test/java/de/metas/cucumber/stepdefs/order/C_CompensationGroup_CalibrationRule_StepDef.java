@@ -30,33 +30,26 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 
+import static de.metas.cucumber.stepdefs.order.ExpectedErrorMessageKeyAssert.assertFailsWithMessageKey;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /** Step definitions for {@link I_C_CompensationGroup_CalibrationRule} records. */
 @RequiredArgsConstructor
 public class C_CompensationGroup_CalibrationRule_StepDef
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	@NonNull private final C_CompensationGroup_CalibrationRule_StepDefData ruleTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
@@ -101,7 +94,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 			}
 			else
 			{
-				assertFailsWithMessageKey(row, create);
+				assertFailsWithMessageKey(row.getAsString("ErrorMessageKey"), create);
 			}
 		});
 	}
@@ -161,7 +154,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 			}
 			else
 			{
-				assertFailsWithMessageKey(row, update);
+				assertFailsWithMessageKey(row.getAsString("ErrorMessageKey"), update);
 			}
 		});
 	}
@@ -217,7 +210,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 			}
 			else
 			{
-				assertFailsWithMessageKey(row, deleteRule);
+				assertFailsWithMessageKey(row.getAsString("ErrorMessageKey"), deleteRule);
 			}
 		});
 	}
@@ -228,22 +221,5 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 		final I_C_CompensationGroup_CalibrationRule record = identifier.lookupNotNullIn(ruleTable);
 		refresh(record);
 		return record;
-	}
-
-	private void assertFailsWithMessageKey(@NonNull final DataTableRow row, @NonNull final Runnable action)
-	{
-		final AdMessageKey expectedKey = AdMessageKey.of(row.getAsString("ErrorMessageKey"));
-		final String expectedErrorCode = msgBL.getErrorCode(expectedKey);
-		final String expectedErrorCodeEffective = expectedErrorCode != null ? expectedErrorCode : expectedKey.toAD_Message();
-
-		try
-		{
-			action.run();
-			Assertions.fail("An exception with message key " + expectedKey + " should have been thrown");
-		}
-		catch (final AdempiereException exception)
-		{
-			assertThat(exception.getErrorCode()).isEqualTo(expectedErrorCodeEffective);
-		}
 	}
 }

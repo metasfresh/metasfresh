@@ -466,6 +466,33 @@ Feature: Compensation group calibration
 
   # ##########################################################################################
   # ##########################################################################################
+  # A template quantity that already rounds to 0 stays 0 although the factor is positive
+  @from:cucumber
+  @Id:S26881_TC10_TemplateQtyRoundsToZero
+  Scenario: A template quantity that rounds to 0 stays 0 with a positive factor
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name       |
+      | schema_1   | CalibZeroQ |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty   | C_UOM_ID | SeqNo |
+      | tl_kraft   | schema_1                      | kraft        | 0.004 | LTR      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | rule_half  | 10    | cust_x        | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_x    | true    | cust_x        | 2026-10-07  |
+
+    When create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_x    | schema_1                      | 1   | Y          | Product         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_kraft | kraft        | 0              | 0.5                                    | 0                                           | rule_half                                  |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
   # Fractional menu quantity
   @from:cucumber
   @Id:S26881_FractionalMenuQty
