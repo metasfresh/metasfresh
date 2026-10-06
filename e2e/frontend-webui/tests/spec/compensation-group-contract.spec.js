@@ -547,7 +547,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     allure.epic('E0170: Contract Management');
     allure.story('Overlapping compensation-group contract is refused with a visible reason');
     // Known gap: the refusal is only written to the process log and the screen shows nothing.
-    // Expected to fail until the reason is shown on screen; remove test.fail() together with that fix.
+    // The expected failure is the reason assertion of step 2 (no error notification with the reason); steps 1 and 3
+    // must pass, so a broken setup is not masked. Remove test.fail() together with that fix.
     test.fail();
     allure.severity('critical');
     test.setTimeout(20 * 60 * 1000);
@@ -591,6 +592,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       existingDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'DocumentNo')).value);
       expect(existingDocumentNo, 'the existing contract has a document no').toBeTruthy();
       expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'EndDate')).value), 'the existing contract ends on X + 30').toContain(isoDate(existingEnd));
+      await expectDocStatus(CONTRACT_WINDOW_ID, existingTerm, 'CO');
     });
 
     await test.step('2. "Erzeuge Vertrag" with the same conditions from X + 5 is refused with a visible reason', async () => {
@@ -600,17 +603,23 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
       await fillDate(page, modal, 'StartDate', overlappingStart);
       await fillDate(page, modal, 'EndDate', overlappingEnd);
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await modal.getByTestId('process-modal-start-button').click();
-      // the process ends (or is refused) ...
-      await page.waitForTimeout(5000);
+      await processStarted;
       await snap(page, '540460-overlap-refused');
 
-      // ... and the screen names the clashing contract, the invoice partner and the period
-      const screen = page.locator('body');
-      await expect(screen, 'the clashing contract\'s document no is shown').toContainText(existingDocumentNo, { timeout: SLOW_ACTION_TIMEOUT });
-      await expect(screen, 'the invoice partner is shown').toContainText(customer.bpartnerCode, { timeout: SLOW_ACTION_TIMEOUT });
-      await expect(screen, 'the clashing contract\'s period is shown').toContainText(germanDate(existingStart), { timeout: SLOW_ACTION_TIMEOUT });
-      await expect(screen, 'the clashing contract\'s period is shown').toContainText(germanDate(existingEnd), { timeout: SLOW_ACTION_TIMEOUT });
+      // The refusal reason is shown in the error notification (the long text sits behind "(read more)"):
+      // it names the clashing contract, the invoice partner and the period.
+      const reason = page.locator('.notification-item.error .notification-content').first();
+      await expect(reason, 'an error notification shows the refusal').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      const readMore = reason.getByText('(read more)');
+      if (await readMore.isVisible()) {
+        await readMore.click();
+      }
+      await expect(reason, 'the clashing contract\'s document no is shown').toContainText(existingDocumentNo);
+      await expect(reason, 'the invoice partner is shown').toContainText(customer.bpartnerCode);
+      await expect(reason, 'the clashing contract\'s start is shown').toContainText(germanDate(existingStart));
+      await expect(reason, 'the clashing contract\'s end is shown').toContainText(germanDate(existingEnd));
     });
 
     await test.step('3. No second contract exists for the partner', async () => {
@@ -701,7 +710,6 @@ function lookupKey(value) {
   return typeof value === 'object' ? String(value.key) : String(value);
 }
 
-/** yyyy-MM-dd of a local date */
 /** dd.MM.yyyy, the date format of the de_DE login */
 function germanDate(date) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -725,6 +733,7 @@ async function countContractsOfPartner(page, partnerId) {
   return rows.filter((row) => lookupKey(row.fieldsByName?.Bill_BPartner_ID?.value) === String(partnerId)).length;
 }
 
+/** yyyy-MM-dd of a local date */
 function isoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
