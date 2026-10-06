@@ -247,7 +247,8 @@ public class PaymentAllocationBuilder
 		Check.assumeEquals(amounts, AllocationAmounts.builder().paymentBonus(amounts.getPaymentBonus()).build());
 
 		final PaymentBonusDeduction paymentBonusDeduction = Check.assumeNotNull(candidate.getPaymentBonusDeduction(), "paymentBonusDeduction shall be set for {}", candidate);
-		paymentBonusCreditMemoService.generateCreditMemo(paymentBonusDeduction, candidate.getDateTrx());
+		// dated like the allocation, but not before the invoice (the candidate's dateAcct)
+		paymentBonusCreditMemoService.generateCreditMemo(paymentBonusDeduction, candidate.getDateAcct());
 	}
 
 	/**
@@ -804,7 +805,7 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
-		// the credit memo is dated like the allocation; it is booked not earlier than the invoice
+		// the credit memo is dated like the allocation, but not before the invoice
 		final LocalDate dateTrx = getDefaultDateTrx();
 		final LocalDate dateAcct = TimeUtil.max(payable.getDateAcct(), dateTrx);
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);

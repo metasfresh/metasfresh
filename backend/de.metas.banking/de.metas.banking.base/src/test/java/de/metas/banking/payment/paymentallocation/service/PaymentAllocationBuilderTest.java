@@ -47,6 +47,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.organization.ClientAndOrgId;
@@ -87,6 +88,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1301,6 +1303,40 @@ public class PaymentAllocationBuilderTest
 					.build();
 			assertExpected(candidatesExpected, result.getCandidates());
 			assertThat(result.isOK()).isTrue();
+		}
+
+		/**
+		 * Processing (no dry run) generates the credit memo; the bonus candidate itself is not saved as an allocation line.
+		 * The allocation is dated before the invoice, so the credit memo gets the invoice's accounting date.
+		 */
+		@Test
+		public void processing_generatesTheCreditMemo_datedNotBeforeTheInvoice()
+		{
+			final PaymentBonusDeduction deduction = deduction("2.60"); // gross 2.78
+			final ArrayList<PaymentBonusDeduction> generatedDeductions = new ArrayList<>();
+			final ArrayList<LocalDate> generatedDates = new ArrayList<>();
+			final PaymentBonusCreditMemoService creditMemoService = new PaymentBonusCreditMemoService()
+			{
+				@Override
+				public InvoiceId generateCreditMemo(@NonNull final PaymentBonusDeduction deductionParam, @NonNull final LocalDate dateInvoiced)
+				{
+					generatedDeductions.add(deductionParam);
+					generatedDates.add(dateInvoiced);
+					return InvoiceId.ofRepoId(9999);
+				}
+			};
+
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(invoice().type(CustomerInvoice).open("2.78").pay("0").paymentBonus("2.78").paymentBonusDeduction(deduction).date("2021-02-01").build()),
+					ImmutableList.of())
+					.paymentBonusCreditMemoService(creditMemoService)
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.build();
+
+			assertThat(generatedDeductions).containsExactly(deduction);
+			assertThat(generatedDates).containsExactly(LocalDate.parse("2021-02-01"));
+			assertThat(result.getPaymentAllocationIds()).isEmpty();
 		}
 
 		@Test
