@@ -89,11 +89,18 @@ public class PaymentBonusCreditMemoService
 		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(salesInvoice.getAD_Client_ID(), deduction.getOrgId().getRepoId());
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(DOC_BASE_AND_SUB_TYPE.getDocBaseType())
 				.docSubType(DOC_BASE_AND_SUB_TYPE.getDocSubType())
 				.clientAndOrgId(clientAndOrgId)
 				.build());
+		if (docTypeId == null)
+		{
+			throw new AdempiereException("There is no document type for payment bonus credit memos (base type ARC, sub type PB) of this client and organization")
+					.appendParametersToMessage()
+					.setParameter("AD_Client_ID", clientAndOrgId.getClientId().getRepoId())
+					.setParameter("AD_Org_ID", clientAndOrgId.getOrgId().getRepoId());
+		}
 
 		//
 		// Header: the invoice partner, bill location, price list and currency of the sales invoice; the VAT comes on top of the bonus

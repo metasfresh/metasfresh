@@ -387,15 +387,15 @@ public class AllocatePayments_StepDef
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
 												 @NonNull final DataTableRow row,
-												 @Nullable final List<PaymentDocument> paymentDocumentsForServiceFee)
+												 @Nullable final List<PaymentDocument> paymentDocuments)
 	{
-		return preparePayableDocument(invoiceIdentifier, row, paymentDocumentsForServiceFee).build();
+		return preparePayableDocument(invoiceIdentifier, row, paymentDocuments).build();
 	}
 
 	@NonNull
 	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
 														  @NonNull final DataTableRow row,
-														  @Nullable final List<PaymentDocument> paymentDocumentsForServiceFee)
+														  @Nullable final List<PaymentDocument> paymentDocuments)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -417,8 +417,8 @@ public class AllocatePayments_StepDef
 
 		//
 		// Service company fee (same flow as the WebUI payment allocation: PaymentAndInvoiceRowsRepo + PaymentsViewAllocateCommand)
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = paymentDocumentsForServiceFee != null
-				? computeInvoiceProcessingFee(invoiceToAllocate, paymentDocumentsForServiceFee).orElse(null)
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = paymentDocuments != null
+				? computeInvoiceProcessingFee(invoiceToAllocate, paymentDocuments).orElse(null)
 				: null;
 		Money invoiceProcessingFee = null;
 		if (invoiceProcessingFeeCalculation != null)
@@ -429,7 +429,7 @@ public class AllocatePayments_StepDef
 
 		//
 		// Bonus that the customer deducts when paying (same flow as the WebUI payment allocation); the optional column PaymentBonusAmt is the amount that the customer actually deducted
-		final PaymentBonusDeduction paymentBonusDeduction = paymentDocumentsForServiceFee != null
+		final PaymentBonusDeduction paymentBonusDeduction = paymentDocuments != null
 				? computePaymentBonusDeduction(invoiceToAllocate, row).orElse(null)
 				: null;
 		Money paymentBonus = null;

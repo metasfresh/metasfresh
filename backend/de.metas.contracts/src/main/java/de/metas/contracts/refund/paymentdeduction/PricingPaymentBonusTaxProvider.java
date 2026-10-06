@@ -33,10 +33,15 @@ import static java.math.BigDecimal.ONE;
 @Component
 public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 {
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 	@Override
 	public Tax getTax(@NonNull final I_C_Invoice salesInvoice, @NonNull final ProductId bonusProductId)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final OrgId orgId = OrgId.ofRepoId(salesInvoice.getAD_Org_ID());
 		final SOTrx soTrx = SOTrx.ofBoolean(salesInvoice.isSOTrx());
 		final BPartnerLocationAndCaptureId billLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(salesInvoice).getBPartnerLocationAndCaptureId();
@@ -44,9 +49,9 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(orgId, bonusProductId, BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()), Quantitys.of(ONE, bonusProductId), soTrx)
 				.setReferencedObject(salesInvoice)
-				.setPriceDate(TimeUtil.asLocalDate(salesInvoice.getDateInvoiced(), Services.get(IOrgDAO.class).getTimeZone(orgId)))
+				.setPriceDate(TimeUtil.asLocalDate(salesInvoice.getDateInvoiced(), orgDAO.getTimeZone(orgId)))
 				.setPriceListId(PriceListId.ofRepoIdOrNull(salesInvoice.getM_PriceList_ID()))
-				.setCountryId(Services.get(IBPartnerDAO.class).getCountryId(billLocationId.getBpartnerLocationId()));
+				.setCountryId(bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId()));
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 		if (!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null)
@@ -58,7 +63,7 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 					.setParameter("M_PriceList_ID", salesInvoice.getM_PriceList_ID());
 		}
 
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+		final TaxId taxId = taxBL.getTaxNotNull(
 				salesInvoice,
 				pricingResult.getTaxCategoryId(),
 				bonusProductId.getRepoId(),
@@ -67,6 +72,6 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 				null, // warehouseId
 				billLocationId,
 				soTrx);
-		return Services.get(ITaxDAO.class).getTaxById(taxId);
+		return taxDAO.getTaxById(taxId);
 	}
 }

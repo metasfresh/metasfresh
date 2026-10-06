@@ -68,9 +68,9 @@ Feature: Bonus that the customer deducts when paying an invoice
       | pp_service | servicePLV                        | serviceProduct          | 0        | PCE               | highTaxCateg     |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
-      | customerBP     | Y              | N            | deductionPS                   |
-      | serviceCompany | N              | Y            | deductionPS                   |
+      | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | customerBP     | Y              | N            | deductionPS                   | I               |
+      | serviceCompany | N              | Y            | deductionPS                   |                 |
     # an account of its own: the organization may have other EUR accounts already
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID | AccountNo          |
@@ -340,3 +340,48 @@ Feature: Bonus that the customer deducts when paying an invoice
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment      | true        |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # The refund engine leaves a contract that is deducted at payment alone
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC6
+  Scenario: A sale gets a refund candidate for a periodic refund contract, but none for a contract that is deducted at payment
+    Given set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And metasfresh has date and time 2026-07-15T09:00:00+02:00[Europe/Berlin]
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Type_Conditions |
+      | conditionsPeriodic | Refund          |
+      | conditionsDeducted | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier     | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configPeriodic | conditionsPeriodic       | monthlySchedule      | 3             | goodsCategory         | bonusPack        | N                   |
+      | configDeducted | conditionsDeducted       | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termPeriodic | conditionsPeriodic                  | customerBP                  | 2026-07-01 | 2026-12-31 |
+      | termDeducted | conditionsDeducted                  | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | customerBP               | 2026-07-15  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol1        | order1                | goodsProduct            | 10         |
+    And the order identified by order1 is completed
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol1            | ic1                    |
+
+    # 3 % of the 100.00 goods for the periodic contract; the customer deducts the other bonus when paying
+    Then after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | Bill_BPartner_ID |
+      | refundPeriodic         | termPeriodic       | 3               | customerBP       |
+    And the C_Flatrate_Term identified by termDeducted has no refund C_Invoice_Candidate
+    And metasfresh has current date and time

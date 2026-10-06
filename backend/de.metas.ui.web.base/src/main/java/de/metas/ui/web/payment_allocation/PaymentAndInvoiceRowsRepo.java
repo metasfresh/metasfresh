@@ -42,6 +42,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalc
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -54,6 +55,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
@@ -65,6 +67,8 @@ import java.util.Set;
 @Repository
 public class PaymentAndInvoiceRowsRepo
 {
+	private static final Logger logger = LogManager.getLogger(PaymentAndInvoiceRowsRepo.class);
+
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currenciesRepo;
 	private final PaymentAllocationRepository paymentAllocationRepo;
@@ -263,9 +267,21 @@ public class PaymentAndInvoiceRowsRepo
 	 */
 	private Optional<PaymentBonusDeduction> computePaymentBonusDeduction(@NonNull final InvoiceToAllocate invoiceToAllocate)
 	{
-		return invoiceToAllocate.getDocBaseType().isSales()
-				? paymentBonusDeductionService.computeForInvoice(invoiceToAllocate.getInvoiceId())
-				: Optional.empty();
+		if (!invoiceToAllocate.getDocBaseType().isSales())
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			return paymentBonusDeductionService.computeForInvoice(invoiceToAllocate.getInvoiceId());
+		}
+		catch (final RuntimeException ex)
+		{
+			// e.g. a bonus product without price: the invoice is shown without the bonus, and the other invoices can still be allocated
+			logger.warn("Could not compute the payment bonus of C_Invoice_ID={}; showing the invoice without it", invoiceToAllocate.getInvoiceId().getRepoId(), ex);
+			return Optional.empty();
+		}
 	}
 
 	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(

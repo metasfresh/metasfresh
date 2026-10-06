@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -103,7 +104,13 @@ public class PaymentBonusDeduction
 	public PaymentBonusDeduction withGrossAmount(@NonNull final Money grossAmountToReach)
 	{
 		grossAmountToReach.assertCurrencyId(currencyId);
-		Check.assume(grossAmountToReach.signum() > 0, "The gross amount of a payment bonus needs to be positive; grossAmountToReach={}", grossAmountToReach);
+		if (grossAmountToReach.signum() <= 0)
+		{
+			throw new AdempiereException("The payment bonus needs to be a positive amount")
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("paymentBonus", grossAmountToReach);
+		}
 
 		final Money grossAmount = getGrossAmount();
 		if (grossAmount.isEqualByComparingTo(grossAmountToReach))
