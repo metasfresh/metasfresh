@@ -184,6 +184,16 @@ public class RefundConfigs
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT).markAsUserValidationError();
 		}
 
+		// the engine picks a config by quantity only and uses the category just to match the contract,
+		// so a condition with lines of several categories would refund a sale with an arbitrary line's percentage
+		// null is a value too: a line without category does not go with a line that has one
+		if (refundConfigs.stream().map(RefundConfig::getProductCategoryId).distinct().count() > 1)
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same product category; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY).markAsUserValidationError();
+		}
+
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
 		{
 			// we have one IC with different configs, so those configs need to have the consistent settings

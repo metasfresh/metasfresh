@@ -2,6 +2,7 @@ package de.metas.contracts.refund.interceptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -11,6 +12,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
@@ -88,8 +90,12 @@ public class C_Flatrate_RefundConfig
 				.conditionsId(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID()))
 				.build();
 
-		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getByQuery(query);
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
+
+		// the stored state of the record itself is replaced by its new state
+		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getByQuery(query).stream()
+				.filter(existingConfig -> !Objects.equals(existingConfig.getId(), newRefundConfig.getId()))
+				.collect(ImmutableList.toImmutableList());
 
 		final ArrayList<RefundConfig> allRefundConfigs = new ArrayList<>(existingRefundConfigs);
 		allRefundConfigs.add(newRefundConfig);

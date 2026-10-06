@@ -60,6 +60,12 @@ public class C_Flatrate_RefundConfig_Test
 	public void assertValid_productAndBonusProduct_withoutCategory_isValid()
 	{
 		assertThatCode(() -> interceptor.assertValid(createConfig(30, 0, 40))).doesNotThrowAnyException();
+	}
+
+	/** its own test: the lines of one condition share their category, so this line cannot follow the one without category */
+	@Test
+	public void assertValid_productAndBonusProduct_withCategory_isValid()
+	{
 		assertThatCode(() -> interceptor.assertValid(createConfig(30, 50, 40))).doesNotThrowAnyException();
 	}
 
