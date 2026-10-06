@@ -10,17 +10,17 @@ import TableRow from '../../../components/table/TableRow';
  * Space (and any printable key) on an attribute-family grid cell must not enter
  * the raw-text edit path.
  *
- * BF-B2's type-to-activate gate keys off `event.key.length === 1`, which now
- * accepts Space. handleKeyDown_RegularChar routes a printable key into
+ * The type-to-activate gate (letters/digits from event.key) routes such a key
+ * into handleKeyDown_RegularChar, which calls
  * handleEditProperty({ select: true }) -> _editProperty calls
  * `this.selectedCell.clearValue()`. For an object-valued attribute cell
  * (ProductAttributes / Address, whose value is {key,caption} and commits through
  * the <Attributes> overlay) that clears the widget's value on activation =
  * silent data loss — the same clobber class the Tab/Enter guards already prevent.
  *
- * Concrete failure pinned here: Space on a ProductAttributes cell that is the
- * active cell (selectedCell set) sets `edited` to the attribute property AND
- * calls clearValue() on it. The fix mirrors the Tab/Enter isAttributeWidget
+ * Concrete failure pinned here: a letter (or Space) on a ProductAttributes
+ * cell that is the active cell (selectedCell set) sets `edited` to the
+ * attribute property AND calls clearValue() on it. The fix mirrors the Tab/Enter isAttributeWidget
  * guard: skip the raw-text edit path for attribute widgets. Scalar cells still
  * activate on a printable key (regression control below).
  */
@@ -76,12 +76,29 @@ describe('TableRow — Space/printable key must not raw-text-edit an attribute c
     expect(clearValue).not.toHaveBeenCalled();
   });
 
-  it('still activates a scalar cell on a printable key (regression control)', () => {
+  it('does NOT activate or clearValue an attribute cell on a letter key', () => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    const instance = wrapper.instance();
+    const clearValue = jest.fn();
+    instance.selectedCell = { clearValue };
+
+    instance.handleKeyDown({
+      event: printableKeyEvent('a'),
+      property: ATTR_PROPERTY,
+      readonly: false,
+      isAttributeWidget: true,
+    });
+
+    expect(instance.state.edited).not.toBe(ATTR_PROPERTY);
+    expect(clearValue).not.toHaveBeenCalled();
+  });
+
+  it('still activates a scalar cell on a letter key (regression control)', () => {
     const wrapper = shallow(<TableRow {...createInitProps()} />);
     const instance = wrapper.instance();
 
     instance.handleKeyDown({
-      event: printableKeyEvent(' '),
+      event: printableKeyEvent('a'),
       property: SCALAR_PROPERTY,
       readonly: false,
       isAttributeWidget: false,

@@ -124,3 +124,48 @@ describe('TableRow — type-to-activate gate keys off event.key (numpad-0)', () 
     expect(altWrapper.instance().state.edited).not.toBe(PROPERTY);
   });
 });
+
+describe('TableRow — type-to-activate gate is restricted to letters and digits', () => {
+  // Activating via the default branch selects the cell content and the
+  // selected cell's clearValue() wipes a filled value. Space and punctuation
+  // never activated before (the gate was letters/digits only) and must not
+  // start doing so, otherwise e.g. pressing Space or "-" on a filled
+  // Text/Number cell silently erases it.
+  it.each([
+    ['Space', ' ', 32],
+    ['minus', '-', 189],
+    ['numpad minus', '-', 109],
+    ['period', '.', 190],
+    ['comma', ',', 188],
+    ['numpad plus', '+', 107],
+    ['numpad divide', '/', 111],
+    ['numpad multiply', '*', 106],
+  ])('does NOT activate the cell on %s', (_label, key, keyCode) => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    fireKeyDown(wrapper.instance(), typeKeyEvent({ key, keyCode }));
+    expect(wrapper.instance().state.edited).not.toBe(PROPERTY);
+  });
+
+  it('activates the cell on a non-ASCII letter (ä)', () => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    fireKeyDown(wrapper.instance(), typeKeyEvent({ key: 'ä', keyCode: 222 }));
+    expect(wrapper.instance().state.edited).toBe(PROPERTY);
+  });
+
+  it('activates the cell on an ASCII letter (a)', () => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    fireKeyDown(wrapper.instance(), typeKeyEvent({ key: 'a', keyCode: 65 }));
+    expect(wrapper.instance().state.edited).toBe(PROPERTY);
+  });
+
+  it('does not throw and does NOT activate when event.key is undefined', () => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    expect(() =>
+      fireKeyDown(
+        wrapper.instance(),
+        typeKeyEvent({ key: undefined, keyCode: 65 })
+      )
+    ).not.toThrow();
+    expect(wrapper.instance().state.edited).not.toBe(PROPERTY);
+  });
+});

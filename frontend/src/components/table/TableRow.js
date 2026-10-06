@@ -18,6 +18,9 @@ import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
+// A single letter or digit (any script), as reported by KeyboardEvent.key
+const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
+
 /**
  * @file Class based component.
  * @module TableRow
@@ -187,17 +190,18 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          // Activate on any single printable character (event.key), not on
-          // event.keyCode/String.fromCharCode: keyCode-based mapping is wrong
-          // for the numeric keypad (e.g. numpad-0 is keyCode 96, which
-          // String.fromCharCode maps to a backtick, never matching a
-          // printable-character gate). event.key already reflects the
-          // actual character produced (numpad-0 and main-row-0 both give
-          // "0"), while non-printable keys (Enter, ArrowDown, F-keys, ...)
-          // report a multi-character name and are excluded by the length
-          // check below.
+          // Activate on a single letter or digit, read from event.key rather
+          // than String.fromCharCode(event.keyCode): keyCode-based mapping is
+          // wrong for the numeric keypad (numpad-0 is keyCode 96, which maps
+          // to a backtick), while event.key reports the produced character
+          // ("0" for both numpad-0 and main-row-0). The gate is deliberately
+          // limited to letters/digits (incl. non-ASCII letters): activation
+          // selects the cell content, which clears a filled value, so Space
+          // and punctuation (- . , + / *) must not activate. Non-printable
+          // keys report a multi-character name and never match.
           if (
-            event.key.length === 1 &&
+            typeof event.key === 'string' &&
+            ACTIVATION_KEY_REGEX.test(event.key) &&
             !event.ctrlKey &&
             !event.altKey &&
             !event.metaKey
@@ -345,8 +349,8 @@ class TableRow extends PureComponent {
     isAttributeWidget,
   }) => {
     // Object-valued attribute widgets (ProductAttributes/Address) commit through
-    // the <Attributes> overlay, not the raw-text edit path. Routing a printable
-    // key (e.g. Space, accepted by the single-printable-character gate above)
+    // the <Attributes> overlay, not the raw-text edit path. Routing an
+    // activation key (a letter/digit accepted by the gate above)
     // into handleEditProperty({ select: true }) would clearValue() the widget
     // and clobber its {key,caption} value (silent data loss). Skip it here,
     // mirroring the Tab/Enter isAttributeWidget guards.
