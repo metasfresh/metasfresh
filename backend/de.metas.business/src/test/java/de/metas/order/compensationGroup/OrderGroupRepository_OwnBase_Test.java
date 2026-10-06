@@ -19,10 +19,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -32,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * A compensation line with its own base stores its applies-to category in {@code C_OrderLine.GroupCompensation_Product_Category_ID}
  * and gets it back from there on reload; a line without own base leaves the column empty.
  */
-public class OrderGroupRepository_TakeOver_Test
+public class OrderGroupRepository_OwnBase_Test
 {
 	private ProductId productId;
 	private ProductCategoryId categoryId;
@@ -73,7 +71,7 @@ public class OrderGroupRepository_TakeOver_Test
 		Services.registerService(IOrderLineBL.class, new OrderGroupRepositoryTest.StubOrderLineBL(order));
 
 		requestFactory = new GroupCompensationLineCreateRequestFactory();
-		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), GroupTemplateRepository.newInstanceForUnitTesting());
+		repo = OrderGroupRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

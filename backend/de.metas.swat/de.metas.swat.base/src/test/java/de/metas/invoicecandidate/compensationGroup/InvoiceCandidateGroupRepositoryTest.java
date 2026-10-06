@@ -16,14 +16,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
@@ -73,7 +71,7 @@ class InvoiceCandidateGroupRepositoryTest
 		saveRecord(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
-		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), OrderGroupRepository.newInstanceForUnitTesting());
+		repo = InvoiceCandidateGroupRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

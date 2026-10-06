@@ -53,7 +53,7 @@ class ContractSettingsTakeOverRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		takeOverRepository = new ContractSettingsTakeOverRepository();
+		takeOverRepository = ContractSettingsTakeOverRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

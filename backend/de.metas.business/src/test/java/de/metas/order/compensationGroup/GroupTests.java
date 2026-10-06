@@ -368,7 +368,7 @@ public class GroupTests
 	}
 
 	/**
-	 * A line with own base (e.g. an own take-over line) is always computed on its category's full regular-lines base, even in a
+	 * A line with own base is always computed on its category's full regular-lines base, even in a
 	 * non-additive (compounding) group with an earlier fixed-amount line on the same category, and it is left out of that
 	 * category's running total, so a later compounding line does not compound with it.
 	 */

@@ -15,6 +15,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -58,6 +60,17 @@ public class ContractSettingsTakeOverService
 	@NonNull private final OrderGroupRepository orderGroupRepository;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
+	@VisibleForTesting
+	public static ContractSettingsTakeOverService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ContractSettingsTakeOverService.class,
+				() -> new ContractSettingsTakeOverService(
+						ContractSettingsTakeOverRepository.newInstanceForUnitTesting(),
+						OrderGroupRepository.newInstanceForUnitTesting()));
+	}
 
 	/** @return the schema with one own compensation line appended per matching take-over, the vendor's lines unchanged; the given schema when nothing is taken over */
 	public GroupTemplate applyToSchema(

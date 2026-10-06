@@ -4,8 +4,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -17,7 +15,6 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
@@ -83,7 +80,7 @@ class PercentCompensationLineInvoicingTest
 		saveRecord(order);
 
 		percentCompensationLineInvoicing = new PercentCompensationLineInvoicing(
-				new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), OrderGroupRepository.newInstanceForUnitTesting()));
+				InvoiceCandidateGroupRepository.newInstanceForUnitTesting());
 	}
 
 	private int createGroupHeader()

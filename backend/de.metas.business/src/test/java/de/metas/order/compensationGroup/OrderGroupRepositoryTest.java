@@ -12,10 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
@@ -32,11 +30,6 @@ import org.mockito.Mockito;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.i18n.AdMessageId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
@@ -118,10 +111,7 @@ public class OrderGroupRepositoryTest
 		Services.registerService(IOrderLineBL.class, new StubOrderLineBL(order));
 
 		// Build repo (no advisors needed for this test).
-		repo = new OrderGroupRepository(
-				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
-				Optional.empty(),
-				GroupTemplateRepository.newInstanceForUnitTesting());
+		repo = OrderGroupRepository.newInstanceForUnitTesting();
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────

@@ -10,7 +10,6 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -77,7 +76,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		settingsRepository = new ContractCompensationGroupSettingsRepository();
-		service = new ContractSettingsTakeOverService(new ContractSettingsTakeOverRepository(), OrderGroupRepository.newInstanceForUnitTesting());
+		service = ContractSettingsTakeOverService.newInstanceForUnitTesting();
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);

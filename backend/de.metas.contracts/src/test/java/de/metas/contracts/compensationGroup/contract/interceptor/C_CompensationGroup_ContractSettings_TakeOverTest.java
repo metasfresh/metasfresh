@@ -2,7 +2,6 @@ package de.metas.contracts.compensationGroup.contract.interceptor;
 
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
@@ -44,12 +43,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class C_CompensationGroup_ContractSettings_TakeOverTest
 {
-	private final C_CompensationGroup_ContractSettings_TakeOver interceptor = new C_CompensationGroup_ContractSettings_TakeOver(new GroupCompensationLineCreateRequestFactory());
+	private C_CompensationGroup_ContractSettings_TakeOver interceptor;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		interceptor = new C_CompensationGroup_ContractSettings_TakeOver(new GroupCompensationLineCreateRequestFactory());
 	}
 
 	private I_M_Product product(final String compensationType, final String amtType)

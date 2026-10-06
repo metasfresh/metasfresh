@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
@@ -10,6 +11,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -50,6 +53,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class ContractSettingsTakeOverRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static ContractSettingsTakeOverRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ContractSettingsTakeOverRepository.class, ContractSettingsTakeOverRepository::new);
+	}
 
 	/**
 	 * @return whether the product is a customer discount product of an active take-over product record of any active take-over

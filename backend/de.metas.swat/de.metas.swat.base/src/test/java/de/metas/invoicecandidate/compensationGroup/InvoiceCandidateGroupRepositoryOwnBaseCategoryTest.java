@@ -5,10 +5,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateLineId;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
@@ -29,7 +27,6 @@ import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -61,7 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * An invoice candidate whose order line has its own base (no schema line, the category stored in {@code C_OrderLine.GroupCompensation_Product_Category_ID})
  * takes its applies-to product category from that order line column; a schema-backed line keeps the schema line's category.
  */
-class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
+class InvoiceCandidateGroupRepositoryOwnBaseCategoryTest
 {
 	private static final ProductCategoryId OWN_BASE_CATEGORY_ID = ProductCategoryId.ofRepoId(777);
 
@@ -113,11 +110,7 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
 		saveRecord(goodsIc);
 
-		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
-				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
-				Optional.empty(),
-				new GroupTemplateRepository(Optional.empty()));
-		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), orderGroupRepository);
+		repo = InvoiceCandidateGroupRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

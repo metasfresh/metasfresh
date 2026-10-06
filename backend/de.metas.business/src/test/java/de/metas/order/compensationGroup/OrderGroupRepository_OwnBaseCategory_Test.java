@@ -54,7 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 /** A compensation line without a schema line takes its applies-to category from {@code C_OrderLine.GroupCompensation_Product_Category_ID}, with no further lookup. */
-public class OrderGroupRepository_TakeOverCategory_Test
+public class OrderGroupRepository_OwnBaseCategory_Test
 {
 	private static final ProductCategoryId OWN_BASE_CATEGORY_ID = ProductCategoryId.ofRepoId(777);
 	private static final ProductCategoryId OTHER_OWN_BASE_CATEGORY_ID = ProductCategoryId.ofRepoId(778);
@@ -113,7 +113,7 @@ public class OrderGroupRepository_TakeOverCategory_Test
 
 		groupTemplateRepository = Mockito.spy(GroupTemplateRepository.newInstanceForUnitTesting());
 		repo = new OrderGroupRepository(
-				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
+				new GroupCompensationLineCreateRequestFactory(),
 				Optional.empty(),
 				groupTemplateRepository);
 	}
