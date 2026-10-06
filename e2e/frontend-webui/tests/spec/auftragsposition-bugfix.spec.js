@@ -251,3 +251,102 @@ Layout-jump (AC15) is covered separately by \`grid-no-layout-jump.spec.js\` — 
     });
   });
 });
+
+/**
+ * "undefined" regression on the committed-value re-edit gesture (AC12).
+ *
+ * The reported sighting: a FILLED Lookup cell is re-edited, a non-matching text is typed, the
+ * user leaves the cell, and does that 2-3 times — the cell then shows the saved value with the
+ * typed raw text appended, and re-opening the editor shows the literal "undefined". The
+ * mechanism is the grid nav layer writing the editor's raw string over the Lookup's
+ * `{key,caption}` value on Tab (`TableRow.handleKeyDown_Tab`); the object-valued guard
+ * (`TableRow.isObjectValuedWidget`) skips that write. This leg drives exactly that gesture
+ * (Tab, a click on another cell, Tab), then re-opens the editor.
+ *
+ * Enter is deliberately not part of this gesture: Enter on a Lookup with no matching result
+ * clears the cell, on the base branch exactly as with this change — that resolve-or-revert
+ * behaviour is a separate topic, not the "undefined" defect guarded here.
+ */
+test.describe('Sales order-line grid — no "undefined" after re-editing a filled Lookup cell (de_DE)', () => {
+  test('Typing a non-matching text into a filled Lookup cell and leaving it, repeatedly, keeps the saved value; re-opening never shows "undefined"', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Order-line grid — no "undefined" on Lookup re-edit');
+    allure.severity('critical');
+    allure.description(`
+## Re-edit a filled Lookup cell (AC12)
+
+Three times (Tab, click on another cell, Tab): activate the saved \`${COMBOBOX_COLUMN}\` cell, type
+a text that matches no product, leave the cell. Afterwards the cell must still show the saved
+product (never the typed text, never "undefined"), and re-opening its editor must not show the
+literal "undefined".
+    `);
+
+    test.setTimeout(180000);
+
+    const masterdata = await createMasterdata();
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await gotoOrderList();
+
+    const recordId = await createNewOrder();
+    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+
+    const productCode = masterdata.products.Product1.productCode;
+    const productCell = page.locator(`[data-cy="cell-${COMBOBOX_COLUMN}"]`).first();
+    const NON_MATCHING_TEXT = 'zz9nomatch';
+
+    for (const [round, leaveBy] of [
+      [1, 'Tab'],
+      [2, 'click on another cell'],
+      [3, 'Tab'],
+    ]) {
+      await test.step(`Round ${round}: type a non-matching text into the filled Lookup cell, leave by ${leaveBy}`, async () => {
+        await productCell.dblclick();
+        const editorInput = productCell.locator('.input-dropdown-container input').first();
+        await editorInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        await editorInput.pressSequentially(NON_MATCHING_TEXT, { delay: 30 });
+        await page.waitForTimeout(800); // let the typeahead query answer "no results"
+        if (leaveBy === 'Tab') {
+          await page.keyboard.press('Tab');
+        } else {
+          await page.locator('[data-cy="cell-QtyEntered"]').first().click();
+        }
+
+        await productCell
+          .locator('.input-dropdown-container')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+        await page.waitForTimeout(500);
+
+        const cellText = (await productCell.textContent()) || '';
+        console.log(`[INFO] round ${round} (${leaveBy}): ${COMBOBOX_COLUMN} cell text "${cellText}"`);
+        expect(cellText, `round ${round}: the cell must not render the literal "undefined"`).not.toContain('undefined');
+        expect(cellText, `round ${round}: the cell must not render the typed raw text`).not.toContain(NON_MATCHING_TEXT);
+        expect(cellText, `round ${round}: the cell must still show its saved product`).toContain(productCode);
+      });
+    }
+
+    await test.step('Re-open the Lookup editor — it must not show "undefined"', async () => {
+      await productCell.dblclick();
+      const editorInput = productCell.locator('.input-dropdown-container input').first();
+      await editorInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      const editorValue = await editorInput.inputValue();
+      console.log(`[INFO] ${COMBOBOX_COLUMN} editor value on re-open: "${editorValue}"`);
+      expect(editorValue, 'the re-opened Lookup editor must not show the literal "undefined"').not.toContain('undefined');
+      expect(editorValue, 'the re-opened Lookup editor must not show the typed raw text').not.toContain(NON_MATCHING_TEXT);
+
+      await page.keyboard.press('Escape');
+    });
+  });
+});
