@@ -29,6 +29,9 @@ import { openRelatedDocument } from '../utils/DocumentReferences';
  *      those conditions, with start and end date, opened in Verträge (540359).
  *   5. Auftrag (143): a sales order for the partner; completing it adds the contract group and
  *      its discount line.
+ *   6. Verträge (540359): a second term for the partner, entered directly in the window (on
+ *      conditions whose transition has a duration, so the end date is computed); it saves and
+ *      gets its DocumentNo from the sequence.
  *
  * Besides the flow, the spec asserts the window titles, tab names, field labels and field order
  * the operator sees.
@@ -403,6 +406,70 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await discountRow.locator('[data-cy="cell-LineNetAmt"]').scrollIntoViewIfNeeded();
       await snap(page, '143-sales-order-discount-group-amount');
     });
+
+    // ------------------------------------------------------------------
+    // 6. Verträge (540359): a term entered directly in the window saves and gets its number
+    //    from the sequence. DocumentNo is mandatory and filled on save, never by the operator.
+    //    The partner has contract data now (from step 4), so the window offers it. The end date
+    //    is read-only there and computed from the transition, so these conditions use a
+    //    transition with a duration (step 3's has none: its terms keep an entered end date).
+    // ------------------------------------------------------------------
+    let yearTransitionId;
+    await test.step('6a. Transition window: a completed transition of 12 months', async () => {
+      await openNewRecord(page, TRANSITION_WINDOW_ID);
+      await fillText(page, page, 'Name', `${transitionName} 12M`);
+      yearTransitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
+      const contractCalendarId = await pickContractCalendarWithYear(yearTransitionId, contractStart.getFullYear());
+      await selectListByKey(page, page, 'C_Calendar_Contract_ID', contractCalendarId);
+      await fillNumber(page, page, 'TermDuration', 12);
+      await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
+      await fillNumber(page, page, 'TermOfNotice', 0);
+      await selectListByKey(page, page, 'TermOfNoticeUnit', DURATION_UNIT_MONTH);
+      await waitForRecordSaved(TRANSITION_WINDOW_ID, yearTransitionId, { maxRetries: 20, retryDelayMs: 500 });
+      await completeDocument(page);
+      await expectDocStatus(TRANSITION_WINDOW_ID, yearTransitionId, 'CO');
+    });
+
+    let yearConditionsId;
+    await test.step('6b. Conditions window: compensation-group conditions with the 12-month transition', async () => {
+      await openNewRecord(page, CONDITIONS_WINDOW_ID);
+      await fillText(page, page, 'Name', `${conditionsName} 12M`);
+      yearConditionsId = await waitForNewRecordId(page, CONDITIONS_WINDOW_ID);
+      await selectListByKey(page, page, 'Type_Conditions', TYPE_CONDITIONS_COMPENSATION_GROUP);
+      await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
+      await selectListByKey(page, page, 'C_Flatrate_Transition_ID', yearTransitionId);
+      await waitForRecordSaved(CONDITIONS_WINDOW_ID, yearConditionsId, { maxRetries: 20, retryDelayMs: 500 });
+      await completeDocument(page);
+      await expectDocStatus(CONDITIONS_WINDOW_ID, yearConditionsId, 'CO');
+    });
+
+    await test.step('6c. Verträge: a new term entered in the window saves with a sequence document number', async () => {
+      const flatrateDataId = lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'C_Flatrate_Data_ID')).value);
+      const billLocationId = lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Bill_Location_ID')).value);
+      const firstTermDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'DocumentNo')).value);
+
+      await openNewRecord(page, CONTRACT_WINDOW_ID);
+      const newTermId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
+
+      await selectListByKey(page, page, 'C_Flatrate_Data_ID', flatrateDataId);
+      await selectListByKey(page, page, 'C_Flatrate_Conditions_ID', yearConditionsId);
+      // the contract data set the invoice partner (callout); its location is the second part of that lookup
+      await selectLookupPartByKey(page, 'Bill_Location_ID', billLocationId);
+      await fillDate(page, page, 'StartDate', contractStart);
+
+      await waitForRecordSaved(CONTRACT_WINDOW_ID, newTermId, { maxRetries: 20, retryDelayMs: 500 });
+      expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, newTermId, 'Bill_BPartner_ID')).value)).toBe(String(customer.id));
+
+      const documentNo = String((await getFieldData(CONTRACT_WINDOW_ID, newTermId, 'DocumentNo')).value ?? '');
+      console.log(`[INFO] new term ${newTermId}: DocumentNo=${documentNo} (term of step 4: ${firstTermDocumentNo})`);
+      expect(documentNo, 'DocumentNo is a number from the sequence, not "0" or the "<>" placeholder').toMatch(/^[1-9]\d*$/);
+      expect(documentNo, 'each term gets its own number').not.toBe(firstTermDocumentNo);
+
+      // the saved term, reloaded, shows that number to the operator
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${newTermId}`);
+      await expect(page.locator('.form-field-DocumentNo input').first()).toHaveValue(documentNo, { timeout: SLOW_ACTION_TIMEOUT });
+      await snap(page, '540359-term-entered-in-window');
+    });
   });
 });
 
@@ -563,6 +630,33 @@ async function selectListByKey(page, scope, fieldName, key) {
     await input.click();
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await option.click();
+  }, key);
+  await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
+}
+
+/**
+ * Pick the option with the given key in one part of a composed lookup (e.g. the location part
+ * of the partner lookup), whose input is rendered as #lookup_<fieldName>, and wait until that key
+ * has been committed. When the part offers a single option, the WebUI selects it by itself on the
+ * input click and closes the dropdown, so the option is clicked only if the dropdown stays open.
+ */
+async function selectLookupPartByKey(page, fieldName, key) {
+  const input = page.locator(`#lookup_${fieldName} input.input-field`).first();
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
+  let committed = false;
+  await withFieldCommit(page, fieldName, async () => {
+    const commit = page.waitForResponse((response) => {
+      const request = response.request();
+      return request.method() === 'PATCH' && Array.isArray(request.postDataJSON())
+        && request.postDataJSON().some((change) => change.path === fieldName && lookupKey(change.value) === String(key));
+    }, { timeout: SLOW_ACTION_TIMEOUT }).then(() => { committed = true; }, () => {});
+    await input.click();
+    const optionShown = option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }).then(() => true, () => false);
+    await Promise.race([commit, optionShown]);
+    if (!committed) {
+      await option.click();
+    }
   }, key);
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
