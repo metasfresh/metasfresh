@@ -400,7 +400,7 @@
    * nothing. The line height keeps the text vertically centred, as before. An extended (multi-line)
    * long-text cell keeps its own height.
    */
-  > div:not(.cell-width-keeper) > .cell-text-wrapper:not(.extended) {
+  > div > .cell-text-wrapper:not(.extended) {
     height: 26px;
     line-height: 26px;
   }
@@ -411,6 +411,15 @@
     align-items: center;
     height: 100%;
     line-height: normal;
+
+    /*
+     * The chip's bottom margin (labels.scss) spaces wrapped chips in the Labels editor. A grid
+     * cell shows one chip on one line, so the margin only makes the centred item taller than
+     * the chip and pushes the chip off-centre (up by half the margin).
+     */
+    .labels-label {
+      margin-bottom: 0;
+    }
   }
 
   .input-primary,

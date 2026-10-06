@@ -28,7 +28,10 @@ import {
  *
  * Measured at 1920px wide, where the grid is not width-constrained and every column takes its
  * natural content width — the layout in which an editor wider (or narrower) than the static value
- * moves the column. A short GLN value ("04012345") keeps the GLN Text column narrower than a
+ * moves the column. Also measured at 1280px (columns near their band minimums) and at 900px,
+ * below the md breakpoint (991px): there the 42px desktop row height does not apply and a row is
+ * only as tall as its 26px content plus padding, so the static and editor boxes are measured
+ * without the row floor that would otherwise absorb a height difference. A short GLN value ("04012345") keeps the GLN Text column narrower than a
  * default-sized text input, the case that widened it.
  *
  * While editing, every visible editor control (input, textarea, switch, button) must also lie inside its cell, so
@@ -42,7 +45,16 @@ import {
  */
 
 const TOLERANCE_PX = 1;
+/**
+ * A vertically centred chip is offset from the box centre by 0 (or by 0.5px when the height
+ * difference is odd); a real layout cause (a margin, a padding) moves it by at least 1px.
+ */
+const CENTRING_TOLERANCE_PX = 0.5;
 const VIEWPORT = { width: 1920, height: 1080 };
+/** below the md breakpoint (frontend variables.scss `$breakpoint-md: 991px`) */
+const NARROW_VIEWPORT = { width: 900, height: 900 };
+/** the desktop row height (table.scss, `.desktop .table td` inside the md media query) */
+const DESKTOP_ROW_HEIGHT_PX = 42;
 
 const ORDER_LINE_EXPECTED_WIDGET_TYPES = [
   'Composed', // Product (Search/Lookup + note), Price
@@ -350,7 +362,8 @@ async function leaveByClickingModalTitle(page) {
 test.describe('Grid editors keep the row height and every column width (de_DE)', () => {
   // 1920: the grid has room and every column takes its natural content width.
   // 1280: the grid overflows horizontally and columns sit near their band minimums.
-  for (const viewport of [VIEWPORT, { width: 1280, height: 720 }]) {
+  // 900: below the md breakpoint - no 42px desktop row height, the row is as tall as its content.
+  for (const viewport of [VIEWPORT, { width: 1280, height: 720 }, NARROW_VIEWPORT]) {
     test(`Order-line grid (${viewport.width}px): opening and leaving each editor changes neither the row height nor any column width`, async ({
       page,
     }) => {
@@ -380,6 +393,15 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
         .filter({ has: page.locator('[data-cy="cell-QtyEntered"]') })
         .first();
       await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      if (viewport === NARROW_VIEWPORT) {
+        // guard: this run must really measure the narrow layout, not the desktop one
+        const rowHeight = await row.evaluate((tr) => tr.getBoundingClientRect().height);
+        console.log(`[GEOMETRY:order-line ${viewport.width}px] static row height ${rowHeight}`);
+        expect(rowHeight, 'below the md breakpoint the 42px desktop row height does not apply').toBeLessThan(
+          DESKTOP_ROW_HEIGHT_PX
+        );
+      }
 
       await assertEveryEditorKeepsGeometry(
         page,
@@ -567,7 +589,7 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
       console.log(`[GEOMETRY:labels] ${JSON.stringify(box)}`);
       expect(box.chipHeight, 'the label chip keeps its own height (not stretched to the 26px box)').toBeLessThan(26);
       expect(Math.abs(box.chipCentre - box.wrapperCentre), 'the chip is vertically centred').toBeLessThanOrEqual(
-        TOLERANCE_PX
+        CENTRING_TOLERANCE_PX
       );
       expect(box.wrapperOverflows, 'nothing of the label cell is clipped').toBe(false);
     });
