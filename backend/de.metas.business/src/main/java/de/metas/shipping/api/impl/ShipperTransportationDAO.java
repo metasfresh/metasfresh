@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.inout.InOutId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -272,5 +274,30 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	{
 		return toSqlQuery(query)
 				.anyMatch();
+	}
+
+	@Override
+	public boolean hasActiveShippingPackage(@NonNull final InOutId inOutId, @NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public void clearShipperTransportationIdIfMatches(@NonNull final InOutId inOutId, @NonNull final ShipperTransportationId expectedCurrentValue)
+	{
+		final I_M_InOut shipment = load(inOutId, I_M_InOut.class);
+		if (shipment.getM_ShipperTransportation_ID() != expectedCurrentValue.getRepoId())
+		{
+			// already relinked to something else (or already cleared) meanwhile - don't clobber
+			return;
+		}
+		shipment.setM_ShipperTransportation_ID(-1);
+		saveRecord(shipment);
 	}
 }
