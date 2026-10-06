@@ -98,6 +98,7 @@ public class PaymentBonusRowValues
 	}
 
 	/**
+	 * @param enteredAmt  the amount that the user entered; checked again with this amount (not with the booked one) when another amount of the row changes, so that the note stays
 	 * @param maxBonusAmt what the customer pays for the invoice (open amount minus discount and fees)
 	 * @return the amount that the user entered, or, if it cannot be booked exactly because of the rounding of the VAT, the closest amount that can, with a note.
 	 *         An amount above what the customer pays gets the note why it cannot be booked.
@@ -122,14 +123,16 @@ public class PaymentBonusRowValues
 			// nothing to adjust; a negative amount is rejected when allocating. No bonus: the note why (e.g. not pre-filled) stays
 			return entered.toBuilder().paymentBonusNote(currentNote).build();
 		}
-		if (enteredAmt.compareTo(maxBonusAmt) > 0)
-		{
-			// rejected when allocating; the note says why right away
-			return entered.toBuilder().paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, enteredAmt, maxBonusAmt)).build();
-		}
-
 		final Money bookedGrossAmt = deduction.withGrossAmount(Money.of(enteredAmt.toBigDecimal(), deduction.getCurrencyId())).getGrossAmount();
 		final Amount bookedAmt = toAmount(bookedGrossAmt, enteredAmt.getCurrencyCode());
+		if (bookedAmt.compareTo(maxBonusAmt) > 0)
+		{
+			// rejected when allocating, which checks the booked amount too; the note says why right away
+			return entered.toBuilder()
+					.paymentBonusAmt(bookedAmt)
+					.paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, bookedAmt, maxBonusAmt))
+					.build();
+		}
 		if (bookedAmt.compareTo(enteredAmt) == 0)
 		{
 			return entered;

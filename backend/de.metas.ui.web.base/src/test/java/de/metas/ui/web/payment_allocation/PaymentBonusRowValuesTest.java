@@ -4,15 +4,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.i18n.ITranslatableString;
-import org.compiere.util.Env;
-import lombok.NonNull;
-import de.metas.util.Services;
-import de.metas.i18n.impl.PlainMsgBL;
-import de.metas.i18n.MessageFormatter;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.MessageFormatter;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
@@ -23,8 +20,11 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,6 +197,19 @@ class PaymentBonusRowValuesTest
 		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR), Amount.of("2", EUR), note);
 
 		assertThat(values.getPaymentBonusNote()).isSameAs(note);
+	}
+
+	/** The allocation checks the amount that is booked (after the VAT rounding) against what the customer pays; so does the row. */
+	@Test
+	void entered_bookedAmountAboveWhatTheCustomerPays_showsThatReason()
+	{
+		final PaymentBonusDeduction deduction = deduction("19", "10.00"); // 0.03 is booked as 0.04
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR), Amount.of("0.03", EUR), null);
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("0.04", EUR));
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+		assertThat(values.getPaymentBonusNote().getDefaultValue()).contains("PaymentBonusNotPrefilledAboveOpenAmt");
 	}
 
 	@Test

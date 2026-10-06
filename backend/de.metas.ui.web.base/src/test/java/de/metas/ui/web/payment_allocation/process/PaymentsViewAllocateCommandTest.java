@@ -45,13 +45,13 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
-import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
-import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -63,23 +63,23 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
+import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.exceptions.UserMessagePresentation;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -676,6 +676,27 @@ public class PaymentsViewAllocateCommandTest
 			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, new BigDecimal("8"))));
 
 			assertThat(changedRow.getPaymentBonusNote()).isNotNull(); // 2.78 > 10 - 8
+		}
+
+		/** The note that the entered amount was adjusted for the VAT rounding stays when another amount of the row changes afterwards. */
+		@Test
+		public void adjustedAmount_thenTheDiscountChanges_keepsTheRoundingNote()
+		{
+			final PaymentBonusDeduction deduction = paymentBonusDeduction("2.60");
+			final InvoiceRow row = InvoiceRowReducers.reduce(
+					invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+							.openAmt(euro(10))
+							.paymentBonusDeduction(deduction)
+							.build(),
+					ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("0.99"))));
+			final Amount bookedAmt = row.getPaymentBonusAmt();
+			assertThat(bookedAmt.toBigDecimal()).isNotEqualByComparingTo("0.99"); // no net amount gives 0.99 with 7 % VAT
+			assertThat(row.getPaymentBonusNote()).isNotNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_DiscountAmt, new BigDecimal("1"))));
+
+			assertThat(changedRow.getPaymentBonusAmt()).isEqualByComparingTo(bookedAmt);
+			assertThat(changedRow.getPaymentBonusNote()).isNotNull();
 		}
 
 		@Test

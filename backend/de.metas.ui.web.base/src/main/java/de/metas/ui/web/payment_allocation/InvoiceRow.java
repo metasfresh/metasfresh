@@ -137,6 +137,11 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final LocalDate dateAcct;
 
+	/** The payment bonus as the user entered it; {@link #paymentBonusAmt} is the amount that is booked, after the VAT rounding. {@code null} if the user did not enter one. */
+	@Getter
+	@Nullable
+	private final Amount paymentBonusEnteredAmt;
+
 	/** The bonus that the customer may deduct when paying the invoice, as computed; {@link #paymentBonusAmt} is pre-filled with its gross amount, see {@link PaymentBonusRowValues}. */
 	@Getter
 	@Nullable
@@ -163,6 +168,7 @@ public class InvoiceRow implements IViewRow
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
 			@Nullable final Amount paymentBonusAmt,
+			@Nullable final Amount paymentBonusEnteredAmt,
 			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
 			@Nullable final ITranslatableString paymentBonusNote,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
@@ -182,6 +188,7 @@ public class InvoiceRow implements IViewRow
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
 		this.paymentBonusAmt = paymentBonusAmt;
+		this.paymentBonusEnteredAmt = paymentBonusEnteredAmt;
 		this.paymentBonusDeduction = paymentBonusDeduction;
 		this.paymentBonusNote = paymentBonusNote;
 		this.invoiceAmtMultiplier = invoiceAmtMultiplier;

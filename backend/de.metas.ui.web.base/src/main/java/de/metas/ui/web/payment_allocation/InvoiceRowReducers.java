@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.payment_allocation;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.ui.web.payment_allocation.InvoiceRow.InvoiceRowBuilder;
@@ -67,6 +68,7 @@ public class InvoiceRowReducers
 				final CurrencyCode currencyCode = row.getCurrencyCode();
 				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
 				rowBuilder.paymentBonusAmt(paymentBonusAmt);
+				rowBuilder.paymentBonusEnteredAmt(paymentBonusAmt);
 			}
 			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
 			{
@@ -91,7 +93,8 @@ public class InvoiceRowReducers
 	 */
 	private static InvoiceRow updatePaymentBonus(@NonNull final InvoiceRow row)
 	{
-		final Amount paymentBonusAmt = row.getPaymentBonusAmt();
+		// the amount as the user entered it, so that e.g. the note about the VAT rounding stays when another amount changes
+		final Amount paymentBonusAmt = CoalesceUtil.coalesce(row.getPaymentBonusEnteredAmt(), row.getPaymentBonusAmt());
 		if (paymentBonusAmt == null)
 		{
 			return row;
