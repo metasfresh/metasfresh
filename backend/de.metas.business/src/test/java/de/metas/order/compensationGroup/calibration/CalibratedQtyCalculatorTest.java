@@ -20,6 +20,13 @@ class CalibratedQtyCalculatorTest
 	}
 
 	@Test
+	void halfUp_exactHalf_negative()
+	{
+		// HALF_UP rounds ties away from zero
+		assertThat(compute("3", "-1", "0.5", 0).getCalibrated()).isEqualTo(new BigDecimal("-2"));
+	}
+
+	@Test
 	void halfUp_notUp_boundary()
 	{
 		// RoundingMode.UP would give 0.13

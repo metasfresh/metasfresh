@@ -16,7 +16,9 @@ public final class CalibratedQtyCalculator
 	private CalibratedQtyCalculator() {}
 
 	/**
-	 * @param factor must be &gt; 0; a factor of 0 means "skip the line" and is handled by the caller
+	 * @param factor       must be &gt; 0; a factor of 0 means "skip the line" and is handled by the caller
+	 * @param uomPrecision UOM standard precision, i.e. the scale to round to; must be &gt;= 0
+	 * @return the calibrated qty and the uncalibrated qty (= template qty x menu qty, rounded to the precision without applying the factor)
 	 */
 	public static CalibratedQty compute(
 			@NonNull final BigDecimal templateQty,
