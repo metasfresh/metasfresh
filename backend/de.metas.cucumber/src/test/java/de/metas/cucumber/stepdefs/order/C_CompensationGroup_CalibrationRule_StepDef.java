@@ -28,6 +28,8 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
@@ -60,6 +62,8 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_CompensationGroup_Schema_StepDefData schemaTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
 
 	/**
 	 * Creates calibration rules; the variant {@code expecting error} expects the save to be rejected with the given AD_Message key.
@@ -72,6 +76,8 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	 * <b>C_BPartner_ID</b> — (optional, identifier-ref) customer<br>
 	 * <b>C_BP_Group_ID</b> — (optional, identifier-ref) business partner group<br>
 	 * <b>M_Product_ID</b> — (optional, identifier-ref) product<br>
+	 * <b>M_Product_Category_ID</b> — (optional, identifier-ref) product category<br>
+	 * <b>AD_Org_ID</b> — (optional, identifier-ref) organisation of the rule, defaults to the main test organisation<br>
 	 * <b>C_CompensationGroup_Schema_ID</b> — (optional, identifier-ref) schema<br>
 	 * <b>ErrorMessageKey</b> — (required with {@code expecting error}) AD_Message value of the expected error<br>
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BP_Group_StepDefData, M_Product_StepDefData, C_CompensationGroup_Schema_StepDefData
@@ -111,6 +117,10 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 				.ifPresent(id -> record.setC_BP_Group_ID(id.lookupNotNullIn(bpGroupTable).getC_BP_Group_ID()));
 		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_M_Product_ID)
 				.ifPresent(id -> record.setM_Product_ID(id.lookupNotNullIn(productTable).getM_Product_ID()));
+		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_M_Product_Category_ID)
+				.ifPresent(id -> record.setM_Product_Category_ID(id.lookupNotNullIn(productCategoryTable).getM_Product_Category_ID()));
+		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_AD_Org_ID)
+				.ifPresent(id -> record.setAD_Org_ID(id.lookupNotNullIn(orgTable).getAD_Org_ID()));
 		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_C_CompensationGroup_Schema_ID)
 				.ifPresent(id -> record.setC_CompensationGroup_Schema_ID(id.lookupNotNullIn(schemaTable).getC_CompensationGroup_Schema_ID()));
 		saveRecord(record);

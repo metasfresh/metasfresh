@@ -880,6 +880,39 @@ public class C_OrderLine_StepDef
 		orderLineTable.putOrReplace(lineIdentifier, firstLine);
 	}
 
+	/**
+	 * Asserts that an order has no line at all for the given product, e.g. a component that was left out of a group.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product that must not appear on any line of the order<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_Order has no C_OrderLine for M_Product:
+	 *   | C_Order_ID | M_Product_ID |
+	 *   | order      | fish_fillet  |
+	 * </pre>
+	 */
+	@And("validate C_Order has no C_OrderLine for M_Product:")
+	public void validate_C_Order_has_no_C_OrderLine_for_M_Product(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order order = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
+			final ProductId productId = productTable.getIdOptional(productIdentifier)
+					.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+
+			final int count = queryBL.createQueryBuilderOutOfTrx(I_C_OrderLine.class)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productId.getRepoId())
+					.create()
+					.count();
+			assertThat(count).as("number of C_OrderLines of product %s in order %s", productIdentifier.getAsString(), order.getC_Order_ID()).isZero();
+		});
+	}
+
 	@Given("metasfresh contains C_OrderLine expecting error:")
 	public void metasfresh_contains_c_order_lines_expecting_error(@NonNull final DataTable dataTable)
 	{
@@ -925,7 +958,9 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensationCalibrationFactor,
+	 *       GroupCompensationQtyEnteredUncalibrated and C_CompensationGroup_CalibrationRule_ID — each also accepts
+	 *       the literal {@code null} to assert an empty value)</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -935,6 +970,24 @@ public class C_OrderLine_StepDef
 	 *   | orderLine_S30235_1 | order_S30235 | product_S30235 | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH                     |
 	 * </pre>
 	 */
+	/** {@code expected} is a number, or the literal {@code null} / {@code -} for "no value". */
+	private static void assertNullableBigDecimal(
+			@NonNull final SoftAssertions softly,
+			@Nullable final BigDecimal actual,
+			@NonNull final String expected,
+			@NonNull final String columnName,
+			@NonNull final String identifierStr)
+	{
+		if ("null".equals(expected) || "-".equals(expected))
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s (expected: null)", columnName, identifierStr).isNull();
+		}
+		else
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s", columnName, identifierStr).isEqualByComparingTo(expected);
+		}
+	}
+
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
 		final String identifierStr = row.getAsIdentifier().getAsString();
@@ -1026,6 +1079,28 @@ public class C_OrderLine_StepDef
 				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
 						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
 						.isEqualTo(vendorBPartnerId.getRepoId()));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor), expected, "GroupCompensationCalibrationFactor", identifierStr));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.ifPresent(ruleIdentifier -> {
+					if (ruleIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s (expected: no rule)", identifierStr)
+								.isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s", identifierStr)
+								.isEqualTo(ruleIdentifier.lookupNotNullIn(calibrationRuleTable).getC_CompensationGroup_CalibrationRule_ID());
+					}
+				});
 
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.order;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
@@ -32,6 +33,7 @@ import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
@@ -39,9 +41,16 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Assertions;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -51,8 +60,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Step definitions for creating compensation groups from schema templates and applying PI inheritance.
@@ -94,6 +106,8 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final @NonNull M_Product_StepDefData productTable;
 
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final CompensationGroupCalibrationService calibrationService = SpringContextHolder.instance.getBean(CompensationGroupCalibrationService.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
@@ -111,47 +125,119 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	 *   | C_OrderLine_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
 	 *   | schema_ol_1    | subProduct1  | piProd_sub1                             |
 	 * }</pre>
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code IdentifyLinesBy} — {@code Product} to register each created regular line as
+	 *       {@code schema_ol_<product identifier>} and each compensation (discount / surcharge) line as
+	 *       {@code schema_comp_<product identifier>} instead of by position; the positions shift when a
+	 *       component is left out by calibration (default: by position)</li>
+	 *   <li>{@code Calibrated} — {@code Y} to apply the calibration rules the way quick input and order candidates do
+	 *       (default {@code N}: the group is created uncalibrated, as the other group creators do)</li>
+	 *   <li>{@code ErrorMessageKey} — AD_Message key of the error the creation is expected to be refused with</li>
+	 * </ul>
 	 */
 	@When("create compensation group from schema template:")
 	public void createGroupFromSchemaTemplate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_Order order = row.getAsIdentifier("C_Order_ID")
-					.lookupNotNullIn(orderTable);
-			final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-
-			final I_C_CompensationGroup_Schema schemaRecord = row.getAsIdentifier("C_CompensationGroup_Schema_ID")
-					.lookupNotNullIn(schemaTable);
-
-			final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID());
-			final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-
-			final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
-
-			final Group group = orderGroupsRepo.prepareNewGroup()
-					.groupTemplate(groupTemplate)
-					.qty(qty)
-					.createGroup(orderId, null);
-
-			// Apply PI inheritance using the production code path (OrderLineQuickInputProcessor)
-			if (groupTemplate.isInheritPackingInstruction())
+			final Optional<String> expectedErrorMessageKey = row.getAsOptionalString("ErrorMessageKey");
+			if (expectedErrorMessageKey.isPresent())
 			{
-				row.getAsOptionalIdentifier("M_HU_PI_Item_Product_ID")
-						.ifPresent(piIdentifier -> {
-							final I_M_HU_PI_Item_Product mainPiItemProductRecord = piIdentifier.lookupNotNullIn(huPiItemProductTable);
-							final HUPIItemProductId mainPiItemProductId = HUPIItemProductId.ofRepoId(mainPiItemProductRecord.getM_HU_PI_Item_Product_ID());
-
-							piInheritanceService.applyPackingInstructionInheritance(order, group, mainPiItemProductId);
-						});
+				assertRefusedWith(expectedErrorMessageKey.get(), () -> createGroupFromSchemaTemplate(row));
 			}
-
-			// Store created order lines for later verification
-			int lineIndex = 1;
-			for (final GroupRegularLine regularLine : group.getRegularLines())
+			else
 			{
-				final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), I_C_OrderLine.class);
+				createGroupFromSchemaTemplate(row);
+			}
+		});
+	}
+
+	private void assertRefusedWith(@NonNull final String messageKey, @NonNull final Runnable action)
+	{
+		final AdMessageKey expectedKey = AdMessageKey.of(messageKey);
+		final String expectedErrorCode = msgBL.getErrorCode(expectedKey);
+		final String expectedErrorCodeEffective = expectedErrorCode != null ? expectedErrorCode : expectedKey.toAD_Message();
+
+		try
+		{
+			action.run();
+			Assertions.fail("An exception with message key " + expectedKey + " should have been thrown");
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).isEqualTo(expectedErrorCodeEffective);
+		}
+	}
+
+	private void createGroupFromSchemaTemplate(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier("C_Order_ID")
+				.lookupNotNullIn(orderTable);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final I_C_CompensationGroup_Schema schemaRecord = row.getAsIdentifier("C_CompensationGroup_Schema_ID")
+				.lookupNotNullIn(schemaTable);
+
+		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID());
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+
+		final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
+
+		final GroupCalibrations calibrations = row.getAsOptionalBoolean("Calibrated").orElseFalse()
+				? calibrationService.computeCalibrations(order, groupTemplate, qty)
+				: null;
+
+		final Group group = orderGroupsRepo.prepareNewGroup()
+				.groupTemplate(groupTemplate)
+				.qty(qty)
+				.calibrations(calibrations)
+				.createGroup(orderId, null);
+
+		// Apply PI inheritance using the production code path (OrderLineQuickInputProcessor)
+		if (groupTemplate.isInheritPackingInstruction())
+		{
+			row.getAsOptionalIdentifier("M_HU_PI_Item_Product_ID")
+					.ifPresent(piIdentifier -> {
+						final I_M_HU_PI_Item_Product mainPiItemProductRecord = piIdentifier.lookupNotNullIn(huPiItemProductTable);
+						final HUPIItemProductId mainPiItemProductId = HUPIItemProductId.ofRepoId(mainPiItemProductRecord.getM_HU_PI_Item_Product_ID());
+
+						piInheritanceService.applyPackingInstructionInheritance(order, group, mainPiItemProductId);
+					});
+		}
+
+		// Store created order lines for later verification
+		final boolean identifyLinesByProduct = row.getAsOptionalString("IdentifyLinesBy").map("Product"::equals).orElse(false);
+		int lineIndex = 1;
+		for (final GroupRegularLine regularLine : group.getRegularLines())
+		{
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), I_C_OrderLine.class);
+			if (identifyLinesByProduct)
+			{
+				registerByProduct("schema_ol_", orderLine);
+			}
+			else
+			{
 				orderLineTable.putOrReplace("schema_ol_" + lineIndex, orderLine);
-				lineIndex++;
+			}
+			lineIndex++;
+		}
+		if (identifyLinesByProduct)
+		{
+			for (final GroupCompensationLine compensationLine : group.getCompensationLines())
+			{
+				final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(compensationLine.getRepoId(), I_C_OrderLine.class);
+				registerByProduct("schema_comp_", orderLine);
+			}
+		}
+	}
+
+	private void registerByProduct(@NonNull final String identifierPrefix, @NonNull final I_C_OrderLine orderLine)
+	{
+		productTable.forEach((productIdentifier, product) -> {
+			if (product.getM_Product_ID() == orderLine.getM_Product_ID())
+			{
+				orderLineTable.putOrReplace(identifierPrefix + productIdentifier.getAsString(), orderLine);
 			}
 		});
 	}
