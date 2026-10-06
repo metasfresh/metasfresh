@@ -367,15 +367,7 @@ class TableRow extends PureComponent {
       return;
     }
 
-    const { valueBeforeEditing } = this.state;
-    if (valueBeforeEditing === null) {
-      // for disabled fields/fields without value, we don't get the field data from the backend
-      const fieldValue = this.getFieldValue(property);
-      if (fieldValue !== undefined) {
-        this.setState({ valueBeforeEditing: fieldValue });
-      }
-    }
-
+    // the value to restore on Escape is captured on entering edit mode (_editProperty)
     this.handleEditProperty({
       event,
       property,

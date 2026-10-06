@@ -80,6 +80,22 @@ describe('RawLookup — Enter with typed text that matches nothing', () => {
     expect(instance.inputSearch.value).toBe(PREVIOUS.caption);
   });
 
+  it('filter widget (view filter / process parameter): restores the previous value and does not commit', () => {
+    const { instance, onChange } = mountFilledLookup({
+      filterWidget: true,
+      mainProperty: { field: 'C_BPartner_ID', parameterName: 'C_BPartner_ID' },
+      item: { field: 'C_BPartner_ID', parameterName: 'C_BPartner_ID' },
+    });
+    // a filter Lookup does not copy its value into the input on mount (handleValueChanged
+    // skips filter widgets): the input shows the previous value because the user had picked it
+    instance.inputSearch.value = PREVIOUS.caption;
+
+    typeAndPressEnter(instance, 'qzzx', []);
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(instance.inputSearch.value).toBe(PREVIOUS.caption);
+  });
+
   it('closes the dropdown list after restoring', () => {
     const { instance } = mountFilledLookup({ mandatory: true });
     const toggleSpy = jest.spyOn(instance, 'fireOnDropdownListToggle');

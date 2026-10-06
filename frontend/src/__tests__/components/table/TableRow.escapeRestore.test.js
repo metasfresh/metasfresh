@@ -135,6 +135,40 @@ describe('TableRow — Escape restores the stored value, not the displayed text'
     expect(escapeEvent.target.value).toBe(STORED_VALUE);
   });
 
+  it('type-to-activate (a digit on a focused cell) a de_DE number cell, then Escape -> stored "3.00" is restored', () => {
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+    instance.setState({ activeCell: { focus: jest.fn() } });
+
+    // a digit typed on a focused, not-yet-edited cell activates it
+    // (handleKeyDown_RegularChar); the value to restore is captured on entry
+    instance.handleKeyDown({
+      event: {
+        key: '7',
+        target: { textContent: DISPLAYED_TEXT_DE },
+        stopPropagation: jest.fn(),
+        persist: jest.fn(),
+      },
+      property: NUMBER_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+    expect(instance.state.edited).toBe(NUMBER_PROPERTY);
+    updatePropertyValue.mockClear();
+
+    const escapeEvent = pressEscape(instance, NUMBER_PROPERTY, '7');
+
+    const writes = updatePropertyValue.mock.calls
+      .map((args) => args[0])
+      .filter((p) => p.property === NUMBER_PROPERTY);
+    expect(writes).toHaveLength(1);
+    expect(writes[0].value).toBe(STORED_VALUE);
+    expect(escapeEvent.target.value).toBe(STORED_VALUE);
+  });
+
   it('Lookup cell: Enter on typed text, then Escape -> the typed text is never written over the stored object', () => {
     const LOOKUP_PROPERTY = 'M_Product_ID'; // fixture: { key, caption }
     const TYPED_TEXT = 'qzzx9nomatch';
