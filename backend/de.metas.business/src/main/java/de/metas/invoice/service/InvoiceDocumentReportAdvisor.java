@@ -43,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -115,7 +116,17 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.docTypeId(docTypeId)
 				.language(language)
 				.poReference(invoice.getPOReference())
+				.suppressAutoPrint(isPaymentBonusCreditMemo(docType))
 				.build();
+	}
+
+	/**
+	 * A payment-bonus credit memo only settles the bonus the customer already deducted at payment; it is archived, but not auto-printed.
+	 */
+	private static boolean isPaymentBonusCreditMemo(@NonNull final I_C_DocType docType)
+	{
+		return X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docType.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo.equals(docType.getDocSubType());
 	}
 
 	private DocTypeId extractDocTypeId(@NonNull final I_C_Invoice invoice)

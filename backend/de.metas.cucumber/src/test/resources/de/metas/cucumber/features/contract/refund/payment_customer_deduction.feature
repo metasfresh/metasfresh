@@ -151,6 +151,47 @@ Feature: Bonus that the customer deducts when paying an invoice
 
   # ##############################################################################################
   # ##############################################################################################
+  # An EDI customer: the payment bonus credit memo is not sent via EDI
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC7
+  Scenario: The payment bonus credit memo of an EDI INVOIC recipient is not exported via EDI
+    Given metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN   | Identifier         |
+      | customerBP    | false                | true                 | paymentBonusInvoicGLN   | customerEdiSetting |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 163.72 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | bonusCreditMemo | 2.78 EUR   | PB         | true   |
+    # N = DontSend
+    And after not more than 30s, C_Invoice records have the following export status
+      | C_Invoice_ID    | EDI_ExportStatus |
+      | bonusCreditMemo | N                |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
   # Two bonuses on the goods, on two bonus products with different VAT rates
   # ##############################################################################################
   # ##############################################################################################
