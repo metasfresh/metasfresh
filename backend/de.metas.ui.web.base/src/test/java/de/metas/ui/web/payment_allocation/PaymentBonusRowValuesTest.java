@@ -1,0 +1,155 @@
+package de.metas.ui.web.payment_allocation;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class PaymentBonusRowValuesTest
+{
+	private static final CurrencyId EUR_ID = CurrencyId.ofRepoId(102);
+	private static final CurrencyCode EUR = CurrencyCode.EUR;
+
+	@BeforeEach
+	void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
+	@Test
+	void prefill_bonusNotAboveTheOpenAmount_isPrefilled()
+	{
+		final PaymentBonusDeduction deduction = deduction("7", "2.60"); // 2.78 with VAT
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("100", EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.78", EUR));
+		assertThat(values.getPaymentBonusDeduction()).isSameAs(deduction);
+		assertThat(values.getPaymentBonusNote()).isNull();
+	}
+
+	/** E.g. an invoice that is paid but for a small rest: the customer cannot deduct more than is open, so nothing is pre-filled, and the note says why. */
+	@Test
+	void prefill_bonusAboveTheOpenAmount_isNotPrefilled()
+	{
+		final PaymentBonusDeduction deduction = deduction("7", "2.60"); // 2.78 with VAT
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("2.00", EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
+		assertThat(values.getPaymentBonusDeduction()).isSameAs(deduction); // a smaller amount can still be entered
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+	}
+
+	/** The open amount is converted to the payment's currency; the bonus is booked in the invoice's currency and cannot be compared or deducted from it. */
+	@Test
+	void prefill_openAmountInAnotherCurrency_noBonus()
+	{
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction("7", "2.60"), EUR, Amount.of("100", CurrencyCode.CHF));
+
+		assertThat(values.getPaymentBonusAmt()).isNull();
+		assertThat(values.getPaymentBonusDeduction()).isNull();
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+	}
+
+	@Test
+	void prefill_noBonus()
+	{
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(null, EUR, Amount.of("100", EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isNull();
+		assertThat(values.getPaymentBonusDeduction()).isNull();
+		assertThat(values.getPaymentBonusNote()).isNull();
+	}
+
+	/** The invoice is still shown and can be allocated without the bonus; the note tells the user why there is none. */
+	@Test
+	void notComputed_showsTheError()
+	{
+		final PaymentBonusRowValues values = PaymentBonusRowValues.notComputed(new AdempiereException("no price for the bonus product"));
+
+		assertThat(values.getPaymentBonusAmt()).isNull();
+		assertThat(values.getPaymentBonusDeduction()).isNull();
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+		assertThat(values.getPaymentBonusNote().getDefaultValue()).contains("no price for the bonus product");
+	}
+
+	@Test
+	void entered_reachableAmount_isKept()
+	{
+		final PaymentBonusDeduction deduction = deduction("7", "2.60");
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("2.00", EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.00", EUR));
+		assertThat(values.getPaymentBonusNote()).isNull();
+	}
+
+	/** Because of the rounding of the VAT, not every gross amount can be booked; the row shows the amount that will be booked. */
+	@Test
+	void entered_unreachableAmount_showsTheAdjustedAmount()
+	{
+		final PaymentBonusDeduction deduction = deduction("19", "10.00"); // 0.02 net -> 0.00 VAT, 0.03 net -> 0.01 VAT: 0.03 gross cannot be reached
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isNotEqualByComparingTo(Amount.of("0.03", EUR));
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(deduction.withGrossAmount(Money.of(new BigDecimal("0.03"), EUR_ID)).getGrossAmount().toAmount(currencyId -> EUR));
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+	}
+
+	@Test
+	void entered_zero_noNote()
+	{
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR));
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
+		assertThat(values.getPaymentBonusNote()).isNull();
+	}
+
+	private static PaymentBonusDeduction deduction(final String taxRate, final String netAmt)
+	{
+		return PaymentBonusDeduction.builder()
+				.orgId(OrgId.ofRepoId(1))
+				.invoiceId(InvoiceId.ofRepoId(10))
+				.customerId(BPartnerId.ofRepoId(20))
+				.currencyId(EUR_ID)
+				.precision(CurrencyPrecision.TWO)
+				.line(PaymentBonusDeductionLine.builder()
+						.bonusProductId(ProductId.ofRepoId(30))
+						.tax(Tax.builder()
+								.taxId(TaxId.ofRepoId(1))
+								.name(taxRate + " %")
+								.orgId(OrgId.ANY)
+								.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+								.taxCategoryId(TaxCategoryId.ofRepoId(1))
+								.rate(new BigDecimal(taxRate))
+								.isTaxExempt(false)
+								.requiresTaxCertificate(false)
+								.seqNo(10)
+								.build())
+						.netAmt(Money.of(new BigDecimal(netAmt), EUR_ID))
+						.build())
+				.build();
+	}
+}

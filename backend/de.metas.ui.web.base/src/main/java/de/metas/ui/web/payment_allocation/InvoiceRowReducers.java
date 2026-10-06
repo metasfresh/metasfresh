@@ -66,7 +66,11 @@ public class InvoiceRowReducers
 
 				final CurrencyCode currencyCode = row.getCurrencyCode();
 				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
-				rowBuilder.paymentBonusAmt(paymentBonusAmt);
+
+				// shows the amount that will be booked, if the entered one cannot be because of the rounding of the VAT
+				final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt);
+				rowBuilder.paymentBonusAmt(paymentBonusRowValues.getPaymentBonusAmt());
+				rowBuilder.paymentBonusNote(paymentBonusRowValues.getPaymentBonusNote());
 			}
 			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
 			{

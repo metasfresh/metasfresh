@@ -40,6 +40,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
@@ -64,6 +65,9 @@ public class PaymentsViewAllocateCommand
 {
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	@VisibleForTesting
+	static final AdMessageKey MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusAboveOpenAmt");
+
 	private final PaymentBonusCreditMemoService paymentBonusCreditMemoService;
 
 	private final ImmutableList<PaymentRow> paymentRows;
@@ -204,6 +208,12 @@ public class PaymentsViewAllocateCommand
 		final Money paymentBonus = paymentBonusDeduction != null
 				? paymentBonusDeduction.getGrossAmount()
 				: Money.zero(currencyId);
+		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(openAmt))
+		{
+			// the customer cannot deduct more than is open
+			throw new AdempiereException(MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT, paymentBonus.toBigDecimal(), openAmt.toBigDecimal(), row.getDocumentNo())
+					.markAsUserValidationError();
+		}
 
 		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt).subtract(paymentBonus);
 

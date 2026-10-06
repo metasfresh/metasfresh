@@ -102,6 +102,12 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final Amount paymentBonusAmt;
 
+	/** Why the payment bonus is not the computed one, e.g. because it could not be computed, or because the entered amount was adjusted to one that can be booked. */
+	@ViewColumn(seqNo = 86, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "PaymentBonusNote")
+	@Getter
+	// not annotated @Nullable, like serviceFeeAmt: the field would no longer be shown
+	private final ITranslatableString paymentBonusNote;
+
 	public static final String FIELD_BankFeeAmt = "bankFeeAmt";
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "BankFeeAmt", fieldName = FIELD_BankFeeAmt)
 	@Getter
@@ -131,7 +137,7 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final LocalDate dateAcct;
 
-	/** The bonus that the customer may deduct when paying the invoice, as computed; {@link #paymentBonusAmt} is pre-filled with its gross amount. */
+	/** The bonus that the customer may deduct when paying the invoice, as computed; {@link #paymentBonusAmt} is pre-filled with its gross amount, see {@link PaymentBonusRowValues}. */
 	@Getter
 	@Nullable
 	private final PaymentBonusDeduction paymentBonusDeduction;
@@ -158,6 +164,7 @@ public class InvoiceRow implements IViewRow
 			@Nullable final Amount serviceFeeAmt,
 			@Nullable final Amount paymentBonusAmt,
 			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
+			@Nullable final ITranslatableString paymentBonusNote,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
 	{
 		this.isPreparedForAllocation = isPreparedForAllocation;
@@ -176,6 +183,7 @@ public class InvoiceRow implements IViewRow
 		this.bankFeeAmt = bankFeeAmt;
 		this.paymentBonusAmt = paymentBonusAmt;
 		this.paymentBonusDeduction = paymentBonusDeduction;
+		this.paymentBonusNote = paymentBonusNote;
 		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt, this.paymentBonusAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();

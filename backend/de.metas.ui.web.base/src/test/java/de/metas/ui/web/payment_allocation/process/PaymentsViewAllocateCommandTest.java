@@ -75,6 +75,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -409,6 +410,25 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.getAmountsToAllocate().getPaymentBonus().toBigDecimal()).isEqualByComparingTo("2.00");
 			assertThat(payableDocument.getAmountsToAllocate().getPayAmt().toBigDecimal()).isEqualByComparingTo("98.00");
 			assertThat(payableDocument.getPaymentBonusDeduction().getNetAmount().toBigDecimal()).isEqualByComparingTo("1.87"); // + 0.13 VAT
+		}
+
+		/** The customer cannot deduct more than is open: the allocation would leave the invoice over-paid. */
+		@Test
+		public void customerInvoice_withPaymentBonusAboveTheOpenAmount_fails()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(2))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException adempiereException = (AdempiereException)ex;
+						assertThat(adempiereException.isUserValidationError()).isTrue();
+						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
+					});
 		}
 
 		@Test
