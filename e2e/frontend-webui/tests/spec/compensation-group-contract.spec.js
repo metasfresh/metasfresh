@@ -539,6 +539,86 @@ test.describe('Compensation-group contract — create through the WebUI and comp
   });
 
   /**
+   * "Erzeuge Vertrag" for a partner that already has an overlapping compensation-group contract on the same
+   * order document type: the contract must not be created, and the operator must be told on screen why -
+   * which contract it clashes with, for which invoice partner and in which period.
+   */
+  test('creating a contract that overlaps an existing one tells the operator why it was refused', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Overlapping compensation-group contract is refused with a visible reason');
+    // Known gap: the refusal is only written to the process log and the screen shows nothing.
+    // Expected to fail until the reason is shown on screen; remove test.fail() together with that fix.
+    test.fail();
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+    const existingStart = x;
+    const existingEnd = addDays(x, 30);
+    const overlappingStart = addDays(x, 5);
+    const overlappingEnd = addDays(x, 60);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        products: {
+          DISCOUNT: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsId;
+    let existingTerm;
+    let existingDocumentNo;
+    await test.step('1. Setup: conditions "3 %" and an active contract from X to X + 30', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear());
+      conditionsId = await createConditions(page, {
+        schemaName: `CG overlap ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT, percent: DISCOUNT_PERCENT }],
+        transitionId, name: `CG conditions overlap ${runId}`,
+      });
+      existingTerm = await createContractTerm(page, customer, conditionsId, existingStart, existingEnd);
+      existingDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'DocumentNo')).value);
+      expect(existingDocumentNo, 'the existing contract has a document no').toBeTruthy();
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+    });
+
+    await test.step('2. "Erzeuge Vertrag" with the same conditions from X + 5 is refused with a visible reason', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
+      await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
+      await fillDate(page, modal, 'StartDate', overlappingStart);
+      await fillDate(page, modal, 'EndDate', overlappingEnd);
+      await modal.getByTestId('process-modal-start-button').click();
+      // the process ends (or is refused) ...
+      await page.waitForTimeout(5000);
+      await snap(page, '540460-overlap-refused');
+
+      // ... and the screen names the clashing contract, the invoice partner and the period
+      const screen = page.locator('body');
+      await expect(screen, 'the clashing contract\'s document no is shown').toContainText(existingDocumentNo, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(screen, 'the invoice partner is shown').toContainText(customer.bpartnerCode, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(screen, 'the clashing contract\'s period is shown').toContainText(germanDate(existingStart), { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(screen, 'the clashing contract\'s period is shown').toContainText(germanDate(existingEnd), { timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    await test.step('3. No second contract exists for the partner', async () => {
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+    });
+  });
+
+  /**
    * Additive schema with two lines on one base: both percentages apply to the same goods amount
    * (3,15 % and 0,25 % of 1 000,00 = -31,50 and -2,50), not one after the other (compounding would give -2,42).
    */
@@ -622,6 +702,29 @@ function lookupKey(value) {
 }
 
 /** yyyy-MM-dd of a local date */
+/** dd.MM.yyyy, the date format of the de_DE login */
+function germanDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+}
+
+/**
+ * Number of contract terms whose invoice partner is `partnerId`, read from the backend's contract view
+ * (the rendered grid is not counted: it is filled after the container is visible).
+ */
+async function countContractsOfPartner(page, partnerId) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}`, {
+    data: { documentType: String(CONTRACT_WINDOW_ID), viewType: 'grid', filters: [] },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(viewResponse.ok(), 'the contract view opens').toBe(true);
+  const view = await viewResponse.json();
+  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=${Math.max(view.size, 1)}`);
+  expect(rowsResponse.ok(), 'the contract view rows are read').toBe(true);
+  const rows = (await rowsResponse.json()).result ?? [];
+  return rows.filter((row) => lookupKey(row.fieldsByName?.Bill_BPartner_ID?.value) === String(partnerId)).length;
+}
+
 function isoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
