@@ -329,7 +329,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_Product_ID (int M_Product_ID);
@@ -339,7 +339,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();

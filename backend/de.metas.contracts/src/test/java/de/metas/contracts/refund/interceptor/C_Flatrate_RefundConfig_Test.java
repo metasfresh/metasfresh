@@ -55,6 +55,14 @@ public class C_Flatrate_RefundConfig_Test
 		assertThatCode(() -> interceptor.assertValid(createConfig(0, 40, 41))).doesNotThrowAnyException();
 	}
 
+	/** a product and a bonus product, no category: the bonus product must not be demanded just because a category is missing or set */
+	@Test
+	public void assertValid_productAndBonusProduct_withoutCategory_isValid()
+	{
+		assertThatCode(() -> interceptor.assertValid(createConfig(30, 0, 40))).doesNotThrowAnyException();
+		assertThatCode(() -> interceptor.assertValid(createConfig(30, 50, 40))).doesNotThrowAnyException();
+	}
+
 	@Test
 	public void assertValid_productWithoutBonusProduct_isValid()
 	{
