@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
@@ -11,30 +12,17 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 /**
- * Resets the barcode-scanner sysconfigs to their defaults, then applies the per-test overrides.
- * <p>
- * Resetting first means no test inherits another test's leaked scanner state (e.g. a leaked
- * {@code mode.hardware.input.readOnly='Y'} or {@code defaultMode='manual'} from barcode_scanner_modes.spec.js).
- * All writes go through {@link ISysConfigBL#setValueAtConfigLevel(String, String)}, which targets the
- * (client,org) matching each sysconfig's declared {@code ConfigurationLevel} so the
- * {@code AD_SysConfig} interceptor does not reject them.
+ * Resets the barcode-scanner sysconfigs to their defaults (so no test inherits another test's scanner state),
+ * then applies the per-test overrides.
  */
 @Builder
 public class SysconfigCommand
 {
-	/**
-	 * Defaults = the effective values after all migrations on a standard DB (seed + later carry-forward migrations).
-	 */
+	// Effective values after all migrations on a standard DB.
 	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.<String, String>builder()
-			// Timing knobs — a test that lowers them (e.g. the truncated-HU-QR picking test drops idleAbandonMillis to 500
-			// so a held partial errors fast) must not leak that value: a small idleAbandonMillis abandons the chunked-scan
-			// test's in-flight partial mid-gap → "QR not recognized". Seeds: 5664360 = 300, 5812460 = 15000, 10.
 			.put("mobileui.frontend.barcodeScanner.inputText.debounceMillis", "300")
 			.put("mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis", "15000")
 			.put("mobileui.frontend.barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan", "10")
-			// Scanner-mode knobs — barcode_scanner_modes.spec.js flips them per test (manual-first, camera off,
-			// input readOnly=Y …). Seeded by 5807640_sysconfig_barcodeScanner_modes.sql; 5807650 carries the legacy
-			// showInputText=Y forward to mode.manual.enabled=Y, so Y is the effective default for manual.
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.enabled", "Y")
 			.put("mobileui.frontend.barcodeScanner.mode.camera.enabled", "Y")
 			.put("mobileui.frontend.barcodeScanner.mode.manual.enabled", "Y")
@@ -52,7 +40,6 @@ public class SysconfigCommand
 	 */
 	public ImmutableMap<String, String> execute()
 	{
-		// capture previous EFFECTIVE values for every name we will touch (defaults + overrides), BEFORE writing
 		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
 		if (sysconfigs != null)
 		{
@@ -66,12 +53,15 @@ public class SysconfigCommand
 			{
 				previousValues.put(name, prev);
 			}
+			else if (SCANNER_SYSCONFIG_DEFAULTS.containsKey(name))
+			{
+				// fail loud instead of creating it: a missing row means the sysconfig was renamed or retired
+				throw new AdempiereException("Scanner sysconfig does not exist: " + name + " - update SCANNER_SYSCONFIG_DEFAULTS");
+			}
 		}
 
-		// reset scanner sysconfigs to defaults (so no test inherits another test's leaked scanner state)
 		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
 
-		// apply per-test overrides
 		if (sysconfigs != null)
 		{
 			sysconfigs.forEach(sysConfigBL::setValueAtConfigLevel);
