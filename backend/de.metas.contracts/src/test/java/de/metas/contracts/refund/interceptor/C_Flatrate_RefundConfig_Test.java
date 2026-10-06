@@ -237,6 +237,23 @@ public class C_Flatrate_RefundConfig_Test
 				});
 	}
 
+	/**
+	 * A condition that already has a line deducted at payment gets no second line, whatever the new line's own flag (which is N by default):
+	 * the user is told that right away, not first that the lines must agree on the flag.
+	 */
+	@Test
+	public void assertValid_secondLineNotFlaggedNextToADeductedAtPaymentLine_failsWithTheSingleLineMessage()
+	{
+		final I_C_Flatrate_RefundConfig firstConfig = createConfig(30, 0, 41);
+		firstConfig.setIsDeductedAtPayment(true);
+		saveRecord(firstConfig);
+
+		final I_C_Flatrate_RefundConfig secondConfig = createConfig(31, 0, 41); // IsDeductedAtPayment=N
+		assertThatThrownBy(() -> interceptor.assertValid(secondConfig))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE.toAD_Message()));
+	}
+
 	/** The minimum quantity of the only line is no threshold when paying either, so it must be 0. */
 	@Test
 	public void assertValid_deductedAtPayment_minQtyAboveZero_fails()

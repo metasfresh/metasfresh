@@ -113,8 +113,9 @@ public class C_Flatrate_RefundConfig
 		final ArrayList<RefundConfig> allRefundConfigs = new ArrayList<>(existingRefundConfigs);
 		allRefundConfigs.add(newRefundConfig);
 
-		RefundConfigs.assertValid(allRefundConfigs);
+		// first: a condition with a line deducted at payment gets no second line, whatever the new line's own flag
 		RefundConfigs.assertDeductedAtPaymentIsSingleLine(allRefundConfigs);
+		RefundConfigs.assertValid(allRefundConfigs);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment)
