@@ -83,7 +83,7 @@ public class RefundConfigRepository
 	/**
 	 * Note on the product: if the query has a product, then configs of that product or without product are candidates;
 	 * as soon as there is a candidate with a product, only the product-specific candidates are returned and the ones without product are dropped
-	 * (so a product-specific config wins over a category-only config of the same conditions).
+	 * (so a product-specific config wins over a category-only config of the same conditions; both lines share the condition's category).
 	 * A config's product category is not considered here; it is a condition of the contract match, see {@link RefundContractRepository#getByQuery(RefundContractQuery)}.
 	 */
 	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)

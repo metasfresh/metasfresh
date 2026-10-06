@@ -187,6 +187,7 @@ public class RefundConfigRepositoryTest
 		final List<I_C_Flatrate_RefundConfig> configRecords = createThreeRefundConfigRecords(conditionsId);
 		final I_C_Flatrate_RefundConfig productConfig = configRecords.get(0);
 		productConfig.setM_Product_ID(5);
+		productConfig.setM_Product_Category_ID(40); // the lines of a condition share its category
 		saveRecord(productConfig);
 		final I_C_Flatrate_RefundConfig categoryConfig = configRecords.get(1);
 		categoryConfig.setM_Product_Category_ID(40);

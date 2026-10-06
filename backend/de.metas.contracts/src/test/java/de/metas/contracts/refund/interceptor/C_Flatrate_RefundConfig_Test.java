@@ -55,18 +55,28 @@ public class C_Flatrate_RefundConfig_Test
 		assertThatCode(() -> interceptor.assertValid(createConfig(0, 40, 41))).doesNotThrowAnyException();
 	}
 
-	/** a product and a bonus product, no category: the bonus product must not be demanded just because a category is missing or set */
+	/** a product and a bonus product, no category: the bonus product must not be demanded just because a category is missing */
 	@Test
 	public void assertValid_productAndBonusProduct_withoutCategory_isValid()
 	{
 		assertThatCode(() -> interceptor.assertValid(createConfig(30, 0, 40))).doesNotThrowAnyException();
 	}
 
-	/** its own test: the lines of one condition share their category, so this line cannot follow the one without category */
+	/** a product and a bonus product, with a category: the bonus product is no reason to reject the line */
 	@Test
 	public void assertValid_productAndBonusProduct_withCategory_isValid()
 	{
 		assertThatCode(() -> interceptor.assertValid(createConfig(30, 50, 40))).doesNotThrowAnyException();
+	}
+
+	/** Only active lines have to share the category: an inactive line is not used by the engine, so it can be edited or deactivated freely. */
+	@Test
+	public void assertValid_inactiveLineWithAnotherProductCategory_isValid()
+	{
+		createConfig(0, 40, 41);
+		final I_C_Flatrate_RefundConfig inactiveConfig = createConfig(0, 50, 41);
+		inactiveConfig.setIsActive(false);
+		assertThatCode(() -> interceptor.assertValid(inactiveConfig)).doesNotThrowAnyException();
 	}
 
 	@Test

@@ -172,6 +172,7 @@ public class RefundContractRepository
 	 *         or if its partner is the query's shipment partner and its bonus recipient is the shipment partner.
 	 *         A contract whose configs have a product category base only matches a product of that category or of one of its sub-categories.
 	 *         A config with both a product and a category requires both: the term's product is the config's product, and the product has to be in the category.
+	 *         All active configs of a condition share its category.
 	 */
 	public ImmutableList<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
 	{

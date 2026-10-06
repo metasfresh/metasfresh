@@ -13,6 +13,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
@@ -91,6 +92,13 @@ public class C_Flatrate_RefundConfig
 				.build();
 
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
+		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
+
+		if (!configRecord.isActive())
+		{
+			// the engine ignores inactive lines, and the lines it compares with are the active ones
+			return;
+		}
 
 		// the stored state of the record itself is replaced by its new state
 		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getByQuery(query).stream()
@@ -101,6 +109,5 @@ public class C_Flatrate_RefundConfig
 		allRefundConfigs.add(newRefundConfig);
 
 		RefundConfigs.assertValid(allRefundConfigs);
-		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
 	}
 }
