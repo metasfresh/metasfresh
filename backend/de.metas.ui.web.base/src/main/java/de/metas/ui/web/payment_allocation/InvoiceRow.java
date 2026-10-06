@@ -103,7 +103,7 @@ public class InvoiceRow implements IViewRow
 	private final Amount paymentBonusAmt;
 
 	/** Why the payment bonus is not the computed one, e.g. because it could not be computed, or because the entered amount was adjusted to one that can be booked. */
-	@ViewColumn(seqNo = 86, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "PaymentBonusNote")
+	@ViewColumn(seqNo = 86, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Large, captionKey = "PaymentBonusNote")
 	@Getter
 	// not annotated @Nullable, like serviceFeeAmt: the field would no longer be shown
 	private final ITranslatableString paymentBonusNote;
