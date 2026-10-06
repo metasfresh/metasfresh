@@ -187,11 +187,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   return (
     <div className="hardware-mode-panel scan-prompt">
-      {/* <span> wrapper (codebase convention — see ButtonWithIndicator.jsx) dates from the FontAwesome SVG+JS
-          build, which replaced the <i> with an <svg> in place. The CSS web-font build (src/index.js) leaves it alone. */}
-      <span>
-        <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
-      </span>
+      <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
       {/* Caption swap — idle text by default, "Scanning in progress…" while the input has
           content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
       <div className="scan-prompt-text">

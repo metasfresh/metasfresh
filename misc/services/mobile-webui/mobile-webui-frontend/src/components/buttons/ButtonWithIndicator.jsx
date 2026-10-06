@@ -148,17 +148,8 @@ const Indicators = ({ completeStatus, indicator1, indicator2 }) => {
 
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
-      <Indicator
-        key={`indicator_${indicator1}_${completeStatus}`} // force remount on indicator change (dates from the FontAwesome SVG+JS build, which converted <i> to <svg>)
-        testId="indicator"
-        indicator={indicator1}
-        completeStatus={completeStatus}
-      />
-      <Indicator
-        key={`indicator_${indicator2}`} // force remount on indicator change (dates from the FontAwesome SVG+JS build, which converted <i> to <svg>)
-        testId="indicator2"
-        indicator={indicator2}
-      />
+      <Indicator testId="indicator" indicator={indicator1} completeStatus={completeStatus} />
+      <Indicator testId="indicator2" indicator={indicator2} />
     </div>
   );
 };
@@ -215,13 +206,7 @@ const Indicator = ({ testId: testIdParam, indicator, completeStatus }) => {
 
   if (!className) return null;
 
-  // Stable <span> wrapper: dates from the FontAwesome SVG+JS build, which replaced the <i> with an <svg> (React then
-  // threw removeChild errors). The CSS web-font build leaves the <i> alone; the wrapper is kept as harmless.
-  return (
-    <span>
-      <i data-testid={testId} className={className} />
-    </span>
-  );
+  return <i data-testid={testId} className={className} />;
 };
 Indicator.propTypes = {
   testId: PropTypes.string,
