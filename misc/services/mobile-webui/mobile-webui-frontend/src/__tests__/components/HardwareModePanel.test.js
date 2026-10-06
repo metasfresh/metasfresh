@@ -52,7 +52,7 @@ describe('HardwareModePanel', () => {
 
     pressKeys('HU#1#{"id":"abc"');
 
-    expect(valueWrites.filter((value) => value !== '')).toEqual([]);
+    expect(valueWrites).toEqual([]);
   });
 
   it('shows the scan in progress while a scan is being read and hides it when the scan is done', () => {

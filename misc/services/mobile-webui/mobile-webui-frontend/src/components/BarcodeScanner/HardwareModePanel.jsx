@@ -93,8 +93,8 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   const { isReadInProgress } = useKeyboardBarcodeReader({
     onReadDone: (barcode, scanStats) => {
-      // The scan comes from the hook's buffer; the hook prevents its keystrokes from reaching the input,
-      // so there is no input value to clear here.
+      // Nothing to clear in the input: the scan comes from the hook's buffer, its keystrokes are kept out of
+      // the input, and the parent's processing state unmounts the input for every forwarded scan.
       onBarcodeScanned({ scannedBarcode: barcode, traceParams: { ...traceParams, ...scanStats } });
     },
     rateMs: textChangedDebounceMillis,
