@@ -66,11 +66,7 @@ public class InvoiceRowReducers
 
 				final CurrencyCode currencyCode = row.getCurrencyCode();
 				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
-
-				// shows the amount that will be booked, if the entered one cannot be because of the rounding of the VAT
-				final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt, row.getMaxPaymentBonusAmt(), row.getPaymentBonusNote());
-				rowBuilder.paymentBonusAmt(paymentBonusRowValues.getPaymentBonusAmt());
-				rowBuilder.paymentBonusNote(paymentBonusRowValues.getPaymentBonusNote());
+				rowBuilder.paymentBonusAmt(paymentBonusAmt);
 			}
 			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
 			{
@@ -86,6 +82,25 @@ public class InvoiceRowReducers
 			}
 		}
 
-		return rowBuilder.build();
+		return updatePaymentBonus(rowBuilder.build());
+	}
+
+	/**
+	 * The payment bonus is checked against what the customer pays, which depends on the discount and the fees too; so it is checked after any change of the row.
+	 * Shows the amount that will be booked, if the entered one cannot be because of the rounding of the VAT, and the note why the bonus is not the computed one.
+	 */
+	private static InvoiceRow updatePaymentBonus(@NonNull final InvoiceRow row)
+	{
+		final Amount paymentBonusAmt = row.getPaymentBonusAmt();
+		if (paymentBonusAmt == null)
+		{
+			return row;
+		}
+
+		final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt, row.getMaxPaymentBonusAmt(), row.getPaymentBonusNote());
+		return row.toBuilder()
+				.paymentBonusAmt(paymentBonusRowValues.getPaymentBonusAmt())
+				.paymentBonusNote(paymentBonusRowValues.getPaymentBonusNote())
+				.build();
 	}
 }

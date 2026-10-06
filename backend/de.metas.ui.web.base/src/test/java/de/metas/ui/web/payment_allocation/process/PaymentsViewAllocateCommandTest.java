@@ -77,6 +77,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.exceptions.UserMessagePresentation;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -654,6 +656,44 @@ public class PaymentsViewAllocateCommandTest
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}
+		}
+	}
+
+	/** The note on the payment bonus follows the other amounts of the row: what the customer pays depends on the discount and the fees too. */
+	@Nested
+	public class InvoiceRowReducers_paymentBonusNote
+	{
+		@Test
+		public void raisingTheBankFee_aboveWhatTheCustomerPays_showsTheReason()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(10))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			assertThat(row.getPaymentBonusNote()).isNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, new BigDecimal("8"))));
+
+			assertThat(changedRow.getPaymentBonusNote()).isNotNull(); // 2.78 > 10 - 8
+		}
+
+		@Test
+		public void loweringTheBankFee_belowWhatTheCustomerPays_removesTheReason()
+		{
+			final InvoiceRow row = InvoiceRowReducers.reduce(
+					invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+							.openAmt(euro(10))
+							.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+							.build(),
+					ImmutableList.of(
+							JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, new BigDecimal("8")),
+							JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("2.78"))));
+			assertThat(row.getPaymentBonusNote()).isNotNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, BigDecimal.ZERO)));
+
+			assertThat(changedRow.getPaymentBonusNote()).isNull();
 		}
 	}
 

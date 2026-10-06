@@ -188,6 +188,17 @@ class PaymentBonusRowValuesTest
 		assertThat(adjusted.getPaymentBonusNote().getDefaultValue()).contains("0,03").doesNotContain("0.03");
 	}
 
+	/** No bonus (e.g. 0 because the computed one is above what the customer pays): the note why stays, also when another amount of the row changes. */
+	@Test
+	void entered_zero_keepsTheNote()
+	{
+		final ITranslatableString note = TranslatableStrings.anyLanguage("not pre-filled");
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR), Amount.of("2", EUR), note);
+
+		assertThat(values.getPaymentBonusNote()).isSameAs(note);
+	}
+
 	@Test
 	void entered_zero_noNote()
 	{

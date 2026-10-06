@@ -119,7 +119,8 @@ public class PaymentBonusRowValues
 		}
 		if (enteredAmt.signum() <= 0)
 		{
-			return entered; // nothing to adjust; a negative amount is rejected when allocating
+			// nothing to adjust; a negative amount is rejected when allocating. No bonus: the note why (e.g. not pre-filled) stays
+			return entered.toBuilder().paymentBonusNote(currentNote).build();
 		}
 		if (enteredAmt.compareTo(maxBonusAmt) > 0)
 		{
