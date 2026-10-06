@@ -9,6 +9,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -195,9 +196,32 @@ public class RefundContractRepository
 		return getIdsByQuery(query)
 				.stream()
 				.map(this::getById)
-				.filter(contract -> isRecipientOf(contract, query))
-				.filter(contract -> contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors)))
+				.filter(contract -> isMatching(contract, query, productCategoryIdAndAncestors))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return {@code true} if the given contract matches the query in the sense of {@link #getByQuery(RefundContractQuery)}:
+	 *         it is valid at the query's date, its product (if any) is the query's, the query's partner is its bonus recipient, and the query's product is in its base.
+	 *         For callers that load the contracts of several queries at once.
+	 * @param productCategoryIdAndAncestors the category of the query's product and its ancestors; only needed (and called) if the contract has a category base
+	 */
+	public static boolean isMatching(
+			@NonNull final RefundContract contract,
+			@NonNull final RefundContractQuery query,
+			@NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
+	{
+		final LocalDate date = query.getDate();
+		if (date.isBefore(contract.getStartDate()) || date.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		if (contract.getProductId() != null && !contract.getProductId().equals(query.getProductId()))
+		{
+			return false;
+		}
+		return isRecipientOf(contract, query)
+				&& contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors));
 	}
 
 	private static boolean isRecipientOf(@NonNull final RefundContract contract, @NonNull final RefundContractQuery query)
@@ -217,7 +241,7 @@ public class RefundContractRepository
 				: ImmutableSet.of();
 	}
 
-	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestors)
+	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
 	{
 		return config.getProductCategoryId() == null || productCategoryIdAndAncestors.get().contains(config.getProductCategoryId());
 	}
@@ -251,6 +275,7 @@ public class RefundContractRepository
 				.builder()
 				.id(flatrateTermId)
 				.bPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
+				.productId(productId)
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
 				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()));
 

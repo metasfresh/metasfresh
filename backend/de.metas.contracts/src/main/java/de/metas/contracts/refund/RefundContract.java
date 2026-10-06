@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
@@ -62,16 +63,22 @@ public class RefundContract
 
 	BPartnerId bPartnerId;
 
+	/** The term's product; {@code null} if the contract applies to every product of its base. */
+	@Nullable
+	ProductId productId;
+
 	@Builder(toBuilder = true)
 	private RefundContract(
 			@Nullable final FlatrateTermId id,
 			@NonNull final BPartnerId bPartnerId,
+			@Nullable final ProductId productId,
 			@Singular final List<RefundConfig> refundConfigs,
 			@NonNull final LocalDate startDate,
 			@NonNull final LocalDate endDate)
 	{
 		this.id = id;
 		this.bPartnerId = bPartnerId;
+		this.productId = productId;
 		this.startDate = startDate;
 		this.endDate = endDate;
 

@@ -1,6 +1,13 @@
 package de.metas.contracts.refund.paymentdeduction;
 
 import de.metas.bpartner.BPartnerId;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
+import de.metas.contracts.refund.packaging.RefundPackagingMaterialProvider;
+import de.metas.handlingunits.HUPIItemProductId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Tax;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
@@ -89,11 +96,7 @@ class PaymentBonusDeductionServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		service = new PaymentBonusDeductionService(
-				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
-				new RefundPackagingFilter(Optional.empty()),
-				(salesInvoice, bonusProductId) -> BONUS_TAX,
-				new PaymentBonusCreditMemoService());
+		service = newService(new RefundPackagingFilter(Optional.empty()));
 
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
@@ -269,6 +272,114 @@ class PaymentBonusDeductionServiceTest
 		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
 	}
 
+	/** The payment allocation view loads the contracts once for all its invoices; each invoice still gets its own bonus. */
+	@Test
+	void calculatorOfSeveralInvoices_computesTheBonusOfEachInvoice()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId1 = createSalesInvoice();
+		createInvoiceLine(invoiceId1, fruit, "100", null);
+		final InvoiceId invoiceId2 = createSalesInvoice();
+		createInvoiceLine(invoiceId2, fruit, "200", null);
+		final InvoiceId invoiceIdNotLoaded = createSalesInvoice();
+		createInvoiceLine(invoiceIdNotLoaded, fruit, "300", null);
+
+		final PaymentBonusDeductionService.Calculator calculator = service.newCalculator(ImmutableSet.of(invoiceId1, invoiceId2));
+
+		assertThat(calculator.computeForInvoice(invoiceId1).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.60");
+		assertThat(calculator.computeForInvoice(invoiceId2).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("5.20");
+		assertThat(calculator.computeForInvoice(invoiceIdNotLoaded)).isEmpty();
+	}
+
+	/** The bonus at payment has no quantity scales: a condition's only line applies, whatever its minimum quantity. */
+	@Test
+	void singleConfigWithAMinimumQuantity_itsPercentageApplies()
+	{
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		config.setMinQty(new BigDecimal("100"));
+		saveRecord(config);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+
+		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("3.00");
+	}
+
+	/** With several lines of one condition, the line with the smallest minimum quantity applies. */
+	@Test
+	void severalConfigs_theSmallestMinimumQuantityApplies()
+	{
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig biggerConfig = newInstance(I_C_Flatrate_RefundConfig.class);
+		InterfaceWrapperHelper.copyValues(config, biggerConfig);
+		biggerConfig.setMinQty(new BigDecimal("1000"));
+		biggerConfig.setRefundPercent(new BigDecimal("5"));
+		saveRecord(biggerConfig);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+
+		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.00");
+	}
+
+	/** The bonus is a percentage of the net goods value; the VAT that is included in the line amount is not part of it. */
+	@Test
+	void taxIncludedInvoice_bonusOnTheNetAmount()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		final I_C_Invoice invoice = loadOutOfTrx(invoiceId, I_C_Invoice.class);
+		invoice.setIsTaxIncluded(true);
+		saveRecord(invoice);
+
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("7 %");
+		tax.setRate(new BigDecimal("7"));
+		tax.setC_TaxCategory_ID(1);
+		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")));
+		tax.setRequiresTaxCertificate("N");
+		saveRecord(tax);
+		final I_C_InvoiceLine line = createInvoiceLine(invoiceId, fruit, "107", null);
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		saveRecord(line);
+
+		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.60"); // 2.6 % of 100, not of 107
+	}
+
+	/** A condition that is restricted to packing materials only takes the lines whose packing instruction has one of them. */
+	@Test
+	void packagingFilter_onlyTheLinesWithTheConditionsPackingMaterial()
+	{
+		final int crateMaterialId = 500;
+		final int boxMaterialId = 600;
+		final HUPIItemProductId crateInstructionId = HUPIItemProductId.ofRepoId(10);
+		final HUPIItemProductId boxInstructionId = HUPIItemProductId.ofRepoId(20);
+		final RefundPackagingMaterialProvider packingMaterialProvider = (huPIItemProductId, bpartnerId) -> Optional.of(huPIItemProductId.equals(crateInstructionId) ? crateMaterialId : boxMaterialId);
+		service = newService(new RefundPackagingFilter(Optional.of(ImmutableList.of(packingMaterialProvider))));
+
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "10", goodsBonusProduct);
+		config.setIsPackingOptionFiltered(true);
+		saveRecord(config);
+		final I_C_Flatrate_RefundConfig_PackingOption option = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
+		option.setC_Flatrate_RefundConfig_ID(config.getC_Flatrate_RefundConfig_ID());
+		option.setM_HU_PackingMaterial_ID(crateMaterialId);
+		saveRecord(option);
+
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", createOrderLine(customerId, crateInstructionId));
+		createInvoiceLine(invoiceId, fruit, "50", createOrderLine(customerId, boxInstructionId));
+		createInvoiceLine(invoiceId, fruit, "30", null); // no packing instruction
+
+		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("10.00"); // 10 % of the 100 in crates only
+	}
+
+	private PaymentBonusDeductionService newService(@NonNull final RefundPackagingFilter refundPackagingFilter)
+	{
+		return new PaymentBonusDeductionService(
+				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
+				refundPackagingFilter,
+				(salesInvoice, bonusProductId) -> BONUS_TAX,
+				new PaymentBonusCreditMemoService());
+	}
+
 	private BPartnerId createBPartner()
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
@@ -364,6 +475,11 @@ class PaymentBonusDeductionServiceTest
 
 	private I_C_OrderLine createOrderLine(@NonNull final BPartnerId orderPartnerId)
 	{
+		return createOrderLine(orderPartnerId, null);
+	}
+
+	private I_C_OrderLine createOrderLine(@NonNull final BPartnerId orderPartnerId, @Nullable final HUPIItemProductId huPIItemProductId)
+	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setC_BPartner_ID(orderPartnerId.getRepoId());
 		order.setIsSOTrx(true);
@@ -371,11 +487,12 @@ class PaymentBonusDeductionServiceTest
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
+		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPIItemProductId));
 		saveRecord(orderLine);
 		return orderLine;
 	}
 
-	private void createInvoiceLine(
+	private I_C_InvoiceLine createInvoiceLine(
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final ProductId productId,
 			@NonNull final String lineNetAmt,
@@ -391,5 +508,6 @@ class PaymentBonusDeductionServiceTest
 			invoiceLine.setC_Order_ID(orderLine.getC_Order_ID());
 		}
 		saveRecord(invoiceLine);
+		return invoiceLine;
 	}
 }

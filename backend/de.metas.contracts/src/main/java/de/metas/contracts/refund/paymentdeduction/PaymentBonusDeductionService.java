@@ -1,15 +1,16 @@
 package de.metas.contracts.refund.paymentdeduction;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.BonusRecipient;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundContractQuery;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyPrecision;
@@ -49,8 +50,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -97,125 +100,189 @@ public class PaymentBonusDeductionService
 	 */
 	public Optional<PaymentBonusDeduction> computeForInvoice(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		if (!invoice.isSOTrx() || invoiceBL.isCreditMemo(invoice))
-		{
-			return Optional.empty(); // the customer deducts a bonus when paying a sales invoice
-		}
-		if (!refundContractRepository.hasAnyRefundContract(TimeUtil.asLocalDate(invoice.getDateInvoiced())))
-		{
-			return Optional.empty(); // the usual case, cached: no refund contracts at all
-		}
-		if (creditMemoService.isCreditMemoAlreadyGenerated(invoiceId))
-		{
-			return Optional.empty(); // once per invoice; e.g. the second allocation of a partially paid invoice deducts nothing
-		}
-
-		final BPartnerId customerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		final CurrencyPrecision precision = currencyBL.getStdPrecision(currencyId);
-
-		final ImmutableList<I_C_InvoiceLine> lineRecords = invoiceDAO.retrieveLines(invoiceId).stream()
-				.filter(line -> line.getM_Product_ID() > 0)
-				.collect(ImmutableList.toImmutableList());
-		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> categoryIdAndAncestorsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(
-				lineRecords.stream().map(line -> ProductId.ofRepoId(line.getM_Product_ID())).collect(ImmutableSet.toImmutableSet()));
-		final ImmutableList<InvoiceLineInfo> lines = lineRecords.stream()
-				.map(line -> toInvoiceLineInfo(invoice, line, categoryIdAndAncestorsByProductId, precision))
-				.collect(ImmutableList.toImmutableList());
-		if (lines.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableSet<BPartnerId> possibleTermPartnerIds = lines.stream()
-				.map(InvoiceLineInfo::getShipmentBPartnerId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Map<ProductId, Money> netAmtsByBonusProductId = new LinkedHashMap<>();
-		for (final I_C_Flatrate_Term term : retrieveRefundTerms(invoice.getDateInvoiced(), customerId, possibleTermPartnerIds))
-		{
-			final RefundContract contract = refundContractRepository.ofRecord(term);
-			if (!contract.isDeductedAtPayment())
-			{
-				continue;
-			}
-
-			final List<RefundConfig> configs = contract.getRefundConfigs();
-			final RefundConfig config = RefundConfigs.smallestMinQty(configs); // the bonus at payment is a flat percentage; there are no quantity scales
-			RefundConfigs.assertDeductedAtPaymentIsComputable(config); // validated when the config is saved
-			final ProductId bonusProductId = Check.assumeNotNull(config.getBonusProductId(), "bonus product of {}", config);
-
-			final ProductId termProductId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
-			final Money baseNetAmt = lines.stream()
-					.filter(line -> isRecipient(contract, customerId, line))
-					.filter(line -> termProductId == null || termProductId.equals(line.getProductId()))
-					.filter(line -> config.getProductId() == null || config.getProductId().equals(line.getProductId()))
-					.filter(line -> config.getProductCategoryId() == null || line.getProductCategoryIdAndAncestors().contains(config.getProductCategoryId()))
-					.filter(line -> refundPackagingFilter.isIncluded(contract.getConditionsId(), line.getHuPIItemProductId(), customerId))
-					.map(InvoiceLineInfo::getNetAmt)
-					.reduce(Money.zero(currencyId), Money::add);
-
-			final Money bonusNetAmt = baseNetAmt.multiply(config.getPercent(), precision);
-			if (bonusNetAmt.signum() <= 0)
-			{
-				continue;
-			}
-			netAmtsByBonusProductId.merge(bonusProductId, bonusNetAmt, Money::add);
-		}
-
-		if (netAmtsByBonusProductId.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableList<PaymentBonusDeductionLine> deductionLines = netAmtsByBonusProductId.entrySet().stream()
-				.map(entry -> PaymentBonusDeductionLine.builder()
-						.bonusProductId(entry.getKey())
-						.tax(taxProvider.getTax(invoice, entry.getKey()))
-						.netAmt(entry.getValue())
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
-		return Optional.of(PaymentBonusDeduction.builder()
-				.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
-				.invoiceId(invoiceId)
-				.customerId(customerId)
-				.currencyId(currencyId)
-				.precision(precision)
-				.lines(deductionLines)
-				.build());
+		return newCalculator(ImmutableSet.of(invoiceId)).computeForInvoice(invoiceId);
 	}
 
-	private static boolean isRecipient(@NonNull final RefundContract contract, @NonNull final BPartnerId customerId, @NonNull final InvoiceLineInfo line)
+	/**
+	 * Loads what is needed to compute the bonuses of the given invoices at once, in particular the refund terms of all their partners,
+	 * e.g. for the invoices of the payment allocation view.
+	 */
+	public Calculator newCalculator(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
-		final BPartnerId recipientId = contract.extractBonusRecipient() == BonusRecipient.SHIPMENT_PARTNER
-				? line.getShipmentBPartnerId()
-				: customerId;
-		return contract.getBPartnerId().equals(recipientId);
-	}
+		final ImmutableList<I_C_Invoice> salesInvoices = invoiceIds.isEmpty()
+				? ImmutableList.of()
+				: invoiceBL.getByIds(invoiceIds).stream()
+				.filter(invoice -> invoice.isSOTrx() && !invoiceBL.isCreditMemo(invoice)) // the customer deducts a bonus when paying a sales invoice
+				.filter(invoice -> refundContractRepository.hasAnyRefundContract(TimeUtil.asLocalDate(invoice.getDateInvoiced()))) // the usual case, cached: no refund contracts at all
+				.collect(ImmutableList.toImmutableList());
+		if (salesInvoices.isEmpty())
+		{
+			return new Calculator(ImmutableMap.of(), ImmutableListMultimap.of(), ImmutableList.of());
+		}
 
-	private List<I_C_Flatrate_Term> retrieveRefundTerms(
-			@NonNull final Timestamp dateInvoiced,
-			@NonNull final BPartnerId customerId,
-			@NonNull final ImmutableSet<BPartnerId> shipmentBPartnerIds)
-	{
+		// once per invoice; e.g. the second allocation of a partially paid invoice deducts nothing
+		final ImmutableSet<InvoiceId> invoiceIdsWithCreditMemo = creditMemoService.retainIfCreditMemoWasAlreadyGenerated(
+				salesInvoices.stream().map(PaymentBonusDeductionService::extractInvoiceId).collect(ImmutableSet.toImmutableSet()));
+		final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById = salesInvoices.stream()
+				.filter(invoice -> !invoiceIdsWithCreditMemo.contains(extractInvoiceId(invoice)))
+				.collect(ImmutableMap.toImmutableMap(PaymentBonusDeductionService::extractInvoiceId, invoice -> invoice));
+
+		final ImmutableListMultimap<InvoiceId, InvoiceLineInfo> linesByInvoiceId = retrieveLines(invoicesById.values());
+
 		final ImmutableSet<BPartnerId> partnerIds = ImmutableSet.<BPartnerId>builder()
-				.add(customerId)
-				.addAll(shipmentBPartnerIds)
+				.addAll(invoicesById.values().stream().map(invoice -> BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).iterator())
+				.addAll(linesByInvoiceId.values().stream().map(InvoiceLineInfo::getShipmentBPartnerId).filter(Objects::nonNull).iterator())
 				.build();
+		final ImmutableList<RefundContract> contracts = invoicesById.isEmpty()
+				? ImmutableList.of()
+				: retrieveDeductedAtPaymentContracts(partnerIds, invoicesById.values());
+
+		return new Calculator(invoicesById, linesByInvoiceId, contracts);
+	}
+
+	private static InvoiceId extractInvoiceId(@NonNull final I_C_Invoice invoice)
+	{
+		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+	}
+
+	private ImmutableListMultimap<InvoiceId, InvoiceLineInfo> retrieveLines(@NonNull final Collection<I_C_Invoice> invoices)
+	{
+		final ImmutableListMultimap.Builder<InvoiceId, I_C_InvoiceLine> lineRecordsByInvoiceId = ImmutableListMultimap.builder();
+		for (final I_C_Invoice invoice : invoices)
+		{
+			final InvoiceId invoiceId = extractInvoiceId(invoice);
+			invoiceDAO.retrieveLines(invoiceId).stream()
+					.filter(line -> line.getM_Product_ID() > 0)
+					.forEach(line -> lineRecordsByInvoiceId.put(invoiceId, line));
+		}
+		final ImmutableListMultimap<InvoiceId, I_C_InvoiceLine> lineRecords = lineRecordsByInvoiceId.build();
+
+		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> categoryIdAndAncestorsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(
+				lineRecords.values().stream().map(line -> ProductId.ofRepoId(line.getM_Product_ID())).collect(ImmutableSet.toImmutableSet()));
+
+		final ImmutableListMultimap.Builder<InvoiceId, InvoiceLineInfo> result = ImmutableListMultimap.builder();
+		for (final I_C_Invoice invoice : invoices)
+		{
+			final InvoiceId invoiceId = extractInvoiceId(invoice);
+			final CurrencyPrecision precision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+			lineRecords.get(invoiceId).forEach(line -> result.put(invoiceId, toInvoiceLineInfo(invoice, line, categoryIdAndAncestorsByProductId, precision)));
+		}
+		return result.build();
+	}
+
+	/**
+	 * @return the completed refund contracts of the given partners that are deducted at payment and valid at any of the invoices' dates; which of them applies to which line is up to {@link RefundContractRepository#isMatching}
+	 */
+	private ImmutableList<RefundContract> retrieveDeductedAtPaymentContracts(
+			@NonNull final ImmutableSet<BPartnerId> partnerIds,
+			@NonNull final Collection<I_C_Invoice> invoices)
+	{
+		final Timestamp minDateInvoiced = invoices.stream().map(I_C_Invoice::getDateInvoiced).min(Comparator.naturalOrder()).get();
+		final Timestamp maxDateInvoiced = invoices.stream().map(I_C_Invoice::getDateInvoiced).max(Comparator.naturalOrder()).get();
 
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateInvoiced)
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateInvoiced)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, maxDateInvoiced)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, minDateInvoiced)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, partnerIds)
 				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
-				.list();
+				.stream()
+				.map(refundContractRepository::ofRecord)
+				.filter(RefundContract::isDeductedAtPayment)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Computes the bonuses of the invoices that it was loaded for; see {@link #newCalculator(Collection)}.
+	 */
+	public final class Calculator
+	{
+		private final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById;
+		private final ImmutableListMultimap<InvoiceId, InvoiceLineInfo> linesByInvoiceId;
+		private final ImmutableList<RefundContract> contracts;
+
+		private Calculator(
+				@NonNull final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById,
+				@NonNull final ImmutableListMultimap<InvoiceId, InvoiceLineInfo> linesByInvoiceId,
+				@NonNull final ImmutableList<RefundContract> contracts)
+		{
+			this.invoicesById = invoicesById;
+			this.linesByInvoiceId = linesByInvoiceId;
+			this.contracts = contracts;
+		}
+
+		/**
+		 * @return the bonus that the customer may deduct when paying the given invoice; empty if there is none, also if the invoice was not given to {@link #newCalculator(Collection)}
+		 */
+		public Optional<PaymentBonusDeduction> computeForInvoice(@NonNull final InvoiceId invoiceId)
+		{
+			final I_C_Invoice invoice = invoicesById.get(invoiceId);
+			final ImmutableList<InvoiceLineInfo> lines = linesByInvoiceId.get(invoiceId);
+			if (invoice == null || lines.isEmpty())
+			{
+				return Optional.empty();
+			}
+
+			final BPartnerId customerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+			final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+			final CurrencyPrecision precision = currencyBL.getStdPrecision(currencyId);
+			final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+
+			final Map<ProductId, Money> netAmtsByBonusProductId = new LinkedHashMap<>();
+			for (final RefundContract contract : contracts)
+			{
+				// the bonus at payment is a flat percentage; there are no quantity scales. The config that the contract adds for quantity 0 is not one of the condition's.
+				final RefundConfig config = RefundConfigs.smallestMinQty(contract.getRefundConfigs().stream()
+						.filter(refundConfig -> refundConfig.getId() != null)
+						.collect(ImmutableList.toImmutableList()));
+				RefundConfigs.assertDeductedAtPaymentIsComputable(config); // validated when the config is saved
+				final ProductId bonusProductId = Check.assumeNotNull(config.getBonusProductId(), "bonus product of {}", config);
+
+				final Money baseNetAmt = lines.stream()
+						.filter(line -> RefundContractRepository.isMatching(contract, toRefundContractQuery(customerId, line, dateInvoiced), line::getProductCategoryIdAndAncestors))
+						.filter(line -> config.getProductId() == null || config.getProductId().equals(line.getProductId()))
+						.filter(line -> refundPackagingFilter.isIncluded(contract.getConditionsId(), line.getHuPIItemProductId(), customerId))
+						.map(InvoiceLineInfo::getNetAmt)
+						.reduce(Money.zero(currencyId), Money::add);
+
+				final Money bonusNetAmt = baseNetAmt.multiply(config.getPercent(), precision);
+				if (bonusNetAmt.signum() <= 0)
+				{
+					continue;
+				}
+				netAmtsByBonusProductId.merge(bonusProductId, bonusNetAmt, Money::add);
+			}
+
+			if (netAmtsByBonusProductId.isEmpty())
+			{
+				return Optional.empty();
+			}
+
+			final ImmutableList<PaymentBonusDeductionLine> deductionLines = netAmtsByBonusProductId.entrySet().stream()
+					.map(entry -> PaymentBonusDeductionLine.builder()
+							.bonusProductId(entry.getKey())
+							.tax(taxProvider.getTax(invoice, entry.getKey()))
+							.netAmt(entry.getValue())
+							.build())
+					.collect(ImmutableList.toImmutableList());
+
+			return Optional.of(PaymentBonusDeduction.builder()
+					.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+					.invoiceId(invoiceId)
+					.customerId(customerId)
+					.currencyId(currencyId)
+					.precision(precision)
+					.lines(deductionLines)
+					.build());
+		}
+	}
+
+	private static RefundContractQuery toRefundContractQuery(@NonNull final BPartnerId customerId, @NonNull final InvoiceLineInfo line, @NonNull final LocalDate dateInvoiced)
+	{
+		return new RefundContractQuery(customerId, line.getShipmentBPartnerId(), line.getProductId(), dateInvoiced);
 	}
 
 	private InvoiceLineInfo toInvoiceLineInfo(
