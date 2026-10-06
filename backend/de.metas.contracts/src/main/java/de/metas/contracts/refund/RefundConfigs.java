@@ -53,6 +53,7 @@ public class RefundConfigs
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
@@ -108,6 +109,11 @@ public class RefundConfigs
 	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		return extractSingleElement(refundConfigs, RefundConfig::getBonusRecipient);
+	}
+
+	public boolean extractDeductedAtPayment(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		return extractSingleElement(refundConfigs, RefundConfig::isDeductedAtPayment);
 	}
 
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
@@ -173,6 +179,14 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same BonusRecipient; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT).markAsUserValidationError();
+		}
+
+		// the bonus of a condition is either invoiced by the refund engine or deducted by the customer at payment
+		if (hasDifferentValues(refundConfigs, RefundConfig::isDeductedAtPayment))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same IsDeductedAtPayment; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT).markAsUserValidationError();
 		}
 
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.

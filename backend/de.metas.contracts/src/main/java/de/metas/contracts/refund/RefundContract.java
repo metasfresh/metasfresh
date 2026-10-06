@@ -124,6 +124,14 @@ public class RefundContract
 		return RefundConfigs.extractBonusRecipient(refundConfigs);
 	}
 
+	/**
+	 * @return {@code true} if the customer deducts this contract's bonus when paying an invoice, instead of getting it invoiced by the refund engine
+	 */
+	public boolean isDeductedAtPayment()
+	{
+		return RefundConfigs.extractDeductedAtPayment(refundConfigs);
+	}
+
 	public RefundMode extractRefundMode()
 	{
 		return RefundConfigs.extractRefundMode(refundConfigs);

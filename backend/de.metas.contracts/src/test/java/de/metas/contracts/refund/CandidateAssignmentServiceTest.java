@@ -266,6 +266,35 @@ public class CandidateAssignmentServiceTest
 	}
 
 	/**
+	 * The customer deducts the bonus of a contract that is deducted at payment when paying the invoice; the refund engine leaves that contract alone.
+	 */
+	@Test
+	public void updateAssignment_skipsTheContractThatIsDeductedAtPayment()
+	{
+		final RefundContract invoicedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract deductedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(invoicedContract);
+		refundTestTools.createRefundCandidate(deductedContract);
+
+		for (final RefundConfig config : deductedContract.getRefundConfigs())
+		{
+			final I_C_Flatrate_RefundConfig configRecord = load(config.getId(), I_C_Flatrate_RefundConfig.class);
+			configRecord.setIsDeductedAtPayment(true);
+			saveRecord(configRecord);
+		}
+
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final List<AssignmentToRefundCandidate> assignments = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).getAssignmentsToRefundCandidates();
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactly(invoicedContract.getId());
+	}
+
+	/**
 	 * A candidate that matches a contract that it is not assigned to yet (e.g. because the contract was completed later) gets assigned in the current period, but not in a past one.
 	 */
 	@Test

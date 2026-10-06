@@ -146,6 +146,8 @@ public class CandidateAssignmentService
 	{
 		return refundContractRepository.getByQuery(RefundContractQuery.of(assignableCandidate))
 				.stream()
+				// the customer deducts that bonus at payment; it is booked at the payment allocation, not invoiced
+				.filter(contract -> !contract.isDeductedAtPayment())
 				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getHuPIItemProductId(), assignableCandidate.getBpartnerLocationId().getBpartnerId()))
 				.collect(ImmutableList.toImmutableList());
 	}
