@@ -14,39 +14,30 @@ import java.util.Map;
  * Resets the barcode-scanner sysconfigs to their defaults, then applies the per-test overrides.
  * <p>
  * Resetting first means no test inherits another test's leaked scanner state (e.g. a leaked
- * {@code isInputTextReadonly='N'} that would make every later spec's scanner editable). All writes
- * go through {@link ISysConfigBL#setValueAtConfigLevel(String, String)}, which targets the
+ * {@code mode.hardware.input.readOnly='Y'} or {@code defaultMode='manual'} from barcode_scanner_modes.spec.js).
+ * All writes go through {@link ISysConfigBL#setValueAtConfigLevel(String, String)}, which targets the
  * (client,org) matching each sysconfig's declared {@code ConfigurationLevel} so the
  * {@code AD_SysConfig} interceptor does not reject them.
  */
 @Builder
 public class SysconfigCommand
 {
+	/**
+	 * Defaults = the effective values after all migrations on a standard DB (seed + later carry-forward migrations).
+	 */
 	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.<String, String>builder()
-			.put("mobileui.frontend.barcodeScanner.showInputText", "Y")
-			.put("mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y")
-			// Reset the per-instance scanner-mode knobs too — a test that flips them (e.g. the
-			// Honeywell CT60 keystroke-wedge contract test) must not leak readOnly=Y or
-			// useCamera=N onto unrelated specs in the same run. Defaults match the framework
-			// fall-backs in BarcodeScannerComponent.jsx (useCamera=true, offscreen/visible
-			// readOnly=false) and the core seed migrations 5807370 / 5807430.
-			.put("mobileui.frontend.barcodeScanner.useCamera", "Y")
-			.put("mobileui.frontend.barcodeScanner.offscreenInput.readOnly", "N")
-			.put("mobileui.frontend.barcodeScanner.visibleInput.readOnly", "N")
-			// Reset the inputText timing knobs too — a test that lowers them (e.g. the truncated-HU-QR
-			// picking test drops idleAbandonMillis to 500 so a held partial errors fast) must NOT leak
-			// that value onto later specs: a small idleAbandonMillis abandons the chunked-scan test's
-			// in-flight partial mid-gap → "QR not recognized". Defaults match the seed migrations
-			// (debounceMillis 5664360 = 300, idleAbandonMillis 5812460 = 15000, triggerOnChange = 10).
+			// Timing knobs — a test that lowers them (e.g. the truncated-HU-QR picking test drops idleAbandonMillis to 500
+			// so a held partial errors fast) must not leak that value: a small idleAbandonMillis abandons the chunked-scan
+			// test's in-flight partial mid-gap → "QR not recognized". Seeds: 5664360 = 300, 5812460 = 15000, 10.
 			.put("mobileui.frontend.barcodeScanner.inputText.debounceMillis", "300")
 			.put("mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis", "15000")
 			.put("mobileui.frontend.barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan", "10")
-			// Reset the scanner-mode knobs too — barcode_scanner_modes.spec.js flips them per test (manual-first,
-			// camera off, input readOnly=Y …), and without a reset they leak into every later spec in the run.
-			// Defaults match the seed migration 5807640_sysconfig_barcodeScanner_modes.sql.
+			// Scanner-mode knobs — barcode_scanner_modes.spec.js flips them per test (manual-first, camera off,
+			// input readOnly=Y …). Seeded by 5807640_sysconfig_barcodeScanner_modes.sql; 5807650 carries the legacy
+			// showInputText=Y forward to mode.manual.enabled=Y, so Y is the effective default for manual.
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.enabled", "Y")
 			.put("mobileui.frontend.barcodeScanner.mode.camera.enabled", "Y")
-			.put("mobileui.frontend.barcodeScanner.mode.manual.enabled", "N")
+			.put("mobileui.frontend.barcodeScanner.mode.manual.enabled", "Y")
 			.put("mobileui.frontend.barcodeScanner.defaultMode", "hardware")
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly", "N")
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode", "none")

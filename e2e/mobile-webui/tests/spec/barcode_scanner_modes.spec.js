@@ -469,7 +469,7 @@ test.describe('Modes', () => {
 });
 
 // Scanner-mode sysconfigs must not leak from one test into the next: every createMasterdata resets them to
-// the seeded defaults (hardware on, camera on, manual off, default mode hardware, input readOnly off).
+// the effective defaults (hardware on, camera on, manual on, default mode hardware, input readOnly off, inputMode none).
 // noinspection JSUnusedLocalSymbols
 test('scanner-mode sysconfigs set by one test do not leak into the next', async ({ page }) => {
     await allure.epic('E0295: Frontend MobileUI');
@@ -477,15 +477,16 @@ test('scanner-mode sysconfigs set by one test do not leak into the next', async 
     await allure.story('Barcode scanning modes');
     await allure.severity('normal');
 
-    // A previous test leaves a manual-first, camera-off, readOnly configuration behind ...
+    // A previous test leaves every scanner-mode knob away from its default ...
     await Backend.createMasterdata({
         language: 'en_US',
         request: {
             sysconfigs: modeSysconfigs({
                 hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
-                manualEnabled: 'Y',
+                manualEnabled: 'N',
                 defaultMode: 'manual',
+                hardwareInputMode: 'text',
                 hardwareInputReadOnly: 'Y',
             }),
         },
@@ -498,8 +499,9 @@ test('scanner-mode sysconfigs set by one test do not leak into the next', async 
     await ApplicationsListScreen.startApplication('huManager');
     await HUManagerScreen.waitForScreen();
 
-    // Seeded defaults apply: hardware input without readOnly, camera toggle offered, no manual-entry fallback.
+    // Defaults apply: hardware mode is active (a leaked defaultMode=manual would open manual entry, since manual is
+    // enabled again), its input has inputmode=none and no readonly, and the footer offers both camera and manual.
     await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: null });
     await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-toggle-hw-camera');
-    await BarcodeScannerComponent.expectFooterButtonAbsent('barcode-scanner-enter-manually');
+    await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-enter-manually');
 });
