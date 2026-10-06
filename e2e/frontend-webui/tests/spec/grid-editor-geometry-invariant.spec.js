@@ -5,12 +5,15 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import {
   createMasterdata,
   gotoOrderList,
   createNewOrder,
   selectOrderCustomer,
   addOrderLine,
+  ORDER_LINE_TAB_ID,
 } from '../utils/OrderLineHarness';
 
 /**
@@ -29,7 +32,7 @@ import {
  * default-sized text input, the case that widened it.
  *
  * While editing, every visible editor control (input, textarea, switch, button) must also lie inside its cell, so
- * the editor really uses the column's width instead of spilling over its neighbour.
+ * the editor really uses the column's width and the row's height instead of spilling over a neighbour.
  *
  * The list of widget types actually exercised is asserted too, so a fixture change can not make
  * this spec silently test fewer editor types.
@@ -67,11 +70,11 @@ async function measureRow(row) {
 
 /**
  * The cell's component box: the visible static presentation (`.cell-text-wrapper`) in display mode,
- * the editor (`.form-group-table`) in edit mode. The invisible width keeper is not part of it.
+ * the editor (its `.form-group` root) in edit mode. The invisible width keeper is not part of it.
  */
 async function measureComponentBox(cell) {
   return await cell.evaluate((td) => {
-    const editor = td.querySelector('.form-group-table');
+    const editor = td.querySelector('.form-group');
     const component = editor || td.querySelector(':scope > div:not(.cell-width-keeper) .cell-text-wrapper');
     if (!component) {
       return null;
@@ -113,7 +116,7 @@ function compareGeometry(phase, activatedCell, before, now) {
 /** returns the editor's widget type, or null when the cell did not open an editor (read-only) */
 async function openEditor(page, cell) {
   await cell.dblclick();
-  const editor = cell.locator('.form-group-table');
+  const editor = cell.locator('.form-group');
   const opened = await editor
     .first()
     .waitFor({ state: 'visible', timeout: 2000 })
@@ -122,14 +125,19 @@ async function openEditor(page, cell) {
   if (!opened) {
     return null;
   }
-  const className = await cell.evaluate((td) => td.querySelector('.form-group-table')?.className || '');
+  const className = await cell.evaluate((td) => td.querySelector('.form-group')?.className || '');
   // let the editor settle (typeahead list, focus) before measuring
   await page.waitForTimeout(400);
   const match = className.match(/widgetType-([A-Za-z]+)/);
   return match ? match[1] : 'unknown';
 }
 
-async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, label) {
+/** leaves the cell's editor; Escape by default (in a modal, Escape would close the whole modal) */
+async function leaveWithEscape(page) {
+  await page.keyboard.press('Escape');
+}
+
+async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, label, { leave = leaveWithEscape } = {}) {
   const cellIds = await row.evaluate((tr) =>
     Array.from(tr.querySelectorAll('td[data-cy]')).map((td) => td.getAttribute('data-cy'))
   );
@@ -152,22 +160,26 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     const controlsOutsideCell = await cell.evaluate((td, tolerance) => {
       const cellBox = td.getBoundingClientRect();
       return Array.from(
-        td.querySelectorAll(
-          '.form-group-table input, .form-group-table textarea, .form-group-table .input-slider, .form-group-table button'
-        )
+        td.querySelectorAll('.form-group input, .form-group textarea, .form-group .input-slider, .form-group button')
       )
         .map((control) => ({ control, box: control.getBoundingClientRect() }))
         .filter(({ box }) => box.width > 0 && box.height > 0)
-        .filter(({ box }) => box.left < cellBox.left - tolerance || box.right > cellBox.right + tolerance)
+        .filter(
+          ({ box }) =>
+            box.left < cellBox.left - tolerance ||
+            box.right > cellBox.right + tolerance ||
+            box.top < cellBox.top - tolerance ||
+            box.bottom > cellBox.bottom + tolerance
+        )
         .map(
           ({ control, box }) =>
-            `${control.tagName.toLowerCase()}.${control.className} spans ${box.left}..${box.right}, cell ${cellBox.left}..${cellBox.right}`
+            `${control.tagName.toLowerCase()}.${control.className} spans x ${box.left}..${box.right} y ${box.top}..${box.bottom}, cell x ${cellBox.left}..${cellBox.right} y ${cellBox.top}..${cellBox.bottom}`
         );
     }, TOLERANCE_PX);
 
-    await page.keyboard.press('Escape');
+    await leave(page);
     await cell
-      .locator('.form-group-table')
+      .locator('.form-group')
       .first()
       .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
@@ -202,6 +214,68 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     violations,
     `${label}: entering/leaving edit mode must not change the component box, the row height or any column width`
   ).toEqual([]);
+}
+
+/**
+ * Serve the sales order layout with the order line's Description column flagged multi-line
+ * (`multilineText`, 3 lines) — exactly what AD_UI_Element.IsMultiLine='Y' on that grid element
+ * produces. A selected row of a grid with such a column is extended: every cell's static value
+ * gets 3 x 20px of height. No included tab of the seed DB carries IsMultiLine, so the AD setting is
+ * applied to the layout response instead of to the database.
+ */
+async function serveOrderLineDescriptionAsMultiline(page) {
+  await page.route(
+    (url) => url.pathname.includes(`/window/${SALES_ORDER_WINDOW_ID}`) && url.pathname.endsWith('/layout'),
+    async (route) => {
+      const response = await route.fetch();
+      const layout = await response.json();
+      const flag = (node) => {
+        if (Array.isArray(node)) {
+          node.forEach(flag);
+        } else if (node && typeof node === 'object') {
+          if (Array.isArray(node.fields) && node.fields[0] && node.fields[0].field === 'Description') {
+            node.multilineText = true;
+            node.multilineTextLines = 3;
+          }
+          Object.values(node).forEach(flag);
+        }
+      };
+      flag(layout);
+      await route.fulfill({ response, json: layout });
+    }
+  );
+}
+
+/** open the order's text-lines modal (a grid with inline-editable text rows) and add one text row */
+async function openTextLinesModalWithOneTextRow(page, orderId) {
+  const topActionsResponse = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${orderId}/${ORDER_LINE_TAB_ID}/topActions`
+  );
+  expect(topActionsResponse.ok()).toBeTruthy();
+  const { actions } = await topActionsResponse.json();
+  const launcherIndex = actions.findIndex((action) => action.internalName === 'WEBUI_Order_DocTextLines_Launcher');
+  expect(launcherIndex, 'the text-lines launcher must be a top action of the order line tab').toBeGreaterThanOrEqual(0);
+  await page.locator('.filter-panel-buttons button[title]').nth(launcherIndex).click();
+  await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes('/documentView/docTextLines/') &&
+        !response.url().includes('/layout') &&
+        response.request().method() === 'GET',
+      { timeout: SLOW_ACTION_TIMEOUT }
+    ),
+    page.getByTestId('quick-action-button').click(),
+  ]);
+  const textRow = page.locator('.panel-modal [data-testid^="table-row-T"]').first();
+  await textRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  return textRow;
+}
+
+/** in a modal, Escape closes the whole modal: leave the cell by clicking the modal's title instead */
+async function leaveByClickingModalTitle(page) {
+  await page.locator('.panel-modal-header-title').click();
 }
 
 test.describe('Grid editors keep the row height and every column width (de_DE)', () => {
@@ -293,5 +367,79 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
       .first();
 
     await assertEveryEditorKeepsGeometry(page, row, ADDRESS_EXPECTED_WIDGET_TYPES, 'address');
+  });
+
+  test('Order-line grid, extended multi-line row: each editor occupies the extended static box; row height and column widths unchanged', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Grid — no layout change when entering/leaving an editor');
+    allure.severity('critical');
+    test.setTimeout(300000);
+    await page.setViewportSize(VIEWPORT);
+    await serveOrderLineDescriptionAsMultiline(page);
+
+    const masterdata = await createMasterdata('de_DE');
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await gotoOrderList();
+    const recordId = await createNewOrder();
+    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await addOrderLine(recordId, {
+      productCode: masterdata.products.Product1.productCode,
+      quantity: 1,
+    });
+
+    const row = page
+      .locator('table tbody tr')
+      .filter({ has: page.locator('[data-cy="cell-QtyEntered"]') })
+      .first();
+    await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    await test.step('Selecting the row extends it (multi-line column)', async () => {
+      await row.locator('[data-cy="cell-Line"]').click();
+      await expect(row.locator('.cell-text-wrapper.extended').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      const rowHeight = await row.evaluate((tr) => tr.getBoundingClientRect().height);
+      expect(rowHeight, 'an extended row is taller than a normal 42px row').toBeGreaterThan(60);
+      // the extended static text keeps its normal line height: a 3-line (60px) cell shows 3 lines of
+      // text, not 2 lines spaced like a single-line cell (26px)
+      const lineHeight = await row
+        .locator('[data-cy="cell-Description"] .cell-text-wrapper.extended')
+        .evaluate((wrapper) => getComputedStyle(wrapper).lineHeight);
+      expect(lineHeight, 'line height of the extended multi-line text').not.toBe('26px');
+    });
+
+    await assertEveryEditorKeepsGeometry(page, row, ['Quantity', 'LongText', 'List'], 'order-line extended row');
+  });
+
+  test('Grid inside a modal (order text lines): opening and leaving each editor changes neither the component box, the row height nor any column width', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Grid — no layout change when entering/leaving an editor');
+    allure.severity('critical');
+    test.setTimeout(300000);
+    await page.setViewportSize(VIEWPORT);
+
+    const masterdata = await createMasterdata('de_DE');
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await gotoOrderList();
+    const recordId = await createNewOrder();
+    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+
+    const textRow = await openTextLinesModalWithOneTextRow(page, recordId);
+
+    await assertEveryEditorKeepsGeometry(page, textRow, ['LongText', 'List'], 'text-lines modal', {
+      leave: leaveByClickingModalTitle,
+    });
   });
 });

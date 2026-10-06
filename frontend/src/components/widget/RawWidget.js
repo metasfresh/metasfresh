@@ -653,7 +653,9 @@ export class RawWidget extends PureComponent {
           'form-group',
           {
             row: !quickInput,
-            'form-group-table': rowId && !isModal,
+            // every grid-cell editor (dataSource "table"), also in a grid shown inside a modal
+            'form-group-table':
+              rowId && (!isModal || this.props.dataSource === 'table'),
           },
           computeWidgetTypeClass(widgetType, fields.length),
           widgetSize ? 'widgetSize-' + widgetSize : '',
