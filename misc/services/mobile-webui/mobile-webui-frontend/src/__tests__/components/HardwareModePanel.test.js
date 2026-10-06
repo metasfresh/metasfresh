@@ -9,9 +9,9 @@ import HardwareModePanel from '../../components/BarcodeScanner/HardwareModePanel
 
 const store = createStore(combineReducers({ settings }));
 
-const panel = ({ isProcessing = false, onBarcodeScanned }) => (
+const panel = ({ isProcessing = false, disabled = false, onBarcodeScanned }) => (
   <Provider store={store}>
-    <HardwareModePanel isProcessing={isProcessing} onBarcodeScanned={onBarcodeScanned} />
+    <HardwareModePanel isProcessing={isProcessing} disabled={disabled} onBarcodeScanned={onBarcodeScanned} />
   </Provider>
 );
 
@@ -30,11 +30,14 @@ const pressKeys = (text) => {
   }
 };
 
+const isScanInProgressShown = (container) =>
+  container.querySelector('.scan-prompt').classList.contains('scan-in-progress');
+
 describe('HardwareModePanel', () => {
-  it('writes only the first character of a scan into the hidden input', () => {
-    // The first character flips the input off :placeholder-shown, which drives the "scan in progress"
-    // caption (BarcodeScannerComponent.scss). Writing every further character forces a style recalc +
-    // layout per keystroke, which on a slow handheld adds up to seconds per long QR code.
+  it('does not write the scanned characters into the hidden input', () => {
+    // The "scan in progress" caption is driven by an explicit state, not by the input's content: every
+    // write into the input forces a style recalc + layout, which on a slow handheld adds up to seconds
+    // per long QR code. The scanned code itself comes from the reader hook's buffer.
     const { input } = renderPanel();
     const valueWrites = [];
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
@@ -49,8 +52,19 @@ describe('HardwareModePanel', () => {
 
     pressKeys('HU#1#{"id":"abc"');
 
-    expect(valueWrites).toEqual(['H']);
-    expect(input.value).toBe('H');
+    expect(valueWrites.filter((value) => value !== '')).toEqual([]);
+  });
+
+  it('shows the scan in progress while a scan is being read and hides it when the scan is done', () => {
+    const { container, onBarcodeScanned } = renderPanel();
+    expect(isScanInProgressShown(container)).toBe(false);
+
+    pressKeys('HU#1#');
+    expect(isScanInProgressShown(container)).toBe(true);
+
+    pressKeys(['Enter']);
+    expect(onBarcodeScanned).toHaveBeenCalledTimes(1);
+    expect(isScanInProgressShown(container)).toBe(false);
   });
 
   it('still shows the scan in progress when the input was not mounted at the first character', () => {
@@ -63,6 +77,36 @@ describe('HardwareModePanel', () => {
     rerenderPanel({ isProcessing: false });
     pressKeys('U#1#');
 
-    expect(container.querySelector('#input-text').value).not.toBe('');
+    expect(isScanInProgressShown(container)).toBe(true);
+  });
+
+  it('hides the scan in progress when the reader is disabled mid-scan', () => {
+    // E.g. switching HARDWARE -> MANUAL mid-scan: the reader drops its buffer without onReadDone, while
+    // the hidden input stays mounted. The caption must not stay on "scanning" after switching back.
+    const { rerenderPanel, container } = renderPanel();
+    pressKeys('HU#1#');
+    expect(isScanInProgressShown(container)).toBe(true);
+
+    rerenderPanel({ disabled: true });
+    rerenderPanel({ disabled: false });
+
+    expect(isScanInProgressShown(container)).toBe(false);
+  });
+
+  it('keeps the same keydown listener for the whole scan', () => {
+    // The in-progress state re-renders the panel mid-scan; that must not tear down and re-attach the
+    // reader's window listener (and its idle timer) for every scan.
+    const { rerenderPanel } = renderPanel();
+    const addSpy = jest.spyOn(window, 'addEventListener');
+    const removeSpy = jest.spyOn(window, 'removeEventListener');
+
+    pressKeys('HU#1#');
+    pressKeys(['Enter']);
+    rerenderPanel({});
+
+    expect(addSpy.mock.calls.filter(([type]) => type === 'keydown')).toHaveLength(0);
+    expect(removeSpy.mock.calls.filter(([type]) => type === 'keydown')).toHaveLength(0);
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
   });
 });

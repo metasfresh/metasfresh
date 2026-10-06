@@ -91,7 +91,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     return () => handleInputTextChangedDebounced.cancel();
   }, [handleInputTextChangedDebounced]);
 
-  useKeyboardBarcodeReader({
+  const { isReadInProgress } = useKeyboardBarcodeReader({
     onReadDone: (barcode, scanStats) => {
       // console.log('onReadDone', barcode);
       // Clear the input BEFORE calling onBarcodeScanned.
@@ -104,16 +104,6 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
         inputTextRef.current.value = '';
       }
       onBarcodeScanned({ scannedBarcode: barcode, traceParams: { ...traceParams, ...scanStats } });
-    },
-    onReadInProgress: (barcode) => {
-      // Write only while the input is still empty: one char flips it off :placeholder-shown, which
-      // drives the "scan in progress" caption (BarcodeScannerComponent.scss); onReadDone clears it.
-      // A write per keystroke forces a style recalc + layout of the input per char, also on a
-      // read-only input, which on a slow handheld adds up to seconds per long QR code. Reading
-      // .value forces no layout. The scanned code itself comes from the hook's buffer (onReadDone).
-      if (inputTextRef?.current && !inputTextRef.current.value) {
-        inputTextRef.current.value = barcode;
-      }
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
@@ -190,7 +180,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
   }
 
   return (
-    <div className="hardware-mode-panel scan-prompt">
+    <div className={`hardware-mode-panel scan-prompt${isReadInProgress ? ' scan-in-progress' : ''}`}>
       {/* FontAwesome SVG-with-JS (src/index.js → @fortawesome/fontawesome-free/js/all.min) mutates
           <i className="fas …"> into <svg> in place. React's fiber keeps a stale stateNode pointer
           to the detached <i>; if the conditional <input> below were ever a sibling needing
@@ -200,8 +190,10 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       <span>
         <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
       </span>
-      {/* Caption swap — idle text by default, "Scanning in progress…" while the input has
-          content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
+      {/* Caption swap — idle text by default, "Scanning in progress…" while the reader hook has a scan
+          in progress (.scan-in-progress, see BarcodeScannerComponent.scss). Deliberately not derived
+          from the input's content: writing scanned chars into the input costs a style recalc + layout
+          per keystroke on the handheld. */}
       <div className="scan-prompt-text">
         <span className="scan-prompt-text-idle">
           {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}

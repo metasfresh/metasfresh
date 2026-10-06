@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
 // Abandon window for a stuck/truncated streamed QR partial (see the note in the effect below).
@@ -18,6 +18,17 @@ export const useKeyboardBarcodeReader = ({
   idleAbandonMs = IDLE_ABANDON_MS,
   disabled = false,
 }) => {
+  // Whether a scan is being read right now (first char received, not yet completed or dropped). The only
+  // state of this hook: it changes twice per scan, so a consumer can show "scan in progress" without
+  // re-rendering per keystroke.
+  const [isReadInProgress, setReadInProgress] = useState(false);
+  // The callbacks are read through refs, so a consumer re-render (e.g. caused by isReadInProgress) does
+  // not tear down and re-attach the window listener and idle timer mid-scan.
+  const onReadDoneRef = useRef(onReadDone);
+  onReadDoneRef.current = onReadDone;
+  const onReadInProgressRef = useRef(onReadInProgress);
+  onReadInProgressRef.current = onReadInProgress;
+
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
@@ -55,6 +66,7 @@ export const useKeyboardBarcodeReader = ({
 
     const resetBuffer = () => {
       bufferRef.current = '';
+      setReadInProgress(false);
       lastKeyTimeRef.current = 0;
       lastKeyEventTimeRef.current = 0;
       lastKeyHadEventTimeRef.current = false;
@@ -81,7 +93,7 @@ export const useKeyboardBarcodeReader = ({
       };
       resetBuffer();
       if (code && (!shouldEnforceMinLength || !minLength || code.length >= minLength)) {
-        onReadDone(code, stats);
+        onReadDoneRef.current(code, stats);
       }
     };
 
@@ -101,7 +113,7 @@ export const useKeyboardBarcodeReader = ({
 
           event.preventDefault(); // Prevent default paste behavior
           // A paste has no per-character delivery: null, not zero, which would read as instant.
-          onReadDone(clipboardText, {
+          onReadDoneRef.current(clipboardText, {
             scanDurationMs: null,
             scanCharCount: clipboardText.length,
             scanMaxCharGapMs: null,
@@ -196,7 +208,8 @@ export const useKeyboardBarcodeReader = ({
         }
 
         bufferRef.current += event.key;
-        onReadInProgress?.(bufferRef.current);
+        setReadInProgress(true);
+        onReadInProgressRef.current?.(bufferRef.current);
         // Prevent the browser from also inserting the character into a focused input.
         // The hook handles value updates via onReadInProgress. Without this, the character
         // would be inserted twice: once by onReadInProgress and once by the browser's default action.
@@ -254,5 +267,7 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [onReadDone, onReadInProgress, rateMs, minLength, idleAbandonMs, disabled]);
+  }, [rateMs, minLength, idleAbandonMs, disabled]);
+
+  return { isReadInProgress };
 };
