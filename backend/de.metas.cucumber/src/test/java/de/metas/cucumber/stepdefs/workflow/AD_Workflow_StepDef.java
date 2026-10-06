@@ -30,6 +30,10 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.WFNodeId;
@@ -43,10 +47,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -85,6 +89,7 @@ public class AD_Workflow_StepDef
 	private final AD_Workflow_StepDefData workflowTable;
 	private final AD_WF_Node_StepDefData wfNodeTable;
 	private final AD_User_StepDefData userTable;
+	private final PP_Product_Planning_StepDefData productPlanningTable;
 
 	/**
 	 * Every {@code AD_Workflow} this step-def created -- directly ({@link #createWorkflow(Map)}) or via {@link
@@ -110,23 +115,25 @@ public class AD_Workflow_StepDef
 
 	/**
 	 * Every {@code AD_Workflow.AD_User_InCharge_ID} this scenario overwrote via
-	 * {@link #update_AD_Workflow_user_in_charge(DataTable)}, keyed by {@code AD_Workflow_ID} and mapped to the
-	 * value from BEFORE the overwrite ({@code 0} standing for "was unset") -- restored by
+	 * {@link #update_AD_Workflow_user_in_charge(DataTable)}, keyed by the routing and mapped to the user in charge
+	 * from BEFORE the overwrite ({@code null} standing for "was unset") -- restored by
 	 * {@link #restoreUserInChargeAfterScenario()}. Unlike {@link #createdWorkflowIds} (rows this scenario
 	 * itself INSERTED, which are deactivated afterwards), a workflow named here is a pre-existing SHARED row
 	 * -- e.g. the default manufacturing routing every order in this feature completes against -- that other
 	 * scenarios and executors also read, so its prior value must be put BACK, never merely deactivated.
 	 */
-	private final Map<Integer, Integer> priorUserInChargeIdByWorkflowId = new LinkedHashMap<>();
+	private final Map<PPRoutingId, UserId> priorUserInChargeIdByRoutingId = new LinkedHashMap<>();
 
 	public AD_Workflow_StepDef(
 			@NonNull final AD_Workflow_StepDefData workflowTable,
 			@NonNull final AD_WF_Node_StepDefData wfNodeTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final PP_Product_Planning_StepDefData productPlanningTable)
 	{
 		this.workflowTable = workflowTable;
 		this.wfNodeTable = wfNodeTable;
 		this.userTable = userTable;
+		this.productPlanningTable = productPlanningTable;
 	}
 
 	@And("load AD_Workflow:")
@@ -217,24 +224,23 @@ public class AD_Workflow_StepDef
 	 * which is exactly the unconfigured state that silently cancels the print job with no error anywhere
 	 * (see {@code OrderCheckupPrintingQueueHandler}).
 	 * <p>
-	 * Targets the routing by its raw {@code AD_Workflow_ID} rather than through {@link #workflowTable} --
-	 * this step exists specifically to mutate a SHARED, pre-existing routing (e.g. the default manufacturing
-	 * routing every order in this feature completes against), not one this scenario itself registered. The
-	 * prior value is captured before the overwrite and restored by
-	 * {@link #restoreUserInChargeAfterScenario()} -- see {@link #priorUserInChargeIdByWorkflowId}'s own
-	 * Javadoc for why.
+	 * The routing is the one a previously created {@code PP_Product_Planning} uses -- typically a SHARED,
+	 * pre-existing routing (e.g. the default manufacturing routing every order in this feature completes
+	 * against), not one this scenario itself created. The prior value is captured before the overwrite and
+	 * restored by {@link #restoreUserInChargeAfterScenario()} -- see {@link #priorUserInChargeIdByRoutingId}'s
+	 * own Javadoc for why.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>AD_Workflow_ID</b> — (required) the existing routing to update, by raw id<br>
+	 *   <b>PP_Product_Planning_ID</b> — (required, identifier-ref) the product planning whose routing to update<br>
 	 *   <b>AD_User_InCharge_ID</b> — (optional, identifier-ref) the user to put in charge; omitted/blank
 	 *       clears the routing to no user in charge<br>
-	 * @cucumber.depends StepDefData: AD_User_StepDefData
+	 * @cucumber.depends StepDefData: PP_Product_Planning_StepDefData, AD_User_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update AD_Workflow user in charge:
-	 *   | AD_Workflow_ID | AD_User_InCharge_ID |
-	 *   | 540075         | routingUser         |
+	 *   | PP_Product_Planning_ID | AD_User_InCharge_ID |
+	 *   | productPlanning        | routingUser         |
 	 * </pre>
 	 */
 	@And("update AD_Workflow user in charge:")
@@ -245,20 +251,24 @@ public class AD_Workflow_StepDef
 
 	private void updateUserInCharge(@NonNull final DataTableRow row)
 	{
-		final int workflowId = row.getAsInt(COLUMNNAME_AD_Workflow_ID);
-		final int userId = row.getAsOptionalIdentifier(COLUMNNAME_AD_User_InCharge_ID)
+		final ProductPlanning productPlanning = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_Planning_ID).lookupNotNullIn(productPlanningTable);
+		final PPRoutingId routingId = Check.assumeNotNull(productPlanning.getWorkflowId(), "PP_Product_Planning has a routing: {}", productPlanning);
+		final UserId userId = row.getAsOptionalIdentifier(COLUMNNAME_AD_User_InCharge_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(identifier -> identifier.lookupNotNullIn(userTable))
-				.map(I_AD_User::getAD_User_ID)
-				.orElse(0);
+				.map(identifier -> identifier.lookupNotNullIdIn(userTable))
+				.orElse(null);
 
-		final I_AD_Workflow workflowRecord = load(workflowId, I_AD_Workflow.class);
+		final I_AD_Workflow workflowRecord = load(routingId, I_AD_Workflow.class);
 
-		// captured once per workflow per scenario: a second overwrite in the same scenario must not clobber
-		// the ALREADY-captured original with this scenario's own first write (mirrors C_Doc_Outbound_Config_StepDef)
-		priorUserInChargeIdByWorkflowId.putIfAbsent(workflowId, workflowRecord.getAD_User_InCharge_ID());
+		// captured once per routing per scenario: a second overwrite in the same scenario must not clobber the
+		// ALREADY-captured original with this scenario's own first write (mirrors C_Doc_Outbound_Config_StepDef).
+		// containsKey rather than putIfAbsent, because a prior "unset" is stored as a null value.
+		if (!priorUserInChargeIdByRoutingId.containsKey(routingId))
+		{
+			priorUserInChargeIdByRoutingId.put(routingId, UserId.ofRepoIdOrNullIfSystem(workflowRecord.getAD_User_InCharge_ID()));
+		}
 
-		workflowRecord.setAD_User_InCharge_ID(userId);
+		workflowRecord.setAD_User_InCharge_ID(UserId.toRepoId(userId));
 		InterfaceWrapperHelper.saveRecord(workflowRecord);
 	}
 
@@ -271,19 +281,18 @@ public class AD_Workflow_StepDef
 	@After
 	public void restoreUserInChargeAfterScenario()
 	{
-		if (priorUserInChargeIdByWorkflowId.isEmpty())
+		if (priorUserInChargeIdByRoutingId.isEmpty())
 		{
 			return;
 		}
 
-		for (final Map.Entry<Integer, Integer> entry : priorUserInChargeIdByWorkflowId.entrySet())
-		{
-			final I_AD_Workflow workflowRecord = load(entry.getKey(), I_AD_Workflow.class);
-			workflowRecord.setAD_User_InCharge_ID(entry.getValue());
+		priorUserInChargeIdByRoutingId.forEach((routingId, priorUserId) -> {
+			final I_AD_Workflow workflowRecord = load(routingId, I_AD_Workflow.class);
+			workflowRecord.setAD_User_InCharge_ID(UserId.toRepoId(priorUserId));
 			InterfaceWrapperHelper.saveRecord(workflowRecord);
-		}
+		});
 
-		priorUserInChargeIdByWorkflowId.clear();
+		priorUserInChargeIdByRoutingId.clear();
 	}
 
 	private void createWorkflow(@NonNull final Map<String, String> row)

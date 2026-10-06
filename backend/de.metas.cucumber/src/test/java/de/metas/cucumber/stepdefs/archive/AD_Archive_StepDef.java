@@ -22,6 +22,16 @@
 
 package de.metas.cucumber.stepdefs.archive;
 
+import com.google.common.collect.ImmutableList;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.multi.GenericMultipleBarcodeReader;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
@@ -42,13 +52,18 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
 import org.compiere.model.I_AD_Archive;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -473,7 +488,14 @@ public class AD_Archive_StepDef
 	}
 
 	/**
-	 * Counts the image XObjects (e.g. a barcode) referenced across all pages of the archived PDF.
+	 * Counts the image XObjects (e.g. a barcode drawn by an {@code <image>} element) referenced across all
+	 * pages of the archived PDF.
+	 * <p>
+	 * NOT usable for a {@code jr:Code39} / Barcode4J <b>component</b>: JasperReports renders those as SVG by
+	 * default ({@code net.sf.jasperreports.components.barcode4j.image.producer=svg}, default.jasperreports
+	 * .properties), so they reach the PDF as vector drawing operations and contribute ZERO image XObjects.
+	 * Assert those with {@link #assert_archived_pdf_barcode_encodes_record_reference} instead.
+	 * <p>
 	 * Counts DISTINCT image XObjects per page (one entry per page's XObject resource dictionary), not
 	 * {@code Do} draw operations: an image object drawn more than once on the same page from the same
 	 * resource entry is counted once, not once per draw. In this report every article row's barcode is its
@@ -520,6 +542,87 @@ public class AD_Archive_StepDef
 		catch (final IOException e)
 		{
 			throw new AdempiereException("Failed to count images in the PDF archived for record " + recordIdentifier, e);
+		}
+	}
+
+	/**
+	 * Asserts the archived PDF prints a Code39 barcode reading {@code <AD_Table_ID>-<Record_ID>} of the
+	 * referenced record -- the form the scanner writes into the scan file name, which the import resolves from.
+	 * <p>
+	 * The image and text steps above cannot see a Barcode4J barcode: JasperReports renders it as SVG, so it
+	 * reaches the PDF as vector operations (no image XObject) and its caption as glyph outlines (no text).
+	 * Hence rasterise and decode; 300 DPI reads ~20 characters, 200 is too coarse.
+	 * <p>
+	 * Presence, not exclusivity: the scanner reads a defined region, so another barcode is harmless.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order_checkup_WH" prints a barcode encoding the reference of the record identified by "order"
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} prints a barcode encoding the reference of the record identified by {string}")
+	public void assert_archived_pdf_barcode_encodes_record_reference(
+			@NonNull final String archivedRecordIdentifier,
+			@NonNull final String referencedRecordIdentifier)
+	{
+		final TableRecordReference referencedRecord = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(referencedRecordIdentifier));
+		final String expectedCode = referencedRecord.getAD_Table_ID() + "-" + referencedRecord.getRecord_ID();
+
+		final List<String> decodedCodes = decodeCode39Barcodes(archivedRecordIdentifier);
+
+		assertThat(decodedCodes)
+				.as("Code39 barcodes scanned out of the PDF archived for record %s (expecting the reference of %s)",
+						archivedRecordIdentifier, referencedRecordIdentifier)
+				.contains(expectedCode);
+	}
+
+	private static final int BARCODE_SCAN_DPI = 300;
+
+	@NonNull
+	private List<String> decodeCode39Barcodes(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			final PDFRenderer renderer = new PDFRenderer(document);
+			final List<String> codes = new ArrayList<>();
+			for (int pageIndex = 0; pageIndex < document.getNumberOfPages(); pageIndex++)
+			{
+				// GRAY: zxing reads only luminance, so RGB would build ~26 MB/page of channels it discards.
+				final BufferedImage pageImage = renderer.renderImageWithDPI(pageIndex, BARCODE_SCAN_DPI, ImageType.GRAY);
+				codes.addAll(decodeCode39Barcodes(pageImage));
+			}
+			return codes;
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to scan barcodes in the PDF archived for record " + recordIdentifier, e);
+		}
+	}
+
+	@NonNull
+	private static List<String> decodeCode39Barcodes(@NonNull final BufferedImage pageImage)
+	{
+		final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(pageImage)));
+
+		final EnumMap<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+		// CODE_39 only, for speed (an unrestricted read tries every 1D symbology). Trade: if the report
+		// switches symbology this reports "but was []" rather than naming the code it found.
+		hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(BarcodeFormat.CODE_39));
+		hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+
+		try
+		{
+			final Result[] results = new GenericMultipleBarcodeReader(new MultiFormatReader()).decodeMultiple(bitmap, hints);
+			return Arrays.stream(results).map(Result::getText).collect(Collectors.toList());
+		}
+		catch (final NotFoundException e)
+		{
+			// A page without a barcode is normal in a multi-page document; empty lets the assertion report
+			// the real diff rather than a zxing exception.
+			return ImmutableList.of();
 		}
 	}
 

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.camel.externalsystems.scriptedadapter.filename;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -30,30 +30,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- * Resolves filename patterns by replacing {@code {placeholder}} tokens with actual values.
+ * Replaces {@code {placeholder}} tokens in a filename pattern; unknown ones are left unchanged.
  *
- * <p>Built-in placeholders:
- * <ul>
- *   <li>{@code {timestamp}} — current local date/time in {@code yyyyMMdd_HHmmss} format (e.g. {@code 20260328_143022})</li>
- * </ul>
- *
- * <p>Context-dependent placeholders (populated by {@link SftpDeliveryProcessor}):
- * <ul>
- *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
- *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
- *   <li>{@code {recordid}} — database record ID of the exported record</li>
- * </ul>
- *
- * <p>Unknown placeholders are left unchanged.
- *
- * <p>Example:
- * <pre>
- *   resolve("DESADV_{documentno}_{timestamp}.json", Map.of("documentno", "12345"))
- *   // → "DESADV_12345_20260328_143022.json"
- * </pre>
+ * <p>{@code {timestamp}} is built in, the rest are supplied by the caller: export-side
+ * {@code {documentno}}, {@code {table}} and {@code {recordid}}, import-side {@code {filename}}
+ * (see {@link ImportFileNameResolver}).
  */
 @UtilityClass
-public class SftpFilenameResolver
+public class FilenamePatternResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -70,7 +54,6 @@ public class SftpFilenameResolver
 	{
 		String result = pattern;
 
-		// Replace variable placeholders first
 		for (final Map.Entry<String, String> entry : variables.entrySet())
 		{
 			if (entry.getValue() != null)
@@ -79,7 +62,6 @@ public class SftpFilenameResolver
 			}
 		}
 
-		// Replace the special {timestamp} placeholder
 		if (result.contains(TIMESTAMP_PLACEHOLDER))
 		{
 			final String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
