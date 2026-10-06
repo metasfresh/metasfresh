@@ -420,6 +420,123 @@ public class OrderGroupRepositoryTest
 	}
 
 	@Test
+	void createPartialGroupFromCompensationLine_packingFilteredLine_recomputesAgainstStoredBase()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final ProductCategoryId goodsCategoryId = newProductCategoryId();
+		final ProductCategoryId cartonCategoryId = newProductCategoryId();
+
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_Category_ID(goodsCategoryId.getRepoId());
+		schemaLine.setM_Product_Category_PackingMaterial_ID(cartonCategoryId.getRepoId());
+		schemaLine.setM_Product_ID(productId.getRepoId());
+		saveRecord(schemaLine);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+
+		// compensation line carrying a previously-computed base of 1224.00, percentage edited to 1
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.ONE);
+		compensationLine.setGroupCompensationBaseAmt(new BigDecimal("1224.00"));
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(new BigDecimal("-7.34"));
+		compensationLine.setLineNetAmt(new BigDecimal("-7.34"));
+		saveRecord(compensationLine);
+
+		final Group group = repo.createPartialGroupFromCompensationLine(compensationLine);
+		group.updateAllCompensationLines();
+
+		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
+		assertThat(recomputedLine.getBase()).isEqualTo(GroupCompensationBase.of(goodsCategoryId, cartonCategoryId));
+		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("1224.00");
+		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-12.24");
+	}
+
+	@Test
+	void retrieveGroup_packingFilter_lineWithoutPackingInstruction_notInBase()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final ProductCategoryId cartonCategoryId = newProductCategoryId();
+
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+
+		// bundle-style schema line: no product category, packing-material category only
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_Category_PackingMaterial_ID(cartonCategoryId.getRepoId());
+		schemaLine.setM_Product_ID(productId.getRepoId());
+		saveRecord(schemaLine);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		final I_M_Product regularLineProduct = newInstance(I_M_Product.class);
+		regularLineProduct.setC_UOM_ID(uomId.getRepoId());
+		regularLineProduct.setM_Product_Category_ID(newProductCategoryId().getRepoId());
+		saveRecord(regularLineProduct);
+
+		for (final String netAmt : new String[] { "100", "50" })
+		{
+			final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+			regularLine.setC_Order_ID(order.getC_Order_ID());
+			regularLine.setM_Product_ID(regularLineProduct.getM_Product_ID());
+			regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+			regularLine.setLineNetAmt(new BigDecimal(netAmt));
+			saveRecord(regularLine);
+		}
+
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(BigDecimal.ZERO);
+		compensationLine.setLineNetAmt(BigDecimal.ZERO);
+		saveRecord(compensationLine);
+
+		final Group group = repo.retrieveGroup(OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId));
+
+		assertThat(group.getCompensationLines().get(0).getBase()).isEqualTo(GroupCompensationBase.of(null, cartonCategoryId));
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(null, cartonCategoryId))).isEqualByComparingTo("0");
+	}
+
+	private static ProductCategoryId newProductCategoryId()
+	{
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+	}
+
+	@Test
 	void createPartialGroupFromCompensationLine_noBase_recomputesAgainstStoredNetAmt()
 	{
 		order.setC_BPartner_ID(1);

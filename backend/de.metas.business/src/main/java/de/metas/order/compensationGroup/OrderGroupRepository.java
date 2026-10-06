@@ -391,6 +391,7 @@ public class OrderGroupRepository implements GroupRepository
 	 */
 	private static GroupCompensationLine toGroupCompensationLine(final I_C_OrderLine groupOrderLine)
 	{
+		final GroupCompensationBase base = retrieveSchemaLineBase(groupOrderLine.getC_CompensationGroup_SchemaLine_ID());
 		return GroupCompensationLine.builder()
 				.repoId(OrderLineId.ofRepoId(groupOrderLine.getC_OrderLine_ID()))
 				.groupTemplateLineId(OrderGroupCompensationUtils.extractGroupTemplateLineId(groupOrderLine))
@@ -404,21 +405,23 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
-				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
+				.appliesToProductCategoryId(base.getProductCategoryId())
+				.packingMaterialProductCategoryId(base.getPackingMaterialProductCategoryId())
 				.build();
 	}
 
-	/** @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line */
-	@Nullable
-	private static ProductCategoryId retrieveAppliesToProductCategoryId(final int compensationGroupSchemaLineId)
+	/** @return the schema line's base; {@link GroupCompensationBase#NONE} when the compensation line is not linked to a schema line */
+	private static GroupCompensationBase retrieveSchemaLineBase(final int compensationGroupSchemaLineId)
 	{
 		if (compensationGroupSchemaLineId <= 0)
 		{
-			return null;
+			return GroupCompensationBase.NONE;
 		}
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
-		return ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID());
+		return GroupCompensationBase.of(
+				ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+				ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()));
 	}
 
 	@Override
@@ -785,10 +788,11 @@ public class OrderGroupRepository implements GroupRepository
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
-		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
+		final GroupCompensationBase base = compensationLine.getBase();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
+				.productCategoryIds(toSet(base.getProductCategoryId()))
+				.packingMaterialProductCategoryIds(toSet(base.getPackingMaterialProductCategoryId()))
 				.build();
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));
@@ -802,6 +806,11 @@ public class OrderGroupRepository implements GroupRepository
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();
+	}
+
+	private static ImmutableSet<ProductCategoryId> toSet(@Nullable final ProductCategoryId productCategoryId)
+	{
+		return productCategoryId != null ? ImmutableSet.of(productCategoryId) : ImmutableSet.of();
 	}
 
 	/**

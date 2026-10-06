@@ -191,9 +191,9 @@ public class Group
 	{
 		moveAllManualCompensationLinesToEnd();
 
-		// non-additive (compounding) mode: one running total PER MATCHING CATEGORY, so a discount line compounds only
-		// with previous discount lines that apply to the same category; a null/empty category compounds against the
-		// whole group, as before.
+		// non-additive (compounding) mode: one running total PER BASE (product category + packing-material category),
+		// so a discount line compounds only with previous discount lines that apply to the same base; a line
+		// without any category compounds against the whole group, as before.
 		final Map<GroupCompensationBase, BigDecimal> runningNetAmtsByBase = new HashMap<>();
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
