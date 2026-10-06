@@ -45,6 +45,29 @@ describe('TableCell — width keeper while editing', () => {
   });
 });
 
+describe('TableCell — the editor height follows an extended (multi-line) row', () => {
+  // A row with a multi-line column grows while selected (TableRow.handleCellExtend): every cell's
+  // static value gets extendLongText * 20 px of height. The editor must get the same height
+  // (table.scss reads --cell-content-height), otherwise opening it would shrink the cell content.
+  it('hands the extended static height to the editor of an edited cell', () => {
+    const wrapper = shallow(
+      <TableCell
+        {...cellProps({ isEdited: true, cellExtended: true, extendLongText: 3 })}
+      />
+    );
+
+    expect(wrapper.find('td').prop('style')).toEqual({
+      '--cell-content-height': '60px',
+    });
+  });
+
+  it('sets no content height when the row is not extended', () => {
+    const wrapper = shallow(<TableCell {...cellProps({ isEdited: true })} />);
+
+    expect(wrapper.find('td').prop('style')).toBeUndefined();
+  });
+});
+
 describe('TableRow — the edited cell still receives its displayed value', () => {
   it('passes tdValue to the cell that is being edited', () => {
     const propsSeed = tableRowFixtures.oldProps1;

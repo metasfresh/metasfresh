@@ -354,9 +354,10 @@
     /*
      * Every editor is pinned to the row's fixed content height (42px row - .5rem top/bottom
      * padding), so opening one never changes the row height. This includes LongText: its
-     * textarea becomes a single scrollable line inside the cell (see below).
+     * textarea becomes a single scrollable line inside the cell (see below). In an extended
+     * (multi-line) row the cell hands over the taller static height (TableCell.js).
      */
-    height: 26px;
+    height: var(--cell-content-height, 26px);
 
     /*
      * The editor takes no width of its own: it fills exactly the width the column already has.
@@ -390,6 +391,18 @@
     visibility: hidden;
     height: 0;
     overflow: hidden;
+  }
+
+  /*
+   * The static value occupies exactly the box its editor occupies (the row's 26px content height,
+   * the column's content width), so entering or leaving edit mode does not change the cell's
+   * component size either — also for an empty value, whose static box would otherwise collapse to
+   * nothing. The line height keeps the text vertically centred, as before. An extended (multi-line)
+   * long-text cell keeps its own height.
+   */
+  > div:not(.cell-width-keeper) > .cell-text-wrapper:not(.extended) {
+    height: 26px;
+    line-height: 26px;
   }
 
   .input-primary,

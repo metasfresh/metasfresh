@@ -15,11 +15,12 @@ import {
 
 /**
  * Geometry invariant for EVERY grid editor type: entering edit mode on a cell and leaving it
- * again changes neither the row height nor the width of ANY column.
+ * again changes neither the cell's component box (the editor occupies exactly the box the static
+ * value occupied: same width and height), nor the row height, nor the width of ANY column.
  *
  * Walks every cell of the first row of two real grids — the sales order-line grid and the
  * Business Partner > Address grid — opens each editable cell (double-click), measures, leaves it
- * (Escape), measures again. Row height and every column width must stay within 1px (sub-pixel
+ * (Escape), measures again. Component box, row height and every column width must stay within 1px (sub-pixel
  * rounding) of the static layout, both while editing and after leaving.
  *
  * Measured at 1920px wide, where the grid is not width-constrained and every column takes its
@@ -62,6 +63,37 @@ async function measureRow(row) {
       width: td.getBoundingClientRect().width,
     })),
   }));
+}
+
+/**
+ * The cell's component box: the visible static presentation (`.cell-text-wrapper`) in display mode,
+ * the editor (`.form-group-table`) in edit mode. The invisible width keeper is not part of it.
+ */
+async function measureComponentBox(cell) {
+  return await cell.evaluate((td) => {
+    const editor = td.querySelector('.form-group-table');
+    const component = editor || td.querySelector(':scope > div:not(.cell-width-keeper) .cell-text-wrapper');
+    if (!component) {
+      return null;
+    }
+    const box = component.getBoundingClientRect();
+    return { kind: editor ? 'editor' : 'static', width: box.width, height: box.height };
+  });
+}
+
+function compareComponentBox(phase, activatedCell, before, now) {
+  if (!before || !now) {
+    return [`${activatedCell} ${phase}: component box not measurable (${JSON.stringify({ before, now })})`];
+  }
+  const violations = [];
+  ['width', 'height'].forEach((dimension) => {
+    if (Math.abs(now[dimension] - before[dimension]) > TOLERANCE_PX) {
+      violations.push(
+        `${activatedCell} ${phase}: component ${dimension} ${before.kind} ${before[dimension]} -> ${now.kind} ${now[dimension]}`
+      );
+    }
+  });
+  return violations;
 }
 
 function compareGeometry(phase, activatedCell, before, now) {
@@ -109,12 +141,14 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     const cell = row.locator(`[data-cy="${cellId}"]`);
     await cell.scrollIntoViewIfNeeded();
     const before = await measureRow(row);
+    const componentBefore = await measureComponentBox(cell);
 
     const widgetType = await openEditor(page, cell);
     if (!widgetType) {
       continue; // read-only cell: no editor, nothing to measure
     }
     const inEdit = await measureRow(row);
+    const componentInEdit = await measureComponentBox(cell);
     const controlsOutsideCell = await cell.evaluate((td, tolerance) => {
       const cellBox = td.getBoundingClientRect();
       return Array.from(
@@ -139,10 +173,13 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
       .catch(() => {});
     await page.waitForTimeout(400);
     const afterLeave = await measureRow(row);
+    const componentAfterLeave = await measureComponentBox(cell);
 
     exercised[cellId] = widgetType;
     const cellViolations = [
       ...controlsOutsideCell.map((detail) => `${cellId} while editing: editor control outside the cell: ${detail}`),
+      ...compareComponentBox('while editing', cellId, componentBefore, componentInEdit),
+      ...compareComponentBox('after leaving', cellId, componentBefore, componentAfterLeave),
       ...compareGeometry('while editing', cellId, before, inEdit),
       ...compareGeometry('after leaving', cellId, before, afterLeave),
     ];
@@ -161,9 +198,10 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     `every expected editor type must have been opened on the ${label} grid (exercised: ${exercisedTypes.join(', ')})`
   ).toEqual([]);
 
-  expect(violations, `${label}: entering/leaving edit mode must not change the row height or any column width`).toEqual(
-    []
-  );
+  expect(
+    violations,
+    `${label}: entering/leaving edit mode must not change the component box, the row height or any column width`
+  ).toEqual([]);
 }
 
 test.describe('Grid editors keep the row height and every column width (de_DE)', () => {

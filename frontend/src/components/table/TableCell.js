@@ -252,10 +252,16 @@ class TableCell extends PureComponent {
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
+    // An extended (multi-line) row makes the static value taller than one line. Hand that height
+    // to the cell's editor too (table.scss `--cell-content-height`), so the editor box equals the
+    // static box and opening it changes nothing.
+    const contentHeightStyle = cellExtended
+      ? { '--cell-content-height': `${extendLongText * 20}px` }
+      : null;
     // a stored custom width wins over the size class (handled above); absent that, a combobox column
     // still needs its 90px minimum-usable-width floor applied inline, without promoting the td-* band
     const comboboxFloorStyle = columnWidth ? undefined : getSizeStyle(item);
-    const tdStyle = columnWidth
+    const widthStyle = columnWidth
       ? {
           ...style,
           width: `${columnWidth}px`,
@@ -265,6 +271,9 @@ class TableCell extends PureComponent {
       : comboboxFloorStyle
       ? { ...style, ...comboboxFloorStyle }
       : undefined;
+    const tdStyle = contentHeightStyle
+      ? { ...widthStyle, ...contentHeightStyle }
+      : widthStyle;
 
     return (
       <td
