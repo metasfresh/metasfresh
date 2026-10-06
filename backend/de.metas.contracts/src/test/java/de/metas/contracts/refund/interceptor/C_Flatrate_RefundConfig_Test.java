@@ -79,6 +79,45 @@ public class C_Flatrate_RefundConfig_Test
 		assertThatCode(() -> interceptor.assertValid(inactiveConfig)).doesNotThrowAnyException();
 	}
 
+	/** The cross-line check is skipped for an inactive line, the single-line check is not: it would still need a product or a bonus product. */
+	@Test
+	public void assertValid_inactiveLineWithoutProductAndBonusProduct_fails()
+	{
+		final I_C_Flatrate_RefundConfig inactiveConfig = createConfig(0, 50, 0);
+		inactiveConfig.setIsActive(false);
+		assertThatThrownBy(() -> interceptor.assertValid(inactiveConfig))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED.toAD_Message()));
+	}
+
+	/** A line that is activated again is compared with the active lines of the condition again. */
+	@Test
+	public void assertValid_reactivatingALineWithAnotherProductCategory_fails()
+	{
+		createConfig(0, 40, 41);
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 50, 41);
+		config.setIsActive(false);
+		saveRecord(config);
+
+		config.setIsActive(true);
+		assertThatThrownBy(() -> interceptor.assertValid(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY.toAD_Message()));
+	}
+
+	/** A line of a product is compared with the lines without product as well, not just with the ones of its own product. */
+	@Test
+	public void assertValid_changingTheCategoryOfAProductLine_nextToAnotherLineOfTheOldCategory_fails()
+	{
+		final I_C_Flatrate_RefundConfig productConfig = createConfig(30, 40, 41);
+		createConfig(0, 40, 41);
+
+		productConfig.setM_Product_Category_ID(41);
+		assertThatThrownBy(() -> interceptor.assertValid(productConfig))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY.toAD_Message()));
+	}
+
 	@Test
 	public void assertValid_productWithoutBonusProduct_isValid()
 	{

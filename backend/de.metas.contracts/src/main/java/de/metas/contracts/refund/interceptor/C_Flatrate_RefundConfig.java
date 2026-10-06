@@ -18,7 +18,6 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig;
-import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.util.Check;
@@ -86,11 +85,6 @@ public class C_Flatrate_RefundConfig
 			return;
 		}
 
-		final RefundConfigQuery query = RefundConfigQuery
-				.builder()
-				.conditionsId(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID()))
-				.build();
-
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
 		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
 
@@ -101,7 +95,7 @@ public class C_Flatrate_RefundConfig
 		}
 
 		// the stored state of the record itself is replaced by its new state
-		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getByQuery(query).stream()
+		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getAllActiveByConditions(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID())).stream()
 				.filter(existingConfig -> !Objects.equals(existingConfig.getId(), newRefundConfig.getId()))
 				.collect(ImmutableList.toImmutableList());
 

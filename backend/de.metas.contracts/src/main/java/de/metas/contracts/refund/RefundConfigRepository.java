@@ -147,6 +147,18 @@ public class RefundConfigRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @return all active configs of the given conditions, without {@link #getByQuery(RefundConfigQuery)}'s precedence of product-specific configs.
+	 */
+	public List<RefundConfig> getAllActiveByConditions(@NonNull final ConditionsId conditionsId)
+	{
+		return createRefundConfigQueryBuilder(conditionsId)
+				.create()
+				.stream()
+				.map(this::ofRecordOrNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public RefundConfig getById(@NonNull final RefundConfigId id)
 	{
 		final I_C_Flatrate_RefundConfig record = load(id, I_C_Flatrate_RefundConfig.class);
