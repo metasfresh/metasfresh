@@ -332,29 +332,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Compensation group contract settings take-over.
-	 * Take-over setting per product category: discount product of the own line of a compensation group contract.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_CompensationGroup_ContractSettings_TakeOver_ID (int C_CompensationGroup_ContractSettings_TakeOver_ID);
-
-	/**
-	 * Get Compensation group contract settings take-over.
-	 * Take-over setting per product category: discount product of the own line of a compensation group contract.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_CompensationGroup_ContractSettings_TakeOver_ID();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_C_CompensationGroup_ContractSettings_TakeOver_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_ContractSettings_TakeOver_ID", null);
-	String COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID = "C_CompensationGroup_ContractSettings_TakeOver_ID";
-
-	/**
 	 * Set Compensations.
 	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
@@ -1165,6 +1142,28 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationPercentage = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationPercentage", null);
 	String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
+
+	/**
+	 * Set Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensation_Product_Category_ID (int GroupCompensation_Product_Category_ID);
+
+	/**
+	 * Get Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getGroupCompensation_Product_Category_ID();
+
+	String COLUMNNAME_GroupCompensation_Product_Category_ID = "GroupCompensation_Product_Category_ID";
 
 	/**
 	 * Set Compensation Type.

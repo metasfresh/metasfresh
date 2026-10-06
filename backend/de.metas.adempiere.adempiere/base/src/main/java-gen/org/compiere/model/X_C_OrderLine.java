@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 35611325L;
+	private static final long serialVersionUID = -1072511787L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -247,21 +247,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Charge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
-	}
-
-	@Override
-	public void setC_CompensationGroup_ContractSettings_TakeOver_ID (final int C_CompensationGroup_ContractSettings_TakeOver_ID)
-	{
-		if (C_CompensationGroup_ContractSettings_TakeOver_ID < 1) 
-			set_Value (COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, C_CompensationGroup_ContractSettings_TakeOver_ID);
-	}
-
-	@Override
-	public int getC_CompensationGroup_ContractSettings_TakeOver_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID);
 	}
 
 	@Override
@@ -846,6 +831,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationPercentage);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setGroupCompensation_Product_Category_ID (final int GroupCompensation_Product_Category_ID)
+	{
+		if (GroupCompensation_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_GroupCompensation_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_GroupCompensation_Product_Category_ID, GroupCompensation_Product_Category_ID);
+	}
+
+	@Override
+	public int getGroupCompensation_Product_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GroupCompensation_Product_Category_ID);
 	}
 
 	/** 
