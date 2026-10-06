@@ -55,11 +55,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import static de.metas.cucumber.stepdefs.order.ExpectedErrorMessageKeyAssert.assertFailsWithMessageKey;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import static de.metas.cucumber.stepdefs.order.ExpectedErrorMessageKeyAssert.assertFailsWithMessageKey;
 
 /**
  * Step definitions for creating compensation groups from schema templates and applying PI inheritance.
