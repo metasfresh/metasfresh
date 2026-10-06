@@ -28,11 +28,13 @@ import {
  *
  * Measured at 1920px wide, where the grid is not width-constrained and every column takes its
  * natural content width — the layout in which an editor wider (or narrower) than the static value
- * moves the column. Also measured at 1280px (columns near their band minimums) and at 900px,
- * below the md breakpoint (991px): there the 42px desktop row height does not apply and a row is
- * only as tall as its 26px content plus padding, so the static and editor boxes are measured
- * without the row floor that would otherwise absorb a height difference. A short GLN value ("04012345") keeps the GLN Text column narrower than a
+ * moves the column. A short GLN value ("04012345") keeps the GLN Text column narrower than a
  * default-sized text input, the case that widened it.
+ *
+ * The order-line grid is also measured at 1280px (columns near their band minimums) and at 900px,
+ * below the md breakpoint (991px). There the 42px desktop row height does not apply: a row is only
+ * as tall as its 26px content plus padding, so there is no row floor to absorb a height difference
+ * between the static value and its editor.
  *
  * While editing, every visible editor control (input, textarea, switch, button) must also lie inside its cell, so
  * the editor really uses the column's width and the row's height instead of spilling over a neighbour.
