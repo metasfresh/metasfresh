@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.compensationGroup;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.MoreCollectors;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -97,7 +98,7 @@ class InvoiceCandidateGroupRepositoryPackingTest
 	{
 		return group.getRegularLines().stream()
 				.filter(line -> line.getLineNetAmt().compareTo(netAmt) == 0)
-				.collect(com.google.common.collect.MoreCollectors.onlyElement());
+				.collect(MoreCollectors.onlyElement());
 	}
 
 	/** a group of two regular candidates (the first one's order line has a packing instruction) and one discount candidate */
