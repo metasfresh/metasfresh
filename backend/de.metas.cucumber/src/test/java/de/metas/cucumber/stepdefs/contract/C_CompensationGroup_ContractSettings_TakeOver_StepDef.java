@@ -27,11 +27,9 @@ import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -41,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -69,7 +66,6 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	@NonNull private final C_CompensationGroup_ContractSettings_TakeOver_StepDefData takeOverTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_Product_StepDefData productTable;
-	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
 	/**
 	 * DataTable columns:
@@ -160,33 +156,6 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 						assertThat(message.translate("de_DE")).as("de_DE message of %s", exception).isEqualTo(row.getAsString("Message_de_DE") + developerModeSuffix);
 						assertThat(message.translate("en_US")).as("en_US message of %s", exception).isEqualTo(row.getAsString("Message_en_US") + developerModeSuffix);
 					});
-		});
-	}
-
-	/**
-	 * Asserts the {@code Description} of an order line created earlier (registered under an identifier by a
-	 * {@code validate the created order lines} step) — the take-over composition, e.g. {@code 3% Bonus A + 3% Bonus B}.
-	 * <p>
-	 * DataTable columns:
-	 * <ul>
-	 *     <li>{@code C_OrderLine_ID} (required, identifier-ref) — the order line</li>
-	 *     <li>{@code Description} (required column; a blank cell means the line has no description) — the exact expected description</li>
-	 * </ul>
-	 * <pre>
-	 * Then validate the take-over composition description of the order lines:
-	 *   | C_OrderLine_ID | Description                          |
-	 *   | ol_discount    | 3% Bonus A + 3% Bonus B              |
-	 * </pre>
-	 */
-	@Then("validate the take-over composition description of the order lines:")
-	public void validateTakeOverDescription(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
-			refresh(orderLine);
-			assertThat(StringUtils.trimBlankToNull(orderLine.getDescription()))
-					.as("Description of C_OrderLine %s", row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).getAsString())
-					.isEqualTo(StringUtils.trimBlankToNull(row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description).orElse(null)));
 		});
 	}
 

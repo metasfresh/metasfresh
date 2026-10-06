@@ -91,7 +91,7 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-		SpringContextHolder.registerJUnitBean(OrderGroupRepository.newInstanceForUnitTesting());
+		OrderGroupRepository.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 

@@ -489,6 +489,15 @@ public class C_OrderLine_StepDef
 				});
 	}
 
+	/**
+	 * Asserts columns of order lines registered under an identifier earlier. Optional columns are handled by {@code validateOrderLine};
+	 * {@code OPT.Description} asserts the exact description, a blank cell meaning the line has no description.
+	 * <pre>
+	 * And validate C_OrderLine:
+	 *   | C_OrderLine_ID | OPT.Description |
+	 *   | ol_discount    | 3% Bonus Ware   |
+	 * </pre>
+	 */
 	@And("validate C_OrderLine:")
 	public void validate_C_OrderLine(@NonNull final DataTable dataTable)
 	{
@@ -925,6 +934,14 @@ public class C_OrderLine_StepDef
 				.ifPresent(categoryIdentifier -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID())
 						.as("GroupCompensation_Product_Category_ID")
 						.isEqualTo(categoryIdentifier.isNullPlaceholder() ? 0 : productCategoryTable.getId(categoryIdentifier).getRepoId()));
+
+		// the column being present is the trigger: a blank cell asserts that the line has no description
+		if (row.asMap().containsKey("OPT." + I_C_OrderLine.COLUMNNAME_Description))
+		{
+			softly.assertThat(StringUtils.trimBlankToNull(orderLine.getDescription()))
+					.as("Description for C_OrderLine Identifier=%s", identifierStr)
+					.isEqualTo(StringUtils.trimBlankToNull(row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description).orElse(null)));
+		}
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))

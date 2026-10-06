@@ -206,10 +206,10 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | vendorTerm                        | goodsCategory                             |
     # exactly 7 lines (3 goods + 2 Pfand + the vendor's own discount line + the take-over line) -- no separate copy of the SO's "Bonus Ware" line
     And the order identified by poDropship has 7 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID           | Description   |
-      | ol_poBonusVendorDropship |               |
-      | ol_poTakeOver            | 3% Bonus Ware |
+    And validate C_OrderLine:
+      | C_OrderLine_ID           | OPT.Description |
+      | ol_poBonusVendorDropship |                 |
+      | ol_poTakeOver            | 3% Bonus Ware   |
 
     # purchase invoice: the discount posts to the discount product's own expense account
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -383,8 +383,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | null                                      |
       | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | goodsCategory                             |
     And the order identified by poDropship has 8 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description |
       | ol_poTakeOver  | 3% Bonus Ware_2 |
 
 
@@ -515,8 +515,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poVendor               | poDropship            | bonusVendorVerpackung   | 1          | true                        | 1                               | -1.00  |
     # 6 regular lines + the appended own line + the vendor's line
     And the order identified by poDropship has 8 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description |
       | ol_poOwn       | 3% Bonus Ware_3 |
 
     # purchase invoice
@@ -686,8 +686,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poVendor               | poDropship            | bonusVendorVerpackung   | 1          | true                        | 1                               | -28.57 |
     # 6 regular lines + the appended own line + the vendor's line
     And the order identified by poDropship has 8 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description |
       | ol_poOwn       | 3% Bonus Ware_4 |
 
     # purchase invoice
@@ -857,8 +857,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poVendor               | poDropship            | bonusVendorVerpackung   | 1          | true                        | 1                               | -28.57 |
     # 6 regular lines + the appended own line + the vendor's line
     And the order identified by poDropship has 8 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description |
       | ol_poOwn       | 3% Bonus Ware_5 |
 
     # purchase invoice
@@ -1679,8 +1679,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -67.66 | null                                      |
       | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -67.66 | goodsCategory                             |
     # the description names only the customer discount products that were actually taken over, not every customer discount product of the take-over record
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description  |
       | ol_poTakeOver  | 3% Bonus Ware_12 |
 
 
@@ -1807,8 +1807,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | null                                      |
       | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 4                               | -86.21 | goodsCategory                             |
     And the order identified by poDropship has 7 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description                             |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description                         |
       | ol_poTakeOver  | 3% Bonus Ware A_13 + 1% Bonus Ware B_13 |
 
 
@@ -1942,8 +1942,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship2 | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | null                                      |
       | ol_poTakeOver2            | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | goodsCategory                             |
     And the order identified by poDropship has 7 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description  |
       | ol_poTakeOver2 | 3% Bonus Ware_14 |
 
 
@@ -2069,8 +2069,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | null                                      |
       | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | goodsCategory                             |
     And the order identified by poDropship has 7 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description  |
       | ol_poTakeOver  | 3% Bonus Ware_15 |
 
   # ##############################################################################################
@@ -2214,8 +2214,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poTakeOver              | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.66 | goodsCategory                             |
       | ol_poBonusVendorVerpackung | poDropship            | bonusVendorVerpackung   | 1          | true                        | 1                               | -1.00  |                                           |
     And the order identified by poDropship has 9 order lines
-    And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description  |
       | ol_poTakeOver  | 3% Bonus Ware_11 |
 
     And after not more than 60s locate up2date invoice candidates by order line:

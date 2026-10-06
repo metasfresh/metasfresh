@@ -84,17 +84,11 @@ public class GroupCompensationLineCreateRequestFactory
 				.build();
 	}
 
-	/** @return whether a compensation line created from a schema line of the given type ({@code null}: the product's own type) and product is a percentage discount */
-	public boolean isPercentDiscountLine(@Nullable final GroupCompensationType schemaLineType, @NonNull final ProductId productId)
-	{
-		final I_M_Product product = productBL.getById(productId);
-		return isPercentDiscount(resolveGroupCompensationType(schemaLineType, product), extractGroupCompensationAmtType(product));
-	}
-
 	/** @return whether the product's own compensation type and amount type make it a percentage discount */
 	public boolean isPercentDiscountProduct(@NonNull final ProductId productId)
 	{
-		return isPercentDiscountLine(null, productId);
+		final I_M_Product product = productBL.getById(productId);
+		return isPercentDiscount(extractGroupCompensationType(product), extractGroupCompensationAmtType(product));
 	}
 
 	public static boolean isPercentDiscount(@NonNull final GroupCompensationType type, @NonNull final GroupCompensationAmtType amtType)
