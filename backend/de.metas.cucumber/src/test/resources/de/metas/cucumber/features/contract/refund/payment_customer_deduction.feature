@@ -425,4 +425,3 @@ Feature: Bonus that the customer deducts when paying an invoice
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | Bill_BPartner_ID |
       | refundPeriodic         | termPeriodic       | 3               | customerBP       |
     And the C_Flatrate_Term identified by termDeducted has no refund C_Invoice_Candidate
-    And metasfresh has current date and time
