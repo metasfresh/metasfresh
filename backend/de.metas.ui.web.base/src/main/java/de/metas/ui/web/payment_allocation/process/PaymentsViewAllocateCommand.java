@@ -54,7 +54,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.UserMessagePresentation;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -213,9 +212,7 @@ public class PaymentsViewAllocateCommand
 		final Money maxPaymentBonus = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
 		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(maxPaymentBonus))
 		{
-			throw new AdempiereException(MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT, moneyService.toAmount(paymentBonus), moneyService.toAmount(maxPaymentBonus), row.getDocumentNo())
-					.markAsUserValidationError()
-					.setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG); // a message to the user, not a "Server error" toast
+			throw new PaymentBonusAboveWhatTheCustomerPaysException(MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT, moneyService.toAmount(paymentBonus), moneyService.toAmount(maxPaymentBonus), row.getDocumentNo());
 		}
 
 		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt).subtract(paymentBonus);

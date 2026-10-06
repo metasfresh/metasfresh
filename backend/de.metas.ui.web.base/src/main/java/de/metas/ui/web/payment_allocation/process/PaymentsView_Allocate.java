@@ -51,8 +51,10 @@ public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implem
 			{
 				throw ex;
 			}
-			// e.g. a payment bonus above what the customer pays: the user sees why the action is not offered
-			return ProcessPreconditionsResolution.reject(AdempiereException.extractMessageTrl(ex));
+			// e.g. a payment bonus above what the customer pays: the user sees why the action is not offered, in short (the actions list shows the reason on one line)
+			return ProcessPreconditionsResolution.reject(ex instanceof PaymentBonusAboveWhatTheCustomerPaysException
+					? ((PaymentBonusAboveWhatTheCustomerPaysException)ex).getShortReason()
+					: AdempiereException.extractMessageTrl(ex));
 		}
 		if (result == null)
 		{

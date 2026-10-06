@@ -70,6 +70,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
+import de.metas.ui.web.payment_allocation.PaymentBonusRowValues;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -460,7 +461,10 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(resolution.isRejected()).isTrue();
 			assertThat(resolution.isInternal()).isFalse();
-			assertThat(resolution.getRejectReason().getDefaultValue()).contains(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
+			// the short reason, like the row's note: the actions list shows it on one line; the full sentence is for the dialog
+			assertThat(resolution.getRejectReason().getDefaultValue())
+					.contains(PaymentBonusRowValues.MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message())
+					.doesNotContain(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
 		}
 
 		/** The discount is not paid either: open 100.00 - discount 3.00 leaves 97.00, a bonus of 99.00 would make the payment negative. */

@@ -1,5 +1,6 @@
 package de.metas.ui.web.payment_allocation;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
@@ -24,7 +25,8 @@ import javax.annotation.Nullable;
 public class PaymentBonusRowValues
 {
 	/** short, so that it fits the column; the amounts are formatted for the user's language */
-	private static final AdMessageKey MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotPrefilledAboveOpenAmt");
+	@VisibleForTesting
+	public static final AdMessageKey MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotPrefilledAboveOpenAmt");
 	private static final AdMessageKey MSG_NOT_COMPUTED = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotComputed");
 	private static final AdMessageKey MSG_OTHER_CURRENCY = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusOtherCurrency");
 	private static final AdMessageKey MSG_ADJUSTED = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusAdjusted");
@@ -77,7 +79,7 @@ public class PaymentBonusRowValues
 			return builder()
 					.paymentBonusAmt(Amount.zero(openAmt.getCurrencyCode()))
 					.paymentBonusDeduction(deduction) // a smaller amount can still be entered
-					.paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, grossAmt, maxBonusAmt))
+					.paymentBonusNote(aboveWhatTheCustomerPays(grossAmt, maxBonusAmt))
 					.build();
 		}
 
@@ -130,7 +132,7 @@ public class PaymentBonusRowValues
 			// rejected when allocating, which checks the booked amount too; the note says why right away
 			return entered.toBuilder()
 					.paymentBonusAmt(bookedAmt)
-					.paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, bookedAmt, maxBonusAmt))
+					.paymentBonusNote(aboveWhatTheCustomerPays(bookedAmt, maxBonusAmt))
 					.build();
 		}
 		if (bookedAmt.compareTo(enteredAmt) == 0)
@@ -142,6 +144,14 @@ public class PaymentBonusRowValues
 				.paymentBonusAmt(bookedAmt)
 				.paymentBonusNote(msg(MSG_ADJUSTED, enteredAmt, bookedAmt))
 				.build();
+	}
+
+	/**
+	 * @return the short reason why a bonus cannot be booked: it is above what the customer pays; e.g. "Bonus 3,57 EUR > zahlbar 2,00 EUR"
+	 */
+	public static ITranslatableString aboveWhatTheCustomerPays(@NonNull final Amount bonusAmt, @NonNull final Amount maxBonusAmt)
+	{
+		return msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, bonusAmt, maxBonusAmt);
 	}
 
 	/** the row's amounts are in the currency of the invoice, like the bonus */
