@@ -45,6 +45,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InvoiceCandidateGroupRepositoryPackingTest
 {
 	private static final int PI_ITEM_PRODUCT_ID = 4711;
+	/** distinct net amounts identify the regular lines, whatever order the group lists them in */
+	private static final BigDecimal PACKED_LINE_NET_AMT = new BigDecimal("100");
+	private static final BigDecimal UNPACKED_LINE_NET_AMT = new BigDecimal("200");
 
 	private InvoiceCandidateGroupRepository repo;
 	private UomId uomId;
@@ -74,8 +77,8 @@ class InvoiceCandidateGroupRepositoryPackingTest
 
 		assertThat(provider.calls.get()).isEqualTo(1);
 		assertThat(group.getRegularLines()).hasSize(2);
-		final GroupRegularLine packedLine = group.getRegularLines().get(0);
-		final GroupRegularLine unpackedLine = group.getRegularLines().get(1);
+		final GroupRegularLine packedLine = findRegularLineByNetAmt(group, PACKED_LINE_NET_AMT);
+		final GroupRegularLine unpackedLine = findRegularLineByNetAmt(group, UNPACKED_LINE_NET_AMT);
 		assertThat(packedLine.getPackingMaterialProductCategoryIds()).containsExactly(cartonCategoryId);
 		assertThat(unpackedLine.getPackingMaterialProductCategoryIds()).isEmpty();
 	}
@@ -88,6 +91,13 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		assertThat(provider.calls.get()).isZero();
 		assertThat(group.getRegularLines()).hasSize(2);
 		assertThat(group.getRegularLines()).allSatisfy(line -> assertThat(line.getPackingMaterialProductCategoryIds()).isEmpty());
+	}
+
+	private static GroupRegularLine findRegularLineByNetAmt(final Group group, final BigDecimal netAmt)
+	{
+		return group.getRegularLines().stream()
+				.filter(line -> line.getLineNetAmt().compareTo(netAmt) == 0)
+				.collect(com.google.common.collect.MoreCollectors.onlyElement());
 	}
 
 	/** a group of two regular candidates (the first one's order line has a packing instruction) and one discount candidate */
@@ -124,8 +134,8 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		discountOrderLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
 		saveRecord(discountOrderLine);
 
-		newRegularCandidate(order, goodsProduct, packedOrderLine, groupRepoId);
-		newRegularCandidate(order, goodsProduct, unpackedOrderLine, groupRepoId);
+		newRegularCandidate(order, goodsProduct, packedOrderLine, groupRepoId, PACKED_LINE_NET_AMT);
+		newRegularCandidate(order, goodsProduct, unpackedOrderLine, groupRepoId, UNPACKED_LINE_NET_AMT);
 
 		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
 		discountIc.setC_Order_ID(order.getC_Order_ID());
@@ -169,14 +179,14 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		return orderLine;
 	}
 
-	private void newRegularCandidate(final I_C_Order order, final I_M_Product product, final I_C_OrderLine orderLine, final int groupRepoId)
+	private void newRegularCandidate(final I_C_Order order, final I_M_Product product, final I_C_OrderLine orderLine, final int groupRepoId, final BigDecimal netAmt)
 	{
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setC_Order_ID(order.getC_Order_ID());
 		ic.setC_Order_CompensationGroup_ID(groupRepoId);
 		ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		ic.setM_Product_ID(product.getM_Product_ID());
-		ic.setNetAmtToInvoice(new BigDecimal("100"));
+		ic.setNetAmtToInvoice(netAmt);
 		saveRecord(ic);
 	}
 
