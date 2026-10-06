@@ -139,6 +139,26 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
+	void eachTakenOverContractLineKeepsItsOwnPercentage()
+	{
+		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final I_C_Order salesOrder = createSalesOrderWithLines(
+				new LineSpec(BONUS_WARE_ID, "3"),
+				new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, "1"));
+		addContractGroupWithDiscountLine(salesOrder, new LineSpec(BONUS_WARE_ID, "3"));
+		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
+
+		final List<ContractSettingsTakeOverMatch> results = service.computeMatches(purchaseOrder, settings);
+
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).getTakenOverPercentages()).containsExactly(
+				ContractSettingsTakeOverMatch.TakenOverPercentage.of(BONUS_WARE_ID, Percent.of(3)),
+				ContractSettingsTakeOverMatch.TakenOverPercentage.of(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, Percent.of(1)),
+				ContractSettingsTakeOverMatch.TakenOverPercentage.of(BONUS_WARE_ID, Percent.of(3)));
+		assertThat(results.get(0).getSummedPercent().toBigDecimal()).isEqualByComparingTo("7");
+	}
+
+	@Test
 	void onlyPercentDiscountLinesOfContractCreatedGroupsAreTakenOver()
 	{
 		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, BONUS_VERPACKUNG_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
@@ -273,6 +293,40 @@ class ContractSettingsTakeOverServiceTest
 		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
 	}
 
+	@Test
+	void applyToSchema_ownLineDescriptionNamesEachTakenOverPercentageWithItsProduct()
+	{
+		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareAId, bonusWareBId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(
+				new LineSpec(bonusWareAId, "3"),
+				new LineSpec(bonusWareBId, "1"));
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)
+				.getCompensationLines();
+
+		assertThat(lines).hasSize(1);
+		assertThat(lines.get(0).getPercentage()).isEqualTo(Percent.of(4));
+		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware A + 1% Bonus Ware B");
+	}
+
+	@Test
+	void applyToSchema_ownLineDescriptionNamesTheSameProductOncePerContractLine()
+	{
+		final ProductId bonusWareId = product("Bonus Ware", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+		addContractGroupWithDiscountLine(salesOrder, new LineSpec(bonusWareId, "3"));
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)
+				.getCompensationLines();
+
+		assertThat(lines).hasSize(1);
+		assertThat(lines.get(0).getPercentage()).isEqualTo(Percent.of(6));
+		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 3% Bonus Ware");
+	}
+
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */
 	private List<GroupTemplateCompensationLine> applyBonusWareTakeOverOf3PercentTo(final GroupTemplateCompensationLine... schemaLines)
 	{
@@ -377,6 +431,12 @@ class ContractSettingsTakeOverServiceTest
 			createCompensationLine(so, group, spec);
 		}
 		return so;
+	}
+
+	private void addContractGroupWithDiscountLine(final I_C_Order so, final LineSpec spec)
+	{
+		final I_C_Order_CompensationGroup contractGroup = createGroupWithRegularLine(so, FlatrateTermId.ofRepoId(6));
+		createCompensationLine(so, contractGroup, spec);
 	}
 
 	private void addManualGroupWithDiscountLine(final I_C_Order so, final LineSpec spec)

@@ -1,7 +1,9 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,13 +31,43 @@ import lombok.Value;
  */
 
 /**
- * A take-over record together with the summed nominal percentage taken over from the linked sales order (never zero)
- * and the customer discount products that contributed to it.
+ * A take-over record together with the nominal percentages it takes over from the linked sales order, one per
+ * contract discount line (never empty).
  */
 @Value
 public class ContractSettingsTakeOverMatch
 {
 	@NonNull ContractSettingsTakeOver takeOver;
-	@NonNull Percent summedPercent;
-	@NonNull ImmutableSet<ProductId> takenOverProductIds;
+	@NonNull ImmutableList<TakenOverPercentage> takenOverPercentages;
+
+	public ContractSettingsTakeOverMatch(
+			@NonNull final ContractSettingsTakeOver takeOver,
+			@NonNull final ImmutableList<TakenOverPercentage> takenOverPercentages)
+	{
+		Check.assumeNotEmpty(takenOverPercentages, "takenOverPercentages is not empty");
+		this.takeOver = takeOver;
+		this.takenOverPercentages = takenOverPercentages;
+	}
+
+	public Percent getSummedPercent()
+	{
+		return takenOverPercentages.stream()
+				.map(TakenOverPercentage::getPercent)
+				.reduce(Percent.ZERO, Percent::add);
+	}
+
+	public ImmutableSet<ProductId> getTakenOverProductIds()
+	{
+		return takenOverPercentages.stream()
+				.map(TakenOverPercentage::getCustomerDiscountProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** The nominal percentage of one contract discount line of the linked sales order. */
+	@Value(staticConstructor = "of")
+	public static class TakenOverPercentage
+	{
+		@NonNull ProductId customerDiscountProductId;
+		@NonNull Percent percent;
+	}
 }

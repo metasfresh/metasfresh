@@ -2,7 +2,6 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -18,8 +17,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /*
@@ -55,6 +57,7 @@ public class ContractSettingsTakeOverService
 	@NonNull private final ContractSettingsTakeOverRepository takeOverRepository;
 	@NonNull private final OrderGroupRepository orderGroupRepository;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+
 
 	/** @return the schema with one own compensation line appended per matching take-over, the vendor's lines unchanged; the given schema when nothing is taken over */
 	public GroupTemplate applyToSchema(
@@ -92,15 +95,14 @@ public class ContractSettingsTakeOverService
 				.build());
 	}
 
-	/** e.g. {@code "3% Bonus Ware"} */
+	/** e.g. {@code "3% Bonus Ware A + 1% Bonus Ware B"}, one entry per taken-over contract discount line */
 	private String createOwnLineDescription(@NonNull final ContractSettingsTakeOverMatch match)
 	{
-		final String takenOverProductNames = productBL.getProductNames(match.getTakenOverProductIds())
-				.values()
+		final Map<ProductId, String> productNames = productBL.getProductNames(match.getTakenOverProductIds());
+		return match.getTakenOverPercentages()
 				.stream()
-				.sorted()
-				.collect(Collectors.joining(", "));
-		return formatPercent(match.getSummedPercent()) + " " + takenOverProductNames;
+				.map(takenOver -> formatPercent(takenOver.getPercent()) + " " + productNames.get(takenOver.getCustomerDiscountProductId()))
+				.collect(Collectors.joining(" + "));
 	}
 
 	private static String formatPercent(@NonNull final Percent percent)
@@ -110,7 +112,7 @@ public class ContractSettingsTakeOverService
 
 	/**
 	 * @return one match per take-over whose customer discount products are on the percentage discount lines of the linked
-	 * sales order's contract-created groups, with their nominal percentages summed; take-overs summing to 0 are dropped
+	 * sales order's contract-created groups, with the nominal percentage of each such line; take-overs without such a line are dropped
 	 */
 	@VisibleForTesting
 	ImmutableList<ContractSettingsTakeOverMatch> computeMatches(
@@ -131,25 +133,20 @@ public class ContractSettingsTakeOverService
 
 		return takeOverRepository.getBySettingsId(settings.getSettingsId())
 				.stream()
-				.map(takeOver -> computeMatch(takeOver, salesOrderDiscountLines))
-				.filter(match -> !match.getSummedPercent().isZero())
+				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines))
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ContractSettingsTakeOverMatch computeMatch(
+	@Nullable
+	private static ContractSettingsTakeOverMatch computeMatchOrNull(
 			@NonNull final ContractSettingsTakeOver takeOver,
 			@NonNull final List<GroupCompensationLine> salesOrderDiscountLines)
 	{
-		Percent sum = Percent.ZERO;
-		final ImmutableSet.Builder<ProductId> takenOverProductIds = ImmutableSet.builder();
-		for (final GroupCompensationLine line : salesOrderDiscountLines)
-		{
-			if (takeOver.getCustomerDiscountProductIds().contains(line.getProductId()) && !line.getPercentage().isZero())
-			{
-				sum = sum.add(line.getPercentage());
-				takenOverProductIds.add(line.getProductId());
-			}
-		}
-		return new ContractSettingsTakeOverMatch(takeOver, sum, takenOverProductIds.build());
+		final ImmutableList<ContractSettingsTakeOverMatch.TakenOverPercentage> takenOverPercentages = salesOrderDiscountLines.stream()
+				.filter(line -> takeOver.getCustomerDiscountProductIds().contains(line.getProductId()) && !line.getPercentage().isZero())
+				.map(line -> ContractSettingsTakeOverMatch.TakenOverPercentage.of(line.getProductId(), line.getPercentage()))
+				.collect(ImmutableList.toImmutableList());
+		return takenOverPercentages.isEmpty() ? null : new ContractSettingsTakeOverMatch(takeOver, takenOverPercentages);
 	}
 }

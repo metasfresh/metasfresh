@@ -1820,8 +1820,8 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poTakeOver             | poDropship            | bonusTakeOver           | 1          | true                        | 4                               | -86.21 |
     And the order identified by poDropship has 7 order lines
     And validate the take-over composition description of the order lines:
-      | C_OrderLine_ID | Description                         |
-      | ol_poTakeOver  | 4% Bonus Ware A_13, Bonus Ware B_13 |
+      | C_OrderLine_ID | Description                             |
+      | ol_poTakeOver  | 3% Bonus Ware A_13 + 1% Bonus Ware B_13 |
 
 
   # ##############################################################################################
