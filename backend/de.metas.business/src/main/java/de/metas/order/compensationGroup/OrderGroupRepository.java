@@ -366,16 +366,38 @@ public class OrderGroupRepository implements GroupRepository
 			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
 			final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
 	{
+		return regularLineBuilderWithCategories(record, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId)
+				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
+				.lineNetAmt(record.getLineNetAmt())
+				.build();
+	}
+
+	/**
+	 * @return a regular line that carries just the order line's product and packing-material categories (net amount zero),
+	 * for deciding which discount bases the order line falls into
+	 */
+	public static GroupRegularLine buildCategoryOnlyRegularLine(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			@NonNull final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
+	{
+		return regularLineBuilderWithCategories(orderLine, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId)
+				.lineNetAmt(BigDecimal.ZERO)
+				.build();
+	}
+
+	private static GroupRegularLine.GroupRegularLineBuilder regularLineBuilderWithCategories(
+			final I_C_OrderLine record,
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
+	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final HUPIItemProductId piItemProductId = extractPIItemProductId(record);
 		return GroupRegularLine.builder()
-				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
-				.lineNetAmt(record.getLineNetAmt())
 				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.packingMaterialProductCategoryIds(piItemProductId != null
 						? packingMaterialCategoryIdsByPIItemProductId.getOrDefault(piItemProductId, ImmutableSet.of())
-						: ImmutableSet.of())
-				.build();
+						: ImmutableSet.of());
 	}
 
 	@Nullable
@@ -390,7 +412,7 @@ public class OrderGroupRepository implements GroupRepository
 	 * of the regular lines' packing instructions. A line without packing instruction (or a virtual one) has no entry.
 	 * The provider is looked up lazily because this repository is also created with {@code new}.
 	 */
-	public ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
+	public static ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
 			final List<I_C_OrderLine> groupOrderLines)
 	{
 		final ImmutableSet<HUPIItemProductId> piItemProductIds = groupOrderLines.stream()
@@ -827,12 +849,7 @@ public class OrderGroupRepository implements GroupRepository
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
-		final GroupCompensationBase base = compensationLine.getBase();
-		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
-				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(toSet(base.getProductCategoryId()))
-				.packingMaterialProductCategoryIds(toSet(base.getPackingMaterialProductCategoryId()))
-				.build();
+		final GroupRegularLine aggregatedRegularLine = toAggregatedRegularLine(compensationLine);
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));
 
@@ -844,6 +861,20 @@ public class OrderGroupRepository implements GroupRepository
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
+				.build();
+	}
+
+	/**
+	 * @return the regular line that stands in for the group's regular lines when only a compensation line is at hand:
+	 * it carries the compensation line's stored base amount and categories, so that the line's own base filter matches it
+	 */
+	public static GroupRegularLine toAggregatedRegularLine(@NonNull final GroupCompensationLine compensationLine)
+	{
+		final GroupCompensationBase base = compensationLine.getBase();
+		return GroupRegularLine.builder()
+				.lineNetAmt(compensationLine.getBaseAmt())
+				.productCategoryIds(toSet(base.getProductCategoryId()))
+				.packingMaterialProductCategoryIds(toSet(base.getPackingMaterialProductCategoryId()))
 				.build();
 	}
 

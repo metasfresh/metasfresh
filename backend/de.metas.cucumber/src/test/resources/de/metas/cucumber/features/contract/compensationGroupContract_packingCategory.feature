@@ -479,7 +479,7 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_svcCarton | orderSvc              | goodsD                  | 800        | pipSvcCarton                           |
       | ol_svcCrate  | orderSvc              | goodsE                  | 400        | pipSvcCrate                            |
-      | ol_svcNoPi   | orderSvc              | goodsF                  | 50         |                                        |
+      | ol_goodsNoPi | orderSvc              | goodsF                  | 50         |                                        |
 
     And the order identified by orderSvc is completed
 
@@ -492,7 +492,7 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.C_Order_CompensationGroup_ID.Identifier |
       | ol_svcCrate               | null                                        |
-      | ol_svcNoPi                | null                                        |
+      | ol_goodsNoPi              | null                                        |
     # the crate deposit line is no group member either
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Order_CompensationGroup_ID.Identifier |

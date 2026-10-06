@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -15,6 +16,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -154,22 +156,28 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId =
 				retrieveProductCategoryIdAndAncestorsByProductId(invoiceCandidates);
 
+		final List<I_C_Invoice_Candidate> regularCandidates = invoiceCandidates.stream()
+				.filter(invoiceCandidate -> !invoiceCandidate.isGroupCompensationLine())
+				.collect(ImmutableList.toImmutableList());
+		final Map<OrderLineId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByOrderLineId =
+				retrievePackingMaterialProductCategoryIdsByOrderLineId(regularCandidates);
+
 		final List<I_C_Invoice_Candidate> compensationLineCandidates = invoiceCandidates.stream()
 				.filter(I_C_Invoice_Candidate::isGroupCompensationLine)
 				.collect(ImmutableList.toImmutableList());
-		final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId =
-				retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(compensationLineCandidates);
+		final Map<InvoiceCandidateId, GroupCompensationBase> baseByInvoiceCandidateId =
+				retrieveBasesByInvoiceCandidateId(compensationLineCandidates);
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
 			if (!invoiceCandidate.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = createReqularLine(invoiceCandidate, productCategoryIdsByProductId);
+				final GroupRegularLine regularLine = createReqularLine(invoiceCandidate, productCategoryIdsByProductId, packingMaterialCategoryIdsByOrderLineId);
 				groupBuilder.regularLine(regularLine);
 			}
 			else
 			{
-				final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, appliesToProductCategoryIdByInvoiceCandidateId);
+				final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, baseByInvoiceCandidateId);
 				groupBuilder.compensationLine(compensationLine);
 			}
 		}
@@ -198,15 +206,64 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		return productDAO.getProductCategoryIdAndAncestorsByProductIds(productIds);
 	}
 
+	/**
+	 * Batch-resolves, in one query for the order lines and one provider call for the whole group, the packing-material
+	 * product categories (plus ancestors) of the regular candidates' order lines' packing instructions. The packing is
+	 * the one of the order line, so it is the same on every partial invoice.
+	 *
+	 * @return order line id -> packing-material category ids; an order line without packing instruction is simply absent
+	 */
+	private ImmutableMap<OrderLineId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdsByOrderLineId(
+			@NonNull final List<I_C_Invoice_Candidate> regularCandidates)
+	{
+		final ImmutableSet<OrderLineId> orderLineIds = regularCandidates.stream()
+				.map(invoiceCandidate -> OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_C_OrderLine> orderLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.create()
+				.list();
+
+		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId =
+				OrderGroupRepository.retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(orderLines);
+		if (packingMaterialCategoryIdsByPIItemProductId.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<OrderLineId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final HUPIItemProductId piItemProductId = OrderGroupRepository.extractPIItemProductId(orderLine);
+			final ImmutableSet<ProductCategoryId> categoryIds = piItemProductId != null ? packingMaterialCategoryIdsByPIItemProductId.get(piItemProductId) : null;
+			if (categoryIds != null)
+			{
+				result.put(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), categoryIds);
+			}
+		}
+		return result.build();
+	}
+
 	private GroupRegularLine createReqularLine(
 			final I_C_Invoice_Candidate invoiceCandidate,
-			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			final Map<OrderLineId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByOrderLineId)
 	{
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID());
 		return GroupRegularLine.builder()
 				// invoiced and to invoice now: a percent discount is computed on both, then its invoiced part is subtracted (see C_OrderLine_Handler#calculatePriceAndTax)
 				.lineNetAmt(invoiceCandidate.getNetAmtToInvoice().add(invoiceCandidate.getNetAmtInvoiced()))
 				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
+				.packingMaterialProductCategoryIds(orderLineId != null
+						? packingMaterialCategoryIdsByOrderLineId.getOrDefault(orderLineId, ImmutableSet.of())
+						: ImmutableSet.of())
 				.build();
 	}
 
@@ -215,7 +272,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	 */
 	private GroupCompensationLine createCompensationLine(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
-			@NonNull final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId)
+			@NonNull final Map<InvoiceCandidateId, GroupCompensationBase> baseByInvoiceCandidateId)
 	{
 		// invoiced and to invoice now, like the regular lines: a compounding percent line's base deducts the whole amount of the lines before it
 		final BigDecimal qtyInvoicedAndToInvoice = invoiceCandidate.getQtyInvoiced().add(invoiceCandidate.getQtyToInvoice());
@@ -232,6 +289,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final BigDecimal lineNetAmt = price.multiply(qtyInPriceUom);
 
 		final InvoiceCandidateId invoiceCandidateId = extractLineId(invoiceCandidate);
+		final GroupCompensationBase base = baseByInvoiceCandidateId.getOrDefault(invoiceCandidateId, GroupCompensationBase.NONE);
 		return GroupCompensationLine.builder()
 				.repoId(invoiceCandidateId)
 				.seqNo(invoiceCandidate.getLine())
@@ -244,19 +302,20 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.price(price)
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
-				.appliesToProductCategoryId(appliesToProductCategoryIdByInvoiceCandidateId.get(invoiceCandidateId))
+				.appliesToProductCategoryId(base.getProductCategoryId())
+				.packingMaterialProductCategoryId(base.getPackingMaterialProductCategoryId())
 				.build();
 	}
 
 	/**
-	 * Batch-resolves each compensation invoice candidate's order line's schema line's applies-to product category in
-	 * two queries (one for the order lines, one for the schema lines), instead of one uncached order-line load plus
-	 * one uncached schema-line load per compensation line.
+	 * Batch-resolves each compensation invoice candidate's order line's schema line's base (product category and
+	 * packing-material category) in two queries (one for the order lines, one for the schema lines), instead of one
+	 * uncached order-line load plus one uncached schema-line load per compensation line.
 	 *
-	 * @return invoice candidate id -> applies-to product category id; a candidate with no resolvable category (no
-	 * order line, no schema line, or no category on the schema line) is simply absent
+	 * @return invoice candidate id -> base; a candidate with no resolvable base (no order line, no schema line, or
+	 * no category on the schema line) is simply absent
 	 */
-	private ImmutableMap<InvoiceCandidateId, ProductCategoryId> retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(
+	private ImmutableMap<InvoiceCandidateId, GroupCompensationBase> retrieveBasesByInvoiceCandidateId(
 			@NonNull final List<I_C_Invoice_Candidate> compensationLineCandidates)
 	{
 		final ImmutableSet<OrderLineId> orderLineIds = compensationLineCandidates.stream()
@@ -284,24 +343,25 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 			return ImmutableMap.of();
 		}
 
-		final ImmutableMap<Integer, ProductCategoryId> productCategoryIdBySchemaLineId = queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+		final ImmutableMap<Integer, GroupCompensationBase> baseBySchemaLineId = queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
 				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
 				.create()
 				.stream()
-				.filter(schemaLine -> ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()) != null)
 				.collect(ImmutableMap.toImmutableMap(
 						I_C_CompensationGroup_SchemaLine::getC_CompensationGroup_SchemaLine_ID,
-						schemaLine -> ProductCategoryId.ofRepoId(schemaLine.getM_Product_Category_ID())));
+						schemaLine -> GroupCompensationBase.of(
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()))));
 
-		final ImmutableMap.Builder<InvoiceCandidateId, ProductCategoryId> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<InvoiceCandidateId, GroupCompensationBase> result = ImmutableMap.builder();
 		for (final I_C_Invoice_Candidate invoiceCandidate : compensationLineCandidates)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceCandidate.getC_OrderLine_ID());
 			final Integer schemaLineId = orderLineId != null ? schemaLineIdByOrderLineId.get(orderLineId) : null;
-			final ProductCategoryId productCategoryId = schemaLineId != null ? productCategoryIdBySchemaLineId.get(schemaLineId) : null;
-			if (productCategoryId != null)
+			final GroupCompensationBase base = schemaLineId != null ? baseBySchemaLineId.get(schemaLineId) : null;
+			if (base != null && !base.isNone())
 			{
-				result.put(extractLineId(invoiceCandidate), productCategoryId);
+				result.put(extractLineId(invoiceCandidate), base);
 			}
 		}
 		return result.build();
@@ -425,14 +485,10 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		InvoiceCandidateCompensationGroupUtils.assertCompensationLine(invoiceCandidate);
 
-		final Map<InvoiceCandidateId, ProductCategoryId> appliesToProductCategoryIdByInvoiceCandidateId =
-				retrieveAppliesToProductCategoryIdsByInvoiceCandidateId(ImmutableList.of(invoiceCandidate));
-		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, appliesToProductCategoryIdByInvoiceCandidateId);
-		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
-		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
-				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
-				.build();
+		final Map<InvoiceCandidateId, GroupCompensationBase> baseByInvoiceCandidateId =
+				retrieveBasesByInvoiceCandidateId(ImmutableList.of(invoiceCandidate));
+		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate, baseByInvoiceCandidateId);
+		final GroupRegularLine aggregatedRegularLine = OrderGroupRepository.toAggregatedRegularLine(compensationLine);
 
 		final I_C_Order order = invoiceCandidate.getC_Order();
 		if (order == null)

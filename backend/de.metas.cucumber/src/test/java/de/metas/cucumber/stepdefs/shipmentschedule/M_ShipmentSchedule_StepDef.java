@@ -49,6 +49,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -61,6 +62,7 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -239,6 +241,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	private final TestContext testContext;
@@ -1323,6 +1326,9 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
 				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override).ifPresent(shipmentScheduleRecord::setDeliveryDate_Override);
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> InterfaceWrapperHelper.create(shipmentScheduleRecord, de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+						.setM_HU_PI_Item_Product_Override_ID(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 
 		saveRecord(shipmentScheduleRecord);
 	}

@@ -35,7 +35,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -292,22 +291,17 @@ public class ContractCompensationGroupService
 				orderGroupRepository.retrieveProductCategoryIdAndAncestorsByProductId(eligibleOrderLines);
 		final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId =
 				declaredBases.stream().anyMatch(base -> base.getPackingMaterialProductCategoryId() != null)
-						? orderGroupRepository.retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(eligibleOrderLines)
+						? OrderGroupRepository.retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(eligibleOrderLines)
 						: ImmutableMap.of();
 
 		final ImmutableList.Builder<OrderLineId> candidateLineIds = ImmutableList.builder();
 		final ImmutableSet.Builder<GroupCompensationBase> matchedBases = ImmutableSet.builder();
 		for (final I_C_OrderLine orderLine : eligibleOrderLines)
 		{
-			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID()); // safe: filtered above
-			final HUPIItemProductId piItemProductId = OrderGroupRepository.extractPIItemProductId(orderLine);
-			final GroupRegularLine regularLine = GroupRegularLine.builder()
-					.lineNetAmt(BigDecimal.ZERO) // only the categories matter for the selection
-					.productCategoryIds(productCategoryIdAndAncestorsByProductId.getOrDefault(productId, ImmutableSet.of()))
-					.packingMaterialProductCategoryIds(piItemProductId != null
-							? packingMaterialCategoryIdsByPIItemProductId.getOrDefault(piItemProductId, ImmutableSet.of())
-							: ImmutableSet.of())
-					.build();
+			final GroupRegularLine regularLine = OrderGroupRepository.buildCategoryOnlyRegularLine(
+					orderLine,
+					productCategoryIdAndAncestorsByProductId,
+					packingMaterialCategoryIdsByPIItemProductId);
 
 			final ImmutableSet<GroupCompensationBase> lineMatchedBases = declaredBases.stream()
 					.filter(base -> base.isMatching(regularLine))
