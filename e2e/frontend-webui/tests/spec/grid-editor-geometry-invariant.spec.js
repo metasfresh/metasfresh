@@ -246,6 +246,75 @@ async function serveOrderLineDescriptionAsMultiline(page) {
   );
 }
 
+const LABELS_FIELD = 'GeometryTestLabels';
+
+/**
+ * Serve the order-line grid with one extra Labels column (`GeometryTestLabels`, one label
+ * "Kundenbindung"), cloned from the Description column. Labels is a real grid widget type
+ * (an AD_UI_Element of type Labels) but no included tab of the seed DB shows one with data, so the
+ * column is added to the layout and row responses instead.
+ */
+async function serveOrderLinesWithLabelsColumn(page) {
+  await page.route(
+    (url) => url.pathname.includes(`/window/${SALES_ORDER_WINDOW_ID}`) && url.pathname.endsWith('/layout'),
+    async (route) => {
+      const response = await route.fetch();
+      const layout = await response.json();
+      const addLabelsColumn = (node) => {
+        if (Array.isArray(node)) {
+          const index = node.findIndex(
+            (element) => element && Array.isArray(element.fields) && element.fields[0]?.field === 'Description'
+          );
+          if (index >= 0 && !node.some((element) => element?.fields?.[0]?.field === LABELS_FIELD)) {
+            const labelsColumn = JSON.parse(JSON.stringify(node[index]));
+            labelsColumn.widgetType = 'Labels';
+            labelsColumn.caption = 'Labels';
+            labelsColumn.fields = [{ ...labelsColumn.fields[0], field: LABELS_FIELD, caption: 'Labels' }];
+            node.splice(index + 1, 0, labelsColumn);
+          }
+          node.forEach(addLabelsColumn);
+        } else if (node && typeof node === 'object') {
+          Object.values(node).forEach(addLabelsColumn);
+        }
+      };
+      addLabelsColumn(layout);
+      await route.fulfill({ response, json: layout });
+    }
+  );
+  await page.route(
+    (url) => new RegExp(`/window/${SALES_ORDER_WINDOW_ID}/\\d+/${ORDER_LINE_TAB_ID}(/|$)`).test(url.pathname),
+    async (route) => {
+      if (route.request().method() !== 'GET') {
+        return route.continue();
+      }
+      const response = await route.fetch();
+      let body;
+      try {
+        body = await response.json();
+      } catch (notJson) {
+        return route.fulfill({ response });
+      }
+      const addLabelsValue = (node) => {
+        if (Array.isArray(node)) {
+          node.forEach(addLabelsValue);
+        } else if (node && typeof node === 'object') {
+          if (node.fieldsByName && typeof node.fieldsByName === 'object' && node.fieldsByName.QtyEntered) {
+            node.fieldsByName[LABELS_FIELD] = {
+              field: LABELS_FIELD,
+              value: { values: [{ key: 'L1', caption: 'Kundenbindung' }] },
+              readonly: true,
+              displayed: true,
+            };
+          }
+          Object.values(node).forEach(addLabelsValue);
+        }
+      };
+      addLabelsValue(body);
+      return route.fulfill({ response, json: body });
+    }
+  );
+}
+
 /** open the order's text-lines modal (a grid with inline-editable text rows) and add one text row */
 async function openTextLinesModalWithOneTextRow(page, orderId) {
   const topActionsResponse = await page.request.get(
@@ -440,6 +509,82 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
 
     await assertEveryEditorKeepsGeometry(page, textRow, ['LongText', 'List'], 'text-lines modal', {
       leave: leaveByClickingModalTitle,
+    });
+  });
+
+  test('Order-line grid with a Labels column: the label chip keeps its size, centred; editing a neighbour changes no geometry', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Grid — no layout change when entering/leaving an editor');
+    allure.severity('critical');
+    test.setTimeout(300000);
+    await page.setViewportSize(VIEWPORT);
+    await serveOrderLinesWithLabelsColumn(page);
+
+    const masterdata = await createMasterdata('de_DE');
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await gotoOrderList();
+    const recordId = await createNewOrder();
+    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await addOrderLine(recordId, {
+      productCode: masterdata.products.Product1.productCode,
+      quantity: 1,
+    });
+    await page.reload();
+
+    const row = page
+      .locator('table tbody tr')
+      .filter({ has: page.locator('[data-cy="cell-QtyEntered"]') })
+      .first();
+    await row.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const labelsCell = row.locator(`[data-cy="cell-${LABELS_FIELD}"]`);
+    await labelsCell.scrollIntoViewIfNeeded();
+    const chip = labelsCell.locator('.labels-label');
+    await expect(chip).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+    const measureChip = async () =>
+      labelsCell.evaluate((td) => {
+        const wrapper = td.querySelector('.cell-text-wrapper');
+        const chipBox = td.querySelector('.labels-label').getBoundingClientRect();
+        const wrapperBox = wrapper.getBoundingClientRect();
+        return {
+          chipHeight: chipBox.height,
+          chipCentre: chipBox.top + chipBox.height / 2,
+          wrapperHeight: wrapperBox.height,
+          wrapperCentre: wrapperBox.top + wrapperBox.height / 2,
+          wrapperOverflows: wrapper.scrollHeight > wrapper.clientHeight + 1,
+        };
+      });
+
+    await test.step('The chip keeps its own height, centred in the 26px static box, nothing clipped', async () => {
+      const box = await measureChip();
+      console.log(`[GEOMETRY:labels] ${JSON.stringify(box)}`);
+      expect(box.chipHeight, 'the label chip keeps its own height (not stretched to the 26px box)').toBeLessThan(26);
+      expect(Math.abs(box.chipCentre - box.wrapperCentre), 'the chip is vertically centred').toBeLessThanOrEqual(
+        TOLERANCE_PX
+      );
+      expect(box.wrapperOverflows, 'nothing of the label cell is clipped').toBe(false);
+    });
+
+    await test.step('Opening and leaving a neighbour editor changes no geometry in the labels row', async () => {
+      const before = await measureRow(row);
+      const qtyCell = row.locator('[data-cy="cell-QtyEntered"]');
+      await qtyCell.scrollIntoViewIfNeeded();
+      await openEditor(page, qtyCell);
+      const inEdit = await measureRow(row);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const afterLeave = await measureRow(row);
+      expect([
+        ...compareGeometry('while editing', 'cell-QtyEntered', before, inEdit),
+        ...compareGeometry('after leaving', 'cell-QtyEntered', before, afterLeave),
+      ]).toEqual([]);
     });
   });
 });
