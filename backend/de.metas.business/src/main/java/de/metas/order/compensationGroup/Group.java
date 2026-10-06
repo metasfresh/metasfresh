@@ -77,7 +77,7 @@ public class Group
 	@Getter
 	private final ConditionsId contractConditionsId;
 
-	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other, except own take-over lines (see {@link GroupCompensationLine#isTakeOverOwnLine()}), which are always computed additively */
+	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other, except lines with own base (see {@link GroupCompensationLine#hasOwnBase()}), which are always computed additively */
 	@Getter
 	private final boolean additive;
 
@@ -247,7 +247,7 @@ public class Group
 				.lineNetAmt(lineNetAmt)
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.appliesToProductCategoryId(request.getAppliesToProductCategoryId())
-				.takeOverId(request.getTakeOverId())
+				.ownBase(request.isOwnBase())
 				.description(request.getDescription())
 				.build();
 
@@ -258,11 +258,11 @@ public class Group
 
 	/**
 	 * @return {@code true} if the given line is computed on its category's running total and adds to it (non-additive mode);
-	 * an own take-over line never is: it is always computed on its category's full base, whatever the additive flag
+	 * a line with own base never is: it is always computed on its category's full base, whatever the additive flag
 	 */
 	private boolean isCompounding(@NonNull final GroupCompensationLine compensationLine)
 	{
-		return !additive && !compensationLine.isTakeOverOwnLine();
+		return !additive && !compensationLine.hasOwnBase();
 	}
 
 	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-matching-category running total, for one new line */

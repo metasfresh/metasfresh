@@ -72,7 +72,6 @@ class ContractSettingsTakeOverServiceTest
 	private ContractSettingsTakeOverService service;
 	private UomId uomId;
 	private ProductId goodsProductId;
-	private ContractSettingsTakeOverId takeOverId;
 
 	@BeforeEach
 	void beforeEach()
@@ -320,7 +319,7 @@ class ContractSettingsTakeOverServiceTest
 				.compensationType(GroupCompensationType.Discount)
 				.percentage(Percent.of(3))
 				.appliesToProductCategoryId(CATEGORY_ID)
-				.takeOverId(takeOverId)
+				.ownBase(true)
 				.description("3% Bonus Ware")
 				.build();
 	}
@@ -372,7 +371,6 @@ class ContractSettingsTakeOverServiceTest
 		takeOver.setM_Product_Category_ID(CATEGORY_ID.getRepoId());
 		takeOver.setM_Product_ID(OWN_PRODUCT_ID.getRepoId());
 		saveRecord(takeOver);
-		takeOverId = ContractSettingsTakeOverId.ofRepoId(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 
 		for (final ProductId productId : customerDiscountProductIds)
 		{

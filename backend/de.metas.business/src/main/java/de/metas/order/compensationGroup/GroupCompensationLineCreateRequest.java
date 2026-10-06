@@ -2,7 +2,6 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -55,9 +54,8 @@ public class GroupCompensationLineCreateRequest
 	@Nullable
 	ProductCategoryId appliesToProductCategoryId;
 
-	/** Contract take-over record this line stems from; {@code null} = none */
-	@Nullable
-	ContractSettingsTakeOverId takeOverId;
+	/** see {@link GroupCompensationLine#hasOwnBase()} */
+	boolean ownBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
 	@Nullable

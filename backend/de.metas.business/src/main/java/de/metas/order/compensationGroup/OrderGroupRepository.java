@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -112,18 +111,15 @@ public class OrderGroupRepository implements GroupRepository
 	@NonNull private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
-	@NonNull private final Optional<ContractSettingsTakeOverCategoryProvider> takeOverCategoryProvider;
 
 	public OrderGroupRepository(
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			@NonNull final Optional<List<OrderGroupRepositoryAdvisor>> advisors,
-			@NonNull final GroupTemplateRepository groupTemplateRepository,
-			@NonNull final Optional<ContractSettingsTakeOverCategoryProvider> takeOverCategoryProvider)
+			@NonNull final GroupTemplateRepository groupTemplateRepository)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
 		this.groupTemplateRepository = groupTemplateRepository;
-		this.takeOverCategoryProvider = takeOverCategoryProvider;
 	}
 
 	@VisibleForTesting
@@ -136,8 +132,7 @@ public class OrderGroupRepository implements GroupRepository
 				() -> new OrderGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
 						Optional.empty(),
-						GroupTemplateRepository.newInstanceForUnitTesting(),
-						Optional.empty()));
+						GroupTemplateRepository.newInstanceForUnitTesting()));
 	}
 
 	@Nullable
@@ -505,7 +500,7 @@ public class OrderGroupRepository implements GroupRepository
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.appliesToProductCategoryId(appliesToProductCategoryId)
-				.takeOverId(ContractSettingsTakeOverId.ofRepoIdOrNull(groupOrderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()))
+				.ownBase(extractOwnBaseProductCategoryIdOrNull(groupOrderLine) != null)
 				.description(groupOrderLine.getDescription())
 				.build();
 	}
@@ -529,12 +524,19 @@ public class OrderGroupRepository implements GroupRepository
 						line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()),
 						line -> new CompensationLineOrigin(
 								appliesToProductCategoryIds.get(OrderLineId.ofRepoId(line.getC_OrderLine_ID())),
-								ContractSettingsTakeOverId.ofRepoIdOrNull(line.getC_CompensationGroup_ContractSettings_TakeOver_ID()))));
+								extractOwnBaseProductCategoryIdOrNull(line) != null)));
+	}
+
+	/** @return the applies-to category stored on the compensation order line itself; {@code null} for a line that takes it from its schema line or has none */
+	@Nullable
+	private static ProductCategoryId extractOwnBaseProductCategoryIdOrNull(@NonNull final I_C_OrderLine compensationLine)
+	{
+		return ProductCategoryId.ofRepoIdOrNull(compensationLine.getGroupCompensation_Product_Category_ID());
 	}
 
 	/**
 	 * @return the applies-to product category of each given compensation line: its schema line's category; for a line
-	 * without schema line, its take-over record's category. A line without category is absent.
+	 * without schema line, the category stored on the line itself. A line without category is absent.
 	 */
 	private ImmutableMap<OrderLineId, ProductCategoryId> retrieveAppliesToProductCategoryIds(@NonNull final List<I_C_OrderLine> compensationLines)
 	{
@@ -544,22 +546,13 @@ public class OrderGroupRepository implements GroupRepository
 						.filter(Objects::nonNull)
 						.collect(ImmutableSet.toImmutableSet()));
 
-		final ImmutableSet<ContractSettingsTakeOverId> takeOverIdsWithoutSchemaLine = compensationLines.stream()
-				.filter(line -> OrderGroupCompensationUtils.extractGroupTemplateLineId(line) == null)
-				.map(line -> ContractSettingsTakeOverId.ofRepoIdOrNull(line.getC_CompensationGroup_ContractSettings_TakeOver_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = takeOverIdsWithoutSchemaLine.isEmpty()
-				? ImmutableMap.of()
-				: takeOverCategoryProvider.map(provider -> provider.getAppliesToProductCategoryIds(takeOverIdsWithoutSchemaLine)).orElseGet(ImmutableMap::of);
-
 		final ImmutableMap.Builder<OrderLineId, ProductCategoryId> result = ImmutableMap.builder();
 		for (final I_C_OrderLine line : compensationLines)
 		{
 			final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(line);
 			final ProductCategoryId categoryId = schemaLineId != null
 					? categoryIdsBySchemaLineId.get(schemaLineId)
-					: categoryIdsByTakeOverId.get(ContractSettingsTakeOverId.ofRepoIdOrNull(line.getC_CompensationGroup_ContractSettings_TakeOver_ID()));
+					: extractOwnBaseProductCategoryIdOrNull(line);
 			if (categoryId != null)
 			{
 				result.put(OrderLineId.ofRepoId(line.getC_OrderLine_ID()), categoryId);
@@ -650,10 +643,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setDiscount(BigDecimal.ZERO);
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
-		if (compensationLine.getTakeOverId() != null)
-		{
-			compensationLinePO.setC_CompensationGroup_ContractSettings_TakeOver_ID(compensationLine.getTakeOverId().getRepoId());
-		}
+		compensationLinePO.setGroupCompensation_Product_Category_ID(compensationLine.hasOwnBase() ? ProductCategoryId.toRepoId(compensationLine.getAppliesToProductCategoryId()) : -1);
 		if (compensationLine.getDescription() != null)
 		{
 			compensationLinePO.setDescription(compensationLine.getDescription());

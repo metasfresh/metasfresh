@@ -2,7 +2,6 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,10 +88,7 @@ public final class GroupCompensationLine
 	@Nullable
 	private final ProductCategoryId appliesToProductCategoryId;
 
-	/** Contract take-over record this line stems from; {@code null} = none */
-	@Getter
-	@Nullable
-	private final ContractSettingsTakeOverId takeOverId;
+	private final boolean ownBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
 	@Getter
@@ -114,13 +110,15 @@ public final class GroupCompensationLine
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
-			@Nullable final ContractSettingsTakeOverId takeOverId,
+			final boolean ownBase,
 			@Nullable final String description)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
-		this.takeOverId = takeOverId;
+		// the order line stores the category only; an own-base line without category would come back as a compounding line
+		Check.assume(!ownBase || appliesToProductCategoryId != null, "A compensation line with own base has an applies-to product category");
+		this.ownBase = ownBase;
 		this.description = description;
 
 		this.seqNo = seqNo;
@@ -196,12 +194,12 @@ public final class GroupCompensationLine
 	}
 
 	/**
-	 * @return {@code true} if this line was added by a contract take-over. Its base is always the full regular-lines amount
-	 * of its category, even if the group is not additive.
+	 * @return {@code true} if this line's applies-to category is stored on its own order line instead of coming from a schema line.
+	 * Its base is always the full regular-lines amount of that category, even if the group is not additive.
 	 */
-	public boolean isTakeOverOwnLine()
+	public boolean hasOwnBase()
 	{
-		return takeOverId != null;
+		return ownBase;
 	}
 
 }

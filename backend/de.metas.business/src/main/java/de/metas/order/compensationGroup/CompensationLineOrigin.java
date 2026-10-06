@@ -1,6 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.product.ProductCategoryId;
 import lombok.Value;
 
@@ -20,13 +19,14 @@ import javax.annotation.Nullable;
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
 
-/** Where a compensation order line comes from: its applies-to product category and the contract take-over it was added by. */
+/** Where a compensation order line takes its base from: its applies-to product category and whether that category is stored on the order line itself. */
 @Value
 public class CompensationLineOrigin
 {
-	public static final CompensationLineOrigin NONE = new CompensationLineOrigin(null, null);
+	public static final CompensationLineOrigin NONE = new CompensationLineOrigin(null, false);
 
 	/** {@code null} = computed on the whole group's regular lines */
 	@Nullable ProductCategoryId appliesToProductCategoryId;
-	@Nullable ContractSettingsTakeOverId takeOverId;
+	/** see {@link GroupCompensationLine#hasOwnBase()} */
+	boolean ownBase;
 }

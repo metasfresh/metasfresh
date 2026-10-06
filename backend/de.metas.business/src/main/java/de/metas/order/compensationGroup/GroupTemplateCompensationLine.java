@@ -1,6 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -52,8 +51,8 @@ public class GroupTemplateCompensationLine
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable ProductCategoryId appliesToProductCategoryId;
 
-	/** Contract take-over record this line stems from; {@code null} = none */
-	@Nullable ContractSettingsTakeOverId takeOverId;
+	/** see {@link GroupCompensationLine#hasOwnBase()} */
+	boolean ownBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine} (e.g. how a taken-over discount percentage is composed); {@code null} = none */
 	@Nullable String description;
@@ -66,7 +65,7 @@ public class GroupTemplateCompensationLine
 			@Nullable final Percent percentage,
 			@Nullable final GroupMatcher groupMatcher,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
-			@Nullable final ContractSettingsTakeOverId takeOverId,
+			final boolean ownBase,
 			@Nullable final String description)
 	{
 		this.id = id;
@@ -75,7 +74,7 @@ public class GroupTemplateCompensationLine
 		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
-		this.takeOverId = takeOverId;
+		this.ownBase = ownBase;
 		this.description = description;
 	}
 

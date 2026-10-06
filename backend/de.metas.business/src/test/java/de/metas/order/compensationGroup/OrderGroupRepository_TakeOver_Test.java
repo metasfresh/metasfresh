@@ -1,13 +1,12 @@
 package de.metas.order.compensationGroup;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,6 +16,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,14 +29,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * A take-over record id carried by a {@link GroupTemplateCompensationLine} must reach the created compensation
- * {@code C_OrderLine.C_CompensationGroup_ContractSettings_TakeOver_ID}; a line without it keeps 0.
+ * A compensation line with its own base stores its applies-to category in {@code C_OrderLine.GroupCompensation_Product_Category_ID}
+ * and gets it back from there on reload; a line without own base leaves the column empty.
  */
 public class OrderGroupRepository_TakeOver_Test
 {
-	private static final ContractSettingsTakeOverId TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540123);
-
 	private ProductId productId;
+	private ProductCategoryId categoryId;
 	private I_C_Order order;
 	private GroupId groupId;
 	private OrderGroupRepository repo;
@@ -52,8 +51,13 @@ public class OrderGroupRepository_TakeOver_Test
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
 
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		categoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
+		product.setM_Product_Category_ID(categoryId.getRepoId());
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
@@ -69,25 +73,43 @@ public class OrderGroupRepository_TakeOver_Test
 		Services.registerService(IOrderLineBL.class, new OrderGroupRepositoryTest.StubOrderLineBL(order));
 
 		requestFactory = new GroupCompensationLineCreateRequestFactory();
-		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), GroupTemplateRepository.newInstanceForUnitTesting(), Optional.empty());
+		repo = new OrderGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), Optional.empty(), GroupTemplateRepository.newInstanceForUnitTesting());
 	}
 
 	@Test
-	void lineWithTakeOverId_carriesIdToOrderLine()
+	void ownBaseLine_storesItsCategoryOnTheOrderLine()
 	{
 		final I_C_OrderLine orderLine = createAndSaveCompensationLine(
-				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).takeOverId(TAKE_OVER_ID).build());
+				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).ownBase(true).build());
 
-		assertThat(orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()).isEqualTo(TAKE_OVER_ID.getRepoId());
+		assertThat(orderLine.getGroupCompensation_Product_Category_ID()).isEqualTo(categoryId.getRepoId());
 	}
 
 	@Test
-	void lineWithoutTakeOverId_keepsZero()
+	void ownBaseLine_reloadedWithTheStoredCategoryAsBase()
+	{
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(productId.getRepoId());
+		regularLine.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
+		regularLine.setLineNetAmt(new BigDecimal("100"));
+		saveRecord(regularLine);
+		createAndSaveCompensationLine(
+				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).ownBase(true).build());
+
+		final GroupCompensationLine reloadedLine = repo.retrieveGroup(groupId).getCompensationLines().get(0);
+
+		assertThat(reloadedLine.hasOwnBase()).isTrue();
+		assertThat(reloadedLine.getAppliesToProductCategoryId()).isEqualTo(categoryId);
+	}
+
+	@Test
+	void lineWithoutOwnBase_leavesTheColumnEmpty()
 	{
 		final I_C_OrderLine orderLine = createAndSaveCompensationLine(
-				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).build());
+				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).build());
 
-		assertThat(orderLine.getC_CompensationGroup_ContractSettings_TakeOver_ID()).isZero();
+		assertThat(ProductCategoryId.ofRepoIdOrNull(orderLine.getGroupCompensation_Product_Category_ID())).isNull();
 	}
 
 	private I_C_OrderLine createAndSaveCompensationLine(final GroupTemplateCompensationLine templateLine)

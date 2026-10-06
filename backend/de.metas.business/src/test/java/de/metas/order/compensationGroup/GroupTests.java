@@ -17,7 +17,6 @@ import lombok.NonNull;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
@@ -200,14 +199,14 @@ public class GroupTests
 				.build();
 	}
 
-	private GroupCompensationLineCreateRequest newOwnTakeOverLineRequest(final double discountPerc, @NonNull final ProductCategoryId appliesToProductCategoryId)
+	private GroupCompensationLineCreateRequest newOwnBaseLineRequest(final double discountPerc, @NonNull final ProductCategoryId appliesToProductCategoryId)
 	{
 		return GroupCompensationLineCreateRequest.builder()
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
 				.appliesToProductCategoryId(appliesToProductCategoryId)
-				.takeOverId(ContractSettingsTakeOverId.ofRepoId(540001))
+				.ownBase(true)
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)
@@ -369,12 +368,12 @@ public class GroupTests
 	}
 
 	/**
-	 * An own take-over line (takeOverId set) is always computed on its category's full regular-lines base, even in a
+	 * A line with own base (e.g. an own take-over line) is always computed on its category's full regular-lines base, even in a
 	 * non-additive (compounding) group with an earlier fixed-amount line on the same category, and it is left out of that
 	 * category's running total, so a later compounding line does not compound with it.
 	 */
 	@Test
-	void notAdditive_ownTakeOverLine_onFullBase_andNotInRunningTotal()
+	void notAdditive_ownBaseLine_onFullBase_andNotInRunningTotal()
 	{
 		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
 		final Group group = Group.builder()
@@ -387,7 +386,7 @@ public class GroupTests
 				.build();
 
 		group.addNewCompensationLine(newFixedAmountRequest(new BigDecimal("-50.00"), BigDecimal.ONE, goods));
-		group.addNewCompensationLine(newOwnTakeOverLineRequest(3.0, goods));
+		group.addNewCompensationLine(newOwnBaseLineRequest(3.0, goods));
 		// provisional amount right after adding: 3 % of the full 1000, not of 1000 - 50
 		assertThat(group.getCompensationLines().get(1).getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-30.00"));
 		assertThat(group.getCompensationLines().get(1).getBaseAmt()).isEqualByComparingTo(new BigDecimal("1000"));
@@ -406,7 +405,7 @@ public class GroupTests
 	}
 
 	@Test
-	void notAdditive_ownTakeOverLine_afterSameCategoryPercentLine_onFullBase()
+	void notAdditive_ownBaseLine_afterSameCategoryPercentLine_onFullBase()
 	{
 		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
 		final Group group = Group.builder()
@@ -418,7 +417,7 @@ public class GroupTests
 				.build();
 
 		group.addNewCompensationLine(newPercentageDiscountRequest(10, goods));
-		group.addNewCompensationLine(newOwnTakeOverLineRequest(3.0, goods));
+		group.addNewCompensationLine(newOwnBaseLineRequest(3.0, goods));
 		group.updateAllCompensationLines();
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)

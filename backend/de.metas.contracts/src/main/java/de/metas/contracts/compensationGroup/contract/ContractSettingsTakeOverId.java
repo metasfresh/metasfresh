@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%

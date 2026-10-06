@@ -121,8 +121,7 @@ public class OrderGroupRepositoryTest
 		repo = new OrderGroupRepository(
 				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
 				Optional.empty(),
-				GroupTemplateRepository.newInstanceForUnitTesting(),
-				Optional.empty());
+				GroupTemplateRepository.newInstanceForUnitTesting());
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
