@@ -71,10 +71,10 @@ Feature: Bonus that the customer deducts when paying an invoice
       | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | customerBP     | Y              | N            | deductionPS                   | I               |
       | serviceCompany | N              | Y            | deductionPS                   |                 |
-    # an account of its own: the organization may have other EUR accounts already
+    # the organization's EUR account (like the service company fee feature); an account of its own would be a second active EUR account for the features that run after this one
     And metasfresh contains organization bank accounts
-      | Identifier      | C_Currency_ID | AccountNo          |
-      | org_EUR_account | EUR           | paymentBonusTestEUR |
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
 
     And metasfresh contains C_InvoiceSchedules:
       | Identifier      | InvoiceDay | InvoiceDistance |
