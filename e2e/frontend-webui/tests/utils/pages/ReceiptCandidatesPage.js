@@ -930,14 +930,14 @@ export class ReceiptCandidatesPage {
           const MENU_OPEN_ATTEMPTS = 2;
           let isMenuReady = false;
           for (let menuAttempt = 1; menuAttempt <= MENU_OPEN_ATTEMPTS; menuAttempt++) {
-            // Left-click the row to select it up-front and confirm the selection
-            // registered (row gains 'row-selected'). Right-click already auto-selects,
+            // Left-click the row to select it up-front and require the selection to
+            // register (row gains 'row-selected'). Right-click already auto-selects,
             // but doing it explicitly first avoids racing that auto-select / an
-            // in-flight re-render before the menu opens.
+            // in-flight re-render before the menu opens. A selection that never
+            // registers fails here, with that cause, and the outer retry loop
+            // handles it - instead of surfacing later as "Zoom Into item not ready".
             await tabTableRow.click();
-            await expect(tabTableRow)
-              .toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT })
-              .catch(() => {});
+            await expect(tabTableRow).toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT });
 
             await rightClickTarget.scrollIntoViewIfNeeded().catch(() => {});
             await rightClickTarget.click({ button: 'right' });
