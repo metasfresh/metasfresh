@@ -762,7 +762,10 @@ public class PaymentsViewAllocateCommandTest
 					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
 					.build();
 			final InvoiceRows rows = InvoiceRows.builder()
-					.repository(Mockito.mock(PaymentAndInvoiceRowsRepo.class))
+					// the rows must not be reloaded from the database, or the user's edits would be lost
+					.repository(Mockito.mock(PaymentAndInvoiceRowsRepo.class, invocation -> {
+						throw new AssertionError("The invoice rows shall not be reloaded: " + invocation);
+					}))
 					.initialRows(ImmutableList.of(row))
 					.evaluationDate(ZonedDateTime.now())
 					.build();
@@ -784,6 +787,8 @@ public class PaymentsViewAllocateCommandTest
 					.filteredOn(changes -> invoicesViewId.getViewId().equals(changes.getViewId()))
 					.extracting(JSONViewChanges::getFullyChanged)
 					.containsExactly(Boolean.TRUE);
+			// the edited value is kept
+			assertThat(rows.getById(row.getId()).getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.78", CurrencyCode.EUR));
 		}
 	}
 
