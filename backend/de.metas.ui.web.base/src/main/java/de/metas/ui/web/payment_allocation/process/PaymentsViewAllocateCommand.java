@@ -24,7 +24,6 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
@@ -37,9 +36,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -51,13 +50,11 @@ import de.metas.ui.web.payment_allocation.PaymentRow;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -223,56 +220,24 @@ public class PaymentsViewAllocateCommand
 				.build();
 	}
 
-	@Value
-	@Builder
-	private static class InvoiceProcessingContext
-	{
-		@NonNull
-		BPartnerId serviceCompanyId;
-		@NonNull
-		ZonedDateTime paymentDate;
-	}
-
 	private static InvoiceProcessingContext extractInvoiceProcessingContext(
 			@NonNull final InvoiceRow row,
 			@NonNull final List<PaymentDocument> paymentDocuments,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
-		if (paymentDocuments.isEmpty())
-		{
-			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(row.getBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
-							.appendParametersToMessage()
-							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
-							.setParameter("C_Invoice.DocumentNo", row.getDocumentNo())
+		final ImmutableList<InvoiceProcessingContext> paymentContexts = paymentDocuments.stream()
+				.map(paymentDocument -> InvoiceProcessingContext.of(
+						paymentDocument.getBpartnerId(),
+						TimeUtil.asZonedDateTime(paymentDocument.getDateTrx())))
+				.collect(ImmutableList.toImmutableList());
 
-					);
-
-			return InvoiceProcessingContext.builder()
-					.serviceCompanyId(config.getServiceCompanyBPartnerId())
-					.paymentDate(evaluationDate)
-					.build();
-		}
-		else
-		{
-			final ImmutableSet<InvoiceProcessingContext> contexts = paymentDocuments.stream()
-					.map(PaymentsViewAllocateCommand::extractInvoiceProcessingContext)
-					.collect(ImmutableSet.toImmutableSet());
-			if (contexts.size() != 1)
-			{
-				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
-			}
-			return contexts.iterator().next();
-		}
-	}
-
-	private static InvoiceProcessingContext extractInvoiceProcessingContext(@NonNull final PaymentDocument paymentDocument)
-	{
-		return InvoiceProcessingContext.builder()
-				.serviceCompanyId(paymentDocument.getBpartnerId())
-				.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx()))
-				.build();
+		return invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+				row.getBPartnerId(),
+				paymentContexts,
+				() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
+						.appendParametersToMessage()
+						.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+						.setParameter("C_Invoice.DocumentNo", row.getDocumentNo()));
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)

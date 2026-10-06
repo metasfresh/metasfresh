@@ -60,19 +60,20 @@ import java.util.Optional;
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
-		for (int i = configsForCompanyBPartners.size() - 1; i >= 0; i--)
+		// per service company, only its most recent config valid at the given date counts; it supersedes its older configs
+		for (final BPartnerId serviceCompanyBPartnerId : companyBPartnersToConfigsSorted.keySet())
 		{
-			final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(i);
-			if (companyConfig.isValid(validFrom))
+			final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = companyBPartnersToConfigsSorted.get(serviceCompanyBPartnerId);
+			for (int i = configs.size() - 1; i >= 0; i--)
 			{
-				if (companyConfig.isBPartnerDetailsActive(customerId))
+				final InvoiceProcessingServiceCompanyConfig companyConfig = configs.get(i);
+				if (companyConfig.isValid(validFrom))
 				{
-					return Optional.of(companyConfig);
-				}
-				else
-				{
-					return Optional.empty();
+					if (companyConfig.isBPartnerDetailsActive(customerId))
+					{
+						return Optional.of(companyConfig);
+					}
+					break;
 				}
 			}
 		}
