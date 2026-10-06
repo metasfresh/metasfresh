@@ -9,6 +9,8 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -129,5 +131,21 @@ public class C_Flatrate_RefundConfig
 		{
 			throw new AdempiereException(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE).markAsUserValidationError();
 		}
+	}
+
+	/**
+	 * Like when a term is completed: the cache invalidation of the table change is sent before the transaction is committed, so a read in between (e.g. of whether there
+	 * is any contract deducted at payment, by a payment allocation view that is loaded meanwhile) could cache the old state; it is reset again once the change is committed.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_Flatrate_RefundConfig.COLUMNNAME_IsActive,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID })
+	public void resetCachesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> refundContractRepository.resetCaches());
 	}
 }
