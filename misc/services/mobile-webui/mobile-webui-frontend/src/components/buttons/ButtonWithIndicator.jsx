@@ -68,14 +68,14 @@ const ButtonWithIndicator = ({
         <div className="left-btn-side">
           {showWarningSign && (
             <span>
-              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing showWarningSign so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
+              {/* Inline wrapper keeps the icon on the text line; as a bare flex item it would sit 2px lower. */}
               <i className="fas fa-exclamation-triangle warning-sign" />
             </span>
           )}
           {typeFASIconName && (
             <span>
-              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing typeFASIconName so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
-              <i key="icon" className={`fas fa-solid ${typeFASIconName}`} />
+              {/* Inline wrapper keeps the icon on the text line; as a bare flex item it would sit 2px lower. */}
+              <i className={`fas fa-solid ${typeFASIconName}`} />
             </span>
           )}
         </div>

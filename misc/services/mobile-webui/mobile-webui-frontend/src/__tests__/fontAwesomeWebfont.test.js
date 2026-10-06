@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-// FontAwesome's SVG+JS build (js/all*) watches the whole document with a MutationObserver and rewrites
-// every <i class="fa…"> into an <svg>. On a long job list that stalls the main thread for minutes on a
-// handheld, so the app must use the CSS web-font build, which draws the same <i> tags without any JS.
+// The app must use FontAwesome's CSS web font: the SVG+JS build (js/all*) rewrites every <i class="fa…">
+// into an <svg> on each DOM change, which stalls long lists on handhelds.
 const readSources = (dir) =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(dir, entry.name);
