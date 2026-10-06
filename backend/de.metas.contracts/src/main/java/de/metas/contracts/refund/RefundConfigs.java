@@ -56,6 +56,7 @@ public class RefundConfigs
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentSingleLine");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
@@ -121,6 +122,26 @@ public class RefundConfigs
 		if (!RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase()) || refundConfig.getBonusProductId() == null)
 		{
 			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is one flat percentage per condition: the minimum quantity is no threshold when paying,
+	 * so a condition that is deducted at payment has exactly one active line, with minimum quantity 0. Separate bonuses are separate conditions.
+	 *
+	 * @param activeRefundConfigs all active configs of one condition
+	 */
+	public void assertDeductedAtPaymentIsSingleLine(@NonNull final List<RefundConfig> activeRefundConfigs)
+	{
+		if (activeRefundConfigs.stream().noneMatch(RefundConfig::isDeductedAtPayment))
+		{
+			return;
+		}
+		if (activeRefundConfigs.size() != 1 || activeRefundConfigs.get(0).getMinQty().signum() != 0)
+		{
+			Loggables.addLog("A condition that is deducted at payment needs exactly one active config with MinQty=0; refundConfigs={}", activeRefundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE).markAsUserValidationError();
 		}
 	}
 

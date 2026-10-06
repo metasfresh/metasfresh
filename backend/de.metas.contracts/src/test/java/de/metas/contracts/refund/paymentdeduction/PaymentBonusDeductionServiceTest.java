@@ -18,6 +18,8 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import org.compiere.model.X_C_InvoiceSchedule;
 import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.contracts.refund.RefundConfigs;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyCode;
@@ -59,6 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PaymentBonusDeductionServiceTest
@@ -318,9 +321,12 @@ class PaymentBonusDeductionServiceTest
 		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.60");
 	}
 
-	/** The bonus at payment has no quantity scales: a condition's only line applies, whatever its minimum quantity. */
+	/**
+	 * The minimum quantity is no threshold when paying, so the only line of a condition that is deducted at payment has minimum quantity 0 (validated when it is saved).
+	 * One with another minimum quantity is rejected like when saving; in particular, the 0 % config that a contract adds for quantity 0 is never booked instead.
+	 */
 	@Test
-	void singleConfigWithAMinimumQuantity_itsPercentageApplies()
+	void singleConfigWithAMinimumQuantity_failsLikeWhenItIsSaved()
 	{
 		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
 		config.setMinQty(new BigDecimal("100"));
@@ -328,23 +334,30 @@ class PaymentBonusDeductionServiceTest
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 
-		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("3.00");
+		assertThatThrownBy(() -> service.computeForInvoice(invoiceId))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE.toAD_Message()));
 	}
 
-	/** With several lines of one condition, the line with the smallest minimum quantity applies. */
+	/**
+	 * A condition that is deducted at payment has one line (validated when a line is saved); one that has several anyway (e.g. from before that validation)
+	 * is rejected like when saving, instead of silently booking one line's percentage.
+	 */
 	@Test
-	void severalConfigs_theSmallestMinimumQuantityApplies()
+	void severalConfigs_failLikeWhenTheyAreSaved()
 	{
 		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2", goodsBonusProduct);
-		final I_C_Flatrate_RefundConfig biggerConfig = newInstance(I_C_Flatrate_RefundConfig.class);
-		InterfaceWrapperHelper.copyValues(config, biggerConfig);
-		biggerConfig.setMinQty(new BigDecimal("1000"));
-		biggerConfig.setRefundPercent(new BigDecimal("5"));
-		saveRecord(biggerConfig);
+		final I_C_Flatrate_RefundConfig secondConfig = newInstance(I_C_Flatrate_RefundConfig.class);
+		InterfaceWrapperHelper.copyValues(config, secondConfig);
+		secondConfig.setMinQty(new BigDecimal("1000"));
+		secondConfig.setRefundPercent(new BigDecimal("5"));
+		saveRecord(secondConfig);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 
-		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.00");
+		assertThatThrownBy(() -> service.computeForInvoice(invoiceId))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE.toAD_Message()));
 	}
 
 	/** The bonus is a percentage of the net goods value; the VAT that is included in the line amount is not part of it. */

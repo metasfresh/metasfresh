@@ -242,11 +242,13 @@ public class PaymentBonusDeductionService
 			final Map<ProductId, Money> netAmtsByBonusProductId = new LinkedHashMap<>();
 			for (final RefundContract contract : contracts)
 			{
-				// the bonus at payment is a flat percentage; there are no quantity scales. The config that the contract adds for quantity 0 is not one of the condition's.
-				final RefundConfig config = RefundConfigs.smallestMinQty(contract.getRefundConfigs().stream()
+				// the bonus at payment is one flat percentage: the condition's only line (validated when it is saved). The config that the contract adds for quantity 0 is not one of the condition's.
+				final ImmutableList<RefundConfig> conditionConfigs = contract.getRefundConfigs().stream()
 						.filter(refundConfig -> refundConfig.getId() != null)
-						.collect(ImmutableList.toImmutableList()));
-				RefundConfigs.assertDeductedAtPaymentIsComputable(config); // validated when the config is saved
+						.collect(ImmutableList.toImmutableList());
+				RefundConfigs.assertDeductedAtPaymentIsSingleLine(conditionConfigs);
+				final RefundConfig config = conditionConfigs.get(0);
+				RefundConfigs.assertDeductedAtPaymentIsComputable(config);
 				final ProductId bonusProductId = Check.assumeNotNull(config.getBonusProductId(), "bonus product of {}", config);
 
 				final Money baseNetAmt = lines.stream()

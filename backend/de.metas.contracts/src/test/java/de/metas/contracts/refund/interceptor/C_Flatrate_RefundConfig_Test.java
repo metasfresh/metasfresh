@@ -215,6 +215,54 @@ public class C_Flatrate_RefundConfig_Test
 		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
 	}
 
+	/**
+	 * The bonus at payment is one flat percentage per condition: a second line (e.g. another product with another percentage) would get no bonus,
+	 * because the minimum quantity is no threshold when paying. Separate bonuses are separate conditions.
+	 */
+	@Test
+	public void assertValid_deductedAtPayment_secondActiveLine_fails()
+	{
+		final I_C_Flatrate_RefundConfig firstConfig = createConfig(30, 0, 41);
+		firstConfig.setIsDeductedAtPayment(true);
+		saveRecord(firstConfig);
+
+		final I_C_Flatrate_RefundConfig secondConfig = createConfig(31, 0, 41);
+		secondConfig.setIsDeductedAtPayment(true);
+		assertThatThrownBy(() -> interceptor.assertValid(secondConfig))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE.toAD_Message());
+				});
+	}
+
+	/** The minimum quantity of the only line is no threshold when paying either, so it must be 0. */
+	@Test
+	public void assertValid_deductedAtPayment_minQtyAboveZero_fails()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setIsDeductedAtPayment(true);
+		config.setMinQty(new BigDecimal("100"));
+		assertThatThrownBy(() -> interceptor.assertValid(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE.toAD_Message()));
+	}
+
+	/** A line that is deactivated does not count: the condition's other line can be the only active one. */
+	@Test
+	public void assertValid_deductedAtPayment_secondLineNextToAnInactiveLine_isValid()
+	{
+		final I_C_Flatrate_RefundConfig firstConfig = createConfig(30, 0, 41);
+		firstConfig.setIsDeductedAtPayment(true);
+		firstConfig.setIsActive(false);
+		saveRecord(firstConfig);
+
+		final I_C_Flatrate_RefundConfig secondConfig = createConfig(31, 0, 41);
+		secondConfig.setIsDeductedAtPayment(true);
+		assertThatCode(() -> interceptor.assertValid(secondConfig)).doesNotThrowAnyException();
+	}
+
 	/** Without completed contracts, the condition is still being set up: the flag can be changed. */
 	@Test
 	public void assertDeductedAtPaymentNotChanged_withoutCompletedContracts_isValid()

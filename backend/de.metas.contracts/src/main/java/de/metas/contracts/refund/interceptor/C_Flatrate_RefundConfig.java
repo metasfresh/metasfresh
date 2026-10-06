@@ -112,6 +112,7 @@ public class C_Flatrate_RefundConfig
 		allRefundConfigs.add(newRefundConfig);
 
 		RefundConfigs.assertValid(allRefundConfigs);
+		RefundConfigs.assertDeductedAtPaymentIsSingleLine(allRefundConfigs);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment)
