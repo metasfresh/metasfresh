@@ -8,6 +8,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.refund.BonusRecipient;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
@@ -40,6 +42,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_Invoice;
@@ -114,31 +117,46 @@ public class PaymentBonusDeductionService
 				? ImmutableList.of()
 				: invoiceBL.getByIds(invoiceIds).stream()
 				.filter(invoice -> invoice.isSOTrx() && !invoiceBL.isCreditMemo(invoice)) // the customer deducts a bonus when paying a sales invoice
-				.filter(invoice -> refundContractRepository.hasAnyRefundContract(TimeUtil.asLocalDate(invoice.getDateInvoiced()))) // the usual case, cached: no refund contracts at all
+				.filter(invoice -> refundContractRepository.hasAnyDeductedAtPaymentContract(TimeUtil.asLocalDate(invoice.getDateInvoiced()))) // the usual case, cached: none at all
 				.collect(ImmutableList.toImmutableList());
 		if (salesInvoices.isEmpty())
 		{
 			return new Calculator(ImmutableMap.of(), ImmutableListMultimap.of(), ImmutableList.of());
 		}
 
+		final ImmutableList<RefundContract> contracts = retrieveDeductedAtPaymentContracts(salesInvoices);
+
+		// only the invoices that a contract may apply to; the lines of the others are not loaded
+		final ImmutableList<I_C_Invoice> invoicesWithPossibleBonus = salesInvoices.stream()
+				.filter(invoice -> contracts.stream().anyMatch(contract -> isPossiblyApplicable(contract, invoice)))
+				.collect(ImmutableList.toImmutableList());
+		if (invoicesWithPossibleBonus.isEmpty())
+		{
+			return new Calculator(ImmutableMap.of(), ImmutableListMultimap.of(), ImmutableList.of());
+		}
+
 		// once per invoice; e.g. the second allocation of a partially paid invoice deducts nothing
 		final ImmutableSet<InvoiceId> invoiceIdsWithCreditMemo = creditMemoService.retainIfCreditMemoWasAlreadyGenerated(
-				salesInvoices.stream().map(PaymentBonusDeductionService::extractInvoiceId).collect(ImmutableSet.toImmutableSet()));
-		final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById = salesInvoices.stream()
+				invoicesWithPossibleBonus.stream().map(PaymentBonusDeductionService::extractInvoiceId).collect(ImmutableSet.toImmutableSet()));
+		final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById = invoicesWithPossibleBonus.stream()
 				.filter(invoice -> !invoiceIdsWithCreditMemo.contains(extractInvoiceId(invoice)))
 				.collect(ImmutableMap.toImmutableMap(PaymentBonusDeductionService::extractInvoiceId, invoice -> invoice));
 
-		final ImmutableListMultimap<InvoiceId, InvoiceLineInfo> linesByInvoiceId = retrieveLines(invoicesById.values());
+		return new Calculator(invoicesById, retrieveLines(invoicesById.values()), contracts);
+	}
 
-		final ImmutableSet<BPartnerId> partnerIds = ImmutableSet.<BPartnerId>builder()
-				.addAll(invoicesById.values().stream().map(invoice -> BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).iterator())
-				.addAll(linesByInvoiceId.values().stream().map(InvoiceLineInfo::getShipmentBPartnerId).filter(Objects::nonNull).iterator())
-				.build();
-		final ImmutableList<RefundContract> contracts = invoicesById.isEmpty()
-				? ImmutableList.of()
-				: retrieveDeductedAtPaymentContracts(partnerIds, invoicesById.values());
-
-		return new Calculator(invoicesById, linesByInvoiceId, contracts);
+	/**
+	 * @return {@code true} if the contract is valid at the invoice date and its bonus may go to the invoice partner, or to a shipment partner of the invoice's lines (only known from the lines)
+	 */
+	private static boolean isPossiblyApplicable(@NonNull final RefundContract contract, @NonNull final I_C_Invoice invoice)
+	{
+		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+		if (dateInvoiced.isBefore(contract.getStartDate()) || dateInvoiced.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		return BonusRecipient.SHIPMENT_PARTNER.equals(contract.extractBonusRecipient())
+				|| contract.getBPartnerId().getRepoId() == invoice.getC_BPartner_ID();
 	}
 
 	private static InvoiceId extractInvoiceId(@NonNull final I_C_Invoice invoice)
@@ -172,14 +190,25 @@ public class PaymentBonusDeductionService
 	}
 
 	/**
-	 * @return the completed refund contracts of the given partners that are deducted at payment and valid at any of the invoices' dates; which of them applies to which line is up to {@link RefundContractRepository#isMatching}
+	 * @return the completed refund contracts that are deducted at payment, valid at any of the invoices' dates, and whose bonus may go to one of the invoices' partners:
+	 *         the contracts of the invoice partners, and all the contracts whose bonus goes to the shipment partner (who is only known from the invoice lines).
+	 *         Which of them applies to which line is up to {@link RefundContractRepository#isMatching}.
 	 */
-	private ImmutableList<RefundContract> retrieveDeductedAtPaymentContracts(
-			@NonNull final ImmutableSet<BPartnerId> partnerIds,
-			@NonNull final Collection<I_C_Invoice> invoices)
+	private ImmutableList<RefundContract> retrieveDeductedAtPaymentContracts(@NonNull final Collection<I_C_Invoice> invoices)
 	{
 		final Timestamp minDateInvoiced = invoices.stream().map(I_C_Invoice::getDateInvoiced).min(Comparator.naturalOrder()).get();
 		final Timestamp maxDateInvoiced = invoices.stream().map(I_C_Invoice::getDateInvoiced).max(Comparator.naturalOrder()).get();
+		final ImmutableSet<Integer> customerIds = invoices.stream().map(I_C_Invoice::getC_BPartner_ID).collect(ImmutableSet.toImmutableSet());
+
+		final ICompositeQueryFilter<I_C_Flatrate_Term> customerOrShipmentPartnerRecipient = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, customerIds)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_BonusRecipient, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_ShipmentPartner)
+								.create());
 
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
@@ -187,14 +216,11 @@ public class PaymentBonusDeductionService
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, maxDateInvoiced)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, minDateInvoiced)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, partnerIds)
+				.filter(customerOrShipmentPartnerRecipient)
 				// only the conditions that are deducted at payment; the other refund contracts are not loaded at all
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
 						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
-						queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
-								.addOnlyActiveRecordsFilter()
-								.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment, true)
-								.create())
+						RefundContractRepository.queryDeductedAtPaymentConfigs())
 				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
 				.stream()

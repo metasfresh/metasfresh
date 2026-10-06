@@ -37,6 +37,10 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import java.util.List;
+import lombok.Getter;
+import de.metas.invoice.service.impl.PlainInvoiceDAO;
+import de.metas.invoice.service.IInvoiceDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -409,6 +413,117 @@ class PaymentBonusDeductionServiceTest
 		createInvoiceLine(invoiceId, fruit, "30", null); // no packing instruction
 
 		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("10.00"); // 10 % of the 100 in crates only
+	}
+
+	/** Only periodic refund contracts (the usual case of a refund customer): no invoice line is loaded at all. */
+	@Test
+	void onlyContractsThatAreNotDeductedAtPayment_noLinesAreLoaded()
+	{
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		config.setIsDeductedAtPayment(false);
+		saveRecord(config);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
+
+		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
+		assertThat(invoiceDAO.getLineLoads()).isZero();
+	}
+
+	/** A contract deducted at payment of another partner, whose bonus goes to that partner: the customer's invoice lines are not loaded. */
+	@Test
+	void deductedContractOfAnotherPartnerOnly_noLinesAreLoaded()
+	{
+		createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
+
+		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
+		assertThat(invoiceDAO.getLineLoads()).isZero();
+	}
+
+	/**
+	 * The customer's contract is loaded for the view (it is valid at one of its invoices' dates), but not valid at the other invoice's date:
+	 * only the lines of the invoice that it may apply to are loaded.
+	 */
+	@Test
+	void contractNotValidAtAnInvoicesDate_thatInvoicesLinesAreNotLoaded()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
+		// another partner's contract in the first half-year, so that there is a contract deducted at payment on the other invoice's date
+		final I_C_Flatrate_RefundConfig otherConfig = createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_Term otherTerm = loadOutOfTrx(retrieveTermIdOfConditions(otherConfig.getC_Flatrate_Conditions_ID()), I_C_Flatrate_Term.class);
+		otherTerm.setStartDate(TimeUtil.asTimestamp(LocalDate.parse("2026-01-01")));
+		otherTerm.setEndDate(TimeUtil.asTimestamp(LocalDate.parse("2026-06-30")));
+		saveRecord(otherTerm);
+
+		final InvoiceId julyInvoiceId = createSalesInvoice(); // 2026-07-15
+		createInvoiceLine(julyInvoiceId, fruit, "100", null);
+		final InvoiceId marchInvoiceId = createSalesInvoice();
+		final I_C_Invoice marchInvoice = loadOutOfTrx(marchInvoiceId, I_C_Invoice.class);
+		marchInvoice.setDateInvoiced(TimeUtil.asTimestamp(LocalDate.parse("2026-03-15")));
+		saveRecord(marchInvoice);
+		createInvoiceLine(marchInvoiceId, fruit, "100", null);
+		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
+
+		final PaymentBonusDeductionService.Calculator calculator = service.newCalculator(ImmutableSet.of(julyInvoiceId, marchInvoiceId));
+
+		assertThat(calculator.computeForInvoice(julyInvoiceId)).isPresent();
+		assertThat(calculator.computeForInvoice(marchInvoiceId)).isEmpty();
+		assertThat(invoiceDAO.getLineLoads()).isEqualTo(1);
+	}
+
+	/** The cached pre-check of the calculator: a periodic refund contract does not count, a contract that is deducted at payment does, on its dates only. */
+	@Test
+	void hasAnyDeductedAtPaymentContract()
+	{
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+		final I_C_Flatrate_RefundConfig periodicConfig = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		periodicConfig.setIsDeductedAtPayment(false);
+		saveRecord(periodicConfig);
+		refundContractRepository.resetCaches();
+		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(DATE_INVOICED)).isFalse();
+
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
+		refundContractRepository.resetCaches();
+		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(DATE_INVOICED)).isTrue();
+		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(LocalDate.parse("2026-06-30"))).isFalse();
+	}
+
+	/** the control of the two tests above: with a contract of the customer, the lines are loaded */
+	@Test
+	void deductedContractOfTheCustomer_linesAreLoaded()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
+
+		assertThat(service.computeForInvoice(invoiceId)).isPresent();
+		assertThat(invoiceDAO.getLineLoads()).isEqualTo(1);
+	}
+
+	/** Registers an invoice DAO that counts how often invoice lines are loaded, and a new service that uses it. */
+	private LineLoadCountingInvoiceDAO registerLineLoadCountingInvoiceDAO()
+	{
+		final LineLoadCountingInvoiceDAO invoiceDAO = new LineLoadCountingInvoiceDAO();
+		Services.registerService(IInvoiceDAO.class, invoiceDAO);
+		service = newService(new RefundPackagingFilter(Optional.empty()));
+		return invoiceDAO;
+	}
+
+	private static class LineLoadCountingInvoiceDAO extends PlainInvoiceDAO
+	{
+		@Getter
+		private int lineLoads = 0;
+
+		@Override
+		public List<de.metas.adempiere.model.I_C_InvoiceLine> retrieveLines(@NonNull final InvoiceId invoiceId)
+		{
+			lineLoads++;
+			return super.retrieveLines(invoiceId);
+		}
 	}
 
 	private PaymentBonusDeductionService newService(@NonNull final RefundPackagingFilter refundPackagingFilter)

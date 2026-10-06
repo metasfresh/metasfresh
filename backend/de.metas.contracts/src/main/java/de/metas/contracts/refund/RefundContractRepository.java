@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
@@ -87,6 +89,13 @@ public class RefundContractRepository
 					0,
 					CCache.EXPIREMINUTES_Never);
 
+	/** Reset when a term or a config changes, e.g. when a config is flagged as deducted at payment. */
+	private static final CCache<LocalDate, Boolean> ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE = CCache.<LocalDate, Boolean>builder()
+			.cacheName(I_C_Flatrate_Term.Table_Name + "#anyDeductedAtPaymentContractOn")
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
+			.build();
+
 	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
@@ -104,6 +113,7 @@ public class RefundContractRepository
 	{
 		CACHE.reset();
 		ANY_REFUND_CONTRACT_CACHE.reset();
+		ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.reset();
 	}
 
 	/**
@@ -125,6 +135,42 @@ public class RefundContractRepository
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if there is any completed refund contract that is deducted at payment, of any partner, on the given date
+	 */
+	public boolean hasAnyDeductedAtPaymentContract(@NonNull final LocalDate date)
+	{
+		return ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.getOrLoad(date, () -> anyDeductedAtPaymentContractExists(TimeUtil.asTimestamp(date)));
+	}
+
+	private static boolean anyDeductedAtPaymentContractExists(@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryDeductedAtPaymentConfigs())
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the active configs that are deducted at payment, e.g. to select the terms of their conditions
+	 */
+	public static IQuery<I_C_Flatrate_RefundConfig> queryDeductedAtPaymentConfigs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment, true)
+				.create();
 	}
 
 	/**
