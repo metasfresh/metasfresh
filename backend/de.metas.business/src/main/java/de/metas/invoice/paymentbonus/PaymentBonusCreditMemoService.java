@@ -65,7 +65,7 @@ public class PaymentBonusCreditMemoService
 	/**
 	 * Creates and completes the payment bonus credit memo of the given deduction.
 	 *
-	 * @param dateInvoiced the date of the payment allocation; the credit memo's invoice and accounting date
+	 * @param dateInvoiced the credit memo's invoice and accounting date: the date of the payment allocation, but not before the invoice's accounting date
 	 */
 	public InvoiceId generateCreditMemo(@NonNull final PaymentBonusDeduction deduction, @NonNull final LocalDate dateInvoiced)
 	{

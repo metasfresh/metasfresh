@@ -205,6 +205,16 @@ public class C_Flatrate_RefundConfig_Test
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT.toAD_Message()));
 	}
 
+	/** An inactive line is not used for the bonus at payment, so a line that is not valid for it can still be deactivated (e.g. to fix it). */
+	@Test
+	public void assertValid_inactiveDeductedAtPaymentLineWithoutBonusProduct_isValid()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(30, 0, 0);
+		config.setIsDeductedAtPayment(true);
+		config.setIsActive(false);
+		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
+	}
+
 	/** Without completed contracts, the condition is still being set up: the flag can be changed. */
 	@Test
 	public void assertDeductedAtPaymentNotChanged_withoutCompletedContracts_isValid()

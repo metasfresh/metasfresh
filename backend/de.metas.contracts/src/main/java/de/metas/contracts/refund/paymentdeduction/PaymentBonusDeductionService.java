@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig;
@@ -187,6 +188,13 @@ public class PaymentBonusDeductionService
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, maxDateInvoiced)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, minDateInvoiced)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, partnerIds)
+				// only the conditions that are deducted at payment; the other refund contracts are not loaded at all
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment, true)
+								.create())
 				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
 				.stream()

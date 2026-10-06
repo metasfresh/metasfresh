@@ -93,13 +93,15 @@ public class C_Flatrate_RefundConfig
 
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
 		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
-		RefundConfigs.assertDeductedAtPaymentIsComputable(newRefundConfig);
 
 		if (!configRecord.isActive())
 		{
 			// the engine ignores inactive lines, and the lines it compares with are the active ones
 			return;
 		}
+
+		// only active lines are used for the bonus at payment, so an invalid line can still be deactivated
+		RefundConfigs.assertDeductedAtPaymentIsComputable(newRefundConfig);
 
 		// the stored state of the record itself is replaced by its new state
 		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getAllActiveByConditions(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID())).stream()

@@ -291,6 +291,33 @@ class PaymentBonusDeductionServiceTest
 		assertThat(calculator.computeForInvoice(invoiceIdNotLoaded)).isEmpty();
 	}
 
+	/**
+	 * Only the contracts that are deducted at payment are loaded: a refund contract of the refund engine whose condition cannot be loaded
+	 * (here: it has no config) must not keep the bonus of the customer's invoices from being computed.
+	 */
+	@Test
+	void anotherRefundContractThatCannotBeLoaded_doesNotMatter()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+
+		final I_C_Flatrate_Conditions conditionsWithoutConfig = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsWithoutConfig.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditionsWithoutConfig);
+		final I_C_Flatrate_Term termWithoutConfig = newInstance(I_C_Flatrate_Term.class);
+		termWithoutConfig.setC_Flatrate_Conditions_ID(conditionsWithoutConfig.getC_Flatrate_Conditions_ID());
+		termWithoutConfig.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		termWithoutConfig.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		termWithoutConfig.setBill_BPartner_ID(customerId.getRepoId());
+		termWithoutConfig.setStartDate(TimeUtil.asTimestamp(LocalDate.parse("2026-07-01")));
+		termWithoutConfig.setEndDate(TimeUtil.asTimestamp(LocalDate.parse("2026-12-31")));
+		saveRecord(termWithoutConfig);
+
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+
+		assertThat(service.computeForInvoice(invoiceId).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.60");
+	}
+
 	/** The bonus at payment has no quantity scales: a condition's only line applies, whatever its minimum quantity. */
 	@Test
 	void singleConfigWithAMinimumQuantity_itsPercentageApplies()
