@@ -58,6 +58,7 @@ import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -171,11 +172,20 @@ public class PaymentAndInvoiceRowsRepo
 			return ImmutableList.of();
 		}
 
-		final InvoiceRowLoadingContext loadingContext = InvoiceRowLoadingContext.builder()
+		final InvoiceRowLoadingContext.InvoiceRowLoadingContextBuilder loadingContextBuilder = InvoiceRowLoadingContext.builder()
 				.evaluationDate(evaluationDate)
-				.invoiceIdsWithServiceInvoiceAlreadyGenetated(extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(invoicesToAllocate))
-				.paymentBonusCalculator(newPaymentBonusCalculator(invoicesToAllocate))
-				.build();
+				.invoiceIdsWithServiceInvoiceAlreadyGenetated(extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(invoicesToAllocate));
+		try
+		{
+			loadingContextBuilder.paymentBonusCalculator(newPaymentBonusCalculator(invoicesToAllocate));
+		}
+		catch (final RuntimeException ex)
+		{
+			// e.g. an invalid contract: the invoices are shown without bonus, with a note why, and can still be allocated
+			logger.warn("Could not load the payment bonus contracts; showing the invoices without payment bonus", ex);
+			loadingContextBuilder.paymentBonusCalculatorError(ex);
+		}
+		final InvoiceRowLoadingContext loadingContext = loadingContextBuilder.build();
 
 		return invoicesToAllocate.stream()
 				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, loadingContext))
@@ -253,7 +263,7 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
 		final Optional<Amount> serviceFeeAmount = computeServiceFee(invoiceToAllocate, loadingContext).map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax);
-		final PaymentBonusRowValues paymentBonus = computePaymentBonus(invoiceToAllocate, loadingContext);
+		final PaymentBonusRowValues paymentBonus = computePaymentBonus(invoiceToAllocate, serviceFeeAmount.orElse(null), loadingContext);
 
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -282,6 +292,7 @@ public class PaymentAndInvoiceRowsRepo
 	 */
 	private PaymentBonusRowValues computePaymentBonus(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@Nullable final Amount serviceFeeAmt,
 			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
 		if (!invoiceToAllocate.getDocBaseType().isSales())
@@ -289,10 +300,16 @@ public class PaymentAndInvoiceRowsRepo
 			return PaymentBonusRowValues.builder().build();
 		}
 
+		final PaymentBonusDeductionService.Calculator paymentBonusCalculator = loadingContext.getPaymentBonusCalculator();
+		if (paymentBonusCalculator == null)
+		{
+			return PaymentBonusRowValues.notComputed(Check.assumeNotNull(loadingContext.getPaymentBonusCalculatorError(), "error of {}", loadingContext));
+		}
+
 		final PaymentBonusDeduction paymentBonusDeduction;
 		try
 		{
-			paymentBonusDeduction = loadingContext.getPaymentBonusCalculator().computeForInvoice(invoiceToAllocate.getInvoiceId()).orElse(null);
+			paymentBonusDeduction = paymentBonusCalculator.computeForInvoice(invoiceToAllocate.getInvoiceId()).orElse(null);
 		}
 		catch (final RuntimeException ex)
 		{
@@ -304,7 +321,9 @@ public class PaymentAndInvoiceRowsRepo
 		return PaymentBonusRowValues.prefill(
 				paymentBonusDeduction,
 				invoiceToAllocate.getDocumentCurrencyCode(),
-				invoiceToAllocate.getOpenAmountConverted());
+				invoiceToAllocate.getOpenAmountConverted(),
+				invoiceToAllocate.getDiscountAmountConverted(),
+				serviceFeeAmt);
 	}
 
 	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(
@@ -413,7 +432,9 @@ public class PaymentAndInvoiceRowsRepo
 	{
 		@NonNull ZonedDateTime evaluationDate;
 		@NonNull ImmutableSet<InvoiceId> invoiceIdsWithServiceInvoiceAlreadyGenetated;
-		@NonNull PaymentBonusDeductionService.Calculator paymentBonusCalculator;
+		/** {@code null} if it could not be loaded, see {@link #paymentBonusCalculatorError} */
+		@Nullable PaymentBonusDeductionService.Calculator paymentBonusCalculator;
+		@Nullable RuntimeException paymentBonusCalculatorError;
 
 		public boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceId invoiceId)
 		{

@@ -208,10 +208,11 @@ public class PaymentsViewAllocateCommand
 		final Money paymentBonus = paymentBonusDeduction != null
 				? paymentBonusDeduction.getGrossAmount()
 				: Money.zero(currencyId);
-		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(openAmt))
+		// the customer cannot deduct more than it pays: the open amount minus the discount and the fees
+		final Money maxPaymentBonus = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(maxPaymentBonus))
 		{
-			// the customer cannot deduct more than is open
-			throw new AdempiereException(MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT, paymentBonus.toBigDecimal(), openAmt.toBigDecimal(), row.getDocumentNo())
+			throw new AdempiereException(MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT, paymentBonus.toBigDecimal(), maxPaymentBonus.toBigDecimal(), row.getDocumentNo())
 					.markAsUserValidationError();
 		}
 

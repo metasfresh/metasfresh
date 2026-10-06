@@ -431,6 +431,22 @@ public class PaymentsViewAllocateCommandTest
 					});
 		}
 
+		/** The discount is not paid either: open 100.00 - discount 3.00 leaves 97.00, a bonus of 99.00 would make the payment negative. */
+		@Test
+		public void customerInvoice_withPaymentBonusAboveTheOpenAmountMinusDiscount_fails()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.discountAmt("3")
+					.paymentBonusAmt("99")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message()));
+		}
+
 		@Test
 		public void customerInvoice_withPaymentBonusButNothingToDeduct_fails()
 		{

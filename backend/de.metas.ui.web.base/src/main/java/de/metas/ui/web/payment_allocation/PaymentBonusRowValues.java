@@ -36,12 +36,16 @@ public class PaymentBonusRowValues
 	/**
 	 * @param deductionCurrencyCode the currency of the deduction, i.e. of the invoice
 	 * @param openAmt               the invoice's open amount, in the currency that the view allocates in
-	 * @return the computed bonus, pre-filled unless it is bigger than the invoice's open amount: the customer cannot deduct more than is open.
+	 * @param discountAmt           the discount that the customer deducts too, in the same currency
+	 * @param serviceFeeAmt         the fee that a service company deducts, in the same currency
+	 * @return the computed bonus, pre-filled unless it is bigger than the open amount minus the discount and the fee: the customer cannot deduct more than it pays.
 	 */
 	public static PaymentBonusRowValues prefill(
 			@Nullable final PaymentBonusDeduction deduction,
 			@NonNull final CurrencyCode deductionCurrencyCode,
-			@NonNull final Amount openAmt)
+			@NonNull final Amount openAmt,
+			@Nullable final Amount discountAmt,
+			@Nullable final Amount serviceFeeAmt)
 	{
 		if (deduction == null)
 		{
@@ -55,13 +59,24 @@ public class PaymentBonusRowValues
 					.build();
 		}
 
+		// what the customer pays: the open amount minus the discount and the service company's fee
+		Amount maxBonusAmt = openAmt;
+		if (discountAmt != null)
+		{
+			maxBonusAmt = maxBonusAmt.subtract(discountAmt);
+		}
+		if (serviceFeeAmt != null)
+		{
+			maxBonusAmt = maxBonusAmt.subtract(serviceFeeAmt);
+		}
+
 		final Amount grossAmt = toAmount(deduction.getGrossAmount(), openAmt.getCurrencyCode());
-		if (grossAmt.compareTo(openAmt) > 0)
+		if (grossAmt.compareTo(maxBonusAmt) > 0)
 		{
 			return builder()
 					.paymentBonusAmt(Amount.zero(openAmt.getCurrencyCode()))
 					.paymentBonusDeduction(deduction) // a smaller amount can still be entered
-					.paymentBonusNote(msg(MSG_NOT_PREFILLED_ABOVE_OPEN_AMT, format(grossAmt), format(openAmt)))
+					.paymentBonusNote(msg(MSG_NOT_PREFILLED_ABOVE_OPEN_AMT, format(grossAmt), format(maxBonusAmt)))
 					.build();
 		}
 
@@ -84,15 +99,20 @@ public class PaymentBonusRowValues
 	/**
 	 * @return the amount that the user entered, or, if it cannot be booked exactly because of the rounding of the VAT, the closest amount that can, with a note
 	 */
-	public static PaymentBonusRowValues entered(@Nullable final PaymentBonusDeduction deduction, @NonNull final Amount enteredAmt)
+	public static PaymentBonusRowValues entered(@Nullable final PaymentBonusDeduction deduction, @NonNull final Amount enteredAmt, @Nullable final ITranslatableString currentNote)
 	{
 		final PaymentBonusRowValues entered = builder()
 				.paymentBonusAmt(enteredAmt)
 				.paymentBonusDeduction(deduction)
 				.build();
-		if (deduction == null || enteredAmt.signum() <= 0)
+		if (deduction == null)
 		{
-			return entered; // nothing to adjust; a non-zero amount without a bonus, or a negative one, is rejected when allocating
+			// nothing to adjust; a non-zero amount is rejected when allocating, and the note still says why there is no bonus
+			return entered.toBuilder().paymentBonusNote(currentNote).build();
+		}
+		if (enteredAmt.signum() <= 0)
+		{
+			return entered; // nothing to adjust; a negative amount is rejected when allocating
 		}
 
 		final Money bookedGrossAmt = deduction.withGrossAmount(Money.of(enteredAmt.toBigDecimal(), deduction.getCurrencyId())).getGrossAmount();

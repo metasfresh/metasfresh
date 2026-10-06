@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
@@ -41,7 +43,7 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("7", "2.60"); // 2.78 with VAT
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("100", EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("100", EUR), null, null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.78", EUR));
 		assertThat(values.getPaymentBonusDeduction()).isSameAs(deduction);
@@ -54,7 +56,7 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("7", "2.60"); // 2.78 with VAT
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("2.00", EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("2.00", EUR), null, null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
 		assertThat(values.getPaymentBonusDeduction()).isSameAs(deduction); // a smaller amount can still be entered
@@ -65,17 +67,29 @@ class PaymentBonusRowValuesTest
 	@Test
 	void prefill_openAmountInAnotherCurrency_noBonus()
 	{
-		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction("7", "2.60"), EUR, Amount.of("100", CurrencyCode.CHF));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction("7", "2.60"), EUR, Amount.of("100", CurrencyCode.CHF), null, null);
 
 		assertThat(values.getPaymentBonusAmt()).isNull();
 		assertThat(values.getPaymentBonusDeduction()).isNull();
 		assertThat(values.getPaymentBonusNote()).isNotNull();
 	}
 
+	/** What the customer pays is the open amount minus the discount and the service fee; the bonus cannot be more than that. */
+	@Test
+	void prefill_bonusAboveTheOpenAmountMinusDiscountAndServiceFee_isNotPrefilled()
+	{
+		final PaymentBonusDeduction deduction = deduction("7", "2.60"); // 2.78 with VAT
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(deduction, EUR, Amount.of("5.00", EUR), Amount.of("1.50", EUR), Amount.of("1.00", EUR)); // 2.50 left
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+	}
+
 	@Test
 	void prefill_noBonus()
 	{
-		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(null, EUR, Amount.of("100", EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.prefill(null, EUR, Amount.of("100", EUR), null, null);
 
 		assertThat(values.getPaymentBonusAmt()).isNull();
 		assertThat(values.getPaymentBonusDeduction()).isNull();
@@ -99,7 +113,7 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("7", "2.60");
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("2.00", EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("2.00", EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.00", EUR));
 		assertThat(values.getPaymentBonusNote()).isNull();
@@ -111,17 +125,29 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("19", "10.00"); // 0.02 net -> 0.00 VAT, 0.03 net -> 0.01 VAT: 0.03 gross cannot be reached
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isNotEqualByComparingTo(Amount.of("0.03", EUR));
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(deduction.withGrossAmount(Money.of(new BigDecimal("0.03"), EUR_ID)).getGrossAmount().toAmount(currencyId -> EUR));
 		assertThat(values.getPaymentBonusNote()).isNotNull();
 	}
 
+	/** Without a computed bonus, the note says why (e.g. it could not be computed); editing the amount keeps it. */
+	@Test
+	void entered_withoutDeduction_keepsTheNote()
+	{
+		final ITranslatableString note = TranslatableStrings.anyLanguage("could not be computed");
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(null, Amount.of("2.00", EUR), note);
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.00", EUR));
+		assertThat(values.getPaymentBonusNote()).isSameAs(note);
+	}
+
 	@Test
 	void entered_zero_noNote()
 	{
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR));
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
 		assertThat(values.getPaymentBonusNote()).isNull();

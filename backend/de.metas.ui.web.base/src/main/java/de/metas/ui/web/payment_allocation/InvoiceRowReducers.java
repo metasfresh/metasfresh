@@ -68,7 +68,7 @@ public class InvoiceRowReducers
 				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
 
 				// shows the amount that will be booked, if the entered one cannot be because of the rounding of the VAT
-				final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt);
+				final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt, row.getPaymentBonusNote());
 				rowBuilder.paymentBonusAmt(paymentBonusRowValues.getPaymentBonusAmt());
 				rowBuilder.paymentBonusNote(paymentBonusRowValues.getPaymentBonusNote());
 			}
