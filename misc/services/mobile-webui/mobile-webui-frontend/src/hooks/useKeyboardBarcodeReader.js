@@ -24,11 +24,14 @@ export const useKeyboardBarcodeReader = ({
   // re-rendering per keystroke.
   const [isReadInProgress, setReadInProgress] = useState(false);
   // The callbacks are read through refs, so a consumer re-render (e.g. caused by isReadInProgress) does
-  // not tear down and re-attach the window listener and idle timer mid-scan.
+  // not tear down and re-attach the window listener and idle timer mid-scan. The refs are updated after
+  // each commit, not during render (React: refs must not be written while rendering).
   const onReadDoneRef = useRef(onReadDone);
-  onReadDoneRef.current = onReadDone;
   const onReadInProgressRef = useRef(onReadInProgress);
-  onReadInProgressRef.current = onReadInProgress;
+  useLayoutEffect(() => {
+    onReadDoneRef.current = onReadDone;
+    onReadInProgressRef.current = onReadInProgress;
+  });
 
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
