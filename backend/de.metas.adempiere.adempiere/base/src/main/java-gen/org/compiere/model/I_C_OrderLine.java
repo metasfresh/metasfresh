@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set C_BPartner_Vendor_ID.
+	 * Set Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get C_BPartner_Vendor_ID.
+	 * Get Vendor.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -850,7 +850,6 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -860,7 +859,6 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
