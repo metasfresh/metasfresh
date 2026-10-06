@@ -57,7 +57,7 @@ export function saveColumnWidths(windowId, viewProfileId, widths) {
  * @method clampComboboxColumnWidths
  * @param {object} columnWidths - Map of fieldName -> stored width in pixels
  * @param {Array} columns - column definitions (`fields[0].field` + `widgetType`), as rendered
- * @summary Load-time combobox floor: a width persisted before the ~210px combobox floor existed
+ * @summary Load-time combobox floor: a width persisted before the 90px combobox floor existed
  * (or restored on a returning session) can still be below it, so a stored **combobox**
  * (widgetType Lookup/List) column width under the floor is raised to it here, on the read path.
  * Non-combobox stored widths are returned unchanged (untouched — no floor applies to them).

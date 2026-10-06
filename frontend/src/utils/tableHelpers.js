@@ -163,8 +163,10 @@ export function getSizeClass(col) {
 }
 
 // combobox (Lookup/List — Search resolves to Lookup upstream) minimum-usable width: below this, the
-// open dropdown editor (`.input-dropdown-container`, floored at 200px) spills into the next column.
-export const COMBOBOX_MIN_WIDTH_PX = 210;
+// open dropdown editor is unusable. The editor itself shrinks to the column width in the grid
+// (`.table-cell .input-dropdown-container { min-width: 0 }`, table.scss), so the floor only has to
+// keep the trigger + a few characters visible (90px).
+export const COMBOBOX_MIN_WIDTH_PX = 90;
 export const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
 
 // `td-*` band min-widths as defined in `table.scss` — used only to detect whether the band already
@@ -180,7 +182,7 @@ const SIZE_CLASS_MIN_WIDTH_PX = {
 /**
  * @method getSizeStyle
  * @param {object} col
- * @summary combobox-only minimum-usable-width floor (~210px), enforced as an inline style at
+ * @summary combobox-only minimum-usable-width floor (90px), enforced as an inline style at
  * size-resolution time — never by promoting the column to a wider `td-*` band (which would also
  * touch the band's `max-width` and every non-combobox column sharing it). Returns `undefined` for a
  * non-combobox column, or for a combobox column whose resolved band already clears the floor.

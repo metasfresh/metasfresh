@@ -1,22 +1,20 @@
 import { getSizeClass, getSizeStyle } from '../../utils/tableHelpers';
 
 describe('combobox size-resolution floor (BF-B4a)', () => {
-  it.each(['S', 'M'])('floors a combobox (Lookup) column at WidgetSize=%s to >= 210px', (size) => {
-    const col = { widgetType: 'Lookup', size };
+  // The combobox floor is 90px. Only the td-sm band (60px) is below it; td-md (144px) clears it.
+  it.each(['Lookup', 'List'])('floors a %s column at WidgetSize=S (td-sm, 60px) to exactly 90px', (widgetType) => {
+    const col = { widgetType, size: 'S' };
 
     const style = getSizeStyle(col);
 
-    expect(style).toBeDefined();
-    expect(parseInt(style.minWidth, 10)).toBeGreaterThanOrEqual(210);
+    expect(style).toEqual({ minWidth: '90px' });
   });
 
-  it.each(['S', 'M'])('floors a combobox (List) column at WidgetSize=%s to >= 210px', (size) => {
-    const col = { widgetType: 'List', size };
+  it.each(['Lookup', 'List'])('does not floor a %s column at WidgetSize=M (td-md, 144px clears 90px)', (widgetType) => {
+    const col = { widgetType, size: 'M' };
 
-    const style = getSizeStyle(col);
-
-    expect(style).toBeDefined();
-    expect(parseInt(style.minWidth, 10)).toBeGreaterThanOrEqual(210);
+    expect(getSizeStyle(col)).toBeUndefined();
+    expect(getSizeClass(col)).toBe('td-md');
   });
 
   it.each(['S', 'M'])('does NOT floor a non-combobox (Text) column at WidgetSize=%s', (size) => {
@@ -27,7 +25,7 @@ describe('combobox size-resolution floor (BF-B4a)', () => {
     expect(getSizeClass(col)).toBe(size === 'S' ? 'td-sm' : 'td-md');
   });
 
-  it('does not floor a combobox column already at or above 210px (WidgetSize=L)', () => {
+  it('does not floor a combobox column already above 90px (WidgetSize=L)', () => {
     const col = { widgetType: 'Lookup', size: 'L' };
 
     expect(getSizeStyle(col)).toBeUndefined();

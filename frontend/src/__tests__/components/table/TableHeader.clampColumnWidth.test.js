@@ -1,8 +1,12 @@
 import { clampColumnWidth } from '../../../components/table/TableHeader';
 
 describe('grid column manual-resize clamp (BF-B4b)', () => {
-  it('clamps a combobox (Lookup) column dragged to 80px up to the ~210px floor', () => {
-    expect(clampColumnWidth({ widgetType: 'Lookup', px: 80 })).toBeGreaterThanOrEqual(210);
+  it('clamps a combobox (Lookup) column dragged to 80px up to the 90px floor', () => {
+    expect(clampColumnWidth({ widgetType: 'Lookup', px: 80 })).toBe(90);
+  });
+
+  it('leaves a combobox (Lookup) column dragged to 120px (above the 90px floor) unchanged', () => {
+    expect(clampColumnWidth({ widgetType: 'Lookup', px: 120 })).toBe(120);
   });
 
   it('leaves a combobox (Lookup) column dragged to 300px unchanged', () => {

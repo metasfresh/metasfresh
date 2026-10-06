@@ -18,15 +18,15 @@ import Table from '../../../components/table/Table';
  *
  * On a normal tab-open the table mounts BEFORE the view/tab column metadata is
  * reduced, so `Table.componentDidMount` runs `clampComboboxColumnWidths` with
- * `columns === []` -> empty widgetTypeByField -> a stored sub-210 combobox width
+ * `columns === []` -> empty widgetTypeByField -> a stored sub-90 combobox width
  * is returned UN-clamped and lands in `state.columnWidths`. Column metadata then
  * arrives moments later (columns []->populated) for the SAME window/view.
  *
- * Concrete failure pinned here: a returning user with a stored sub-210 combobox
+ * Concrete failure pinned here: a returning user with a stored sub-90 combobox
  * width (localStorage columnWidths_<windowId>_<viewId>) never gets it clamped,
  * because the only post-mount re-clamp fired on a windowId/viewId change, not on
- * the columns []->populated transition. The stored 144px then wins in TableCell,
- * the ~210px floor is skipped, and the combobox dropdown overlaps the next
+ * the columns []->populated transition. The stored 60px then wins in TableCell,
+ * the 90px floor is skipped, and the combobox dropdown overlaps the next
  * column (AC13 Partiecode overlap) again.
  */
 
@@ -49,7 +49,7 @@ const store = mockStore(createStore());
 const WINDOW_ID = '540189';
 const VIEW_ID = 'view-abc';
 const COMBOBOX_FIELD = 'Partiecode';
-const STORED_SUB_FLOOR_WIDTH = 144;
+const STORED_SUB_FLOOR_WIDTH = 60;
 
 // Column metadata as it arrives AFTER mount (the combobox is a Lookup widget).
 const populatedColumns = [
@@ -103,7 +103,7 @@ describe('Table — combobox load-time clamp survives async columns []->populate
 
   afterEach(() => localStorage.clear());
 
-  it('clamps a stored sub-210 combobox width once columns arrive for the same window/view', () => {
+  it('clamps a stored sub-90 combobox width once columns arrive for the same window/view', () => {
     const wrapper = mount(<Host columns={[]} />);
     const instance = wrapper.find('Table').instance();
 
@@ -117,10 +117,10 @@ describe('Table — combobox load-time clamp survives async columns []->populate
     wrapper.setProps({ columns: populatedColumns });
     wrapper.update();
 
-    // The stored sub-floor combobox width must now be clamped to the ~210 floor.
+    // The stored sub-floor combobox width must now be clamped to the 90px floor.
     expect(
       instance.state.columnWidths[COMBOBOX_FIELD]
-    ).toBeGreaterThanOrEqual(210);
+    ).toBe(90);
 
     wrapper.unmount();
   });

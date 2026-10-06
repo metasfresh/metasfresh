@@ -212,7 +212,7 @@ class TableCell extends PureComponent {
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
     // a stored custom width wins over the size class (handled above); absent that, a combobox column
-    // still needs its ~210px minimum-usable-width floor applied inline, without promoting the td-* band
+    // still needs its 90px minimum-usable-width floor applied inline, without promoting the td-* band
     const comboboxFloorStyle = columnWidth ? undefined : getSizeStyle(item);
     const tdStyle = columnWidth
       ? {

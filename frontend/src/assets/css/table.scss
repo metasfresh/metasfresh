@@ -376,10 +376,37 @@
    * wrapper at least 50px + its own horizontal padding wide — wider than a short static value
    * (e.g. a one-digit quantity) ever needed, so activation grows the column to fit it. A grid
    * cell's already-rendered width is whatever the static value needed; let the input shrink to
-   * that instead of imposing its own floor (the combobox's ~210px floor is enforced separately,
+   * that instead of imposing its own floor (the combobox's 90px floor is enforced separately,
    * on its own wrapper, and is unaffected by the inner input's min-width).
    */
   input {
+    min-width: 0;
+  }
+
+  /*
+   * Dropping the input's own min-width above (so it can shrink to the cell's static-display
+   * width) exposes the wrapper's OWN 8px+8px horizontal padding (`.input-secondary`/
+   * `.input-primary`, inputs.scss): in a narrow td-sm number column (e.g. Price/CostPrice,
+   * ~60px cell) the wrapper padding alone eats 16px of the ~43px wrapper, leaving the input
+   * only ~27px inner width — less than a "12,50"-length value's ~39px scrollWidth, so the
+   * value scrolls and only the tail digits stay visible while editing (static display uses the
+   * full cell width and is unaffected). Zero the wrapper's horizontal padding in the grid so the
+   * input gets the full cell width instead.
+   */
+  .input-primary,
+  .input-secondary {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /*
+   * The combobox editor's own wrapper (`.input-dropdown-container`, inputs.scss) carries a global
+   * `min-width: 200px` so a combobox opened in a single-row/detail form always has room for its
+   * dropdown trigger + text. In a grid cell that floor overflows a narrow column the same way the
+   * bare `input` rule above did — so drop it here too, scoped to `.table-cell` only, leaving the
+   * global inputs.scss rule (and therefore every non-grid form) untouched.
+   */
+  .input-dropdown-container {
     min-width: 0;
   }
 
