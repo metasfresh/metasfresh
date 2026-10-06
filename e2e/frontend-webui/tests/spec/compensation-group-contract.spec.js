@@ -85,6 +85,7 @@ const DE = {
   schemaLineTab: 'Kompensationszeilen',
   isAdditive: 'Additiv',
   schemaLineCategory: 'Gilt für Produktkategorie',
+  schemaLinePackingCategory: 'Packmittel-Kategorie',
   schemaLineProduct: 'Produkt',
   schemaLineSeqNo: 'Reihenfolge',
   schemaLineDiscount: 'Gesamtauftragsrabatt %',
@@ -135,7 +136,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: { language: LANGUAGE } },
-        productCategories: { GOODS_CATEGORY: {} },
+        productCategories: { GOODS_CATEGORY: {}, CARTON_CATEGORY: {} },
         bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
         warehouses: { wh: {} },
         products: {
@@ -148,6 +149,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const goods = masterdata.products.GOODS;
     const discount = masterdata.products.DISCOUNT;
     const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+    const cartonCategoryId = masterdata.productCategories.CARTON_CATEGORY.id;
 
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
@@ -181,12 +183,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       await expectLabel(modal, 'SeqNo', DE.schemaLineSeqNo);
       await expectLabel(modal, 'M_Product_Category_ID', DE.schemaLineCategory);
+      await expectLabel(modal, 'M_Product_Category_PackingMaterial_ID', DE.schemaLinePackingCategory);
       await expectLabel(modal, 'M_Product_ID', DE.schemaLineProduct);
       await expectLabel(modal, 'CompleteOrderDiscount', DE.schemaLineDiscount);
-      // the "applies to" category sits directly between the sequence and the discount product
-      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_ID']);
+      // the "applies to" category and the packing-material category sit directly between the sequence and the discount product
+      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_Category_PackingMaterial_ID', 'M_Product_ID']);
 
       await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
+      await selectListByKey(page, modal, 'M_Product_Category_PackingMaterial_ID', cartonCategoryId);
       await selectLookup(page, modal, 'M_Product_ID', discount.productCode);
       await fillNumber(page, modal, 'CompleteOrderDiscount', DISCOUNT_PERCENT);
       await snap(page, '540415-schema-line');
@@ -194,10 +198,12 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       // the category column is also in the schema-line grid, next to the product
       await expect(page.locator('th[data-testid="column-M_Product_Category_ID"]')).toBeVisible();
+      await expect(page.locator('th[data-testid="column-M_Product_Category_PackingMaterial_ID"]')).toBeVisible();
 
       const lines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
       expect(lines, 'exactly one schema line').toHaveLength(1);
       expect(lookupKey(lines[0].fieldsByName.M_Product_Category_ID.value)).toBe(String(goodsCategoryId));
+      expect(lookupKey(lines[0].fieldsByName.M_Product_Category_PackingMaterial_ID.value)).toBe(String(cartonCategoryId));
       expect(lookupKey(lines[0].fieldsByName.M_Product_ID.value)).toBe(String(discount.id));
       expect(Number(lines[0].fieldsByName.CompleteOrderDiscount.value)).toBe(DISCOUNT_PERCENT);
     });
