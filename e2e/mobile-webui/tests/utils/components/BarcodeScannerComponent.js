@@ -171,6 +171,9 @@ export const BarcodeScannerComponent = {
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
+        // A keyboard (hardware) scan never writes into #input-text; the reader's explicit state is the
+        // signal that the scan was consumed.
+        await expect(page.locator('.scan-prompt.scan-in-progress')).toHaveCount(0);
     }),
 
     // Fills the visible editable input and presses Enter — exercises the manual-typing path

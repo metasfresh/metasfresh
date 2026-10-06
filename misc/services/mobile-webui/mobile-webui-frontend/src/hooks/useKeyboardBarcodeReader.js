@@ -12,6 +12,7 @@ export const IDLE_ABANDON_MS = 15000;
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
+  // Optional observer of the growing buffer (used by the hook tests); UI state should use isReadInProgress.
   onReadInProgress,
   rateMs = 50,
   minLength = 10,
@@ -112,6 +113,8 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
+          // Reset before firing onReadDone, as completeScan does: the callback may unmount this component.
+          resetBuffer();
           // A paste has no per-character delivery: null, not zero, which would read as instant.
           onReadDoneRef.current(clipboardText, {
             scanDurationMs: null,
@@ -120,7 +123,6 @@ export const useKeyboardBarcodeReader = ({
             scanMaxProcessingGapMs: null,
             scanChunkCount: null,
           });
-          resetBuffer();
           return;
         } catch (error) {
           console.error('Failed to read clipboard:', error);
@@ -210,10 +212,8 @@ export const useKeyboardBarcodeReader = ({
         bufferRef.current += event.key;
         setReadInProgress(true);
         onReadInProgressRef.current?.(bufferRef.current);
-        // Prevent the browser from also inserting the character into a focused input.
-        // The hook handles value updates via onReadInProgress. Without this, the character
-        // would be inserted twice: once by onReadInProgress and once by the browser's default action.
-        // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
+        // Prevent the browser from also inserting the character into a focused input: the scan lives in
+        // the buffer only. (Before the readOnly→inputMode="none" change, readOnly prevented the insertion.)
         event.preventDefault();
         lastKeyTimeRef.current = now;
         lastKeyEventTimeRef.current = eventTimeMs;

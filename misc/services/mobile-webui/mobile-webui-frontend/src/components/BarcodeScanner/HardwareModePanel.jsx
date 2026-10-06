@@ -93,16 +93,8 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   const { isReadInProgress } = useKeyboardBarcodeReader({
     onReadDone: (barcode, scanStats) => {
-      // console.log('onReadDone', barcode);
-      // Clear the input BEFORE calling onBarcodeScanned.
-      // onBarcodeScanned triggers setProcessing(true) in the parent, which in React 17 legacy
-      // mode (outside a React event handler) re-renders synchronously and unmounts the input
-      // ({!isProcessing && <input/>}), nulling inputTextRef.current. Clearing AFTER the call
-      // would be silently skipped and the un-cleared value could reach handleInputTextKeyPress
-      // via the trailing keyup event, double-firing the scan.
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = '';
-      }
+      // The scan comes from the hook's buffer; the hook prevents its keystrokes from reaching the input,
+      // so there is no input value to clear here.
       onBarcodeScanned({ scannedBarcode: barcode, traceParams: { ...traceParams, ...scanStats } });
     },
     rateMs: textChangedDebounceMillis,
