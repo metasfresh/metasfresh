@@ -462,9 +462,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       const documentNo = String((await getFieldData(CONTRACT_WINDOW_ID, newTermId, 'DocumentNo')).value ?? '');
       console.log(`[INFO] new term ${newTermId}: DocumentNo=${documentNo} (term of step 4: ${firstTermDocumentNo})`);
-      expect(documentNo, 'DocumentNo is a number from the sequence, not "0" or the "<>" placeholder').toMatch(/^[1-9]\d*$/);
+      // the sequence may carry a prefix/suffix, so only what a missing number would look like is excluded
+      expect(documentNo.trim(), 'DocumentNo is filled').not.toBe('');
+      expect(documentNo, 'DocumentNo is not the former default "0"').not.toBe('0');
+      const hasPreliminaryMarkers = documentNo.trim().startsWith('<') && documentNo.trim().endsWith('>');
+      expect(hasPreliminaryMarkers, `DocumentNo "${documentNo}" is not a preliminary "<...>" number`).toBe(false);
       expect(documentNo, 'each term gets its own number').not.toBe(firstTermDocumentNo);
 
+      // the new term is deliberately left drafted: completing it would hit MSG_CompensationGroup_OverlappingTerm (same partner, doc types and period as the step-4 term)
       // the saved term, reloaded, shows that number to the operator
       await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${newTermId}`);
       await expect(page.locator('.form-field-DocumentNo input').first()).toHaveValue(documentNo, { timeout: SLOW_ACTION_TIMEOUT });
