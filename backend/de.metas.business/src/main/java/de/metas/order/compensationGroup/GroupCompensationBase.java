@@ -1,12 +1,6 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
 import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.lang.Percent;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -22,39 +16,38 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class GroupCompensationLineCreateRequest
+/**
+ * The base a compensation (discount) line is computed on: a product category and/or a packing-material category.
+ * A {@code null} part does not restrict the regular lines; {@link #NONE} means the whole group.
+ */
+@Value(staticConstructor = "of")
+public class GroupCompensationBase
 {
-	ProductId productId;
-	UomId uomId;
+	public static final GroupCompensationBase NONE = of(null, null);
 
-	@NonNull GroupCompensationType type;
-	@NonNull GroupCompensationAmtType amtType;
+	@Nullable ProductCategoryId productCategoryId;
+	@Nullable ProductCategoryId packingMaterialProductCategoryId;
 
-	Percent percentage;
-	BigDecimal qtyEntered;
-	BigDecimal price;
+	public boolean isNone()
+	{
+		return productCategoryId == null && packingMaterialProductCategoryId == null;
+	}
 
-	GroupTemplateLineId groupTemplateLineId;
-
-	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
-	@Nullable
-	ProductCategoryId appliesToProductCategoryId;
-
-	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
-	@Nullable
-	ProductCategoryId packingMaterialProductCategoryId;
+	public boolean isMatching(@NonNull final GroupRegularLine line)
+	{
+		return (productCategoryId == null || line.getProductCategoryIds().contains(productCategoryId))
+				&& (packingMaterialProductCategoryId == null || line.getPackingMaterialProductCategoryIds().contains(packingMaterialProductCategoryId));
+	}
 }
