@@ -385,18 +385,33 @@
 
   /*
    * Dropping the input's own min-width above (so it can shrink to the cell's static-display
-   * width) exposes the wrapper's OWN 8px+8px horizontal padding (`.input-secondary`/
-   * `.input-primary`, inputs.scss): in a narrow td-sm number column (e.g. Price/CostPrice,
-   * ~60px cell) the wrapper padding alone eats 16px of the ~43px wrapper, leaving the input
-   * only ~27px inner width — less than a "12,50"-length value's ~39px scrollWidth, so the
-   * value scrolls and only the tail digits stay visible while editing (static display uses the
-   * full cell width and is unaffected). Zero the wrapper's horizontal padding in the grid so the
-   * input gets the full cell width instead.
+   * width) exposes the editor's own horizontal padding: the borderless `.input-secondary`
+   * wrapper's 8px+8px (inputs.scss) plus the input's own 2px+2px. In a narrow td-sm number
+   * column (e.g. the price, a 60px cell with ~37px of content width) that leaves a
+   * "12,50"-length value too little room, so it scrolls and only its tail stays visible while
+   * editing (the static display uses the full content width and is unaffected). Drop both
+   * paddings so the editor gets exactly the static display's content width — whatever fits
+   * when static fits when editing.
+   *
+   * Scoped to the borderless `.input-secondary` wrapper (number and other single-line grid
+   * editors). The bordered `.input-primary` wrapper (e.g. a LongText editor) keeps its padding,
+   * so its text never sits flush against its border. A mandatory, still-empty editor gets a
+   * 2px red border (`.input-mandatory`, inputs.scss); keep a 2px inner gap there for the same
+   * reason (it has no value yet, so nothing is truncated by it).
    */
-  .input-primary,
   .input-secondary {
     padding-left: 0;
     padding-right: 0;
+
+    &.input-mandatory {
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+
+    input {
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
 
   /*
