@@ -351,18 +351,45 @@
     margin-right: 0;
     box-sizing: border-box;
 
-    > .col-sm-12 {
+    /*
+     * Every editor is pinned to the row's fixed content height (42px row - .5rem top/bottom
+     * padding), so opening one never changes the row height. This includes LongText: its
+     * textarea becomes a single scrollable line inside the cell (see below).
+     */
+    height: 26px;
+
+    /*
+     * The editor takes no width of its own: it fills exactly the width the column already has.
+     * `width: 0` removes the editor's intrinsic width (e.g. a text input's default 20-character
+     * size, or a switch with its gutter) from the column's size calculation, so it can not
+     * widen the column; `min-width: 100%` then stretches it back to the full cell. The column
+     * width itself is kept by `.cell-width-keeper` below.
+     */
+    width: 0;
+    min-width: 100%;
+
+    /* the widget's single Bootstrap column (`.col-sm-12`, or `.col-sm-9` for a Switch) */
+    > [class*='col-'] {
       padding-left: 0;
       padding-right: 0;
     }
 
-    /*
-     * LongText's textarea legitimately needs more than one line of height — only single-line
-     * editors are pinned to the row's fixed content height (42px row - .5rem top/bottom padding).
-     */
-    &:not(.widgetType-LongText) {
-      height: 26px;
+    &.widgetType-LongText textarea {
+      height: 100%;
+      min-height: 0;
     }
+  }
+
+  /*
+   * An invisible copy of the cell's static content, rendered next to the editor while the cell
+   * is edited (TableCell.js). It contributes exactly the width the static value contributed, so a
+   * column sized by its value (e.g. a long product name) keeps that width instead of snapping to
+   * its band minimum, and it takes no height.
+   */
+  .cell-width-keeper {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
   }
 
   .input-primary,
@@ -425,7 +452,7 @@
     min-width: 0;
   }
 
-  .form-group-table:not(.widgetType-LongText) {
+  .form-group-table {
     .input-primary,
     .input-secondary,
     .input-dropdown-container {

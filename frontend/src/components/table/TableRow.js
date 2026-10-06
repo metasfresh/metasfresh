@@ -640,7 +640,6 @@ class TableRow extends PureComponent {
             const tdValue = getTdValue({
               widgetData,
               item,
-              isEdited,
               isGerman,
             });
             const description = getDescription({ widgetData, tdValue });

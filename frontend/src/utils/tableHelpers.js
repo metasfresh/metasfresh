@@ -511,22 +511,21 @@ export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
 
 /**
  * @method getTdValue
- * @summary Get the content of the table divider based on the widgetData provided
+ * @summary Get the displayed content of the table divider based on the widgetData provided.
+ * Also computed while the cell is being edited: the grid keeps an invisible copy of it next to
+ * the editor so the column keeps its width (TableCell.renderStaticContent).
  *
  * @param {array} widgetData
  * @param {object} item
- * @param {bool} isEdited
  * @param {bool} isGerman
  */
-export function getTdValue({ widgetData, item, isEdited, isGerman }) {
-  return !isEdited
-    ? fieldValueToString({
-        fieldValue: widgetData[0].value,
-        fieldType: item.widgetType,
-        precision: widgetData[0].precision,
-        isGerman,
-      })
-    : null;
+export function getTdValue({ widgetData, item, isGerman }) {
+  return fieldValueToString({
+    fieldValue: widgetData[0].value,
+    fieldType: item.widgetType,
+    precision: widgetData[0].precision,
+    isGerman,
+  });
 }
 
 /**

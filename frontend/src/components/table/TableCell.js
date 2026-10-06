@@ -165,6 +165,55 @@ class TableCell extends PureComponent {
     this.clearWidgetValue = reset == null;
   };
 
+  /**
+   * @method renderStaticContent
+   * @summary The cell's read-only presentation. Rendered visibly when the cell is not being
+   * edited, and as an invisible width keeper next to the editor while it is (see render).
+   *
+   * @param {boolean} isWidthKeeper - true for the invisible copy rendered while editing
+   */
+  renderStaticContent = ({ isWidthKeeper }) => {
+    const {
+      item,
+      cellExtended,
+      extendLongText,
+      description,
+      tooltipData,
+      tooltipWidget,
+      tdValue,
+      tableCellData,
+      rowId,
+    } = this.props;
+    const { tooltipToggled } = this.state;
+    const { widgetType } = item;
+    const style = cellExtended ? { height: extendLongText * 20 } : {};
+
+    return (
+      <div className={classnames({ 'with-widget': tooltipWidget })}>
+        <div
+          className={classnames('cell-text-wrapper', {
+            [`${widgetType.toLowerCase()}-cell`]: widgetType,
+            extended: cellExtended,
+          })}
+          style={style}
+          title={isWidthKeeper ? undefined : getTdTitle({ item, description })}
+        >
+          <TableCellWidget {...{ tdValue, widgetType, tableCellData, rowId }} />
+        </div>
+        {tooltipWidget && (
+          <WidgetTooltip
+            iconName={tooltipWidget.tooltipIconName}
+            text={tooltipData?.value}
+            isToggled={isWidthKeeper ? false : tooltipToggled}
+            onToggle={(tooltipOpen) =>
+              !isWidthKeeper && this.widgetTooltipToggle(tooltipOpen)
+            }
+          />
+        )}
+      </div>
+    );
+  };
+
   render() {
     const {
       isEdited,
@@ -195,19 +244,11 @@ class TableCell extends PureComponent {
       tableId,
       isReadonly,
       isMandatory,
-      tooltipData,
-      tooltipWidget,
-      tdValue,
-      description,
-      tableCellData,
       colIndex,
       updateRow,
       columnWidth,
     } = this.props;
     const docId = `${this.props.docId}`;
-    const { tooltipToggled } = this.state;
-    const { widgetType } = item;
-    const tdTitle = getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
@@ -257,66 +298,54 @@ class TableCell extends PureComponent {
           />
         )}
         {isEdited ? (
-          <WidgetWrapper
-            renderMaster={true}
-            dataSource="table"
-            tableId={tableId}
-            {...item}
-            {...{
-              tableId,
-              windowId,
-              viewId,
-              rowId,
-              closeTableField,
-              isOpenDatePicker,
-              listenOnKeys,
-              listenOnKeysFalse,
-              listenOnKeysTrue,
-              onClickOutside,
-              rowIndex,
-              colIndex,
-              isEditable,
-              isEdited,
-              supportFieldEdit,
-              entity,
-              updateHeight,
-              updateRow,
-              isModal,
-            }}
-            suppressChange={isEdited}
-            clearValue={this.clearWidgetValue}
-            dateFormat={isDateField}
-            dataId={mainTable ? null : docId}
-            tabId={mainTable ? null : tabId}
-            noLabel={true}
-            gridAlign={item.gridAlign}
-            handleBackdropLock={this.handleBackdropLock}
-          />
-        ) : (
-          <div className={classnames({ 'with-widget': tooltipWidget })}>
-            <div
-              className={classnames('cell-text-wrapper', {
-                [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
-                extended: cellExtended,
-              })}
-              style={style}
-              title={tdTitle}
-            >
-              <TableCellWidget
-                {...{ tdValue, widgetType, tableCellData, rowId }}
-              />
+          <>
+            {/*
+              Keeps the column exactly as wide as the static value made it: the editor itself
+              takes no width of its own in a grid cell (table.scss), so without this invisible
+              copy of the static content a column sized by its value would snap to its band
+              minimum while editing.
+            */}
+            <div className="cell-width-keeper" aria-hidden="true">
+              {this.renderStaticContent({ isWidthKeeper: true })}
             </div>
-            {tooltipWidget && !isEdited && (
-              <WidgetTooltip
-                iconName={tooltipWidget.tooltipIconName}
-                text={tooltipData?.value}
-                isToggled={tooltipToggled}
-                onToggle={(tooltipOpen) =>
-                  this.widgetTooltipToggle(tooltipOpen)
-                }
-              />
-            )}
-          </div>
+            <WidgetWrapper
+              renderMaster={true}
+              dataSource="table"
+              tableId={tableId}
+              {...item}
+              {...{
+                tableId,
+                windowId,
+                viewId,
+                rowId,
+                closeTableField,
+                isOpenDatePicker,
+                listenOnKeys,
+                listenOnKeysFalse,
+                listenOnKeysTrue,
+                onClickOutside,
+                rowIndex,
+                colIndex,
+                isEditable,
+                isEdited,
+                supportFieldEdit,
+                entity,
+                updateHeight,
+                updateRow,
+                isModal,
+              }}
+              suppressChange={isEdited}
+              clearValue={this.clearWidgetValue}
+              dateFormat={isDateField}
+              dataId={mainTable ? null : docId}
+              tabId={mainTable ? null : tabId}
+              noLabel={true}
+              gridAlign={item.gridAlign}
+              handleBackdropLock={this.handleBackdropLock}
+            />
+          </>
+        ) : (
+          this.renderStaticContent({ isWidthKeeper: false })
         )}
       </td>
     );
