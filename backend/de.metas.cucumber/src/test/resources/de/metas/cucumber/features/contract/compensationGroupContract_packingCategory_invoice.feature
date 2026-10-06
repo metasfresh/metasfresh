@@ -7,6 +7,10 @@ Feature: Contract compensation group — the carton-only discount line on shippe
 ##
 ## The discount follows the carton-packed goods that are invoiced. The packing is always the one of the
 ## order line, whatever packing the shipment ends up with.
+##
+## Invoicing uses IgnoreInvoiceSchedule=Y: a shipment of packed goods is dated with the real clock, which is
+## after the frozen test clock, so the invoice schedule would skip the candidates. The invoice-schedule path itself
+## is covered by the other contract compensation group features, which do not ignore it.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -169,7 +173,6 @@ Feature: Contract compensation group — the carton-only discount line on shippe
       | ol_carton12    | ic_carton12            |
       | ol_goodsBonus  | ic_goodsBonus          |
       | ol_cartonBonus | ic_cartonBonus         |
-    # a shipment of packed goods is dated with the real clock, past the frozen test clock: invoice regardless of the schedule date
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
       | ic_carton10                       | Y                         |
@@ -276,7 +279,6 @@ Feature: Contract compensation group — the carton-only discount line on shippe
       | ol_crate       | ic_crate               |
       | ol_carton12    | ic_carton12            |
       | ol_goodsBonus  | ic_goodsBonus          |
-    # a shipment of packed goods is dated with the real clock, past the frozen test clock: invoice regardless of the schedule date
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
       | ic_carton10                       | Y                         |
@@ -402,7 +404,6 @@ Feature: Contract compensation group — the carton-only discount line on shippe
       | ic_carton12                       | 0               |
       | ic_goodsBonus                     | -34.8           |
       | ic_cartonBonus                    | -4.32           |
-    # a shipment of packed goods is dated with the real clock, past the frozen test clock: invoice regardless of the schedule date
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule | OPT.QtyInvoiced |
       | ic_carton10                       | Y                         | 600             |
@@ -445,7 +446,6 @@ Feature: Contract compensation group — the carton-only discount line on shippe
       | ic_carton12                       | 504             |
       | ic_goodsBonus                     | -15.12          |
       | ic_cartonBonus                    | -3.02           |
-    # a shipment of packed goods is dated with the real clock, past the frozen test clock: invoice regardless of the schedule date
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule | OPT.QtyInvoiced |
       | ic_carton10                       | Y                         | 600             |
@@ -543,6 +543,9 @@ Feature: Contract compensation group — the carton-only discount line on shippe
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier |
       | ss_crate                         | pipCarton10ForB                                 |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | M_HU_PI_Item_Product_Override_ID.Identifier |
+      | ss_crate                         | pipCarton10ForB                             |
 
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -573,7 +576,6 @@ Feature: Contract compensation group — the carton-only discount line on shippe
       | ic_crate                          | 440             |
       | ic_goodsBonus                     | -34.8           |
       | ic_cartonBonus                    | -4.32           |
-    # a shipment of packed goods is dated with the real clock, past the frozen test clock: invoice regardless of the schedule date
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule | OPT.QtyInvoiced |
       | ic_carton10                       | Y                         | 600             |

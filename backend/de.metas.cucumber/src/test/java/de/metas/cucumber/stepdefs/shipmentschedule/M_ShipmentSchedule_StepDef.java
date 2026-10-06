@@ -49,8 +49,8 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
@@ -903,6 +903,7 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyReserved</b> — (optional) expected reserved quantity<br>
 	 *   <b>QtyToDeliver</b> — (optional) expected qty to deliver<br>
 	 *   <b>QtyToDeliver_Override</b> — (optional) expected override qty<br>
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) expected packing instruction override<br>
 	 *   <b>QtyPickList</b> — (optional) expected picked quantity<br>
 	 *   <b>QtyDelivered</b> — (optional) expected delivered quantity<br>
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
@@ -1413,6 +1414,10 @@ public class M_ShipmentSchedule_StepDef
 
 		InterfaceWrapperHelper.refresh(shipmentSchedule);
 		final SoftAssertions softly = new SoftAssertions();
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> softly.assertThat(InterfaceWrapperHelper.create(shipmentSchedule, de.metas.handlingunits.model.I_M_ShipmentSchedule.class).getM_HU_PI_Item_Product_Override_ID())
+						.as("M_HU_PI_Item_Product_Override_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 		if (qtyToDeliverOverride != null)
 		{
 			softly.assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).as("QtyToDeliver_Override for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());

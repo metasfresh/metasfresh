@@ -16,8 +16,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
-import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
+import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupCompensationType;
@@ -156,17 +156,18 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId =
 				retrieveProductCategoryIdAndAncestorsByProductId(invoiceCandidates);
 
-		final List<I_C_Invoice_Candidate> regularCandidates = invoiceCandidates.stream()
-				.filter(invoiceCandidate -> !invoiceCandidate.isGroupCompensationLine())
-				.collect(ImmutableList.toImmutableList());
-		final Map<OrderLineId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByOrderLineId =
-				retrievePackingMaterialProductCategoryIdsByOrderLineId(regularCandidates);
-
 		final List<I_C_Invoice_Candidate> compensationLineCandidates = invoiceCandidates.stream()
 				.filter(I_C_Invoice_Candidate::isGroupCompensationLine)
 				.collect(ImmutableList.toImmutableList());
 		final Map<InvoiceCandidateId, GroupCompensationBase> baseByInvoiceCandidateId =
 				retrieveBasesByInvoiceCandidateId(compensationLineCandidates);
+
+		// the packing is needed only when a discount line is restricted to a packing-material category
+		final boolean packingMaterialCategoryNeeded = baseByInvoiceCandidateId.values().stream()
+				.anyMatch(base -> base.getPackingMaterialProductCategoryId() != null);
+		final Map<OrderLineId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByOrderLineId = packingMaterialCategoryNeeded
+				? retrievePackingMaterialProductCategoryIdsByOrderLineId(regularCandidates(invoiceCandidates))
+				: ImmutableMap.of();
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
@@ -204,6 +205,13 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.map(invoiceCandidate -> ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 		return productDAO.getProductCategoryIdAndAncestorsByProductIds(productIds);
+	}
+
+	private static List<I_C_Invoice_Candidate> regularCandidates(final List<I_C_Invoice_Candidate> invoiceCandidates)
+	{
+		return invoiceCandidates.stream()
+				.filter(invoiceCandidate -> !invoiceCandidate.isGroupCompensationLine())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
