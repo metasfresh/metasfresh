@@ -156,10 +156,13 @@ class TableRow extends PureComponent {
     this.handleEditProperty({ event });
   };
 
-  handleDoubleClick = (e) => {
+  handleDoubleClick = () => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
 
-    this.setState({ valueBeforeEditing: e.target.textContent });
+    // The value to restore on Escape is captured from the stored field data
+    // when the cell enters edit mode (see _editProperty) - never from
+    // e.target.textContent, which is the locale-formatted display text
+    // ("10,00" in de_DE) and is rejected by an <input type="number">.
 
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
@@ -231,11 +234,11 @@ class TableRow extends PureComponent {
 
     // here `edited` controls if on {enter} we should edit a widget, or only submit it.
     // if true - property will be edited. Otherwise just saved.
-    // If widget is not active - use the textContent as the initial value
+    // If widget is not active - use the stored field value as the initial value
     let fieldValue = event.target.value;
 
     if (!edited) {
-      fieldValue = event.target.textContent;
+      fieldValue = this.getFieldValue(property) ?? '';
       this.handleEditProperty({
         event,
         property,
@@ -317,20 +320,26 @@ class TableRow extends PureComponent {
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      updatePropertyValue({
-        property,
-        value: valueBeforeEditing,
-        tabId,
-        rowId,
-        isModal: modalVisible,
-        entity,
-        tableId,
-      });
-      event.stopPropagation();
+      // Object-valued (Lookup/List) cells: their widget owns the value (it
+      // restores or commits it itself), and the row's remembered value can be
+      // the editor's raw text (Enter) - writing it back would clobber the
+      // {key,caption} object. Just close the editor; the stored value shows.
+      if (!this.isObjectValuedWidget(property)) {
+        updatePropertyValue({
+          property,
+          value: valueBeforeEditing,
+          tabId,
+          rowId,
+          isModal: modalVisible,
+          entity,
+          tableId,
+        });
 
-      // reset the field value to the previous one, so that we won't
-      // overwrite it
-      event.target.value = valueBeforeEditing;
+        // reset the field value to the previous one, so that we won't
+        // overwrite it
+        event.target.value = valueBeforeEditing;
+      }
+      event.stopPropagation();
 
       // we need to store the active cell to focus it after deactivating widget
       const activeCellElement = activeCell;
@@ -412,6 +421,15 @@ class TableRow extends PureComponent {
     const isEditable = typeof readonly !== undefined ? !readonly : true;
     if (isEditable) {
       if (this.state.edited === property && event) event.persist();
+
+      // Entering edit mode on a cell: remember its STORED value so Escape can
+      // restore it. Display text is no substitute: it is locale-formatted
+      // ("10,00" in de_DE), which an <input type="number"> rejects as "".
+      if (property && this.state.edited !== property) {
+        this.setState({
+          valueBeforeEditing: this.getFieldValue(property) ?? '',
+        });
+      }
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
