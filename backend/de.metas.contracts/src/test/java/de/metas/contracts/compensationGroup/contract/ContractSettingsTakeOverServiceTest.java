@@ -7,7 +7,6 @@ import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
@@ -58,7 +57,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-/** The take-over: drop-ship detection, the per-take-over nominal percentage sum, and the merge into / append to the schema's compensation lines. */
+/** The take-over: drop-ship detection, the per-take-over nominal percentage sum, and the append of its own line to the schema's compensation lines. */
 class ContractSettingsTakeOverServiceTest
 {
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
@@ -78,7 +77,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		settingsRepository = new ContractCompensationGroupSettingsRepository();
-		service = new ContractSettingsTakeOverService(new ContractSettingsTakeOverRepository(), OrderGroupRepository.newInstanceForUnitTesting(), new GroupCompensationLineCreateRequestFactory());
+		service = new ContractSettingsTakeOverService(new ContractSettingsTakeOverRepository(), OrderGroupRepository.newInstanceForUnitTesting());
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -213,31 +212,25 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
-	void applyToSchema_mergesIntoThePercentDiscountLineOfTheSameCategory()
+	void applyToSchema_keepsThePercentDiscountLineOfTheSameCategoryAndAppendsAnOwnLine()
 	{
-		final ProductId vendorBonusId = product("Bonus Vendor", null, null);
+		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", null, null))
+				.toBuilder()
+				.description("3% Bonus Vendor")
+				.build();
 
-		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(schemaLine(Percent.of(3), CATEGORY_ID, vendorBonusId));
-
-		assertThat(lines).containsExactly(GroupTemplateCompensationLine.builder()
-				.productId(vendorBonusId)
-				.percentage(Percent.of(6))
-				.appliesToProductCategoryId(CATEGORY_ID)
-				.description("3% Bonus Vendor + 3% Bonus Ware")
-				.build());
+		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
 	}
 
 	@Test
-	void applyToSchema_mergesIntoALineWhoseTemplateTypeOverridesASurchargeProduct()
+	void applyToSchema_appendsAnOwnLineWhenTheOnlyLineOfTheCategoryIsARevenueBreakLine()
 	{
-		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, null))
+		final GroupTemplateCompensationLine revenueBreakLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", null, null))
 				.toBuilder()
-				.compensationType(GroupCompensationType.Discount)
+				.groupMatcher(group -> false)
 				.build();
 
-		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(vendorLine);
-
-		assertThat(lines).extracting(GroupTemplateCompensationLine::getPercentage).containsExactly(Percent.of(6));
+		assertThat(applyBonusWareTakeOverOf3PercentTo(revenueBreakLine)).containsExactly(revenueBreakLine, expectedOwnLine());
 	}
 
 	@Test
@@ -278,27 +271,6 @@ class ContractSettingsTakeOverServiceTest
 		final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Fixed Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_PriceAndQty));
 
 		assertThat(applyBonusWareTakeOverOf3PercentTo(vendorLine)).containsExactly(vendorLine, expectedOwnLine());
-	}
-
-	@Test
-	void applyToSchema_mergesIntoTheFirstPercentDiscountLineOfTheCategoryOnly()
-	{
-		final ProductId vendorBonusId = product("Bonus Vendor", null, null);
-		final GroupTemplateCompensationLine otherCategoryLine = schemaLine(Percent.of(1), OTHER_CATEGORY_ID, vendorBonusId);
-		final GroupTemplateCompensationLine noPercentageLine = schemaLine(null, CATEGORY_ID, vendorBonusId);
-		final GroupTemplateCompensationLine surchargeLine = schemaLine(Percent.of(3), CATEGORY_ID, product("Surcharge Vendor", X_C_OrderLine.GROUPCOMPENSATIONTYPE_Surcharge, null));
-		final GroupTemplateCompensationLine firstPercentDiscountLine = schemaLine(Percent.of(3), CATEGORY_ID, vendorBonusId);
-		final GroupTemplateCompensationLine laterPercentDiscountLine = schemaLine(Percent.of(5), CATEGORY_ID, vendorBonusId);
-
-		final List<GroupTemplateCompensationLine> lines = applyBonusWareTakeOverOf3PercentTo(
-				otherCategoryLine, noPercentageLine, surchargeLine, firstPercentDiscountLine, laterPercentDiscountLine);
-
-		assertThat(lines).containsExactly(
-				otherCategoryLine,
-				noPercentageLine,
-				surchargeLine,
-				firstPercentDiscountLine.toBuilder().percentage(Percent.of(6)).description("3% Bonus Vendor + 3% Bonus Ware").build(),
-				laterPercentDiscountLine);
 	}
 
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */

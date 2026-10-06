@@ -11,7 +11,6 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 /*
@@ -56,10 +54,9 @@ public class ContractSettingsTakeOverService
 {
 	@NonNull private final ContractSettingsTakeOverRepository takeOverRepository;
 	@NonNull private final OrderGroupRepository orderGroupRepository;
-	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
-	/** @return the schema with each matching take-over merged into, or appended to, its compensation lines; the given schema when nothing is taken over */
+	/** @return the schema with one own compensation line appended per matching take-over, the vendor's lines unchanged; the given schema when nothing is taken over */
 	public GroupTemplate applyToSchema(
 			@NonNull final GroupTemplate schema,
 			@NonNull final OrderDropShipInfo order,
@@ -72,7 +69,7 @@ public class ContractSettingsTakeOverService
 		}
 
 		final List<GroupTemplateCompensationLine> lines = new ArrayList<>(schema.getCompensationLines());
-		matches.forEach(match -> mergeOrAppend(lines, match));
+		matches.forEach(match -> appendOwnLine(lines, match));
 
 		return schema.toBuilder()
 				.clearCompensationLines()
@@ -80,51 +77,19 @@ public class ContractSettingsTakeOverService
 				.build();
 	}
 
-	/** Merges into the first percentage discount line on the take-over's category (nominal sum: 3% + 3% is one 6% line), else appends an own line. */
-	private void mergeOrAppend(
+	private void appendOwnLine(
 			@NonNull final List<GroupTemplateCompensationLine> lines,
 			@NonNull final ContractSettingsTakeOverMatch match)
 	{
-		final ProductCategoryId categoryId = match.getTakeOver().getProductCategoryId();
-		for (final ListIterator<GroupTemplateCompensationLine> it = lines.listIterator(); it.hasNext(); )
-		{
-			final GroupTemplateCompensationLine line = it.next();
-			final Percent linePercent = line.getPercentage();
-			if (linePercent != null && categoryId.equals(line.getAppliesToProductCategoryId()) && isPercentDiscountLine(line))
-			{
-				it.set(line.toBuilder()
-						.percentage(linePercent.add(match.getSummedPercent()))
-						.description(createMergedLineDescription(linePercent, line.getProductId(), match))
-						.build());
-				return;
-			}
-		}
-
 		final ContractSettingsTakeOver takeOver = match.getTakeOver();
 		lines.add(GroupTemplateCompensationLine.builder()
 				.productId(takeOver.getOwnLineProductId())
 				.compensationType(GroupCompensationType.Discount)
 				.percentage(match.getSummedPercent())
-				.appliesToProductCategoryId(categoryId)
+				.appliesToProductCategoryId(takeOver.getProductCategoryId())
 				.ownBase(true)
 				.description(createOwnLineDescription(match))
 				.build());
-	}
-
-	/** A line whose product makes it a surcharge or a non-percentage discount would compute 0%, losing the taken-over percentage. */
-	private boolean isPercentDiscountLine(@NonNull final GroupTemplateCompensationLine line)
-	{
-		return compensationLineCreateRequestFactory.isPercentDiscountLine(line.getCompensationType(), line.getProductId());
-	}
-
-	/** e.g. {@code "3% Bonus Vendor + 3% Bonus Ware"} */
-	private String createMergedLineDescription(
-			@NonNull final Percent linePercent,
-			@NonNull final ProductId lineProductId,
-			@NonNull final ContractSettingsTakeOverMatch match)
-	{
-		return formatPercent(linePercent) + " " + productBL.getProductName(lineProductId)
-				+ " + " + createOwnLineDescription(match);
 	}
 
 	/** e.g. {@code "3% Bonus Ware"} */
