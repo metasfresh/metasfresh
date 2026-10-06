@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -18,7 +19,6 @@ import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -35,13 +35,13 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.MutableInt;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -379,7 +379,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	@Nullable
-	private static HUPIItemProductId extractPIItemProductId(@NonNull final I_C_OrderLine orderLine)
+	public static HUPIItemProductId extractPIItemProductId(@NonNull final I_C_OrderLine orderLine)
 	{
 		final de.metas.interfaces.I_C_OrderLine orderLineWithPacking = InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class);
 		return HUPIItemProductId.ofRepoIdOrNull(orderLineWithPacking.getM_HU_PI_Item_Product_ID());
@@ -390,7 +390,7 @@ public class OrderGroupRepository implements GroupRepository
 	 * of the regular lines' packing instructions. A line without packing instruction (or a virtual one) has no entry.
 	 * The provider is looked up lazily because this repository is also created with {@code new}.
 	 */
-	private ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
+	public ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
 			final List<I_C_OrderLine> groupOrderLines)
 	{
 		final ImmutableSet<HUPIItemProductId> piItemProductIds = groupOrderLines.stream()
