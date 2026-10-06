@@ -75,6 +75,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.exceptions.UserMessagePresentation;
+import de.metas.process.ProcessPreconditionsResolution;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -428,7 +430,35 @@ public class PaymentsViewAllocateCommandTest
 						final AdempiereException adempiereException = (AdempiereException)ex;
 						assertThat(adempiereException.isUserValidationError()).isTrue();
 						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
+						// shown as a message to the user, not as a "Server error" toast
+						assertThat(adempiereException.getUserMessagePresentation()).isEqualTo(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 					});
+		}
+
+		/** The allocate action is not offered while a bonus is above what the customer pays; the user sees why. */
+		@Test
+		public void allocatePreconditions_withPaymentBonusAboveTheOpenAmount_rejectedWithTheReason()
+		{
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).build();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(2))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+					.paymentRow(paymentRow)
+					.invoiceRow(invoiceRow)
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.build();
+
+			final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+			assertThat(resolution.isRejected()).isTrue();
+			assertThat(resolution.isInternal()).isFalse();
+			assertThat(resolution.getRejectReason().getDefaultValue()).contains(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
 		}
 
 		/** The discount is not paid either: open 100.00 - discount 3.00 leaves 97.00, a bonus of 99.00 would make the payment negative. */

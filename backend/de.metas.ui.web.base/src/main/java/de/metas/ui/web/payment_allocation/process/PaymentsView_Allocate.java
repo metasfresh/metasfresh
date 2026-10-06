@@ -1,8 +1,11 @@
 package de.metas.ui.web.payment_allocation.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -31,7 +34,26 @@ public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implem
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final PaymentAllocationResult result = newPaymentsViewAllocateCommand().dryRun().orElse(null);
+		return checkPreconditions(newPaymentsViewAllocateCommand());
+	}
+
+	@VisibleForTesting
+	static ProcessPreconditionsResolution checkPreconditions(@NonNull final PaymentsViewAllocateCommand command)
+	{
+		final PaymentAllocationResult result;
+		try
+		{
+			result = command.dryRun().orElse(null);
+		}
+		catch (final AdempiereException ex)
+		{
+			if (!ex.isUserValidationError())
+			{
+				throw ex;
+			}
+			// e.g. a payment bonus above what the customer pays: the user sees why the action is not offered
+			return ProcessPreconditionsResolution.reject(AdempiereException.extractMessageTrl(ex));
+		}
 		if (result == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("invalid");
