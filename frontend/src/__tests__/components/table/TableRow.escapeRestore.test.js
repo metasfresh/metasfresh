@@ -169,4 +169,50 @@ describe('TableRow — Escape restores the stored value, not the displayed text'
     });
     expect(escapeEvent.target.value).toBe(TYPED_TEXT);
   });
+
+  it.each([
+    ['text (LongText)', 'PriceLimitNote', 'Nicht erzwungen', 'typed text'],
+    ['date', 'DateOrdered', '22.01.2020', '01.01.2030'],
+  ])(
+    '%s cell: double-click, then Escape -> the stored value is restored, not the display text',
+    (_label, property, displayedText, typedValue) => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = shallow(
+        <TableRow {...createInitProps({ updatePropertyValue })} />
+      );
+      const instance = wrapper.instance();
+      instance.setState({ activeCell: { focus: jest.fn() } });
+      const storedValue = instance.getFieldValue(property);
+
+      doubleClickCell(instance, property, displayedText);
+      const escapeEvent = pressEscape(instance, property, typedValue);
+
+      const writes = updatePropertyValue.mock.calls
+        .map((args) => args[0])
+        .filter((p) => p.property === property);
+      expect(writes).toHaveLength(1);
+      expect(writes[0].value).toBe(storedValue);
+      expect(escapeEvent.target.value).toBe(storedValue);
+    }
+  );
+
+  it('attribute (ProductAttributes) cell: Escape writes back the stored {key,caption}, never text', () => {
+    const property = 'M_AttributeSetInstance_ID';
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+    instance.setState({ activeCell: { focus: jest.fn() } });
+    const storedValue = instance.getFieldValue(property);
+
+    doubleClickCell(instance, property, '---');
+    pressEscape(instance, property, '');
+
+    const writes = updatePropertyValue.mock.calls
+      .map((args) => args[0])
+      .filter((p) => p.property === property);
+    expect(writes).toHaveLength(1);
+    expect(writes[0].value).toEqual(storedValue);
+  });
 });

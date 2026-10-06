@@ -405,6 +405,14 @@
     line-height: 26px;
   }
 
+  /* label chips keep their own size, vertically centred in that box (not stretched to 26px) */
+  .table-cell-label-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    line-height: normal;
+  }
+
   .input-primary,
   .input-secondary,
   .input-dropdown-container {
