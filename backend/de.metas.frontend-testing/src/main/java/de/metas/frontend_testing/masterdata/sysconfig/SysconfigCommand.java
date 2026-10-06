@@ -18,7 +18,7 @@ import java.util.Map;
 @Builder
 public class SysconfigCommand
 {
-	// Effective values after all migrations on a standard DB.
+	// Values on a freshly migrated DB, not the per-script seeds (e.g. mode.manual.enabled is seeded N, migrated to Y).
 	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.<String, String>builder()
 			.put("mobileui.frontend.barcodeScanner.inputText.debounceMillis", "300")
 			.put("mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis", "15000")
@@ -36,7 +36,7 @@ public class SysconfigCommand
 	@Nullable private final Map<String, String> sysconfigs;
 
 	/**
-	 * @return map from sysconfig name to its previous (effective) value, captured before any write
+	 * @return map from sysconfig name to its previous value, captured before any write
 	 */
 	public ImmutableMap<String, String> execute()
 	{
