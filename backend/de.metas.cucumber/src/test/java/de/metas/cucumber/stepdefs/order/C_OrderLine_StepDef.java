@@ -444,6 +444,8 @@ public class C_OrderLine_StepDef
 	 * and {@code OPT.C_Flatrate_Term_ID.Identifier} (asserts the {@code C_Flatrate_Term_ID} of the line's OWN
 	 * compensation group — resolved via the line itself, so it also works for an auto-created, e.g.
 	 * contract-triggered, group that was never registered under its own identifier).
+	 * {@code OPT.GroupCompensation_Product_Category_ID} (identifier of an {@code M_Product_Category}, or {@code null} for none)
+	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart.
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -465,11 +467,16 @@ public class C_OrderLine_StepDef
 
 					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
-					//dev-note: we assume the tests are not using the same product on different lines
-					final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
+					//dev-note: we assume the tests are not using the same product on different lines, unless they tell them apart by OPT.GroupCompensation_Product_Category_ID
+					final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
-							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
+							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered);
+					row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
+							.ifPresent(categoryIdentifier -> orderLineQueryBuilder.addEqualsFilter(
+									I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID,
+									categoryIdentifier.isNullPlaceholder() ? null : productCategoryTable.getId(categoryIdentifier)));
+					final I_C_OrderLine orderLineRecord = orderLineQueryBuilder
 							.create()
 							.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -879,7 +886,7 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensation_Product_Category_ID (identifier-ref to an M_Product_Category))</li>
+	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensation_Product_Category_ID (identifier-ref to an M_Product_Category; {@code null} asserts none))</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -915,8 +922,9 @@ public class C_OrderLine_StepDef
 				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
 
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
-				.map(productCategoryTable::getId)
-				.ifPresent(categoryId -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID()).as("GroupCompensation_Product_Category_ID").isEqualTo(categoryId.getRepoId()));
+				.ifPresent(categoryIdentifier -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID())
+						.as("GroupCompensation_Product_Category_ID")
+						.isEqualTo(categoryIdentifier.isNullPlaceholder() ? 0 : productCategoryTable.getId(categoryIdentifier).getRepoId()));
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
