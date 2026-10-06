@@ -41,6 +41,15 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.inputText.debounceMillis", "300")
 			.put("mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis", "15000")
 			.put("mobileui.frontend.barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan", "10")
+			// Reset the scanner-mode knobs too — barcode_scanner_modes.spec.js flips them per test (manual-first,
+			// camera off, input readOnly=Y …), and without a reset they leak into every later spec in the run.
+			// Defaults match the seed migration 5807640_sysconfig_barcodeScanner_modes.sql.
+			.put("mobileui.frontend.barcodeScanner.mode.hardware.enabled", "Y")
+			.put("mobileui.frontend.barcodeScanner.mode.camera.enabled", "Y")
+			.put("mobileui.frontend.barcodeScanner.mode.manual.enabled", "N")
+			.put("mobileui.frontend.barcodeScanner.defaultMode", "hardware")
+			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly", "N")
+			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode", "none")
 			.build();
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
