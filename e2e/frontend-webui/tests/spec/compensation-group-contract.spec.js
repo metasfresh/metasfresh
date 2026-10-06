@@ -929,7 +929,7 @@ async function createTransition(page, name, fiscalYear, { allowCancellation = fa
 /**
  * Schema (with its lines), settings (listing the standard sales order doc type) and completed conditions of
  * type compensation group. Percentages are typed with a decimal point, because a decimal comma is dropped
- * by the number fields (https://github.com/metasfresh/mf15/issues/4507).
+ * by the number fields (known WebUI behaviour).
  * @returns the id of the conditions
  */
 async function createConditions(page, { schemaName, goodsCategoryId, additive, lines, transitionId, name }) {
