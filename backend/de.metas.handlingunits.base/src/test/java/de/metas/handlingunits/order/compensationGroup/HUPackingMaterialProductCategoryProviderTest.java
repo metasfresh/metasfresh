@@ -14,7 +14,6 @@ import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,6 +102,52 @@ class HUPackingMaterialProductCategoryProviderTest
 		assertThat(provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(pipId))).doesNotContainKey(pipId);
 	}
 
+	@Test
+	void twoPIPs_categoriesNotMixedUp()
+	{
+		final ProductCategoryId root = category("root", null);
+		final ProductCategoryId carton = category("carton", root);
+		final ProductCategoryId foil = category("foil", null);
+
+		final I_M_HU_PI_Item_Product pipA = pip();
+		addPackingMaterialItem(pipA, product(carton), true);
+		final I_M_HU_PI_Item_Product pipB = pip();
+		addPackingMaterialItem(pipB, product(foil), true);
+
+		final HUPIItemProductId idA = HUPIItemProductId.ofRepoId(pipA.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idB = HUPIItemProductId.ofRepoId(pipB.getM_HU_PI_Item_Product_ID());
+		final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result = provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(idA, idB));
+
+		assertThat(result.get(idA)).containsExactlyInAnyOrder(root, carton).doesNotContain(foil);
+		assertThat(result.get(idB)).containsExactly(foil).doesNotContain(carton);
+	}
+
+	@Test
+	void mixedRegularAndVirtual_onlyRegularHasEntry()
+	{
+		final ProductCategoryId carton = category("carton", null);
+		final I_M_HU_PI_Item_Product pip = pip();
+		addPackingMaterialItem(pip, product(carton), true);
+
+		final HUPIItemProductId pipId = HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID());
+		final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result = provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(pipId, HUPIItemProductId.VIRTUAL_HU));
+
+		assertThat(result.get(pipId)).containsExactly(carton);
+		assertThat(result).doesNotContainKey(HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	@Test
+	void inactivePackingMaterial_ignored()
+	{
+		final ProductCategoryId carton = category("carton", null);
+		final I_M_HU_PI_Item_Product pip = pip();
+		addPackingMaterialItem(pip, product(carton), true, false);
+
+		final HUPIItemProductId pipId = HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID());
+
+		assertThat(provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(pipId))).doesNotContainKey(pipId);
+	}
+
 	private ProductCategoryId category(final String name, final ProductCategoryId parentId)
 	{
 		final I_M_Product_Category record = newInstance(I_M_Product_Category.class);
@@ -121,10 +166,13 @@ class HUPackingMaterialProductCategoryProviderTest
 		return record;
 	}
 
+	private int nextPIVersionId = 1;
+
+	/** Each packing instruction gets its own PI version, so its packing-material items are not shared with other instructions. */
 	private I_M_HU_PI_Item_Product pip()
 	{
 		final I_M_HU_PI_Item materialItem = newInstance(I_M_HU_PI_Item.class);
-		materialItem.setM_HU_PI_Version_ID(1);
+		materialItem.setM_HU_PI_Version_ID(nextPIVersionId++);
 		materialItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
 		saveRecord(materialItem);
 
@@ -136,8 +184,14 @@ class HUPackingMaterialProductCategoryProviderTest
 
 	private void addPackingMaterialItem(final I_M_HU_PI_Item_Product pip, final I_M_Product product, final boolean active)
 	{
+		addPackingMaterialItem(pip, product, active, true);
+	}
+
+	private void addPackingMaterialItem(final I_M_HU_PI_Item_Product pip, final I_M_Product product, final boolean itemActive, final boolean packingMaterialActive)
+	{
 		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName("pm");
+		packingMaterial.setIsActive(packingMaterialActive);
 		if (product != null)
 		{
 			packingMaterial.setM_Product_ID(product.getM_Product_ID());
@@ -148,7 +202,7 @@ class HUPackingMaterialProductCategoryProviderTest
 		item.setM_HU_PI_Version_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version_ID());
 		item.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		item.setM_HU_PackingMaterial_ID(packingMaterial.getM_HU_PackingMaterial_ID());
-		item.setIsActive(active);
+		item.setIsActive(itemActive);
 		saveRecord(item);
 	}
 }
