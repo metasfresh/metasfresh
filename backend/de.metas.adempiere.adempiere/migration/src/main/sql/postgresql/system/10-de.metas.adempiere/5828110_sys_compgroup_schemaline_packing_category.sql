@@ -10,7 +10,7 @@
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                         ColumnName, EntityType, Name, PrintName, Description, Help)
 VALUES (585519 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-06 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'M_Product_Category_PackingMaterial_ID', 'D', 'Packmittel-Kategorie', 'Packmittel-Kategorie',
+        'M_Product_Category_PackingMaterial_ID', 'de.metas.order', 'Packmittel-Kategorie', 'Packmittel-Kategorie',
         'Leer = alle Zeilen. Wenn gesetzt, zählen nur Auftragszeilen, deren Packvorschrift ein Packmittel mit einem Produkt in dieser Kategorie (inkl. Unterkategorien) hat.',
         'Es zählt die Packvorschrift der Auftragszeile, auch für jede Teilrechnung. Bei einem Auftrag im Entwurf wirkt eine geänderte Packvorschrift erst bei der nächsten Änderung des Zeilenbetrags.');
 
@@ -40,7 +40,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsEncrypted, IsSelectionColumn,
                        IsAllowLogging, PersonalDataCategory)
 VALUES (593712 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-06 09:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-06 09:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        0, 'D', 'M_Product_Category_PackingMaterial_ID', 540941, 585519, 18, 540153,
+        0, 'de.metas.order', 'M_Product_Category_PackingMaterial_ID', 540941, 585519, 18, 540153,
         10, 'Packmittel-Kategorie',
         'Leer = alle Zeilen. Wenn gesetzt, zählen nur Auftragszeilen, deren Packvorschrift ein Packmittel mit einem Produkt in dieser Kategorie (inkl. Unterkategorien) hat.',
         'N', 'Y', 'N', NULL,
