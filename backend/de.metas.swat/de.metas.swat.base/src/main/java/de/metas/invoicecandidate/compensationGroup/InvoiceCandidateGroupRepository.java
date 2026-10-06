@@ -250,7 +250,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
 				.appliesToProductCategoryId(origin.getAppliesToProductCategoryId())
-				.takeOverId(origin.getTakeOverId())
+				.ownBase(origin.isOwnBase())
 				.build();
 	}
 

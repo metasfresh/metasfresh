@@ -1,9 +1,5 @@
 package de.metas.invoicecandidate.compensationGroup;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import de.metas.contracts.compensationGroup.contract.ContractSettingsTakeOverId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
@@ -14,11 +10,12 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateLineId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.compensationGroup.ContractSettingsTakeOverCategoryProvider;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -32,10 +29,7 @@ import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -64,15 +58,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 /**
- * An invoice candidate whose order line is an own take-over line (no schema line, but a take-over record id)
- * resolves its applies-to product category from the take-over record; a schema-backed line keeps the schema line's category.
+ * An invoice candidate whose order line has its own base (no schema line, the category stored in {@code C_OrderLine.GroupCompensation_Product_Category_ID})
+ * takes its applies-to product category from that order line column; a schema-backed line keeps the schema line's category.
  */
 class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 {
-	private static final ContractSettingsTakeOverId TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540123);
-	private static final ProductCategoryId TAKE_OVER_CATEGORY_ID = ProductCategoryId.ofRepoId(777);
-	/** a take-over record on the goods candidate's own category */
-	private static final ContractSettingsTakeOverId GOODS_TAKE_OVER_ID = ContractSettingsTakeOverId.ofRepoId(540124);
+	private static final ProductCategoryId OWN_BASE_CATEGORY_ID = ProductCategoryId.ofRepoId(777);
 
 	private UomId uomId;
 	private ProductId discountProductId;
@@ -80,12 +71,14 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 	private GroupId groupId;
 	private InvoiceCandidateGroupRepository repo;
 	private ProductCategoryId goodsCategoryId;
-	private final List<Set<ContractSettingsTakeOverId>> takeOverCategoryProviderCalls = new ArrayList<>();
+	private IQueryBL queryBLSpy;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBLSpy = Mockito.spy(Services.get(IQueryBL.class));
+		Services.registerService(IQueryBL.class, queryBLSpy); // before any repository picks up IQueryBL
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -120,64 +113,56 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		goodsIc.setNetAmtToInvoice(new BigDecimal("1000"));
 		saveRecord(goodsIc);
 
-		final ImmutableMap<ContractSettingsTakeOverId, ProductCategoryId> categoryIdsByTakeOverId = ImmutableMap.of(
-				TAKE_OVER_ID, TAKE_OVER_CATEGORY_ID,
-				GOODS_TAKE_OVER_ID, goodsCategoryId);
-		final ContractSettingsTakeOverCategoryProvider provider = takeOverIds -> {
-			takeOverCategoryProviderCalls.add(ImmutableSet.copyOf(takeOverIds));
-			return ImmutableMap.copyOf(Maps.filterKeys(categoryIdsByTakeOverId, takeOverIds::contains));
-		};
 		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
 				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
 				Optional.empty(),
-				new GroupTemplateRepository(Optional.empty()),
-				Optional.of(provider));
+				new GroupTemplateRepository(Optional.empty()));
 		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class), orderGroupRepository);
 	}
 
 	@Test
-	void ownTakeOverLine_resolvesCategoryFromTakeOverRecord()
+	void ownBaseLine_takesCategoryFromOrderLine()
 	{
-		createDiscountCandidate(null, TAKE_OVER_ID);
+		createDiscountCandidate(null, OWN_BASE_CATEGORY_ID);
 
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines()).hasSize(1);
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId())
-				.isEqualTo(TAKE_OVER_CATEGORY_ID);
+				.isEqualTo(OWN_BASE_CATEGORY_ID);
 	}
 
 	@Test
-	void severalOwnTakeOverLines_resolveCategoriesWithOneProviderCall()
+	void severalOwnBaseLines_readTheirOrderLinesWithOneQuery()
 	{
-		createDiscountCandidate(null, TAKE_OVER_ID);
-		createDiscountCandidate(null, GOODS_TAKE_OVER_ID);
+		createDiscountCandidate(null, OWN_BASE_CATEGORY_ID);
+		createDiscountCandidate(null, goodsCategoryId);
+		Mockito.clearInvocations(queryBLSpy);
 
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines())
 				.extracting(GroupCompensationLine::getAppliesToProductCategoryId)
-				.containsExactlyInAnyOrder(TAKE_OVER_CATEGORY_ID, goodsCategoryId);
-		assertThat(takeOverCategoryProviderCalls).containsExactly(ImmutableSet.of(TAKE_OVER_ID, GOODS_TAKE_OVER_ID));
+				.containsExactlyInAnyOrder(OWN_BASE_CATEGORY_ID, goodsCategoryId);
+		Mockito.verify(queryBLSpy, Mockito.times(1)).createQueryBuilder(I_C_OrderLine.class);
 	}
 
 	@Test
-	void ownTakeOverLine_carriesTakeOverId()
+	void ownBaseLine_hasOwnBase()
 	{
-		createDiscountCandidate(null, TAKE_OVER_ID);
+		createDiscountCandidate(null, OWN_BASE_CATEGORY_ID);
 
 		final Group group = repo.retrieveGroup(groupId);
 
-		assertThat(group.getCompensationLines().get(0).getTakeOverId()).isEqualTo(TAKE_OVER_ID);
-		assertThat(group.getCompensationLines().get(0).isTakeOverOwnLine()).isTrue();
+		assertThat(group.getCompensationLines().get(0).hasOwnBase()).isTrue();
 	}
 
 	/**
-	 * The group has no schema, so it is not additive (compounding); still the own take-over line is computed on its category's
+	 * The group has no schema, so it is not additive (compounding); still the own-base line is computed on its category's
 	 * full base (1000), not on the base reduced by the preceding fixed-amount line on the same category (1000 - 50).
 	 */
 	@Test
-	void ownTakeOverLine_notAdditiveGroup_onFullBase_notCompoundedWithFixedAmountLine()
+	void ownBaseLine_notAdditiveGroup_onFullBase_notCompoundedWithFixedAmountLine()
 	{
 		final I_C_Invoice_Candidate fixedAmountIc = createDiscountCandidate(null, null);
 		fixedAmountIc.setLine(10);
@@ -193,7 +178,7 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		fixedAmountOrderLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
 		saveRecord(fixedAmountOrderLine);
 
-		final I_C_Invoice_Candidate ownLineIc = createDiscountCandidate(null, GOODS_TAKE_OVER_ID);
+		final I_C_Invoice_Candidate ownLineIc = createDiscountCandidate(null, goodsCategoryId);
 		ownLineIc.setLine(20);
 		ownLineIc.setGroupCompensationPercentage(new BigDecimal("3"));
 		saveRecord(ownLineIc);
@@ -215,16 +200,17 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		schemaLine.setM_Product_Category_ID(888);
 		schemaLine.setM_Product_ID(discountProductId.getRepoId());
 		saveRecord(schemaLine);
-		createDiscountCandidate(GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()), TAKE_OVER_ID);
+		createDiscountCandidate(GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()), null);
 
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId())
 				.isEqualTo(ProductCategoryId.ofRepoId(888));
+		assertThat(group.getCompensationLines().get(0).hasOwnBase()).isFalse();
 	}
 
 	@Test
-	void ownLine_withoutTakeOverId_hasNoCategory()
+	void lineWithoutSchemaLineAndWithoutStoredCategory_hasNoCategory()
 	{
 		createDiscountCandidate(null, null);
 
@@ -233,7 +219,7 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId()).isNull();
 	}
 
-	private I_C_Invoice_Candidate createDiscountCandidate(@Nullable final GroupTemplateLineId schemaLineId, @Nullable final ContractSettingsTakeOverId takeOverId)
+	private I_C_Invoice_Candidate createDiscountCandidate(@Nullable final GroupTemplateLineId schemaLineId, @Nullable final ProductCategoryId ownBaseCategoryId)
 	{
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
@@ -242,7 +228,7 @@ class InvoiceCandidateGroupRepositoryTakeOverCategoryTest
 		orderLine.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		orderLine.setIsGroupCompensationLine(true);
 		orderLine.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(schemaLineId));
-		orderLine.setC_CompensationGroup_ContractSettings_TakeOver_ID(ContractSettingsTakeOverId.toRepoId(takeOverId));
+		orderLine.setGroupCompensation_Product_Category_ID(ProductCategoryId.toRepoId(ownBaseCategoryId));
 		saveRecord(orderLine);
 
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
