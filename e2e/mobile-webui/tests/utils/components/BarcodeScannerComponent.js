@@ -16,6 +16,14 @@ const dispatchScanKeystrokes = async (chunk) => {
     }, chunk);
 };
 
+// Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') as one keydown/keyup on document.
+const dispatchScanTerminator = async (key) => {
+    await page.evaluate((k) => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+        document.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
+    }, key);
+};
+
 export const BarcodeScannerComponent = {
     waitToAttach: async ({ testId }) => await test.step(`${NAME} - Wait for input element to attach  (${testId})`, async () => {
         let selector = '#input-text';
@@ -105,10 +113,7 @@ export const BarcodeScannerComponent = {
         // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
         // hook recognises as "scan finished", force-completing the buffer immediately.
         if (terminator) {
-            await page.evaluate((key) => {
-                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
-                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
-            }, terminator);
+            await dispatchScanTerminator(terminator);
         }
     }),
 
@@ -267,10 +272,7 @@ export const BarcodeScannerComponent = {
 
     // Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') on its own, e.g. after typePartial().
     typeTerminator: async (key) => await test.step(`${NAME} - Type end-of-scan key ${key}`, async () => {
-        await page.evaluate((k) => {
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
-            document.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
-        }, key);
+        await dispatchScanTerminator(key);
     }),
 
     // The visible scan prompt shows "scanning…" (and hides its idle caption) while a hardware scan is
@@ -287,8 +289,9 @@ export const BarcodeScannerComponent = {
         }
     }),
 
-    // A keyboard scan must never be written into the off-screen input (each write costs a style recalc +
-    // layout on the handheld); the scan lives in the reader's buffer only.
+    // Guards handheld scan speed: a keyboard scan must never be written into the off-screen input (each
+    // write costs a style recalc + layout per character on the handheld); the scan lives in the reader's
+    // buffer only.
     expectHardwareInputEmpty: async () => await test.step(`${NAME} - Expect hardware input empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('', { timeout: FAST_ACTION_TIMEOUT });
     }),

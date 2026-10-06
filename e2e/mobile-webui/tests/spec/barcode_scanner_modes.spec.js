@@ -500,13 +500,13 @@ test.describe('Scan in progress indicator', () => {
 
         const masterdata = await huManagerInHardwareMode();
         const qrCode = masterdata.handlingUnits.HU1.qrCode;
-        const half = Math.floor(qrCode.length / 2);
+        const splitAt = 20; // inside the JSON payload, so the first part is an incomplete (still streaming) HU QR code
 
-        await BarcodeScannerComponent.typePartial(qrCode.substring(0, half));
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, splitAt));
         await BarcodeScannerComponent.expectScanInProgressShown(true);
         await BarcodeScannerComponent.expectHardwareInputEmpty();
 
-        await BarcodeScannerComponent.typePartial(qrCode.substring(half));
+        await BarcodeScannerComponent.typePartial(qrCode.substring(splitAt));
         await HUManagerScreen.waitForHUInfoPanel();
         await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     });
