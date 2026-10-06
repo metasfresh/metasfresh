@@ -31,6 +31,10 @@ WHERE AD_Element_ID = 585520
   AND AD_Language = 'en_US'
 ;
 
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585520, 'de_DE')
+;
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585520, 'de_CH')
+;
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585520, 'en_US')
 ;
 
