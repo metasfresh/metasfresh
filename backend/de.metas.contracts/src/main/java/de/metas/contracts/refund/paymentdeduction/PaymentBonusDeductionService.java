@@ -8,7 +8,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.BonusRecipient;
 import de.metas.contracts.refund.RefundConfig;
-import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractRepository;
@@ -35,12 +34,12 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
@@ -145,19 +144,8 @@ public class PaymentBonusDeductionService
 
 			final List<RefundConfig> configs = contract.getRefundConfigs();
 			final RefundConfig config = RefundConfigs.smallestMinQty(configs); // the bonus at payment is a flat percentage; there are no quantity scales
-			if (!RefundBase.PERCENTAGE.equals(config.getRefundBase()))
-			{
-				throw new AdempiereException("A refund that is deducted at payment needs a percentage base")
-						.appendParametersToMessage()
-						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID());
-			}
-			final ProductId bonusProductId = RefundConfigs.extractRefundProductId(configs);
-			if (bonusProductId == null)
-			{
-				throw new AdempiereException("A refund that is deducted at payment needs a bonus product")
-						.appendParametersToMessage()
-						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID());
-			}
+			RefundConfigs.assertDeductedAtPaymentIsComputable(config); // validated when the config is saved
+			final ProductId bonusProductId = Check.assumeNotNull(config.getBonusProductId(), "bonus product of {}", config);
 
 			final ProductId termProductId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
 			final Money baseNetAmt = lines.stream()

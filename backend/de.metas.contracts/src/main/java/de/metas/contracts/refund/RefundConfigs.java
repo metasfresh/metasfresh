@@ -2,6 +2,7 @@ package de.metas.contracts.refund;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
@@ -54,6 +55,8 @@ public class RefundConfigs
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
@@ -103,6 +106,21 @@ public class RefundConfigs
 		if (refundConfig.getProductId() == null && refundConfig.getBonusProductId() == null)
 		{
 			throw new AdempiereException(MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is a percentage of the net goods value, booked on the bonus product with its VAT on top.
+	 */
+	public void assertDeductedAtPaymentIsComputable(@NonNull final RefundConfig refundConfig)
+	{
+		if (!refundConfig.isDeductedAtPayment())
+		{
+			return;
+		}
+		if (!RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase()) || refundConfig.getBonusProductId() == null)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT).markAsUserValidationError();
 		}
 	}
 

@@ -127,6 +127,19 @@ public class RefundContractRepository
 	}
 
 	/**
+	 * @return {@code true} if there is any completed (or already closed) contract with the given conditions
+	 */
+	public boolean hasCompletedContracts(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed, X_C_Flatrate_Term.DOCSTATUS_Closed)
+				.create()
+				.anyMatch();
+	}
+
+	/**
 	 * @return the ids of all refund terms of the query's invoice partner or shipment partner (whether a term really applies depends on its bonus recipient, see {@link #getByQuery(RefundContractQuery)});
 	 *         a term with the queried product comes before a term without product.
 	 */

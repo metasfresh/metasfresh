@@ -2,10 +2,13 @@ package de.metas.contracts.refund.interceptor;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
+import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,7 +38,8 @@ public class C_Flatrate_RefundConfig_Test
 		AdempiereTestHelper.get().init();
 		saveRecord(newInstance(I_C_UOM.class));
 
-		interceptor = new C_Flatrate_RefundConfig(new RefundConfigRepository(new InvoiceScheduleRepository()));
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		interceptor = new C_Flatrate_RefundConfig(refundConfigRepository, new RefundContractRepository(refundConfigRepository));
 
 		conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -161,6 +165,85 @@ public class C_Flatrate_RefundConfig_Test
 		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
 		config.setM_Product_Category_ID(50);
 		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
+	}
+
+	/** A bonus that the customer deducts at payment is a percentage of the net goods value, booked on the bonus product. */
+	@Test
+	public void assertValid_deductedAtPayment_withPercentageAndBonusProduct_isValid()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setIsDeductedAtPayment(true);
+		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
+	}
+
+	/** A product is enough for a refund line of the refund engine, but not for the bonus at payment: it is booked on a bonus product. */
+	@Test
+	public void assertValid_deductedAtPayment_withoutBonusProduct_fails()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(30, 0, 0);
+		config.setIsDeductedAtPayment(true);
+		assertThatThrownBy(() -> interceptor.assertValid(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT.toAD_Message());
+				});
+	}
+
+	/** The bonus at payment is computed as a percentage; an amount per quantity has no base when paying. */
+	@Test
+	public void assertValid_deductedAtPayment_withAmountBase_fails()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setIsDeductedAtPayment(true);
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		config.setRefundAmt(BigDecimal.ONE);
+		config.setC_Currency_ID(102);
+		assertThatThrownBy(() -> interceptor.assertValid(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT.toAD_Message()));
+	}
+
+	/** Without completed contracts, the condition is still being set up: the flag can be changed. */
+	@Test
+	public void assertDeductedAtPaymentNotChanged_withoutCompletedContracts_isValid()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		createTerm(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+
+		config.setIsDeductedAtPayment(true);
+		assertThatCode(() -> interceptor.assertDeductedAtPaymentNotChanged(config)).doesNotThrowAnyException();
+	}
+
+	/**
+	 * With completed contracts, the refund engine already created refund candidates (or the customer already deducted bonuses at payment) under the old setting;
+	 * changing it would refund the same sales twice, or not at all.
+	 */
+	@Test
+	public void assertDeductedAtPaymentNotChanged_withCompletedContract_fails()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		createTerm(X_C_Flatrate_Term.DOCSTATUS_Completed);
+
+		config.setIsDeductedAtPayment(true);
+		assertThatThrownBy(() -> interceptor.assertDeductedAtPaymentNotChanged(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE.toAD_Message());
+				});
+	}
+
+	private void createTerm(final String docStatus)
+	{
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		term.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		term.setDocStatus(docStatus);
+		term.setProcessed(X_C_Flatrate_Term.DOCSTATUS_Completed.equals(docStatus));
+		saveRecord(term);
 	}
 
 	private I_C_Flatrate_RefundConfig createConfig(final int productId, final int categoryId, final int bonusProductId)

@@ -9,6 +9,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
+import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,10 +54,14 @@ import lombok.NonNull;
 public class C_Flatrate_RefundConfig
 {
 	private final RefundConfigRepository refundConfigRepository;
+	private final RefundContractRepository refundContractRepository;
 
-	public C_Flatrate_RefundConfig(@NonNull final RefundConfigRepository refundConfigRepository)
+	public C_Flatrate_RefundConfig(
+			@NonNull final RefundConfigRepository refundConfigRepository,
+			@NonNull final RefundContractRepository refundContractRepository)
 	{
 		this.refundConfigRepository = refundConfigRepository;
+		this.refundContractRepository = refundContractRepository;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
@@ -87,6 +93,7 @@ public class C_Flatrate_RefundConfig
 
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
 		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
+		RefundConfigs.assertDeductedAtPaymentIsComputable(newRefundConfig);
 
 		if (!configRecord.isActive())
 		{
@@ -103,5 +110,21 @@ public class C_Flatrate_RefundConfig
 		allRefundConfigs.add(newRefundConfig);
 
 		RefundConfigs.assertValid(allRefundConfigs);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment)
+	public void assertDeductedAtPaymentNotChanged(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(configRecord.getC_Flatrate_Conditions_ID());
+		if (conditionsId == null)
+		{
+			return;
+		}
+
+		// the completed contracts already have refund candidates, or bonuses deducted at payment, under the current setting
+		if (refundContractRepository.hasCompletedContracts(conditionsId))
+		{
+			throw new AdempiereException(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE).markAsUserValidationError();
+		}
 	}
 }
