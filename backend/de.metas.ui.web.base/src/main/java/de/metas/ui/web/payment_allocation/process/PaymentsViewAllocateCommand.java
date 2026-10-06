@@ -40,6 +40,8 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -62,6 +64,7 @@ public class PaymentsViewAllocateCommand
 {
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private final PaymentBonusCreditMemoService paymentBonusCreditMemoService;
 
 	private final ImmutableList<PaymentRow> paymentRows;
 	private final ImmutableList<InvoiceRow> invoiceRows;
@@ -73,6 +76,7 @@ public class PaymentsViewAllocateCommand
 	private PaymentsViewAllocateCommand(
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
+			@NonNull final PaymentBonusCreditMemoService paymentBonusCreditMemoService,
 			//
 			@NonNull @Singular final ImmutableList<PaymentRow> paymentRows,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
@@ -82,6 +86,7 @@ public class PaymentsViewAllocateCommand
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+		this.paymentBonusCreditMemoService = paymentBonusCreditMemoService;
 
 		this.paymentRows = paymentRows;
 		this.invoiceRows = invoiceRows;
@@ -134,6 +139,7 @@ public class PaymentsViewAllocateCommand
 
 		return PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.paymentBonusCreditMemoService(paymentBonusCreditMemoService)
 				//
 				.defaultDateTrx(defaultDateTrx)
 				.paymentDocuments(paymentDocuments)
@@ -193,7 +199,13 @@ public class PaymentsViewAllocateCommand
 				: Money.zero(currencyId);
 		final WriteOffType writeOffType = bankFeeAmt.signum() != 0 ? WriteOffType.BankFee : WriteOffType.WriteOff;
 
-		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		// Bonus that the customer deducted when paying: the amount in the row wins over the computed one
+		@Nullable final PaymentBonusDeduction paymentBonusDeduction = extractPaymentBonusDeduction(row, moneyService);
+		final Money paymentBonus = paymentBonusDeduction != null
+				? paymentBonusDeduction.getGrossAmount()
+				: Money.zero(currencyId);
+
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt).subtract(paymentBonus);
 
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
@@ -209,15 +221,37 @@ public class PaymentsViewAllocateCommand
 										   .discountAmt(discountAmt)
 										   .writeOffAmt(bankFeeAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .paymentBonus(paymentBonus)
 										   .build()
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.date(row.getDateInvoiced())
 				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
 				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.writeOffType(writeOffType)
 				.build();
+	}
+
+	@Nullable
+	private static PaymentBonusDeduction extractPaymentBonusDeduction(@NonNull final InvoiceRow row, @NonNull final MoneyService moneyService)
+	{
+		@Nullable final Amount paymentBonusAmt = row.getPaymentBonusAmt();
+		if (paymentBonusAmt == null || paymentBonusAmt.isZero())
+		{
+			return null;
+		}
+
+		final PaymentBonusDeduction computedDeduction = row.getPaymentBonusDeduction();
+		if (computedDeduction == null)
+		{
+			throw new AdempiereException("The customer has no bonus to deduct when paying this invoice")
+					.appendParametersToMessage()
+					.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+					.setParameter("C_Invoice.DocumentNo", row.getDocumentNo());
+		}
+		return computedDeduction.withGrossAmount(moneyService.toMoney(paymentBonusAmt));
 	}
 
 	private static InvoiceProcessingContext extractInvoiceProcessingContext(

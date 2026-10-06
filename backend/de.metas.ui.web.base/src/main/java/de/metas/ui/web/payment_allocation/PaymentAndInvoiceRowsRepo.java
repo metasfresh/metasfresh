@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.PaymentToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.refund.paymentdeduction.PaymentBonusDeductionService;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -40,6 +41,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -68,16 +70,19 @@ public class PaymentAndInvoiceRowsRepo
 	private final PaymentAllocationRepository paymentAllocationRepo;
 	private final LookupDataSource bpartnersLookup;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService;
+	private final PaymentBonusDeductionService paymentBonusDeductionService;
 
 	public PaymentAndInvoiceRowsRepo(
 			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final PaymentAllocationRepository paymentAllocationRepo,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService,
+			@NonNull final PaymentBonusDeductionService paymentBonusDeductionService,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.currenciesRepo = currenciesRepo;
 		this.paymentAllocationRepo = paymentAllocationRepo;
 		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
+		this.paymentBonusDeductionService = paymentBonusDeductionService;
 		this.bpartnersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
@@ -230,6 +235,7 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
 		final Optional<Amount> serviceFeeAmount = computeServiceFee(invoiceToAllocate, loadingContext).map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax);
+		final PaymentBonusDeduction paymentBonusDeduction = computePaymentBonusDeduction(invoiceToAllocate).orElse(null);
 
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -246,8 +252,20 @@ public class PaymentAndInvoiceRowsRepo
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
 				.serviceFeeAmt(serviceFeeAmount.orElse(null))
+				.paymentBonusAmt(paymentBonusDeduction != null ? paymentBonusDeduction.getGrossAmount().toAmount(currenciesRepo::getCurrencyCodeById) : null)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	/**
+	 * @return the bonus that the customer may deduct when paying the given sales invoice
+	 */
+	private Optional<PaymentBonusDeduction> computePaymentBonusDeduction(@NonNull final InvoiceToAllocate invoiceToAllocate)
+	{
+		return invoiceToAllocate.getDocBaseType().isSales()
+				? paymentBonusDeductionService.computeForInvoice(invoiceToAllocate.getInvoiceId())
+				: Optional.empty();
 	}
 
 	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(

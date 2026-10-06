@@ -60,6 +60,14 @@ public class InvoiceRowReducers
 				final Amount serviceFeeAmt = Amount.of(serviceFeeAmtBD, currencyCode);
 				rowBuilder.serviceFeeAmt(serviceFeeAmt);
 			}
+			else if (InvoiceRow.FIELD_PaymentBonusAmt.contentEquals(fieldName))
+			{
+				final BigDecimal paymentBonusAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
+
+				final CurrencyCode currencyCode = row.getCurrencyCode();
+				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
+				rowBuilder.paymentBonusAmt(paymentBonusAmt);
+			}
 			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
 			{
 				final BigDecimal bankFeeAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);

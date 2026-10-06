@@ -44,6 +44,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -101,6 +102,10 @@ public class PaymentBonusDeductionService
 		if (!invoice.isSOTrx() || invoiceBL.isCreditMemo(invoice))
 		{
 			return Optional.empty(); // the customer deducts a bonus when paying a sales invoice
+		}
+		if (!refundContractRepository.hasAnyRefundContract(TimeUtil.asLocalDate(invoice.getDateInvoiced())))
+		{
+			return Optional.empty(); // the usual case, cached: no refund contracts at all
 		}
 		if (creditMemoService.isCreditMemoAlreadyGenerated(invoiceId))
 		{
