@@ -8,6 +8,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,6 +43,21 @@ public class RefundConfigsTest
 
 	private static RefundConfig config(@Nullable final Integer productId, @Nullable final Integer bonusProductId, final int minQty, @Nullable final BonusRecipient bonusRecipient)
 	{
+		return config(productId, bonusProductId, minQty, bonusRecipient, null);
+	}
+
+	private static RefundConfig configOfCategory(@Nullable final Integer productCategoryId, final int minQty)
+	{
+		return config(null, 1, minQty, null, productCategoryId);
+	}
+
+	private static RefundConfig config(
+			@Nullable final Integer productId,
+			@Nullable final Integer bonusProductId,
+			final int minQty,
+			@Nullable final BonusRecipient bonusRecipient,
+			@Nullable final Integer productCategoryId)
+	{
 		return RefundConfig.builder()
 				.conditionsId(ConditionsId.ofRepoId(20))
 				.invoiceSchedule(INVOICE_SCHEDULE)
@@ -53,6 +69,7 @@ public class RefundConfigsTest
 				.productId(productId == null ? null : ProductId.ofRepoId(productId))
 				.bonusProductId(bonusProductId == null ? null : ProductId.ofRepoId(bonusProductId))
 				.bonusRecipient(bonusRecipient)
+				.productCategoryId(productCategoryId == null ? null : ProductCategoryId.ofRepoId(productCategoryId))
 				.build();
 	}
 
@@ -132,6 +149,37 @@ public class RefundConfigsTest
 					final AdempiereException adempiereException = (AdempiereException)ex;
 					assertThat(adempiereException.isUserValidationError()).isTrue();
 					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT.toAD_Message());
+				});
+	}
+
+	/** The engine picks a config by quantity only, so the lines of one condition share one base category. */
+	@Test
+	public void assertValid_configsWithTheSameProductCategory_isValid()
+	{
+		RefundConfigs.assertValid(ImmutableList.of(configOfCategory(7, 0), configOfCategory(7, 10)));
+		RefundConfigs.assertValid(ImmutableList.of(configOfCategory(null, 0), configOfCategory(null, 10)));
+	}
+
+	@Test
+	public void assertValid_configsWithDifferentProductCategories_fails()
+	{
+		assertSameProductCategoryError(ImmutableList.of(configOfCategory(7, 0), configOfCategory(8, 10)));
+	}
+
+	@Test
+	public void assertValid_configWithAndConfigWithoutProductCategory_fails()
+	{
+		assertSameProductCategoryError(ImmutableList.of(configOfCategory(7, 0), configOfCategory(null, 10)));
+	}
+
+	private static void assertSameProductCategoryError(final ImmutableList<RefundConfig> configs)
+	{
+		assertThatThrownBy(() -> RefundConfigs.assertValid(configs))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY.toAD_Message());
 				});
 	}
 }

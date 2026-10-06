@@ -82,6 +82,32 @@ public class C_Flatrate_RefundConfig_Test
 				});
 	}
 
+	/** A second line of the condition with another product category: the engine would book on an arbitrary line's percentage. */
+	@Test
+	public void assertValid_secondLineWithAnotherProductCategory_fails()
+	{
+		createConfig(0, 40, 41);
+		assertThatThrownBy(() -> interceptor.assertValid(createConfig(0, 50, 41)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY.toAD_Message()));
+	}
+
+	@Test
+	public void assertValid_secondLineWithTheSameProductCategory_isValid()
+	{
+		createConfig(0, 40, 41);
+		assertThatCode(() -> interceptor.assertValid(createConfig(0, 40, 41))).doesNotThrowAnyException();
+	}
+
+	/** The record's own stored state must not count against its new state, or the category of a condition's only line could never be changed. */
+	@Test
+	public void assertValid_changingTheProductCategoryOfTheOnlyLine_isValid()
+	{
+		final I_C_Flatrate_RefundConfig config = createConfig(0, 40, 41);
+		config.setM_Product_Category_ID(50);
+		assertThatCode(() -> interceptor.assertValid(config)).doesNotThrowAnyException();
+	}
+
 	private I_C_Flatrate_RefundConfig createConfig(final int productId, final int categoryId, final int bonusProductId)
 	{
 		final I_C_Flatrate_RefundConfig config = newInstance(I_C_Flatrate_RefundConfig.class);
