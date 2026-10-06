@@ -286,7 +286,9 @@ public class OrderGroupRepository implements GroupRepository
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableMap<GroupId, I_C_Order_CompensationGroup> groupRecordsById = retrieveGroupRecordsById(allOrderLines);
+		final ImmutableMap<GroupId, I_C_Order_CompensationGroup> groupRecordsById = retrieveGroupRecordsById(orderLinesOfEachGroup.stream()
+				.map(OrderGroupRepository::extractSingleGroupId)
+				.collect(ImmutableSet.toImmutableSet()));
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(allOrderLines);
 		final Map<OrderLineId, ProductCategoryId> appliesToProductCategoryIdsByOrderLineId = retrieveAppliesToProductCategoryIds(allOrderLines.stream()
 				.filter(I_C_OrderLine::isGroupCompensationLine)
@@ -335,14 +337,12 @@ public class OrderGroupRepository implements GroupRepository
 		return groups.build();
 	}
 
-	private ImmutableMap<GroupId, I_C_Order_CompensationGroup> retrieveGroupRecordsById(@NonNull final List<I_C_OrderLine> orderLines)
+	private ImmutableMap<GroupId, I_C_Order_CompensationGroup> retrieveGroupRecordsById(@NonNull final Set<GroupId> groupIds)
 	{
-		final ImmutableSet<Integer> groupRecordIds = orderLines.stream()
-				.map(I_C_OrderLine::getC_Order_CompensationGroup_ID)
-				.collect(ImmutableSet.toImmutableSet());
-
 		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupRecordIds)
+				.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupIds.stream()
+						.map(GroupId::getOrderCompensationGroupId)
+						.collect(ImmutableSet.toImmutableSet()))
 				.create()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
