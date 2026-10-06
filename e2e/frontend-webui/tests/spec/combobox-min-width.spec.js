@@ -67,7 +67,7 @@ async function dragResizeAsNarrowAsPossible(page, fieldName) {
 }
 
 async function seedOrderLineGrid(page) {
-  const masterdata = await createMasterdata('en_US');
+  const masterdata = await createMasterdata();
 
   await LoginPage.goto();
   await LoginPage.login(masterdata.login.user);
