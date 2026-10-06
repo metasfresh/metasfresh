@@ -55,6 +55,7 @@ import lombok.NonNull;
 @Callout(I_C_Flatrate_RefundConfig.class)
 public class C_Flatrate_RefundConfig
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final RefundConfigRepository refundConfigRepository;
 	private final RefundContractRepository refundContractRepository;
 
@@ -144,7 +145,7 @@ public class C_Flatrate_RefundConfig
 			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID })
 	public void resetCachesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
-		Services.get(ITrxManager.class)
+		trxManager
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerHandlingMethod(trx -> refundContractRepository.resetCaches());
