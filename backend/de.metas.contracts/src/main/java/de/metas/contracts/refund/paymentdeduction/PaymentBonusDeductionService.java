@@ -17,6 +17,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.service.IInvoiceBL;
@@ -61,6 +62,7 @@ import java.util.Optional;
  * A term applies to an invoice line if its partner is the line's bonus recipient (the invoice partner, or the partner that the line's order was shipped to),
  * if the line's product matches the term's product and base category (including sub-categories), and if the line passes the term's packaging filter.
  * The bonus is the term's percentage of the net value of the matching lines, booked on the term's bonus product; the VAT of the bonus product comes on top.
+ * It is deducted once per invoice: there is none if the invoice already has a payment bonus credit memo.
  */
 @Service
 public class PaymentBonusDeductionService
@@ -76,15 +78,18 @@ public class PaymentBonusDeductionService
 	private final RefundContractRepository refundContractRepository;
 	private final RefundPackagingFilter refundPackagingFilter;
 	private final PaymentBonusTaxProvider taxProvider;
+	private final PaymentBonusCreditMemoService creditMemoService;
 
 	public PaymentBonusDeductionService(
 			@NonNull final RefundContractRepository refundContractRepository,
 			@NonNull final RefundPackagingFilter refundPackagingFilter,
-			@NonNull final PaymentBonusTaxProvider taxProvider)
+			@NonNull final PaymentBonusTaxProvider taxProvider,
+			@NonNull final PaymentBonusCreditMemoService creditMemoService)
 	{
 		this.refundContractRepository = refundContractRepository;
 		this.refundPackagingFilter = refundPackagingFilter;
 		this.taxProvider = taxProvider;
+		this.creditMemoService = creditMemoService;
 	}
 
 	/**
@@ -96,6 +101,10 @@ public class PaymentBonusDeductionService
 		if (!invoice.isSOTrx() || invoiceBL.isCreditMemo(invoice))
 		{
 			return Optional.empty(); // the customer deducts a bonus when paying a sales invoice
+		}
+		if (creditMemoService.isCreditMemoAlreadyGenerated(invoiceId))
+		{
+			return Optional.empty(); // once per invoice; e.g. the second allocation of a partially paid invoice deducts nothing
 		}
 
 		final BPartnerId customerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());

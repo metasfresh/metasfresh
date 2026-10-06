@@ -15,7 +15,9 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.money.CurrencyId;
@@ -90,7 +92,8 @@ class PaymentBonusDeductionServiceTest
 		service = new PaymentBonusDeductionService(
 				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
 				new RefundPackagingFilter(Optional.empty()),
-				(salesInvoice, bonusProductId) -> BONUS_TAX);
+				(salesInvoice, bonusProductId) -> BONUS_TAX,
+				new PaymentBonusCreditMemoService());
 
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
@@ -220,6 +223,28 @@ class PaymentBonusDeductionServiceTest
 		saveRecord(term);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
+
+		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
+	}
+
+	/** The customer deducts the bonus once per invoice; a partial payment's second allocation does not deduct it again. */
+	@Test
+	void creditMemoAlreadyGenerated_noDeduction()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+
+		final I_C_DocType creditMemoDocType = newInstance(I_C_DocType.class);
+		creditMemoDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
+		creditMemoDocType.setDocSubType(X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo);
+		creditMemoDocType.setIsSOTrx(true);
+		saveRecord(creditMemoDocType);
+		final I_C_Invoice creditMemo = newInstance(I_C_Invoice.class);
+		creditMemo.setC_DocTypeTarget_ID(creditMemoDocType.getC_DocType_ID());
+		creditMemo.setRef_Invoice_ID(invoiceId.getRepoId());
+		creditMemo.setDocStatus(DocStatus.Completed.getCode());
+		saveRecord(creditMemo);
 
 		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
 	}
