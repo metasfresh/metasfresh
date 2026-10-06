@@ -214,6 +214,23 @@ public class InvoiceRow implements IViewRow
 				.build();
 	}
 
+	/**
+	 * @return what the customer pays for the invoice: the open amount minus the discount and the fees. The payment bonus cannot be more.
+	 */
+	public Amount getMaxPaymentBonusAmt()
+	{
+		Amount maxPaymentBonusAmt = openAmt.subtract(discountAmt);
+		if (serviceFeeAmt != null)
+		{
+			maxPaymentBonusAmt = maxPaymentBonusAmt.subtract(serviceFeeAmt);
+		}
+		if (bankFeeAmt != null)
+		{
+			maxPaymentBonusAmt = maxPaymentBonusAmt.subtract(bankFeeAmt);
+		}
+		return maxPaymentBonusAmt;
+	}
+
 	static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)
 	{
 		return DocumentId.of(invoiceId);

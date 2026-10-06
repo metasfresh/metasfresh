@@ -5,6 +5,13 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.ITranslatableString;
+import org.compiere.util.Env;
+import lombok.NonNull;
+import de.metas.util.Services;
+import de.metas.i18n.impl.PlainMsgBL;
+import de.metas.i18n.MessageFormatter;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
@@ -113,7 +120,7 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("7", "2.60");
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("2.00", EUR), null);
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("2.00", EUR), Amount.of("100", EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.00", EUR));
 		assertThat(values.getPaymentBonusNote()).isNull();
@@ -125,7 +132,7 @@ class PaymentBonusRowValuesTest
 	{
 		final PaymentBonusDeduction deduction = deduction("19", "10.00"); // 0.02 net -> 0.00 VAT, 0.03 net -> 0.01 VAT: 0.03 gross cannot be reached
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR), null);
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("0.03", EUR), Amount.of("100", EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isNotEqualByComparingTo(Amount.of("0.03", EUR));
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(deduction.withGrossAmount(Money.of(new BigDecimal("0.03"), EUR_ID)).getGrossAmount().toAmount(currencyId -> EUR));
@@ -138,16 +145,53 @@ class PaymentBonusRowValuesTest
 	{
 		final ITranslatableString note = TranslatableStrings.anyLanguage("could not be computed");
 
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(null, Amount.of("2.00", EUR), note);
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(null, Amount.of("2.00", EUR), Amount.of("100", EUR), note);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.00", EUR));
 		assertThat(values.getPaymentBonusNote()).isSameAs(note);
 	}
 
+	/** Entering an amount above what the customer pays: the row tells why it cannot be booked, like the pre-fill does. */
+	@Test
+	void entered_aboveWhatTheCustomerPays_keepsTheReason()
+	{
+		final PaymentBonusDeduction deduction = deduction("7", "2.60");
+
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction, Amount.of("3.00", EUR), Amount.of("2.00", EUR), TranslatableStrings.anyLanguage("not pre-filled"));
+
+		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("3.00", EUR));
+		assertThat(values.getPaymentBonusNote()).isNotNull();
+		assertThat(values.getPaymentBonusNote().getDefaultValue()).contains("PaymentBonusNotPrefilledAboveOpenAmt");
+	}
+
+	/**
+	 * The amounts in the notes are formatted for the user's language (e.g. with a decimal comma in German), like in every message whose parameters are amounts.
+	 * The test formats the message like {@code Msg} does, with {@link MessageFormatter}.
+	 */
+	@Test
+	void notes_formatTheAmountsForTheLanguage()
+	{
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Language, "de_DE");
+		Services.registerService(IMsgBL.class, new PlainMsgBL()
+		{
+			@Override
+			public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
+			{
+				return TranslatableStrings.constant(MessageFormatter.format("{0} / {1}", msgParameters));
+			}
+		});
+
+		final PaymentBonusRowValues prefilled = PaymentBonusRowValues.prefill(deduction("7", "2.60"), EUR, Amount.of("2", EUR), null, null);
+		assertThat(prefilled.getPaymentBonusNote().getDefaultValue()).contains("2,78").contains("2,00").doesNotContain("2.78");
+
+		final PaymentBonusRowValues adjusted = PaymentBonusRowValues.entered(deduction("19", "10.00"), Amount.of("0.03", EUR), Amount.of("100", EUR), null);
+		assertThat(adjusted.getPaymentBonusNote().getDefaultValue()).contains("0,03").doesNotContain("0.03");
+	}
+
 	@Test
 	void entered_zero_noNote()
 	{
-		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR), null);
+		final PaymentBonusRowValues values = PaymentBonusRowValues.entered(deduction("7", "2.60"), Amount.zero(EUR), Amount.of("100", EUR), null);
 
 		assertThat(values.getPaymentBonusAmt()).isEqualByComparingTo(Amount.zero(EUR));
 		assertThat(values.getPaymentBonusNote()).isNull();

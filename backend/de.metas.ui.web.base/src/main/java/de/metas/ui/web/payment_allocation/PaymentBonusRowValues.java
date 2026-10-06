@@ -23,7 +23,8 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class PaymentBonusRowValues
 {
-	private static final AdMessageKey MSG_NOT_PREFILLED_ABOVE_OPEN_AMT = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotPrefilledAboveOpenAmt");
+	/** short, so that it fits the column; the amounts are formatted for the user's language */
+	private static final AdMessageKey MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotPrefilledAboveOpenAmt");
 	private static final AdMessageKey MSG_NOT_COMPUTED = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNotComputed");
 	private static final AdMessageKey MSG_OTHER_CURRENCY = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusOtherCurrency");
 	private static final AdMessageKey MSG_ADJUSTED = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusAdjusted");
@@ -76,7 +77,7 @@ public class PaymentBonusRowValues
 			return builder()
 					.paymentBonusAmt(Amount.zero(openAmt.getCurrencyCode()))
 					.paymentBonusDeduction(deduction) // a smaller amount can still be entered
-					.paymentBonusNote(msg(MSG_NOT_PREFILLED_ABOVE_OPEN_AMT, format(grossAmt), format(maxBonusAmt)))
+					.paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, grossAmt, maxBonusAmt))
 					.build();
 		}
 
@@ -97,9 +98,15 @@ public class PaymentBonusRowValues
 	}
 
 	/**
-	 * @return the amount that the user entered, or, if it cannot be booked exactly because of the rounding of the VAT, the closest amount that can, with a note
+	 * @param maxBonusAmt what the customer pays for the invoice (open amount minus discount and fees)
+	 * @return the amount that the user entered, or, if it cannot be booked exactly because of the rounding of the VAT, the closest amount that can, with a note.
+	 *         An amount above what the customer pays gets the note why it cannot be booked.
 	 */
-	public static PaymentBonusRowValues entered(@Nullable final PaymentBonusDeduction deduction, @NonNull final Amount enteredAmt, @Nullable final ITranslatableString currentNote)
+	public static PaymentBonusRowValues entered(
+			@Nullable final PaymentBonusDeduction deduction,
+			@NonNull final Amount enteredAmt,
+			@NonNull final Amount maxBonusAmt,
+			@Nullable final ITranslatableString currentNote)
 	{
 		final PaymentBonusRowValues entered = builder()
 				.paymentBonusAmt(enteredAmt)
@@ -114,6 +121,11 @@ public class PaymentBonusRowValues
 		{
 			return entered; // nothing to adjust; a negative amount is rejected when allocating
 		}
+		if (enteredAmt.compareTo(maxBonusAmt) > 0)
+		{
+			// rejected when allocating; the note says why right away
+			return entered.toBuilder().paymentBonusNote(msg(MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS, enteredAmt, maxBonusAmt)).build();
+		}
 
 		final Money bookedGrossAmt = deduction.withGrossAmount(Money.of(enteredAmt.toBigDecimal(), deduction.getCurrencyId())).getGrossAmount();
 		final Amount bookedAmt = toAmount(bookedGrossAmt, enteredAmt.getCurrencyCode());
@@ -124,7 +136,7 @@ public class PaymentBonusRowValues
 
 		return entered.toBuilder()
 				.paymentBonusAmt(bookedAmt)
-				.paymentBonusNote(msg(MSG_ADJUSTED, format(enteredAmt), format(bookedAmt)))
+				.paymentBonusNote(msg(MSG_ADJUSTED, enteredAmt, bookedAmt))
 				.build();
 	}
 
@@ -132,11 +144,6 @@ public class PaymentBonusRowValues
 	private static Amount toAmount(@NonNull final Money money, @NonNull final CurrencyCode currencyCode)
 	{
 		return Amount.of(money.toBigDecimal(), currencyCode);
-	}
-
-	private static String format(@NonNull final Amount amount)
-	{
-		return amount.toBigDecimal().toPlainString() + " " + amount.getCurrencyCode().toThreeLetterCode();
 	}
 
 	private static ITranslatableString msg(@NonNull final AdMessageKey key, @NonNull final Object... params)
