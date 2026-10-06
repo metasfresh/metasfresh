@@ -17,12 +17,12 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
  * the combobox width floor did NOT break the two pre-existing column-sizing invariants:
  *
  * - AC19 (TC9): manual drag-resize still works and PERSISTS across a reload, above the floor
- *   the only new lower bound is the combobox ~210px clamp; a non-combobox column still clamps
+ *   the only new lower bound is the combobox 90px clamp; a non-combobox column still clamps
  *   at the flat 50px floor.
  * - AC20 (TC10): the WidgetSize S/M/L(/XL/XXL) `td-*` size-class bands still render within their
  *   configured pixel ranges for non-combobox columns.
  *
- * The extreme-clamp mechanics themselves (combobox ~210px / non-combobox 50px, plus the
+ * The extreme-clamp mechanics themselves (combobox 90px / non-combobox 50px, plus the
  * open-editor-no-overlap check) are already exercised in depth by `combobox-min-width.spec.js`
  * — this spec's clamp assertions are a light, non-duplicated re-affirmation alongside the
  * genuinely new coverage here: persistence across a reload, and the size-class bands.
@@ -37,7 +37,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 const COMBOBOX_FIELD = 'M_Product_ID';
 const NON_COMBOBOX_FIELD = 'QtyEntered';
 const SECOND_BAND_FIELD = 'Description'; // a LongText-family widget on this grid -> a wider td-* band than QtyEntered
-const COMBOBOX_MIN_WIDTH_PX = 210;
+const COMBOBOX_MIN_WIDTH_PX = 90;
 const FLAT_MIN_WIDTH_PX = 50;
 
 // `td-*` band pixel ranges as defined in `table.scss` (`:249-284`) — asserted here as fixed
@@ -104,7 +104,7 @@ test.describe('Column-invariant regression guard', () => {
    (not merely visible immediately after the drag).
 2. Above the floor, both a combobox and a non-combobox column still resize freely; at the
    extreme the non-combobox column clamps at the flat 50px floor and the combobox column at
-   ~210px — the only new lower bound introduced by this milestone.
+   90px — the only new lower bound introduced by this milestone.
     `);
 
     test.setTimeout(120000);
@@ -161,7 +161,7 @@ test.describe('Column-invariant regression guard', () => {
       ).toBeLessThanOrEqual(FLAT_MIN_WIDTH_PX + 5);
     });
 
-    await test.step('At the extreme, the combobox column still clamps at ~210px (the only new lower bound)', async () => {
+    await test.step('At the extreme, the combobox column still clamps at 90px (the only new lower bound)', async () => {
       await dragColumn(page, COMBOBOX_FIELD, -600);
 
       const clampedBox = await page.getByTestId(`column-${COMBOBOX_FIELD}`).boundingBox();
@@ -169,7 +169,7 @@ test.describe('Column-invariant regression guard', () => {
 
       expect(
         clampedBox.width,
-        `combobox column must clamp at ~${COMBOBOX_MIN_WIDTH_PX}px, not the flat ${FLAT_MIN_WIDTH_PX}px floor`
+        `combobox column must clamp at ${COMBOBOX_MIN_WIDTH_PX}px, not the flat ${FLAT_MIN_WIDTH_PX}px floor`
       ).toBeGreaterThanOrEqual(COMBOBOX_MIN_WIDTH_PX - 5);
     });
   });
