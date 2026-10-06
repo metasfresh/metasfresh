@@ -20,9 +20,10 @@ import TableRow from '../../../components/table/TableRow';
  *
  * Concrete failure pinned here: a letter (or Space) on a ProductAttributes
  * cell that is the active cell (selectedCell set) sets `edited` to the
- * attribute property AND calls clearValue() on it. The fix mirrors the Tab/Enter isAttributeWidget
- * guard: skip the raw-text edit path for attribute widgets. Scalar cells still
- * activate on a printable key (regression control below).
+ * attribute property AND calls clearValue() on it. The fix mirrors the
+ * Tab/Enter isAttributeWidget guard: skip the raw-text edit path for
+ * attribute widgets. Scalar cells still activate on a letter key
+ * (regression control below).
  */
 
 const ATTR_PROPERTY = 'M_AttributeSetInstance_ID'; // fixture: ProductAttributes, object-valued

@@ -8,17 +8,16 @@ import TableRow from '../../../components/table/TableRow';
 
 /**
  * Type-to-activate gate: the default branch of TableRow.handleKeyDown must
- * decide "is this a printable single character?" from event.key, not from
+ * decide "is this a single letter or digit?" from event.key, not from
  * String.fromCharCode(event.keyCode).
  *
  * Concrete failure pinned here: numpad-0 (keyCode 96) maps via
- * String.fromCharCode to a backtick, which fails the `[a-zA-Z0-9]` gate, so
- * activation never happens. Main-row-0 (keyCode 48) happens to map to the
- * character "0" and activates today. Both must activate identically since
- * both press produce the same event.key ("0"). A non-printable key (Enter,
- * ArrowDown, an F-key) must NOT activate the cell — event.key for those is a
- * multi-character name, so the printable-single-char gate must keep
- * rejecting them.
+ * String.fromCharCode to a backtick, which the old keyCode-based letter/digit
+ * gate rejected, so activation never happened. Main-row-0 (keyCode 48) maps
+ * to "0" and activated. Both must activate identically since both produce
+ * the same event.key ("0"). A non-printable key (Enter, ArrowDown, an F-key)
+ * must NOT activate the cell — event.key for those is a multi-character
+ * name, which the single letter/digit gate rejects.
  *
  * Activation is observed the same way TableRow itself models it: the row's
  * `edited` state is set to the property name (see handleEditProperty ->
