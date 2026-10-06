@@ -295,6 +295,63 @@ Feature: Bonus that the customer deducts when paying an invoice
 
   # ##############################################################################################
   # ##############################################################################################
+  # One payment for two invoices, each with its bonus
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC8
+  Scenario: One payment for two invoices deducts the bonus of each invoice, booked with a credit memo per invoice
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the second invoice: 5 x 10.00 goods (7 %); GrandTotal = 50.00 + 3.50 = 53.50
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice2   | customerBP    | Ausgangsrechnung        | 2026-07-16   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine2 | invoice2     | goodsProduct | 5 PCE       |
+    And the invoice identified by invoice2 is completed
+
+    # bonus of the first invoice: 2.60 + 0.18 VAT = 2.78; of the second: 2.6 % of 50.00 = 1.30 + 0.09 VAT = 1.39
+    # the customer pays (166.50 - 2.78) + (53.50 - 1.39) = 163.72 + 52.11 = 215.83
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 215.83 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo1          |
+      | invoice2     |              | bonusCreditMemo2          |
+
+    Then validate created invoices
+      | C_Invoice_ID     | GrandTotal | DocSubType | IsPaid |
+      | invoice          | 166.50 EUR |            | true   |
+      | invoice2         | 53.50 EUR  |            | true   |
+      | bonusCreditMemo1 | 2.78 EUR   | PB         | true   |
+      | bonusCreditMemo2 | 1.39 EUR   | PB         | true   |
+    And validate created invoice lines
+      | C_Invoice_ID     | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID |
+      | bonusCreditMemo1 | bonusWare    | 1           | 2.60       | lowTax   |
+      | bonusCreditMemo2 | bonusWare    | 1           | 1.30       | lowTax   |
+    And validate payments
+      | C_Payment_ID | IsAllocated |
+      | payment      | true        |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
   # The customer deducts another amount than computed
   # ##############################################################################################
   # ##############################################################################################
