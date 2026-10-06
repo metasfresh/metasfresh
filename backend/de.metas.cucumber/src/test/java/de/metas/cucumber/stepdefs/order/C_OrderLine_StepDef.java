@@ -158,6 +158,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
+	@NonNull private final C_CompensationGroup_CalibrationRule_StepDefData calibrationRuleTable;
 
 	/**
 	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
@@ -174,6 +175,7 @@ public class C_OrderLine_StepDef
 	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -203,6 +205,11 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(ruleIdentifier -> ruleIdentifier.lookupNotNullIn(calibrationRuleTable))
+				.ifPresent(rule -> orderLine.setC_CompensationGroup_CalibrationRule_ID(rule.getC_CompensationGroup_CalibrationRule_ID()));
 
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 				.map(partnerTable::getId)
