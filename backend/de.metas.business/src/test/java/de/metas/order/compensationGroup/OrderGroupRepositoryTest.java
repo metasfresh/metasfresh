@@ -302,7 +302,7 @@ public class OrderGroupRepositoryTest
 		regularLine.setLineNetAmt(new BigDecimal("50"));
 		saveRecord(regularLine);
 
-		final GroupRegularLine loadedRegularLine = OrderGroupRepository.toGroupRegularLine(regularLine, ImmutableMap.of());
+		final GroupRegularLine loadedRegularLine = OrderGroupRepository.toGroupRegularLine(regularLine, ImmutableMap.of(), ImmutableMap.of());
 
 		assertThat(loadedRegularLine.getProductCategoryIds()).isEmpty();
 	}

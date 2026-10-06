@@ -18,6 +18,7 @@ import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -34,6 +35,8 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
@@ -263,12 +266,13 @@ public class OrderGroupRepository implements GroupRepository
 				.additive(isAdditive(orderCompensationGroupPO));
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
+		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId = retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(groupOrderLines);
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
 			if (!groupOrderLine.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId);
+				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId);
 				groupBuilder.regularLine(regularLine);
 			}
 			else
@@ -359,14 +363,49 @@ public class OrderGroupRepository implements GroupRepository
 	@VisibleForTesting
 	static GroupRegularLine toGroupRegularLine(
 			final I_C_OrderLine record,
-			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final HUPIItemProductId piItemProductId = extractPIItemProductId(record);
 		return GroupRegularLine.builder()
 				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.lineNetAmt(record.getLineNetAmt())
 				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
+				.packingMaterialProductCategoryIds(piItemProductId != null
+						? packingMaterialCategoryIdsByPIItemProductId.getOrDefault(piItemProductId, ImmutableSet.of())
+						: ImmutableSet.of())
 				.build();
+	}
+
+	@Nullable
+	private static HUPIItemProductId extractPIItemProductId(@NonNull final I_C_OrderLine orderLine)
+	{
+		final de.metas.interfaces.I_C_OrderLine orderLineWithPacking = InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class);
+		return HUPIItemProductId.ofRepoIdOrNull(orderLineWithPacking.getM_HU_PI_Item_Product_ID());
+	}
+
+	/**
+	 * Batch-resolves, in one provider call for the whole group, the packing-material product categories (plus ancestors)
+	 * of the regular lines' packing instructions. A line without packing instruction (or a virtual one) has no entry.
+	 * The provider is looked up lazily because this repository is also created with {@code new}.
+	 */
+	private ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
+			final List<I_C_OrderLine> groupOrderLines)
+	{
+		final ImmutableSet<HUPIItemProductId> piItemProductIds = groupOrderLines.stream()
+				.filter(orderLine -> !orderLine.isGroupCompensationLine())
+				.map(OrderGroupRepository::extractPIItemProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (piItemProductIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return SpringContextHolder.instance
+				.getBeanOr(PackingMaterialProductCategoryProvider.class, PackingMaterialProductCategoryProvider.NONE)
+				.getPackingMaterialProductCategoryIdsAndAncestors(piItemProductIds);
 	}
 
 	/**
