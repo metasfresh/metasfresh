@@ -110,8 +110,10 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
       await selectLookupByKey(page, modal, 'Bonus_Product_ID', bonus.productCode, bonus.id);
       await fillNumber(page, modal, 'MinQty', 100);
       await fillNumber(page, modal, 'RefundPercent', 5);
+      const rejectionsBeforeComplete = rejectedSaves.reasons.length;
       await selectFirstListOption(page, modal, 'C_InvoiceSchedule_ID');
-      rejectedSaves.stop();
+      await rejectedSaves.stop();
+      expect(rejectedSaves.reasons.length, 'the complete line is rejected').toBeGreaterThan(rejectionsBeforeComplete);
       const reason = rejectedSaves.reasons[rejectedSaves.reasons.length - 1];
       expect(reason, 'the rejecting save carries a reason').toBeTruthy();
 
