@@ -17,7 +17,7 @@ public final class CalibrationRules
 {
 	private static final Comparator<CalibrationRule> ORDER = Comparator
 			.comparingInt(CalibrationRule::getSeqNo)
-			.thenComparingInt(rule -> CalibrationRuleId.toRepoId(rule.getId()));
+			.thenComparing(CalibrationRule::getId, Comparator.nullsFirst(Comparator.naturalOrder()));
 
 	private final ImmutableList<CalibrationRule> rules;
 

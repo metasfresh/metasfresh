@@ -8,6 +8,8 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -19,6 +21,12 @@ class CalibrationRulesTest
 {
 	private static final OrgId ORG_A = OrgId.ofRepoId(1000000);
 	private static final OrgId ORG_B = OrgId.ofRepoId(1000001);
+
+	@BeforeEach
+	void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
 	private static CalibrationRule.CalibrationRuleBuilder rule(final int id, final int seqNo)
 	{
@@ -98,6 +106,19 @@ class CalibrationRulesTest
 				rule(4, 10).build()));
 
 		assertThat(rules.findFirstMatching(key().build()).map(r -> r.getId().getRepoId())).contains(4);
+	}
+
+	@Test
+	void ordering_ruleWithoutIdSortsBeforeRulesWithIdOnSameSeqNo()
+	{
+		final CalibrationRule unsaved = rule(1, 10).id(null).build();
+		final CalibrationRules rules = new CalibrationRules(Arrays.asList(
+				rule(2, 10).build(),
+				unsaved,
+				rule(3, 5).build()));
+
+		assertThat(rules.asList()).extracting(CalibrationRule::getId)
+				.containsExactly(CalibrationRuleId.ofRepoId(3), null, CalibrationRuleId.ofRepoId(2));
 	}
 
 	@Test
