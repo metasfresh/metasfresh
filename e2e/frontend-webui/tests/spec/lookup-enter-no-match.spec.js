@@ -4,6 +4,8 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import {
   createMasterdata,
   gotoOrderList,
@@ -21,7 +23,8 @@ import {
  * Produkt").
  *
  * Covered in every layout that uses the shared Lookup: the order-line grid, the order-line form
- * opened with Alt+E ("Erweiterte Erfassung"), and three Lookup fields of the order header form.
+ * opened with Alt+E ("Erweiterte Erfassung"), and three Lookup fields of the order header form
+ * (pricing system, input data source, organisation).
  * A deliberate clear (delete the text, leave the field) clears it.
  *
  * Features tested:
@@ -83,12 +86,39 @@ async function seedOrderWithLine(page) {
   };
 }
 
+/**
+ * Give an empty header Lookup a value (the first entry its typeahead offers) through the WebAPI, then
+ * reload so the form shows it.
+ */
+async function fillAnyValueAndReload(page, recordId, field) {
+  const typeahead = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}/field/${field}/typeahead?query=%20`
+  );
+  expect(typeahead.ok(), `${field} typeahead: ${typeahead.status()}`).toBeTruthy();
+  const [firstValue] = (await typeahead.json()).values || [];
+  expect(firstValue, `${field} offers at least one value`).toBeTruthy();
+
+  const patch = await page.request.patch(`${WEBAPI_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`, {
+    data: [{ op: 'replace', path: field, value: firstValue }],
+  });
+  expect(patch.ok(), `setting ${field}: ${patch.status()}`).toBeTruthy();
+
+  await page.reload();
+  await expect(page.locator(`#lookup_${field} input.input-field`).first()).toHaveValue(firstValue.caption, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+}
+
 /** type the text into a focused Lookup input (replacing its content) and press Enter */
 async function typeNonMatchingAndPressEnter(page, input) {
   await input.click();
   await page.keyboard.press('ControlOrMeta+a');
   await input.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });
   await waitForTypeaheadToSettle(page);
+  // Enter must reach THIS Lookup holding the typed text: a field that moves the focus on (or
+  // never takes the text) sends the keys to another field.
+  await expect(input, 'the Lookup keeps the focus while typing').toBeFocused();
+  await expect(input, 'the Lookup holds the typed text').toHaveValue(NON_MATCHING_TEXT);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(1500); // a PATCH, if any, is sent right away
 }
@@ -188,9 +218,10 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
     test.setTimeout(240000);
 
     const { recordId } = await seedOrderWithLine(page);
+    await fillAnyValueAndReload(page, recordId, 'AD_InputDataSource_ID');
     const patches = trackPatches(page, recordId);
 
-    for (const field of ['M_PricingSystem_ID', 'C_BPartner_Location_ID', 'AD_Org_ID']) {
+    for (const field of ['M_PricingSystem_ID', 'AD_InputDataSource_ID', 'AD_Org_ID']) {
       await test.step(`Header ${field}: non-matching text + Enter keeps the value`, async () => {
         const input = page.locator(`#lookup_${field} input.input-field`).first();
         await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -200,9 +231,7 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
         await typeNonMatchingAndPressEnter(page, input);
 
         await expect(input, `${field} shows its previous value again`).toHaveValue(previous);
-        // A Lookup whose typeahead ignores the typed text (e.g. the partner's locations) may re-send
-        // the SAME value; what must never be sent is an empty value.
-        expect(clearingPatchesFor(patches, field), `${field} is not cleared`).toEqual([]);
+        expect(patchesFor(patches, field), `no change is sent for ${field}`).toEqual([]);
         await page.keyboard.press('Tab');
         await page.waitForTimeout(500);
       });
