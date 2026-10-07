@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
@@ -132,9 +133,20 @@ public class OrderCandidatesRestController
 			logger.warn("Got exception while processing {}", bulkRequest, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-			return ResponseEntity.badRequest()
-					.body(JsonOLCandCreateBulkResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+			return ResponseEntity.badRequest().body(toErrorResponse(ex, adLanguage));
 		}
+	}
+
+	@VisibleForTesting
+	static JsonOLCandCreateBulkResponse toErrorResponse(@NonNull final Throwable ex, @NonNull final String adLanguage)
+	{
+		if (ex instanceof OLCandBulkCreateException)
+		{
+			return JsonOLCandCreateBulkResponse.errors(((OLCandBulkCreateException)ex).getErrors().stream()
+					.map(error -> JsonErrors.ofThrowable(error, adLanguage))
+					.collect(ImmutableList.toImmutableList()));
+		}
+		return JsonOLCandCreateBulkResponse.error(JsonErrors.ofThrowable(ex, adLanguage));
 	}
 
 	@PutMapping(PATH_PROCESS)
