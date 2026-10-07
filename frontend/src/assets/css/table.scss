@@ -370,9 +370,13 @@
       min-height: 0;
     }
 
-    .input-primary,
-    .input-secondary,
-    .input-dropdown-container {
+    /*
+     * The rules below size the cell's own widget. `:not(.attributes-dropdown *)` keeps them off the
+     * widgets of the attribute popup, which is rendered inside the cell (Attributes.js).
+     */
+    .input-primary:not(.attributes-dropdown *),
+    .input-secondary:not(.attributes-dropdown *),
+    .input-dropdown-container:not(.attributes-dropdown *) {
       height: 26px;
       padding-top: 2px;
       padding-bottom: 2px;
@@ -388,12 +392,12 @@
     }
 
     /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
-    input {
+    input:not(.attributes-dropdown *) {
       min-width: 0;
     }
 
     /* overrides the combobox's `min-width: 200px` (inputs.scss), which would widen a narrow column */
-    .input-dropdown-container {
+    .input-dropdown-container:not(.attributes-dropdown *) {
       min-width: 0;
     }
 
@@ -402,7 +406,7 @@
      * shown also fits when edited. A bordered editor (`.input-primary`, e.g. LongText) keeps its
      * padding, and a mandatory editor's red border keeps a 2px gap.
      */
-    .input-secondary {
+    .input-secondary:not(.attributes-dropdown *) {
       padding-left: 0;
       padding-right: 0;
 
