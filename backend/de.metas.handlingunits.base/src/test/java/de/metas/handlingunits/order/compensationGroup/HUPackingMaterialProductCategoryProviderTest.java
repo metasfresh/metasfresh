@@ -8,11 +8,18 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.product.ProductCategoryId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.Invocation;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -42,12 +49,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class HUPackingMaterialProductCategoryProviderTest
 {
+	private static final List<Class<?>> PACKING_INSTRUCTION_MODEL_CLASSES = Arrays.asList(I_M_HU_PI_Item_Product.class, I_M_HU_PI_Item.class, I_M_HU_PackingMaterial.class);
+
+	private IQueryBL queryBLSpy;
 	private HUPackingMaterialProductCategoryProvider provider;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// register the spy BEFORE the provider (and the DAO it gets via Services) is created, so their queryBL fields pick it up
+		queryBLSpy = Mockito.spy(Services.get(IQueryBL.class));
+		Services.registerService(IQueryBL.class, queryBLSpy);
+
 		provider = new HUPackingMaterialProductCategoryProvider();
 	}
 
@@ -148,6 +163,81 @@ class HUPackingMaterialProductCategoryProviderTest
 		assertThat(provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(pipId))).doesNotContainKey(pipId);
 	}
 
+	/**
+	 * Several packing instructions on one PI version (sharing a material item, or with their own material item) and one on another version.
+	 * The inactive packing-material item and the inactive packing material on the shared version must be ignored for all its instructions.
+	 */
+	@Test
+	void pipsOnSharedAndSeparateVersions_eachGetsItsVersionsActivePackingMaterials()
+	{
+		final ProductCategoryId carton = category("carton", null);
+		final ProductCategoryId foil = category("foil", null);
+		final ProductCategoryId pallet = category("pallet", null);
+		final ProductCategoryId crate = category("crate", null);
+
+		final I_M_HU_PI_Item_Product pipA = pip();
+		addPackingMaterialItem(pipA, product(carton), true);
+		addPackingMaterialItem(pipA, product(pallet), false); // inactive packing-material item
+		addPackingMaterialItem(pipA, product(crate), true, false); // inactive packing material
+		final I_M_HU_PI_Item_Product pipB = pipWithSameMaterialItem(pipA);
+		final I_M_HU_PI_Item_Product pipC = pipWithOwnMaterialItemOnSameVersion(pipA);
+
+		final I_M_HU_PI_Item_Product pipD = pip();
+		addPackingMaterialItem(pipD, product(foil), true);
+
+		final HUPIItemProductId idA = HUPIItemProductId.ofRepoId(pipA.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idB = HUPIItemProductId.ofRepoId(pipB.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idC = HUPIItemProductId.ofRepoId(pipC.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idD = HUPIItemProductId.ofRepoId(pipD.getM_HU_PI_Item_Product_ID());
+		final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result = provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(idA, idB, idC, idD));
+
+		assertThat(result).containsOnlyKeys(idA, idB, idC, idD);
+		assertThat(result.get(idA)).containsExactly(carton);
+		assertThat(result.get(idB)).containsExactly(carton);
+		assertThat(result.get(idC)).containsExactly(carton);
+		assertThat(result.get(idD)).containsExactly(foil);
+	}
+
+	/**
+	 * The packing-instruction lookups (M_HU_PI_Item_Product, M_HU_PI_Item, M_HU_PackingMaterial) are batched:
+	 * resolving three packing instructions issues no more such queries than resolving one.
+	 */
+	@Test
+	void packingInstructionQueries_doNotGrowWithNumberOfPackingInstructions()
+	{
+		final I_M_Product cartonProduct = product(category("carton", null));
+		final I_M_HU_PI_Item_Product pipA = pip();
+		addPackingMaterialItem(pipA, cartonProduct, true);
+		final I_M_HU_PI_Item_Product pipB = pip();
+		addPackingMaterialItem(pipB, cartonProduct, true);
+		final I_M_HU_PI_Item_Product pipC = pipWithSameMaterialItem(pipA);
+
+		final HUPIItemProductId idA = HUPIItemProductId.ofRepoId(pipA.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idB = HUPIItemProductId.ofRepoId(pipB.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId idC = HUPIItemProductId.ofRepoId(pipC.getM_HU_PI_Item_Product_ID());
+
+		final long queriesForOne = countPackingInstructionQueries(() -> assertThat(provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(idA))).hasSize(1));
+		final long queriesForThree = countPackingInstructionQueries(() -> assertThat(provider.getPackingMaterialProductCategoryIdsAndAncestors(ImmutableSet.of(idA, idB, idC))).hasSize(3));
+
+		assertThat(queriesForOne).isPositive();
+		assertThat(queriesForThree).isEqualTo(queriesForOne);
+	}
+
+	private long countPackingInstructionQueries(final Runnable runnable)
+	{
+		Mockito.clearInvocations(queryBLSpy);
+		runnable.run();
+		return Mockito.mockingDetails(queryBLSpy).getInvocations().stream()
+				.filter(invocation -> invocation.getMethod().getName().startsWith("createQueryBuilder"))
+				.filter(HUPackingMaterialProductCategoryProviderTest::isOnPackingInstructionModel)
+				.count();
+	}
+
+	private static boolean isOnPackingInstructionModel(final Invocation invocation)
+	{
+		return Arrays.stream(invocation.getArguments()).anyMatch(PACKING_INSTRUCTION_MODEL_CLASSES::contains);
+	}
+
 	private ProductCategoryId category(final String name, final ProductCategoryId parentId)
 	{
 		final I_M_Product_Category record = newInstance(I_M_Product_Category.class);
@@ -173,6 +263,29 @@ class HUPackingMaterialProductCategoryProviderTest
 	{
 		final I_M_HU_PI_Item materialItem = newInstance(I_M_HU_PI_Item.class);
 		materialItem.setM_HU_PI_Version_ID(nextPIVersionId++);
+		materialItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
+		saveRecord(materialItem);
+
+		final I_M_HU_PI_Item_Product pip = newInstance(I_M_HU_PI_Item_Product.class);
+		pip.setM_HU_PI_Item_ID(materialItem.getM_HU_PI_Item_ID());
+		saveRecord(pip);
+		return pip;
+	}
+
+	/** Another packing instruction on the same material item, e.g. the same PI for a different product. */
+	private I_M_HU_PI_Item_Product pipWithSameMaterialItem(final I_M_HU_PI_Item_Product other)
+	{
+		final I_M_HU_PI_Item_Product pip = newInstance(I_M_HU_PI_Item_Product.class);
+		pip.setM_HU_PI_Item_ID(other.getM_HU_PI_Item_ID());
+		saveRecord(pip);
+		return pip;
+	}
+
+	/** Another packing instruction with its own material item, but on the same PI version as {@code other}. */
+	private I_M_HU_PI_Item_Product pipWithOwnMaterialItemOnSameVersion(final I_M_HU_PI_Item_Product other)
+	{
+		final I_M_HU_PI_Item materialItem = newInstance(I_M_HU_PI_Item.class);
+		materialItem.setM_HU_PI_Version_ID(other.getM_HU_PI_Item().getM_HU_PI_Version_ID());
 		materialItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
 		saveRecord(materialItem);
 

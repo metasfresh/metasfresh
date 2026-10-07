@@ -2,22 +2,18 @@ package de.metas.handlingunits.order.compensationGroup;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.order.compensationGroup.PackingMaterialProductCategoryProvider;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,32 +61,16 @@ public class HUPackingMaterialProductCategoryProvider implements PackingMaterial
 			return ImmutableMap.of();
 		}
 
-		final List<I_M_HU_PI_Item_Product> pips = InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(regularIds, I_M_HU_PI_Item_Product.class);
-
-		final Map<HUPIItemProductId, Set<ProductId>> packingMaterialProductIdsByPIP = new HashMap<>();
-		final Set<ProductId> allProductIds = new HashSet<>();
-		for (final I_M_HU_PI_Item_Product pip : pips)
+		final ImmutableSetMultimap<HUPIItemProductId, ProductId> packingMaterialProductIdsByPIP = packingMaterialDAO.retrievePackingMaterialProductIdsByPIItemProductIds(regularIds);
+		if (packingMaterialProductIdsByPIP.isEmpty())
 		{
-			final Set<ProductId> productIds = new HashSet<>();
-			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterialDAO.retrievePackingMaterials(pip))
-			{
-				final ProductId productId = ProductId.ofRepoIdOrNull(packingMaterial.getM_Product_ID());
-				if (productId != null)
-				{
-					productIds.add(productId);
-				}
-			}
-			if (!productIds.isEmpty())
-			{
-				packingMaterialProductIdsByPIP.put(HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID()), productIds);
-				allProductIds.addAll(productIds);
-			}
+			return ImmutableMap.of();
 		}
 
-		final Map<ProductId, ImmutableSet<ProductCategoryId>> categoryIdsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(allProductIds);
+		final Map<ProductId, ImmutableSet<ProductCategoryId>> categoryIdsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(ImmutableSet.copyOf(packingMaterialProductIdsByPIP.values()));
 
 		final ImmutableMap.Builder<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
-		packingMaterialProductIdsByPIP.forEach((pipId, productIds) -> {
+		packingMaterialProductIdsByPIP.asMap().forEach((pipId, productIds) -> {
 			final ImmutableSet.Builder<ProductCategoryId> categoryIds = ImmutableSet.builder();
 			for (final ProductId productId : productIds)
 			{
