@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from '../utils/screens/ApplicationsListScreen'
 import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
+import { expectErrorToast } from '../utils/common';
 
 
 // Mode-engine sysconfigs (new per-mode knobs introduced by the BarcodeScannerModes redesign).
@@ -478,4 +479,86 @@ test.describe('Modes', () => {
         await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     });
 
+});
+
+// "Scanning…" indicator of the visible hardware scan prompt. It is driven by the reader hook's explicit
+// isReadInProgress state (not by text in the off-screen input), so it must appear for every scan, never
+// write the scan into the input, and disappear on EVERY way a scan ends.
+test.describe('Scan in progress indicator', () => {
+
+    const huManagerInHardwareMode = async ({ manualEnabled = 'N' } = {}) => {
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled,
+                defaultMode: 'hardware',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+        return masterdata;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    test('shows "scanning" while an HU QR code streams in, without writing it into the input', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await huManagerInHardwareMode();
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+        const splitAt = 20; // inside the JSON payload, so the first part is an incomplete (still streaming) HU QR code
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, splitAt));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+        await BarcodeScannerComponent.expectHardwareInputEmpty();
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(splitAt));
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" does not stay after switching to manual and back mid-scan', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode({ manualEnabled: 'Y' });
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, 20));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-back-to-scanner');
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" disappears when an incomplete scan ends with an error', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode();
+        const truncatedQrCode = masterdata.handlingUnits.HU1.qrCode.substring(0, 40);
+
+        await expectErrorToast('Truncated HU QR code is rejected', async () => {
+            await BarcodeScannerComponent.typePartial(truncatedQrCode);
+            await BarcodeScannerComponent.expectScanInProgressShown(true);
+            await BarcodeScannerComponent.typeTerminator('Enter');
+        });
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
 });
