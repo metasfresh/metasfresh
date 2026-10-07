@@ -5,11 +5,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -89,7 +90,7 @@ public class CreateCalibrationRuleCommandTest
 		assertThat(rule.getM_Product_Category_ID()).isEqualTo(14);
 		assertThat(rule.getC_CompensationGroup_Schema_ID()).isEqualTo(15);
 		assertThat(rule.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("1.5");
-		assertThat(context.getId(Identifier.ofString("rule1"), de.metas.order.compensationGroup.calibration.CalibrationRuleId.class))
+		assertThat(context.getId(Identifier.ofString("rule1"), CalibrationRuleId.class))
 				.isEqualTo(response.getId());
 	}
 
