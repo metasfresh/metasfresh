@@ -120,12 +120,12 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	@Override
 	public void validate(@NonNull final I_C_OLCand olCand)
 	{
+		updateManualQtyItemCapacity(olCand); // first, so that it is decided even if a later check fails
+
 		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
 		{
 			throw new AdempiereException(ERR_MISSING_PRODUCT);
 		}
-
-		updateManualQtyItemCapacityIfPackingInstructionChanged(olCand);
 
 		validateAndSetPriceInformation(olCand);
 
@@ -304,19 +304,10 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	}
 
 	/**
-	 * {@code IsManualQtyItemCapacity} follows the effective packing instruction: {@code 'Y'} iff it gives no finite TU capacity (none, virtual or infinite),
-	 * so that the candidate's own {@code QtyItemCapacity} is used. Decided whenever the candidate is new or its packing instruction (or override) was changed
-	 * in this save - by the creator, the user, or an earlier validator - so a value set manually in between is kept.
+	 * {@code IsManualQtyItemCapacity} is derived from the effective packing instruction: {@code 'Y'} iff it gives no finite TU capacity (none, virtual or infinite),
+	 * so that the candidate's own {@code QtyItemCapacity} is used. Decided on every validation, so it also follows a packing instruction
+	 * that was set by the creator, the user, or an earlier validator.
 	 */
-	private void updateManualQtyItemCapacityIfPackingInstructionChanged(@NonNull final I_C_OLCand olCand)
-	{
-		if (InterfaceWrapperHelper.isNew(olCand)
-				|| InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_Override_ID))
-		{
-			updateManualQtyItemCapacity(olCand);
-		}
-	}
-
 	private void updateManualQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 	{
 		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
@@ -324,7 +315,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	/**
 	 * Also decides {@code IsManualQtyItemCapacity} from the packing instruction taken from the price,
-	 * because {@link #updateManualQtyItemCapacityIfPackingInstructionChanged(I_C_OLCand)} ran before it was assigned.
+	 * because {@link #updateManualQtyItemCapacity(I_C_OLCand)} ran before it was assigned.
 	 */
 	private void setPackingInstructionFromPricing(@NonNull final I_C_OLCand olCand, @NonNull final IPricingResult pricingResult)
 	{
