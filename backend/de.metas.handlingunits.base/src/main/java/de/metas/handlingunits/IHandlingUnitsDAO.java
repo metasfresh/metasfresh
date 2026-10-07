@@ -364,6 +364,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void save(@NonNull I_M_HU_PI huPi);
 
+	void save(@NonNull I_M_HU_PI_Item piItem);
+
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 
 	@NonNull

@@ -65,7 +65,6 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
-	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
@@ -74,6 +73,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
+	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonPackageRequest> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;

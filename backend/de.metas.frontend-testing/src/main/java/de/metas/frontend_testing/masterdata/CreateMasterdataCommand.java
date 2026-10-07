@@ -121,10 +121,7 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
-		// Shippers must be created BEFORE configureWarehouseEmpties(): the empties DD_NetworkDistributionLine requires one.
-		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
-		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		// Resources must be created AFTER workplaces: a workstation resource may reference a workplace
@@ -133,6 +130,9 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
+		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
+		// Post-pass: needs every warehouse AND the shippers (a DD_NetworkDistributionLine requires one).
+		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
@@ -160,10 +160,10 @@ public class CreateMasterdataCommand
 				.resources(resources)
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
-				.shippers(shippers)
 				.warehouses(warehouses)
 				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
+				.shippers(shippers)
 				.handlingUnits(hus)
 				.packages(packages)
 				.generatedHUQRCodes(generatedHUQRCodes)

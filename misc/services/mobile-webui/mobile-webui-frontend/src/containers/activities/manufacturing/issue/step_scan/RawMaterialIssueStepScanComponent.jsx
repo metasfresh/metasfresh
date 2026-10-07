@@ -149,7 +149,6 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       computeEmptyingConfirmationPrompt({ qty: qtyInput, qtyRejected, rejectedReason, resolvedBarcodeData }),
     []
   );
-
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
 
