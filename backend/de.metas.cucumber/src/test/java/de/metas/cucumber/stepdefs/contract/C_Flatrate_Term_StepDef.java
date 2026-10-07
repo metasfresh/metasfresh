@@ -37,6 +37,10 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -62,7 +66,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -78,6 +84,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -109,6 +116,14 @@ public class C_Flatrate_Term_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+
+	/**
+	 * The {@code AD_Process} (class {@code C_Flatrate_Term_Extend_And_Notify_User}, not bound to a table) that the scheduler runs.
+	 * The same class also backs the manual, record-bound "extend contract" process.
+	 */
+	private static final String SCHEDULED_CONTRACT_EXTENSION_PROCESS_VALUE = "C_Flatrate_Term_ProcessNoticeDates";
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -373,10 +388,11 @@ public class C_Flatrate_Term_StepDef
 	 * In production the scheduler runs that process over all eligible terms of the client. This step does not run the process
 	 * itself, because it would also extend other scenarios' leftover terms of the shared test DB. Instead it
 	 * <ul>
-	 *     <li>asserts that the term matches the process's selection (active, completed, not yet processed by an extension run,
-	 *     notice date before "now", not quit or voided), and</li>
+	 *     <li>asserts that the term is selected by the process's selection query (active, completed, not yet processed by an
+	 *     extension run, notice date before "now", not quit or voided), and</li>
 	 *     <li>calls {@link IFlatrateBL#extendContractAndNotifyUser} with the request the process builds for each selected term
-	 *     ({@code forceExtend=false}, no forced completion, no explicit start date), in a new transaction, as the process does.</li>
+	 *     ({@code forceExtend=false}, no forced completion, no explicit start date, a real {@code AD_PInstance} of that process,
+	 *     which the extension writes into {@code AD_PInstance_EndOfTerm_ID}), in a new transaction, as the process does.</li>
 	 * </ul>
 	 * The step fails if the extension throws.
 	 *
@@ -414,21 +430,59 @@ public class C_Flatrate_Term_StepDef
 		assertThat(error.getMessage()).as("Error message of the failed extension").contains(expectedMessagePart);
 	}
 
+	/**
+	 * Asserts that the scheduled contract extension would NOT select the given term (e.g. because an extension run already
+	 * processed it, see {@code AD_PInstance_EndOfTerm_ID}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 is not eligible for the scheduled contract extension
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) is not eligible for the scheduled contract extension$")
+	public void the_C_Flatrate_Term_is_not_eligible_for_scheduled_extension(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term term = loadFresh(identifier);
+		assertThat(isSelectedByScheduledContractExtension(term))
+				.as("C_Flatrate_Term %s shall not be selected by the scheduled contract extension; term=%s", identifier, term)
+				.isFalse();
+	}
+
+	/**
+	 * Asserts that a run of the scheduled contract extension processed the given term: its {@code AD_PInstance_EndOfTerm_ID}
+	 * references an {@code AD_PInstance} of the scheduled contract extension process.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 is marked as processed by the scheduled contract extension
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) is marked as processed by the scheduled contract extension$")
+	public void the_C_Flatrate_Term_is_marked_as_processed_by_scheduled_extension(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term term = loadFresh(identifier);
+		final PInstanceId pinstanceId = PInstanceId.ofRepoIdOrNull(term.getAD_PInstance_EndOfTerm_ID());
+		assertThat(pinstanceId).as("AD_PInstance_EndOfTerm_ID of C_Flatrate_Term %s", identifier).isNotNull();
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(SCHEDULED_CONTRACT_EXTENSION_PROCESS_VALUE);
+		assertThat(adPInstanceDAO.getById(pinstanceId).getAD_Process_ID()).as("AD_Process_ID of AD_PInstance_EndOfTerm_ID").isEqualTo(processId.getRepoId());
+	}
+
 	@Nullable
 	private RuntimeException runScheduledContractExtension(@NonNull final String identifier)
 	{
 		final I_C_Flatrate_Term termToExtend = loadFresh(identifier);
+		assertThat(isSelectedByScheduledContractExtension(termToExtend))
+				.as("C_Flatrate_Term %s shall be selected by the scheduled contract extension; term=%s", identifier, termToExtend)
+				.isTrue();
 
-		// the selection of C_Flatrate_Term_Extend_And_Notify_User.extendAllEligibleTerms
-		assertThat(termToExtend.isActive()).as("IsActive").isTrue();
-		assertThat(termToExtend.getDocStatus()).as("DocStatus").isEqualTo(IDocument.STATUS_Completed);
-		assertThat(termToExtend.getAD_PInstance_EndOfTerm_ID()).as("AD_PInstance_EndOfTerm_ID").isLessThanOrEqualTo(0);
-		assertThat(termToExtend.getNoticeDate()).as("NoticeDate").isNotNull();
-		assertThat(termToExtend.getNoticeDate()).as("NoticeDate must be before now").isBefore(SystemTime.asTimestamp());
-		assertThat(termToExtend.getContractStatus()).as("ContractStatus")
-				.isNotIn(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(SCHEDULED_CONTRACT_EXTENSION_PROCESS_VALUE);
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceDAO.createAD_PInstance(processId).getAD_PInstance_ID());
 
 		final ContractExtendingRequest request = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(pinstanceId)
 				.contract(termToExtend)
 				.forceExtend(false)
 				.forceComplete(null)
@@ -447,6 +501,28 @@ public class C_Flatrate_Term_StepDef
 			}
 		});
 		return error[0];
+	}
+
+	/**
+	 * The selection query of {@code C_Flatrate_Term_Extend_And_Notify_User.extendAllEligibleTerms}, restricted to the given term.
+	 * The process's client filter is left out: the cucumber context runs as the system client.
+	 */
+	private boolean isSelectedByScheduledContractExtension(@NonNull final I_C_Flatrate_Term term)
+	{
+		final ICompositeQueryFilter<I_C_Flatrate_Term> notQuitOrVoidedFilter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, null);
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, CompareQueryFilter.Operator.LESS, SystemTime.asTimestamp())
+				.filter(notQuitOrVoidedFilter)
+				.create()
+				.anyMatch();
 	}
 
 	/**

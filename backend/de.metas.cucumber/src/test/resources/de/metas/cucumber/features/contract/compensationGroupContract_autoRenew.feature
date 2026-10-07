@@ -38,8 +38,8 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
       | SOO         | SO         | docTypeSalesOrder |
 
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier  | Name        | OPT.IsAdditive |
-      | bonusSchema | Bonus       | true           |
+      | Identifier  | Name  | OPT.IsAdditive |
+      | bonusSchema | Bonus | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier      | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | bonusSchemaLine | bonusSchema                              | discountProduct         | 3                         | goodsCategory                        |
@@ -67,12 +67,13 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
   @Id:S32353_TC69
   Scenario: A compensation-group contract with a 1-year extend-one transition is renewed by the scheduled extension, and orders of both periods get the bonus
     Given metasfresh contains C_Flatrate_Transition:
-      | Identifier    | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.IsAutoCompleteNewTerm | OPT.EnsurePeriodsForYears |
-      | oneYearTrans  | 1            | year             | 1                | month                | EO                | true                      | 2026,2027,2028            |
+      | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.IsAutoCompleteNewTerm | OPT.EnsurePeriodsForYears |
+      | oneYearTrans | 1            | year             | 1                | month                | EO                | true                      | 2026,2027,2028            |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier      | Name             | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | bonusConditions | Bonus conditions | CompensationGroup | oneYearTrans                            | bonusSettings                                          |
-    # the drop-ship partner is set, as the contract import and the contract creation for partners set it
+    # DropShip_BPartner_ID is set on purpose: FlatrateBL.createNewTerm throws an NPE when extending a term without a
+    # drop-ship partner (known defect, handled separately). Imported and partner-created contracts always have one.
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | firstTerm  | bonusConditions                     | invoicePartner              | invoicePartner                      | 2026-01-01 | 2026-12-31 | DR            | false         |
@@ -83,7 +84,9 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
 
     When the scheduled contract extension runs for the C_Flatrate_Term identified by firstTerm
 
-    Then the C_Flatrate_Term identified by firstTerm has the follow-up C_Flatrate_Term:
+    Then the C_Flatrate_Term identified by firstTerm is marked as processed by the scheduled contract extension
+    And the C_Flatrate_Term identified by firstTerm is not eligible for the scheduled contract extension
+    And the C_Flatrate_Term identified by firstTerm has the follow-up C_Flatrate_Term:
       | Identifier | StartDate  | EndDate    | NoticeDate | DocStatus | IsAutoRenew | C_Flatrate_Conditions_ID | Bill_BPartner_ID |
       | nextTerm   | 2027-01-01 | 2027-12-31 | 2027-11-30 | CO        | true        | bonusConditions          | invoicePartner   |
 
@@ -100,9 +103,9 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
 
     # 3% of 1000
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol_firstPeriodDiscount      | orderFirstPeriod      | discountProduct         | 1          | true                        | 3                               | -30   | firstTerm                         |
-      | ol_followUpPeriodDiscount   | orderFollowUpPeriod   | discountProduct         | 1          | true                        | 3                               | -30   | nextTerm                          |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_firstPeriodDiscount    | orderFirstPeriod      | discountProduct         | 1          | true                        | 3                               | -30   | firstTerm                         |
+      | ol_followUpPeriodDiscount | orderFollowUpPeriod   | discountProduct         | 1          | true                        | 3                               | -30   | nextTerm                          |
 
 
   # ##############################################################################################
@@ -123,7 +126,8 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier      | Name             | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | bonusConditions | Bonus conditions | CompensationGroup | zeroDurTrans                            | bonusSettings                                          |
-    # the drop-ship partner is set, as the contract import and the contract creation for partners set it
+    # DropShip_BPartner_ID is set on purpose: FlatrateBL.createNewTerm throws an NPE when extending a term without a
+    # drop-ship partner (known defect, handled separately). Imported and partner-created contracts always have one.
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | firstTerm  | bonusConditions                     | invoicePartner              | invoicePartner                      | 2026-01-01 | 2026-12-31 | DR            | false         |
@@ -138,13 +142,13 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
 
     # the contract still applies within its own period; after its end date there is no bonus
     And metasfresh contains C_Orders:
-      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | orderOwnPeriod   | true    | invoicePartner           | 2026-12-20  |
-      | orderAfterEnd    | true    | invoicePartner           | 2027-02-01  |
+      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderOwnPeriod | true    | invoicePartner           | 2026-12-20  |
+      | orderAfterEnd  | true    | invoicePartner           | 2027-02-01  |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_ownPeriod   | orderOwnPeriod        | goodsProduct            | 1          |
-      | ol_afterEnd    | orderAfterEnd         | goodsProduct            | 1          |
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_ownPeriod | orderOwnPeriod        | goodsProduct            | 1          |
+      | ol_afterEnd  | orderAfterEnd         | goodsProduct            | 1          |
     And the order identified by orderOwnPeriod is completed
     And the order identified by orderAfterEnd is completed
 
