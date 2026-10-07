@@ -52,6 +52,7 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -102,6 +103,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
+	private final CompensationGroupCalibrationService calibrationService = SpringContextHolder.instance.getBean(CompensationGroupCalibrationService.class);
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
@@ -134,9 +136,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final ConditionsId contractConditionsId = extractContractConditionsId(quickInput).orElse(null);
 
+		final BigDecimal qty = extractQty(quickInput);
 		final Group group = orderGroupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
-				.qty(extractQty(quickInput))
+				.qty(qty)
+				.calibrations(calibrationService.computeCalibrations(order, groupTemplate, qty))
 				.createGroup(orderId, contractConditionsId);
 
 		if (groupTemplate.isInheritPackingInstruction())
