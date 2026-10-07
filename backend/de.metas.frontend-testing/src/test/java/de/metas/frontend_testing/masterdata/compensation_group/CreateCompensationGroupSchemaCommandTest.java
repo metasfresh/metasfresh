@@ -110,6 +110,9 @@ public class CreateCompensationGroupSchemaCommandTest
 		assertThat(lines.get(0).getQty()).isEqualByComparingTo(new BigDecimal("1"));
 		assertThat(lines.get(0).isWithoutCharge()).isTrue();
 		assertThat(lines.get(0).isAllowSeparateInvoicing()).isFalse();
+		// no UOM in the request: the template line takes the product's stock UOM
+		final I_M_Product member1Record = InterfaceWrapperHelper.load(member1.getId(), I_M_Product.class);
+		assertThat(lines.get(0).getC_UOM_ID()).isGreaterThan(0).isEqualTo(member1Record.getC_UOM_ID());
 
 		assertThat(lines.get(1).getM_Product_ID()).isEqualTo(member2.getId().getRepoId());
 		assertThat(lines.get(1).getQty()).isEqualByComparingTo(new BigDecimal("2"));
