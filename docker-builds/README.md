@@ -4,7 +4,7 @@
 ### CICD (github actions)
 pipeline is located under *.github\workflows\cicd.yaml* and gets executed on push<br>
 executions can be followed under: https://github.com/metasfresh/metasfresh/actions<br>
-junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
+junit and cucumber test failures are printed in the logs of the cicd run (Testspace is retired; this line has no Allure reports yet)<br>
 images will get pushed to our docker hub registries with `<mf-version>-<branch-name>.<build-number>` tags<br>
 
 #### Further reading about github related topics
@@ -87,7 +87,7 @@ an overview of existing tags can be found here: https://hub.docker.com/repositor
 ## Tests
 
 ### CICD (github actions)
-junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
+junit and cucumber test failures are printed in the logs of the cicd run (Testspace is retired; this line has no Allure reports yet)<br>
 in addition to that, a database image with the post cucumber run state is available for every cucumber run as:<br>
 `metasfresh/metas-db:<tag>-postcucumber`<br>
 <br>

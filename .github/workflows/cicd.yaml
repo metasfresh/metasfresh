@@ -22,11 +22,6 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v6
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: sanitize-ref-name
         id: sanitize
         env:
@@ -76,15 +71,6 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
-          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
-      - name: testspace push build infos
-        continue-on-error: true  # testspace retired — never fail the build on it
-        run: |
-          touch github_run.txt
-          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
-          echo pipeline $PIPELINE_VERSION >> github_run.txt
-          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
-          testspace github_run.txt
 
   java:
     runs-on: ubuntu-latest
@@ -240,11 +226,6 @@ jobs:
     needs: [init, frontend]
     steps:
       - uses: actions/checkout@v6
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         run: |
           docker buildx build \
@@ -253,11 +234,8 @@ jobs:
           --tag metas-frontend:test \
           .
       - name: publish results
-        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
-          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
-          testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -597,11 +575,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -640,14 +613,9 @@ jobs:
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: push-results
-        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
-          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -738,11 +706,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -767,12 +730,6 @@ jobs:
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results
-        continue-on-error: true  # testspace retired — never fail the build on it
-        run: |
-          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
-          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
       - name: push-database-images
         uses: nick-fields/retry@v4
         with:
