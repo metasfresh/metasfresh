@@ -19,11 +19,12 @@ import java.util.stream.Collector;
 @ToString
 public final class CalibrationRules
 {
-	public static final CalibrationRules EMPTY = new CalibrationRules(ImmutableList.of());
-
+	// declared before EMPTY: static fields are initialized in textual order and the constructor sorts by ORDER
 	private static final Comparator<CalibrationRule> ORDER = Comparator
 			.comparingInt(CalibrationRule::getSeqNo)
 			.thenComparing(CalibrationRule::getId, Comparator.nullsFirst(Comparator.naturalOrder()));
+
+	public static final CalibrationRules EMPTY = new CalibrationRules(ImmutableList.of());
 
 	private final ImmutableList<CalibrationRule> rules;
 
