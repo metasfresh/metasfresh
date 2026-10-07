@@ -262,6 +262,16 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	}
 
 	@Test
+	void notCalibrated_togetherWithHasCalibrationRuleTrue_isRejected()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).hasCalibrationRule(true).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("calibrated=false cannot be combined with hasCalibrationRule=true");
+	}
+
+	@Test
 	void noRuleApplied_matchesACalibratedLineWithFactor1AndNoRule()
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));

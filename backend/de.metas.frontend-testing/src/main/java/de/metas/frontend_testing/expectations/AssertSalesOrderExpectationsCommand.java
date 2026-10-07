@@ -238,6 +238,10 @@ class AssertSalesOrderExpectationsCommand
 		{
 			throw new AdempiereException("Expectation calibrated=false cannot be combined with an expected calibration factor, rule or uncalibrated qty: " + expectation);
 		}
+		if (expectNotCalibrated && Boolean.TRUE.equals(expectation.getHasCalibrationRule()))
+		{
+			throw new AdempiereException("Expectation calibrated=false cannot be combined with hasCalibrationRule=true: " + expectation);
+		}
 		if (Boolean.FALSE.equals(expectation.getHasCalibrationRule()) && expectation.getCalibrationRule() != null)
 		{
 			throw new AdempiereException("Expectation hasCalibrationRule=false cannot be combined with an expected calibration rule: " + expectation);

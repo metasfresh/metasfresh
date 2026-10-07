@@ -47,7 +47,8 @@ public class JsonOrderLineExpectation
 	/**
 	 * {@code false}: the line carries no calibration (factor, rule and uncalibrated qty are all empty);
 	 * {@code true}: the line is calibrated (factor and uncalibrated qty are set, the rule may be empty).
-	 * {@code false} cannot be combined with an expected factor, rule or uncalibrated qty.
+	 * {@code false} cannot be combined with an expected factor, rule or uncalibrated qty, nor with
+	 * {@code hasCalibrationRule=true} (a line without calibration has no rule).
 	 */
 	@Nullable Boolean calibrated;
 
