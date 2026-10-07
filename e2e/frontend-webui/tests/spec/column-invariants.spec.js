@@ -1,14 +1,9 @@
 import { test } from '../../playwright.config';
 import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 
@@ -43,10 +38,10 @@ async function seedOrderLineGrid(page) {
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
 
-  await gotoOrderList();
-  const recordId = await createNewOrder();
-  await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-  await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+  const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+  await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
   await page
     .locator(`[data-cy="cell-${COMBOBOX_FIELD}"]`)
@@ -70,7 +65,7 @@ async function dragColumn(page, fieldName, deltaPx) {
   await page.mouse.down();
   await page.mouse.move(startX + deltaPx, startY, { steps: 15 });
   await page.mouse.up();
-  await page.waitForTimeout(300);
+  await flushPendingUiTasks(page);
 }
 
 test.describe('Grid column sizing', () => {

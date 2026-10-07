@@ -3,14 +3,9 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Combobox (Lookup/List) column minimum width on the sales order-line grid:
@@ -47,7 +42,7 @@ async function dragResizeAsNarrowAsPossible(page, fieldName) {
   // drag far past any reasonable width — the clamp, not the drag distance, decides the result
   await page.mouse.move(startX - 600, startY, { steps: 15 });
   await page.mouse.up();
-  await page.waitForTimeout(300);
+  await flushPendingUiTasks(page);
 }
 
 async function seedOrderLineGrid(page) {
@@ -57,10 +52,10 @@ async function seedOrderLineGrid(page) {
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
 
-  await gotoOrderList();
-  const recordId = await createNewOrder();
-  await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-  await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+  const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+  await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
   await page
     .locator(`[data-cy="cell-${COMBOBOX_FIELD}"]`)
@@ -179,7 +174,7 @@ Store a combobox width below 90px and an equally low width of another column in 
     await page.mouse.down();
     await page.mouse.move(handleBox.x + handleBox.width / 2 + 60, handleBox.y + handleBox.height / 2, { steps: 10 });
     await page.mouse.up();
-    await page.waitForTimeout(300);
+    await flushPendingUiTasks(page);
 
     const storageKey = await page.evaluate(() => {
       const key = Object.keys(localStorage).find((k) => k.startsWith('columnWidths_'));

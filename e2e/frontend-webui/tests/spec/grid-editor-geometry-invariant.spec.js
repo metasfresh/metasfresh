@@ -4,17 +4,11 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-  ORDER_LINE_TAB_ID,
-} from '../utils/OrderLineHarness';
+import { createMasterdata, ORDER_LINE_TAB_ID } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Geometry invariant for EVERY grid editor type: entering edit mode on a cell and leaving it
@@ -140,8 +134,8 @@ async function openEditor(page, cell) {
     return null;
   }
   const className = await cell.evaluate((td) => td.querySelector('.form-group')?.className || '');
-  // let the editor settle (typeahead list, focus) before measuring
-  await page.waitForTimeout(400);
+  // let the editor settle (focus, first render) before measuring
+  await flushPendingUiTasks(page);
   const match = className.match(/widgetType-([A-Za-z]+)/);
   return match ? match[1] : 'unknown';
 }
@@ -192,12 +186,13 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     }, TOLERANCE_PX);
 
     await leave(page);
-    await cell
-      .locator('.form-group')
-      .first()
-      .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-      .catch(() => {});
-    await page.waitForTimeout(400);
+    // a List editor in a modal grid stays open when the modal's title is clicked; every other
+    // editor closes
+    const staysOpen = leave === leaveByClickingModalTitle && widgetType === 'List';
+    if (!staysOpen) {
+      await cell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }
+    await flushPendingUiTasks(page);
     const afterLeave = await measureRow(row);
     const componentAfterLeave = await measureComponentBox(cell);
 
@@ -382,12 +377,13 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
       await LoginPage.login(masterdata.login.user);
       await DashboardPage.expectVisible();
 
-      await gotoOrderList();
-      const recordId = await createNewOrder();
-      await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-      await addOrderLine(recordId, {
-        productCode: masterdata.products.Product1.productCode,
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await SalesOrderPage.addOrderLine({
+        product: masterdata.products.Product1.productCode,
         quantity: 1,
+        recordId,
       });
 
       const row = page
@@ -479,12 +475,13 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, {
-      productCode: masterdata.products.Product1.productCode,
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({
+      product: masterdata.products.Product1.productCode,
       quantity: 1,
+      recordId,
     });
 
     const row = page
@@ -525,9 +522,9 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
 
     const textRow = await openTextLinesModalWithOneTextRow(page, recordId);
 
@@ -553,12 +550,13 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, {
-      productCode: masterdata.products.Product1.productCode,
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({
+      product: masterdata.products.Product1.productCode,
       quantity: 1,
+      recordId,
     });
     await page.reload();
 
@@ -603,7 +601,8 @@ test.describe('Grid editors keep the row height and every column width (de_DE)',
       await openEditor(page, qtyCell);
       const inEdit = await measureRow(row);
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(400);
+      await qtyCell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+      await flushPendingUiTasks(page);
       const afterLeave = await measureRow(row);
       expect([
         ...compareGeometry('while editing', 'cell-QtyEntered', before, inEdit),

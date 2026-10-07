@@ -6,7 +6,8 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { waitForRecordSaved, getFieldData } from '../utils/WebAPIValidation';
-import { createMasterdata, gotoOrderList, createNewOrder, selectOrderCustomer } from '../utils/OrderLineHarness';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * A text field of a single-row form (the sales order header): Enter saves the value and keeps the
@@ -41,10 +42,10 @@ test.describe('Single-row form text field', () => {
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
     // the customer fills the remaining mandatory header fields, so the order can be saved
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
 
     const headerField = page.locator(`.form-field-${HEADER_TEXT_FIELD} input.input-field`).first();
     await headerField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });

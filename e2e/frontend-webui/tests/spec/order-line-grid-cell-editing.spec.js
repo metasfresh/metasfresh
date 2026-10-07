@@ -3,14 +3,9 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForTypeaheadAnswer } from '../utils/common';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Cell editing on the sales order-line grid (de_DE): the grid shows its columns, a Lookup cell
@@ -56,11 +51,11 @@ Create an order with one line: the order-line grid shows every expected column, 
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
+    await SalesOrderPage.goto();
 
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
     await test.step('Order-line grid renders every expected column', async () => {
       for (const column of GRID_COLUMNS) {
@@ -117,11 +112,11 @@ test.describe('Sales order-line grid — leaving a Lookup cell; numpad-0 (de_DE)
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
+    await SalesOrderPage.goto();
 
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
     const productCode = masterdata.products.Product1.productCode;
 
@@ -137,9 +132,8 @@ test.describe('Sales order-line grid — leaving a Lookup cell; numpad-0 (de_DE)
       await page.keyboard.press('Tab');
       await productCell
         .locator('.input-dropdown-container')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForTimeout(500);
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+      await flushPendingUiTasks(page);
     });
 
     await test.step('No "undefined" after navigating away from the Lookup cell', async () => {
@@ -167,9 +161,8 @@ test.describe('Sales order-line grid — leaving a Lookup cell; numpad-0 (de_DE)
       await page.keyboard.press('Escape');
       await productCell
         .locator('.input-dropdown-container')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForTimeout(500);
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+      await flushPendingUiTasks(page);
 
       const cellTextAfterReopen = (await productCell.textContent()) || '';
       console.log(`[INFO] ${COMBOBOX_COLUMN} cell text after nav-back: "${cellTextAfterReopen}"`);
@@ -202,7 +195,6 @@ test.describe('Sales order-line grid — leaving a Lookup cell; numpad-0 (de_DE)
         Object.defineProperty(event, 'which', { get: () => 96 });
         el.dispatchEvent(event);
       });
-      await page.waitForTimeout(300);
 
       await qtyCell
         .locator('.input-body-container')
@@ -243,11 +235,11 @@ literal "undefined".
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
+    await SalesOrderPage.goto();
 
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
     const productCode = masterdata.products.Product1.productCode;
     const productCell = page.locator(`[data-cy="cell-${COMBOBOX_COLUMN}"]`).first();
@@ -263,8 +255,13 @@ literal "undefined".
         const editorInput = productCell.locator('.input-dropdown-container input').first();
         await editorInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
+        // the typed text is added to the cell's text: the query ends with it
+        const answered = waitForTypeaheadAnswer(page, (query) => query.endsWith(NON_MATCHING_TEXT));
         await editorInput.pressSequentially(NON_MATCHING_TEXT, { delay: 30 });
-        await page.waitForTimeout(800); // let the typeahead query answer "no results"
+        await answered;
+        await expect(page.locator('.input-dropdown-list .input-dropdown-list-header')).toBeVisible({
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
         if (leaveBy === 'Tab') {
           await page.keyboard.press('Tab');
         } else {
@@ -273,9 +270,8 @@ literal "undefined".
 
         await productCell
           .locator('.input-dropdown-container')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page.waitForTimeout(500);
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await flushPendingUiTasks(page);
 
         const cellText = (await productCell.textContent()) || '';
         console.log(`[INFO] round ${round} (${leaveBy}): ${COMBOBOX_COLUMN} cell text "${cellText}"`);

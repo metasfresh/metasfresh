@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
 import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 import { TEST_WINDOW_ID } from '../utils/WindowIds';
 
@@ -128,7 +128,7 @@ async function openEditorFromContextMenu(page, cell) {
   const input = cell.locator('.form-group input').first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await expect(input).toBeFocused();
-  await page.waitForTimeout(300); // let the editor settle before measuring
+  await flushPendingUiTasks(page); // let the editor settle before measuring
   return input;
 }
 
@@ -175,7 +175,7 @@ test.describe('Test window list view — inline edit of Amount and Quantity (de_
         await input.fill(column.typed);
         await page.keyboard.press('Escape');
         await cell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
-        await page.waitForTimeout(500);
+        await flushPendingUiTasks(page);
         const afterLeave = await measure(row, cell);
 
         expect(

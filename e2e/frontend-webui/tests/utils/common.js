@@ -11,6 +11,47 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 export const getPage = () => global.currentPage;
 
 /**
+ * Waits until the page has run every task queued so far (event handlers, promise callbacks, one
+ * timer turn). A request the UI starts while handling an action - e.g. the PATCH a field sends
+ * when it is left - has then been reported to Playwright's `request` listeners, so a check that
+ * "no request was sent" can run right after it.
+ */
+export async function flushPendingUiTasks(page) {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => setTimeout(resolve, 0));
+      })
+  );
+}
+
+/**
+ * Resolves when a Lookup's typeahead answered a query: a GET with `?query=` for a document field,
+ * a POST with `{query}` for a view-filter parameter.
+ *
+ * @param {Page} page
+ * @param {string|function(string): boolean} expectedQuery - the exact query text, or a predicate
+ */
+export function waitForTypeaheadAnswer(page, expectedQuery) {
+  const isExpected =
+    typeof expectedQuery === 'function' ? expectedQuery : (query) => query === expectedQuery;
+  return page.waitForResponse(
+    (response) => {
+      if (!response.url().includes('/typeahead')) {
+        return false;
+      }
+      const request = response.request();
+      const query =
+        request.method() === 'POST'
+          ? (request.postDataJSON() || {}).query
+          : new URL(response.url()).searchParams.get('query');
+      return typeof query === 'string' && isExpected(query);
+    },
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+}
+
+/**
  * Collect uncaught page errors and console.error entries from `page` for a hard
  * zero-error assertion at the end of a scenario. Attach BEFORE navigating.
  */

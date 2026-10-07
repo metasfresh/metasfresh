@@ -4,13 +4,8 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Narrow number grid cell: in edit mode the whole value is visible, not only its tail, and the
@@ -49,11 +44,11 @@ editor (\`${BORDERED_TEXT_COLUMN}\`) must keep its inner padding (text not flush
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
+    await SalesOrderPage.goto();
 
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
     const cell = page.locator(`[data-cy="cell-${NUMBER_COLUMN}"]`).first();
     await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -87,14 +82,9 @@ editor (\`${BORDERED_TEXT_COLUMN}\`) must keep its inner padding (text not flush
 
     await test.step('Leave with Tab — the displayed value is unchanged', async () => {
       await page.keyboard.press('Tab');
-      await cell
-        .locator('.input-body-container')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForTimeout(300);
+      await cell.locator('.input-body-container').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
 
-      const textAfter = ((await cell.textContent()) || '').trim();
-      expect(textAfter, 'the displayed value must be unchanged after leaving the editor').toBe(staticText);
+      await expect(cell, 'the displayed value must be unchanged after leaving the editor').toHaveText(staticText);
     });
     await test.step('A bordered text editor keeps its inner padding (text not flush against the border)', async () => {
       const textCell = page.locator(`[data-cy="cell-${BORDERED_TEXT_COLUMN}"]`).first();

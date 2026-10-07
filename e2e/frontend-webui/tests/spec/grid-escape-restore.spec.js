@@ -3,14 +3,9 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Escape after double-clicking a grid cell keeps the cell's value (de_DE).
@@ -51,12 +46,13 @@ test.describe('Sales order-line grid — Escape after double-click keeps the val
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, {
-      productCode: masterdata.products.Product1.productCode,
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({
+      product: masterdata.products.Product1.productCode,
       quantity: 3,
+      recordId,
     });
 
     const priceCell = page.locator(`[data-cy="cell-${PRICE_COLUMN}"]`).first();
@@ -75,12 +71,8 @@ test.describe('Sales order-line grid — Escape after double-click keeps the val
         await cell.dblclick();
         await cell.locator('input').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await page.keyboard.press('Escape');
-        await cell
-          .locator('input')
-          .first()
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page.waitForTimeout(1500); // a blur PATCH, if any, fires right after leaving
+        await cell.locator('input').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await flushPendingUiTasks(page);
 
         await expect(cell, `${column} must still show its value after Escape`).toContainText(expectedText);
       });
@@ -117,12 +109,13 @@ test.describe('Sales order-line grid — Enter opens a cell with its stored valu
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await gotoOrderList();
-    const recordId = await createNewOrder();
-    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLine(recordId, {
-      productCode: masterdata.products.Product1.productCode,
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({
+      product: masterdata.products.Product1.productCode,
       quantity: 3,
+      recordId,
     });
 
     const qtyCell = page.locator(`[data-cy="cell-${QTY_COLUMN}"]`).first();

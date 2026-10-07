@@ -4,13 +4,8 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { createMasterdata } from '../utils/OrderLineHarness';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
  * Opening a grid cell's editor (`QtyEntered`, a number cell) changes neither the row height nor the
@@ -58,11 +53,11 @@ width must be unchanged (within ${TOLERANCE_PX}px of sub-pixel rounding).
       await LoginPage.login(masterdata.login.user);
       await DashboardPage.expectVisible();
 
-      await gotoOrderList();
+      await SalesOrderPage.goto();
 
-      const recordId = await createNewOrder();
-      await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-      await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
       const cell = page.locator(`[data-cy="cell-${GEOMETRY_COLUMN}"]`).first();
       await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -189,11 +184,11 @@ the row's bottom edge (no visual bleed into the row below).
       await LoginPage.login(masterdata.login.user);
       await DashboardPage.expectVisible();
 
-      await gotoOrderList();
+      await SalesOrderPage.goto();
 
-      const recordId = await createNewOrder();
-      await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-      await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
 
       const cell = page.locator(`[data-cy="cell-${ATTRIBUTE_COLUMN}"]`).first();
       await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });

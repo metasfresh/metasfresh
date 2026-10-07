@@ -4,16 +4,10 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForTypeaheadAnswer } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import {
-  createMasterdata,
-  gotoOrderList,
-  createNewOrder,
-  selectOrderCustomer,
-  addOrderLine,
-} from '../utils/OrderLineHarness';
+import { createMasterdata } from '../utils/OrderLineHarness';
 
 /**
  * Enter on a filled Lookup whose typed text matches nothing puts the previous value back (de_DE).
@@ -58,13 +52,16 @@ function clearingPatchesFor(patches, field) {
   });
 }
 
-async function waitForTypeaheadToSettle(page) {
-  await page.waitForTimeout(1200);
-  await page
-    .locator('.input-dropdown-container .rotating, .input-dropdown-container .spinner')
-    .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-    .catch(() => {});
-  await page.waitForTimeout(300);
+/** Replace the focused Lookup's text with `text` and wait until its list shows "no results". */
+async function typeNonMatchingText(page, input) {
+  const answered = waitForTypeaheadAnswer(page, NON_MATCHING_TEXT);
+  await input.click();
+  await page.keyboard.press('ControlOrMeta+a');
+  await input.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });
+  await answered;
+  await expect(page.locator('.input-dropdown-list .input-dropdown-list-header')).toBeVisible({
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
 }
 
 async function seedOrderWithLine(page) {
@@ -73,12 +70,13 @@ async function seedOrderWithLine(page) {
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
 
-  await gotoOrderList();
-  const recordId = await createNewOrder();
-  await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
-  await addOrderLine(recordId, {
-    productCode: masterdata.products.Product1.productCode,
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+  const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+  await SalesOrderPage.addOrderLine({
+    product: masterdata.products.Product1.productCode,
     quantity: 1,
+    recordId,
   });
   return {
     masterdata,
@@ -112,16 +110,14 @@ async function fillAnyValueAndReload(page, recordId, field) {
 
 /** type the text into a focused Lookup input (replacing its content) and press Enter */
 async function typeNonMatchingAndPressEnter(page, input) {
-  await input.click();
-  await page.keyboard.press('ControlOrMeta+a');
-  await input.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });
-  await waitForTypeaheadToSettle(page);
+  await typeNonMatchingText(page, input);
   // Enter must reach THIS Lookup holding the typed text: a field that moves the focus on (or
   // never takes the text) sends the keys to another field.
   await expect(input, 'the Lookup keeps the focus while typing').toBeFocused();
   await expect(input, 'the Lookup holds the typed text').toHaveValue(NON_MATCHING_TEXT);
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(1500); // a PATCH, if any, is sent right away
+  await expect(page.locator('.input-dropdown-list'), 'Enter closes the list').toHaveCount(0);
+  await flushPendingUiTasks(page);
 }
 
 /** Open the sales order list's "Standard" filter panel and return it. */
@@ -243,7 +239,7 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
         await expect(input, `${field} shows its previous value again`).toHaveValue(previous);
         expect(patchesFor(patches, field), `no change is sent for ${field}`).toEqual([]);
         await page.keyboard.press('Tab');
-        await page.waitForTimeout(500);
+        await expect(input, `${field} is left`).not.toBeFocused();
       });
     }
 
@@ -254,9 +250,15 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
       await input.click();
       await page.keyboard.press('ControlOrMeta+a');
       await page.keyboard.press('Backspace');
-      await waitForTypeaheadToSettle(page);
+      const clearSent = page.waitForRequest(
+        (request) =>
+          request.method() === 'PATCH' &&
+          request.url().includes(`/${recordId}`) &&
+          (request.postData() || '').includes('"M_PricingSystem_ID"'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(1500);
+      await clearSent;
 
       expect(clearingPatchesFor(patches, 'M_PricingSystem_ID'), 'the deliberate clear is sent as empty').toHaveLength(1);
     });
@@ -297,10 +299,7 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
     });
 
     await test.step('Non-matching text + Tab shows the picked customer again', async () => {
-      await partnerInput.click();
-      await page.keyboard.press('ControlOrMeta+a');
-      await partnerInput.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });
-      await waitForTypeaheadToSettle(page);
+      await typeNonMatchingText(page, partnerInput);
       await page.keyboard.press('Tab');
       await expect(partnerInput, 'the filter field shows the picked customer again').toHaveValue(
         new RegExp(customerCode)
