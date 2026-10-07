@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * Repository Tables: C_CompensationGroup_CalibrationRule
+ * Repository Cluster: CompensationGroupCalibrationRuleRepository, CalibrationRuleMasterdataRepository
  */
 @Repository
 public class CompensationGroupCalibrationRuleRepository

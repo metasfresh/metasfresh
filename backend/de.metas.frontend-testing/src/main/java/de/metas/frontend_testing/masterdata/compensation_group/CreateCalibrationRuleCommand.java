@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 /**
  * Creates one {@link I_C_CompensationGroup_CalibrationRule}, resolving the selector identifiers through the context.
- * Persistence is direct via {@link InterfaceWrapperHelper} (same pattern as {@link CreateCompensationGroupSchemaCommand});
+ * Persistence goes through {@link CalibrationRuleMasterdataRepository} (persistence primitives belong in a repository);
  * the table's own model interceptor validates BP-or-group and the non-negative factor.
  */
 @Builder
