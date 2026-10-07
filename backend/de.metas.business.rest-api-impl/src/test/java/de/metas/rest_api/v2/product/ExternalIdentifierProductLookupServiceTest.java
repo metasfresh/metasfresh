@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -644,88 +645,92 @@ public class ExternalIdentifierProductLookupServiceTest
 		return TimeUtil.asTimestamp(LocalDate.parse(date).atStartOfDay(ORG_ZONE));
 	}
 
-	@Test
-	void explain_gtin_unknown()
+	@Nested
+	public class explainUnresolvedGTIN
 	{
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000009"), DELIVERY_DATE, null);
+		@Test
+		void unknown()
+		{
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000009"), DELIVERY_DATE, null);
 
-		assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000009.");
-	}
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000009.");
+		}
 
-	@Test
-	void explain_gtin_only_on_piips_not_valid_on_date()
-	{
-		final I_M_Product product = createProduct("feta", true);
-		final BPartnerId orderingPartner = createBPartner("ordering");
-		final I_M_HU_PI_Item_Product partnerRow = createPiip(product, "90000000003", orderingPartner);
-		partnerRow.setValidFrom(orgMidnight("2022-09-01"));
-		InterfaceWrapperHelper.save(partnerRow);
-		final I_M_HU_PI_Item_Product genericRow = createPiip(product, "90000000003", null);
-		genericRow.setValidFrom(orgMidnight("2022-09-01"));
-		InterfaceWrapperHelper.save(genericRow);
+		@Test
+		void only_on_piips_not_valid_on_date()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final BPartnerId orderingPartner = createBPartner("ordering");
+			final I_M_HU_PI_Item_Product partnerRow = createPiip(product, "90000000003", orderingPartner);
+			partnerRow.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(partnerRow);
+			final I_M_HU_PI_Item_Product genericRow = createPiip(product, "90000000003", null);
+			genericRow.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(genericRow);
 
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000003"), DELIVERY_DATE, orderingPartner);
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000003"), DELIVERY_DATE, orderingPartner);
 
-		assertThat(text).isEqualTo("GTIN 90000000003 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
-				+ "M_HU_PI_Item_Product_ID=" + partnerRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01, "
-				+ "M_HU_PI_Item_Product_ID=" + genericRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01.");
-	}
+			assertThat(text).isEqualTo("GTIN 90000000003 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+					+ "M_HU_PI_Item_Product_ID=" + partnerRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01, "
+					+ "M_HU_PI_Item_Product_ID=" + genericRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01.");
+		}
 
-	@Test
-	void explain_gtin_expired_piip_shows_valid_to()
-	{
-		final I_M_Product product = createProduct("feta", true);
-		final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000004", null);
-		piip.setValidFrom(orgMidnight("2019-01-01"));
-		piip.setValidTo(orgMidnight("2019-12-31"));
-		InterfaceWrapperHelper.save(piip);
+		@Test
+		void expired_piip_shows_valid_to()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000004", null);
+			piip.setValidFrom(orgMidnight("2019-01-01"));
+			piip.setValidTo(orgMidnight("2019-12-31"));
+			InterfaceWrapperHelper.save(piip);
 
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000004"), DELIVERY_DATE, null);
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000004"), DELIVERY_DATE, null);
 
-		assertThat(text).isEqualTo("GTIN 90000000004 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
-				+ "M_HU_PI_Item_Product_ID=" + piip.getM_HU_PI_Item_Product_ID() + " valid from 2019-01-01 to 2019-12-31.");
-	}
+			assertThat(text).isEqualTo("GTIN 90000000004 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+					+ "M_HU_PI_Item_Product_ID=" + piip.getM_HU_PI_Item_Product_ID() + " valid from 2019-01-01 to 2019-12-31.");
+		}
 
-	@Test
-	void explain_gtin_only_on_other_partners_piip_is_unknown()
-	{
-		final I_M_Product product = createProduct("feta", true);
-		final BPartnerId orderingPartner = createBPartner("ordering");
-		final BPartnerId otherPartner = createBPartner("other");
-		final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000005", otherPartner);
-		piip.setValidFrom(orgMidnight("2019-01-01"));
-		InterfaceWrapperHelper.save(piip);
+		@Test
+		void only_on_other_partners_piip_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final BPartnerId orderingPartner = createBPartner("ordering");
+			final BPartnerId otherPartner = createBPartner("other");
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000005", otherPartner);
+			piip.setValidFrom(orgMidnight("2019-01-01"));
+			InterfaceWrapperHelper.save(piip);
 
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000005"), DELIVERY_DATE, orderingPartner);
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000005"), DELIVERY_DATE, orderingPartner);
 
-		assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000005.");
-	}
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000005.");
+		}
 
-	@Test
-	void explain_gtin_piip_of_inactive_product_is_unknown()
-	{
-		final I_M_Product inactiveProduct = createProduct("stale", false);
-		final I_M_HU_PI_Item_Product piip = createPiip(inactiveProduct, "90000000006", null);
-		piip.setValidFrom(orgMidnight("2022-09-01"));
-		InterfaceWrapperHelper.save(piip);
+		@Test
+		void piip_of_inactive_product_is_unknown()
+		{
+			final I_M_Product inactiveProduct = createProduct("stale", false);
+			final I_M_HU_PI_Item_Product piip = createPiip(inactiveProduct, "90000000006", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(piip);
 
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000006"), DELIVERY_DATE, null);
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000006"), DELIVERY_DATE, null);
 
-		assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000006.");
-	}
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000006.");
+		}
 
-	@Test
-	void explain_gtin_inactive_piip_row_is_unknown()
-	{
-		final I_M_Product product = createProduct("feta", true);
-		final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000007", null);
-		piip.setValidFrom(orgMidnight("2022-09-01"));
-		piip.setIsActive(false);
-		InterfaceWrapperHelper.save(piip);
+		@Test
+		void inactive_piip_row_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000007", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			piip.setIsActive(false);
+			InterfaceWrapperHelper.save(piip);
 
-		final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000007"), DELIVERY_DATE, null);
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000007"), DELIVERY_DATE, null);
 
-		assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000007.");
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000007.");
+		}
 	}
 
 	private I_M_Product createProduct(final String value, final boolean active)
