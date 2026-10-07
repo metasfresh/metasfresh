@@ -335,36 +335,26 @@
   }
 
   /*
-   * Entering edit mode swaps the static text wrapper for the full widget editor. Two artefacts
-   * of that editor's generic (non-grid) layout scaffolding exceed the cell's static box and force
-   * the row/column to grow the moment a cell is activated — pin them so activation stays
-   * pixel-stable in both dimensions. Scoped to `.table-cell` (a class only ever set on a grid
-   * `<td>`, never on a single-row/detail-form field) so single-row forms keep today's
-   * Bootstrap row/col layout untouched.
-   *
-   * Bootstrap's `.row` (form-group-table also carries `.row`) sets `margin: 0 -15px`; a grid
-   * cell renders no label column, so the `.col-sm-12` gutter that margin compensates for is
-   * pure overhead here — cancel both instead of letting the cell grow to fit them.
+   * Grid-cell editing: opening or leaving a cell's editor changes neither the row height nor any
+   * column width. `.table-cell` is set only on a grid `<td>`, so single-row forms are not affected.
    */
+
+  /* The cell's editor (RawWidget sets `form-group-table` on a grid cell's editor). */
   .form-group-table {
+    /* no Bootstrap `.row` gutter: a grid cell has no label column to align with */
     margin-left: 0;
     margin-right: 0;
     box-sizing: border-box;
 
     /*
-     * Every editor is pinned to the row's fixed content height (42px row - .5rem top/bottom
-     * padding), so opening one never changes the row height. This includes LongText: its
-     * textarea becomes a single scrollable line inside the cell (see below). In an extended
-     * (multi-line) row the cell hands over the taller static height (TableCell.js).
+     * The row's content height (42px row - .5rem top/bottom padding). An extended (multi-line)
+     * row passes its taller height via `--cell-content-height` (TableCell.js).
      */
     height: var(--cell-content-height, 26px);
 
     /*
-     * The editor takes no width of its own: it fills exactly the width the column already has.
-     * `width: 0` removes the editor's intrinsic width (e.g. a text input's default 20-character
-     * size, or a switch with its gutter) from the column's size calculation, so it can not
-     * widen the column; `min-width: 100%` then stretches it back to the full cell. The column
-     * width itself is kept by `.cell-width-keeper` below.
+     * Fill the column without widening it: `width: 0` drops the editor's intrinsic width from the
+     * column sizing, `min-width: 100%` stretches it to the cell.
      */
     width: 0;
     min-width: 100%;
@@ -379,82 +369,43 @@
       height: 100%;
       min-height: 0;
     }
-  }
 
-  /*
-   * An invisible copy of the cell's static content, rendered next to the editor while the cell
-   * is edited (TableCell.js). It contributes exactly the width the static value contributed, so a
-   * column sized by its value (e.g. a long product name) keeps that width instead of snapping to
-   * its band minimum, and it takes no height.
-   */
-  .cell-width-keeper {
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-  }
+    .input-primary,
+    .input-secondary,
+    .input-dropdown-container {
+      height: 26px;
+      padding-top: 2px;
+      padding-bottom: 2px;
 
-  /*
-   * The static value occupies exactly the box its editor occupies (the row's 26px content height,
-   * the column's content width), so entering or leaving edit mode does not change the cell's
-   * component size either — also for an empty value, whose static box would otherwise collapse to
-   * nothing. The line height keeps the text vertically centred, as before. An extended (multi-line)
-   * long-text cell keeps its own height.
-   */
-  > div > .cell-text-wrapper:not(.extended) {
-    height: 26px;
-    line-height: 26px;
-  }
-
-  /* label chips keep their own size, vertically centred in that box (not stretched to 26px) */
-  .table-cell-label-container {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    line-height: normal;
-
-    /*
-     * The chip's bottom margin (labels.scss) spaces wrapped chips in the Labels editor. A grid
-     * cell shows one chip on one line, so the margin only makes the centred item taller than
-     * the chip and pushes the chip off-centre (up by half the margin).
-     */
-    .labels-label {
-      margin-bottom: 0;
+      /* the mandatory border (2px top + bottom) takes the place of the vertical padding */
+      &.input-mandatory {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
     }
   }
 
+  /* The editor's inputs: no minimum width and no horizontal padding of their own. */
   .input-primary,
   .input-secondary,
   .input-dropdown-container {
     box-sizing: border-box;
   }
 
-  /*
-   * The base `input { min-width: 50px; }` rule (inputs.scss) forces this editor's inline-block
-   * wrapper at least 50px + its own horizontal padding wide — wider than a short static value
-   * (e.g. a one-digit quantity) ever needed, so activation grows the column to fit it. A grid
-   * cell's already-rendered width is whatever the static value needed; let the input shrink to
-   * that instead of imposing its own floor (the combobox's 90px floor is enforced separately,
-   * on its own wrapper, and is unaffected by the inner input's min-width).
-   */
+  /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
   input {
     min-width: 0;
   }
 
+  /* overrides the combobox's `min-width: 200px` (inputs.scss), which would widen a narrow column */
+  .input-dropdown-container {
+    min-width: 0;
+  }
+
   /*
-   * Dropping the input's own min-width above (so it can shrink to the cell's static-display
-   * width) exposes the editor's own horizontal padding: the borderless `.input-secondary`
-   * wrapper's 8px+8px (inputs.scss) plus the input's own 2px+2px. In a narrow td-sm number
-   * column (e.g. the price, a 60px cell with ~37px of content width) that leaves a
-   * "12,50"-length value too little room, so it scrolls and only its tail stays visible while
-   * editing (the static display uses the full content width and is unaffected). Drop both
-   * paddings so the editor gets exactly the static display's content width — whatever fits
-   * when static fits when editing.
-   *
-   * Scoped to the borderless `.input-secondary` wrapper (number and other single-line grid
-   * editors). The bordered `.input-primary` wrapper (e.g. a LongText editor) keeps its padding,
-   * so its text never sits flush against its border. A mandatory, still-empty editor gets a
-   * 2px red border (`.input-mandatory`, inputs.scss); keep a 2px inner gap there for the same
-   * reason (it has no value yet, so nothing is truncated by it).
+   * A borderless editor gets the static value's full content width, so a value that fits when shown
+   * also fits when edited. A bordered editor (`.input-primary`, e.g. LongText) keeps its padding, and
+   * a mandatory editor's red border keeps a 2px gap.
    */
   .input-secondary {
     padding-left: 0;
@@ -471,33 +422,34 @@
     }
   }
 
+  /* The static value. */
+
   /*
-   * The combobox editor's own wrapper (`.input-dropdown-container`, inputs.scss) carries a global
-   * `min-width: 200px` so a combobox opened in a single-row/detail form always has room for its
-   * dropdown trigger + text. In a grid cell that floor overflows a narrow column the same way the
-   * bare `input` rule above did — so drop it here too, scoped to `.table-cell` only, leaving the
-   * global inputs.scss rule (and therefore every non-grid form) untouched.
+   * An invisible copy of the static value, rendered next to the editor (TableCell.js): it keeps the
+   * column as wide as the value made it, and takes no height.
    */
-  .input-dropdown-container {
-    min-width: 0;
+  .cell-width-keeper {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
   }
 
-  .form-group-table {
-    .input-primary,
-    .input-secondary,
-    .input-dropdown-container {
-      height: 26px;
-      padding-top: 2px;
-      padding-bottom: 2px;
+  /* the same box as the editor, also when empty; an extended (multi-line) cell keeps its height */
+  > div > .cell-text-wrapper:not(.extended) {
+    height: 26px;
+    line-height: 26px;
+  }
 
-      /*
-       * The mandatory-emphasis border (2px solid, top+bottom) must still fit the same 26px
-       * box — absorb it by dropping the remaining vertical padding rather than growing the row.
-       */
-      &.input-mandatory {
-        padding-top: 0;
-        padding-bottom: 0;
-      }
+  /* a label chip keeps its own size, vertically centred in that box */
+  .table-cell-label-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    line-height: normal;
+
+    /* the chip's bottom margin (labels.scss) only spaces wrapped chips in the Labels editor */
+    .labels-label {
+      margin-bottom: 0;
     }
   }
 }
