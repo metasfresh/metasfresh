@@ -22,9 +22,9 @@ export const setCurrentPage = (currentPage) => {
 // See skill playwright-video-delivery § "Test speed vs. recording speed".
 export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
 
-// Hold the currently-painted screen on the video recorder long enough for the freshly-entered
-// values to be captured as a clear, deliberate freeze (the recorder samples ~25 fps and Playwright
-// otherwise fills + confirms within a single frame, so the values are never recorded). NO-OP unless
+// Hold the currently-painted screen long enough for the video recorder to capture it — e.g. freshly
+// entered values, which Playwright otherwise fills + confirms before the recorder receives a frame
+// showing them (it receives frames only when the page repaints; see below). NO-OP unless
 // UAT_CAPTURE is set — so this can only ever slow a deliberate capture run, never a normal/CI run;
 // the value is therefore generous for legibility, not a marginal minimum.
 const CAPTURE_HOLD_MS = 500;
