@@ -118,6 +118,27 @@ public class C_Invoice_Candidate_Assignment_StepDef
 		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s", term.getC_Flatrate_Term_ID()).isZero();
 	}
 
+	/**
+	 * Asserts that an invoice candidate is not assigned to any refund invoice candidate, i.e. it is in no refund base.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Invoice_Candidate identified by bonusIC has no C_Invoice_Candidate_Assignment
+	 * </pre>
+	 */
+	@And("^the C_Invoice_Candidate identified by (.*) has no C_Invoice_Candidate_Assignment$")
+	public void C_Invoice_Candidate_has_no_C_Invoice_Candidate_Assignment(@NonNull final String invoiceCandidateIdentifier)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandidateIdentifier);
+		final int count = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Invoice_Candidate_Assigned_ID, invoiceCandidate.getC_Invoice_Candidate_ID())
+				.create()
+				.count();
+		assertThat(count).as("refund assignments of C_Invoice_Candidate_ID=%s", invoiceCandidate.getC_Invoice_Candidate_ID()).isZero();
+	}
+
 	private void waitForRefundInvoiceCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
 		final I_C_Flatrate_Term term = row.getAsIdentifier(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Flatrate_Term_ID).lookupNotNullIn(contractTable);
