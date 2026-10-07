@@ -9,6 +9,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.lang.SOTrx;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -16,6 +17,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
+import de.metas.order.compensationGroup.calibration.LineCalibration;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
@@ -91,6 +95,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
+	private static final AdMessageKey MSG_AllComponentsLeftOut = AdMessageKey.of("C_CompensationGroup_CalibrationRule_AllComponentsLeftOut");
+
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -547,6 +553,7 @@ public class OrderGroupRepository implements GroupRepository
 		assertOrderNotProcessed(order);
 
 		final ArrayList<I_C_OrderLine> allRegularOrderLines = new ArrayList<>(existingRegularOrderLines);
+		final GroupCalibrations calibrations = request.getCalibrations();
 
 		for (final GroupTemplateRegularLine regularLineToAdd : newGroupTemplate.getRegularLinesToAdd())
 		{
@@ -555,8 +562,18 @@ public class OrderGroupRepository implements GroupRepository
 				continue;
 			}
 
+			if (calibrations != null && calibrations.getByTemplateLineId(regularLineToAdd.getId()).map(LineCalibration::isSkip).orElse(false))
+			{
+				continue;
+			}
+
 			final I_C_OrderLine regularOrderLine = createRegularLineFromTemplate(regularLineToAdd, order, request);
 			allRegularOrderLines.add(regularOrderLine);
+		}
+
+		if (calibrations != null && calibrations.isAllSkipped() && allRegularOrderLines.isEmpty())
+		{
+			throw new AdempiereException(MSG_AllComponentsLeftOut);
 		}
 
 		if (allRegularOrderLines.isEmpty())
@@ -938,7 +955,21 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		orderLine.setC_UOM_ID(from.getQty().getUomId().getRepoId());
-		orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
+		final LineCalibration calibration = request.getCalibrations() != null
+				? request.getCalibrations().getByTemplateLineId(from.getId()).orElse(null)
+				: null;
+		if (calibration != null)
+		{
+			orderLine.setQtyEntered(calibration.getCalibratedQty());
+			// the calibration columns are not updateable: they are only set while the line is new
+			orderLine.setGroupCompensationCalibrationFactor(calibration.getFactor());
+			orderLine.setGroupCompensationQtyEnteredUncalibrated(calibration.getUncalibratedQty());
+			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibration.getRuleId()));
+		}
+		else
+		{
+			orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
+		}
 		orderLine.setC_CompensationGroup_Schema_TemplateLine_ID(from.getId().getRepoId());
 		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
 		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());

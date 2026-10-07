@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -60,6 +61,7 @@ public class CompensationGroupCalibrationRuleRepository
 	{
 		return CalibrationRule.builder()
 				.id(CalibrationRuleId.ofRepoId(record.getC_CompensationGroup_CalibrationRule_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.bpGroupId(BPGroupId.ofRepoIdOrNull(record.getC_BP_Group_ID()))

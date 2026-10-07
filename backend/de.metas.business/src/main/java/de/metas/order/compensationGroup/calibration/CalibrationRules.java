@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /** Active calibration rules, ordered by SeqNo, then by ID. */
 @EqualsAndHashCode
@@ -27,5 +28,10 @@ public final class CalibrationRules
 	public List<CalibrationRule> asList()
 	{
 		return rules;
+	}
+
+	public Optional<CalibrationRule> findFirstMatching(@NonNull final CalibrationMatchKey key)
+	{
+		return rules.stream().filter(rule -> rule.appliesTo(key)).findFirst();
 	}
 }
