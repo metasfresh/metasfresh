@@ -355,6 +355,10 @@ Feature: Compensation groups that were not created by a contract
       | invoice1_goods2             | goods2                  | 1           | 500        |
       | invoice1_goods3             | goods3                  | 1           | 200        |
       | invoice1_discount           | discountProduct         | 1           | -51        |
+    # the invoice's net total: the goods (1000 + 500 + 200) less the discount
+    And validate created invoices
+      | C_Invoice_ID | TotalLines |
+      | invoice1     | 1649       |
 
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
@@ -437,6 +441,10 @@ Feature: Compensation groups that were not created by a contract
       | invoice1_goods2             | goods2                  | 1           | 500        |
       | invoice1_goods3             | goods3                  | 1           | 200        |
       | invoice1_discount           | discountProduct         | 1           | -45        |
+    # the invoice's net total: the goods (1000 + 500 + 200) less the discount
+    And validate created invoices
+      | C_Invoice_ID | TotalLines |
+      | invoice1     | 1655       |
 
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
