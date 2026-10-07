@@ -116,8 +116,9 @@ const runScenario = async ({ tuHasPartner }) => {
                 }
             },
             hus: {
-                [stockPalletQRCode]: { huStatus: 'A', qtyTUs: QTY_TUS_ON_PALLET - 2 },
-                lu1: { huStatus: 'S', qtyTUs: 2 },
+                [stockPalletQRCode]: { huStatus: 'A', tus: [{ isAggregatedTU: true, qtyTUs: QTY_TUS_ON_PALLET - 2 }] },
+                // each pick onto the existing picking pallet adds its own aggregated TU
+                lu1: { huStatus: 'S', tus: [{ isAggregatedTU: true, qtyTUs: 1 }, { isAggregatedTU: true, qtyTUs: 1 }] },
             }
         });
     });
