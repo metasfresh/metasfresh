@@ -18,7 +18,10 @@ import {
 
 describe('Widget helpers', () => {
   afterEach(() => {
-    initNumeralLocales('en', { numberDecimalSeparator: '.', numberGroupingSeparator: ',' });
+    initNumeralLocales('en', {
+      numberDecimalSeparator: '.',
+      numberGroupingSeparator: ',',
+    });
   });
 
   describe('getClassNames', () => {

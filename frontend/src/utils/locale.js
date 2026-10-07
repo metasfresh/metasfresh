@@ -62,6 +62,9 @@ export function isGermanLanguage(languageObj) {
     : false;
 }
 
+/** The number separators of the current user session, see {@link initNumeralLocales} */
+let sessionNumberDelimiters = { decimal: '.', thousands: ',' };
+
 export function initNumeralLocales(lang, locale) {
   sessionNumberDelimiters = {
     decimal: locale.numberDecimalSeparator || '.',
@@ -89,9 +92,6 @@ export function initNumeralLocales(lang, locale) {
     }
   }
 }
-
-/** The number separators of the current user session, see {@link initNumeralLocales} */
-let sessionNumberDelimiters = { decimal: '.', thousands: ',' };
 
 /**
  * @returns {{decimal: string, thousands: string}} the number separators of the current user session's locale.

@@ -10,7 +10,10 @@ const EN = { decimal: '.', thousands: ',' };
 const FR = { decimal: ',', thousands: '\u202F' }; // narrow no-break space grouping
 
 afterEach(() => {
-  initNumeralLocales('en', { numberDecimalSeparator: '.', numberGroupingSeparator: ',' });
+  initNumeralLocales('en', {
+    numberDecimalSeparator: '.',
+    numberGroupingSeparator: ',',
+  });
 });
 
 describe('normalizeDecimalNumberString', () => {

@@ -410,11 +410,40 @@ class FiltersItem extends PureComponent {
           return afcItem;
         });
       }
-      applyFilters(activeFilterClone, () => {
+      applyFilters(this.withDecimalNumbersNormalized(activeFilterClone), () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
       });
     }
+  };
+
+  /**
+   * @method withDecimalNumbersNormalized
+   * @summary The number filter fields keep the text as typed (e.g. '3,' or '-' on the way to '3,57' or '-5'),
+   *          so the decimal numbers are converted to the dot-decimal the backend expects only when the filter is applied.
+   * @param {object} filterToApply
+   */
+  withDecimalNumbersNormalized = (filterToApply) => {
+    const layoutParameters = this.state.filter?.parameters ?? [];
+    const getWidgetType = (parameter) =>
+      parameter.widgetType ??
+      layoutParameters.find(
+        (layoutParameter) =>
+          layoutParameter.parameterName === parameter.parameterName
+      )?.widgetType;
+
+    return {
+      ...filterToApply,
+      parameters: filterToApply.parameters.map((parameter) =>
+        isDecimalNumberField(getWidgetType(parameter))
+          ? {
+              ...parameter,
+              value: normalizeDecimalNumberString(parameter.value),
+              valueTo: normalizeDecimalNumberString(parameter.valueTo),
+            }
+          : parameter
+      ),
+    };
   };
 
   /**
@@ -611,17 +640,11 @@ class FiltersItem extends PureComponent {
                               Moment.isMoment(value)) ||
                             !DATE_FIELD_FORMATS[widgetType]
                           ) {
-                            // the filter state is what gets sent: a typed '3,57' must already be '3.57' there
-                            const isDecimal = isDecimalNumberField(widgetType);
                             this.setValue(
                               property,
-                              isDecimal
-                                ? normalizeDecimalNumberString(value)
-                                : value,
+                              value,
                               id,
-                              isDecimal
-                                ? normalizeDecimalNumberString(valueTo)
-                                : valueTo,
+                              valueTo,
                               filter.filterId,
                               item.defaultValue
                             );
