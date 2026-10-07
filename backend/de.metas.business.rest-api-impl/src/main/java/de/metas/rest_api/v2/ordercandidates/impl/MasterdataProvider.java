@@ -323,6 +323,15 @@ public final class MasterdataProvider
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date, bpartnerId);
 	}
 
+	public ProductInfo getProductInfoForOrderCandidate(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return productMasterDataProvider.getProductInfoForOrderCandidate(productIdentifier, orgId, date, bpartnerId);
+	}
+
 	@Nullable
 	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{

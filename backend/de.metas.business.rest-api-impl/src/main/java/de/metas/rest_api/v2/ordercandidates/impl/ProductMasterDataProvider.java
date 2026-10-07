@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -131,6 +132,25 @@ public final class ProductMasterDataProvider
 		return productInfoCache.getOrLoadNonNull(
 				new ProductCacheKey(orgId, productExternalIdentifier, date, bpartnerId),
 				this::getProductInfo0);
+	}
+
+	public ProductInfo getProductInfoForOrderCandidate(
+			@NonNull final ExternalIdentifier productExternalIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		try
+		{
+			return getProductInfo(productExternalIdentifier, orgId, date, bpartnerId);
+		}
+		catch (final MissingResourceException ex)
+		{
+			final String reason = productExternalIdentifier.getType() == ExternalIdentifier.Type.GTIN
+					? " " + productLookupService.explainUnresolvedGTIN(productExternalIdentifier, date, bpartnerId)
+					: "";
+			throw new OLCandProductNotFoundException(TranslatableStrings.constant(ex.getMessage() + reason));
+		}
 	}
 
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)
