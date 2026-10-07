@@ -267,9 +267,12 @@ public class OrderGroupRepository implements GroupRepository
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
 
-		final List<GroupCompensationLine> compensationLines = groupOrderLines.stream()
+		final List<I_C_OrderLine> compensationLineRecords = groupOrderLines.stream()
 				.filter(I_C_OrderLine::isGroupCompensationLine)
-				.map(OrderGroupRepository::toGroupCompensationLine)
+				.collect(ImmutableList.toImmutableList());
+		final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId = retrieveSchemaLineBases(compensationLineRecords);
+		final List<GroupCompensationLine> compensationLines = compensationLineRecords.stream()
+				.map(compensationLineRecord -> toGroupCompensationLine(compensationLineRecord, basesBySchemaLineId))
 				.collect(ImmutableList.toImmutableList());
 
 		// the packing is needed only when a discount line is restricted to a packing-material category.
@@ -475,9 +478,11 @@ public class OrderGroupRepository implements GroupRepository
 	/**
 	 * note to dev: keep in sync with {@link #updateOrderLineFromCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
 	 */
-	private static GroupCompensationLine toGroupCompensationLine(final I_C_OrderLine groupOrderLine)
+	private static GroupCompensationLine toGroupCompensationLine(
+			@NonNull final I_C_OrderLine groupOrderLine,
+			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId)
 	{
-		final GroupCompensationBase base = retrieveSchemaLineBase(groupOrderLine.getC_CompensationGroup_SchemaLine_ID());
+		final GroupCompensationBase base = getSchemaLineBase(groupOrderLine, basesBySchemaLineId);
 		return GroupCompensationLine.builder()
 				.repoId(OrderLineId.ofRepoId(groupOrderLine.getC_OrderLine_ID()))
 				.groupTemplateLineId(OrderGroupCompensationUtils.extractGroupTemplateLineId(groupOrderLine))
@@ -496,18 +501,48 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** @return the schema line's base; {@link GroupCompensationBase#NONE} when the compensation line is not linked to a schema line */
-	private static GroupCompensationBase retrieveSchemaLineBase(final int compensationGroupSchemaLineId)
+	/**
+	 * @return the bases of the schema lines the given compensation lines are linked to, loaded with one query; lines without a schema line are skipped
+	 */
+	private ImmutableMap<GroupTemplateLineId, GroupCompensationBase> retrieveSchemaLineBases(@NonNull final List<I_C_OrderLine> compensationLineRecords)
 	{
-		if (compensationGroupSchemaLineId <= 0)
+		final ImmutableSet<GroupTemplateLineId> schemaLineIds = compensationLineRecords.stream()
+				.map(OrderGroupCompensationUtils::extractGroupTemplateLineId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (schemaLineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_SchemaLine_ID, schemaLineIds.stream().map(GroupTemplateLineId::getRepoId).collect(ImmutableSet.toImmutableSet()))
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						schemaLine -> GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()),
+						schemaLine -> GroupCompensationBase.of(
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()))));
+	}
+
+	/** @return the schema line's base; {@link GroupCompensationBase#NONE} when the compensation line is not linked to a schema line */
+	private static GroupCompensationBase getSchemaLineBase(
+			@NonNull final I_C_OrderLine compensationLineRecord,
+			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId)
+	{
+		final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(compensationLineRecord);
+		if (schemaLineId == null)
 		{
 			return GroupCompensationBase.NONE;
 		}
 
-		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
-		return GroupCompensationBase.of(
-				ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
-				ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()));
+		final GroupCompensationBase base = basesBySchemaLineId.get(schemaLineId);
+		if (base == null)
+		{
+			throw new AdempiereException("No C_CompensationGroup_SchemaLine found for " + schemaLineId);
+		}
+		return base;
 	}
 
 	@Override
@@ -560,7 +595,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * note to dev: keep in sync with {@link #toGroupCompensationLine(I_C_OrderLine)}
+	 * note to dev: keep in sync with {@link #toGroupCompensationLine(I_C_OrderLine, Map)}
 	 */
 	private void updateOrderLineFromCompensationLine(final I_C_OrderLine compensationLinePO,
 													 final GroupCompensationLine compensationLine,
@@ -873,7 +908,7 @@ public class OrderGroupRepository implements GroupRepository
 	{
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
-		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
+		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord, retrieveSchemaLineBases(ImmutableList.of(compensationLineRecord)));
 		final GroupRegularLine aggregatedRegularLine = toAggregatedRegularLine(compensationLine);
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));

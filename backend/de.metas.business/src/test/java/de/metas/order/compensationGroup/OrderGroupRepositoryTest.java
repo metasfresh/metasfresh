@@ -63,6 +63,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L
@@ -586,6 +587,95 @@ public class OrderGroupRepositoryTest
 		repo.retrieveGroup(groupId);
 
 		assertThat(provider.calls).isZero();
+	}
+
+	/** Several discount lines, each linked to its own schema line, plus a manual one: every line gets its own schema line's base. */
+	@Test
+	void retrieveGroup_severalDiscountLines_eachGetsItsOwnSchemaLineBase()
+	{
+		registerCountingProvider();
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		final I_M_Product regularLineProduct = newInstance(I_M_Product.class);
+		regularLineProduct.setC_UOM_ID(uomId.getRepoId());
+		regularLineProduct.setM_Product_Category_ID(newProductCategoryId().getRepoId());
+		saveRecord(regularLineProduct);
+
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(regularLineProduct.getM_Product_ID());
+		regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		regularLine.setLineNetAmt(new BigDecimal("100"));
+		saveRecord(regularLine);
+
+		final ProductCategoryId categoryA = newProductCategoryId();
+		final ProductCategoryId categoryB = newProductCategoryId();
+		final ProductCategoryId packingCategoryC = newProductCategoryId();
+		final OrderLineId lineA = createDiscountLine(orderCompensationGroupId, schemaLine(schema, categoryA, null));
+		final OrderLineId lineB = createDiscountLine(orderCompensationGroupId, schemaLine(schema, categoryB, null));
+		final OrderLineId lineC = createDiscountLine(orderCompensationGroupId, schemaLine(schema, null, packingCategoryC));
+		final OrderLineId manualLine = createDiscountLine(orderCompensationGroupId, null);
+
+		final Group group = repo.retrieveGroup(OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId));
+
+		final Map<RepoIdAware, GroupCompensationBase> baseByLineId = group.getCompensationLines().stream()
+				.collect(ImmutableMap.toImmutableMap(GroupCompensationLine::getRepoId, GroupCompensationLine::getBase));
+		assertThat(baseByLineId).containsOnlyKeys(lineA, lineB, lineC, manualLine);
+		assertThat(baseByLineId.get(lineA)).isEqualTo(GroupCompensationBase.of(categoryA, null));
+		assertThat(baseByLineId.get(lineB)).isEqualTo(GroupCompensationBase.of(categoryB, null));
+		assertThat(baseByLineId.get(lineC)).isEqualTo(GroupCompensationBase.of(null, packingCategoryC));
+		assertThat(baseByLineId.get(manualLine).isNone()).isTrue();
+	}
+
+	private static I_C_CompensationGroup_SchemaLine schemaLine(
+			@NonNull final I_C_CompensationGroup_Schema schema,
+			@Nullable final ProductCategoryId productCategoryId,
+			@Nullable final ProductCategoryId packingMaterialCategoryId)
+	{
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		if (productCategoryId != null)
+		{
+			schemaLine.setM_Product_Category_ID(productCategoryId.getRepoId());
+		}
+		if (packingMaterialCategoryId != null)
+		{
+			schemaLine.setM_Product_Category_PackingMaterial_ID(packingMaterialCategoryId.getRepoId());
+		}
+		saveRecord(schemaLine);
+		return schemaLine;
+	}
+
+	private OrderLineId createDiscountLine(final int orderCompensationGroupId, @Nullable final I_C_CompensationGroup_SchemaLine schemaLine)
+	{
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLine.setIsGroupCompensationLine(true);
+		if (schemaLine != null)
+		{
+			compensationLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		}
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(BigDecimal.ZERO);
+		compensationLine.setLineNetAmt(BigDecimal.ZERO);
+		saveRecord(compensationLine);
+		return OrderLineId.ofRepoId(compensationLine.getC_OrderLine_ID());
 	}
 
 	private static CountingPackingMaterialProductCategoryProvider registerCountingProvider()
