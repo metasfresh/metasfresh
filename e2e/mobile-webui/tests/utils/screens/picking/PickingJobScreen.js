@@ -191,8 +191,8 @@ export const PickingJobScreen = {
             });
         }
 
-        // Capture mode only (UAT_CAPTURE): the line renders below the fold, so after a pick the picked
-        // quantity would appear in no recorded frame; scroll it into view and hold it there.
+        // Capture mode only (UAT_CAPTURE): a line button may render below the fold, so its picked quantity
+        // can appear in no recorded frame; scroll it into view and hold it there.
         await revealForCaptureIfEnabled(lineButton);
     }),
 
