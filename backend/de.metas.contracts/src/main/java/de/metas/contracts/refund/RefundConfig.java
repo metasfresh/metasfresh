@@ -92,9 +92,6 @@ public class RefundConfig
 	/** If set, the refund line is booked on this product (with its tax and accounts) instead of {@link #productId}. */
 	ProductId bonusProductId;
 
-	/** The partner that the refund is issued to; matches the sales of the invoice partner or of the shipment partner. */
-	BonusRecipient bonusRecipient;
-
 	InvoiceSchedule invoiceSchedule;
 
 	ConditionsId conditionsId;
@@ -116,7 +113,6 @@ public class RefundConfig
 			@Nullable final ProductId productId,
 			@Nullable final ProductCategoryId productCategoryId,
 			@Nullable final ProductId bonusProductId,
-			@Nullable final BonusRecipient bonusRecipient,
 			@Nullable final InvoiceSchedule invoiceSchedule,
 			@NonNull final ConditionsId conditionsId,
 			boolean useInProfitCalculation,
@@ -130,7 +126,6 @@ public class RefundConfig
 		this.productId = productId;
 		this.productCategoryId = productCategoryId;
 		this.bonusProductId = bonusProductId;
-		this.bonusRecipient = bonusRecipient != null ? bonusRecipient : BonusRecipient.INVOICE_PARTNER;
 		this.invoiceSchedule = invoiceSchedule;
 		this.conditionsId = conditionsId;
 		this.useInProfitCalculation = useInProfitCalculation;

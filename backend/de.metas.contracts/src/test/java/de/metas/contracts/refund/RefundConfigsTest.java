@@ -42,21 +42,15 @@ public class RefundConfigsTest
 		return config(productId, bonusProductId, minQty, null);
 	}
 
-	private static RefundConfig config(@Nullable final Integer productId, @Nullable final Integer bonusProductId, final int minQty, @Nullable final BonusRecipient bonusRecipient)
-	{
-		return config(productId, bonusProductId, minQty, bonusRecipient, null);
-	}
-
 	private static RefundConfig configOfCategory(@Nullable final Integer productCategoryId, final int minQty)
 	{
-		return config(null, 1, minQty, null, productCategoryId);
+		return config(null, 1, minQty, productCategoryId);
 	}
 
 	private static RefundConfig config(
 			@Nullable final Integer productId,
 			@Nullable final Integer bonusProductId,
 			final int minQty,
-			@Nullable final BonusRecipient bonusRecipient,
 			@Nullable final Integer productCategoryId)
 	{
 		return RefundConfig.builder()
@@ -69,7 +63,6 @@ public class RefundConfigsTest
 				.percent(Percent.of(10))
 				.productId(productId == null ? null : ProductId.ofRepoId(productId))
 				.bonusProductId(bonusProductId == null ? null : ProductId.ofRepoId(bonusProductId))
-				.bonusRecipient(bonusRecipient)
 				.productCategoryId(productCategoryId == null ? null : ProductCategoryId.ofRepoId(productCategoryId))
 				.build();
 	}
@@ -163,33 +156,6 @@ public class RefundConfigsTest
 		assertThatThrownBy(() -> RefundConfigs.extractRefundProductId(ImmutableList.of(config(3, null, 0), config(4, null, 10))))
 				.isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("exactly one 1 item");
-	}
-
-	@Test
-	public void extractBonusRecipient()
-	{
-		assertThat(RefundConfigs.extractBonusRecipient(ImmutableList.of(config(null, 1, 0, BonusRecipient.SHIPMENT_PARTNER), config(null, 1, 10, BonusRecipient.SHIPMENT_PARTNER))))
-				.isEqualTo(BonusRecipient.SHIPMENT_PARTNER);
-	}
-
-	@Test
-	public void extractBonusRecipient_defaultsToTheInvoicePartner()
-	{
-		assertThat(RefundConfigs.extractBonusRecipient(ImmutableList.of(config(null, 1, 0)))).isEqualTo(BonusRecipient.INVOICE_PARTNER);
-	}
-
-	@Test
-	public void assertValid_configsWithDifferentBonusRecipients_fails()
-	{
-		assertThatThrownBy(() -> RefundConfigs.assertValid(ImmutableList.of(
-				config(null, 1, 0, BonusRecipient.INVOICE_PARTNER),
-				config(null, 1, 10, BonusRecipient.SHIPMENT_PARTNER))))
-				.isInstanceOf(AdempiereException.class)
-				.satisfies(ex -> {
-					final AdempiereException adempiereException = (AdempiereException)ex;
-					assertThat(adempiereException.isUserValidationError()).isTrue();
-					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT.toAD_Message());
-				});
 	}
 
 	/** A condition's bonus is either invoiced by the refund engine or deducted by the customer at payment, never both. */

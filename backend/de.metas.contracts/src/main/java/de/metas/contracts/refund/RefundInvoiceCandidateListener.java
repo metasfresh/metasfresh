@@ -7,8 +7,6 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
-import de.metas.order.OrderId;
-import de.metas.order.OrderShipmentBPartners;
 import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -103,7 +101,6 @@ public final class RefundInvoiceCandidateListener implements IInvoiceCandidateLi
 		}
 		final RefundContractQuery query = new RefundContractQuery(
 				billBPartnerId,
-				OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(candidate.getC_Order_ID())),
 				ProductId.ofRepoId(candidate.getM_Product_ID()),
 				date);
 		return !contractRepository.getIdsByQuery(query).isEmpty();

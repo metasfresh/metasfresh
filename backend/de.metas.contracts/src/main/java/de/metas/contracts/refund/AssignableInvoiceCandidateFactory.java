@@ -2,7 +2,6 @@ package de.metas.contracts.refund;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
@@ -19,7 +18,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePackingInstructions;
-import de.metas.order.OrderShipmentBPartners;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductDAO;
@@ -122,7 +120,6 @@ public class AssignableInvoiceCandidateFactory
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
 				.soTrx(SOTrx.ofBoolean(assignableRecord.isSOTrx()))
 				.huPIItemProductId(extractHUPIItemProductId(assignableRecord))
-				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID())))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision.toInt())

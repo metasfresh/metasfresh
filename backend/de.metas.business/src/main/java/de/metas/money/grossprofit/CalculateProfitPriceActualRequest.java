@@ -43,10 +43,6 @@ public class CalculateProfitPriceActualRequest
 	@NonNull
 	BPartnerId bPartnerId;
 
-	/** The partner the goods are shipped to, if known: the drop-ship partner of the order, else the order's partner. {@code null} if there is no order. */
-	@Nullable
-	BPartnerId shipmentBPartnerId;
-
 	/** The packing instruction of the order line the price is calculated for, as it currently is on that line (which may be not yet saved); {@code null} if there is none. */
 	@Nullable
 	HUPIItemProductId huPIItemProductId;

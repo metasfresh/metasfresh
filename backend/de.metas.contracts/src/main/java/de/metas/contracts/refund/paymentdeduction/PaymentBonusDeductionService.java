@@ -9,8 +9,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
-import de.metas.contracts.refund.BonusRecipient;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
@@ -32,7 +30,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePackingInstructions;
-import de.metas.order.OrderShipmentBPartners;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.OrgId;
@@ -45,7 +42,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_Invoice;
@@ -70,7 +66,7 @@ import java.util.Optional;
  * Computes the bonus that a customer deducts when paying a sales invoice ("bei Zahlung").
  * <p>
  * The bonus comes from the completed refund terms whose configs are deducted at payment and that are valid at the invoice date.
- * A term applies to an invoice line if its partner is the line's bonus recipient (the invoice partner, or the partner that the line's order was shipped to),
+ * A term applies to an invoice line if its partner is the invoice partner (the bonus always goes to the invoice partner),
  * if the line's product matches the term's product and base category (including sub-categories), and if the line passes the term's packaging filter.
  * The bonus is the term's percentage of the net value of the matching lines, booked on the term's bonus product; the VAT of the bonus product comes on top.
  * It is deducted once per invoice: there is none if the invoice already has a payment bonus credit memo.
@@ -150,7 +146,7 @@ public class PaymentBonusDeductionService
 	}
 
 	/**
-	 * @return {@code true} if the contract is valid at the invoice date and its bonus may go to the invoice partner, or to a shipment partner of the invoice's lines (only known from the lines)
+	 * @return {@code true} if the contract is valid at the invoice date and belongs to the invoice partner
 	 */
 	private static boolean isPossiblyApplicable(@NonNull final RefundContract contract, @NonNull final I_C_Invoice invoice)
 	{
@@ -159,8 +155,7 @@ public class PaymentBonusDeductionService
 		{
 			return false;
 		}
-		return BonusRecipient.SHIPMENT_PARTNER.equals(contract.extractBonusRecipient())
-				|| contract.getBPartnerId().getRepoId() == invoice.getC_BPartner_ID();
+		return contract.getBPartnerId().getRepoId() == invoice.getC_BPartner_ID();
 	}
 
 	private static InvoiceId extractInvoiceId(@NonNull final I_C_Invoice invoice)
@@ -241,8 +236,7 @@ public class PaymentBonusDeductionService
 	}
 
 	/**
-	 * @return the completed refund contracts that are deducted at payment, valid at any of the invoices' dates, and whose bonus may go to one of the invoices' partners:
-	 *         the contracts of the invoice partners, and all the contracts whose bonus goes to the shipment partner (who is only known from the invoice lines).
+	 * @return the completed refund contracts of the invoices' partners that are deducted at payment and valid at any of the invoices' dates.
 	 *         Which of them applies to which line is up to {@link RefundContractRepository#isMatching}.
 	 */
 	private ImmutableList<RefundContract> retrieveDeductedAtPaymentContracts(@NonNull final Collection<I_C_Invoice> invoices)
@@ -251,23 +245,13 @@ public class PaymentBonusDeductionService
 		final Timestamp maxDateInvoiced = invoices.stream().map(I_C_Invoice::getDateInvoiced).max(Comparator.naturalOrder()).get();
 		final ImmutableSet<Integer> customerIds = invoices.stream().map(I_C_Invoice::getC_BPartner_ID).collect(ImmutableSet.toImmutableSet());
 
-		final ICompositeQueryFilter<I_C_Flatrate_Term> customerOrShipmentPartnerRecipient = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
-				.setJoinOr()
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, customerIds)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
-						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
-						queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
-								.addOnlyActiveRecordsFilter()
-								.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_BonusRecipient, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_ShipmentPartner)
-								.create());
-
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, maxDateInvoiced)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, minDateInvoiced)
-				.filter(customerOrShipmentPartnerRecipient)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, customerIds)
 				// only the conditions that are deducted at payment; the other refund contracts are not loaded at all
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
 						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
@@ -369,7 +353,7 @@ public class PaymentBonusDeductionService
 
 	private static RefundContractQuery toRefundContractQuery(@NonNull final BPartnerId customerId, @NonNull final InvoiceLineInfo line, @NonNull final LocalDate dateInvoiced)
 	{
-		return new RefundContractQuery(customerId, line.getShipmentBPartnerId(), line.getProductId(), dateInvoiced);
+		return new RefundContractQuery(customerId, line.getProductId(), dateInvoiced);
 	}
 
 	private InvoiceLineInfo toInvoiceLineInfo(
@@ -382,14 +366,10 @@ public class PaymentBonusDeductionService
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID());
 		final I_C_OrderLine orderLine = orderLineId != null ? orderDAO.getOrderLineById(orderLineId) : null;
-		final OrderId orderId = orderLine != null
-				? OrderId.ofRepoId(orderLine.getC_Order_ID())
-				: OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
 
 		return InvoiceLineInfo.builder()
 				.productId(productId)
 				.productCategoryIdAndAncestors(categoryIdAndAncestorsByProductId.getOrDefault(productId, ImmutableSet.of()))
-				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(orderId))
 				.huPIItemProductId(orderLine != null ? OrderLinePackingInstructions.extractHUPIItemProductId(orderLine) : null)
 				.netAmt(Money.of(extractNetAmt(invoice, line, precision), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
 				.build();
@@ -411,7 +391,6 @@ public class PaymentBonusDeductionService
 	{
 		@NonNull ProductId productId;
 		@NonNull ImmutableSet<ProductCategoryId> productCategoryIdAndAncestors;
-		@Nullable BPartnerId shipmentBPartnerId;
 		@Nullable HUPIItemProductId huPIItemProductId;
 		@NonNull Money netAmt;
 	}

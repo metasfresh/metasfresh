@@ -2,7 +2,6 @@ package de.metas.order.grossprofit;
 
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.order.OrderLine;
-import de.metas.order.OrderShipmentBPartners;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -17,7 +16,6 @@ public class OrderLineProfitPriceActualRequests
 		return CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(orderLine.getBPartnerId())
 				.huPIItemProductId(orderLine.getHuPIItemProductId())
-				.shipmentBPartnerId(OrderShipmentBPartners.extractShipmentBPartnerId(orderLine.getOrderId()))
 				.productId(orderLine.getProductId())
 				.date(orderLine.getDatePromised().toLocalDate())
 				.baseAmount(orderLine.getPriceActual().toMoney())

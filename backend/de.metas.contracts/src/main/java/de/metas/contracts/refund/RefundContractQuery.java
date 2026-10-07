@@ -5,11 +5,8 @@ import java.time.LocalDate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.product.ProductId;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -34,7 +31,6 @@ import javax.annotation.Nullable;
  */
 
 @Value
-@AllArgsConstructor
 public class RefundContractQuery
 {
 	public static RefundContractQuery of(
@@ -42,7 +38,6 @@ public class RefundContractQuery
 	{
 		return new RefundContractQuery(
 				invoiceCandidate.getBpartnerLocationId().getBpartnerId(),
-				invoiceCandidate.getShipmentBPartnerId(),
 				invoiceCandidate.getProductId(),
 				invoiceCandidate.getInvoiceableFrom());
 	}
@@ -51,31 +46,16 @@ public class RefundContractQuery
 	{
 		return new RefundContractQuery(
 				request.getBPartnerId(),
-				request.getShipmentBPartnerId(),
 				request.getProductId(),
 				request.getDate());
 	}
 
-	/** The partner that is invoiced. */
 	@NonNull
 	BPartnerId bPartnerId;
-
-	/** The partner that the goods are shipped to; {@code null} if there is none, e.g. because the invoice candidate has no order. */
-	@Nullable
-	BPartnerId shipmentBPartnerId;
 
 	@NonNull
 	ProductId productId;
 
 	@NonNull
 	LocalDate date;
-
-	/** A query for the invoice partner only. */
-	public RefundContractQuery(
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final ProductId productId,
-			@NonNull final LocalDate date)
-	{
-		this(bPartnerId, null, productId, date);
-	}
 }

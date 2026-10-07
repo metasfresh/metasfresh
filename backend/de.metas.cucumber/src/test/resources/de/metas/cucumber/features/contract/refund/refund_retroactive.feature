@@ -35,7 +35,7 @@ Feature: Refund contracts that are completed after the sales were invoiced
       | pp_goods   | refundPLV                         | goodsProduct            | 100      | PCE               | Normal                        |
       | pp_bonus   | refundPLV                         | bonusWare               | 1        | PCE               | Normal                        |
 
-    # the head office is invoiced, the store receives the goods
+    # the store orders, the head office is invoiced
     And metasfresh contains C_BPartners without locations:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | headOffice | Y              | refundPS                      | I               |
@@ -73,22 +73,22 @@ Feature: Refund contracts that are completed after the sales were invoiced
       | icJune                            | Y                     |
       | icJuly                            | Y                     |
 
-    # the term is entered afterwards, with a start date in the past; the store receives the goods
+    # the term is entered afterwards, with a start date in the past; the refund goes to the invoice partner
     When metasfresh contains C_Flatrate_Conditions:
       | Identifier | Type_Conditions |
-      | condShip   | Refund          |
+      | condHead   | Refund          |
     And metasfresh contains C_Flatrate_RefundConfigs:
-      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | BonusRecipient |
-      | cfgShip    | condShip                 | monthlySchedule      | 5             | goodsCategory         | bonusWare        | S              |
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
+      | cfgHead    | condHead                 | monthlySchedule      | 5             | goodsCategory         | bonusWare        |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus |
-      | termShip   | condShip                            | store                       | 2026-06-01 | 2026-12-31 | DR            |
-    And the C_Flatrate_Term identified by termShip is completed
+      | termHead   | condHead                            | headOffice                  | 2026-06-01 | 2026-12-31 | DR            |
+    And the C_Flatrate_Term identified by termHead is completed
 
     # July is the current period: 5% of 2000. June is a past period: no refund candidate, so this finds exactly one.
     Then after not more than 60s, refund C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DateToInvoice | Bill_BPartner_ID |
-      | refundJuly             | termShip           | 100             | 2026-07-31    | store            |
+      | refundJuly             | termHead           | 100             | 2026-07-31    | headOffice       |
     And after not more than 60s, C_Invoice_Candidate_Assignments are found:
       | C_Invoice_Candidate_Term_ID | C_Invoice_Candidate_Assigned_ID | C_Flatrate_Term_ID | AssignedMoneyAmount |
-      | refundJuly                  | icJuly                          | termShip           | 100                 |
+      | refundJuly                  | icJuly                          | termHead           | 100                 |

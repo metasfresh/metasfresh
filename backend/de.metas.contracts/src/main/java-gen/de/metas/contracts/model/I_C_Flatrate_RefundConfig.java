@@ -74,29 +74,6 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_Bonus_Product_ID = "Bonus_Product_ID";
 
 	/**
-	 * Set Bonus recipient.
-	 * Specifies the partner the bonus is issued to.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setBonusRecipient (java.lang.String BonusRecipient);
-
-	/**
-	 * Get Bonus recipient.
-	 * Specifies the partner the bonus is issued to.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getBonusRecipient();
-
-	ModelColumn<I_C_Flatrate_RefundConfig, Object> COLUMN_BonusRecipient = new ModelColumn<>(I_C_Flatrate_RefundConfig.class, "BonusRecipient", null);
-	String COLUMNNAME_BonusRecipient = "BonusRecipient";
-
-	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *

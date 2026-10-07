@@ -13,6 +13,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Flatrate_Term_Test
 {
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(30);
+	private static final BPartnerId OTHER_BPARTNER_ID = BPartnerId.ofRepoId(31);
 
 	private C_Flatrate_Term interceptor;
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
@@ -79,6 +81,26 @@ public class C_Flatrate_Term_Test
 		assertThat(interceptor.createInvoiceCandidatesToInvalidQuery(term, LocalDate.of(2026, 7, 15)).list())
 				.extracting(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.containsExactly(julyAfterStart.getC_Invoice_Candidate_ID());
+	}
+
+	/** the refund always goes to the invoice partner: a candidate invoiced to another partner is not flagged, even if the term's partner ordered (or receives) the goods */
+	@Test
+	public void createInvoiceCandidatesToInvalidQuery_onlyTheCandidatesInvoicedToTheTermsPartner()
+	{
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+		final I_C_Invoice_Candidate invoicedToThePartner = createInvoiceCandidate(LocalDate.of(2026, 7, 20), false);
+
+		final I_C_Order orderOfThePartner = newInstance(I_C_Order.class);
+		orderOfThePartner.setC_BPartner_ID(BPARTNER_ID.getRepoId());
+		saveRecord(orderOfThePartner);
+		final I_C_Invoice_Candidate invoicedToAnotherPartner = createInvoiceCandidate(LocalDate.of(2026, 7, 20), false);
+		invoicedToAnotherPartner.setBill_BPartner_ID(OTHER_BPARTNER_ID.getRepoId());
+		invoicedToAnotherPartner.setC_Order_ID(orderOfThePartner.getC_Order_ID());
+		saveRecord(invoicedToAnotherPartner);
+
+		assertThat(interceptor.createInvoiceCandidatesToInvalidQuery(term, LocalDate.of(2026, 7, 15)).list())
+				.extracting(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.containsExactly(invoicedToThePartner.getC_Invoice_Candidate_ID());
 	}
 
 	/**

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements I_C_Flatrate_RefundConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1107343416L;
+	private static final long serialVersionUID = 394528154L;
 
     /** Standard Constructor */
     public X_C_Flatrate_RefundConfig (final Properties ctx, final int C_Flatrate_RefundConfig_ID, @Nullable final String trxName)
@@ -48,27 +48,6 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	public int getBonus_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bonus_Product_ID);
-	}
-
-	/** 
-	 * BonusRecipient AD_Reference_ID=542145
-	 * Reference name: BonusRecipient
-	 */
-	public static final int BONUSRECIPIENT_AD_Reference_ID=542145;
-	/** ShipmentPartner = S */
-	public static final String BONUSRECIPIENT_ShipmentPartner = "S";
-	/** InvoicePartner = I */
-	public static final String BONUSRECIPIENT_InvoicePartner = "I";
-	@Override
-	public void setBonusRecipient (final java.lang.String BonusRecipient)
-	{
-		set_Value (COLUMNNAME_BonusRecipient, BonusRecipient);
-	}
-
-	@Override
-	public java.lang.String getBonusRecipient() 
-	{
-		return get_ValueAsString(COLUMNNAME_BonusRecipient);
 	}
 
 	@Override

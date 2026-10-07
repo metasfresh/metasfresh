@@ -127,11 +127,6 @@ public class RefundContract
 		return CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getConditionsId);
 	}
 
-	public BonusRecipient extractBonusRecipient()
-	{
-		return RefundConfigs.extractBonusRecipient(refundConfigs);
-	}
-
 	/**
 	 * @return {@code true} if the customer deducts this contract's bonus when paying an invoice, instead of getting it invoiced by the refund engine
 	 */

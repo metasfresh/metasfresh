@@ -54,7 +54,6 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
-	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
@@ -148,11 +147,6 @@ public class RefundConfigs
 		}
 	}
 
-	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
-	{
-		return extractSingleElement(refundConfigs, RefundConfig::getBonusRecipient);
-	}
-
 	public boolean extractDeductedAtPayment(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		return extractSingleElement(refundConfigs, RefundConfig::isDeductedAtPayment);
@@ -241,13 +235,6 @@ public class RefundConfigs
 		}
 
 		// the refund of a contract is issued to one partner
-		if (hasDifferentValues(refundConfigs, RefundConfig::getBonusRecipient))
-		{
-			Loggables.addLog("The given refundConfigs need to all have the same BonusRecipient; refundConfigs={}", refundConfigs);
-
-			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT).markAsUserValidationError();
-		}
-
 		// the bonus of a condition is either invoiced by the refund engine or deducted by the customer at payment
 		if (hasDifferentValues(refundConfigs, RefundConfig::isDeductedAtPayment))
 		{

@@ -94,7 +94,7 @@ class PaymentBonusDeductionServiceTest
 	private CurrencyId currencyId;
 	private int invoiceScheduleId;
 	private BPartnerId customerId;
-	private BPartnerId shipmentPartnerId;
+	private BPartnerId otherPartnerId;
 	private I_M_Product_Category goodsCategory;
 	private I_M_Product_Category packagingCategory;
 	private ProductId fruit;
@@ -119,7 +119,7 @@ class PaymentBonusDeductionServiceTest
 		invoiceScheduleId = invoiceSchedule.getC_InvoiceSchedule_ID();
 
 		customerId = createBPartner();
-		shipmentPartnerId = createBPartner();
+		otherPartnerId = createBPartner();
 
 		// goods > fruit; the base category of a contract includes its sub-categories
 		goodsCategory = createProductCategory(null);
@@ -136,7 +136,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void bonusOnTheNetGoodsValueOnly_includingSubCategories()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		createInvoiceLine(invoiceId, crate, "50", null);
@@ -160,7 +160,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void contractCompensationLine_isNotInTheBase()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(createCompensationGroupContract(), true));
@@ -175,7 +175,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void contractCompensationLinesAggregatedIntoOneLineWithoutOrderLine_areNotInTheBase()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		final I_C_Flatrate_Term contract = createCompensationGroupContract();
@@ -191,7 +191,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void mixedAggregatedLine_staysInTheBase()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final I_C_Flatrate_Term contract = createCompensationGroupContract();
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
@@ -206,7 +206,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void manualCompensationLine_staysInTheBase()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(null, true));
@@ -220,7 +220,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void goodsLineOfAContractGroup_staysInTheBase()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final I_C_Flatrate_Term contract = createCompensationGroupContract();
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLineOfCandidates(invoiceId, "100", createCandidateInGroup(contract, false));
@@ -235,7 +235,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void calculatorOfSeveralInvoices_leavesOutTheContractCompensationLineOfEach()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final I_C_Flatrate_Term contract = createCompensationGroupContract();
 		final InvoiceId invoiceId1 = createSalesInvoice();
 		createInvoiceLine(invoiceId1, fruit, "100", null);
@@ -259,8 +259,8 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void twoTermsWithTwoBonusProducts_twoLines()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "5.2", goodsBonusProduct);
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "0.8", packagingBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "5.2", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "0.8", packagingBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "200", null);
 
@@ -274,37 +274,13 @@ class PaymentBonusDeductionServiceTest
 		assertThat(deduction.getGrossAmount().toBigDecimal()).isEqualByComparingTo("12.84"); // 12.00 + 7 % of the sum
 	}
 
+	/** the bonus always goes to the invoice partner: the term of the partner that ordered and received the goods does not apply */
 	@Test
-	void shipmentPartnerRecipient_matchesTheLinesShippedToThatPartner()
+	void anotherPartnersTerm_doesNotMatch_evenIfThatPartnerOrderedTheGoods()
 	{
-		createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_ShipmentPartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(otherPartnerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
-		createInvoiceLine(invoiceId, fruit, "100", createOrderLine(shipmentPartnerId));
-		createInvoiceLine(invoiceId, fruit, "1000", createOrderLine(customerId)); // shipped to the invoice partner itself
-
-		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
-
-		assertThat(deduction.getLines()).hasSize(1);
-		assertThat(deduction.getLines().get(0).getNetAmt().toBigDecimal()).isEqualByComparingTo("3.00");
-		assertThat(deduction.getCustomerId()).isEqualTo(customerId); // the invoice partner deducts it
-	}
-
-	@Test
-	void shipmentPartnerRecipient_doesNotMatchTheInvoicePartnersOwnTerm()
-	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_ShipmentPartner, goodsCategory, "3", goodsBonusProduct);
-		final InvoiceId invoiceId = createSalesInvoice();
-		createInvoiceLine(invoiceId, fruit, "100", createOrderLine(shipmentPartnerId));
-
-		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
-	}
-
-	@Test
-	void invoicePartnerRecipient_doesNotMatchAnotherPartnersTerm()
-	{
-		createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
-		final InvoiceId invoiceId = createSalesInvoice();
-		createInvoiceLine(invoiceId, fruit, "100", createOrderLine(shipmentPartnerId));
+		createInvoiceLine(invoiceId, fruit, "100", createOrderLine(otherPartnerId));
 
 		assertThat(service.computeForInvoice(invoiceId)).isEmpty();
 	}
@@ -312,7 +288,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void termThatIsNotDeductedAtPayment_noDeduction()
 	{
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		config.setIsDeductedAtPayment(false);
 		saveRecord(config);
 		final InvoiceId invoiceId = createSalesInvoice();
@@ -324,7 +300,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void emptyBase_noDeduction()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, crate, "100", null);
 
@@ -334,7 +310,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void termNotValidAtTheInvoiceDate_noDeduction()
 	{
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final I_C_Flatrate_Term term = loadOutOfTrx(retrieveTermIdOfConditions(config.getC_Flatrate_Conditions_ID()), I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.asTimestamp(DATE_INVOICED.plusDays(1)));
 		saveRecord(term);
@@ -348,7 +324,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void creditMemoAlreadyGenerated_noDeduction()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 
@@ -369,7 +345,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void purchaseInvoice_noDeduction()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createInvoice(false, X_C_DocType.DOCBASETYPE_APInvoice);
 		createInvoiceLine(invoiceId, fruit, "100", null);
 
@@ -379,7 +355,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void salesCreditMemo_noDeduction()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createInvoice(true, X_C_DocType.DOCBASETYPE_ARCreditMemo);
 		createInvoiceLine(invoiceId, fruit, "100", null);
 
@@ -390,7 +366,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void calculatorOfSeveralInvoices_computesTheBonusOfEachInvoice()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId1 = createSalesInvoice();
 		createInvoiceLine(invoiceId1, fruit, "100", null);
 		final InvoiceId invoiceId2 = createSalesInvoice();
@@ -412,7 +388,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void anotherRefundContractThatCannotBeLoaded_doesNotMatter()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 
 		final I_C_Flatrate_Conditions conditionsWithoutConfig = newInstance(I_C_Flatrate_Conditions.class);
 		conditionsWithoutConfig.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -439,7 +415,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void singleConfigWithAMinimumQuantity_failsLikeWhenItIsSaved()
 	{
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		config.setMinQty(new BigDecimal("100"));
 		saveRecord(config);
 		final InvoiceId invoiceId = createSalesInvoice();
@@ -457,7 +433,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void severalConfigs_failLikeWhenTheyAreSaved()
 	{
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "2", goodsBonusProduct);
 		final I_C_Flatrate_RefundConfig secondConfig = newInstance(I_C_Flatrate_RefundConfig.class);
 		InterfaceWrapperHelper.copyValues(config, secondConfig);
 		secondConfig.setMinQty(new BigDecimal("1000"));
@@ -475,7 +451,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void taxIncludedInvoice_bonusOnTheNetAmount()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		final I_C_Invoice invoice = loadOutOfTrx(invoiceId, I_C_Invoice.class);
 		invoice.setIsTaxIncluded(true);
@@ -506,7 +482,7 @@ class PaymentBonusDeductionServiceTest
 		final RefundPackagingMaterialProvider packingMaterialProvider = (huPIItemProductId, bpartnerId) -> Optional.of(huPIItemProductId.equals(crateInstructionId) ? crateMaterialId : boxMaterialId);
 		service = newService(new RefundPackagingFilter(Optional.of(ImmutableList.of(packingMaterialProvider))));
 
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "10", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "10", goodsBonusProduct);
 		config.setIsPackingOptionFiltered(true);
 		saveRecord(config);
 		final I_C_Flatrate_RefundConfig_PackingOption option = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
@@ -526,7 +502,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void onlyContractsThatAreNotDeductedAtPayment_noLinesAreLoaded()
 	{
-		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		config.setIsDeductedAtPayment(false);
 		saveRecord(config);
 		final InvoiceId invoiceId = createSalesInvoice();
@@ -541,7 +517,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void deductedContractOfAnotherPartnerOnly_noLinesAreLoaded()
 	{
-		createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(otherPartnerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
@@ -557,9 +533,9 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void contractNotValidAtAnInvoicesDate_thatInvoicesLinesAreNotLoaded()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
 		// another partner's contract in the first half-year, so that there is a contract deducted at payment on the other invoice's date
-		final I_C_Flatrate_RefundConfig otherConfig = createDeductedAtPaymentTerm(shipmentPartnerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig otherConfig = createDeductedAtPaymentTerm(otherPartnerId, goodsCategory, "3", goodsBonusProduct);
 		final I_C_Flatrate_Term otherTerm = loadOutOfTrx(retrieveTermIdOfConditions(otherConfig.getC_Flatrate_Conditions_ID()), I_C_Flatrate_Term.class);
 		otherTerm.setStartDate(TimeUtil.asTimestamp(LocalDate.parse("2026-01-01")));
 		otherTerm.setEndDate(TimeUtil.asTimestamp(LocalDate.parse("2026-06-30")));
@@ -586,13 +562,13 @@ class PaymentBonusDeductionServiceTest
 	void hasAnyDeductedAtPaymentContract()
 	{
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
-		final I_C_Flatrate_RefundConfig periodicConfig = createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		final I_C_Flatrate_RefundConfig periodicConfig = createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		periodicConfig.setIsDeductedAtPayment(false);
 		saveRecord(periodicConfig);
 		refundContractRepository.resetCaches();
 		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(DATE_INVOICED)).isFalse();
 
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct); // 2026-07-01 .. 2026-12-31
 		refundContractRepository.resetCaches();
 		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(DATE_INVOICED)).isTrue();
 		assertThat(refundContractRepository.hasAnyDeductedAtPaymentContract(LocalDate.parse("2026-06-30"))).isFalse();
@@ -602,7 +578,7 @@ class PaymentBonusDeductionServiceTest
 	@Test
 	void deductedContractOfTheCustomer_linesAreLoaded()
 	{
-		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "3", goodsBonusProduct);
+		createDeductedAtPaymentTerm(customerId, goodsCategory, "3", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
 		final LineLoadCountingInvoiceDAO invoiceDAO = registerLineLoadCountingInvoiceDAO();
@@ -667,7 +643,6 @@ class PaymentBonusDeductionServiceTest
 
 	private I_C_Flatrate_RefundConfig createDeductedAtPaymentTerm(
 			@NonNull final BPartnerId termPartnerId,
-			@NonNull final String bonusRecipient,
 			@NonNull final I_M_Product_Category baseCategory,
 			@NonNull final String percent,
 			@NonNull final ProductId bonusProductId)
@@ -680,7 +655,6 @@ class PaymentBonusDeductionServiceTest
 		config.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 		config.setM_Product_Category_ID(baseCategory.getM_Product_Category_ID());
 		config.setBonus_Product_ID(bonusProductId.getRepoId());
-		config.setBonusRecipient(bonusRecipient);
 		config.setIsDeductedAtPayment(true);
 		config.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		config.setC_InvoiceSchedule_ID(invoiceScheduleId);

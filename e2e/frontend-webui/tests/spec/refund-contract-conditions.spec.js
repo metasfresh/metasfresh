@@ -41,7 +41,7 @@ import {
  * Vertragsbedingungen (540113), tab "Rückvergütung" (C_Flatrate_RefundConfig):
  *   - a refund line can be based on a product category instead of a product; then the bonus product
  *     (the product of the credit memo line) is mandatory;
- *   - the bonus goes to the invoice partner (default) or to the shipment partner (BonusRecipient);
+ *   - the bonus always goes to the invoice partner: the line has no recipient setting;
  *   - with "filter by packaging" (IsPackingOptionFiltered) only the packing materials listed in the new
  *     tab "Rückvergütung Verpackungsoption" count;
  *   - all refund lines of one condition share one product category (AD_Message 545897).
@@ -60,8 +60,6 @@ const LANGUAGES = [
 ];
 
 // Ref-list keys
-const BONUS_RECIPIENT_INVOICE_PARTNER = 'I'; // default
-const BONUS_RECIPIENT_SHIPMENT_PARTNER = 'S';
 const REFUND_MODE_TIERED = 'T'; // default
 const REFUND_BASE_PERCENTAGE = 'P'; // default
 
@@ -81,8 +79,8 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
   });
 
   for (const { language, label } of LANGUAGES) {
-    test(`a category-based refund line with bonus product, shipment-partner recipient and packaging filter is saved, with its packing option (${label})`, async ({ page }) => {
-      allure.story('Refund line: category base, bonus product, bonus recipient and packaging filter');
+    test(`a category-based refund line with bonus product and packaging filter is saved, with its packing option (${label})`, async ({ page }) => {
+      allure.story('Refund line: category base, bonus product and packaging filter');
       const runId = Date.now();
       const packingMaterialKey = `PM${runId}`;
       const masterdata = await Backend.createMasterdata({
@@ -118,15 +116,16 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
         await expect(page.getByTestId(`tab-AD_Tab-${REFUND_PACKING_OPTION_TAB_ID}`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       });
 
-      await test.step('Rückvergütung: a line with category, bonus product, shipment partner and packaging filter', async () => {
+      await test.step('Rückvergütung: a line with category, bonus product and packaging filter', async () => {
         const modal = await openNewIncludedRow(page, REFUND_CONFIG_TAB_ID);
         // without a product, the bonus product is mandatory and the product is not
         await expect(modal.locator('.form-field-Bonus_Product_ID .input-mandatory'), 'Bonusprodukt is mandatory without a product').toHaveCount(1);
         await expect(modal.locator('.form-field-M_Product_ID .input-mandatory'), 'Produkt is not mandatory').toHaveCount(0);
+        // the refund always goes to the invoice partner: there is no recipient field
+        await expect(modal.locator('.form-field-BonusRecipient'), 'no Bonusempfänger field').toHaveCount(0);
 
         await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
         await selectLookupByKey(page, modal, 'Bonus_Product_ID', bonus.productCode, bonus.id);
-        await selectListByKey(page, modal, 'BonusRecipient', BONUS_RECIPIENT_SHIPMENT_PARTNER);
         await setCheckbox(page, modal, 'IsPackingOptionFiltered');
         await fillNumber(page, modal, 'RefundPercent', REFUND_PERCENT);
         await selectFirstListOption(page, modal, 'C_InvoiceSchedule_ID');
@@ -142,15 +141,16 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
         expect(lookupKey(line.M_Product_ID?.value), 'no product').toBeNull();
         expect(lookupKey(line.M_Product_Category_ID.value)).toBe(String(goodsCategoryId));
         expect(lookupKey(line.Bonus_Product_ID.value)).toBe(String(bonus.id));
-        expect(lookupKey(line.BonusRecipient.value)).toBe(BONUS_RECIPIENT_SHIPMENT_PARTNER);
+        expect(line.BonusRecipient, 'no recipient on the line').toBeUndefined();
         expect(line.IsPackingOptionFiltered.value).toBe(true);
         expect(lookupKey(line.RefundBase.value)).toBe(REFUND_BASE_PERCENTAGE);
         expect(Number(line.RefundPercent.value)).toBe(REFUND_PERCENT);
 
         // the new settings are columns of the refund grid, and the row shows the bonus product
-        for (const column of ['M_Product_Category_ID', 'Bonus_Product_ID', 'BonusRecipient', 'IsPackingOptionFiltered']) {
+        for (const column of ['M_Product_Category_ID', 'Bonus_Product_ID', 'IsPackingOptionFiltered']) {
           await expect(page.locator(`th[data-testid="column-${column}"]`), `grid column ${column}`).toHaveCount(1);
         }
+        await expect(page.locator('th[data-testid="column-BonusRecipient"]'), 'no recipient column').toHaveCount(0);
         await expect(page.locator('.tab-pane td[data-cy="cell-Bonus_Product_ID"]').first()).toContainText(bonus.productName);
       });
 
@@ -231,7 +231,6 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
         expect(lookupKey(line.M_Product_ID?.value), 'no product').toBeNull();
         expect(lookupKey(line.M_Product_Category_ID.value)).toBe(categoryAId);
         expect(lookupKey(line.Bonus_Product_ID.value)).toBe(String(bonus.id));
-        expect(lookupKey(line.BonusRecipient.value), 'default recipient').toBe(BONUS_RECIPIENT_INVOICE_PARTNER);
         expect(line.IsPackingOptionFiltered.value, 'packaging filter off by default').toBe(false);
         expect(lookupKey(line.RefundMode.value), 'default refund mode').toBe(REFUND_MODE_TIERED);
       });
