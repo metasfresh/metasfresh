@@ -7,6 +7,7 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,9 +22,13 @@ public class CalibrationRule
 	private static final AdMessageKey MSG_BPartnerOrGroupRequired = AdMessageKey.of("C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired");
 	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
 
-	/** null while the rule is not saved yet */
+	/**
+	 * null while the rule is not saved yet
+	 */
 	@Nullable CalibrationRuleId id;
-	/** {@link OrgId#ANY} applies to every organization */
+	/**
+	 * {@link OrgId#ANY} applies to every organization
+	 */
 	@NonNull OrgId orgId;
 	int seqNo;
 	@Nullable BPartnerId bpartnerId;
@@ -73,5 +78,10 @@ public class CalibrationRule
 				&& (productId == null || ProductId.equals(productId, key.getProductId()))
 				&& (productCategoryId == null || ProductCategoryId.equals(productCategoryId, key.getProductCategoryId()))
 				&& (schemaId == null || GroupTemplateId.equals(schemaId, key.getGroupTemplateId()));
+	}
+
+	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
+	{
+		return qtyEnteredUncalibrated.multiply(getFactor()).roundToUOMPrecision();
 	}
 }

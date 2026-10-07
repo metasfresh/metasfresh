@@ -136,11 +136,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final ConditionsId contractConditionsId = extractContractConditionsId(quickInput).orElse(null);
 
-		final BigDecimal qty = extractQty(quickInput);
 		final Group group = orderGroupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
-				.qty(qty)
-				.calibrations(calibrationService.computeCalibrations(order, groupTemplate, qty))
+				.qty(extractQty(quickInput))
+				.calibrations(calibrationService.computeCalibrations(order, groupTemplate))
 				.createGroup(orderId, contractConditionsId);
 
 		if (groupTemplate.isInheritPackingInstruction())

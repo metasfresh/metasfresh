@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -99,12 +100,13 @@ class CalibrationRulesTest
 	@Test
 	void findFirstMatching_lowestSeqNoThenIdWins()
 	{
-		final CalibrationRules rules = new CalibrationRules(Arrays.asList(
+		final CalibrationRules rules = CalibrationRules.of(Arrays.asList(
 				rule(3, 20).build(),
 				rule(2, 10).bpartnerId(BPartnerId.ofRepoId(99)).build(),
 				rule(5, 10).build(),
 				rule(4, 10).build()));
 
+		//noinspection DataFlowIssue
 		assertThat(rules.findFirstMatching(key().build()).map(r -> r.getId().getRepoId())).contains(4);
 	}
 
@@ -112,7 +114,7 @@ class CalibrationRulesTest
 	void ordering_ruleWithoutIdSortsBeforeRulesWithIdOnSameSeqNo()
 	{
 		final CalibrationRule unsaved = rule(1, 10).id(null).build();
-		final CalibrationRules rules = new CalibrationRules(Arrays.asList(
+		final CalibrationRules rules = CalibrationRules.of(Arrays.asList(
 				rule(2, 10).build(),
 				unsaved,
 				rule(3, 5).build()));
@@ -124,7 +126,10 @@ class CalibrationRulesTest
 	@Test
 	void findFirstMatching_noMatch()
 	{
-		final CalibrationRules rules = new CalibrationRules(Arrays.asList(rule(1, 10).productId(ProductId.ofRepoId(31)).build()));
+		final CalibrationRules rules = CalibrationRules.of(Collections.singletonList(
+				rule(1, 10).productId(ProductId.ofRepoId(31)).build()
+		));
+		
 		assertThat(rules.findFirstMatching(key().build())).isEmpty();
 	}
 }

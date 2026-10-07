@@ -17,9 +17,6 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Repository Tables: C_CompensationGroup_CalibrationRule
  * Repository Cluster: CompensationGroupCalibrationRuleRepository, CalibrationRuleMasterdataRepository
@@ -38,7 +35,6 @@ public class CompensationGroupCalibrationRuleRepository
 	public static CompensationGroupCalibrationRuleRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(CompensationGroupCalibrationRuleRepository.class, CompensationGroupCalibrationRuleRepository::new);
 	}
 
@@ -49,12 +45,11 @@ public class CompensationGroupCalibrationRuleRepository
 
 	private CalibrationRules retrieveActiveRules()
 	{
-		final List<CalibrationRule> rules = queryBL.createQueryBuilder(I_C_CompensationGroup_CalibrationRule.class)
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_CalibrationRule.class)
 				.addOnlyActiveRecordsFilter()
 				.stream()
 				.map(CompensationGroupCalibrationRuleRepository::fromRecord)
-				.collect(Collectors.toList());
-		return new CalibrationRules(rules);
+				.collect(CalibrationRules.collect());
 	}
 
 	@NonNull
@@ -69,7 +64,7 @@ public class CompensationGroupCalibrationRuleRepository
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.schemaId(GroupTemplateId.ofRepoIdOrNull(record.getC_CompensationGroup_Schema_ID()))
-				.factor(Percent.of(record.getGroupCompensationCalibrationFactor().movePointRight(2)))
+				.factor(Percent.of(record.getGroupCompensationCalibrationFactor()))
 				.build();
 	}
 }

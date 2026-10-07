@@ -27,11 +27,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.effective.BPartnerAddressEffective;
 import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
@@ -77,10 +77,10 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.promotioncode.PromotionCodeId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
@@ -807,7 +807,7 @@ class OLCandOrderFactory
 		final Group group = orderGroupsRepository.prepareNewGroup()
 				.groupTemplate(groupTemplate)
 				.qty(orderedQty)
-				.calibrations(calibrationService.computeCalibrations(order, groupTemplate, orderedQty))
+				.calibrations(calibrationService.computeCalibrations(order, groupTemplate))
 				.createGroup(orderId, flatrateConditionsId);
 
 		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.
