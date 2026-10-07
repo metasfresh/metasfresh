@@ -115,7 +115,8 @@ describe('TableRow — Escape restores the stored value, not the displayed text'
       isAttributeWidget: false,
     });
     expect(instance.state.edited).toBe(NUMBER_PROPERTY);
-    updatePropertyValue.mockClear();
+    // opening the editor writes nothing: the editor shows the stored value
+    expect(updatePropertyValue).not.toHaveBeenCalled();
 
     const escapeEvent = pressEscape(instance, NUMBER_PROPERTY, '7');
 

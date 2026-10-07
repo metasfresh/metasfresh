@@ -242,26 +242,23 @@ class TableRow extends PureComponent {
     }
 
     const { edited } = this.state;
-    const inputContent = event.target.value;
 
-    // here `edited` controls if on {enter} we should edit a widget, or only submit it.
-    // if true - property will be edited. Otherwise just saved.
-    // If widget is not active - use the stored field value as the initial value
-    let fieldValue = event.target.value;
-
+    // Enter on a cell that is not being edited opens its editor, which shows the stored value;
+    // nothing is written. Enter in an open editor saves the editor's value.
     if (!edited) {
-      fieldValue = this.getFieldValue(property) ?? '';
       this.handleEditProperty({
         event,
         property,
         focus: true,
         readonly,
       });
+      return;
     }
 
+    const inputContent = event.target.value;
     this.setState(
       {
-        valueBeforeEditing: fieldValue,
+        valueBeforeEditing: inputContent,
       },
       () => this.writeScalarFieldValue(property, inputContent)
     );

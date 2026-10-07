@@ -102,3 +102,62 @@ test.describe('Sales order-line grid — Escape after double-click keeps the val
     });
   });
 });
+
+test.describe('Sales order-line grid — Enter opens a cell with its stored value (de_DE)', () => {
+  test('Enter on a selected quantity cell opens it with the quantity; Escape and Tab keep it', async ({ page }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Order-line grid — Enter opens the editor with the stored value');
+    allure.severity('critical');
+    test.setTimeout(180000);
+
+    const masterdata = await createMasterdata('de_DE');
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await gotoOrderList();
+    const recordId = await createNewOrder();
+    await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await addOrderLine(recordId, {
+      productCode: masterdata.products.Product1.productCode,
+      quantity: 3,
+    });
+
+    const qtyCell = page.locator(`[data-cy="cell-${QTY_COLUMN}"]`).first();
+    await expect(qtyCell).toContainText('3', { timeout: SLOW_ACTION_TIMEOUT });
+    const linePatches = trackLinePatches(page, recordId);
+    const editor = qtyCell.locator('input').first();
+
+    for (const leaveKey of ['Escape', 'Tab']) {
+      await test.step(`Select the cell, Enter, then ${leaveKey}`, async () => {
+        await qtyCell.click();
+        await page.keyboard.press('Enter');
+        await editor.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(editor, 'the editor opens with the stored quantity').toHaveValue('3');
+
+        await page.keyboard.press(leaveKey);
+        await editor.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(qtyCell, `the quantity is still shown after ${leaveKey}`).toContainText('3');
+      });
+    }
+
+    await test.step('No empty quantity was sent', async () => {
+      const clearing = linePatches.filter((patch) => {
+        const operations = JSON.parse(patch.body || '[]');
+        return operations.some(
+          (operation) => operation.path === QTY_COLUMN && (operation.value === null || operation.value === '')
+        );
+      });
+      expect(clearing, 'Enter then Escape/Tab must not clear the quantity').toEqual([]);
+    });
+
+    await test.step('After a reload the quantity is unchanged', async () => {
+      await page.reload();
+      await expect(page.locator(`[data-cy="cell-${QTY_COLUMN}"]`).first()).toContainText('3', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+    });
+  });
+});
