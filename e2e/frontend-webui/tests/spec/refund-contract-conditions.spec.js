@@ -22,6 +22,7 @@ import {
   openNewIncludedRow,
   openNewRecord,
   openRecord,
+  recordRejectedSaveReasons,
   REFUND_CONFIG_TAB_ID,
   REFUND_PACKING_OPTION_TAB_ID,
   selectFirstListOption,
@@ -65,37 +66,6 @@ const REFUND_MODE_TIERED = 'T'; // default
 const REFUND_BASE_PERCENTAGE = 'P'; // default
 
 const REFUND_PERCENT = 3;
-
-/**
- * Records, in order, the reason of every rejected save (PATCH) in the Vertragsbedingungen window, as the server returned it.
- * Which rule rejects the line (AD_Message 545897) is pinned by the unit test RefundConfigsTest; here the dialog
- * must show exactly the reason the server gave.
- */
-const recordRejectedSaveReasons = (page) => {
-  const reasons = [];
-  const listener = async (response) => {
-    if (response.request().method() !== 'PATCH' || !response.url().includes(`/window/${CONDITIONS_WINDOW_ID}/`)) {
-      return;
-    }
-    try {
-      const body = await response.json();
-      if (!response.ok()) {
-        reasons.push(body?.message || null);
-        return;
-      }
-      const documents = Array.isArray(body) ? body : body.documents || [body];
-      for (const document of documents) {
-        if (document?.saveStatus?.error) {
-          reasons.push(document.saveStatus.reason || null);
-        }
-      }
-    } catch (nonJsonResponse) {
-      /* not a document response */
-    }
-  };
-  page.on('response', listener);
-  return { reasons, stop: () => page.off('response', listener) };
-};
 
 test.describe('Refund contracts: refund lines in Vertragsbedingungen and product-less refund terms in Verträge', () => {
   test.beforeEach(async ({ page }) => {
@@ -269,7 +239,8 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
       await test.step('a second line of another product category is rejected with the message', async () => {
         // the line is rejected as soon as it is complete (its category differs from the first line's), so the
         // rejected saves are recorded from the start; the last one carries the reason the dialog has to show
-        const rejectedSaves = recordRejectedSaveReasons(page);
+        // (that this reason is AD_Message 545897 is pinned by RefundConfigsTest)
+        const rejectedSaves = recordRejectedSaveReasons(page, CONDITIONS_WINDOW_ID);
         const modal = await openNewIncludedRow(page, REFUND_CONFIG_TAB_ID);
         await selectLookupByKey(page, modal, 'Bonus_Product_ID', bonus.productCode, bonus.id);
         await fillNumber(page, modal, 'RefundPercent', REFUND_PERCENT);
