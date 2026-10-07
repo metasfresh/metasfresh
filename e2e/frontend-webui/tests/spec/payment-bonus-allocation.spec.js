@@ -25,6 +25,7 @@ import {
   openNewIncludedRow,
   openNewRecord,
   openRecord,
+  recordRejectedSaveReasons,
   REFUND_CONFIG_TAB_ID,
   selectFirstListOption,
   selectListByKey,
@@ -41,7 +42,7 @@ import {
  *   - Vertragsbedingungen (540113), tab Rückvergütung: such a condition has exactly one refund line; a second
  *     one is rejected with AD_Message 545906.
  *   - Zahlung-Zuordnung (the payment allocation view, launched from a payment): the Zahlungsbonus column of the
- *     invoice is pre-filled with the bonus (percentage of the invoice's grand total); allocating creates a
+ *     invoice is pre-filled with the bonus (percentage of the invoice's net goods, plus VAT); allocating creates a
  *     credit memo "Zahlungsbonus-Gutschrift" (DocSubType PB) over the bonus that references the invoice and
  *     is allocated against it, so the invoice ends up paid.
  *   - When the bonus is above the open amount, the column is pre-filled with 0 and a note says why; a bonus
@@ -68,15 +69,6 @@ const INVOICE_LINE_TAB_ID = 270; // Rechnung > Rechnungsposition
 const INVOICE_TAX_TAB = 'AD_Tab-271'; // Rechnung > Rechnungs Steuer
 const DOCTYPE_WINDOW_ID = 135; // Belegart (C_DocType)
 const DOCSUBTYPE_PAYMENT_BONUS_CREDIT_MEMO = 'PB';
-
-// AD_Message 545906 (de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentSingleLine), texts from
-// migration 5828050. The message itself is under test, so its text is asserted; it cannot be read through the
-// WebUI instead (the test role has no access to the system window "Meldung", and the error the WebUI receives
-// carries only the translated text), hence one text per login language.
-const MSG_DEDUCTED_AT_PAYMENT_SINGLE_LINE = {
-  de_DE: 'Eine Vertragsbedingung mit Abzug bei Zahlung hat genau eine aktive Rückvergütungszeile, mit Mindestmenge 0. Ein weiterer Bonus braucht eine eigene Vertragsbedingung.',
-  en_US: 'A contract condition that is deducted at payment has exactly one active refund line, with minimum quantity 0. Another bonus needs a condition of its own.',
-};
 
 test.describe('Payment bonus: a refund deducted at payment, applied in the payment allocation view', () => {
   test.beforeEach(async ({ page }) => {
@@ -110,16 +102,21 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
     });
 
     await test.step('a second refund line is rejected with the message', async () => {
+      // the rejected saves are recorded from the start; the last one carries the reason the dialog has to show
+      // (that this reason is AD_Message 545906 is pinned by C_Flatrate_RefundConfig_Test)
+      const rejectedSaves = recordRejectedSaveReasons(page, CONDITIONS_WINDOW_ID);
       const modal = await openNewIncludedRow(page, REFUND_CONFIG_TAB_ID);
       await selectListByKey(page, modal, 'M_Product_Category_ID', categoryId);
       await selectLookupByKey(page, modal, 'Bonus_Product_ID', bonus.productCode, bonus.id);
       await fillNumber(page, modal, 'MinQty', 100);
       await fillNumber(page, modal, 'RefundPercent', 5);
       await selectFirstListOption(page, modal, 'C_InvoiceSchedule_ID');
+      rejectedSaves.stop();
+      const reason = rejectedSaves.reasons[rejectedSaves.reasons.length - 1];
+      expect(reason, 'the rejecting save carries a reason').toBeTruthy();
 
       await expect(modal.locator('.window-indicator-container .bar.error')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
-      await expect(modal.locator('.window-indicator-container .message-bar .text'))
-        .toContainText(MSG_DEDUCTED_AT_PAYMENT_SINGLE_LINE[LANGUAGE], { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(modal.locator('.window-indicator-container .message-bar .text'), 'the dialog shows the server\'s reason').toHaveText(reason, { timeout: SLOW_ACTION_TIMEOUT });
       await closeModal(modal); // the native "leave?" dialog is accepted
 
       const rows = await getRefundConfigRows(conditionsId);
@@ -136,7 +133,7 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
     const customer = masterdata.bpartners.CUSTOMER;
     const bonus = masterdata.products.BONUS;
     const [invoice] = invoices;
-    const bonusCents = percentOfCents(invoice.grandTotalCents, REFUND_PERCENT);
+    const { bonusCents, goodsTaxId } = await getExpectedBonus(invoice.id);
 
     await createDeductedAtPaymentContract(page, { runId, customer, categoryId: masterdata.productCategories.GOODS_CATEGORY.id, bonus });
 
@@ -189,6 +186,8 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
       expect(lookupKey(creditMemo.DocStatus)).toBe('CO');
       expect(creditMemo.IsPaid).toBe(true);
       expect(await getGrandTotalCents(creditMemoId), 'credit memo over the bonus').toBe(bonusCents);
+      const creditMemoTaxIds = ((await getTabRows(SALES_INVOICE_WINDOW_ID, creditMemoId, INVOICE_TAX_TAB)) ?? []).map((l) => lookupKey(l.fieldsByName.C_Tax_ID.value));
+      expect(creditMemoTaxIds, 'the bonus has the VAT of the goods, as the expected bonus assumes').toEqual([goodsTaxId]);
       expect(lookupKey(creditMemo.C_BPartner_ID)).toBe(String(customer.id));
       const docTypeId = lookupKey(creditMemo.C_DocTypeTarget_ID);
       expect(lookupKey((await getFieldData(DOCTYPE_WINDOW_ID, docTypeId, 'DocBaseType')).value)).toBe('ARC');
@@ -213,7 +212,7 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
     const { masterdata, invoices } = await setUpCustomer(page, { orders: 1 });
     const customer = masterdata.bpartners.CUSTOMER;
     const [invoice] = invoices;
-    const bonusCents = percentOfCents(invoice.grandTotalCents, REFUND_PERCENT);
+    const { bonusCents } = await getExpectedBonus(invoice.id);
     const openCents = OPEN_AFTER_FIRST_PAYMENT_CENTS;
     expect(openCents, 'what is left open is less than the bonus').toBeLessThan(bonusCents);
 
@@ -223,7 +222,10 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
       const row = invoiceRow(page, invoice.documentNo);
       expect(await cellText(row, 'paymentBonusAmt'), 'no bonus without a contract: the cell is empty').toBe('');
       await markInvoiceForAllocation(page, row);
+      await expectQuickAction(page, 'PaymentsView_Allocate', { disabled: false });
+      const allocated = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
       await clickQuickAction(page, 'PaymentsView_Allocate');
+      expect((await allocated).ok(), 'Zahlung-Zuordnung runs without error').toBe(true);
       await expect.poll(async () => getAllocatedCents(invoice.id), {
         message: 'amount allocated to the invoice by the first payment',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
@@ -435,14 +437,18 @@ async function enterPaymentBonus(page, row, cents) {
 async function expectQuickAction(page, processValue, { disabled }) {
   let reason = null;
   await expect.poll(async () => {
-    const item = await openQuickActionsDropdownListing(page, processValue);
-    if (!item) {
-      return 'not listed';
+    try {
+      const item = await openQuickActionsDropdownListing(page, processValue);
+      if (!item) {
+        return 'not listed';
+      }
+      const isDisabled = (await item.getAttribute('class')).includes('quick-actions-item-disabled');
+      reason = isDisabled ? (await item.locator('small').innerText()).trim().replace(/^\((.*)\)$/s, '$1') : null;
+      return isDisabled ? 'disabled' : 'enabled';
+    } finally {
+      // also when reading the item failed midway, so that the next attempt starts with a closed dropdown
+      await closeQuickActionsDropdown(page);
     }
-    const isDisabled = (await item.getAttribute('class')).includes('quick-actions-item-disabled');
-    reason = isDisabled ? (await item.locator('small').innerText()).trim().replace(/^\((.*)\)$/s, '$1') : null;
-    await closeQuickActionsDropdown(page);
-    return isDisabled ? 'disabled' : 'enabled';
   }, { message: `quick action ${processValue}`, timeout: VERY_SLOW_ACTION_TIMEOUT, intervals: [1000] }).toBe(disabled ? 'disabled' : 'enabled');
   return reason;
 }
@@ -505,6 +511,23 @@ async function getGrandTotalCents(invoiceId) {
   const taxLines = (await getTabRows(SALES_INVOICE_WINDOW_ID, invoiceId, INVOICE_TAX_TAB)) ?? [];
   expect(taxLines.length, `tax lines of invoice ${invoiceId}`).toBeGreaterThan(0);
   return taxLines.reduce((sum, line) => sum + toCents(line.fieldsByName.TaxBaseAmt.value) + toCents(line.fieldsByName.TaxAmt.value), 0);
+}
+
+/**
+ * The bonus the invoice gets, with VAT on top: REFUND_PERCENT % of the invoice's net goods, plus VAT at the goods' rate.
+ * That the bonus product has the goods' tax (the masterdata gives every product the default tax category) is checked on
+ * the credit memo of the allocation test.
+ * @returns { bonusCents, goodsTaxId }
+ */
+async function getExpectedBonus(invoiceId) {
+  const taxLines = (await getTabRows(SALES_INVOICE_WINDOW_ID, invoiceId, INVOICE_TAX_TAB)) ?? [];
+  expect(taxLines, `invoice ${invoiceId} has one tax, that of the goods`).toHaveLength(1);
+  const baseCents = toCents(taxLines[0].fieldsByName.TaxBaseAmt.value);
+  const taxCents = toCents(taxLines[0].fieldsByName.TaxAmt.value);
+  const netBonusCents = percentOfCents(baseCents, REFUND_PERCENT);
+  const bonusTaxCents = (netBonusCents * taxCents) / baseCents;
+  expect(Number.isInteger(bonusTaxCents), `VAT of the ${netBonusCents} cents bonus is a whole number of cents`).toBe(true);
+  return { bonusCents: netBonusCents + bonusTaxCents, goodsTaxId: lookupKey(taxLines[0].fieldsByName.C_Tax_ID.value) };
 }
 
 /** The sum of the invoice's allocation lines (payments and credit memos allocated to it). */
