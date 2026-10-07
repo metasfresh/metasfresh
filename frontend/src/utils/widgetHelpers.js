@@ -7,6 +7,7 @@ import {
   DATE_TIMEZONE_FORMAT,
   DATE_FIELD_FORMATS,
 } from '../constants/Constants';
+import { normalizeDecimalNumberString } from './locale';
 
 /*
  * Helper function returning proper date field formatting depending on the
@@ -91,6 +92,25 @@ export function isNumberField(widgetType) {
 }
 
 /**
+ * @method isDecimalNumberField
+ * @summary Tells whether the widget takes a fractional number the user types with the separators of his locale
+ *          (e.g. a decimal comma in German). Such a widget renders a text input, because a browser number input
+ *          silently drops a comma, and converts the typed text to a dot-decimal before patching it.
+ * @param {string} widgetType
+ */
+export function isDecimalNumberField(widgetType) {
+  switch (widgetType) {
+    case 'Amount':
+    case 'Quantity':
+    case 'Number':
+    case 'CostPrice':
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
  * @method formatValueByWidgetType
  * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
  * @param {string} widgetType
@@ -134,7 +154,11 @@ export function validatePrecision({
     precisionProcessed = 0;
   }
 
-  return precisionProcessed < (widgetValue.split('.')[1] || []).length
+  const normalizedValue = isDecimalNumberField(widgetType)
+    ? normalizeDecimalNumberString(widgetValue)
+    : widgetValue;
+
+  return precisionProcessed < (normalizedValue.split('.')[1] || []).length
     ? false
     : true;
 }

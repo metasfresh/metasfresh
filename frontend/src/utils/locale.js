@@ -84,3 +84,78 @@ export function initNumeralLocales(lang, locale) {
     }
   }
 }
+
+/**
+ * @returns {{decimal: string, thousands: string}} the number separators of the logged-in user's session locale,
+ *          as registered into numeral by {@link initNumeralLocales}
+ */
+const getSessionNumberDelimiters = () => numeral.localeData().delimiters;
+
+/**
+ * @summary Converts a number the user typed with the separators of the session locale into the
+ *          dot-decimal form the backend expects. The rules:
+ *          - when the text contains the session's decimal separator, every grouping separator is dropped
+ *            and the decimal separator becomes a dot (de: '1.234,56' -> '1234.56', en: '1,234.56' -> '1234.56');
+ *          - when it does not, a single dot is still read as the decimal point, so '3.57' keeps working for a
+ *            user whose decimal separator is a comma; any other separator is a grouping one
+ *            (de: '1.234.567' -> '1234567', en: '1,234' -> '1234').
+ * @param {string} text the raw text from the input
+ * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ * @returns {string} the normalized number; an empty or missing value is returned as is
+ */
+export function normalizeDecimalNumberString(
+  text,
+  delimiters = getSessionNumberDelimiters()
+) {
+  if (typeof text !== 'string' || !text) {
+    return text;
+  }
+
+  const { decimal, thousands } = delimiters;
+  const trimmed = text.trim();
+  const decimalIdx = trimmed.lastIndexOf(decimal);
+
+  if (decimal !== '.' && decimalIdx >= 0) {
+    const integerPart = trimmed.substring(0, decimalIdx);
+    const fractionPart = trimmed.substring(decimalIdx + 1);
+    return `${removeSeparators(integerPart, [
+      thousands,
+      '.',
+      ',',
+    ])}.${fractionPart}`;
+  } else if (trimmed.indexOf('.') === trimmed.lastIndexOf('.')) {
+    return removeSeparators(
+      trimmed,
+      [thousands, ','].filter((s) => s !== '.')
+    );
+  } else {
+    return removeSeparators(trimmed, [thousands, '.', ',']);
+  }
+}
+
+const removeSeparators = (text, separators) =>
+  separators.reduce((acc, separator) => acc.split(separator).join(''), text);
+
+/**
+ * @summary Tells whether a text may be typed into a decimal number input: digits, a leading minus,
+ *          dots, commas and the session's grouping separator (e.g. the Swiss apostrophe).
+ * @param {string} text
+ * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ */
+export function isAllowedDecimalNumberInput(
+  text,
+  delimiters = getSessionNumberDelimiters()
+) {
+  const allowedSeparators = [
+    '.',
+    ',',
+    delimiters.decimal,
+    delimiters.thousands,
+  ];
+  return [...(text ?? '')].every(
+    (char, idx) =>
+      (char >= '0' && char <= '9') ||
+      allowedSeparators.includes(char) ||
+      (char === '-' && idx === 0)
+  );
+}

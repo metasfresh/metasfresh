@@ -8,7 +8,11 @@ import {
   DATE_TIMEZONE_FORMAT,
   TIME_FORMAT,
 } from '../../constants/Constants';
-import { getClassNames, getFormattedDate } from '../../utils/widgetHelpers';
+import {
+  getClassNames,
+  getFormattedDate,
+  isDecimalNumberField,
+} from '../../utils/widgetHelpers';
 import { withForwardedRef } from '../hoc/WithRouterAndRef';
 
 import ActionButton from './ActionButton';
@@ -469,6 +473,7 @@ class WidgetRenderer extends PureComponent {
               valueFrom={widgetData[0].value}
               valueTo={widgetData[0].valueTo}
               step={step}
+              isDecimalNumber={isDecimalNumberField(widgetType)}
               devices={devices}
               //
               id={widgetProperties.id}
@@ -495,6 +500,7 @@ class WidgetRenderer extends PureComponent {
                 widgetProperties.value /* the value up-to-date, even if was not already PATCHed */
               }
               step={step}
+              isDecimalNumber={isDecimalNumberField(widgetType)}
               devices={devices}
               //
               id={widgetProperties.id}

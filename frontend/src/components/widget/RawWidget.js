@@ -3,7 +3,15 @@ import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 
-import { getWidgetField, shouldPatch } from '../../utils/widgetHelpers';
+import {
+  getWidgetField,
+  isDecimalNumberField,
+  shouldPatch,
+} from '../../utils/widgetHelpers';
+import {
+  isAllowedDecimalNumberInput,
+  normalizeDecimalNumberString,
+} from '../../utils/locale';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
@@ -352,12 +360,19 @@ export class RawWidget extends PureComponent {
   };
 
   handleChange = (e, isValueTo = false) => {
-    const { handleChange, filterWidget, fields, id, widgetData } = this.props;
+    const { handleChange, filterWidget, fields, id, widgetData, widgetType } =
+      this.props;
     if (!handleChange) return;
 
     const widgetFieldName = getWidgetField({ filterWidget, fields });
 
     const valueToSet = e.target.value;
+    if (
+      isDecimalNumberField(widgetType) &&
+      !isAllowedDecimalNumberInput(valueToSet)
+    ) {
+      return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves
+    }
     const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
     const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
 
@@ -382,6 +397,13 @@ export class RawWidget extends PureComponent {
     const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
       this.props;
     const { cachedValue } = this.state;
+
+    // the user typed the number with the separators of his locale (e.g. '3,57' in German), the backend expects '3.57'
+    if (isDecimalNumberField(widgetType)) {
+      value = normalizeDecimalNumberString(value);
+      valueTo = normalizeDecimalNumberString(valueTo);
+    }
+
     const willPatch = shouldPatch({
       property,
       value,

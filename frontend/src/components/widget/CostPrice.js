@@ -59,7 +59,8 @@ export default class CostPrice extends PureComponent {
       return (
         <input
           ref={this.inputRef}
-          type={'number'}
+          type={'text'} // not 'number': a browser number input drops the decimal comma (e.g. German '3,57' becomes 357)
+          inputMode={'decimal'}
           value={value}
           autoComplete={autoComplete}
           className={cx(className, rank ? `input-${rank}` : null)}

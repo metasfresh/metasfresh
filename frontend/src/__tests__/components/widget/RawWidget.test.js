@@ -8,6 +8,7 @@ import
 from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
+import { initNumeralLocales } from '../../../utils/locale';
 
 const createDummyProps = function(props) {
   return {
@@ -685,6 +686,130 @@ describe('RawWidget component', () => {
       expect(spy).toHaveBeenCalled();
       expect(handlePatchSpy).toHaveBeenCalled();
       expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('decimal comma in a German user session:', () => {
+    const amountLayout = {
+      caption: 'Skonto',
+      fields: [{ field: 'DiscountAmt', emptyText: 'none' }],
+      emptyText: 'none',
+      field: 'DiscountAmt',
+      widgetType: 'Amount',
+    };
+    const amountData = {
+      displayed: true,
+      field: 'DiscountAmt',
+      mandatory: false,
+      readonly: false,
+      validStatus: { valid: true, initialValue: true, fieldName: 'DiscountAmt' },
+      value: '0',
+      widgetType: 'Amount',
+    };
+
+    beforeEach(() => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+    });
+
+    it('lets the user type a comma into an amount (no browser number input that drops it)', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+      const input = wrapper.find('input');
+
+      expect(input.props().type).toEqual('text');
+      expect(input.props().inputMode).toEqual('decimal');
+    });
+
+    it('patches 3,57 typed into an amount as 3.57', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('keyDown', {
+        key: 'Enter',
+        target: { value: '3,57' },
+        preventDefault: jest.fn(),
+      });
+
+      expect(handlePatchSpy).toHaveBeenCalledWith(
+        'DiscountAmt',
+        '3.57',
+        undefined,
+        undefined
+      );
+    });
+
+    it('patches 13,75 typed into a price (CostPrice/Number widget) as 13.75', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...fixtures.costPrice.layout1,
+        widgetData: [{ ...fixtures.costPrice.data1 }],
+        handlePatch: handlePatchSpy,
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      const input = wrapper.find('input');
+
+      expect(input.props().type).toEqual('text');
+
+      input.simulate('keyDown', {
+        key: 'Enter',
+        target: { value: '13,75' },
+        preventDefault: jest.fn(),
+      });
+
+      expect(handlePatchSpy).toHaveBeenCalledWith(
+        'PriceList',
+        '13.75',
+        undefined,
+        undefined
+      );
+    });
+
+    it('ignores a letter typed into an amount', () => {
+      const handleChangeSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handleChange: handleChangeSpy,
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
+      expect(handleChangeSpy).not.toHaveBeenCalled();
+
+      wrapper.find('input').simulate('change', { target: { value: '3,5' } });
+      expect(handleChangeSpy).toHaveBeenCalledWith(
+        'DiscountAmt',
+        '3,5',
+        undefined,
+        undefined
+      );
+    });
+
+    it('keeps the integer widget a browser number input', () => {
+      const props = createDummyProps({
+        ...fixtures.integer.layout1,
+        widgetData: [{ ...fixtures.integer.data1 }],
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+
+      expect(wrapper.find('input').props().type).toEqual('number');
     });
   });
 

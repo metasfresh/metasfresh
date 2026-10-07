@@ -9,6 +9,7 @@ import {
   getClassNames,
   getWidgetField,
 } from '../../utils/widgetHelpers';
+import { initNumeralLocales } from '../../utils/locale';
 import {
   DATE_FORMAT,
   TIME_FORMAT,
@@ -194,6 +195,28 @@ describe('Widget helpers', () => {
         fieldName: 'qtyToDeliverCatchOverride',
       });
       expect(resultToCheckFour).toBe(true);
+    });
+
+    it('counts the digits after a decimal comma in a German user session', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+
+      expect(
+        validatePrecision({
+          widgetValue: '3,579',
+          widgetType: 'Amount',
+          precision: 2,
+        })
+      ).toBe(false);
+      expect(
+        validatePrecision({
+          widgetValue: '3,57',
+          widgetType: 'Amount',
+          precision: 2,
+        })
+      ).toBe(true);
     });
 
     it('test null and empty object as value', () => {

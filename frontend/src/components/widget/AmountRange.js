@@ -9,6 +9,7 @@ const AmountRange = forwardRef(
       valueFrom,
       valueTo,
       step,
+      isDecimalNumber,
       devices,
       //
       id,
@@ -76,6 +77,7 @@ const AmountRange = forwardRef(
           widgetField={widgetField}
           value={valueFrom}
           step={step}
+          isDecimalNumber={isDecimalNumber}
           devices={devices}
           //
           id={id}
@@ -99,6 +101,7 @@ const AmountRange = forwardRef(
           widgetField={widgetField}
           value={valueTo}
           step={step}
+          isDecimalNumber={isDecimalNumber}
           devices={devices}
           //
           //id={id}
@@ -127,6 +130,7 @@ AmountRange.propTypes = {
   valueFrom: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   valueTo: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   step: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isDecimalNumber: PropTypes.bool,
   devices: PropTypes.any,
   //
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
