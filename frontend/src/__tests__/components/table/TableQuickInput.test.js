@@ -117,7 +117,7 @@ describe('TableQuickInput', () => {
     const qtyInput = document.createElement('input');
     form.appendChild(qtyInput);
     document.body.appendChild(form);
-    markRefusedNumberInput(qtyInput, '3.57'); // e.g. '3.57' typed into the quantity in a German session
+    markRefusedNumberInput(qtyInput, '3,57 EUR'); // e.g. a text that is no number pasted into the quantity
 
     // all mandatory fields filled, so only the refused number can stop the submit
     const data = Object.fromEntries(
@@ -139,7 +139,7 @@ describe('TableQuickInput', () => {
     // the refusal toast may be gone by now: the user is told again why nothing happens
     expect(addNotification).toHaveBeenCalledWith(
       'Invalid number',
-      expect.stringContaining('"3.57"'),
+      expect.stringContaining('"3,57 EUR"'),
       5000,
       'error'
     );

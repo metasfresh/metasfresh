@@ -775,7 +775,7 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).not.toHaveBeenCalled();
     });
 
-    it('keeps the typed text while typing and reads a dot in groups of three as grouping (1.000 -> 1000)', () => {
+    it('keeps the typed text while typing and reads the dot as the decimal separator (1.000 -> 1.000, no grouping)', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({
         ...amountLayout,
@@ -788,12 +788,15 @@ describe('RawWidget component', () => {
       expect(wrapper.find('input').props().value).toEqual('1.000');
 
       pressEnter(wrapper.find('input'), '1.000');
-      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1000', undefined, undefined);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1.000', undefined, undefined);
     });
 
-    it.each(['3.57', '1,234.56'])(
-      'refuses %s (a dot that is no grouping): no patch, one visible error, and the stored amount is kept',
-      (typed) => {
+    it.each([
+      ['3.57', '3.57'],
+      ['1,234.56', '1234.56'],
+    ])(
+      'patches %s (a dotted decimal, now accepted) as %s: no refusal',
+      (typed, patched) => {
         const addNotificationSpy = jest.fn();
         const handlePatchSpy = jest.fn();
         const handleRestoreSpy = jest.fn();
@@ -809,17 +812,10 @@ describe('RawWidget component', () => {
         wrapper.find('input').simulate('change', { target: { value: typed } });
 
         pressEnter(wrapper.find('input'), typed);
-        // the field shows the stored amount again, and the parent forgets the typed text
-        expect(wrapper.find('input').props().value).toEqual('2,5');
-        expect(handleRestoreSpy).toHaveBeenCalledWith('DiscountAmt', '2.5');
 
-        wrapper
-          .find('input')
-          .simulate('blur', { target: { value: wrapper.find('input').props().value } });
-
-        expect(handlePatchSpy).not.toHaveBeenCalled();
-        expect(addNotificationSpy).toHaveBeenCalledTimes(1);
-        expect(addNotificationSpy.mock.calls[0][1]).toContain(typed);
+        expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', patched, undefined, undefined);
+        expect(handleRestoreSpy).not.toHaveBeenCalled();
+        expect(addNotificationSpy).not.toHaveBeenCalled();
       }
     );
 
@@ -844,9 +840,9 @@ describe('RawWidget component', () => {
     });
 
     it.each([
-      ['Enter', '3.57', 0],
+      ['Enter', '3,5a', 0],
       ['Enter', '3,57', 1],
-      ['Tab', '3.57', 0],
+      ['Tab', '3,5a', 0],
       ['Tab', '3,57', 1],
     ])(
       'lets the table row see %s on %s only when it is a valid number (the row would take the typed text)',
@@ -884,7 +880,7 @@ describe('RawWidget component', () => {
       expect(wrapper.find('input').props().value).toEqual('');
     });
 
-    it('shows the stored amount once the patched value comes back (typed 1.000 -> 1000)', () => {
+    it('shows the stored amount once the patched value comes back (typed 1.000 is the decimal 1)', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({
         ...amountLayout,
@@ -894,11 +890,13 @@ describe('RawWidget component', () => {
       const wrapper = mount(<RawWidget {...props} />);
       wrapper.find('input').simulate('change', { target: { value: '1.000' } });
       pressEnter(wrapper.find('input'), '1.000');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1.000', undefined, undefined);
 
-      wrapper.setProps({ widgetData: [{ ...amountData, value: '1000' }] });
+      // the server stores the amount and returns its canonical value (1.000 is the number one)
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] });
       wrapper.update();
 
-      expect(wrapper.find('input').props().value).toEqual('1000');
+      expect(wrapper.find('input').props().value).toEqual('1');
     });
 
     const amountRangeFilterProps = (extra) =>
@@ -935,8 +933,8 @@ describe('RawWidget component', () => {
         />
       );
 
-      wrapper.find('input').at(0).simulate('change', { target: { value: '3.57' } });
-      pressEnter(wrapper.find('input').at(0), '3.57');
+      wrapper.find('input').at(0).simulate('change', { target: { value: '3,5a' } });
+      pressEnter(wrapper.find('input').at(0), '3,5a');
 
       expect(handlePatchSpy).not.toHaveBeenCalled();
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '');
@@ -955,8 +953,9 @@ describe('RawWidget component', () => {
         />
       );
 
-      wrapper.find('input').at(1).simulate('change', { target: { value: '3.57' } });
-      pressEnter(wrapper.find('input').at(1), '3.57');
+      // a valid edit of the "to" end records its last valid text ('4,5'), then an unparseable commit is refused
+      wrapper.find('input').at(1).simulate('change', { target: { value: '4,55' } });
+      pressEnter(wrapper.find('input').at(1), '3,5a');
 
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '4,5');
     });
@@ -973,9 +972,10 @@ describe('RawWidget component', () => {
         />
       );
 
+      // '3,5' then '3,57' are both valid edits; '3,5' is the last valid text before the current typing
       wrapper.find('input').at(0).simulate('change', { target: { value: '3,5' } });
-      wrapper.find('input').at(0).simulate('change', { target: { value: '3.57' } });
-      pressEnter(wrapper.find('input').at(0), '3.57');
+      wrapper.find('input').at(0).simulate('change', { target: { value: '3,57' } });
+      pressEnter(wrapper.find('input').at(0), '3,5a');
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '3,5', undefined, '4,5');
     });
 
@@ -991,9 +991,10 @@ describe('RawWidget component', () => {
         />
       );
 
+      // '5,5' then '5,57' are both valid edits; '5,5' is the last valid "to" text before the current typing
       wrapper.find('input').at(1).simulate('change', { target: { value: '5,5' } });
-      wrapper.find('input').at(1).simulate('change', { target: { value: '5.57' } });
-      pressEnter(wrapper.find('input').at(1), '5.57');
+      wrapper.find('input').at(1).simulate('change', { target: { value: '5,57' } });
+      pressEnter(wrapper.find('input').at(1), '5,5a');
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '5,5');
     });
 
@@ -1014,14 +1015,14 @@ describe('RawWidget component', () => {
         { attachTo: container }
       );
       const form = wrapper.find('form').getDOMNode();
-      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      const input = wrapper.find('input').getDOMNode();
+      input.value = '3,5a'; // a text that is no number, as the browser reports it (e.g. a paste that reached the field)
 
-      wrapper.find('input').simulate('keyDown', { key: 'Enter', target: wrapper.find('input').getDOMNode(), preventDefault });
+      wrapper.find('input').simulate('keyDown', { key: 'Enter', target: input, preventDefault });
 
       expect(preventDefault).toHaveBeenCalled();
       expect(getRefusedNumberText(form)).not.toBeNull();
 
-      const input = wrapper.find('input').getDOMNode();
       input.value = '3,5'; // typed into the refused input itself, as the browser reports it
       wrapper.find('input').simulate('change', { target: input });
       expect(getRefusedNumberText(form)).toBeNull();
@@ -1047,7 +1048,9 @@ describe('RawWidget component', () => {
         wrapper.find('input').at(index).simulate('change', { target: input });
         return input;
       };
-      const fromInput = typeInto(0, '3.57');
+      // a text that is no number (e.g. a paste) reaches the input and is refused on Enter, marking the end
+      const fromInput = wrapper.find('input').at(0).getDOMNode();
+      fromInput.value = '3,5a';
       wrapper.find('input').at(0).simulate('keyDown', { key: 'Enter', target: fromInput, preventDefault: jest.fn() });
       expect(getRefusedNumberText(container)).not.toBeNull();
 
@@ -1071,9 +1074,9 @@ describe('RawWidget component', () => {
         addNotification: jest.fn(),
       });
       const wrapper = mount(<RawWidget {...props} />);
-      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
 
-      pressEnter(wrapper.find('input'), '3.57');
+      pressEnter(wrapper.find('input'), '3,5a');
 
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2.5', undefined, undefined);
     });
@@ -1091,9 +1094,9 @@ describe('RawWidget component', () => {
       });
       const wrapper = mount(<RawWidget {...props} />);
       wrapper.find('input').simulate('focus');
-      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
 
-      wrapper.find('input').simulate('keyDown', { key: 'Tab', target: { value: '3.57' }, preventDefault });
+      wrapper.find('input').simulate('keyDown', { key: 'Tab', target: { value: '3,5a' }, preventDefault });
 
       expect(preventDefault).toHaveBeenCalled();
       expect(handleBlurSpy).not.toHaveBeenCalled();
@@ -1113,16 +1116,40 @@ describe('RawWidget component', () => {
         addNotification: addNotificationSpy,
       });
       const wrapper = mount(<RawWidget {...props} />);
-      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
 
-      wrapper.find('input').simulate('keyDown', { key: 'ArrowDown', target: { value: '3.57' }, preventDefault: jest.fn() });
+      wrapper.find('input').simulate('keyDown', { key: 'ArrowDown', target: { value: '3,5a' }, preventDefault: jest.fn() });
 
       expect(closeTableFieldSpy).not.toHaveBeenCalled();
       expect(handlePatchSpy).not.toHaveBeenCalled();
       expect(addNotificationSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('shows the refusal for a pasted text with characters a number cannot hold', () => {
+    it.each(['insertFromPaste', 'insertFromDrop', 'insertReplacementText'])(
+      'shows the refusal for a whole text (inputType %s) with characters a number cannot hold',
+      (inputType) => {
+        const handleChangeSpy = jest.fn();
+        const addNotificationSpy = jest.fn();
+        const props = createDummyProps({
+          ...amountLayout,
+          widgetData: [{ ...amountData }],
+          handleChange: handleChangeSpy,
+          addNotification: addNotificationSpy,
+        });
+        const wrapper = mount(<RawWidget {...props} />);
+
+        wrapper.find('input').simulate('change', {
+          target: { value: '3,57 EUR' },
+          nativeEvent: { inputType },
+        });
+
+        expect(handleChangeSpy).not.toHaveBeenCalled();
+        expect(addNotificationSpy).toHaveBeenCalledTimes(1);
+        expect(addNotificationSpy.mock.calls[0][1]).toContain('3,57 EUR');
+      }
+    );
+
+    it('silently ignores a non-numeric single keystroke (not a pasted/dropped chunk), without an error', () => {
       const handleChangeSpy = jest.fn();
       const addNotificationSpy = jest.fn();
       const props = createDummyProps({
@@ -1134,13 +1161,12 @@ describe('RawWidget component', () => {
       const wrapper = mount(<RawWidget {...props} />);
 
       wrapper.find('input').simulate('change', {
-        target: { value: '3,57 EUR' },
-        nativeEvent: { inputType: 'insertFromPaste' },
+        target: { value: '3,5a' },
+        nativeEvent: { inputType: 'insertText' },
       });
 
       expect(handleChangeSpy).not.toHaveBeenCalled();
-      expect(addNotificationSpy).toHaveBeenCalledTimes(1);
-      expect(addNotificationSpy.mock.calls[0][1]).toContain('3,57 EUR');
+      expect(addNotificationSpy).not.toHaveBeenCalled();
     });
 
     it('does not patch an amount retyped to the stored value', () => {
@@ -1375,7 +1401,7 @@ describe('RawWidget component', () => {
       jest.restoreAllMocks();
     });
 
-    it('refuses 1,5 (a comma that is no grouping) with a visible error, instead of storing 15', () => {
+    it('patches 1,5 (the comma is read as the decimal separator) as 1.5', () => {
       const addNotificationSpy = jest.fn();
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({
@@ -1392,14 +1418,14 @@ describe('RawWidget component', () => {
         preventDefault: jest.fn(),
       });
 
-      expect(handlePatchSpy).not.toHaveBeenCalled();
-      expect(addNotificationSpy).toHaveBeenCalledTimes(1);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1.5', undefined, undefined);
+      expect(addNotificationSpy).not.toHaveBeenCalled();
     });
 
     it.each([
       ['3.57', '3.57'],
       ['1,234.5', '1234.5'],
-      ['1,000', '1000'],
+      ['1,000', '1.000'],
     ])('patches %s typed into an amount as %s', (typed, patched) => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({

@@ -11,6 +11,6 @@ module.exports = {
   invalidNumber: {
     title: 'Invalid number',
     description:
-      '"%(text)s" was not taken over: the decimal separator is "%(decimal)s", "%(grouping)s" is allowed only to group thousands in groups of three (e.g. %(example)s).',
+      '"%(text)s" is not a valid number: enter digits with "," or "." as the decimal separator (e.g. %(example)s).',
   },
 };

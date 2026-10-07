@@ -11,6 +11,6 @@ module.exports = {
   invalidNumber: {
     title: 'Ungültige Zahl',
     description:
-      '„%(text)s“ wurde nicht übernommen: Dezimaltrennzeichen ist „%(decimal)s“, „%(grouping)s“ ist nur als Tausendertrennzeichen in Dreiergruppen erlaubt (z. B. %(example)s).',
+      '„%(text)s“ ist keine gültige Zahl: Bitte Ziffern mit „,“ oder „.“ als Dezimaltrennzeichen eingeben (z. B. %(example)s).',
   },
 };

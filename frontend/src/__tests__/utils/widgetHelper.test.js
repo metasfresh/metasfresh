@@ -173,19 +173,21 @@ describe('Widget helpers', () => {
 
   describe('validatePrecision function', () => {
     it('works correctly', () => {
+      // both the comma and the dot are read as the decimal separator, so '223,544334' has six decimal places:
+      // too many for a Quantity (precision forced to 0) or for precision 2
       const resultToCheckOne = validatePrecision({
         widgetValue: '223,544334',
         widgetType: 'Quantity',
         precision: 2,
       });
-      expect(resultToCheckOne).toBe(true);
+      expect(resultToCheckOne).toBe(false);
 
       const resultToCheckTwo = validatePrecision({
         widgetValue: '223,544334',
         widgetType: 'Quantity',
         precision: 0,
       });
-      expect(resultToCheckTwo).toBe(true);
+      expect(resultToCheckTwo).toBe(false);
 
       const resultToCheckThree = validatePrecision({
         widgetValue: '223.544334',

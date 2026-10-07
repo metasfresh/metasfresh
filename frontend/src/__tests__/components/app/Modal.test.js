@@ -141,7 +141,7 @@ describe('Modal test', () => {
     modalContent.appendChild(parameterInput);
     document.body.appendChild(modalContent);
     modal.modalContentElement = modalContent;
-    markRefusedNumberInput(parameterInput, '3.57'); // e.g. '3.57' typed into an amount parameter in a German session
+    markRefusedNumberInput(parameterInput, '3,57 EUR'); // e.g. a text that is no number pasted into an amount parameter
 
     await modal.handleStart();
 
@@ -151,7 +151,7 @@ describe('Modal test', () => {
       expect.objectContaining({
         type: ADD_NOTIFICATION,
         title: 'Invalid number',
-        msg: expect.stringContaining('"3.57"'),
+        msg: expect.stringContaining('"3,57 EUR"'),
         notifType: 'error',
       })
     );

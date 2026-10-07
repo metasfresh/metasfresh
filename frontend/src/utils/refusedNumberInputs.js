@@ -36,17 +36,18 @@ export const getRefusedNumberText = (container) => {
 };
 
 /**
- * @summary The notification that tells the user why a typed or pasted number was not taken over, the session way
+ * @summary The notification that tells the user why a typed or pasted text was not taken over as a number. A number may
+ *          be typed with either "," or "." as the decimal separator; only genuinely unparseable input (e.g. a letter) is
+ *          refused.
  * @param {string} refusedText
  * @returns {{title: string, message: string}}
  */
 export const getRefusedNumberNotification = (refusedText) => {
-  const { decimal, thousands } = getSessionNumberDelimiters();
+  const { decimal } = getSessionNumberDelimiters();
   const params = {
     text: refusedText,
     decimal,
-    grouping: thousands,
-    example: `1${thousands}234${decimal}56`,
+    example: `1234${decimal}56`,
   };
   return {
     title: counterpart.translate('window.error.invalidNumber.title', {
@@ -54,7 +55,7 @@ export const getRefusedNumberNotification = (refusedText) => {
     }),
     message: counterpart.translate('window.error.invalidNumber.description', {
       ...params,
-      fallback: `"${refusedText}" was not taken over: the decimal separator is "${decimal}", "${thousands}" is allowed only to group thousands in groups of three (e.g. ${params.example}).`,
+      fallback: `"${refusedText}" is not a valid number: enter digits with "," or "." as the decimal separator (e.g. ${params.example}).`,
     }),
   };
 };

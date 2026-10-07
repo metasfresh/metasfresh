@@ -30,6 +30,16 @@ import PropTypes from 'prop-types';
 const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
 
 /**
+ * The `InputEvent.inputType`s that bring a whole chunk of text into the field at once (not a single keystroke). When
+ * such a chunk is no number, the decimal widget rejects it visibly (an error notification) instead of swallowing it.
+ */
+const INSERT_WHOLE_TEXT_INPUT_TYPES = [
+  'insertFromPaste',
+  'insertFromDrop',
+  'insertReplacementText',
+];
+
+/**
  * Tells whether a widget value is just what the user typed, coming back from the parent's state - and not a value from
  * outside. A document keeps the typed text as is; a filter keeps the dot-decimal, or nothing while the text is no
  * complete number.
@@ -409,8 +419,8 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method refuseInvalidNumber
-   * @summary A decimal number that is invalid with the session's separators (e.g. '3.57' in German, where the dot only
-   *          groups thousands) is not patched: the user is told why, and the field shows the stored value again
+   * @summary A text that is no number (e.g. one holding a letter, which only a paste can bring in - see handleChange)
+   *          is not patched: the user is told why, and the field shows the stored value again
    */
   refuseInvalidNumber = ({ property, id, invalidText, isValueToInvalid }) => {
     const { handleChange, handleRestore, filterWidget, range } = this.props;
@@ -567,8 +577,9 @@ export class RawWidget extends PureComponent {
     const valueToSet = e.target.value;
     if (isDecimalNumberField(widgetType)) {
       if (!isAllowedDecimalNumberInput(valueToSet)) {
-        // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves - a paste visibly
-        if (e.nativeEvent?.inputType === 'insertFromPaste') {
+        // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves; a whole chunk of
+        // non-numeric text brought in at once (paste, drag-drop, autocorrect replacement) is rejected visibly
+        if (INSERT_WHOLE_TEXT_INPUT_TYPES.includes(e.nativeEvent?.inputType)) {
           this.notifyRefusedNumber(valueToSet);
         }
         return;

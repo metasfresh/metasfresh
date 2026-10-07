@@ -10,13 +10,14 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 
 /**
- * Grid in-row amount editor — numbers are read and edited with the separators of the user's session.
+ * Grid in-row amount editor — numbers are read and edited the way the user types them, with either separator.
  *
  * Regression guard: in a German session, typing "3,57" into an Amount cell of a grid view stored 357, because the
  * amount editor was a browser <input type="number">, which silently drops the comma keystroke. Now:
- * - the session's decimal separator is the decimal separator ("3,57" in German, "3.57" in English);
- * - the other separator only groups thousands in valid groups of three ("1.000" in German is 1000);
- * - anything else ("3.57" in German, "1,5" in English) is not patched and an error notification says why;
+ * - both the comma and the dot are read as the decimal separator ("3,57" and "3.57" are both 3.57, in either session);
+ * - there is no thousands grouping on input ("1.000" is the decimal 1, not 1000);
+ * - the typed value is normalized to a dot-decimal before it is patched (the backend parses a dot-decimal);
+ * - only a text that is no number (which only a paste can bring in) is refused, with an error notification that says why;
  * - a field that is opened and left untouched is not patched.
  *
  * Grid: the payment-allocation view opened from a sales invoice, column "discountAmt" (Amount widget, edited in-row).
@@ -29,8 +30,8 @@ const PAYMENT_ALLOCATION_FROM_INVOICE_ACTION = 'PaymentView_Launcher_From_C_Invo
 
 /** How the grid renders an amount with the separators of each session language */
 const DISPLAYED = {
-  de_DE: { '3.57': '3,57', 1000: '1.000,00' },
-  en_US: { '3.57': '3.57' },
+  de_DE: { '3.57': '3,57', '1.000': '1,00' },
+  en_US: { '3.57': '3.57', '1.5': '1.50' },
 };
 
 const setupAllure = (language) => {
@@ -115,23 +116,45 @@ const typeAndExpectStored = async (page, { invoiceDocumentNo, typed, patched, la
 };
 
 /**
- * Types an invalid amount, presses the key (Enter, Tab or ArrowDown) and asserts it is refused: a visible error, the
- * editor stays open and focused showing the kept amount, no PATCH - also not when the editor is left afterwards
+ * Simulates pasting text into the decimal input by firing the same "input" event (inputType "insertFromPaste") the
+ * browser fires on a real paste. A letter typed key-by-key is swallowed by the decimal input, so a paste is the only
+ * way a text that is no number reaches the field — and the way it is refused.
  */
-const typeAndExpectRefused = async (page, { invoiceDocumentNo, typed, key = 'Enter', keptEditText, keptDisplayed }) => {
+const pasteIntoInput = async (input, text) => {
+  await input.evaluate((el, value) => {
+    const valueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value'
+    ).set;
+    valueSetter.call(el, value);
+    el.dispatchEvent(
+      new InputEvent('input', {
+        bubbles: true,
+        cancelable: true,
+        inputType: 'insertFromPaste',
+        data: value,
+      })
+    );
+  }, text);
+};
+
+/**
+ * Pastes a text that is no number into the in-row editor and asserts it is refused: a visible error, the editor stays
+ * open and focused showing the kept amount (the stored amount it reverts to), and no PATCH
+ */
+const pasteAndExpectRefused = async (page, { invoiceDocumentNo, pasted, keptEditText, keptDisplayed }) => {
   const cell = discountCellOf(page, invoiceDocumentNo);
 
-  await test.step(`type ${typed} and press ${key}: refused with a visible error, the amount is kept`, async () => {
+  await test.step(`paste ${pasted} (a text that is no number): refused with a visible error, the amount is kept`, async () => {
     const patches = [];
     const collectPatch = (req) => isDiscountPatch(req) && patches.push(req.postData());
     page.on('request', collectPatch);
 
     const input = await openDiscountEditor(cell);
-    await typeIntoEditor(input, typed);
-    await input.press(key);
+    await pasteIntoInput(input, pasted);
 
-    // the error names what was typed, which is no localized text
-    await expect(page.locator('.notification-item.error', { hasText: typed }).first()).toBeVisible({
+    // the error names what was pasted, which is no localized text
+    await expect(page.locator('.notification-item.error', { hasText: pasted }).first()).toBeVisible({
       timeout: SLOW_ACTION_TIMEOUT,
     });
     await expect(input, 'the editor shows the kept amount again').toHaveValue(keptEditText);
@@ -215,7 +238,7 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
     await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '3,57', keptDisplayed: '3,57' });
   });
 
-  test('German session: 1.000 is 1000, 3.57 is refused on Enter, Tab and ArrowDown with a visible error', async ({ page }) => {
+  test('German session: the dot is a decimal separator too (3.57, 1.000 accepted); a text that is no number is refused with a visible error', async ({ page }) => {
     setupAllure('de_DE');
     test.setTimeout(120000);
     await page.setViewportSize({ width: 2400, height: 1000 });
@@ -223,24 +246,20 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
 
     await openAllocationViewOfInvoice(page, invoice.id);
     const invoiceDocumentNo = invoice.documentNo;
-    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '1.000', patched: '1000', language: 'de_DE' });
-    for (const [typed, key] of [
-      ['3.57', 'Enter'],
-      ['2.5', 'Tab'],
-      ['4.5', 'ArrowDown'],
-    ]) {
-      await typeAndExpectRefused(page, {
-        invoiceDocumentNo,
-        typed,
-        key,
-        keptEditText: '1000',
-        keptDisplayed: DISPLAYED.de_DE[1000],
-      });
-    }
-    await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '1000', keptDisplayed: '1.000,00' });
+    // a dotted decimal is accepted (the dot is the decimal separator too); "1.000" is the decimal 1, not grouped to 1000
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '1.000', patched: '1.000', language: 'de_DE' });
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '3.57', patched: '3.57', language: 'de_DE' });
+    // only a text that is no number is refused: the paste shows a visible error and the stored amount is kept, no PATCH
+    await pasteAndExpectRefused(page, {
+      invoiceDocumentNo,
+      pasted: '3,5a',
+      keptEditText: '3,57',
+      keptDisplayed: DISPLAYED.de_DE['3.57'],
+    });
+    await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '3,57', keptDisplayed: DISPLAYED.de_DE['3.57'] });
   });
 
-  test('English session: 3.57 is stored as 3.57, 1,5 is refused with a visible error', async ({ page }) => {
+  test('English session: the dot and the comma are both decimal separators (3.57 and 1,5 are accepted)', async ({ page }) => {
     setupAllure('en_US');
     test.setTimeout(120000);
     await page.setViewportSize({ width: 2400, height: 1000 });
@@ -249,17 +268,12 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
     await openAllocationViewOfInvoice(page, invoice.id);
     const invoiceDocumentNo = invoice.documentNo;
     await typeAndExpectStored(page, { invoiceDocumentNo, typed: '3.57', patched: '3.57', language: 'en_US' });
-    await typeAndExpectRefused(page, {
-      invoiceDocumentNo,
-      typed: '1,5',
-      keptEditText: '3.57',
-      keptDisplayed: DISPLAYED.en_US['3.57'],
-    });
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '1,5', patched: '1.5', language: 'en_US' });
   });
 });
 
 test.describe('Quick input - separators of the session', () => {
-  test('German session: a refused quantity adds no order line, a valid one does', async ({ page }) => {
+  test('German session: an unparseable quantity is refused, a decimal-comma quantity adds the line', async ({ page }) => {
     setupAllure('de_DE');
     test.setTimeout(180000);
 
@@ -280,38 +294,21 @@ test.describe('Quick input - separators of the session', () => {
       recordId,
     });
 
-    await test.step('type 1.5 into the quantity and press Enter: refused, nothing is added', async () => {
+    await test.step('paste a text that is no number into the quantity: refused with an error, nothing is added', async () => {
       const completeRequested = page
         .waitForRequest((req) => req.url().includes('/quickInput/') && req.url().endsWith('/complete'), {
           timeout: 5000,
         })
         .catch(() => null);
-      // no input type: the quantity is a number input in the old bundle, a text input in the new one
+      // a letter typed key-by-key is swallowed by the decimal input; a paste is what brings a non-number in, and it is refused
       const quantityInput = page.locator('.quick-input-container .widgetType-Quantity input');
       await quantityInput.click();
-      await quantityInput.press('ControlOrMeta+a');
-      await quantityInput.pressSequentially('1.5', { delay: 80 });
-      await quantityInput.press('Enter');
+      await pasteIntoInput(quantityInput, '3,5a');
 
-      await expect(page.locator('.notification-item.error', { hasText: '1.5' }).first()).toBeVisible({
+      await expect(page.locator('.notification-item.error', { hasText: '3,5a' }).first()).toBeVisible({
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      await expect(quantityInput, 'the quantity no longer holds the refused text').not.toHaveValue('1.5');
-      expect(await completeRequested, 'request adding the order line').toBeNull();
-    });
-
-    await test.step('press Enter again without typing: still refused, told again, nothing is added', async () => {
-      const refusalNotification = page.locator('.notification-item.error', { hasText: '1.5' });
-      await expect(refusalNotification).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT }); // the first toast is gone
-      const completeRequested = page
-        .waitForRequest((req) => req.url().includes('/quickInput/') && req.url().endsWith('/complete'), {
-          timeout: 5000,
-        })
-        .catch(() => null);
-
-      await page.locator('.quick-input-container .widgetType-Quantity input').press('Enter');
-
-      await expect(refusalNotification.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(quantityInput, 'the quantity does not take the pasted text').not.toHaveValue('3,5a');
       expect(await completeRequested, 'request adding the order line').toBeNull();
     });
 

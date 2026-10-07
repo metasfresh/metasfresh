@@ -186,10 +186,10 @@ describe('MasterWidget component', () => {
       const wrapper = mount(<MasterWidget {...props} />);
 
       wrapper.find('input').simulate('focus');
-      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
       wrapper.find('input').simulate('keyDown', {
         key: 'Enter',
-        target: { value: '3.57' },
+        target: { value: '3,5a' },
         preventDefault: jest.fn(),
       });
 
