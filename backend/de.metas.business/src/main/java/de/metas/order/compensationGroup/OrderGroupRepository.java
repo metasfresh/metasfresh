@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -38,7 +39,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.MutableInt;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -264,23 +267,52 @@ public class OrderGroupRepository implements GroupRepository
 
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
 
+		final List<I_C_OrderLine> compensationLineRecords = groupOrderLines.stream()
+				.filter(I_C_OrderLine::isGroupCompensationLine)
+				.collect(ImmutableList.toImmutableList());
+		final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId = retrieveSchemaLineBases(compensationLineRecords);
+		final List<GroupCompensationLine> compensationLines = compensationLineRecords.stream()
+				.map(compensationLineRecord -> toGroupCompensationLine(compensationLineRecord, basesBySchemaLineId))
+				.collect(ImmutableList.toImmutableList());
+
+		// the packing is needed only when a discount line is restricted to a packing-material category.
+		// Also look at the schema: a new group is loaded before its discount lines are added from the schema (GroupCreator#recreateGroup)
+		final boolean packingMaterialCategoryNeeded = compensationLines.stream()
+				.anyMatch(compensationLine -> compensationLine.getBase().getPackingMaterialProductCategoryId() != null)
+				|| hasSchemaLineWithPackingMaterialCategory(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID());
+		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId = packingMaterialCategoryNeeded
+				? retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(groupOrderLines)
+				: ImmutableMap.of();
+
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
 			if (!groupOrderLine.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId);
+				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId);
 				groupBuilder.regularLine(regularLine);
 			}
-			else
-			{
-				final GroupCompensationLine compensationLine = toGroupCompensationLine(groupOrderLine);
-				groupBuilder.compensationLine(compensationLine);
-			}
 		}
+		compensationLines.forEach(groupBuilder::compensationLine);
 
 		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
 
 		return groupBuilder.build();
+	}
+
+	/** @return {@code true} if the given schema has an active line restricted to a packing-material category; {@code false} when there is no schema */
+	private boolean hasSchemaLineWithPackingMaterialCategory(final int compensationGroupSchemaId)
+	{
+		if (compensationGroupSchemaId <= 0)
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_Schema_ID, compensationGroupSchemaId)
+				.addNotNull(I_C_CompensationGroup_SchemaLine.COLUMNNAME_M_Product_Category_PackingMaterial_ID)
+				.create()
+				.anyMatch();
 	}
 
 	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
@@ -359,14 +391,71 @@ public class OrderGroupRepository implements GroupRepository
 	@VisibleForTesting
 	static GroupRegularLine toGroupRegularLine(
 			final I_C_OrderLine record,
-			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
 	{
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		return GroupRegularLine.builder()
+		return regularLineBuilderWithCategories(record, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId)
 				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.lineNetAmt(record.getLineNetAmt())
-				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.build();
+	}
+
+	/**
+	 * @return a regular line that carries just the order line's product and packing-material categories (net amount zero),
+	 * for deciding which discount bases the order line falls into
+	 */
+	public static GroupRegularLine buildCategoryOnlyRegularLine(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			@NonNull final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
+	{
+		return regularLineBuilderWithCategories(orderLine, productCategoryIdsByProductId, packingMaterialCategoryIdsByPIItemProductId)
+				.lineNetAmt(BigDecimal.ZERO)
+				.build();
+	}
+
+	private static GroupRegularLine.GroupRegularLineBuilder regularLineBuilderWithCategories(
+			final I_C_OrderLine record,
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId,
+			final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId)
+	{
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final HUPIItemProductId piItemProductId = extractPIItemProductId(record);
+		return GroupRegularLine.builder()
+				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
+				.packingMaterialProductCategoryIds(piItemProductId != null
+						? packingMaterialCategoryIdsByPIItemProductId.getOrDefault(piItemProductId, ImmutableSet.of())
+						: ImmutableSet.of());
+	}
+
+	@Nullable
+	public static HUPIItemProductId extractPIItemProductId(@NonNull final I_C_OrderLine orderLine)
+	{
+		final de.metas.interfaces.I_C_OrderLine orderLineWithPacking = InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class);
+		return HUPIItemProductId.ofRepoIdOrNull(orderLineWithPacking.getM_HU_PI_Item_Product_ID());
+	}
+
+	/**
+	 * Batch-resolves, in one provider call for the whole group, the packing-material product categories (plus ancestors)
+	 * of the regular lines' packing instructions. A line without packing instruction (or a virtual one) has no entry.
+	 * The provider is looked up lazily because this repository is also created with {@code new}.
+	 */
+	public static ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(
+			final List<I_C_OrderLine> groupOrderLines)
+	{
+		final ImmutableSet<HUPIItemProductId> piItemProductIds = groupOrderLines.stream()
+				.filter(orderLine -> !orderLine.isGroupCompensationLine())
+				.map(OrderGroupRepository::extractPIItemProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (piItemProductIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return SpringContextHolder.instance
+				.getBeanOr(PackingMaterialProductCategoryProvider.class, PackingMaterialProductCategoryProvider.NONE)
+				.getPackingMaterialProductCategoryIdsAndAncestors(piItemProductIds);
 	}
 
 	/**
@@ -389,8 +478,11 @@ public class OrderGroupRepository implements GroupRepository
 	/**
 	 * note to dev: keep in sync with {@link #updateOrderLineFromCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
 	 */
-	private static GroupCompensationLine toGroupCompensationLine(final I_C_OrderLine groupOrderLine)
+	private static GroupCompensationLine toGroupCompensationLine(
+			@NonNull final I_C_OrderLine groupOrderLine,
+			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId)
 	{
+		final GroupCompensationBase base = getSchemaLineBase(groupOrderLine, basesBySchemaLineId);
 		return GroupCompensationLine.builder()
 				.repoId(OrderLineId.ofRepoId(groupOrderLine.getC_OrderLine_ID()))
 				.groupTemplateLineId(OrderGroupCompensationUtils.extractGroupTemplateLineId(groupOrderLine))
@@ -404,21 +496,53 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
-				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
+				.appliesToProductCategoryId(base.getProductCategoryId())
+				.packingMaterialProductCategoryId(base.getPackingMaterialProductCategoryId())
 				.build();
 	}
 
-	/** @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line */
-	@Nullable
-	private static ProductCategoryId retrieveAppliesToProductCategoryId(final int compensationGroupSchemaLineId)
+	/**
+	 * @return the bases of the schema lines the given compensation lines are linked to, loaded with one query; lines without a schema line are skipped
+	 */
+	private ImmutableMap<GroupTemplateLineId, GroupCompensationBase> retrieveSchemaLineBases(@NonNull final List<I_C_OrderLine> compensationLineRecords)
 	{
-		if (compensationGroupSchemaLineId <= 0)
+		final ImmutableSet<GroupTemplateLineId> schemaLineIds = compensationLineRecords.stream()
+				.map(OrderGroupCompensationUtils::extractGroupTemplateLineId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (schemaLineIds.isEmpty())
 		{
-			return null;
+			return ImmutableMap.of();
 		}
 
-		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
-		return ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID());
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_SchemaLine_ID, schemaLineIds.stream().map(GroupTemplateLineId::getRepoId).collect(ImmutableSet.toImmutableSet()))
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						schemaLine -> GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()),
+						schemaLine -> GroupCompensationBase.of(
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()))));
+	}
+
+	/** @return the schema line's base; {@link GroupCompensationBase#NONE} when the compensation line is not linked to a schema line */
+	private static GroupCompensationBase getSchemaLineBase(
+			@NonNull final I_C_OrderLine compensationLineRecord,
+			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId)
+	{
+		final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(compensationLineRecord);
+		if (schemaLineId == null)
+		{
+			return GroupCompensationBase.NONE;
+		}
+
+		final GroupCompensationBase base = basesBySchemaLineId.get(schemaLineId);
+		if (base == null)
+		{
+			throw new AdempiereException("No C_CompensationGroup_SchemaLine found for " + schemaLineId);
+		}
+		return base;
 	}
 
 	@Override
@@ -471,7 +595,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * note to dev: keep in sync with {@link #toGroupCompensationLine(I_C_OrderLine)}
+	 * note to dev: keep in sync with {@link #toGroupCompensationLine(I_C_OrderLine, Map)}
 	 */
 	private void updateOrderLineFromCompensationLine(final I_C_OrderLine compensationLinePO,
 													 final GroupCompensationLine compensationLine,
@@ -784,12 +908,8 @@ public class OrderGroupRepository implements GroupRepository
 	{
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
-		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
-		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
-		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
-				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
-				.build();
+		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord, retrieveSchemaLineBases(ImmutableList.of(compensationLineRecord)));
+		final GroupRegularLine aggregatedRegularLine = toAggregatedRegularLine(compensationLine);
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));
 
@@ -802,6 +922,25 @@ public class OrderGroupRepository implements GroupRepository
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();
+	}
+
+	/**
+	 * @return the regular line that stands in for the group's regular lines when only a compensation line is at hand:
+	 * it carries the compensation line's stored base amount and categories, so that the line's own base filter matches it
+	 */
+	public static GroupRegularLine toAggregatedRegularLine(@NonNull final GroupCompensationLine compensationLine)
+	{
+		final GroupCompensationBase base = compensationLine.getBase();
+		return GroupRegularLine.builder()
+				.lineNetAmt(compensationLine.getBaseAmt())
+				.productCategoryIds(toSet(base.getProductCategoryId()))
+				.packingMaterialProductCategoryIds(toSet(base.getPackingMaterialProductCategoryId()))
+				.build();
+	}
+
+	private static ImmutableSet<ProductCategoryId> toSet(@Nullable final ProductCategoryId productCategoryId)
+	{
+		return productCategoryId != null ? ImmutableSet.of(productCategoryId) : ImmutableSet.of();
 	}
 
 	/**

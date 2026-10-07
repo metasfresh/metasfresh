@@ -88,6 +88,11 @@ public final class GroupCompensationLine
 	@Nullable
 	private final ProductCategoryId appliesToProductCategoryId;
 
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Getter
+	@Nullable
+	private final ProductCategoryId packingMaterialProductCategoryId;
+
 	@Builder
 	public GroupCompensationLine(
 			final RepoIdAware repoId,
@@ -102,11 +107,13 @@ public final class GroupCompensationLine
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
-			@Nullable final ProductCategoryId appliesToProductCategoryId)
+			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			@Nullable final ProductCategoryId packingMaterialProductCategoryId)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
+		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
 
 		this.seqNo = seqNo;
 
@@ -140,6 +147,11 @@ public final class GroupCompensationLine
 		{
 			throw new AdempiereException("Unknown " + GroupCompensationAmtType.class + ": " + amtType);
 		}
+	}
+
+	public GroupCompensationBase getBase()
+	{
+		return GroupCompensationBase.of(appliesToProductCategoryId, packingMaterialProductCategoryId);
 	}
 
 	public boolean isPercentage()

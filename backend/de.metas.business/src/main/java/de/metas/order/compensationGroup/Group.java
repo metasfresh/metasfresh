@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ONE;
@@ -136,17 +135,17 @@ public class Group
 	}
 
 	/**
-	 * @param appliesToProductCategoryId {@code null} = the whole group's regular lines; else only the regular lines whose {@link GroupRegularLine#getProductCategoryIds()} contains it
+	 * @param base {@link GroupCompensationBase#NONE} = the whole group's regular lines; else only the regular lines matching it
 	 */
-	BigDecimal getRegularLinesNetAmt(@Nullable final ProductCategoryId appliesToProductCategoryId)
+	BigDecimal getRegularLinesNetAmt(@NonNull final GroupCompensationBase base)
 	{
-		if (appliesToProductCategoryId == null)
+		if (base.isNone())
 		{
 			return getRegularLinesNetAmt();
 		}
 
 		return regularLines.stream()
-				.filter(regularLine -> regularLine.getProductCategoryIds().contains(appliesToProductCategoryId))
+				.filter(base::isMatching)
 				.map(GroupRegularLine::getLineNetAmt)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
@@ -184,28 +183,28 @@ public class Group
 	{
 		moveAllManualCompensationLinesToEnd();
 
-		// non-additive (compounding) mode: one running total PER MATCHING CATEGORY, so a discount line compounds only
-		// with previous discount lines that apply to the same category; a null/empty category compounds against the
-		// whole group, as before.
-		final Map<Optional<ProductCategoryId>, BigDecimal> runningNetAmtsByAppliesToProductCategory = new HashMap<>();
+		// non-additive (compounding) mode: one running total PER BASE (product category + packing-material category),
+		// so a discount line compounds only with previous discount lines that apply to the same base; a line
+		// without any category compounds against the whole group, as before.
+		final Map<GroupCompensationBase, BigDecimal> runningNetAmtsByBase = new HashMap<>();
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
-			final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
+			final GroupCompensationBase base = compensationLine.getBase();
 			final BigDecimal baseAmt;
 			if (additive)
 			{
-				baseAmt = getRegularLinesNetAmt(appliesToProductCategoryId);
+				baseAmt = getRegularLinesNetAmt(base);
 			}
 			else
 			{
-				baseAmt = runningNetAmtsByAppliesToProductCategory.computeIfAbsent(Optional.ofNullable(appliesToProductCategoryId), key -> getRegularLinesNetAmt(appliesToProductCategoryId));
+				baseAmt = runningNetAmtsByBase.computeIfAbsent(base, this::getRegularLinesNetAmt);
 			}
 
 			updateCompensationLine(compensationLine, baseAmt);
 
 			if (!additive)
 			{
-				runningNetAmtsByAppliesToProductCategory.put(Optional.ofNullable(appliesToProductCategoryId), baseAmt.add(compensationLine.getLineNetAmt()));
+				runningNetAmtsByBase.put(base, baseAmt.add(compensationLine.getLineNetAmt()));
 			}
 		}
 	}
@@ -246,23 +245,24 @@ public class Group
 				.lineNetAmt(lineNetAmt)
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.appliesToProductCategoryId(request.getAppliesToProductCategoryId())
+				.packingMaterialProductCategoryId(request.getPackingMaterialProductCategoryId())
 				.build();
 
-		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getAppliesToProductCategoryId()));
+		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getBase()));
 
 		compensationLines.add(compensationLine);
 	}
 
 	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-matching-category running total, for one new line */
-	private BigDecimal computeInitialBaseAmt(@Nullable final ProductCategoryId appliesToProductCategoryId)
+	private BigDecimal computeInitialBaseAmt(@NonNull final GroupCompensationBase base)
 	{
-		BigDecimal baseAmt = getRegularLinesNetAmt(appliesToProductCategoryId);
+		BigDecimal baseAmt = getRegularLinesNetAmt(base);
 
 		if (!additive)
 		{
 			for (final GroupCompensationLine existingLine : compensationLines)
 			{
-				if (Objects.equals(existingLine.getAppliesToProductCategoryId(), appliesToProductCategoryId))
+				if (Objects.equals(existingLine.getBase(), base))
 				{
 					baseAmt = baseAmt.add(existingLine.getLineNetAmt());
 				}

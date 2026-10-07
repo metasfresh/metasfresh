@@ -157,6 +157,7 @@ public class GroupTemplateRepository
 				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
 				.percentage(extractPercentage(compensationLineRecord))
 				.appliesToProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_ID()))
+				.packingMaterialProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_PackingMaterial_ID()))
 				.build();
 	}
 

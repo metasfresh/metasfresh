@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -161,6 +162,17 @@ public class GroupTests
 				.build();
 	}
 
+	private GroupRegularLine regularLine(
+			final int lineNetAmt,
+			@NonNull final Set<ProductCategoryId> productCategoryIds,
+			@NonNull final Set<ProductCategoryId> packingCategoryIds)
+	{
+		return regularLine(lineNetAmt)
+				.productCategoryIds(productCategoryIds)
+				.packingMaterialProductCategoryIds(packingCategoryIds)
+				.build();
+	}
+
 	private GroupCompensationLineBuilder percentageDiscountLine(final int discountPerc)
 	{
 		final int seqNo = nextSeqNo++;
@@ -193,6 +205,23 @@ public class GroupTests
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
 				.appliesToProductCategoryId(appliesToProductCategoryId)
+				// does not matter but needs to be filled
+				.productId(productId)
+				.uomId(uomId)
+				.build();
+	}
+
+	private GroupCompensationLineCreateRequest newPercentageDiscountRequest(
+			final double discountPerc,
+			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			@Nullable final ProductCategoryId packingMaterialProductCategoryId)
+	{
+		return GroupCompensationLineCreateRequest.builder()
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.Percent)
+				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
+				.appliesToProductCategoryId(appliesToProductCategoryId)
+				.packingMaterialProductCategoryId(packingMaterialProductCategoryId)
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)
@@ -266,7 +295,7 @@ public class GroupTests
 				.regularLine(regularLine(1000, child, parent))
 				.build();
 
-		assertThat(group.getRegularLinesNetAmt(parent)).isEqualByComparingTo(BigDecimal.valueOf(1000));
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(parent, null))).isEqualByComparingTo(BigDecimal.valueOf(1000));
 	}
 
 	@Test
@@ -327,7 +356,7 @@ public class GroupTests
 				.regularLine(regularLine(1000, parent)) // only the parent category, not the child
 				.build();
 
-		assertThat(group.getRegularLinesNetAmt(child)).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(child, null))).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 	@Test
@@ -351,5 +380,67 @@ public class GroupTests
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
 				.containsExactly(new BigDecimal("-30.00"), new BigDecimal("-3.00"));
+	}
+
+	@Test
+	void getRegularLinesNetAmt_packingFilterWithoutProductCategory_countsOnlyMatchingLines()
+	{
+		final ProductCategoryId carton = ProductCategoryId.ofRepoId(40);
+		final ProductCategoryId crate = ProductCategoryId.ofRepoId(41);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(720, ImmutableSet.of(), ImmutableSet.of(carton)))
+				.regularLine(regularLine(440, ImmutableSet.of(), ImmutableSet.of(crate)))
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, null, carton));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(null, carton))).isEqualByComparingTo("720.00");
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-4.32"));
+	}
+
+	@Test
+	void updateAllCompensationLines_compounding_keyedByCategoryPair()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId carton = ProductCategoryId.ofRepoId(40);
+		final ProductCategoryId crate = ProductCategoryId.ofRepoId(41);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(720, ImmutableSet.of(goods), ImmutableSet.of(carton)))
+				.regularLine(regularLine(504, ImmutableSet.of(goods), ImmutableSet.of(carton)))
+				.regularLine(regularLine(440, ImmutableSet.of(goods), ImmutableSet.of(crate)))
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(3.0, goods, null));
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, goods, carton));
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.5, goods, carton));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-49.92"), new BigDecimal("-7.34"), new BigDecimal("-6.08"));
+	}
+
+	@Test
+	void updateAllCompensationLines_compounding_bothCategoriesEmpty_asToday()
+	{
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000).build())
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, null, null));
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, null, null));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-90.00"));
 	}
 }

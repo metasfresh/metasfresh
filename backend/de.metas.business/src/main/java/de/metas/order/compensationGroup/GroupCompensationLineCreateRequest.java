@@ -53,4 +53,8 @@ public class GroupCompensationLineCreateRequest
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable
 	ProductCategoryId appliesToProductCategoryId;
+
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Nullable
+	ProductCategoryId packingMaterialProductCategoryId;
 }
