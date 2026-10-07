@@ -125,7 +125,6 @@ const runScenario = async ({ tuHasPartner }) => {
 };
 
 // Variant (a): the TUs of the stock pallet have no partner (partner only on the pallet).
-// Before the fix: the 1st pick fails with "... is not configured to be stored into LU ...".
 // noinspection JSUnusedLocalSymbols
 test('Pick TUs from a pallet with a customer-bound TU item - TU without partner', async ({ page }) => {
     // === ALLURE METADATA ===
@@ -139,7 +138,6 @@ test('Pick TUs from a pallet with a customer-bound TU item - TU without partner'
 });
 
 // Variant (b): the TUs of the stock pallet have the customer as partner too.
-// Before the fix: the 1st pick is OK, the 2nd fails with ERR_LU_HAS_NO_TU_SUB_PACK_INSTR.
 // noinspection JSUnusedLocalSymbols
 test('Pick TUs from a pallet with a customer-bound TU item - TU partner = customer', async ({ page }) => {
     // === ALLURE METADATA ===

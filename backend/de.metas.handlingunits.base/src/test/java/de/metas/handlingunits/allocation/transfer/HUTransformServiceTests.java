@@ -1454,7 +1454,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC1 a: existing target pallet with partner P; item bound to P only; the TU itself has no partner.
+	 * Existing target pallet with partner P; item bound to P only; the TU itself has no partner.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_withPartner_itemBoundToThatPartner()
@@ -1469,12 +1469,12 @@ public class HUTransformServiceTests
 		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
 
 		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
-		assertNewTUsHavePartner(targetLU, childrenBefore, partnerP); // inherited from the target LU (partner P), as before the fix
+		assertNewTUsHavePartner(targetLU, childrenBefore, partnerP); // inherited from the target LU (partner P)
 		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
 	}
 
 	/**
-	 * TC1 b: existing target pallet without partner -> falls back to the source pallet's partner P; item bound to P only.
+	 * Existing target pallet without partner -> falls back to the source pallet's partner P; item bound to P only.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_withoutPartner_fallsBackToSourceLUPartner()
@@ -1494,7 +1494,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC1 c: new target pallet of the same PI -> source pallet's partner P; item bound to P only; the TU itself has no partner.
+	 * New target pallet of the same PI -> source pallet's partner P; item bound to P only; the TU itself has no partner.
 	 */
 	@Test
 	public void luExtractTUs_toNewLU_fallsBackToSourceLUPartner()
@@ -1516,7 +1516,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC1 d: precedence. TU with its own partner X on a source pallet with partner Y; item bound to X; new target pallet -> the TU's own partner wins (as before).
+	 * Precedence. TU with its own partner X on a source pallet with partner Y; item bound to X; new target pallet -> the TU's own partner wins.
 	 */
 	@Test
 	public void luExtractTUs_toNewLU_tuOwnPartnerWinsOverSourceLUPartner()
@@ -1539,7 +1539,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC1 e: precedence. Existing target pallet with partner X; TU (and source pallet) with partner Y; item bound to X -> the target pallet's partner wins.
+	 * Precedence. Existing target pallet with partner X; TU (and source pallet) with partner Y; item bound to X -> the target pallet's partner wins.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_targetLUPartnerWinsOverTUPartner()
@@ -1558,7 +1558,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC1 f: extract ALL remaining TUs of the aggregate onto an existing pallet without partner (attach path); source pallet partner P; item bound to P only.
+	 * Extract ALL remaining TUs of the aggregate onto an existing pallet without partner (attach path); source pallet partner P; item bound to P only.
 	 */
 	@Test
 	public void luExtractTUs_allTUsOfAggregate_toExistingLUWithoutPartner()
@@ -1640,7 +1640,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 a: generic item (no partner) -> existing target pallet works.
+	 * Generic item (no partner) -> existing target pallet works.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_genericItem()
@@ -1658,7 +1658,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 a: generic item (no partner) -> new target pallet works.
+	 * Generic item (no partner) -> new target pallet works.
 	 */
 	@Test
 	public void luExtractTUs_toNewLU_genericItem()
@@ -1680,7 +1680,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 b: the only item is bound to a different partner -> existing target pallet: error, nothing moved.
+	 * The only item is bound to a different partner -> existing target pallet: error, nothing moved.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_itemBoundToOtherPartnerOnly_fails()
@@ -1699,7 +1699,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 b: the only item is bound to a different partner -> new target pallet: error, nothing moved.
+	 * The only item is bound to a different partner -> new target pallet: error, nothing moved.
 	 */
 	@Test
 	public void luExtractTUs_toNewLU_itemBoundToOtherPartnerOnly_fails()
@@ -1716,7 +1716,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 b: no item at all for the TU -> existing target pallet: error, nothing moved.
+	 * No item at all for the TU -> existing target pallet: error, nothing moved.
 	 */
 	@Test
 	public void luExtractTUs_toExistingLU_noItem_fails()
@@ -1735,7 +1735,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * TC3 b: no item at all for the TU -> new target pallet: error, nothing moved.
+	 * No item at all for the TU -> new target pallet: error, nothing moved.
 	 */
 	@Test
 	public void luExtractTUs_toNewLU_noItem_fails()
@@ -1753,7 +1753,7 @@ public class HUTransformServiceTests
 
 	/**
 	 * Standalone TU (not on any pallet) moved onto an existing pallet: the partner resolves only from the target pallet (none here),
-	 * so a generic item is found and the move works as before.
+	 * so a generic item is found and the move works.
 	 */
 	@Test
 	public void tuToExistingLU_standaloneTU_genericItem_works()
@@ -1770,7 +1770,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Standalone TU (no pallet to take a partner from) onto an existing pallet without partner, where the only item is partner-bound: unchanged error, nothing moved.
+	 * Standalone TU (no pallet to take a partner from) onto an existing pallet without partner, where the only item is partner-bound: error, nothing moved.
 	 */
 	@Test
 	public void tuToExistingLU_standaloneTU_itemBoundToPartnerOnly_fails()

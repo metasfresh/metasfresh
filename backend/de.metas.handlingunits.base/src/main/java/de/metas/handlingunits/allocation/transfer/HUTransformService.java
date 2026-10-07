@@ -1269,8 +1269,7 @@ public class HUTransformService
 					I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
 					if (parentPIItem == null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID())
 					{
-						// the lookup above only accepts generic items and items bound to the new LU's partner, which is the source TU's (possibly none).
-						// luPIItem is the item the new LU was created from, so it links the LU's version to this TU's PI, even if it is bound to another partner (e.g. the one of the pallet the TU was taken from).
+						// the new LU carries the TU's partner (maybe none); luPIItem is the item the LU was created from and links it to this TU's PI, even if partner-bound
 						parentPIItem = luPIItem;
 					}
 					if (parentPIItem == null)
