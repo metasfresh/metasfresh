@@ -208,7 +208,7 @@ export async function openLineAdvancedEdit(page, productCode) {
 
 /**
  * The calibration group of the line's advanced edit shows factor, rule (by its name, which starts with its SeqNo)
- * and uncalibrated quantity, all read-only; the UOM editor is rendered once.
+ * and uncalibrated quantity, all read-only, and nothing else (no unit widget; the line unit is shown once, outside it).
  */
 export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName }) {
     await openLineAdvancedEdit(page, productCode);
@@ -226,7 +226,14 @@ export async function expectCalibrationGroup(page, productCode, { factor, rulePr
     await expect(uncalibratedInput).toHaveValue(new RegExp(`^${uncalibrated}([.,]0+)?$`));
     await expect(uncalibratedInput).toBeDisabled();
 
-    await expect(modal.locator('.form-field-C_UOM_ID.widgetType-List')).toHaveCount(1);
+    const calibrationGroup = modal.locator('.panel-spaced').filter({ has: page.locator(`.form-field-${FIELD_FACTOR}`) });
+    await expect(calibrationGroup).toHaveCount(1);
+    await expect(calibrationGroup.locator('.form-group')).toHaveCount(3);
+    for (const field of [FIELD_FACTOR, FIELD_RULE, FIELD_UNCALIBRATED]) {
+        await expect(calibrationGroup.locator(`.form-field-${field}`)).toHaveCount(1);
+    }
+    await expect(calibrationGroup.locator('.form-field-C_UOM_ID')).toHaveCount(0);
+    await expect(modal.locator('.form-field-C_UOM_ID')).toHaveCount(1);
     await modal.locator(`.form-field-${FIELD_UNCALIBRATED}`).scrollIntoViewIfNeeded();
     await snap(page, snapshotName ?? `advanced-edit-${productCode.split('_')[0].toLowerCase()}-calibrated`);
     await AdvancedEdit.close();
