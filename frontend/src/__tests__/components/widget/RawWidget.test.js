@@ -846,11 +846,13 @@ describe('RawWidget component', () => {
     });
 
     it.each([
-      ['3.57', 0],
-      ['3,57', 1],
+      ['Enter', '3.57', 0],
+      ['Enter', '3,57', 1],
+      ['Tab', '3.57', 0],
+      ['Tab', '3,57', 1],
     ])(
-      'lets the table row see Enter on %s only when it is a valid number (the row would take the typed text)',
-      (typed, expectedRowKeyDowns) => {
+      'lets the table row see %s on %s only when it is a valid number (the row would take the typed text)',
+      (key, typed, expectedRowKeyDowns) => {
         const rowKeyDownSpy = jest.fn();
         const props = createDummyProps({
           ...amountLayout,
@@ -864,8 +866,9 @@ describe('RawWidget component', () => {
         );
         wrapper.find('input').simulate('change', { target: { value: typed } });
 
+        wrapper.find('input').simulate('focus');
         wrapper.find('input').simulate('keyDown', {
-          key: 'Enter',
+          key,
           target: { value: typed },
         });
 

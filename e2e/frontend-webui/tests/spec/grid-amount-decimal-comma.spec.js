@@ -10,24 +10,28 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 
 /**
- * Grid in-row amount editor — a decimal typed with the user's own decimal separator must be stored as typed.
+ * Grid in-row amount editor — numbers are read and edited with the separators of the user's session.
  *
- * Regression guard: in a German session, typing "3,57" into an Amount cell of a grid view stored 357.
- * The amount editor was a browser <input type="number">, which silently drops the comma keystroke, so the
- * PATCH carried "357". The editor is now a text input and the typed text is converted to the dot-decimal
- * the backend expects, using the separators of the user's session locale.
+ * Regression guard: in a German session, typing "3,57" into an Amount cell of a grid view stored 357, because the
+ * amount editor was a browser <input type="number">, which silently drops the comma keystroke. Now:
+ * - the session's decimal separator is the decimal separator ("3,57" in German, "3.57" in English);
+ * - the other separator only groups thousands in valid groups of three ("1.000" in German is 1000);
+ * - anything else ("3.57" in German, "1,5" in English) is not patched and an error notification says why;
+ * - a field that is opened and left untouched is not patched.
  *
- * Grid: the payment-allocation view opened from a sales invoice, column "discountAmt" (Amount widget,
- * edited in-row). One invoice serves both sessions: the German test creates it, the English test reuses it
- * (each opens its own allocation view, so the edits do not interfere). The invoice is created through the
- * invoice-candidate UI, because the `invoices` masterdata request times out waiting for the invoice.
- * The tests therefore run serially: the English tests need the German one's invoice and are skipped when it fails
- * (also when only they are selected with --grep). Every allocation view starts with a zero discount.
+ * Grid: the payment-allocation view opened from a sales invoice, column "discountAmt" (Amount widget, edited in-row).
+ * One invoice serves all tests: the first German test creates it (through the invoice-candidate UI, because the
+ * `invoices` masterdata request times out waiting for the invoice), the others reuse it. The tests therefore run
+ * serially and are skipped when the first one fails (also when only they are selected with --grep). Every test opens
+ * its own allocation view, which starts with a zero discount.
  */
 const PAYMENT_ALLOCATION_FROM_INVOICE_ACTION = 'PaymentView_Launcher_From_C_Invoice_SingleDocument';
-const EXPECTED_AMOUNT = 3.57;
-/** How the grid renders EXPECTED_AMOUNT and a zero amount with the separators of each session language */
-const DISPLAYED_AMOUNT = { de_DE: { expected: '3,57', zero: '0,00' }, en_US: { expected: '3.57', zero: '0.00' } };
+
+/** How the grid renders an amount with the separators of each session language */
+const DISPLAYED = {
+  de_DE: { '3.57': '3,57', 1000: '1.000,00', 0: '0,00' },
+  en_US: { '3.57': '3.57', 0: '0.00' },
+};
 
 const setupAllure = (language) => {
   allure.epic('E0294: Frontend WebUI');
@@ -58,53 +62,96 @@ const openAllocationViewOfInvoice = async (page, invoiceId) => {
   });
 };
 
-/** Types into the invoice row's discount cell, presses Enter and returns the PATCH sent and the server's answer */
-const typeIntoDiscountCell = async (page, { invoiceDocumentNo, typed }) => {
+const isDiscountPatch = (req) => req.method() === 'PATCH' && (req.postData() || '').includes('discountAmt');
+
+const discountCellOf = (page, invoiceDocumentNo) => {
   const invoiceRow = page.locator('tr', { hasText: invoiceDocumentNo }).first();
-  const discountCell = invoiceRow.locator('[data-cy="cell-discountAmt"]');
+  return { invoiceRow, discountCell: invoiceRow.locator('[data-cy="cell-discountAmt"]') };
+};
+
+/** Opens the in-row editor of the invoice row's discount cell and returns its input */
+const openDiscountEditor = async ({ invoiceRow, discountCell }) => {
   await discountCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // select the row
+  await discountCell.dblclick(); // on a selected row, a double click opens the in-row editor
+  const input = discountCell.locator('input');
+  await expect(input).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  return input;
+};
 
-  let patchRequest = null;
-  let patchResponse = null;
-  await test.step(`type ${typed} into the discount amount cell and press Enter`, async () => {
-    await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // select the row
-    await discountCell.dblclick(); // on a selected row, a double click opens the in-row editor
-    const input = discountCell.locator('input');
-    await expect(input).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await input.press('Control+a');
-    await input.pressSequentially(typed, { delay: 80 });
+const typeIntoEditor = async (input, typed) => {
+  await input.press('Control+a');
+  await input.pressSequentially(typed, { delay: 80 });
+  // what the user typed is what the editor holds (a browser number input would show 357 for 3,57)
+  expect(await input.inputValue(), 'text in the amount editor after typing').toBe(typed);
+};
 
-    // what the user typed is what the editor holds (a browser number input would show 357 for 3,57)
-    expect(await input.inputValue(), 'text in the amount editor after typing').toBe(typed);
+/** Types a valid amount, presses Enter and asserts the PATCH, the server's row and the grid cell */
+const typeAndExpectStored = async (page, { invoiceDocumentNo, typed, patched, language }) => {
+  const cell = discountCellOf(page, invoiceDocumentNo);
 
-    const isDiscountPatch = (req) => req.method() === 'PATCH' && (req.postData() || '').includes('discountAmt');
+  await test.step(`type ${typed}: stored as ${patched}`, async () => {
+    const input = await openDiscountEditor(cell);
+    await typeIntoEditor(input, typed);
+
     const patchRequested = page.waitForRequest(isDiscountPatch, { timeout: SLOW_ACTION_TIMEOUT });
     const patchResponded = page.waitForResponse((resp) => isDiscountPatch(resp.request()), {
       timeout: SLOW_ACTION_TIMEOUT,
     });
     await input.press('Enter');
-    patchRequest = JSON.parse((await patchRequested).postData());
-    patchResponse = await patchResponded;
-  });
 
-  return { invoiceRow, discountCell, patchRequest, patchResponse };
+    expect(JSON.parse((await patchRequested).postData()), 'PATCH sent for discountAmt').toContainEqual(
+      expect.objectContaining({ path: 'discountAmt', value: patched })
+    );
+    const patchResponse = await patchResponded;
+    expect(patchResponse.status(), 'PATCH response status').toBe(200);
+    const body = await patchResponse.json();
+    const row = Array.isArray(body) ? body[0] : body;
+    expect(row.error, 'error of the row edit').toBeUndefined();
+    expect(Number(row.fieldsByName?.discountAmt?.value), 'discountAmt stored by the server').toBe(Number(patched));
+
+    await expectDisplayedDiscount(cell, DISPLAYED[language][patched]);
+  });
 };
 
-/** Asserts the PATCH, the server's row and the grid cell all hold EXPECTED_AMOUNT */
-const expectDiscountStored = async ({ invoiceRow, discountCell, patchRequest, patchResponse }, language) => {
-  expect(patchRequest, 'PATCH sent for discountAmt').toContainEqual(
-    expect.objectContaining({ path: 'discountAmt', value: '3.57' })
-  );
+/** Types an invalid amount, presses Enter and asserts it is refused: no PATCH, a visible error, the amount kept */
+const typeAndExpectRefused = async (page, { invoiceDocumentNo, typed, keptEditText, keptDisplayed }) => {
+  const cell = discountCellOf(page, invoiceDocumentNo);
 
-  expect(patchResponse.status(), 'PATCH response status').toBe(200);
-  const body = await patchResponse.json();
-  const rows = Array.isArray(body) ? body : [body];
-  const storedValues = rows.map((row) => row?.fieldsByName?.discountAmt?.value).filter((value) => value !== undefined);
-  expect(storedValues.length, 'discountAmt returned by the server').toBeGreaterThan(0);
-  expect(Number(storedValues[storedValues.length - 1]), 'discountAmt stored by the server').toBe(EXPECTED_AMOUNT);
+  await test.step(`type ${typed}: refused with a visible error, the amount is kept`, async () => {
+    const patches = [];
+    const collectPatch = (req) => isDiscountPatch(req) && patches.push(req.postData());
+    page.on('request', collectPatch);
 
-  await test.step('the grid cell shows the stored amount', async () => {
-    await expectDisplayedDiscount({ invoiceRow, discountCell }, DISPLAYED_AMOUNT[language].expected);
+    const input = await openDiscountEditor(cell);
+    await typeIntoEditor(input, typed);
+    await input.press('Enter');
+
+    // the error names what was typed, which is no localized text
+    await expect(page.locator('.notification-item.error', { hasText: typed }).first()).toBeVisible({
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+    await expect(input, 'the editor shows the kept amount again').toHaveValue(keptEditText);
+    await expectDisplayedDiscount(cell, keptDisplayed);
+
+    page.off('request', collectPatch);
+    expect(patches, 'PATCHes sent for discountAmt').toEqual([]);
+  });
+};
+
+/** Opens the discount editor and leaves it without typing: nothing must be patched */
+const focusAndLeaveUntouched = async (page, { invoiceDocumentNo, expectedEditText, keptDisplayed }) => {
+  const cell = discountCellOf(page, invoiceDocumentNo);
+
+  await test.step('open the discount editor and leave it untouched: nothing is patched', async () => {
+    const input = await openDiscountEditor(cell);
+    // edit mode shows the stored amount with the session's decimal separator and no grouping
+    await expect(input).toHaveValue(expectedEditText);
+
+    // a PATCH would be sent right when the editor is left; none must come within a few seconds
+    const patchRequested = page.waitForRequest(isDiscountPatch, { timeout: 3000 }).catch(() => null);
+    await expectDisplayedDiscount(cell, keptDisplayed); // leaves the editor
+    expect(await patchRequested, 'PATCH sent for the untouched discountAmt').toBeNull();
   });
 };
 
@@ -113,7 +160,7 @@ const expectDisplayedDiscount = async ({ invoiceRow, discountCell }, expectedTex
   await expect(discountCell).toHaveText(expectedText, { timeout: SLOW_ACTION_TIMEOUT });
 };
 
-test.describe.serial('Grid in-row amount editor - decimal separator of the session', () => {
+test.describe.serial('Grid in-row amount editor - separators of the session', () => {
   const invoice = { id: null, documentNo: null };
 
   test('German session: 3,57 typed into a grid amount cell is stored as 3.57', async ({ page }) => {
@@ -159,42 +206,43 @@ test.describe.serial('Grid in-row amount editor - decimal separator of the sessi
     });
 
     await openAllocationViewOfInvoice(page, invoice.id);
-    const edit = await typeIntoDiscountCell(page, { invoiceDocumentNo: invoice.documentNo, typed: '3,57' });
-    await expectDiscountStored(edit, 'de_DE');
+    const invoiceDocumentNo = invoice.documentNo;
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '3,57', patched: '3.57', language: 'de_DE' });
+    await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '3,57', keptDisplayed: '3,57' });
   });
 
-  test('English session: 3.57 is stored as 3.57', async ({ page }) => {
+  test('German session: 1.000 is 1000, 3.57 is refused with a visible error', async ({ page }) => {
+    setupAllure('de_DE');
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 2400, height: 1000 });
+    await loginAs('de_DE');
+
+    await openAllocationViewOfInvoice(page, invoice.id);
+    const invoiceDocumentNo = invoice.documentNo;
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '1.000', patched: '1000', language: 'de_DE' });
+    await typeAndExpectRefused(page, {
+      invoiceDocumentNo,
+      typed: '3.57',
+      keptEditText: '1000',
+      keptDisplayed: DISPLAYED.de_DE[1000],
+    });
+    await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '1000', keptDisplayed: '1.000,00' });
+  });
+
+  test('English session: 3.57 is stored as 3.57, 1,5 is refused with a visible error', async ({ page }) => {
     setupAllure('en_US');
     test.setTimeout(120000);
     await page.setViewportSize({ width: 2400, height: 1000 });
     await loginAs('en_US');
 
     await openAllocationViewOfInvoice(page, invoice.id);
-    const edit = await typeIntoDiscountCell(page, { invoiceDocumentNo: invoice.documentNo, typed: '3.57' });
-    await expectDiscountStored(edit, 'en_US');
-  });
-
-  test('English session: 1,5 (a comma that is no valid grouping) is rejected, never stored as 15', async ({ page }) => {
-    setupAllure('en_US');
-    test.setTimeout(120000);
-    await page.setViewportSize({ width: 2400, height: 1000 });
-    await loginAs('en_US');
-
-    await openAllocationViewOfInvoice(page, invoice.id);
-    const edit = await typeIntoDiscountCell(page, { invoiceDocumentNo: invoice.documentNo, typed: '1,5' });
-
-    // sent as typed, so that the backend rejects it ...
-    expect(edit.patchRequest, 'PATCH sent for discountAmt').toContainEqual(
-      expect.objectContaining({ path: 'discountAmt', value: '1,5' })
-    );
-    // ... which an editable view answers with the unchanged row plus the error (HTTP 200, see ViewRowEditRestController)
-    expect(edit.patchResponse.status(), 'PATCH response status').toBe(200);
-    const body = await edit.patchResponse.json();
-    const row = Array.isArray(body) ? body[0] : body;
-    expect(row.error, 'the row edit reports an error').toBeTruthy();
-    expect(row.fieldsByName?.discountAmt?.value, 'discountAmt kept by the server').toBe('0');
-
-    // and the grid shows the unchanged amount
-    await expectDisplayedDiscount(edit, DISPLAYED_AMOUNT.en_US.zero);
+    const invoiceDocumentNo = invoice.documentNo;
+    await typeAndExpectStored(page, { invoiceDocumentNo, typed: '3.57', patched: '3.57', language: 'en_US' });
+    await typeAndExpectRefused(page, {
+      invoiceDocumentNo,
+      typed: '1,5',
+      keptEditText: '3.57',
+      keptDisplayed: DISPLAYED.en_US['3.57'],
+    });
   });
 });
