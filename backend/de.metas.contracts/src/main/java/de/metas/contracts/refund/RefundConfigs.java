@@ -159,10 +159,22 @@ public class RefundConfigs
 	 */
 	public void assertInvoiceDistanceDividesTheYear(@NonNull final RefundConfig refundConfig)
 	{
-		final InvoiceSchedule invoiceSchedule = refundConfig.getInvoiceSchedule();
+		assertInvoiceDistanceDividesTheYear(refundConfig.getInvoiceSchedule());
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods, so the schedule's distance has to divide the year.
+	 * Checked when a refund line is saved, and again where the periods are computed, because the (shared) schedule can be changed later.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final InvoiceSchedule invoiceSchedule)
+	{
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()) && 12 % invoiceSchedule.getInvoiceDistance() != 0)
 		{
-			throw new AdempiereException(MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE).markAsUserValidationError();
+			throw new AdempiereException(MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE)
+					.markAsUserValidationError()
+					.setParameter("C_InvoiceSchedule_ID", invoiceSchedule.getId())
+					.setParameter("InvoiceDistance", invoiceSchedule.getInvoiceDistance())
+					.appendParametersToMessage();
 		}
 	}
 

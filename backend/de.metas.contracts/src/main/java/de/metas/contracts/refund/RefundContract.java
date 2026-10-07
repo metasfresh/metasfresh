@@ -191,9 +191,14 @@ public class RefundContract
 		return periodStart;
 	}
 
-	/** @return the first month of the calendar period of {@code invoiceDistance} months that contains the given date; the distance divides 12 (see {@link RefundConfigs#assertValid}) */
+	/**
+	 * @return the first month of the calendar period of {@code invoiceDistance} months that contains the given date
+	 * @throws org.adempiere.exceptions.AdempiereException if the distance does not divide 12 (see {@link RefundConfigs#assertInvoiceDistanceDividesTheYear(InvoiceSchedule)})
+	 */
 	private static YearMonth computeCalendarPeriodFirstMonth(@NonNull final InvoiceSchedule invoiceSchedule, @NonNull final LocalDate date)
 	{
+		RefundConfigs.assertInvoiceDistanceDividesTheYear(invoiceSchedule);
+
 		final int months = invoiceSchedule.getInvoiceDistance();
 		final int periodIndex = (date.getMonthValue() - 1) / months;
 		return YearMonth.of(date.getYear(), periodIndex * months + 1);

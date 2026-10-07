@@ -4,10 +4,12 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,6 +228,38 @@ public class RefundContractTest
 		assertThat(contract.computeCurrentPeriodStart(LocalDate.of(2026, 1, 10))).isEqualTo(LocalDate.of(2026, 3, 15));
 	}
 
+	/**
+	 * The distance of a monthly schedule is only checked when a refund line is saved; a shared C_InvoiceSchedule edited afterwards
+	 * to a distance that does not divide the year would give overlapping or shifted periods, so the period computation refuses it.
+	 */
+	@Test
+	public void calendarPeriods_distanceThatDoesNotDivideTheYear_fails()
+	{
+		final RefundContract contract = contractWithSchedule(31, 5, LocalDate.of(2026, 1, 1));
+
+		assertThatThrownBy(() -> contract.computeNextInvoiceDate(LocalDate.of(2026, 7, 10)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_InvoiceSchedule_ID")
+				.satisfies(e -> assertThat(((AdempiereException)e).isUserValidationError()).isTrue())
+				.satisfies(e -> assertThat(((AdempiereException)e).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message()));
+		assertThatThrownBy(() -> contract.computeCurrentPeriodStart(LocalDate.of(2026, 7, 10)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(e -> assertThat(((AdempiereException)e).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message()));
+	}
+
+	/** the last period ends on its calendar end, not on the term's end date (approved default) */
+	@Test
+	public void calendarPeriods_lastPeriodEndsOnItsCalendarEnd_notOnTheTermEnd()
+	{
+		final RefundContract quarterly = contractWithSchedule(Frequency.MONTLY, 3, null, 31, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 14));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 3, 10)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 3, 14)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+
+		final RefundContract monthly = contractWithSchedule(Frequency.MONTLY, 1, null, 31, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 14));
+		assertThat(monthly.computeNextInvoiceDate(LocalDate.of(2026, 3, 14)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(monthly.computeCurrentPeriodStart(LocalDate.of(2026, 3, 14))).isEqualTo(LocalDate.of(2026, 3, 1));
+	}
+
 	/** asserts each period ("start/end") through both its start and its end, and through a day in between */
 	private void assertPeriods(final int invoiceDayOfMonth, final int invoiceDistance, final String startDate, final String... expectedPeriods)
 	{
@@ -296,6 +330,11 @@ public class RefundContractTest
 
 	private RefundContract contractWithSchedule(final Frequency frequency, final int invoiceDistance, final java.time.DayOfWeek dayOfWeek, final int invoiceDayOfMonth, final LocalDate startDate)
 	{
+		return contractWithSchedule(frequency, invoiceDistance, dayOfWeek, invoiceDayOfMonth, startDate, startDate.plusYears(3));
+	}
+
+	private RefundContract contractWithSchedule(final Frequency frequency, final int invoiceDistance, final java.time.DayOfWeek dayOfWeek, final int invoiceDayOfMonth, final LocalDate startDate, final LocalDate endDate)
+	{
 		final InvoiceSchedule schedule = InvoiceSchedule.builder()
 				.id(InvoiceScheduleId.ofRepoId(6))
 				.frequency(frequency)
@@ -308,7 +347,7 @@ public class RefundContractTest
 				.id(FlatrateTermId.ofRepoId(101))
 				.bPartnerId(BPartnerId.ofRepoId(200))
 				.startDate(startDate)
-				.endDate(startDate.plusYears(3))
+				.endDate(endDate)
 				.refundConfig(refundConfig1.toBuilder().invoiceSchedule(schedule).build())
 				.build();
 	}
