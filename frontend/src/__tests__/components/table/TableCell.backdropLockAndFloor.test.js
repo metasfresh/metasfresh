@@ -35,7 +35,7 @@ function cellProps({ widgetType, size = 'M', ...overrides }) {
 
 describe('TableCell — backdrop lock', () => {
   it.each(['Address', 'ProductAttributes', 'List', 'Lookup'])(
-    'keeps a %s cell in edit mode when its editor reports false',
+    'does not call onClickOutside for a %s editor reporting false',
     (widgetType) => {
       const props = cellProps({ widgetType });
       const wrapper = shallow(<TableCell {...props} />);

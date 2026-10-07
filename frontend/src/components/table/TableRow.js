@@ -112,7 +112,7 @@ class TableRow extends PureComponent {
    * active editor, or an editor such as Labels whose key target is a contentEditable span).
    *
    * @param {string} property - the cell's field name
-   * @param {*} value - a text or number value
+   * @param {*} value - a text or number value; undefined when there is none
    * @returns {boolean} true if the value was written
    */
   writeScalarFieldValue = (property, value) => {
