@@ -6,7 +6,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { waitForRecordSaved } from '../utils/WebAPIValidation';
+import { getFieldData, waitForRecordSaved } from '../utils/WebAPIValidation';
 import { LookupWidget } from '../utils/widgets/LookupWidget';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { ListWidget } from '../utils/widgets/ListWidget';
@@ -246,12 +246,12 @@ test.describe('Compensation group calibration', () => {
             await expectCalibrationGroupHidden(page, haehnchen);
 
             await Backend.expect({
-                title: 'Krankenhaus order lines: today\'s quantities',
+                title: 'Krankenhaus order lines: today\'s quantities, factor 1, no rule applied',
                 salesOrders: {
                     [order.orderId]: {
                         lines: [
-                            { product: 'REIS', qtyEntered: 200 },
-                            { product: 'HAEHNCHEN', qtyEntered: 100 },
+                            { product: 'REIS', qtyEntered: 200, calibrationFactor: 1, qtyEnteredUncalibrated: 200, hasCalibrationRule: false },
+                            { product: 'HAEHNCHEN', qtyEntered: 100, calibrationFactor: 1, qtyEnteredUncalibrated: 100, hasCalibrationRule: false },
                         ],
                     },
                 },
@@ -334,7 +334,8 @@ test.describe('Compensation group calibration', () => {
             const reference = page.locator(`[data-cy="${RULE_TO_SALES_ORDERS_REFERENCE}"]`);
             await expect(reference).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
             await reference.click();
-            await page.waitForURL(/\/window\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+            // the rule's own URL matches /window/<id> as well: wait until the page has left the rules window
+            await page.waitForURL((url) => windowIdOfPath(url.pathname) !== rulesWindowId, { timeout: SLOW_ACTION_TIMEOUT });
             // the SALES order window (Auftrag), not the purchase one. Note: the relation's target window comes from the
             // reference's own window setting and may differ from the menu's window on an instance that overrides it.
             expect(windowIdFromUrl(page), 'related documents open the sales-order window').toBe(orderWindowId);
@@ -411,12 +412,17 @@ async function newRuleThroughWindow(page, rulesWindowUrl) {
     await page.locator('.form-field-SeqNo').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
 
+function windowIdOfPath(pathname) {
+    const match = pathname.match(/\/window\/(\d+)/);
+    return match ? match[1] : null;
+}
+
 function windowIdFromUrl(page) {
-    const match = page.url().match(/\/window\/(\d+)/);
-    if (!match) {
+    const windowId = windowIdOfPath(new URL(page.url()).pathname);
+    if (!windowId) {
         throw new Error(`No window id in URL ${page.url()}`);
     }
-    return match[1];
+    return windowId;
 }
 
 function recordIdFromUrl(page) {
@@ -440,11 +446,14 @@ async function createOrder(page, bpartnerCode, { docTypeId } = {}) {
     const windowId = windowIdFromUrl(page);
     const orderId = recordIdFromUrl(page);
 
-    if (docTypeId) {
-        await ListWidget.setByValue('C_DocTypeTarget_ID', String(docTypeId));
-    }
     await LookupWidget.setValue('C_BPartner_ID', bpartnerCode);
     await waitForRecordSaved(windowId, orderId, { maxRetries: 20, retryDelayMs: 1000 });
+    if (docTypeId) {
+        await ListWidget.setByValue('C_DocTypeTarget_ID', String(docTypeId));
+        await waitForRecordSaved(windowId, orderId, { maxRetries: 20, retryDelayMs: 1000 });
+        const docTypeField = await getFieldData(windowId, orderId, 'C_DocTypeTarget_ID');
+        expect(String(docTypeField.value && docTypeField.value.key), 'target document type of the new order').toBe(String(docTypeId));
+    }
     return { windowId, orderId };
 }
 
