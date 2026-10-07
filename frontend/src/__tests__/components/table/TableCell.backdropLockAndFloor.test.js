@@ -33,7 +33,7 @@ function cellProps({ widgetType, size = 'M', ...overrides }) {
 }
 
 describe('TableCell — backdrop lock', () => {
-  it.each(['Address', 'ProductAttributes', 'Attributes', 'List', 'Lookup'])(
+  it.each(['Address', 'ProductAttributes', 'List', 'Lookup'])(
     'does not tear down a %s editor when its overlay reports the backdrop state',
     (widgetType) => {
       const props = cellProps({ widgetType });

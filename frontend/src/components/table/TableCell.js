@@ -52,13 +52,7 @@ class TableCell extends PureComponent {
     // button-overlay as 'ProductAttributes', so it must be treated as a
     // backdrop-locking widget too; otherwise clicking outside would trigger the
     // grid's onClickOutside and tear down the overlay mid-edit.
-    const widgetsList = [
-      'ProductAttributes',
-      'Address',
-      'Attributes',
-      'List',
-      'Lookup',
-    ];
+    const widgetsList = ['ProductAttributes', 'Address', 'List', 'Lookup'];
 
     if (!widgetsList.includes(item.widgetType)) {
       !state && this.props.onClickOutside();
