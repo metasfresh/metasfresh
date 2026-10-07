@@ -371,7 +371,7 @@ export class RawWidget extends PureComponent {
       isDecimalNumberField(widgetType) &&
       !isAllowedDecimalNumberInput(valueToSet)
     ) {
-      return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves
+      return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes (and pastes) ourselves
     }
     const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
     const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;

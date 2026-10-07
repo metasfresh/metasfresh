@@ -98,7 +98,9 @@ const getSessionNumberDelimiters = () => numeral.localeData().delimiters;
  *            and the decimal separator becomes a dot (de: '1.234,56' -> '1234.56', en: '1,234.56' -> '1234.56');
  *          - when it does not, a single dot is still read as the decimal point, so '3.57' keeps working for a
  *            user whose decimal separator is a comma; any other separator is a grouping one
- *            (de: '1.234.567' -> '1234567', en: '1,234' -> '1234').
+ *            (de: '1.234.567' -> '1234567', en: '1,234' -> '1234');
+ *          - a text without any digit is read as empty; a text with more than one decimal separator, or with
+ *            a separator after the decimal one, is ambiguous and is returned as typed for the backend to reject it.
  * @param {string} text the raw text from the input
  * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
  * @returns {string} the normalized number; an empty or missing value is returned as is
@@ -115,9 +117,17 @@ export function normalizeDecimalNumberString(
   const trimmed = text.trim();
   const decimalIdx = trimmed.lastIndexOf(decimal);
 
-  if (decimal !== '.' && decimalIdx >= 0) {
+  if (!/[0-9]/.test(trimmed)) {
+    return ''; // e.g. a lone '-' or ',': nothing typed yet
+  } else if (decimal !== '.' && decimalIdx >= 0) {
     const integerPart = trimmed.substring(0, decimalIdx);
     const fractionPart = trimmed.substring(decimalIdx + 1);
+    if (
+      integerPart.includes(decimal) ||
+      /[^0-9]/.test(fractionPart) // e.g. a pasted English '1,234.56' in a German session
+    ) {
+      return trimmed; // ambiguous: sent as typed, so that the backend rejects it instead of storing a wrong number
+    }
     return `${removeSeparators(integerPart, [
       thousands,
       '.',

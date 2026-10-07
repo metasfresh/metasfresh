@@ -55,6 +55,19 @@ describe('normalizeDecimalNumberString', () => {
     expect(normalizeDecimalNumberString(undefined, DE)).toEqual(undefined);
   });
 
+  it('reads a text without any digit (e.g. a lone minus or comma) as empty', () => {
+    expect(normalizeDecimalNumberString('-', DE)).toEqual('');
+    expect(normalizeDecimalNumberString(',', DE)).toEqual('');
+    expect(normalizeDecimalNumberString('.', EN)).toEqual('');
+  });
+
+  it('leaves a text with more than one decimal separator untouched, for the backend to reject it', () => {
+    expect(normalizeDecimalNumberString('3,57,', DE)).toEqual('3,57,');
+    expect(normalizeDecimalNumberString('1,2,3', DE)).toEqual('1,2,3');
+    expect(normalizeDecimalNumberString('1,234.56', DE)).toEqual('1,234.56');
+    expect(normalizeDecimalNumberString('1.234.567,8', DE)).toEqual('1234567.8'); // dots before the comma are grouping
+  });
+
   it('uses the separators of the logged-in user session by default', () => {
     initNumeralLocales('de', {
       numberDecimalSeparator: ',',
