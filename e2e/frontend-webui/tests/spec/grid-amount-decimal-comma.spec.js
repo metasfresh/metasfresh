@@ -315,7 +315,14 @@ test.describe('Quick input - separators of the session', () => {
       expect(await completeRequested, 'request adding the order line').toBeNull();
     });
 
-    await test.step('type 1,5 and press Enter: the line is added', async () => {
+    await test.step('type 1,5 and press Enter: 1.5 is sent and the line is added', async () => {
+      const quantityPatched = page.waitForRequest(
+        (req) =>
+          req.method() === 'PATCH' &&
+          req.url().includes('/quickInput/') &&
+          (req.postData() || '').includes('Qty'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
       const completeRequested = page.waitForRequest(
         (req) => req.url().includes('/quickInput/') && req.url().endsWith('/complete'),
         { timeout: SLOW_ACTION_TIMEOUT }
@@ -325,16 +332,19 @@ test.describe('Quick input - separators of the session', () => {
       await quantityInput.press('ControlOrMeta+a');
       await quantityInput.pressSequentially('1,5', { delay: 80 });
       await quantityInput.press('Enter');
+      const quantityChange = (await quantityPatched).postDataJSON().find((change) => /Qty/.test(change.path));
+      expect(quantityChange.value, 'the quantity sent to the backend').toEqual('1.5');
       await completeRequested;
     });
 
+    // the product's unit (PCE) has no decimals, so the backend stores the line with quantity 2: only the line count is
+    // checked here, the quantity sent is checked above
     await test.step('the order has the one line typed validly', async () => {
       await page.getByTestId('batch-entry-toggle').click(); // close the quick input
       await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`);
       await page.getByTestId('status-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.table-flex-wrapper table').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.table-flex-wrapper table tbody tr [data-cy="cell-M_Product_ID"]')).toHaveCount(1);
-      await expect(page.locator('.table-flex-wrapper table tbody tr [data-cy="cell-QtyEntered"]')).toHaveText(/^1,5/);
     });
   });
 });
