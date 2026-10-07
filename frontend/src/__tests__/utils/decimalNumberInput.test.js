@@ -7,6 +7,11 @@ import {
 // The separators a user session reports (see JSONUserSessionLocale) for a German and an English user
 const DE = { decimal: ',', thousands: '.' };
 const EN = { decimal: '.', thousands: ',' };
+const FR = { decimal: ',', thousands: '\u202F' }; // narrow no-break space grouping
+
+afterEach(() => {
+  initNumeralLocales('en', { numberDecimalSeparator: '.', numberGroupingSeparator: ',' });
+});
 
 describe('normalizeDecimalNumberString', () => {
   describe('German user (decimal comma, dot grouping)', () => {
@@ -43,6 +48,38 @@ describe('normalizeDecimalNumberString', () => {
     it('reads a lone comma as a grouping separator', () => {
       expect(normalizeDecimalNumberString('1,234', EN)).toEqual('1234');
     });
+  });
+
+  describe('a grouping separator is accepted only in valid groups of three digits', () => {
+    it('sends an English comma that is no grouping as typed', () => {
+      expect(normalizeDecimalNumberString('1,5', EN)).toEqual('1,5');
+      expect(normalizeDecimalNumberString('3,57', EN)).toEqual('3,57');
+      expect(normalizeDecimalNumberString('12,34', EN)).toEqual('12,34');
+      expect(normalizeDecimalNumberString('1,2345', EN)).toEqual('1,2345');
+    });
+
+    it('accepts valid English grouping', () => {
+      expect(normalizeDecimalNumberString('12,345', EN)).toEqual('12345');
+      expect(normalizeDecimalNumberString('1,234,567.8', EN)).toEqual('1234567.8');
+    });
+
+    it('sends invalid German dot grouping as typed', () => {
+      expect(normalizeDecimalNumberString('1.2.3', DE)).toEqual('1.2.3');
+      expect(normalizeDecimalNumberString('12.34,5', DE)).toEqual('12.34,5');
+    });
+  });
+
+  it('drops blanks, no-break spaces and narrow no-break spaces (e.g. pasted French or Swiss numbers)', () => {
+    expect(normalizeDecimalNumberString('1 234,56', DE)).toEqual('1234.56');
+    expect(normalizeDecimalNumberString('1\u00A0234,56', DE)).toEqual('1234.56');
+    expect(normalizeDecimalNumberString('1\u202F234,56', FR)).toEqual('1234.56');
+  });
+
+  it('reads the separators of the current session, also after the user switched to a locale with other separators', () => {
+    initNumeralLocales('de', { numberDecimalSeparator: ',', numberGroupingSeparator: '.' });
+    initNumeralLocales('de', { numberDecimalSeparator: '.', numberGroupingSeparator: "'" }); // e.g. de_CH
+
+    expect(normalizeDecimalNumberString("1'234.5")).toEqual('1234.5');
   });
 
   it('trims surrounding blanks', () => {
@@ -93,6 +130,12 @@ describe('isAllowedDecimalNumberInput', () => {
     expect(isAllowedDecimalNumberInput('3,5a', DE)).toBe(false);
     expect(isAllowedDecimalNumberInput('1e5', DE)).toBe(false);
     expect(isAllowedDecimalNumberInput('3-5', DE)).toBe(false);
+  });
+
+  it('accepts blanks and no-break spaces, which are dropped when the value is read', () => {
+    expect(isAllowedDecimalNumberInput('1 234,56', DE)).toBe(true);
+    expect(isAllowedDecimalNumberInput('1\u00A0234,56', DE)).toBe(true);
+    expect(isAllowedDecimalNumberInput(' -3,5', DE)).toBe(true);
   });
 
   it("accepts the session's own grouping separator, e.g. the Swiss apostrophe", () => {

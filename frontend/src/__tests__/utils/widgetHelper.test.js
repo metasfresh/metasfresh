@@ -17,6 +17,10 @@ import {
 } from '../../constants/Constants';
 
 describe('Widget helpers', () => {
+  afterEach(() => {
+    initNumeralLocales('en', { numberDecimalSeparator: '.', numberGroupingSeparator: ',' });
+  });
+
   describe('getClassNames', () => {
     class Widget {
       constructor(props) {
@@ -217,6 +221,19 @@ describe('Widget helpers', () => {
           precision: 2,
         })
       ).toBe(true);
+    });
+
+    it('treats a decimal comma like a decimal point for a quantity (precision 0 while typing)', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+
+      expect(
+        validatePrecision({ widgetValue: '2,5', widgetType: 'Quantity' })
+      ).toBe(
+        validatePrecision({ widgetValue: '2.5', widgetType: 'Quantity' })
+      );
     });
 
     it('test null and empty object as value', () => {

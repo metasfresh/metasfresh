@@ -714,6 +714,101 @@ describe('RawWidget component', () => {
       });
     });
 
+    afterEach(() => {
+      initNumeralLocales('en', {
+        numberDecimalSeparator: '.',
+        numberGroupingSeparator: ',',
+      });
+    });
+
+    const pressEnter = (input, value) =>
+      input.simulate('keyDown', {
+        key: 'Enter',
+        target: { value },
+        preventDefault: jest.fn(),
+      });
+
+    it('patches a pasted amount with blanks or no-break spaces as grouping', () => {
+      const handlePatchSpy = jest.fn();
+      const handleChangeSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+        handleChange: handleChangeSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('change', { target: { value: '1\u00A0234,56' } });
+      expect(handleChangeSpy).toHaveBeenCalled();
+
+      pressEnter(wrapper.find('input'), '1\u00A0234,56');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1234.56', undefined, undefined);
+    });
+
+    it('sends an ambiguous amount as typed, for the backend to reject it', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      pressEnter(wrapper.find('input'), '1,234.56');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1,234.56', undefined, undefined);
+    });
+
+    it('patches both ends of an amount range filter (valueTo too)', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        fields: [{ field: 'DiscountAmt', parameterName: 'DiscountAmt', emptyText: 'none' }],
+        widgetData: [{ ...amountData, value: '1,5', valueTo: null }],
+        range: true,
+        filterWidget: true,
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      pressEnter(wrapper.find('input').at(1), '3,57');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1.5', undefined, '3.57');
+    });
+
+    it('patches both ends of a price range filter (valueTo too)', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...fixtures.costPrice.layout1,
+        fields: [{ field: 'PriceList', parameterName: 'PriceList', emptyText: 'none' }],
+        widgetData: [{ ...fixtures.costPrice.data1, value: '1,5', valueTo: null }],
+        range: true,
+        filterWidget: true,
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').at(1).simulate('focus'); // a price input takes keys in edit mode only
+
+      pressEnter(wrapper.find('input').at(1), '13,75');
+      expect(handlePatchSpy).toHaveBeenCalledWith('PriceList', '1.5', undefined, '13.75');
+    });
+
+    it('patches 2,5 typed into a Number cell of a table row as 2.5', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...fixtures.costPrice.layout1,
+        widgetType: 'Number',
+        widgetData: [{ ...fixtures.costPrice.data1, field: 'Discount', value: '0', widgetType: 'Number' }],
+        fields: [{ field: 'Discount', emptyText: 'none' }],
+        rowId: '1000001',
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+
+      pressEnter(wrapper.find('input'), '2,5');
+      expect(handlePatchSpy).toHaveBeenCalledWith('Discount', '2.5', undefined, undefined);
+    });
+
     it('lets the user type a comma into an amount (no browser number input that drops it)', () => {
       const props = createDummyProps({
         ...amountLayout,
@@ -810,6 +905,54 @@ describe('RawWidget component', () => {
       const wrapper = mount(<RawWidget {...props} />);
 
       expect(wrapper.find('input').props().type).toEqual('number');
+    });
+  });
+
+  describe('decimal input in an English user session:', () => {
+    const amountLayout = {
+      caption: 'Discount',
+      fields: [{ field: 'DiscountAmt', emptyText: 'none' }],
+      emptyText: 'none',
+      field: 'DiscountAmt',
+      widgetType: 'Amount',
+    };
+    const amountData = {
+      displayed: true,
+      field: 'DiscountAmt',
+      mandatory: false,
+      readonly: false,
+      validStatus: { valid: true, initialValue: true, fieldName: 'DiscountAmt' },
+      value: '0',
+      widgetType: 'Amount',
+    };
+
+    beforeEach(() => {
+      initNumeralLocales('en', {
+        numberDecimalSeparator: '.',
+        numberGroupingSeparator: ',',
+      });
+    });
+
+    it.each([
+      ['3.57', '3.57'],
+      ['1,234.5', '1234.5'],
+      ['1,5', '1,5'], // no valid grouping: sent as typed, so that the backend rejects it instead of storing 15
+    ])('patches %s typed into an amount as %s', (typed, patched) => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('keyDown', {
+        key: 'Enter',
+        target: { value: typed },
+        preventDefault: jest.fn(),
+      });
+
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', patched, undefined, undefined);
     });
   });
 

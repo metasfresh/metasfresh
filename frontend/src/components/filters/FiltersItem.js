@@ -10,7 +10,11 @@ import Moment from 'moment-timezone';
 import { closeFilterBox, openFilterBox } from '../../actions/WindowActions';
 
 import { convertDateToReadable } from '../../utils/dateHelpers';
-import { isFocusableWidgetType } from '../../utils/widgetHelpers';
+import {
+  isDecimalNumberField,
+  isFocusableWidgetType,
+} from '../../utils/widgetHelpers';
+import { normalizeDecimalNumberString } from '../../utils/locale';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
@@ -607,11 +611,17 @@ class FiltersItem extends PureComponent {
                               Moment.isMoment(value)) ||
                             !DATE_FIELD_FORMATS[widgetType]
                           ) {
+                            // the filter state is what gets sent: a typed '3,57' must already be '3.57' there
+                            const isDecimal = isDecimalNumberField(widgetType);
                             this.setValue(
                               property,
-                              value,
+                              isDecimal
+                                ? normalizeDecimalNumberString(value)
+                                : value,
                               id,
-                              valueTo,
+                              isDecimal
+                                ? normalizeDecimalNumberString(valueTo)
+                                : valueTo,
                               filter.filterId,
                               item.defaultValue
                             );

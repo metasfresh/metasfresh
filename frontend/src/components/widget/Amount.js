@@ -37,7 +37,9 @@ export default class Amount extends PureComponent {
         )}
       >
         {/* A decimal number is typed into a text input: a browser number input drops the decimal comma (e.g. German
-            '3,57' becomes 357) whatever the user's locale, and the typed text is converted by RawWidget. */}
+            '3,57' becomes 357) whatever the user's locale, and the typed text is converted by RawWidget.
+            A negative amount stays possible, as before: min=0 never stopped typing '-5' into a number input, it only
+            flagged the input as invalid, and nothing read that flag. */}
         <input
           {...(isDecimalNumber
             ? { type: 'text', inputMode: 'decimal' }

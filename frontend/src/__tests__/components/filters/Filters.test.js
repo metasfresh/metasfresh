@@ -14,6 +14,7 @@ import {
 } from '../../../reducers/windowHandler';
 
 import Filters from '../../../components/filters/Filters';
+import { initNumeralLocales } from '../../../utils/locale';
 import filtersFixtures from '../../../../test_setup/fixtures/filters.json';
 import filterData
   from '../../../../test_setup/fixtures/filters/filterData.json';
@@ -61,6 +62,10 @@ const createInitialProps = function (
 };
 
 describe('Filters tests', () => {
+  afterEach(() => {
+    initNumeralLocales('en', { numberDecimalSeparator: '.', numberGroupingSeparator: ',' });
+  });
+
   it('renders without errors', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({
@@ -339,6 +344,45 @@ describe('Filters tests', () => {
         },
       ];
       expect(updateDocListListener).toBeCalledWith(filterResult);
+    });
+
+    it('stores a decimal comma typed into a number filter as a dot-decimal (German session)', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+      const dummyProps = createInitialProps(undefined, {
+        filtersActive: filtersFixtures.filtersActive3,
+      });
+      const initialState = createStore({
+        windowHandler: { allowShortcut: true, modal: { visible: false } },
+        filters: filtersStoreTwo,
+      });
+
+      const wrapper = mount(
+        <ShortcutProvider>
+          <Provider store={mockStore(initialState)}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+
+      act(() => {
+        wrapper
+          .find('.form-field-QtyDelivered input')
+          .first()
+          .simulate('change', { target: { value: '3,5' } });
+      });
+      wrapper.update();
+
+      const qtyDelivered = wrapper
+        .find('FiltersItem')
+        .state()
+        .filter.parameters.find((p) => p.parameterName === 'QtyDelivered');
+      expect(qtyDelivered.value).toEqual('3.5');
     });
 
     it('supports selecting filters without parameters', () => {

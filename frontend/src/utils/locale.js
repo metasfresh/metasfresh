@@ -63,6 +63,11 @@ export function isGermanLanguage(languageObj) {
 }
 
 export function initNumeralLocales(lang, locale) {
+  sessionNumberDelimiters = {
+    decimal: locale.numberDecimalSeparator || '.',
+    thousands: locale.numberGroupingSeparator || ',',
+  };
+
   const language = lang.toLowerCase();
   const LOCAL_NUMERAL_FORMAT = {
     defaultFormat: '0,0.00[000]',
@@ -85,22 +90,28 @@ export function initNumeralLocales(lang, locale) {
   }
 }
 
+/** The number separators of the current user session, see {@link initNumeralLocales} */
+let sessionNumberDelimiters = { decimal: '.', thousands: ',' };
+
 /**
- * @returns {{decimal: string, thousands: string}} the number separators of the logged-in user's session locale,
- *          as registered into numeral by {@link initNumeralLocales}
+ * @returns {{decimal: string, thousands: string}} the number separators of the current user session's locale.
+ *          Read from the session locale itself and not from numeral, which keeps the separators of the first
+ *          registration of a language for the whole tab.
  */
-const getSessionNumberDelimiters = () => numeral.localeData().delimiters;
+const getSessionNumberDelimiters = () => sessionNumberDelimiters;
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * @summary Converts a number the user typed with the separators of the session locale into the
- *          dot-decimal form the backend expects. The rules:
- *          - when the text contains the session's decimal separator, every grouping separator is dropped
- *            and the decimal separator becomes a dot (de: '1.234,56' -> '1234.56', en: '1,234.56' -> '1234.56');
- *          - when it does not, a single dot is still read as the decimal point, so '3.57' keeps working for a
- *            user whose decimal separator is a comma; any other separator is a grouping one
- *            (de: '1.234.567' -> '1234567', en: '1,234' -> '1234');
- *          - a text without any digit is read as empty; a text with more than one decimal separator, or with
- *            a separator after the decimal one, is ambiguous and is returned as typed for the backend to reject it.
+ *          dot-decimal form the backend expects. Blanks (also no-break and narrow no-break spaces) are dropped first.
+ *          The accepted forms:
+ *          - a number with the session's decimal separator: de '3,57' -> '3.57', en '3.57' -> '3.57';
+ *          - for a comma-decimal session, a number with a decimal point, because edit mode shows the stored value
+ *            that way: de '3.57' -> '3.57', also de '1.234' -> '1.234';
+ *          - a number grouped in valid groups of three digits: de '1.234,56' / '1.234.567', en '1,234.56' / '12,345'.
+ *          Anything else (e.g. en '1,5', de '1.2.3', de '1,234.56') is ambiguous and is returned as typed, so that the
+ *          backend rejects it instead of storing a wrong number. A text without any digit is read as empty.
  * @param {string} text the raw text from the input
  * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
  * @returns {string} the normalized number; an empty or missing value is returned as is
@@ -114,46 +125,34 @@ export function normalizeDecimalNumberString(
   }
 
   const { decimal, thousands } = delimiters;
-  const trimmed = text.trim();
-  const decimalIdx = trimmed.lastIndexOf(decimal);
+  const compact = text.replace(/\s/g, '');
+  const sign = compact.startsWith('-') ? '-' : '';
+  const unsigned = compact.substring(sign.length);
+  const decimalPattern = escapeRegExp(decimal);
+  const isBlankGrouping = /^\s$/.test(thousands); // already dropped with the blanks
 
-  if (!/[0-9]/.test(trimmed)) {
+  if (!/[0-9]/.test(compact)) {
     return ''; // e.g. a lone '-' or ',': nothing typed yet
-  } else if (decimal !== '.' && decimalIdx >= 0) {
-    const integerPart = trimmed.substring(0, decimalIdx);
-    const fractionPart = trimmed.substring(decimalIdx + 1);
-    if (
-      integerPart.includes(decimal) ||
-      /[^0-9]/.test(fractionPart) // e.g. a pasted English '1,234.56' in a German session
-    ) {
-      return trimmed; // ambiguous: sent as typed, so that the backend rejects it instead of storing a wrong number
-    }
-    return `${removeSeparators(integerPart, [
-      thousands,
-      '.',
-      ',',
-    ])}.${fractionPart}`;
+  } else if (new RegExp(`^\\d*(${decimalPattern}\\d*)?$`).test(unsigned)) {
+    return sign + unsigned.replace(decimal, '.');
+  } else if (decimal !== '.' && /^\d*\.\d*$/.test(unsigned)) {
+    return sign + unsigned;
   } else if (
-    decimal === '.' &&
-    trimmed.indexOf('.') !== trimmed.lastIndexOf('.')
+    !isBlankGrouping &&
+    new RegExp(
+      `^\\d{1,3}(${escapeRegExp(thousands)}\\d{3})+(${decimalPattern}\\d*)?$`
+    ).test(unsigned)
   ) {
-    return trimmed; // ambiguous: more than one decimal point
-  } else if (trimmed.indexOf('.') === trimmed.lastIndexOf('.')) {
-    return removeSeparators(
-      trimmed,
-      [thousands, ','].filter((s) => s !== '.')
-    );
+    return sign + unsigned.split(thousands).join('').replace(decimal, '.');
   } else {
-    return removeSeparators(trimmed, [thousands, '.', ',']);
+    return text.trim(); // ambiguous: sent as typed, so that the backend rejects it
   }
 }
 
-const removeSeparators = (text, separators) =>
-  separators.reduce((acc, separator) => acc.split(separator).join(''), text);
-
 /**
- * @summary Tells whether a text may be typed into a decimal number input: digits, a leading minus,
- *          dots, commas and the session's grouping separator (e.g. the Swiss apostrophe).
+ * @summary Tells whether a text may be typed into a decimal number input: digits, a leading minus, dots, commas,
+ *          blanks and the session's own separators (e.g. the Swiss apostrophe). Whether the text is a valid number is
+ *          decided by {@link normalizeDecimalNumberString}, because while typing e.g. '1,2' is on its way to '1,234'.
  * @param {string} text
  * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
  */
@@ -167,7 +166,8 @@ export function isAllowedDecimalNumberInput(
     delimiters.decimal,
     delimiters.thousands,
   ];
-  return [...(text ?? '')].every(
+  const compact = (text ?? '').replace(/\s/g, '');
+  return [...compact].every(
     (char, idx) =>
       (char >= '0' && char <= '9') ||
       allowedSeparators.includes(char) ||
