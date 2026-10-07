@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup.calibration;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -12,6 +13,8 @@ import de.metas.product.IProductDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,16 @@ public class CompensationGroupCalibrationService
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final CompensationGroupCalibrationRuleRepository ruleRepository;
+
+	@VisibleForTesting
+	public static CompensationGroupCalibrationService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				CompensationGroupCalibrationService.class,
+				() -> new CompensationGroupCalibrationService(CompensationGroupCalibrationRuleRepository.newInstanceForUnitTesting()));
+	}
 
 	public CompensationGroupCalibrationService(@NonNull final CompensationGroupCalibrationRuleRepository ruleRepository)
 	{

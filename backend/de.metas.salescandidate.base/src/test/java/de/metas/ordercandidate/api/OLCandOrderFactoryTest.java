@@ -35,6 +35,7 @@ import de.metas.location.LocationId;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.location.adapter.OLCandDocumentLocationAdapterFactory;
@@ -95,6 +96,7 @@ class OLCandOrderFactoryTest
 		));
 
 		SpringContextHolder.registerJUnitBean(new GroupTemplateRepository(Optional.empty()));
+		CompensationGroupCalibrationService.newInstanceForUnitTesting();
 
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 

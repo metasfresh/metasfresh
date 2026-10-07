@@ -35,6 +35,7 @@ import de.metas.location.LocationId;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.NullOLCandListener;
@@ -93,6 +94,7 @@ class OLCandOrderFactoryFirstClassFieldsTest
 				Optional.empty()
 		));
 		SpringContextHolder.registerJUnitBean(new GroupTemplateRepository(Optional.empty()));
+		CompensationGroupCalibrationService.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
