@@ -554,6 +554,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		final ArrayList<I_C_OrderLine> allRegularOrderLines = new ArrayList<>(existingRegularOrderLines);
 		final GroupCalibrations calibrations = request.getCalibrations();
+		boolean anyComponentLeftOut = false;
 
 		for (final GroupTemplateRegularLine regularLineToAdd : newGroupTemplate.getRegularLinesToAdd())
 		{
@@ -564,6 +565,7 @@ public class OrderGroupRepository implements GroupRepository
 
 			if (calibrations != null && calibrations.getByTemplateLineId(regularLineToAdd.getId()).map(LineCalibration::isSkip).orElse(false))
 			{
+				anyComponentLeftOut = true;
 				continue;
 			}
 
@@ -571,7 +573,7 @@ public class OrderGroupRepository implements GroupRepository
 			allRegularOrderLines.add(regularOrderLine);
 		}
 
-		if (calibrations != null && calibrations.isAllSkipped() && allRegularOrderLines.isEmpty())
+		if (anyComponentLeftOut && allRegularOrderLines.isEmpty())
 		{
 			throw new AdempiereException(MSG_AllComponentsLeftOut);
 		}
