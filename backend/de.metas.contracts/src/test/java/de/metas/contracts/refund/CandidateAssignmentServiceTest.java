@@ -10,6 +10,7 @@ import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
@@ -40,6 +41,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
@@ -231,6 +234,99 @@ public class CandidateAssignmentServiceTest
 					assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the full 10
 					assertThat(assignment.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
 				});
+	}
+
+	/**
+	 * The discount line that a compensation-group contract put on the order is not part of any refund base:
+	 * the periodic refund is computed on the goods value before that on-invoice discount.
+	 */
+	@Test
+	public void updateAssignment_contractCompensationLine_isNotAssigned()
+	{
+		refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate compensationLineRecord = createCompensationLineRecord(createCompensationGroupContract());
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(compensationLineRecord));
+
+		assertThat(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(assignableInvoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(compensationLineRecord.getC_Invoice_Candidate_ID())).getAssignmentsToRefundCandidates()).isEmpty();
+	}
+
+	/**
+	 * A discount line of a group the user put together on the order (no contract) reduces what the customer pays, so it stays in the refund base.
+	 */
+	@Test
+	public void updateAssignment_manualCompensationLine_isAssigned()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate compensationLineRecord = createCompensationLineRecord(null);
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(compensationLineRecord));
+
+		final AssignmentToRefundCandidate assignment = singleElement(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates());
+		assertThat(assignment.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the line's 10
+	}
+
+	/**
+	 * A contract discount line that was assigned to a refund contract before is unassigned with its next update, and the refund gives the amount back.
+	 */
+	@Test
+	public void updateAssignment_contractCompensationLine_staleAssignmentIsRemoved()
+	{
+		final AssignableInvoiceCandidate assignedCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+		assertThat(refundCandidate.getMoney().toBigDecimal()).isEqualByComparingTo("100"); // guard
+
+		final I_C_Invoice_Candidate record = load(assignedCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
+		turnIntoCompensationLine(record, createCompensationGroupContract());
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(record));
+
+		assertThat(result.getAssignableInvoiceCandidate().isAssigned()).isFalse();
+		assertThat(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()).getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("98");
+	}
+
+	private static I_C_Flatrate_Term createCompensationGroupContract()
+	{
+		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
+		contractRecord.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
+		saveRecord(contractRecord);
+		return contractRecord;
+	}
+
+	private I_C_Invoice_Candidate createCompensationLineRecord(@Nullable final I_C_Flatrate_Term compensationGroupContract)
+	{
+		final I_C_Invoice_Candidate record = refundTestTools.createAssignableInvoiceCandidateRecord(ONE);
+		turnIntoCompensationLine(record, compensationGroupContract);
+		return record;
+	}
+
+	/**
+	 * @param compensationGroupContract the contract that created the group; {@code null} for a group the user put together
+	 */
+	private static void turnIntoCompensationLine(@NonNull final I_C_Invoice_Candidate record, @Nullable final I_C_Flatrate_Term compensationGroupContract)
+	{
+		final I_C_Order orderRecord = newInstance(I_C_Order.class);
+		orderRecord.setC_BPartner_ID(record.getBill_BPartner_ID());
+		saveRecord(orderRecord);
+
+		final I_C_Order_CompensationGroup groupRecord = newInstance(I_C_Order_CompensationGroup.class);
+		groupRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+		if (compensationGroupContract != null)
+		{
+			groupRecord.setC_Flatrate_Term_ID(compensationGroupContract.getC_Flatrate_Term_ID());
+		}
+		saveRecord(groupRecord);
+
+		record.setC_Order_ID(orderRecord.getC_Order_ID());
+		record.setC_Order_CompensationGroup_ID(groupRecord.getC_Order_CompensationGroup_ID());
+		record.setIsGroupCompensationLine(true);
+		saveRecord(record);
 	}
 
 	/**
