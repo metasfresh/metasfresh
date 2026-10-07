@@ -28,13 +28,17 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
@@ -59,6 +63,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -67,6 +72,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -102,6 +108,7 @@ public class C_Flatrate_Term_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -357,6 +364,172 @@ public class C_Flatrate_Term_StepDef
 		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
 
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+	}
+
+	/**
+	 * Runs the scheduled contract extension ("Vertragsverlängerung", process {@code C_Flatrate_Term_Extend_And_Notify_User}
+	 * started without a record) for the given term.
+	 * <p>
+	 * In production the scheduler runs that process over all eligible terms of the client. This step does not run the process
+	 * itself, because it would also extend other scenarios' leftover terms of the shared test DB. Instead it
+	 * <ul>
+	 *     <li>asserts that the term matches the process's selection (active, completed, not yet processed by an extension run,
+	 *     notice date before "now", not quit or voided), and</li>
+	 *     <li>calls {@link IFlatrateBL#extendContractAndNotifyUser} with the request the process builds for each selected term
+	 *     ({@code forceExtend=false}, no forced completion, no explicit start date), in a new transaction, as the process does.</li>
+	 * </ul>
+	 * The step fails if the extension throws.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the scheduled contract extension runs for the C_Flatrate_Term identified by contract_1
+	 * </pre>
+	 */
+	@And("^the scheduled contract extension runs for the C_Flatrate_Term identified by (.*)$")
+	public void the_scheduled_contract_extension_runs(@NonNull final String identifier)
+	{
+		final RuntimeException error = runScheduledContractExtension(identifier);
+		if (error != null)
+		{
+			throw error;
+		}
+	}
+
+	/**
+	 * Like {@link #the_scheduled_contract_extension_runs(String)}, but asserts that the extension of the given term FAILS, with
+	 * an error message containing the given text. The process logs such an error per term and carries on with the next one.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the scheduled contract extension fails for the C_Flatrate_Term identified by contract_1 with message containing EndDate
+	 * </pre>
+	 */
+	@And("^the scheduled contract extension fails for the C_Flatrate_Term identified by (.*) with message containing (.*)$")
+	public void the_scheduled_contract_extension_fails(@NonNull final String identifier, @NonNull final String expectedMessagePart)
+	{
+		final RuntimeException error = runScheduledContractExtension(identifier);
+		assertThat(error).as("Extension of C_Flatrate_Term %s was expected to fail", identifier).isNotNull();
+		assertThat(error.getMessage()).as("Error message of the failed extension").contains(expectedMessagePart);
+	}
+
+	@Nullable
+	private RuntimeException runScheduledContractExtension(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term termToExtend = loadFresh(identifier);
+
+		// the selection of C_Flatrate_Term_Extend_And_Notify_User.extendAllEligibleTerms
+		assertThat(termToExtend.isActive()).as("IsActive").isTrue();
+		assertThat(termToExtend.getDocStatus()).as("DocStatus").isEqualTo(IDocument.STATUS_Completed);
+		assertThat(termToExtend.getAD_PInstance_EndOfTerm_ID()).as("AD_PInstance_EndOfTerm_ID").isLessThanOrEqualTo(0);
+		assertThat(termToExtend.getNoticeDate()).as("NoticeDate").isNotNull();
+		assertThat(termToExtend.getNoticeDate()).as("NoticeDate must be before now").isBefore(SystemTime.asTimestamp());
+		assertThat(termToExtend.getContractStatus()).as("ContractStatus")
+				.isNotIn(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
+
+		final ContractExtendingRequest request = ContractExtendingRequest.builder()
+				.contract(termToExtend)
+				.forceExtend(false)
+				.forceComplete(null)
+				.nextTermStartDate(null)
+				.build();
+
+		final RuntimeException[] error = new RuntimeException[1];
+		trxManager.runInNewTrx(() -> {
+			try
+			{
+				flatrateBL.extendContractAndNotifyUser(request);
+			}
+			catch (final RuntimeException e)
+			{
+				error[0] = e; // like the process: catch per term, so its transaction is not rolled back as a whole
+			}
+		});
+		return error[0];
+	}
+
+	/**
+	 * Asserts the follow-up term which the contract extension created for the given term (the term's {@code C_FlatrateTerm_Next_ID}),
+	 * and registers it under the given identifier.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias to register the follow-up term under<br>
+	 *   <b>StartDate</b> — (optional) expected start date<br>
+	 *   <b>EndDate</b> — (optional) expected end date<br>
+	 *   <b>NoticeDate</b> — (optional) expected notice date<br>
+	 *   <b>DocStatus</b> — (optional) expected document status<br>
+	 *   <b>IsAutoRenew</b> — (optional) expected auto-renew flag<br>
+	 *   <b>C_Flatrate_Conditions_ID</b> — (optional, identifier-ref) expected conditions<br>
+	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) expected invoice partner<br>
+	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData, C_Flatrate_Conditions_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 has the follow-up C_Flatrate_Term:
+	 *   | Identifier | StartDate  | EndDate    | DocStatus | IsAutoRenew |
+	 *   | contract_2 | 2027-01-01 | 2027-12-31 | CO        | true        |
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has the follow-up C_Flatrate_Term:$")
+	public void the_C_Flatrate_Term_has_follow_up_term(@NonNull final String identifier, @NonNull final DataTable dataTable)
+	{
+		final I_C_Flatrate_Term term = loadFresh(identifier);
+		assertThat(term.getC_FlatrateTerm_Next_ID()).as("C_FlatrateTerm_Next_ID of C_Flatrate_Term %s", identifier).isGreaterThan(0);
+
+		final I_C_Flatrate_Term nextTerm = flatrateDAO.getById(FlatrateTermId.ofRepoId(term.getC_FlatrateTerm_Next_ID()));
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_StartDate)
+				.ifPresent(startDate -> assertThat(TimeUtil.asLocalDate(nextTerm.getStartDate())).as("StartDate").isEqualTo(startDate));
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_EndDate)
+				.ifPresent(endDate -> assertThat(TimeUtil.asLocalDate(nextTerm.getEndDate())).as("EndDate").isEqualTo(endDate));
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_NoticeDate)
+				.ifPresent(noticeDate -> assertThat(TimeUtil.asLocalDate(nextTerm.getNoticeDate())).as("NoticeDate").isEqualTo(noticeDate));
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
+				.ifPresent(docStatus -> assertThat(nextTerm.getDocStatus()).as("DocStatus").isEqualTo(docStatus));
+		row.getAsOptionalBoolean(I_C_Flatrate_Term.COLUMNNAME_IsAutoRenew)
+				.ifPresent(isAutoRenew -> assertThat(nextTerm.isAutoRenew()).as("IsAutoRenew").isEqualTo(isAutoRenew));
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Flatrate_Conditions_ID)
+				.ifPresent(conditionsId -> assertThat(nextTerm.getC_Flatrate_Conditions_ID()).as("C_Flatrate_Conditions_ID")
+						.isEqualTo(conditionsId.lookupNotNullIn(conditionsTable).getC_Flatrate_Conditions_ID()));
+		row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
+				.ifPresent(bpartnerId -> assertThat(nextTerm.getBill_BPartner_ID()).as("Bill_BPartner_ID")
+						.isEqualTo(bpartnerId.lookupNotNullIn(bpartnerTable).getC_BPartner_ID()));
+
+		contractTable.putOrReplace(row.getAsIdentifier(), nextTerm);
+	}
+
+	/**
+	 * Asserts that the given term was not extended: it has no {@code C_FlatrateTerm_Next_ID}, and no other term exists for its
+	 * invoice partner and conditions (so no half-created follow-up term was left behind either).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 has no follow-up C_Flatrate_Term
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has no follow-up C_Flatrate_Term$")
+	public void the_C_Flatrate_Term_has_no_follow_up_term(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term term = loadFresh(identifier);
+		assertThat(term.getC_FlatrateTerm_Next_ID()).as("C_FlatrateTerm_Next_ID of C_Flatrate_Term %s", identifier).isLessThanOrEqualTo(0);
+
+		final List<Integer> otherTermIds = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(COLUMNNAME_Bill_BPartner_ID, term.getBill_BPartner_ID())
+				.addEqualsFilter(COLUMNNAME_C_Flatrate_Conditions_ID, term.getC_Flatrate_Conditions_ID())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.create()
+				.listIds();
+		assertThat(otherTermIds).as("Other C_Flatrate_Terms of the same invoice partner and conditions").isEmpty();
+	}
+
+	private I_C_Flatrate_Term loadFresh(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term term = contractTable.get(identifier);
+		assertThat(term).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+		return flatrateDAO.getById(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 	}
 
 	@And("^the C_Flatrate_Term identified by (.*) has (.*) C_Flatrate_DataEntries.$")
