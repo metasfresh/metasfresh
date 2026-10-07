@@ -556,27 +556,79 @@ public class OrderGroupRepositoryTest
 		assertThat(provider.calls).isEqualTo(1);
 	}
 
+	/**
+	 * A new group is first loaded with its regular lines only; the discount lines are added from the schema afterwards
+	 * ({@link GroupCreator#recreateGroup}). So the packing must already be resolved when only the group's schema has a
+	 * packing-restricted line, else that discount line is computed on a base of 0.
+	 */
+	@Test
+	void retrieveGroup_noDiscountLineYet_schemaWithPackingFilter_resolvesPackingMaterialCategories()
+	{
+		final ProductCategoryId cartonCategoryId = newProductCategoryId();
+		final CountingPackingMaterialProductCategoryProvider provider = registerCountingProvider(
+				ImmutableMap.of(HUPIItemProductId.ofRepoId(PACKED_LINE_PI_ITEM_PRODUCT_ID), ImmutableSet.of(cartonCategoryId)));
+
+		final GroupId groupId = createGroupWithPackedRegularLine(cartonCategoryId, false);
+		final Group group = repo.retrieveGroup(groupId);
+
+		assertThat(group.getCompensationLines()).isEmpty();
+		assertThat(provider.calls).isEqualTo(1);
+		assertThat(group.getRegularLinesNetAmt(GroupCompensationBase.of(null, cartonCategoryId))).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void retrieveGroup_noDiscountLineYet_schemaWithoutPackingFilter_doesNotResolvePackingMaterialCategories()
+	{
+		final CountingPackingMaterialProductCategoryProvider provider = registerCountingProvider();
+
+		final GroupId groupId = createGroupWithPackedRegularLine(null, false);
+		repo.retrieveGroup(groupId);
+
+		assertThat(provider.calls).isZero();
+	}
+
 	private static CountingPackingMaterialProductCategoryProvider registerCountingProvider()
 	{
-		final CountingPackingMaterialProductCategoryProvider provider = new CountingPackingMaterialProductCategoryProvider();
+		return registerCountingProvider(ImmutableMap.of());
+	}
+
+	private static CountingPackingMaterialProductCategoryProvider registerCountingProvider(@NonNull final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result)
+	{
+		final CountingPackingMaterialProductCategoryProvider provider = new CountingPackingMaterialProductCategoryProvider(result);
 		SpringContextHolder.registerJUnitBean(PackingMaterialProductCategoryProvider.class, provider);
 		return provider;
 	}
 
 	private static class CountingPackingMaterialProductCategoryProvider implements PackingMaterialProductCategoryProvider
 	{
+		@NonNull private final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result;
 		int calls = 0;
+
+		private CountingPackingMaterialProductCategoryProvider(@NonNull final ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> result)
+		{
+			this.result = result;
+		}
 
 		@Override
 		public @NonNull ImmutableMap<HUPIItemProductId, ImmutableSet<ProductCategoryId>> getPackingMaterialProductCategoryIdsAndAncestors(@NonNull final Set<HUPIItemProductId> ids)
 		{
 			calls++;
-			return ImmutableMap.of();
+			return result;
 		}
 	}
 
+	private static final int PACKED_LINE_PI_ITEM_PRODUCT_ID = 540001;
+
 	/** @return a group with one regular line that has a packing instruction and one discount line whose schema line has the given packing-material category (may be null) */
 	private GroupId createGroupWithPackedRegularLine(@Nullable final ProductCategoryId packingMaterialCategoryId)
+	{
+		return createGroupWithPackedRegularLine(packingMaterialCategoryId, true);
+	}
+
+	/**
+	 * @param withDiscountLine {@code false} = the group has only the regular line, like a new group before its discount lines are added from the schema
+	 */
+	private GroupId createGroupWithPackedRegularLine(@Nullable final ProductCategoryId packingMaterialCategoryId, final boolean withDiscountLine)
 	{
 		order.setC_BPartner_ID(1);
 		saveRecord(order);
@@ -609,8 +661,13 @@ public class OrderGroupRepositoryTest
 		regularLine.setM_Product_ID(regularLineProduct.getM_Product_ID());
 		regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
 		regularLine.setLineNetAmt(new BigDecimal("100"));
-		InterfaceWrapperHelper.create(regularLine, de.metas.interfaces.I_C_OrderLine.class).setM_HU_PI_Item_Product_ID(540001);
+		InterfaceWrapperHelper.create(regularLine, de.metas.interfaces.I_C_OrderLine.class).setM_HU_PI_Item_Product_ID(PACKED_LINE_PI_ITEM_PRODUCT_ID);
 		saveRecord(regularLine);
+
+		if (!withDiscountLine)
+		{
+			return OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		}
 
 		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
 		compensationLine.setC_Order_ID(order.getC_Order_ID());

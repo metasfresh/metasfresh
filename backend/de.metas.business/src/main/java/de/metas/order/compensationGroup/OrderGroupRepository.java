@@ -272,9 +272,11 @@ public class OrderGroupRepository implements GroupRepository
 				.map(OrderGroupRepository::toGroupCompensationLine)
 				.collect(ImmutableList.toImmutableList());
 
-		// the packing is needed only when a discount line is restricted to a packing-material category
+		// the packing is needed only when a discount line is restricted to a packing-material category.
+		// Also look at the schema: a new group is loaded before its discount lines are added from the schema (GroupCreator#recreateGroup)
 		final boolean packingMaterialCategoryNeeded = compensationLines.stream()
-				.anyMatch(compensationLine -> compensationLine.getBase().getPackingMaterialProductCategoryId() != null);
+				.anyMatch(compensationLine -> compensationLine.getBase().getPackingMaterialProductCategoryId() != null)
+				|| hasSchemaLineWithPackingMaterialCategory(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID());
 		final Map<HUPIItemProductId, ImmutableSet<ProductCategoryId>> packingMaterialCategoryIdsByPIItemProductId = packingMaterialCategoryNeeded
 				? retrievePackingMaterialProductCategoryIdAndAncestorsByPIItemProductId(groupOrderLines)
 				: ImmutableMap.of();
@@ -292,6 +294,22 @@ public class OrderGroupRepository implements GroupRepository
 		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
 
 		return groupBuilder.build();
+	}
+
+	/** @return {@code true} if the given schema has an active line restricted to a packing-material category; {@code false} when there is no schema */
+	private boolean hasSchemaLineWithPackingMaterialCategory(final int compensationGroupSchemaId)
+	{
+		if (compensationGroupSchemaId <= 0)
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_Schema_ID, compensationGroupSchemaId)
+				.addNotNull(I_C_CompensationGroup_SchemaLine.COLUMNNAME_M_Product_Category_PackingMaterial_ID)
+				.create()
+				.anyMatch();
 	}
 
 	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
