@@ -239,7 +239,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 			if (olCandPackingInstructionId == null)
 			{
-				olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+				setPackingInstructionFromPricing(olCand, pricingResult);
 			}
 
 			if (pricingResult.getTaxCategoryId() == null)
@@ -297,8 +297,24 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		if (olCandPackingInstructionId == null)
 		{
-			olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+			setPackingInstructionFromPricing(olCand, pricingResult);
 		}
+	}
+
+	/**
+	 * Also decides {@code IsManualQtyItemCapacity} from the new packing instruction:
+	 * the model interceptor that normally does that on a packing-instruction change has already run before this validation,
+	 * so without this a candidate created without packing instruction keeps {@code IsManualQtyItemCapacity='Y'} and fails with {@link #ERR_ITEM_CAPACITY_NOT_FOUND}.
+	 */
+	private void setPackingInstructionFromPricing(@NonNull final I_C_OLCand olCand, @NonNull final IPricingResult pricingResult)
+	{
+		final int packingInstructionRepoId = HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId());
+		if (packingInstructionRepoId == olCand.getM_HU_PI_Item_Product_ID())
+		{
+			return;
+		}
+		olCand.setM_HU_PI_Item_Product_ID(packingInstructionRepoId);
+		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
 	}
 
 	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)
