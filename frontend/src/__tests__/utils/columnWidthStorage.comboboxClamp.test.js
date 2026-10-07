@@ -11,31 +11,31 @@ const textColumn = (fieldName) => ({
 
 describe('stored combobox column width clamp on load', () => {
   it('clamps a stored combobox column width below 90px up to the 90px floor', () => {
-    const columnWidths = { Partiecode: 60 };
-    const columns = [comboboxColumn('Partiecode')];
+    const columnWidths = { LotCode: 60 };
+    const columns = [comboboxColumn('LotCode')];
 
     const clamped = clampComboboxColumnWidths(columnWidths, columns);
 
-    expect(clamped.Partiecode).toBe(90);
+    expect(clamped.LotCode).toBe(90);
   });
 
   // A narrow-but-usable stored width is kept: widening it makes the column grow on entering edit mode.
   it('leaves a stored combobox column width just above the 90px floor (120px) unchanged', () => {
-    const columnWidths = { Partiecode: 120 };
-    const columns = [comboboxColumn('Partiecode')];
+    const columnWidths = { LotCode: 120 };
+    const columns = [comboboxColumn('LotCode')];
 
     const clamped = clampComboboxColumnWidths(columnWidths, columns);
 
-    expect(clamped.Partiecode).toBe(120);
+    expect(clamped.LotCode).toBe(120);
   });
 
   it('leaves a stored combobox column width already above 90px unchanged', () => {
-    const columnWidths = { Partiecode: 260 };
-    const columns = [comboboxColumn('Partiecode')];
+    const columnWidths = { LotCode: 260 };
+    const columns = [comboboxColumn('LotCode')];
 
     const clamped = clampComboboxColumnWidths(columnWidths, columns);
 
-    expect(clamped.Partiecode).toBe(260);
+    expect(clamped.LotCode).toBe(260);
   });
 
   it('leaves a stored non-combobox column width below 90px unchanged', () => {

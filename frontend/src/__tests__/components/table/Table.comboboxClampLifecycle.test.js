@@ -35,7 +35,7 @@ const store = mockStore(createStore());
 
 const WINDOW_ID = '540189';
 const VIEW_ID = 'view-abc';
-const COMBOBOX_FIELD = 'Partiecode';
+const COMBOBOX_FIELD = 'LotCode';
 const STORED_SUB_FLOOR_WIDTH = 60;
 
 // Column metadata as it arrives AFTER mount (the combobox is a Lookup widget).
