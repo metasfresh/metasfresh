@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -1719,6 +1720,79 @@ public class HUTransformServiceTests
 				.hasMessageContaining(MSG_LU_CANNOT_STACK_TU);
 
 		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(1);
+	}
+
+	/**
+	 * A real (non-aggregate) TU that sits on a pallet with partner P (TU without partner; item bound to P only), moved whole onto a NEW pallet.
+	 */
+	@Test
+	public void tuToNewLU_realTUOnPartnerPallet_itemBoundToPartnerOnly_works()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 1);
+		final I_M_HU realTU = createStandaloneTU(fixture);
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, sourceLU); // the pallet partner P is used to find the item
+		Assertions.assertThat(handlingUnitsBL.isAggregateHU(realTU)).as("guard: real TU").isFalse();
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(realTU).getM_HU_ID()).as("guard: TU on source pallet").isEqualTo(sourceLU.getM_HU_ID());
+		Assertions.assertThat(countTUs(sourceLU)).as("guard: TUs on source LU").isEqualTo(2);
+
+		final LUTUResult result = huTransformService.tuToNewLU(realTU, QtyTU.ONE, HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID()));
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		final I_M_HU newLU = result.getLURecords().get(0);
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(realTU).getM_HU_ID()).as("TU is under the new LU").isEqualTo(newLU.getM_HU_ID());
+		Assertions.assertThat(countTUs(newLU)).as("TUs on new LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(1);
+	}
+
+	/**
+	 * Take ALL TUs of an aggregate onto a NEW pallet (whole-move branch); source pallet partner P; item bound to P only.
+	 * Calls {@code tuToNewLU} for the aggregate directly: via {@code luExtractTUs}, taking all TUs of a pallet is "take the pallet as is".
+	 */
+	@Test
+	public void tuToNewLU_allTUsOfAggregate_itemBoundToPartnerOnly_works()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 3);
+		final I_M_HU aggregateTU = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(sourceLU).stream()
+				.filter(handlingUnitsBL::isAggregateHU)
+				.collect(Collectors.toList()));
+
+		final LUTUResult result = huTransformService.tuToNewLU(aggregateTU, QtyTU.ofInt(3), HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID()));
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		Assertions.assertThat(countTUs(result.getLURecords().get(0))).as("TUs on new LU").isEqualTo(3);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(0);
+	}
+
+	/**
+	 * Same as {@link #tuToNewLU_realTUOnPartnerPallet_itemBoundToPartnerOnly_works()}, but through {@code luExtractTUs} (the mobile picking route).
+	 */
+	@Test
+	public void luExtractTUs_realTUOnPartnerPallet_toNewLU_itemBoundToPartnerOnly()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 2);
+		huTransformService.tuToExistingLU(createStandaloneTU(fixture), QtyTU.ONE, sourceLU);
+		huTransformService.tuToExistingLU(createStandaloneTU(fixture), QtyTU.ONE, sourceLU);
+		Assertions.assertThat(countTUs(sourceLU)).as("guard: TUs on source LU").isEqualTo(4);
+
+		// 3 of 4 TUs (not the whole pallet): whichever TUs are taken first (aggregated or real), they must fit a new pallet
+		final LUTUResult result = huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ofInt(3))
+				.targetLU(HUTransformService.TargetLU.ofNewLU(fixture.piLU))
+				.build());
+
+		final int tusOnNewLUs = result.getLURecords().stream().mapToInt(this::countTUs).sum();
+		Assertions.assertThat(tusOnNewLUs).as("TUs on new LU(s)").isEqualTo(3);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(1);
 	}
 
 	private I_M_HU createStandaloneTU(@NonNull final PalletFixture fixture)

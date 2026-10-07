@@ -604,10 +604,7 @@ public class HUTransformService
 				// the partner is only used to find the right (possibly partner-bound) LU->TU item; it is NOT stamped onto the created TUs
 				if (luItemBPartnerId != null)
 				{
-					handlingUnitsDAO.retrieveFirstPIItem(
-									handlingUnitsBL.getEffectivePackingInstructionsId(luHU),
-									handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU),
-									luItemBPartnerId)
+					retrieveLUItemForTU(luHU, handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU), luItemBPartnerId)
 							.ifPresent(lutuProducer::setLUItemPI);
 				}
 				lutuProducer.addCUPerTU(tuCapacity);
@@ -639,11 +636,7 @@ public class HUTransformService
 			I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
 			if (luPIItem == null && luItemBPartnerId != null)
 			{
-				luPIItem = handlingUnitsDAO.retrieveFirstPIItem(
-								handlingUnitsBL.getEffectivePackingInstructionsId(luHU),
-								HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
-								luItemBPartnerId)
-						.orElse(null);
+				luPIItem = retrieveLUItemForTU(luHU, HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), luItemBPartnerId).orElse(null);
 			}
 			if (luPIItem == null)
 			{
@@ -1169,6 +1162,21 @@ public class HUTransformService
 		return IHandlingUnitsBL.extractBPartnerIdOrNull(topLevelParent);
 	}
 
+	/**
+	 * Finds the LU to TU item of the LU's own packing instructions version for the given partner (which may be the partner of the pallet the TU was taken from, not the LU's own).
+	 */
+	private Optional<I_M_HU_PI_Item> retrieveLUItemForTU(
+			@NonNull final I_M_HU luHU,
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		return handlingUnitsDAO.retrievePIItems(luHU.getM_HU_PI_Version(), bpartnerId)
+				.stream()
+				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(piItem.getItemType()))
+				.filter(piItem -> HuPackingInstructionsId.equals(HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID()), tuPIId))
+				.findFirst();
+	}
+
 	private I_M_HU_PI_Item getLuPIItem(
 			@NonNull final HuPackingInstructionsId luPIId,
 			@NonNull final HuPackingInstructionsId tuPIId,
@@ -1240,7 +1248,13 @@ public class HUTransformService
 				{
 					// create the new parent-item that will link sourceTuHU with lu
 					final I_M_HU_PI tuPI = handlingUnitsBL.getPI(sourceTuHU);
-					final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
+					I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
+					if (parentPIItem == null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID())
+					{
+						// the lookup above only accepts generic items and items bound to the new LU's partner, which is the source TU's (possibly none).
+						// luPIItem is the item the new LU was created from, so it links the LU's version to this TU's PI, even if it is bound to another partner (e.g. the one of the pallet the TU was taken from).
+						parentPIItem = luPIItem;
+					}
 					if (parentPIItem == null)
 					{
 						throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(lu) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(sourceTuHU) + "` because there is no link between them.")
