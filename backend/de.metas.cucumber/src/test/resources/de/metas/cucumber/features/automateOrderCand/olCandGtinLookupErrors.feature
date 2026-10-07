@@ -30,9 +30,6 @@ Feature: order candidate bulk request with product identifiers that cannot be re
   @allure.label.epic:E0291_REST_API
   @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
   @allure.label.feature:F00120_Sales_Order_Candidate
-  @F4550
-  @F00120
-  @topic:orderCandidate
   Scenario: two of three lines have a GTIN that is only on packing instructions not valid on the delivery date; both are reported, nothing is created
     # line 10: GTIN is the product's own GTIN and is also on packing instructions (partner / without partner) of two products
     # line 20: GTIN only on packing instructions (partner / without partner) that are valid long before the delivery date

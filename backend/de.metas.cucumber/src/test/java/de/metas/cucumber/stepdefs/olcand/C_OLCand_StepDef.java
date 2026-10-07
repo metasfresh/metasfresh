@@ -455,7 +455,7 @@ public class C_OLCand_StepDef
 				.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
 				.create()
 				.count();
-		assertThat(actualCount).as("C_OLCand count for externalHeaderId=" + externalHeaderId).isEqualTo(expectedCount);
+		assertThat(actualCount).as("C_OLCand count for externalHeaderId=%s", externalHeaderId).isEqualTo(expectedCount);
 	}
 
 	@And("^after not more than (.*)s, C_OLCand is found")
