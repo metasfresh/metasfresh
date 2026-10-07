@@ -18,6 +18,21 @@ describe('FontAwesome', () => {
     expect(indexSource).toContain("import '@fortawesome/fontawesome-free/css/all.css';");
   });
 
+  // A font glyph is sized by font-size and snaps to whole pixels: wide icons (warehouse) render bigger
+  // and all sit lower than the SVG drawing they replaced. Indicators are drawn from the SVG files instead.
+  it('draws every job-list indicator icon from its SVG file', () => {
+    const indicatorSource = sources.find(({ fullPath }) => fullPath.endsWith('ButtonWithIndicator.jsx')).source;
+    const indicatorIcons = [
+      ...new Set([...indicatorSource.matchAll(/'indicator-box[^']*\bfas (fa-[a-z-]+)'/g)].map((match) => match[1])),
+    ];
+    const buttonsScss = fs.readFileSync(path.join(__dirname, '..', 'assets', 'buttons.scss'), 'utf8');
+
+    expect(indicatorIcons.length).toBeGreaterThan(0);
+    indicatorIcons.forEach((icon) => {
+      expect(buttonsScss).toContain(`@include indicator-icon('${icon.replace(/^fa-/, '')}');`);
+    });
+  });
+
   it('never loads the SVG+JS build', () => {
     const offenders = sources
       .filter(({ source }) => /@fortawesome\/fontawesome-free\/js\//.test(source))
