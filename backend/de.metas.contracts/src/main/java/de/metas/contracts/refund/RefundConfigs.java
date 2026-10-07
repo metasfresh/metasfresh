@@ -53,7 +53,6 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
-	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
 	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
@@ -106,11 +105,6 @@ public class RefundConfigs
 		{
 			throw new AdempiereException(MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED).markAsUserValidationError();
 		}
-	}
-
-	public BonusRecipient extractBonusRecipient(@NonNull final List<RefundConfig> refundConfigs)
-	{
-		return extractSingleElement(refundConfigs, RefundConfig::getBonusRecipient);
 	}
 
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
@@ -196,13 +190,6 @@ public class RefundConfigs
 		}
 
 		// the refund of a contract is issued to one partner
-		if (hasDifferentValues(refundConfigs, RefundConfig::getBonusRecipient))
-		{
-			Loggables.addLog("The given refundConfigs need to all have the same BonusRecipient; refundConfigs={}", refundConfigs);
-
-			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT).markAsUserValidationError();
-		}
-
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.
 		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(Objects::nonNull).distinct().count();
 		if (distinctBonusProducts > 1)

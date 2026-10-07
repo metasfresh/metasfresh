@@ -53,7 +53,7 @@ public interface I_C_Flatrate_RefundConfig
 
 	/**
 	 * Set Bonus product.
-	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product.
+	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product. Required if no product is given.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -63,7 +63,7 @@ public interface I_C_Flatrate_RefundConfig
 
 	/**
 	 * Get Bonus product.
-	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product.
+	 * Product of the credit memo line. The tax and accounts of the credit memo follow this product. Required if no product is given.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -72,29 +72,6 @@ public interface I_C_Flatrate_RefundConfig
 	int getBonus_Product_ID();
 
 	String COLUMNNAME_Bonus_Product_ID = "Bonus_Product_ID";
-
-	/**
-	 * Set Bonus recipient.
-	 * Specifies the partner the bonus is issued to.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setBonusRecipient (java.lang.String BonusRecipient);
-
-	/**
-	 * Get Bonus recipient.
-	 * Specifies the partner the bonus is issued to.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getBonusRecipient();
-
-	ModelColumn<I_C_Flatrate_RefundConfig, Object> COLUMN_BonusRecipient = new ModelColumn<>(I_C_Flatrate_RefundConfig.class, "BonusRecipient", null);
-	String COLUMNNAME_BonusRecipient = "BonusRecipient";
 
 	/**
 	 * Set Currency.

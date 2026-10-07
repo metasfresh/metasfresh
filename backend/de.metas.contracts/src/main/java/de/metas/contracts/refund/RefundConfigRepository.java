@@ -211,7 +211,6 @@ public class RefundConfigRepository
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.bonusProductId(ProductId.ofRepoIdOrNull(record.getBonus_Product_ID()))
-				.bonusRecipient(BonusRecipient.ofNullableCode(record.getBonusRecipient()))
 				.refundMode(extractRefundMode(record))
 				.useInProfitCalculation(record.isUseInProfitCalculation());
 
@@ -305,7 +304,6 @@ public class RefundConfigRepository
 		configRecord.setM_Product_ID(ProductId.toRepoId(refundConfig.getProductId()));
 		configRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(refundConfig.getProductCategoryId()));
 		configRecord.setBonus_Product_ID(ProductId.toRepoId(refundConfig.getBonusProductId()));
-		configRecord.setBonusRecipient(refundConfig.getBonusRecipient().getCode());
 
 		switch (refundConfig.getRefundInvoiceType())
 		{

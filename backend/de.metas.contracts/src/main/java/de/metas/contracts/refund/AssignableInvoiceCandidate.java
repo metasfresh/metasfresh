@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -59,10 +58,6 @@ public class AssignableInvoiceCandidate
 
 	BPartnerLocationId bpartnerLocationId;
 
-	/** The partner the goods are shipped to: the order's drop-ship partner, else the order's partner. {@code null} if the candidate has no order. */
-	@Nullable
-	BPartnerId shipmentBPartnerId;
-
 	/** The packing instruction of the order line the candidate stems from; {@code null} if it has none. */
 	@Nullable
 	HUPIItemProductId huPIItemProductId;
@@ -98,7 +93,6 @@ public class AssignableInvoiceCandidate
 	private AssignableInvoiceCandidate(
 			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerLocationId bpartnerLocationId,
-			@Nullable final BPartnerId shipmentBPartnerId,
 			@Nullable final HUPIItemProductId huPIItemProductId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final ProductId productId,
@@ -112,7 +106,6 @@ public class AssignableInvoiceCandidate
 	{
 		this.id = id;
 		this.bpartnerLocationId = bpartnerLocationId;
-		this.shipmentBPartnerId = shipmentBPartnerId;
 		this.huPIItemProductId = huPIItemProductId;
 		this.soTrx = soTrx;
 		this.productId = productId;

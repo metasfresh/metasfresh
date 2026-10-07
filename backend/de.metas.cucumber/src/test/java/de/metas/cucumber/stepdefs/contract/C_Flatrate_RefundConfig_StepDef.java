@@ -76,7 +76,6 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>MinQty</b> — (optional, default 0)<br>
 	 *   <b>Bonus_Product_ID</b> — (optional, identifier-ref) product that the refund line is booked on<br>
 	 *   <b>M_Product_Category_ID</b> — (optional, identifier-ref) product category the refund is based on<br>
-	 *   <b>BonusRecipient</b> — (optional) I = invoice partner, S = shipment partner<br>
 	 *   <b>IsPackingOptionFiltered</b> — (optional) only lines of the configured packaging options count<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Conditions_StepDefData, C_InvoiceSchedule_StepDefData, M_Product_StepDefData, M_Product_Category_StepDefData
 	 * @cucumber.example
@@ -108,7 +107,6 @@ public class C_Flatrate_RefundConfig_StepDef
 					.ifPresent(identifier -> config.setBonus_Product_ID(productTable.getId(identifier).getRepoId()));
 			optionalIdentifier(row.getAsOptionalIdentifier(I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_Category_ID))
 					.ifPresent(identifier -> config.setM_Product_Category_ID(productCategoryTable.getId(identifier).getRepoId()));
-			row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_BonusRecipient).ifPresent(config::setBonusRecipient);
 			row.getAsOptionalBoolean(I_C_Flatrate_RefundConfig.COLUMNNAME_IsPackingOptionFiltered)
 					.ifPresent(config::setIsPackingOptionFiltered);
 

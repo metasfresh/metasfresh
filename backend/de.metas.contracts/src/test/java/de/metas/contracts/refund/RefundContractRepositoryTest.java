@@ -189,45 +189,27 @@ public class RefundContractRepositoryTest
 		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(bpartnerId, productInOtherCategory, NOW))).isEmpty();
 	}
 
-	/**
-	 * A term whose configs go to the invoice partner matches the invoice partner of the query;
-	 * a term whose configs go to the shipment partner matches the shipment partner of the query, and never the invoice partner.
-	 */
+	/** the refund always goes to the invoice partner: a query only matches the terms of its invoice partner, never those of another partner (e.g. the one the goods are shipped to) */
 	@Test
-	public void getByQuery_bonusRecipient()
+	public void getByQuery_onlyTheTermsOfTheInvoicePartner()
 	{
 		final BPartnerId headOffice = BPartnerId.ofRepoId(101);
 		final BPartnerId store = BPartnerId.ofRepoId(102);
 		final ProductId productId = ProductId.ofRepoId(103);
 
-		final FlatrateTermId headInvoiceTerm = createRefundTermForRecipient(headOffice, BonusRecipient.INVOICE_PARTNER);
-		final FlatrateTermId storeShipTerm = createRefundTermForRecipient(store, BonusRecipient.SHIPMENT_PARTNER);
-		final FlatrateTermId headShipTerm = createRefundTermForRecipient(headOffice, BonusRecipient.SHIPMENT_PARTNER);
-		final FlatrateTermId storeInvoiceTerm = createRefundTermForRecipient(store, BonusRecipient.INVOICE_PARTNER);
+		final FlatrateTermId headOfficeTerm = createRefundTermWithConfigs(headOffice);
+		final FlatrateTermId storeTerm = createRefundTermWithConfigs(store);
 
-		// the head office is invoiced, the store receives the goods
-		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(headOffice, store, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactlyInAnyOrder(headInvoiceTerm, storeShipTerm);
-
-		// no shipment partner (the candidate has no order): no refund for a shipment partner term
-		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(headOffice, null, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactly(headInvoiceTerm);
-		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(store, null, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactly(storeInvoiceTerm);
-
-		// the store is invoiced, the head office receives the goods
-		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(store, headOffice, productId, NOW)))
-				.extracting(RefundContract::getId).containsExactlyInAnyOrder(storeInvoiceTerm, headShipTerm);
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(headOffice, productId, NOW)))
+				.extracting(RefundContract::getId).containsExactly(headOfficeTerm);
+		assertThat(refundContractRepository.getByQuery(new RefundContractQuery(store, productId, NOW)))
+				.extracting(RefundContract::getId).containsExactly(storeTerm);
 	}
 
-	private FlatrateTermId createRefundTermForRecipient(@NonNull final BPartnerId bpartnerId, @NonNull final BonusRecipient bonusRecipient)
+	private FlatrateTermId createRefundTermWithConfigs(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_Flatrate_Term term = createRefundTerm(bpartnerId, 0);
-		for (final I_C_Flatrate_RefundConfig config : RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())))
-		{
-			config.setBonusRecipient(bonusRecipient.getCode());
-			saveRecord(config);
-		}
+		RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()));
 		return FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 	}
 

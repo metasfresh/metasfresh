@@ -120,11 +120,6 @@ public class RefundContract
 		return CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getConditionsId);
 	}
 
-	public BonusRecipient extractBonusRecipient()
-	{
-		return RefundConfigs.extractBonusRecipient(refundConfigs);
-	}
-
 	public RefundMode extractRefundMode()
 	{
 		return RefundConfigs.extractRefundMode(refundConfigs);
