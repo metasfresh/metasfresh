@@ -50,6 +50,37 @@ export async function withFieldCommit(page, fieldName, action, expectedKey = und
   return await committed;
 }
 
+/**
+ * Records, in order, the reason of every rejected save (PATCH) in the given window, as the server returned it,
+ * so that a spec can compare the message shown in the dialog with it instead of with a localized text.
+ * @returns { reasons, stop }
+ */
+export function recordRejectedSaveReasons(page, windowId) {
+  const reasons = [];
+  const listener = async (response) => {
+    if (response.request().method() !== 'PATCH' || !response.url().includes(`/window/${windowId}/`)) {
+      return;
+    }
+    try {
+      const body = await response.json();
+      if (!response.ok()) {
+        reasons.push(body?.message || null);
+        return;
+      }
+      const documents = Array.isArray(body) ? body : body.documents || [body];
+      for (const document of documents) {
+        if (document?.saveStatus?.error) {
+          reasons.push(document.saveStatus.reason || null);
+        }
+      }
+    } catch (nonJsonResponse) {
+      /* not a document response */
+    }
+  };
+  page.on('response', listener);
+  return { reasons, stop: () => page.off('response', listener) };
+}
+
 export async function openNewRecord(page, windowId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/NEW`);
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
