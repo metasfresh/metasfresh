@@ -44,7 +44,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -513,7 +512,7 @@ public class CreateHUCommand
 		}
 	}
 
-	private static void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
+	private void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
 	{
 		if (Objects.equals(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), bpartnerId))
 		{
@@ -522,7 +521,7 @@ public class CreateHUCommand
 
 		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		hu.setC_BPartner_Location_ID(-1); // the location inherited from the source CU belongs to the previous partner
-		InterfaceWrapperHelper.saveRecord(hu);
+		handlingUnitsDAO.saveHU(hu);
 	}
 
 	private IAttributeStorage updateAttributes(final HuId huId)
