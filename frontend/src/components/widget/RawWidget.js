@@ -642,6 +642,10 @@ export class RawWidget extends PureComponent {
       fieldClass += ' form-group-flex';
     }
 
+    // a grid cell's editor, also in a grid shown inside a modal; table.scss fits it into the cell
+    const isGridCellEditor =
+      !!rowId && (!isModal || this.props.dataSource === 'table');
+
     const labelProps = {};
     if (!noLabel && caption && fields[0].supportZoomInto) {
       labelProps.onClick = () => handleZoomInto(fields[0].field);
@@ -653,9 +657,7 @@ export class RawWidget extends PureComponent {
           'form-group',
           {
             row: !quickInput,
-            // every grid-cell editor (dataSource "table"), also in a grid shown inside a modal
-            'form-group-table':
-              rowId && (!isModal || this.props.dataSource === 'table'),
+            'form-group-table': isGridCellEditor,
           },
           computeWidgetTypeClass(widgetType, fields.length),
           widgetSize ? 'widgetSize-' + widgetSize : '',
