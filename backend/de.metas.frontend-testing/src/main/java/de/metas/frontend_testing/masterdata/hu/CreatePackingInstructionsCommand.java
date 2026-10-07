@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -37,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -83,11 +85,12 @@ public class CreatePackingInstructionsCommand
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), request.getBpartner());
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
 		else
 		{
+			Check.assumeNull(request.getBpartner(), "bpartner is only supported together with lu: {}", request);
 			lu = null;
 			luPIItem = null;
 			luPIItemTestId = null;
@@ -175,13 +178,17 @@ public class CreatePackingInstructionsCommand
 				.build();
 	}
 
-	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
+	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU, @Nullable final Identifier bpartnerIdentifier)
 	{
 		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		luPIItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
 		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
 		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
 		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		if (bpartnerIdentifier != null)
+		{
+			luPIItemRecord.setC_BPartner_ID(BPartnerId.toRepoId(context.getId(bpartnerIdentifier, BPartnerId.class)));
+		}
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}

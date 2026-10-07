@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 
 const NAME = 'SelectPickTargetScreen';
@@ -12,7 +12,11 @@ export const SelectPickTargetLUScreen = {
     }),
 
     clickLUButton: async ({ lu }) => await test.step(`${NAME} - Click LU button`, async () => {
-        await page.locator('button').filter({ hasText: lu }).tap();
+        const luButton = page.locator('button').filter({ hasText: lu });
+        // Capture mode only (UAT_CAPTURE): the list may still show the loading spinner on the recording;
+        // wait until the offered target is rendered and hold it in view before tapping it.
+        await revealForCaptureIfEnabled(luButton);
+        await luButton.tap();
     }),
 
     clickCloseTargetButton: async () => await test.step(`${NAME} - Click Close Target LU button`, async () => {
