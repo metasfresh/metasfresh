@@ -64,7 +64,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -202,6 +201,8 @@ public class PaymentBonusDeductionService
 	 *         They are not part of any base: the bonus at payment is computed on the goods value before that discount.
 	 *         A line is recognised through the invoice candidates it was created from ({@code C_Invoice_Line_Alloc}), because invoicing may
 	 *         aggregate the discount lines of several orders into one invoice line without order line; it is left out if all of them are such discount lines.
+	 *         A mixed line (a contract discount candidate aggregated with any other candidate) stays whole in the base: this errs on the safe side,
+	 *         the base can only stay too high, never too low.
 	 *         A discount line of a group the user put together (no contract) stays in the base, as does a line that no invoice candidate created.
 	 */
 	private ImmutableSet<Integer> retrieveContractCompensationInvoiceLineIds(@NonNull final Collection<I_C_InvoiceLine> lines)

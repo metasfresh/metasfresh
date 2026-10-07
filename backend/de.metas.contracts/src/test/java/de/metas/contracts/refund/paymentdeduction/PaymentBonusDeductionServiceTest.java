@@ -186,6 +186,21 @@ class PaymentBonusDeductionServiceTest
 	}
 
 	/**
+	 * An invoice line aggregated from a contract discount candidate and a goods candidate is not a pure discount line: it stays whole in the base.
+	 */
+	@Test
+	void mixedAggregatedLine_staysInTheBase()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final I_C_Flatrate_Term contract = createCompensationGroupContract();
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(contract, true), createCandidateInGroup(contract, false));
+
+		assertThat(computeNetBonus(invoiceId)).isEqualByComparingTo("2.52"); // 2.6 % of 97 = 2.522
+	}
+
+	/**
 	 * A discount line of a group the user put together on the order (no contract) reduces what the customer pays, so it stays in the base.
 	 */
 	@Test
