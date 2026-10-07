@@ -530,7 +530,7 @@ Feature: order candidate bulk request with product identifiers that cannot be re
   @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
   @allure.label.feature:F00120_Sales_Order_Candidate
   @Id:S32656_20
-  Scenario: product error on one line and an unknown GLN on another; both are reported in line order, nothing is created
+  Scenario: product error on one line and an unknown GLN on another; both are reported, nothing is created
     # line 20: GTIN only on a packing instruction that becomes valid after the delivery date (2022-09-01)
     # line 30: unknown gln- partner
     Given metasfresh contains M_Products:
@@ -541,14 +541,14 @@ Feature: order candidate bulk request with product identifiers that cannot be re
       | M_Product_ID.Identifier | GTIN          |
       | pB_S32656_20            | 4000000326854 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_S32656_20 | customer_S32656_20 | N            | Y              | 2000837                       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | location_S32656_20 | 4000000326830 | customer_S32656_20       | true                | true         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
-      | piipA_S32656_20 | PCE | 3008003 | pA_S32656_20 | customer_S32656_20 | 20 | 2022-09-01 | 4000000326823 | piipA_S32656_20 |
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN          | REST.Context    |
+      | piipA_S32656_20                    | PCE                   | 3008003                    | pA_S32656_20            | customer_S32656_20       | 20  | 2022-09-01 | 4000000326823 | piipA_S32656_20 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
   """
@@ -649,14 +649,14 @@ Feature: order candidate bulk request with product identifiers that cannot be re
       | Identifier   | Name                  | IsStocked |
       | pA_S32656_40 | gtinErrorsA_S32656_40 | true      |
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_S32656_40 | customer_S32656_40 | N            | Y              | 2000837                       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | location_S32656_40 | 4000000326878 | customer_S32656_40       | true                | true         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
-      | piipA_S32656_40 | PCE | 3008003 | pA_S32656_40 | customer_S32656_40 | 20 | 2022-09-01 | 4000000326861 | piipA_S32656_40 |
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN          | REST.Context    |
+      | piipA_S32656_40                    | PCE                   | 3008003                    | pA_S32656_40            | customer_S32656_40       | 20  | 2022-09-01 | 4000000326861 | piipA_S32656_40 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
   """
@@ -760,7 +760,7 @@ Feature: order candidate bulk request with product identifiers that cannot be re
       | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_S32656_45 | customer_S32656_45 | N            | Y              | 2000837                       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN   | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | location_S32656_45 | 4000000326892 | customer_S32656_45       | true                | true         |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
@@ -833,15 +833,15 @@ Feature: order candidate bulk request with product identifiers that cannot be re
       | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | ppA_S32656_60 | 2002141                           | pA_S32656_60            | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_S32656_60 | customer_S32656_60 | N            | Y              | 2000837                       |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | location_S32656_60 | 4000000326922 | customer_S32656_60       | true                | true         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
-      | piipA_S32656_60 | PCE | 3008003 | pA_S32656_60 | customer_S32656_60 | 20 | 2021-03-01 | 4000000326908 | piipA_S32656_60 |
-      | piipB_S32656_60 | PCE | 3008003 | pB_S32656_60 | customer_S32656_60 | 20 | 2022-09-01 | 4000000326915 | piipB_S32656_60 |
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN          | REST.Context    |
+      | piipA_S32656_60                    | PCE                   | 3008003                    | pA_S32656_60            | customer_S32656_60       | 20  | 2021-03-01 | 4000000326908 | piipA_S32656_60 |
+      | piipB_S32656_60                    | PCE                   | 3008003                    | pB_S32656_60            | customer_S32656_60       | 20  | 2022-09-01 | 4000000326915 | piipB_S32656_60 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
