@@ -36,9 +36,9 @@ import { openReferencesPanel, waitForReferences, waitForSpinnersToDisappear } fr
  * order lines through the testing backend.
  *
  *   Part 1  rule window "Kalibrierungsregeln": rules in SeqNo order under a filter, a rule created through the
- *           window (rejected until customer or group is set), a 3-decimal factor entered and re-read
+ *           window (rejected until customer or group is set), a decimal percent factor (66,7) entered and re-read
  *   Part 2  orders through the quick input: Kindergarten (calibrated), Krankenhaus (no rule, group hidden),
- *           a quotation for Kindergarten, Kita B (3-decimal factor on the line)
+ *           a quotation for Kindergarten, Kita B (decimal percent factor on the line)
  *   Part 3  a used rule cannot be deleted (deactivate-instead message); a deactivated rule still shows by name on
  *           its line; the rule's related-documents panel lists the sales order and opens the SALES order window
  *
@@ -118,7 +118,7 @@ test.describe('Compensation group calibration', () => {
                 },
                 // rule 10 via masterdata; rule 20 and the Kita B rule are entered through the window below
                 calibrationRules: {
-                    RULE10: { seqNo: 10, bpartner: 'KINDERGARTEN', product: 'REIS', factor: 0.5 },
+                    RULE10: { seqNo: 10, bpartner: 'KINDERGARTEN', product: 'REIS', factor: 50 },
                 },
             },
         });
@@ -154,7 +154,7 @@ test.describe('Compensation group calibration', () => {
             await expect(page.locator('table tbody tr')).toHaveCount(1);
             await expect(rule10Row.locator('[data-cy="cell-SeqNo"]')).toHaveText('10');
             await expect(rule10Row.locator('[data-cy="cell-M_Product_ID"]')).toContainText(reis);
-            await expect(rule10Row.locator('[data-cy="cell-GroupCompensationCalibrationFactor"]')).toHaveText(/^0[.,]5$/);
+            await expect(rule10Row.locator('[data-cy="cell-GroupCompensationCalibrationFactor"]')).toHaveText(/^50$/);
         });
 
         await test.step('Part 1: a rule without customer and group is rejected; rule 20 entered through the window', async () => {
@@ -163,7 +163,7 @@ test.describe('Compensation group calibration', () => {
 
             // product and factor alone do not help: still rejected
             await LookupWidget.setValue('M_Product_ID', haehnchen);
-            await NumericWidget.setValue(FIELD_FACTOR, '0.6');
+            await NumericWidget.setValue(FIELD_FACTOR, '60');
             await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toBeVisible();
 
             // with the customer it is accepted
@@ -175,23 +175,23 @@ test.describe('Compensation group calibration', () => {
             await snap(page, 'rule-20-detail');
         });
 
-        await test.step('Part 1: a 3-decimal factor (Kita B, Reis, 0,667) is entered and re-read as 0,667', async () => {
+        await test.step('Part 1: a decimal percent factor (Kita B, Reis, 66,7 %) is entered and re-read as 66,7', async () => {
             await newRuleThroughWindow(page, rulesWindowUrl);
             await NumericWidget.setValue('SeqNo', 30);
             await LookupWidget.setValue('C_BPartner_ID', kitaB);
             await LookupWidget.setValue('M_Product_ID', reis);
-            await NumericWidget.setValue(FIELD_FACTOR, '0.667');
+            await NumericWidget.setValue(FIELD_FACTOR, '66.7');
             rule30Id = recordIdFromUrl(page);
             await waitForRecordSaved(rulesWindowId, rule30Id, { maxRetries: 20, retryDelayMs: 1000 });
 
             // re-read: the detail after a reload and the grid row both show 3 decimals
             await page.reload();
-            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^0[.,]667$/, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^66[.,]7$/, { timeout: SLOW_ACTION_TIMEOUT });
             await page.goto(rulesWindowUrl);
             await expectGridLoaded(page);
             await filterRulesByCustomer(page, kitaB);
             await expect(page.getByTestId(`table-row-${rule30Id}`).locator(`[data-cy="cell-${FIELD_FACTOR}"]`))
-                .toHaveText(/^0[.,]667$/, { timeout: SLOW_ACTION_TIMEOUT });
+                .toHaveText(/^66[.,]7$/, { timeout: SLOW_ACTION_TIMEOUT });
         });
 
         await test.step('Part 1: under the customer filter the rules show in SeqNo order', async () => {
@@ -204,7 +204,7 @@ test.describe('Compensation group calibration', () => {
             await expect(rows.nth(0).locator('[data-cy="cell-M_Product_ID"]')).toContainText(reis);
             await expect(rows.nth(1).locator('[data-cy="cell-SeqNo"]')).toHaveText('20');
             await expect(rows.nth(1).locator('[data-cy="cell-M_Product_ID"]')).toContainText(haehnchen);
-            await expect(rows.nth(1).locator(`[data-cy="cell-${FIELD_FACTOR}"]`)).toHaveText(/^0[.,]6$/);
+            await expect(rows.nth(1).locator(`[data-cy="cell-${FIELD_FACTOR}"]`)).toHaveText(/^60$/);
             await snap(page, 'rules-grid-customer-filter');
         });
 
@@ -226,16 +226,16 @@ test.describe('Compensation group calibration', () => {
             await expectNoCalibrationGridColumn(page);
 
             // advanced edit: the calibration group shows, read-only
-            await expectCalibrationGroup(page, reis, { factor: '0.5', rulePrefix: '10', uncalibrated: '200' });
-            await expectCalibrationGroup(page, haehnchen, { factor: '0.6', rulePrefix: '20', uncalibrated: '100' });
+            await expectCalibrationGroup(page, reis, { factor: '50', rulePrefix: '10', uncalibrated: '200' });
+            await expectCalibrationGroup(page, haehnchen, { factor: '60', rulePrefix: '20', uncalibrated: '100' });
 
             await Backend.expect({
                 title: 'Kindergarten order lines: calibrated quantities, factors, rules, uncalibrated quantities',
                 salesOrders: {
                     [kindergartenOrderId]: {
                         lines: [
-                            { product: 'REIS', qtyEntered: 100, calibrationFactor: 0.5, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 200 },
-                            { product: 'HAEHNCHEN', qtyEntered: 60, calibrationFactor: 0.6, qtyEnteredUncalibrated: 100 },
+                            { product: 'REIS', qtyEntered: 100, calibrationFactor: 50, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 200 },
+                            { product: 'HAEHNCHEN', qtyEntered: 60, calibrationFactor: 60, qtyEnteredUncalibrated: 100 },
                         ],
                     },
                 },
@@ -252,12 +252,12 @@ test.describe('Compensation group calibration', () => {
             await expectCalibrationGroupHidden(page, haehnchen);
 
             await Backend.expect({
-                title: 'Krankenhaus order lines: today\'s quantities, factor 1, no rule applied',
+                title: 'Krankenhaus order lines: today\'s quantities, factor 100 %, no rule applied',
                 salesOrders: {
                     [order.orderId]: {
                         lines: [
-                            { product: 'REIS', qtyEntered: 200, calibrationFactor: 1, qtyEnteredUncalibrated: 200, hasCalibrationRule: false },
-                            { product: 'HAEHNCHEN', qtyEntered: 100, calibrationFactor: 1, qtyEnteredUncalibrated: 100, hasCalibrationRule: false },
+                            { product: 'REIS', qtyEntered: 200, calibrationFactor: 100, qtyEnteredUncalibrated: 200, hasCalibrationRule: false },
+                            { product: 'HAEHNCHEN', qtyEntered: 100, calibrationFactor: 100, qtyEnteredUncalibrated: 100, hasCalibrationRule: false },
                         ],
                     },
                 },
@@ -271,30 +271,30 @@ test.describe('Compensation group calibration', () => {
             await addMenuThroughQuickInput(page, menu, 1);
 
             await expectLineQty(page, reis, 100);
-            await expectCalibrationGroup(page, reis, { factor: '0.5', rulePrefix: '10', uncalibrated: '200', snapshotName: 'quotation-advanced-edit-reis-calibrated' });
+            await expectCalibrationGroup(page, reis, { factor: '50', rulePrefix: '10', uncalibrated: '200', snapshotName: 'quotation-advanced-edit-reis-calibrated' });
 
             await Backend.expect({
                 title: 'Kindergarten quotation lines',
                 salesOrders: {
                     [order.orderId]: {
-                        lines: [{ product: 'REIS', qtyEntered: 100, calibrationFactor: 0.5, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 200 }],
+                        lines: [{ product: 'REIS', qtyEntered: 100, calibrationFactor: 50, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 200 }],
                     },
                 },
             });
         });
 
-        await test.step('Part 2: order for Kita B -> Reis 133,40 g, the advanced edit shows 0,667', async () => {
+        await test.step('Part 2: order for Kita B -> Reis 133,40 g, the advanced edit shows 66,7', async () => {
             const order = await createOrder(page, kitaB);
             await addMenuThroughQuickInput(page, menu, 1);
 
             await expectLineQty(page, reis, 133.4);
-            await expectCalibrationGroup(page, reis, { factor: '0.667', rulePrefix: '30', uncalibrated: '200' });
+            await expectCalibrationGroup(page, reis, { factor: '66.7', rulePrefix: '30', uncalibrated: '200' });
 
             await Backend.expect({
-                title: 'Kita B order line: 3-decimal factor',
+                title: 'Kita B order line: decimal percent factor',
                 salesOrders: {
                     [order.orderId]: {
-                        lines: [{ product: 'REIS', qtyEntered: 133.4, calibrationFactor: 0.667, qtyEnteredUncalibrated: 200 }],
+                        lines: [{ product: 'REIS', qtyEntered: 133.4, calibrationFactor: 66.7, qtyEnteredUncalibrated: 200 }],
                     },
                 },
             });
@@ -315,7 +315,7 @@ test.describe('Compensation group calibration', () => {
             await snap(page, 'rule-20-delete-refused');
             // the rule is still there
             await page.goto(`${rulesWindowUrl}/${rule20Id}`);
-            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^0[.,]6$/, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^60$/, { timeout: SLOW_ACTION_TIMEOUT });
         });
 
         await test.step('Part 3: deactivated rule 20 still shows by name on its Haehnchen line', async () => {
@@ -329,7 +329,7 @@ test.describe('Compensation group calibration', () => {
             await page.goto(`${FRONTEND_BASE_URL}/window/${orderWindowId}/${kindergartenOrderId}`);
             await expectLineQty(page, haehnchen, 60);
             // the line shows the rule's name, not "<id>"
-            await expectCalibrationGroup(page, haehnchen, { factor: '0.6', rulePrefix: '20', uncalibrated: '100', snapshotName: 'order-line-deactivated-rule' });
+            await expectCalibrationGroup(page, haehnchen, { factor: '60', rulePrefix: '20', uncalibrated: '100', snapshotName: 'order-line-deactivated-rule' });
         });
 
         await test.step('Part 3: the related-documents panel of rule 10 lists the sales order and opens the sales-order window', async () => {

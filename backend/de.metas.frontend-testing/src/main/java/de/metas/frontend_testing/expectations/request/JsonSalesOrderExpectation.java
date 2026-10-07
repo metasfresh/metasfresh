@@ -36,7 +36,7 @@ import java.util.List;
  *     },
  *     'SO3': {
  *       // assert order lines by product (masterdata keys), incl. the calibration data
- *       lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 1.5, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }]
+ *       lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 150, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }]
  *     }
  *   }
  * });

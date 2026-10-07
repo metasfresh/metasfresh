@@ -638,7 +638,7 @@ Feature: Contract-triggered compensation group on sales-order completion
       | tl_bonus   | mainSchema                    | bonusProduct | 4   | PCE      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_10    | 10    | storeBP       | 0.5                                |
+      | rule_10    | 10    | storeBP       | 50                                 |
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
       | orderCalib   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |

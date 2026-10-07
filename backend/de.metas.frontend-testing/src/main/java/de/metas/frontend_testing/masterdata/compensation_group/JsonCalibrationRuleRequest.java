@@ -29,6 +29,6 @@ public class JsonCalibrationRuleRequest
 	@Nullable Identifier productCategory;
 	@Nullable Identifier schema;
 
-	/** {@code GroupCompensationCalibrationFactor} (must be &gt;= 0). */
+	/** {@code GroupCompensationCalibrationFactor}: a 100-based percent (80 = 80 %, 100 = unchanged, 0 = Qty 0); must be &gt;= 0. */
 	@NonNull BigDecimal factor;
 }

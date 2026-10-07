@@ -30,16 +30,16 @@ Feature: Compensation group calibration rules
   Scenario: A rule needs a customer or a business partner group and a non-negative factor
     When metasfresh contains C_CompensationGroup_CalibrationRule expecting error:
       | Identifier | M_Product_ID | GroupCompensationCalibrationFactor | ErrorMessageKey                                                |
-      | rule_none  | component    | 0.5                                | C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired    |
+      | rule_none  | component    | 50                                 | C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired    |
     And metasfresh contains C_CompensationGroup_CalibrationRule expecting error:
       | Identifier | C_BPartner_ID | GroupCompensationCalibrationFactor | ErrorMessageKey                                     |
-      | rule_neg   | customer      | -1                                 | C_CompensationGroup_CalibrationRule_NegativeFactor  |
+      | rule_neg   | customer      | -100                               | C_CompensationGroup_CalibrationRule_NegativeFactor  |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier    | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_customer | customer      | component    | 0.5                                |
+      | rule_customer | customer      | component    | 50                                 |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | C_BP_Group_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_group | bpGroup       | component    | 0.8                                |
+      | rule_group | bpGroup       | component    | 80                                 |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
       | rule_zero  | customer      | component    | 0                                  |
@@ -67,10 +67,10 @@ Feature: Compensation group calibration rules
       | priced     | CalibrationRule_Priced  | Y          | ps                 |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_used  | priced        | 0.7                                |
+      | rule_used  | priced        | 70                                 |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier  | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_unused | priced        | 0.9                                |
+      | rule_unused | priced        | 90                                 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order      | true    | priced        | 2026-10-07  |

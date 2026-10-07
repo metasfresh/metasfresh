@@ -30,7 +30,7 @@ public class JsonOrderLineExpectation
 	@Nullable BigDecimal qtyEntered;
 
 	/**
-	 * Expected C_OrderLine.GroupCompensationCalibrationFactor.
+	 * Expected C_OrderLine.GroupCompensationCalibrationFactor, a 100-based percent (80 = 80 %, 100 = unchanged).
 	 */
 	@Nullable BigDecimal calibrationFactor;
 
@@ -53,7 +53,7 @@ public class JsonOrderLineExpectation
 	@Nullable Boolean calibrated;
 
 	/**
-	 * {@code false}: C_OrderLine.C_CompensationGroup_CalibrationRule_ID is empty (e.g. calibrated with factor 1 because no rule matched);
+	 * {@code false}: C_OrderLine.C_CompensationGroup_CalibrationRule_ID is empty (e.g. calibrated with factor 100 because no rule matched);
 	 * {@code true}: some rule is stored. Cannot be combined with an expected {@link #calibrationRule}.
 	 */
 	@Nullable Boolean hasCalibrationRule;

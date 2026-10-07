@@ -462,7 +462,7 @@ public class CreateMasterdataCommandTest
 				+ "\"bpGroups\": {\"GRP\": {\"name\": \"Wholesale\"}},"
 				+ "\"bpartners\": {\"BP\": {\"bpGroup\": \"GRP\"}},"
 				+ "\"calibrationRules\": {\"R1\": {\"seqNo\": 10, \"bpartner\": \"BP\", \"bpGroup\": \"GRP\", \"product\": \"P1\","
-				+ " \"productCategory\": \"CAT\", \"schema\": \"S1\", \"factor\": 1.5}}"
+				+ " \"productCategory\": \"CAT\", \"schema\": \"S1\", \"factor\": 150}}"
 				+ "}";
 
 		// when
@@ -479,6 +479,6 @@ public class CreateMasterdataCommandTest
 		assertThat(rule.getProduct()).isEqualTo(Identifier.ofString("P1"));
 		assertThat(rule.getProductCategory()).isEqualTo(Identifier.ofString("CAT"));
 		assertThat(rule.getSchema()).isEqualTo(Identifier.ofString("S1"));
-		assertThat(rule.getFactor()).isEqualByComparingTo("1.5");
+		assertThat(rule.getFactor()).isEqualByComparingTo("150");
 	}
 }

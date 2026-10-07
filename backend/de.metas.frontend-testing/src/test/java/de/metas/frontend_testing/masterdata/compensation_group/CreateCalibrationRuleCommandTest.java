@@ -78,7 +78,7 @@ public class CreateCalibrationRuleCommandTest
 				.product(Identifier.ofString("prod"))
 				.productCategory(Identifier.ofString("cat"))
 				.schema(Identifier.ofString("schema"))
-				.factor(new BigDecimal("1.5"))
+				.factor(new BigDecimal("150"))
 				.build());
 
 		final I_C_CompensationGroup_CalibrationRule rule = InterfaceWrapperHelper.load(response.getId(), I_C_CompensationGroup_CalibrationRule.class);
@@ -89,7 +89,7 @@ public class CreateCalibrationRuleCommandTest
 		assertThat(rule.getM_Product_ID()).isEqualTo(13);
 		assertThat(rule.getM_Product_Category_ID()).isEqualTo(14);
 		assertThat(rule.getC_CompensationGroup_Schema_ID()).isEqualTo(15);
-		assertThat(rule.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("1.5");
+		assertThat(rule.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("150");
 		assertThat(context.getId(Identifier.ofString("rule1"), CalibrationRuleId.class))
 				.isEqualTo(response.getId());
 	}
@@ -100,7 +100,7 @@ public class CreateCalibrationRuleCommandTest
 		final JsonCalibrationRuleResponse response = execute("rule2", JsonCalibrationRuleRequest.builder()
 				.seqNo(10)
 				.bpGroup(Identifier.ofString("grp"))
-				.factor(BigDecimal.TEN)
+				.factor(new BigDecimal("80"))
 				.build());
 
 		final I_C_CompensationGroup_CalibrationRule rule = InterfaceWrapperHelper.load(response.getId(), I_C_CompensationGroup_CalibrationRule.class);
@@ -114,8 +114,8 @@ public class CreateCalibrationRuleCommandTest
 	@Test
 	public void execute_withoutSeqNo_appendsAfterTheHighestExisting()
 	{
-		execute("ruleA", JsonCalibrationRuleRequest.builder().seqNo(40).bpGroup(Identifier.ofString("grp")).factor(BigDecimal.ONE).build());
-		final JsonCalibrationRuleResponse b = execute("ruleB", JsonCalibrationRuleRequest.builder().bpGroup(Identifier.ofString("grp")).factor(BigDecimal.ONE).build());
+		execute("ruleA", JsonCalibrationRuleRequest.builder().seqNo(40).bpGroup(Identifier.ofString("grp")).factor(new BigDecimal("100")).build());
+		final JsonCalibrationRuleResponse b = execute("ruleB", JsonCalibrationRuleRequest.builder().bpGroup(Identifier.ofString("grp")).factor(new BigDecimal("100")).build());
 
 		assertThat(InterfaceWrapperHelper.load(b.getId(), I_C_CompensationGroup_CalibrationRule.class).getSeqNo()).isEqualTo(50);
 	}

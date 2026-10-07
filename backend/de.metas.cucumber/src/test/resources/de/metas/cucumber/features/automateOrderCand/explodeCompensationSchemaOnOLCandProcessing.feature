@@ -603,8 +603,8 @@ Feature: Explode a compensation-group-schema product into its component order li
       | customer   | customer | Y              | N            | ps_schema                     | customerLocation           | 4009900001234 |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_10    | 10    | customer      | reis         | 0.5                                |
-      | rule_20    | 20    | customer      | haehnchen    | 0.6                                |
+      | rule_10    | 10    | customer      | reis         | 50                                 |
+      | rule_20    | 20    | customer      | haehnchen    | 60                                 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
@@ -654,12 +654,12 @@ Feature: Explode a compensation-group-schema product into its component order li
       | C_Order_ID.Identifier |
       | order_calibrated      |
 
-    # template 200 GRM x 0.5 = 100 GRM and 100 GRM x 0.6 = 60 GRM, each with its matched rule and the uncalibrated quantity
+    # template 200 GRM x 50 % = 100 GRM and 100 GRM x 60 % = 60 GRM, each with its matched rule and the uncalibrated quantity
     And validate the created order lines
       | C_OrderLine_ID.Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | processed |
       | orderLine_calibrated_reis    | order_calibrated      | reis                    | 100        | true      |
       | orderLine_calibrated_haehnchen | order_calibrated    | haehnchen               | 60         | true      |
     And validate C_OrderLine:
       | C_OrderLine_ID                 | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | orderLine_calibrated_reis      | reis         | 100            | 0.5                                    | 200                                         | rule_10                                    |
-      | orderLine_calibrated_haehnchen | haehnchen    | 60             | 0.6                                    | 100                                         | rule_20                                    |
+      | orderLine_calibrated_reis      | reis         | 100            | 50                                     | 200                                         | rule_10                                    |
+      | orderLine_calibrated_haehnchen | haehnchen    | 60             | 60                                     | 100                                         | rule_20                                    |
