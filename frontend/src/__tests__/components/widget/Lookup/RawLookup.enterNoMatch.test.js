@@ -1,7 +1,8 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 
-import { RawLookup } from '../../../../components/widget/Lookup/RawLookup';
+import ConnectedRawLookup, { RawLookup } from '../../../../components/widget/Lookup/RawLookup';
+import { Lookup } from '../../../../components/widget/Lookup/Lookup';
 
 /**
  * Enter on a filled Lookup whose typed text matches nothing puts the previous value back, as
@@ -69,15 +70,57 @@ describe('RawLookup — Enter with typed text that matches nothing', () => {
     expect(instance.inputSearch.value).toBe(PREVIOUS.caption);
   });
 
-  it('filter widget (view filter / process parameter): restores the previous value and does not commit', () => {
-    const { instance, onChange } = mountFilledLookup({
-      filterWidget: true,
-      mainProperty: { field: 'C_BPartner_ID', parameterName: 'C_BPartner_ID' },
-      item: { field: 'C_BPartner_ID', parameterName: 'C_BPartner_ID' },
+  it('filter widget, not applied yet: restores the value picked in the filter', () => {
+    // The wiring of a view filter: FiltersItem hands its filter parameter to Lookup as both the
+    // field descriptor and the widget data, plus `updateItems`, which writes a picked value into
+    // the parameter's `defaultValue`. For a not-applied filter, Lookup passes that `defaultValue`
+    // on to RawLookup.
+    const parameter = {
+      field: 'C_BPartner_ID',
+      parameterName: 'C_BPartner_ID',
+      widgetType: 'Lookup',
+      defaultValue: null,
+      value: null,
+    };
+    const updateItems = jest.fn(({ widgetField, value }) => {
+      if (widgetField === parameter.parameterName) {
+        parameter.defaultValue = value;
+        parameter.value = value;
+      }
     });
-    // a filter Lookup does not copy its value into the input on mount (handleValueChanged
-    // skips filter widgets): the input shows the previous value because the user had picked it
-    instance.inputSearch.value = PREVIOUS.caption;
+    const lookup = shallow(
+      <Lookup
+        properties={[parameter]}
+        widgetData={[parameter]}
+        filterWidget={true}
+        isFilterActive={false}
+        updateItems={updateItems}
+        windowType="143"
+        entity="documentView"
+        onChange={jest.fn()}
+        onSelectBarcode={jest.fn()}
+        onScanBarcode={jest.fn()}
+      />
+    );
+    const defaultValueFromLookup = () => {
+      lookup.setProps({});
+      return lookup.find(ConnectedRawLookup).at(0).prop('defaultValue');
+    };
+
+    const { wrapper, instance, onChange } = mountFilledLookup({
+      filterWidget: true,
+      mainProperty: parameter,
+      item: parameter,
+      updateItems,
+      defaultValue: defaultValueFromLookup(),
+    });
+
+    // the user picks the partner in the filter
+    instance.inputSearch.value = 'Pre';
+    instance.handleSelect(PREVIOUS);
+    expect(updateItems).toHaveBeenCalledWith({ widgetField: 'C_BPartner_ID', value: PREVIOUS });
+    wrapper.setProps({ defaultValue: defaultValueFromLookup() });
+    onChange.mockClear();
 
     typeAndPressEnter(instance, 'qzzx', []);
 

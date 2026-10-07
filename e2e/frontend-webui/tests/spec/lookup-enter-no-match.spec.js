@@ -3,6 +3,7 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
@@ -121,6 +122,15 @@ async function typeNonMatchingAndPressEnter(page, input) {
   await expect(input, 'the Lookup holds the typed text').toHaveValue(NON_MATCHING_TEXT);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(1500); // a PATCH, if any, is sent right away
+}
+
+/** Open the sales order list's "Standard" filter panel and return it. */
+async function openStandardFilter(page) {
+  await page.locator('.filters-not-frequent button.toggle-filters').click();
+  await page.locator('.filters-not-frequent .filter-option-default').click();
+  const panel = page.locator('.filters-not-frequent .filter-widget');
+  await panel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  return panel;
 }
 
 test.describe('Lookup — Enter with text that matches nothing keeps the previous value (de_DE)', () => {
@@ -249,6 +259,66 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
       await page.waitForTimeout(1500);
 
       expect(clearingPatchesFor(patches, 'M_PricingSystem_ID'), 'the deliberate clear is sent as empty').toHaveLength(1);
+    });
+  });
+
+  test('View filter, before and after applying it: the picked partner is kept', async ({ page }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Lookup — Enter on a non-matching text restores the previous value');
+    allure.severity('critical');
+    test.setTimeout(240000);
+
+    const masterdata = await createMasterdata('de_DE');
+    const customerCode = masterdata.bpartners.CUSTOMER1.bpartnerCode;
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+    await SalesOrderPage.goto();
+
+    const panel = await openStandardFilter(page);
+    const partnerInput = panel.locator('#lookup_C_BPartner_ID input.input-field');
+
+    await test.step('Pick the customer in the filter (not applied)', async () => {
+      await partnerInput.click();
+      await partnerInput.pressSequentially(customerCode, { delay: 20 });
+      const option = page.locator('.input-dropdown-list-option').filter({ hasText: customerCode }).first();
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await option.click();
+      await expect(partnerInput).toHaveValue(new RegExp(customerCode));
+    });
+
+    await test.step('Non-matching text + Enter shows the picked customer again', async () => {
+      await typeNonMatchingAndPressEnter(page, partnerInput);
+      await expect(partnerInput, 'the filter field shows the picked customer again').toHaveValue(
+        new RegExp(customerCode)
+      );
+    });
+
+    await test.step('Non-matching text + Tab shows the picked customer again', async () => {
+      await partnerInput.click();
+      await page.keyboard.press('ControlOrMeta+a');
+      await partnerInput.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });
+      await waitForTypeaheadToSettle(page);
+      await page.keyboard.press('Tab');
+      await expect(partnerInput, 'the filter field shows the picked customer again').toHaveValue(
+        new RegExp(customerCode)
+      );
+    });
+
+    await test.step('Applied filter: non-matching text + Enter shows the customer again', async () => {
+      await panel.getByTestId('filter-apply-button').click();
+      await panel.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+
+      await page.locator('.filters-not-frequent button.toggle-filters').click();
+      await panel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(partnerInput, 'the applied filter shows the customer').toHaveValue(new RegExp(customerCode));
+
+      await typeNonMatchingAndPressEnter(page, partnerInput);
+      await expect(partnerInput, 'the applied filter shows the customer again').toHaveValue(
+        new RegExp(customerCode)
+      );
     });
   });
 });
