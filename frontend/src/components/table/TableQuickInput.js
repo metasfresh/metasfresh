@@ -12,6 +12,7 @@ import {
 } from '../../actions/TableQuickInputActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
+import { hasRefusedNumberInput } from '../../utils/refusedNumberInputs';
 
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
@@ -133,6 +134,12 @@ class TableQuickInput extends PureComponent {
       this.props;
 
     e.preventDefault();
+
+    // a number the user typed was refused (see RawWidget): its field shows the stored value again, which must not be
+    // taken as the user's input
+    if (hasRefusedNumberInput(e.currentTarget)) {
+      return;
+    }
 
     // blur to make sure the field value is committed, events are fired, etc
     const activeElement = document.activeElement;

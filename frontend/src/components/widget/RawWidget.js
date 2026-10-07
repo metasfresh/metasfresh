@@ -16,8 +16,10 @@ import {
   isValidDecimalNumberString,
   normalizeDecimalNumberString,
 } from '../../utils/locale';
-import { addNotification } from '../../actions/AppActions';
-import store from '../../store/store';
+import {
+  markRefusedNumberInput,
+  unmarkRefusedNumberInput,
+} from '../../utils/refusedNumberInputs';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
@@ -46,6 +48,14 @@ const isEchoOfTypedText = (value, typedText, isFilter) => {
     return false;
   }
 };
+
+/** Tells whether two dot-decimal numbers (or their strings) are the same number, e.g. '2.50' and '2.5' */
+const isSameNumber = (value1, value2) =>
+  value1 != null &&
+  value2 != null &&
+  String(value1).trim() !== '' &&
+  String(value2).trim() !== '' &&
+  Number(value1) === Number(value2);
 
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
@@ -100,6 +110,7 @@ export class RawWidget extends PureComponent {
 
   componentWillUnmount() {
     this.mounted = false;
+    unmarkRefusedNumberInput(this.inputElement);
   }
 
   componentDidUpdate(prevProps) {
@@ -403,51 +414,67 @@ export class RawWidget extends PureComponent {
    */
   refuseInvalidNumber = ({ property, id, invalidText, isValueToInvalid }) => {
     const { handleChange, handleRestore, filterWidget, range } = this.props;
-    const keptValueText =
-      formatDecimalNumberForEditing(this.state.cachedValue) ?? '';
+    const { cachedValue } = this.state;
+    const keptValueText = formatDecimalNumberForEditing(cachedValue) ?? '';
 
-    if (this.lastRefusedNumberText !== invalidText) {
-      this.lastRefusedNumberText = invalidText;
-
-      const { decimal, thousands } = getSessionNumberDelimiters();
-      const params = {
-        text: invalidText,
-        decimal,
-        grouping: thousands,
-        example: `1${thousands}234${decimal}56`,
-      };
-      store.dispatch(
-        addNotification(
-          counterpart.translate('window.error.invalidNumber.title', {
-            fallback: 'Invalid number',
-          }),
-          counterpart.translate('window.error.invalidNumber.description', {
-            ...params,
-            fallback: `"${invalidText}" was not taken over: the decimal separator is "${decimal}", "${thousands}" is allowed only to group thousands in groups of three (e.g. ${params.example}).`,
-          }),
-          5000,
-          'error'
-        )
-      );
-    }
+    this.notifyRefusedNumber(invalidText);
+    // a form or modal must not go on with the stored value the field shows again, see refusedNumberInputs
+    markRefusedNumberInput(this.inputElement);
 
     if (filterWidget) {
-      // a filter keeps no value for an invalid number, so it gets the shown ends back (it reads them the session way)
+      // a filter keeps no value for an invalid number, so it gets the ends shown before the typing back (read the session way)
       const value = isValueToInvalid
         ? this.getDecimalEditText(false)
-        : keptValueText;
+        : this.textBeforeTyping ?? keptValueText;
       const valueTo = !range
         ? undefined
         : isValueToInvalid
-        ? ''
+        ? this.textToBeforeTyping ?? ''
         : this.getDecimalEditText(true);
       this.setState({ typedText: null, typedTextTo: null });
       handleChange?.(property, value, id, valueTo);
     } else {
-      // the parent (MasterWidget) forgets the typed text too, without becoming `edited` as on a change
       this.setState({ typedText: null, typedTextTo: null, keptValueText });
-      handleRestore?.(property, this.state.cachedValue);
+      if (handleRestore) {
+        // MasterWidget forgets the typed text too, without becoming `edited` as on a change
+        handleRestore(property, cachedValue);
+      } else {
+        handleChange?.(property, cachedValue, id, undefined); // e.g. quick input, which keeps the typed text otherwise
+      }
     }
+    this.textBeforeTyping = null;
+    this.textToBeforeTyping = null;
+  };
+
+  /**
+   * @method notifyRefusedNumber
+   * @summary Tells the user why a typed or pasted number was not taken over - once for the same text
+   */
+  notifyRefusedNumber = (invalidText) => {
+    const { addNotification } = this.props;
+    if (this.lastRefusedNumberText === invalidText) {
+      return;
+    }
+    this.lastRefusedNumberText = invalidText;
+
+    const { decimal, thousands } = getSessionNumberDelimiters();
+    const params = {
+      text: invalidText,
+      decimal,
+      grouping: thousands,
+      example: `1${thousands}234${decimal}56`,
+    };
+    addNotification?.(
+      counterpart.translate('window.error.invalidNumber.title', {
+        fallback: 'Invalid number',
+      }),
+      counterpart.translate('window.error.invalidNumber.description', {
+        ...params,
+        fallback: `"${invalidText}" was not taken over: the decimal separator is "${decimal}", "${thousands}" is allowed only to group thousands in groups of three (e.g. ${params.example}).`,
+      }),
+      5000,
+      'error'
+    );
   };
 
   /**
@@ -492,12 +519,30 @@ export class RawWidget extends PureComponent {
       id,
     } = this.props;
     const { key } = e;
+    this.inputElement = e.target;
 
     const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
     this.updateTypedCharacters(value);
+
+    // an invalid decimal number is refused (see handlePatch) and the field stays where it is: the key must neither close
+    // a table field, nor reach a table row (which would take the typed text), nor submit a form (e.g. quick input)
+    const isInvalidDecimalNumber =
+      isDecimalNumberField(widgetType) &&
+      !(
+        isValidDecimalNumberString(value) && isValidDecimalNumberString(valueTo)
+      );
+    const isSubmitKey =
+      ((key === 'Enter' || key === 'Tab') && !e.shiftKey) ||
+      key === 'ArrowUp' ||
+      key === 'ArrowDown';
+    if (isInvalidDecimalNumber && isSubmitKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      return this.handlePatch(widgetField, value, id, valueTo);
+    }
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
     const NumberWidgets = [
@@ -522,17 +567,6 @@ export class RawWidget extends PureComponent {
         e.preventDefault();
       }
 
-      // an invalid decimal number is refused below: keep the key from a table row, which would take the typed text
-      if (
-        isDecimalNumberField(widgetType) &&
-        !(
-          isValidDecimalNumberString(value) &&
-          isValidDecimalNumberString(valueTo)
-        )
-      ) {
-        e.stopPropagation();
-      }
-
       return key === 'Tab'
         ? this.handleBlur(e)
         : this.handlePatch(widgetField, value, id, valueTo);
@@ -548,9 +582,20 @@ export class RawWidget extends PureComponent {
     const valueToSet = e.target.value;
     if (isDecimalNumberField(widgetType)) {
       if (!isAllowedDecimalNumberInput(valueToSet)) {
-        return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes (and pastes) ourselves
+        // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves - a paste visibly
+        if (e.nativeEvent?.inputType === 'insertFromPaste') {
+          this.notifyRefusedNumber(valueToSet);
+        }
+        return;
+      }
+      if (isValueTo && this.state.typedTextTo === null) {
+        this.textToBeforeTyping = this.getDecimalEditText(true);
+      } else if (!isValueTo && this.state.typedText === null) {
+        this.textBeforeTyping = this.getDecimalEditText(false);
       }
       this.lastRefusedNumberText = null;
+      unmarkRefusedNumberInput(this.inputElement); // typed again: no longer refused
+      this.inputElement = e.target;
       this.setState({
         [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet,
         keptValueText: null,
@@ -577,13 +622,24 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
-      this.props;
+    const {
+      handlePatch,
+      inProgress,
+      widgetType,
+      maxLength,
+      widgetData,
+      filterWidget,
+    } = this.props;
     const { cachedValue } = this.state;
 
     // the user typed the number with the separators of his locale (e.g. '3,57' in German), the backend expects '3.57'
     if (isDecimalNumberField(widgetType)) {
-      if (!isForce && this.isUntouchedDecimalEditText(value, valueTo)) {
+      const isDocumentField = !filterWidget; // a filter applies on patch, also unchanged (e.g. Enter in an inline filter)
+      if (
+        !isForce &&
+        isDocumentField &&
+        this.isUntouchedDecimalEditText(value, valueTo)
+      ) {
         return Promise.resolve(null);
       }
 
@@ -601,6 +657,16 @@ export class RawWidget extends PureComponent {
 
       value = normalizeDecimalNumberString(value);
       valueTo = normalizeDecimalNumberString(valueTo);
+
+      // e.g. '2,50' retyped for a stored 2.5: nothing to patch
+      if (
+        !isForce &&
+        isDocumentField &&
+        valueTo == null &&
+        isSameNumber(value, cachedValue)
+      ) {
+        return Promise.resolve(null);
+      }
     }
 
     const willPatch = shouldPatch({
@@ -1031,6 +1097,7 @@ RawWidget.propTypes = {
   handleProcess: PropTypes.func,
   handleChange: PropTypes.func,
   handleRestore: PropTypes.func,
+  addNotification: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   handleZoomInto: PropTypes.func,
   onShow: PropTypes.func,

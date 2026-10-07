@@ -201,3 +201,32 @@ describe('isValidDecimalNumberString', () => {
     );
   });
 });
+
+describe('grouping rules', () => {
+  it('refuses a first group with a leading zero', () => {
+    ['0.500', '00.500', '0.500,5'].forEach((text) =>
+      expect(isValidDecimalNumberString(text, DE)).toBe(false)
+    );
+    ['0,500', '00,500'].forEach((text) =>
+      expect(isValidDecimalNumberString(text, EN)).toBe(false)
+    );
+    expect(normalizeDecimalNumberString('0,5', DE)).toEqual('0.5');
+  });
+
+  it('refuses blanks that are no grouping, and accepts blanks between groups of three', () => {
+    ['3 57', '1 2', '12 34,5'].forEach((text) =>
+      expect(isValidDecimalNumberString(text, DE)).toBe(false)
+    );
+    expect(normalizeDecimalNumberString('1 234,56', DE)).toEqual('1234.56');
+    expect(normalizeDecimalNumberString('1\u00A0234\u202F567,8', DE)).toEqual('1234567.8');
+    expect(normalizeDecimalNumberString(' 3,57 ', DE)).toEqual('3.57');
+  });
+
+  it("accepts the ASCII apostrophe where the session groups with an apostrophe (de_CH)", () => {
+    const CH = { decimal: '.', thousands: '\u2019' };
+    expect(normalizeDecimalNumberString("1'234.5", CH)).toEqual('1234.5');
+    expect(normalizeDecimalNumberString('1\u2019234.5', CH)).toEqual('1234.5');
+    expect(isAllowedDecimalNumberInput("1'234.5", CH)).toBe(true);
+    expect(isValidDecimalNumberString("1'234.5", DE)).toBe(false);
+  });
+});

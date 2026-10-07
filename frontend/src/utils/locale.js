@@ -102,36 +102,47 @@ export const getSessionNumberDelimiters = () => sessionNumberDelimiters;
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const BLANKS = ' \u00A0\u202F'; // space, no-break space, narrow no-break space
+const APOSTROPHES = "'\u2019"; // ASCII and typographic apostrophe, e.g. de_CH grouping
+
+/** The characters that may group thousands: the session's grouping separator (both apostrophes for an apostrophe), and blanks */
+const getGroupingCharacters = (thousands) =>
+  (APOSTROPHES.includes(thousands) ? APOSTROPHES : thousands) + BLANKS;
+
 /**
- * @summary Reads a number the user typed with the separators of the session locale. Blanks (also no-break and narrow
- *          no-break spaces) are dropped first. Valid are only:
+ * @summary Reads a number the user typed with the separators of the session locale. Valid are only:
  *          - a number with the session's decimal separator: de '3,57', en '3.57';
- *          - a number grouped in valid groups of three digits: de '1.000' / '1.234,56', en '1,000' / '1,234.56'.
- *          So in a German session a dot is a grouping separator only: '3.57' or '1.2' are invalid; English mirrors it.
+ *          - a number grouped in valid groups of three digits: de '1.000' / '1.234,56', en '1,000' / '1,234.56'; a blank
+ *            (also no-break or narrow no-break space) may group too ('1 234,56'), and the first group has no leading zero.
+ *          So in a German session a dot is a grouping separator only: '3.57', '1.2', '0.500' or '3 57' are invalid;
+ *          English mirrors it.
  * @param {string} text the raw text from the input
  * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
  * @returns {string|null} the dot-decimal number the backend expects, '' when the text holds no digit (e.g. '-'),
  *          or null when the text is no valid number
  */
+
 const parseDecimalNumberString = (text, delimiters) => {
   const { decimal, thousands } = delimiters;
-  const compact = text.replace(/\s/g, '');
-  const sign = compact.startsWith('-') ? '-' : '';
-  const unsigned = compact.substring(sign.length);
+  const trimmed = text.trim();
+  const sign = trimmed.startsWith('-') ? '-' : '';
+  const unsigned = trimmed.substring(sign.length);
   const decimalPattern = escapeRegExp(decimal);
-  const isBlankGrouping = /^\s$/.test(thousands); // already dropped with the blanks
+  const groupingClass = `[${escapeRegExp(getGroupingCharacters(thousands))}]`;
 
-  if (!/[0-9]/.test(compact)) {
+  if (!/[0-9]/.test(trimmed)) {
     return ''; // e.g. a lone '-' or ',': nothing typed yet
   } else if (new RegExp(`^\\d*(${decimalPattern}\\d*)?$`).test(unsigned)) {
     return sign + unsigned.replace(decimal, '.');
   } else if (
-    !isBlankGrouping &&
     new RegExp(
-      `^\\d{1,3}(${escapeRegExp(thousands)}\\d{3})+(${decimalPattern}\\d*)?$`
+      `^[1-9]\\d{0,2}(${groupingClass}\\d{3})+(${decimalPattern}\\d*)?$`
     ).test(unsigned)
   ) {
-    return sign + unsigned.split(thousands).join('').replace(decimal, '.');
+    return (
+      sign +
+      unsigned.replace(new RegExp(groupingClass, 'g'), '').replace(decimal, '.')
+    );
   } else {
     return null;
   }
@@ -206,7 +217,7 @@ export function isAllowedDecimalNumberInput(
     '.',
     ',',
     delimiters.decimal,
-    delimiters.thousands,
+    ...getGroupingCharacters(delimiters.thousands),
   ];
   const compact = (text ?? '').replace(/\s/g, '');
   return [...compact].every(

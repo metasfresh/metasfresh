@@ -17,6 +17,13 @@ import quickInputData
 import ConnectedTableQuickInput, {
   TableQuickInput
 } from '../../../components/table/TableQuickInput';
+import { markRefusedNumberInput } from '../../../utils/refusedNumberInputs';
+import { completeQuickInput } from '../../../actions/TableQuickInputActions';
+
+jest.mock('../../../actions/TableQuickInputActions', () => ({
+  ...jest.requireActual('../../../actions/TableQuickInputActions'),
+  completeQuickInput: jest.fn(() => Promise.resolve()),
+}));
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -103,5 +110,29 @@ describe('TableQuickInput', () => {
     );
 
     expect(wrapper.find('.hint').text()).toBe(`(Press 'Enter' to add)`);
+  });
+
+  it('does not add a line while a field holds a refused number', async () => {
+    const form = document.createElement('form');
+    const qtyInput = document.createElement('input');
+    form.appendChild(qtyInput);
+    document.body.appendChild(form);
+    markRefusedNumberInput(qtyInput); // e.g. '3.57' typed into the quantity in a German session
+
+    // all mandatory fields filled, so only the refused number can stop the submit
+    const data = Object.fromEntries(
+      Object.entries(initialProps.data).map(([name, field]) => [name, { ...field, mandatory: false }])
+    );
+    const wrapper = shallow(<TableQuickInput {...initialProps} data={data} />);
+    const instance = wrapper.instance();
+    instance.patchPromise = Promise.resolve();
+    const preventDefault = jest.fn();
+
+    await instance.onSubmit({ preventDefault, currentTarget: form });
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(wrapper.state('isSubmitPending')).toBeFalsy();
+    expect(completeQuickInput).not.toHaveBeenCalled();
+    form.remove();
   });
 });

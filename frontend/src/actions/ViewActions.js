@@ -660,7 +660,9 @@ export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
           const message = error.message ?? '';
           dispatch(
             addNotification(
-              'Error: ' + message.split(' ', 4).join(' ') + '...',
+              message
+                ? 'Error: ' + message.split(' ', 4).join(' ') + '...'
+                : 'Error',
               message,
               5000,
               'error'

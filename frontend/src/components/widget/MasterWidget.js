@@ -239,21 +239,23 @@ class MasterWidget extends PureComponent {
       disconnected,
     } = this.props;
 
-    this.setState({ edited: false, value: storedValue }, () => {
-      updatePropertyValue({
-        windowId,
-        docId: dataId,
-        property,
-        value: storedValue,
-        tabId,
-        rowId: rowId === 'NEW' ? relativeDocId : rowId,
-        isModal,
-        entity,
-        tableId: getTableId({ windowId, docId: dataId, tabId, viewId }),
-        disconnected,
-        action: 'change',
-      });
+    // the store first: the widget may be gone right after, e.g. when a table field is closed
+    updatePropertyValue({
+      windowId,
+      docId: dataId,
+      property,
+      value: storedValue,
+      tabId,
+      rowId: rowId === 'NEW' ? relativeDocId : rowId,
+      isModal,
+      entity,
+      tableId: getTableId({ windowId, docId: dataId, tabId, viewId }),
+      disconnected,
+      action: 'change',
     });
+    if (this.mounted) {
+      this.setState({ edited: false, value: storedValue });
+    }
   };
 
   /**

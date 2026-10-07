@@ -647,6 +647,16 @@ describe('patchViewAction', () => {
     expect(notifications(store)).toHaveLength(1);
   });
 
+  it('shows an error without a message with a plain title', async () => {
+    const store = mockStore(createStore());
+    replyWithRow({ id: rowId, fieldsByName: {}, error: { message: null } });
+
+    await patchDiscount(store);
+
+    expect(notifications(store)).toHaveLength(1);
+    expect(notifications(store)[0].title).toEqual('Error');
+  });
+
   it('shows nothing when the row edit succeeded', async () => {
     const store = mockStore(createStore());
     replyWithRow({ id: rowId, fieldsByName: {} });

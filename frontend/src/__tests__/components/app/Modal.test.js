@@ -25,6 +25,13 @@ import processResponses
   from '../../../../test_setup/fixtures/process/responses.json'
 
 import thunk from 'redux-thunk';
+import { startProcess } from '../../../api/process';
+import { markRefusedNumberInput } from '../../../utils/refusedNumberInputs';
+
+jest.mock('../../../api/process', () => ({
+  ...jest.requireActual('../../../api/process'),
+  startProcess: jest.fn(() => Promise.resolve({ data: {} })),
+}));
 
 const mockStore = configureStore([thunk]);
 
@@ -115,5 +122,27 @@ describe('Modal test', () => {
     { attachTo: document.getElementById('container') });
 
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  it('does not start the process while a parameter holds a refused number', async () => {
+    const store = mockStore(getInitialState());
+    const modal = new DisconnectedModal({
+      ...fixtures,
+      dispatch: store.dispatch,
+      layout: { pinstanceId: '123' },
+      indicator: 'saved',
+    });
+    modal.setState = (state, callback) => callback && callback(); // not rendered: only the start decision matters
+    const modalContent = document.createElement('div');
+    const parameterInput = document.createElement('input');
+    modalContent.appendChild(parameterInput);
+    document.body.appendChild(modalContent);
+    modal.modalContentElement = modalContent;
+    markRefusedNumberInput(parameterInput); // e.g. '3.57' typed into an amount parameter in a German session
+
+    await modal.handleStart();
+
+    expect(startProcess).not.toHaveBeenCalled();
+    modalContent.remove();
   });
 });

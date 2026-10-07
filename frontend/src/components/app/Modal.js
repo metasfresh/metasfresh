@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
+import { hasRefusedNumberInput } from '../../utils/refusedNumberInputs';
 import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
@@ -489,6 +490,12 @@ class Modal extends Component {
   handleStart = () => {
     const { dispatch, layout, windowId, indicator, parentId } = this.props;
 
+    // a number the user typed into a parameter was refused (see RawWidget): the parameter shows its stored value
+    // again, which must not be taken as the user's input
+    if (hasRefusedNumberInput(this.modalContentElement)) {
+      return;
+    }
+
     if (indicator === IndicatorState.PENDING) {
       this.setState({ waitingFetch: true, pending: true });
       return;
@@ -782,6 +789,7 @@ class Modal extends Component {
           <div
             className="panel-modal-content container-fluid"
             ref={(c) => {
+              this.modalContentElement = c;
               // Focus the modal wrapper only if nothing inside it is already
               // focused. SectionGroup.requestElementGroupFocus normally places
               // focus on the first editable input during mount; this ref
