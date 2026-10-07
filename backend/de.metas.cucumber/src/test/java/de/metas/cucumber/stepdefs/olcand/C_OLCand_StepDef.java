@@ -235,6 +235,37 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Changes an already-loaded {@code C_OLCand} like a user would in the window and saves it (which triggers the candidate's validation).
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to update<br>
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OLCand:
+	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier |
+	 *   | olCand                 | huItemProduct                                    |
+	 * </pre>
+	 */
+	@And("update C_OLCand:")
+	public void update_C_OLCand(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final de.metas.handlingunits.model.I_C_OLCand olCand = InterfaceWrapperHelper.create(
+					row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupIn(olCandTable),
+					de.metas.handlingunits.model.I_C_OLCand.class);
+			InterfaceWrapperHelper.refresh(olCand);
+
+			row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+					.map(id -> id.lookupIn(huItemProductTable))
+					.ifPresent(huPIItemProduct -> olCand.setM_HU_PI_Item_Product_Override_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID()));
+
+			InterfaceWrapperHelper.saveRecord(olCand);
+		});
+	}
+
 	@And("validate C_OLCand is with error")
 	public void validate_C_OLCand_has_error(@NonNull final DataTable dataTable)
 	{

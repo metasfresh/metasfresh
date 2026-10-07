@@ -125,6 +125,8 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			throw new AdempiereException(ERR_MISSING_PRODUCT);
 		}
 
+		updateManualQtyItemCapacityIfPackingInstructionChanged(olCand);
+
 		validateAndSetPriceInformation(olCand);
 
 		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
@@ -302,9 +304,27 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	}
 
 	/**
-	 * Also decides {@code IsManualQtyItemCapacity} from the new packing instruction:
-	 * the model interceptor that normally does that on a packing-instruction change has already run before this validation,
-	 * so without this a candidate created without packing instruction keeps {@code IsManualQtyItemCapacity='Y'} and fails with {@link #ERR_ITEM_CAPACITY_NOT_FOUND}.
+	 * {@code IsManualQtyItemCapacity} follows the effective packing instruction: {@code 'Y'} iff it gives no finite TU capacity (none, virtual or infinite),
+	 * so that the candidate's own {@code QtyItemCapacity} is used. Decided whenever the candidate is new or its packing instruction (or override) was changed
+	 * in this save - by the creator, the user, or an earlier validator - so a value set manually in between is kept.
+	 */
+	private void updateManualQtyItemCapacityIfPackingInstructionChanged(@NonNull final I_C_OLCand olCand)
+	{
+		if (InterfaceWrapperHelper.isNew(olCand)
+				|| InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_Override_ID))
+		{
+			updateManualQtyItemCapacity(olCand);
+		}
+	}
+
+	private void updateManualQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+	{
+		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
+	}
+
+	/**
+	 * Also decides {@code IsManualQtyItemCapacity} from the packing instruction taken from the price,
+	 * because {@link #updateManualQtyItemCapacityIfPackingInstructionChanged(I_C_OLCand)} ran before it was assigned.
 	 */
 	private void setPackingInstructionFromPricing(@NonNull final I_C_OLCand olCand, @NonNull final IPricingResult pricingResult)
 	{
@@ -314,7 +334,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			return;
 		}
 		olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(packingInstructionId));
-		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
+		updateManualQtyItemCapacity(olCand);
 	}
 
 	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)
