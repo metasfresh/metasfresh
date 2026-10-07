@@ -30,7 +30,28 @@ export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
 const CAPTURE_HOLD_MS = 500;
 export const holdForCaptureIfEnabled = async () => {
     if (!UAT_CAPTURE || page == null) return;
-    await page.waitForTimeout(CAPTURE_HOLD_MS);
+    // NOT a plain waitForTimeout(): the recorder only receives a frame when the page repaints, and a screen
+    // that has just turned static can reach it only with the next repaint — after the hold. Measured on the
+    // LU target list: no frame arrived during the whole 500 ms hold, so the list was in no recorded frame.
+    // Repaint an invisible pixel on every animation frame while holding, so the held screen is recorded.
+    await page.evaluate((holdMs) => new Promise((resolve) => {
+        const marker = document.createElement('div');
+        marker.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none';
+        document.body.appendChild(marker);
+        const end = performance.now() + holdMs;
+        let toggle = false;
+        const repaint = () => {
+            toggle = !toggle;
+            marker.style.backgroundColor = toggle ? '#000' : '#fff';
+            if (performance.now() < end) {
+                requestAnimationFrame(repaint);
+            } else {
+                marker.remove();
+                resolve();
+            }
+        };
+        requestAnimationFrame(repaint);
+    }), CAPTURE_HOLD_MS);
 };
 
 // Bring an element the test is asserting on into the recorded viewport, then hold it there. Playwright's
