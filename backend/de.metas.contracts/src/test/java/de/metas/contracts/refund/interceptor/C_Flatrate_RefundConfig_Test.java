@@ -52,6 +52,18 @@ public class C_Flatrate_RefundConfig_Test
 		saveRecord(schedule);
 	}
 
+	/** saving a refund line with a monthly schedule whose distance does not divide the year (refund periods are calendar periods) is rejected */
+	@Test
+	public void assertValid_monthlyScheduleOfFiveMonths_fails()
+	{
+		schedule.setInvoiceDistance(5);
+		saveRecord(schedule);
+
+		assertThatThrownBy(() -> interceptor.assertValid(createConfig(0, 40, 41)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message()));
+	}
+
 	/** A config of a product category does not need a product: it applies to every product of the category. */
 	@Test
 	public void assertValid_categoryWithBonusProduct_withoutProduct_isValid()

@@ -245,7 +245,7 @@ public class RefundConfigRepositoryTest
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
 		invoiceScheduleRecord.setInvoiceDay(1);
-		invoiceScheduleRecord.setInvoiceDistance(5);
+		invoiceScheduleRecord.setInvoiceDistance(3); // quarterly: refund periods are calendar periods, so a monthly distance has to divide the year
 		saveRecord(invoiceScheduleRecord);
 		return invoiceScheduleRecord;
 	}

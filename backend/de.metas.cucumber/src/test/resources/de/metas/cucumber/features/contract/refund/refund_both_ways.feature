@@ -128,7 +128,7 @@ Feature: Refund contracts on the sales and on the purchase side
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:refundBothWays_TC2
-  Scenario Outline: The refund candidate of a term is invoiceable at the end of its first period, counted from the start date: <months> months
+  Scenario Outline: The refund candidate of a term is invoiceable at the end of its calendar period: <months> months
     Given metasfresh contains C_BPartners:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | quarterBP  | Y              | refundPS                      | I               |
@@ -163,4 +163,55 @@ Feature: Refund contracts on the sales and on the purchase side
       | months | end of period |
       | 3      | 2026-09-30    |
       | 6      | 2026-12-31    |
-      | 12     | 2027-06-30    |
+      | 12     | 2026-12-31    |
+
+  # ##############################################################################################
+  # A term starting in the middle of a quarter: its first, short period ends with the calendar period
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:refundBothWays_TC3
+  Scenario Outline: A term starting mid-quarter refunds its first sales at the end of the calendar period: <months> months
+    Given metasfresh has date and time 2026-08-20T09:00:00+02:00[Europe/Berlin]
+    And metasfresh contains C_BPartners:
+      | Identifier  | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | midPeriodBP | Y              | refundPS                      | I               |
+    # invoice day 30, like the seeded schedules: the refund period still ends on the calendar period's last day
+    And metasfresh contains C_InvoiceSchedules:
+      | Identifier     | InvoiceDay | InvoiceDistance |
+      | periodSchedule | 30         | <months>        |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier | Type_Conditions |
+      | condMid    | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
+      | cfgMid     | condMid                  | periodSchedule       | 10            | goodsCategory         | bonusWare        |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termMid    | condMid                             | midPeriodBP                 | 2026-08-15 | 2027-12-31 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | midPeriodBP              | 2026-08-20  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | line1      | order1                | goodsProduct            | 10         |
+    And the order identified by order1 is completed
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | line1          | ic1                    |
+
+    # the short first period runs from the start date (15.08) to the end of its calendar period
+    Then after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DateToInvoice   |
+      | refundIC               | termMid            | 100             | <end of period> |
+    And after not more than 60s, C_Invoice_Candidate_Assignments are found:
+      | C_Invoice_Candidate_Term_ID | C_Invoice_Candidate_Assigned_ID | C_Flatrate_Term_ID | AssignedMoneyAmount |
+      | refundIC                    | ic1                             | termMid            | 100                 |
+
+    Examples:
+      | months | end of period |
+      | 3      | 2026-09-30    |
+      | 6      | 2026-12-31    |
+      | 12     | 2026-12-31    |

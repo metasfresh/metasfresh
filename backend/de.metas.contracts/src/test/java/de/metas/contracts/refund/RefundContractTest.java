@@ -4,10 +4,12 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -142,35 +144,136 @@ public class RefundContractTest
 		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2027, 1, 15)).getDateToInvoice()).isEqualTo(LocalDate.of(2027, 3, 31));
 	}
 
-	/** the period ends of a monthly schedule with invoice day 31 start from the anchor; the short month only clamps its own end */
+	/** monthly-based refund periods are calendar periods: quarters, half-years and years end on 31.03, 30.06, 30.09, 31.12 / 30.06, 31.12 / 31.12 */
 	@Test
-	public void computeNextInvoiceDate_multiMonthEndOfMonthSchedule_startingInAugust()
+	public void computeNextInvoiceDate_multiMonthSchedule_startingInAugust()
 	{
-		assertPeriodEnds(31, 3, "2026-08-01", "2026-10-31", "2027-01-31", "2027-04-30", "2027-07-31");
-		assertPeriodEnds(31, 6, "2026-08-01", "2027-01-31", "2027-07-31", "2028-01-31");
-		assertPeriodEnds(31, 12, "2026-08-01", "2027-07-31", "2028-07-31");
+		assertPeriodEnds(31, 3, "2026-08-01", "2026-09-30", "2026-12-31", "2027-03-31", "2027-06-30");
+		assertPeriodEnds(31, 6, "2026-08-01", "2026-12-31", "2027-06-30", "2027-12-31");
+		assertPeriodEnds(31, 12, "2026-08-01", "2026-12-31", "2027-12-31");
 	}
 
 	@Test
-	public void computeNextInvoiceDate_multiMonthEndOfMonthSchedule_startingInNovember()
+	public void computeNextInvoiceDate_multiMonthSchedule_startingInNovember()
 	{
-		assertPeriodEnds(31, 3, "2026-11-01", "2027-01-31", "2027-04-30", "2027-07-31");
-		assertPeriodEnds(31, 6, "2026-11-01", "2027-04-30", "2027-10-31");
-		assertPeriodEnds(31, 12, "2026-11-01", "2027-10-31", "2028-10-31");
+		assertPeriodEnds(31, 3, "2026-11-01", "2026-12-31", "2027-03-31", "2027-06-30");
+		assertPeriodEnds(31, 6, "2026-11-01", "2026-12-31", "2027-06-30");
+		assertPeriodEnds(31, 12, "2026-11-01", "2026-12-31", "2027-12-31");
 	}
 
 	@Test
 	public void computeNextInvoiceDate_periodEndInALeapYearFebruary()
 	{
-		assertPeriodEnds(31, 3, "2027-12-01", "2028-02-29", "2028-05-31");
-		assertPeriodEnds(31, 12, "2027-03-01", "2028-02-29", "2029-02-28");
+		assertPeriodEnds(31, 1, "2028-02-01", "2028-02-29", "2028-03-31");
+		assertPeriodEnds(31, 3, "2027-12-01", "2027-12-31", "2028-03-31");
+		assertPeriodEnds(31, 12, "2027-03-01", "2027-12-31", "2028-12-31");
+	}
+
+	/** the invoice day of the schedule does not move the end of a refund period: it is the calendar period's last day */
+	@Test
+	public void computeNextInvoiceDate_invoiceDayIsIgnored()
+	{
+		assertPeriodEnds(15, 1, "2026-08-01", "2026-08-31", "2026-09-30", "2026-10-31");
+		assertPeriodEnds(15, 3, "2026-08-01", "2026-09-30", "2026-12-31", "2027-03-31");
+	}
+
+	/** a contract starting mid-quarter has a short first period up to the quarter's end, then calendar quarters */
+	@Test
+	public void calendarPeriods_quarterly_startingMidQuarter()
+	{
+		assertPeriods(31, 3, "2026-03-15",
+				"2026-03-15/2026-03-31", "2026-04-01/2026-06-30", "2026-07-01/2026-09-30", "2026-10-01/2026-12-31", "2027-01-01/2027-03-31");
 	}
 
 	@Test
-	public void computeNextInvoiceDate_midMonthInvoiceDay()
+	public void calendarPeriods_halfYearly_startingMidQuarter()
 	{
-		assertPeriodEnds(15, 1, "2026-08-01", "2026-08-15", "2026-09-15", "2026-10-15");
-		assertPeriodEnds(15, 3, "2026-08-01", "2026-10-15", "2027-01-15", "2027-04-15");
+		assertPeriods(31, 6, "2026-03-15", "2026-03-15/2026-06-30", "2026-07-01/2026-12-31", "2027-01-01/2027-06-30");
+	}
+
+	@Test
+	public void calendarPeriods_yearly_startingMidQuarter()
+	{
+		assertPeriods(31, 12, "2026-03-15", "2026-03-15/2026-12-31", "2027-01-01/2027-12-31");
+	}
+
+	@Test
+	public void calendarPeriods_monthly_startingMidMonth()
+	{
+		assertPeriods(31, 1, "2026-01-20", "2026-01-20/2026-01-31", "2026-02-01/2026-02-28", "2026-03-01/2026-03-31");
+	}
+
+	/**
+	 * A sale on the last day of a month belongs to the period that ends that day, also with a schedule whose invoice day is the 30th
+	 * (like the seeded schedules "quartalsweise", "halbjährlich", "jährlich").
+	 */
+	@Test
+	public void computeNextInvoiceDate_saleOnTheLastDayOfTheCalendarPeriod()
+	{
+		final RefundContract quarterly = contractWithSchedule(30, 3, LocalDate.of(2026, 1, 1));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 3, 31)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 12, 31)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 12, 31));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2027, 1, 1)).getDateToInvoice()).isEqualTo(LocalDate.of(2027, 3, 31));
+
+		final RefundContract yearly = contractWithSchedule(30, 12, LocalDate.of(2026, 1, 1));
+		assertThat(yearly.computeNextInvoiceDate(LocalDate.of(2026, 12, 31)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 12, 31));
+	}
+
+	/** before the contract's start, the first period is the one asked for: it starts with the contract */
+	@Test
+	public void calendarPeriods_dateBeforeTheStart()
+	{
+		final RefundContract contract = contractWithSchedule(31, 3, LocalDate.of(2026, 3, 15));
+		assertThat(contract.computeNextInvoiceDate(LocalDate.of(2026, 1, 10)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(contract.computeCurrentPeriodStart(LocalDate.of(2026, 1, 10))).isEqualTo(LocalDate.of(2026, 3, 15));
+	}
+
+	/**
+	 * The distance of a monthly schedule is only checked when a refund line is saved; a shared C_InvoiceSchedule edited afterwards
+	 * to a distance that does not divide the year would give overlapping or shifted periods, so the period computation refuses it.
+	 */
+	@Test
+	public void calendarPeriods_distanceThatDoesNotDivideTheYear_fails()
+	{
+		final RefundContract contract = contractWithSchedule(31, 5, LocalDate.of(2026, 1, 1));
+
+		assertThatThrownBy(() -> contract.computeNextInvoiceDate(LocalDate.of(2026, 7, 10)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_InvoiceSchedule_ID")
+				.satisfies(e -> assertThat(((AdempiereException)e).isUserValidationError()).isTrue())
+				.satisfies(e -> assertThat(((AdempiereException)e).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message()));
+		assertThatThrownBy(() -> contract.computeCurrentPeriodStart(LocalDate.of(2026, 7, 10)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(e -> assertThat(((AdempiereException)e).getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message()));
+	}
+
+	/** the last period ends on its calendar end, not on the term's end date (approved default) */
+	@Test
+	public void calendarPeriods_lastPeriodEndsOnItsCalendarEnd_notOnTheTermEnd()
+	{
+		final RefundContract quarterly = contractWithSchedule(Frequency.MONTLY, 3, null, 31, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 14));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 3, 10)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(quarterly.computeNextInvoiceDate(LocalDate.of(2026, 3, 14)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+
+		final RefundContract monthly = contractWithSchedule(Frequency.MONTLY, 1, null, 31, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 14));
+		assertThat(monthly.computeNextInvoiceDate(LocalDate.of(2026, 3, 14)).getDateToInvoice()).isEqualTo(LocalDate.of(2026, 3, 31));
+		assertThat(monthly.computeCurrentPeriodStart(LocalDate.of(2026, 3, 14))).isEqualTo(LocalDate.of(2026, 3, 1));
+	}
+
+	/** asserts each period ("start/end") through both its start and its end, and through a day in between */
+	private void assertPeriods(final int invoiceDayOfMonth, final int invoiceDistance, final String startDate, final String... expectedPeriods)
+	{
+		final RefundContract contract = contractWithSchedule(invoiceDayOfMonth, invoiceDistance, LocalDate.parse(startDate));
+		for (final String expectedPeriod : expectedPeriods)
+		{
+			final LocalDate periodStart = LocalDate.parse(expectedPeriod.split("/")[0]);
+			final LocalDate periodEnd = LocalDate.parse(expectedPeriod.split("/")[1]);
+			for (final LocalDate day : new LocalDate[] { periodStart, periodStart.plusDays((periodEnd.toEpochDay() - periodStart.toEpochDay()) / 2), periodEnd })
+			{
+				assertThat(contract.computeNextInvoiceDate(day).getDateToInvoice()).as("end of the period containing %s", day).isEqualTo(periodEnd);
+				assertThat(contract.computeCurrentPeriodStart(day)).as("start of the period containing %s", day).isEqualTo(periodStart);
+			}
+		}
 	}
 
 	private void assertPeriodEnds(final int invoiceDayOfMonth, final int invoiceDistance, final String startDate, final String... expectedPeriodEnds)
@@ -227,6 +330,11 @@ public class RefundContractTest
 
 	private RefundContract contractWithSchedule(final Frequency frequency, final int invoiceDistance, final java.time.DayOfWeek dayOfWeek, final int invoiceDayOfMonth, final LocalDate startDate)
 	{
+		return contractWithSchedule(frequency, invoiceDistance, dayOfWeek, invoiceDayOfMonth, startDate, startDate.plusYears(3));
+	}
+
+	private RefundContract contractWithSchedule(final Frequency frequency, final int invoiceDistance, final java.time.DayOfWeek dayOfWeek, final int invoiceDayOfMonth, final LocalDate startDate, final LocalDate endDate)
+	{
 		final InvoiceSchedule schedule = InvoiceSchedule.builder()
 				.id(InvoiceScheduleId.ofRepoId(6))
 				.frequency(frequency)
@@ -239,7 +347,7 @@ public class RefundContractTest
 				.id(FlatrateTermId.ofRepoId(101))
 				.bPartnerId(BPartnerId.ofRepoId(200))
 				.startDate(startDate)
-				.endDate(startDate.plusYears(3))
+				.endDate(endDate)
 				.refundConfig(refundConfig1.toBuilder().invoiceSchedule(schedule).build())
 				.build();
 	}

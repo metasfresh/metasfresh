@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -116,17 +115,20 @@ public class RefundTestTools
 	// because otherwise the refund candidate we create in here is not found to be a match when searched for via ASSIGNABLE_CANDIDATE_INVOICE_DATE
 	// note that we also need to make sure to have 1 as the min number
 	@VisibleForTesting
-	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth();
+	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth(ASSIGNABLE_CANDIDATE_INVOICE_DATE);
 
+	/**
+	 * A fixed day in the middle of a month (and of a quarter), so that the fixtures' calendar refund periods do not depend on the day the tests run:
+	 * the refund candidate's day after it and the contract's days around it stay in the same month.
+	 */
 	private static LocalDate computeAssignableCandidateInvoiceDate()
 	{
-		return SystemTime.asLocalDate();
+		return LocalDate.of(2026, 8, 12);
 	}
 
 	@VisibleForTesting
-	static int computeInvoiceScheduleDayOfMonth()
+	static int computeInvoiceScheduleDayOfMonth(@NonNull final LocalDate assignableCandidateInvoiceDate)
 	{
-		final LocalDate assignableCandidateInvoiceDate = computeAssignableCandidateInvoiceDate();
 		final LocalDate refundCandidateInvoiceDate = computeRefundCandidateInvoiceDate(assignableCandidateInvoiceDate);
 
 		return ((refundCandidateInvoiceDate.getDayOfMonth() + 4) % 28) + 1;

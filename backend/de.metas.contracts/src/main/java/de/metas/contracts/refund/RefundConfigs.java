@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -58,6 +60,7 @@ public class RefundConfigs
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentSingleLine");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
+	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
@@ -193,6 +196,31 @@ public class RefundConfigs
 			return null;
 		}
 		return singleElement(productIds);
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods (see {@link RefundContract#computeNextInvoiceDate}),
+	 * so the schedule's distance has to divide the year: 1, 2, 3, 4, 6 or 12 months. Checked when a refund line is saved.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final RefundConfig refundConfig)
+	{
+		assertInvoiceDistanceDividesTheYear(refundConfig.getInvoiceSchedule());
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods, so the schedule's distance has to divide the year.
+	 * Checked when a refund line is saved, and again where the periods are computed, because the (shared) schedule can be changed later.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final InvoiceSchedule invoiceSchedule)
+	{
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()) && 12 % invoiceSchedule.getInvoiceDistance() != 0)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE)
+					.markAsUserValidationError()
+					.setParameter("C_InvoiceSchedule_ID", invoiceSchedule.getId())
+					.setParameter("InvoiceDistance", invoiceSchedule.getInvoiceDistance())
+					.appendParametersToMessage();
+		}
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)

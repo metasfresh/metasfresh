@@ -96,6 +96,7 @@ public class C_Flatrate_RefundConfig
 
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
 		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
+		RefundConfigs.assertInvoiceDistanceDividesTheYear(newRefundConfig);
 
 		if (!configRecord.isActive())
 		{
