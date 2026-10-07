@@ -927,3 +927,177 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_reis | reis         | 200            | null                                   | null                                        | null                                       |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # Existing order lines keep their calibration when the rule or the order's customer changes
+  @from:cucumber
+  @Id:S26881_TC13_ExistingLinesUnchanged
+  Scenario: A changed rule factor and a changed customer leave the lines of a draft order as they are
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name         |
+      | schema_1   | CalibExisting |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | r10        | 10    | cust_x        | 0.5                                |
+      | r20        | 20    | cust_y        | 0.8                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | location_y | 0130456809028 | cust_y        | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_x    | true    | cust_x        | 2026-10-07  |
+    And create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_x    | schema_1                      | 1   | Y          | Product         |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
+
+    # the rule's factor is changed
+    When update C_CompensationGroup_CalibrationRule:
+      | Identifier | GroupCompensationCalibrationFactor |
+      | r10        | 0.9                                |
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | order_x    | schema_ol_reis | reis         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
+
+    # the order's customer is changed to one with another rule, together with its location
+    When update order
+      | C_Order_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | order_x    | cust_y        | location_y             |
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | order_x    | schema_ol_reis | reis         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # A copied order keeps the lines' quantity, factor and rule, without a new match
+  @from:cucumber
+  @Id:S26881_TC13_CopiedOrder
+  Scenario: A copied order keeps the calibration of the original lines although the rule has changed
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name       |
+      | schema_1   | CalibCopy  |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | r10        | 10    | cust_x        | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_x    | true    | cust_x        | 2026-10-07  |
+    And create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_x    | schema_1                      | 1   | Y          | Product         |
+    And update C_CompensationGroup_CalibrationRule:
+      | Identifier | GroupCompensationCalibrationFactor |
+      | r10        | 0.9                                |
+
+    When C_Order is cloned
+      | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
+      | order_x               | order_copy                        |
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | order_copy | copy_ol_reis   | reis         |
+    # the copy takes over 100 / 0.5 / 200 / r10, not the 180 a new match with the changed rule would give
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | copy_ol_reis   | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # A sales order created from a calibrated quotation keeps the lines' quantity, factor and rule
+  @from:cucumber
+  @Id:S26881_TC13_SalesOrderFromQuotation
+  Scenario: A sales order created from a calibrated quotation keeps the calibration of the quotation lines
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name        |
+      | schema_1   | CalibQuote  |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | r10        | 10    | cust_x        | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType |
+      | quote_x    | true    | cust_x        | 2026-10-07  | SOO         | ON         |
+    And create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | quote_x    | schema_1                      | 1   | Y          | Product         |
+    And the order identified by quote_x is completed
+    And update C_CompensationGroup_CalibrationRule:
+      | Identifier | GroupCompensationCalibrationFactor |
+      | r10        | 0.9                                |
+
+    When sales order is created from proposal:
+      | C_Order_ID | SalesOrder.C_Order_ID |
+      | quote_x    | order_x               |
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | order_x    | order_ol_reis  | reis         |
+    # 100 / 0.5 / 200 / r10 as quoted, not the 180 a new match with the changed rule would give
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | order_ol_reis  | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # The action grouping existing lines by product category is not calibrated
+  @from:cucumber
+  @Id:S26881_TC13_MultiGroupsProcess
+  Scenario: Grouping order lines by the schema of their product category adds uncalibrated template lines
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name           |
+      | schema_1   | CalibMultiGrp  |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
+    And metasfresh contains M_Product_Category:
+      | Identifier | Name         | Value         |
+      | cat_menu   | CalibMenuCat | CalibMenuCat1 |
+    And update M_Product_Category:
+      | M_Product_Category_ID | OPT.C_CompensationGroup_Schema_ID |
+      | cat_menu              | schema_1                          |
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 | IsStocked | OPT.M_Product_Category_ID.Identifier |
+      | menu_a     | PCE      | false     | cat_menu                             |
+      | menu_b     | PCE      | false     | cat_menu                             |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
+      | pp_menu_a  | plv_sales              | menu_a       | 1        | Normal                        | PCE               |
+      | pp_menu_b  | plv_sales              | menu_b       | 1        | Normal                        | PCE               |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | r10        | 10    | cust_x        | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_x    | true    | cust_x        | 2026-10-07  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_menu_a  | order_x    | menu_a       | 1          |
+      | ol_menu_b  | order_x    | menu_b       | 1          |
+
+    When the AD_Process with value 'C_Order_CreateCompensationMultiGroups' is run on the record identified by 'order_x' with the selected included records 'ol_menu_a,ol_menu_b'
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | order_x    | ol_reis        | reis         |
+    # a rule matches the customer, yet the template line has today's quantity and no calibration
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | ol_reis        | reis         | 200            | null                                   | null                                        | null                                       |

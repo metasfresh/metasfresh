@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.process;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -36,6 +38,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -117,6 +120,36 @@ public class AD_Process_Run_StepDef
 					.setWhereClause(DB.buildSqlList(tableName + "_ID", recordRefSet.toIntSet()));
 		}
 		executeProcess(processInfo);
+	}
+
+	/**
+	 * Runs the {@code AD_Process} identified by its {@code Value} on a window record together with the rows
+	 * the user selected in one of its included tabs (e.g. a document and the selected lines of its line tab),
+	 * for a process reading them via {@code JavaProcess#getSelectedIncludedRecords(Class)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the AD_Process with value 'C_Order_CreateCompensationMultiGroups' is run on the record identified by 'order_1' with the selected included records 'ol_1,ol_2'
+	 * </pre>
+	 *
+	 * @param processValue the {@code AD_Process.Value}
+	 * @param recordIdentifier identifier of the window record the process runs against
+	 * @param commaSeparatedIncludedIdentifiers identifiers of the selected rows of the included tab
+	 */
+	@When("the AD_Process with value {string} is run on the record identified by {string} with the selected included records {string}")
+	public void run_ad_process_on_record_with_selected_included_records(
+			@NonNull final String processValue,
+			@NonNull final String recordIdentifier,
+			@NonNull final String commaSeparatedIncludedIdentifiers)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+		final ImmutableSet<TableRecordReference> includedRecordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIncludedIdentifiers);
+		assertThat(includedRecordRefs).as("records identified by `%s`", commaSeparatedIncludedIdentifiers).isNotEmpty();
+
+		executeProcess(newProcessInfoBuilder(processValue)
+				.setRecord(recordRef)
+				.setSelectedIncludedRecords(includedRecordRefs));
 	}
 
 	/**

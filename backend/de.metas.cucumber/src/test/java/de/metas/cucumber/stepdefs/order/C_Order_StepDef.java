@@ -72,6 +72,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
+import de.metas.order.process.C_Order_CreateFromProposal;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -1030,6 +1031,12 @@ public class C_Order_StepDef
 			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		}
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerIdentifier -> bpartnerIdentifier.lookupNotNullIn(bpartnerTable))
+				.ifPresent(bpartner -> order.setC_BPartner_ID(bpartner.getC_BPartner_ID()));
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsReprintOrderCheckup)
 				.ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
@@ -1402,6 +1409,62 @@ public class C_Order_StepDef
 
 			assertThat(orderLine).isPresent();
 		}
+	}
+
+	/**
+	 * Runs the order window's "create sales order from proposal / quotation" action ({@code C_Order_CreateFromProposal})
+	 * on a completed quotation or proposal and registers the new, drafted sales order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the completed quotation or proposal<br>
+	 *   <b>SalesOrder.C_Order_ID</b> — (required) identifier under which the created sales order is registered<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When sales order is created from proposal:
+	 *   | C_Order_ID | SalesOrder.C_Order_ID |
+	 *   | quote_1    | order_1               |
+	 * </pre>
+	 */
+	@When("sales order is created from proposal:")
+	public void create_sales_order_from_proposal(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order proposal = row.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+			final DocTypeId salesOrderDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.SalesOrder)
+					.docSubType(DocSubType.StandardOrder)
+					.adClientId(proposal.getAD_Client_ID())
+					.adOrgId(proposal.getAD_Org_ID())
+					.build());
+
+			// executed under the client context and the "WebUI" role, as the user's session would; the default cucumber ctx matches no business records
+			final RoleId roleId = roleDAO.getUserRoles(Env.getLoggedUserId())
+					.stream()
+					.filter(role -> "WebUI".equals(role.getName()))
+					.map(Role::getId)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + Env.getLoggedUserId()));
+
+			ProcessInfo.builder()
+					.setAD_Process_ID(adProcessDAO.retrieveProcessIdByClass(C_Order_CreateFromProposal.class).getRepoId())
+					.setClientId(Env.getClientId())
+					.setRoleId(roleId)
+					.setCreateTemporaryCtx()
+					.setRecord(TableRecordReference.of(I_C_Order.Table_Name, proposal.getC_Order_ID()))
+					.addParameter("C_DocType_ID", salesOrderDocTypeId.getRepoId())
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult()
+					.propagateErrorIfAny();
+
+			final I_C_Order proposalReloaded = orderBL.getById(OrderId.ofRepoId(proposal.getC_Order_ID()));
+			assertThat(proposalReloaded.getRef_Order_ID()).as("Ref_Order_ID of proposal %s", proposal.getC_Order_ID()).isPositive();
+			orderTable.putOrReplace(row.getAsIdentifier("SalesOrder.C_Order_ID"), orderBL.getById(OrderId.ofRepoId(proposalReloaded.getRef_Order_ID())));
+		});
 	}
 
 	@When("C_Order is cloned")

@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -50,10 +51,13 @@ import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Categ
 @RequiredArgsConstructor
 public class M_Product_Category_StepDef
 {
+	private static final String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+	@NonNull private final C_CompensationGroup_Schema_StepDefData compensationGroupSchemaTable;
 
 	/**
 	 * Updates the accounting settings ({@code M_Product_Category_Acct}) of a product category for an accounting schema,
@@ -114,6 +118,22 @@ public class M_Product_Category_StepDef
 				});
 	}
 
+	/**
+	 * Updates a product category.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_Category_ID</b> — (required, identifier-ref) the category<br>
+	 *   <b>OPT.M_AttributeSet_ID</b> — (optional, identifier-ref) the attribute set<br>
+	 *   <b>OPT.C_CompensationGroup_Schema_ID</b> — (optional, identifier-ref) the compensation group schema (menu) of the category<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData, M_AttributeSet_StepDefData, C_CompensationGroup_Schema_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_Product_Category:
+	 *   | M_Product_Category_ID | OPT.C_CompensationGroup_Schema_ID |
+	 *   | category_1            | schema_1                          |
+	 * </pre>
+	 */
 	@And("update M_Product_Category:")
 	public void update_M_Product_Category(@NonNull final DataTable dataTable)
 	{
@@ -127,6 +147,10 @@ public class M_Product_Category_StepDef
 					row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSet_ID)
 							.map(attributeSetTable::getId)
 							.ifPresent(attributeSetId -> productCategory.setM_AttributeSet_ID(attributeSetId.getRepoId()));
+
+					row.getAsOptionalIdentifier(COLUMNNAME_C_CompensationGroup_Schema_ID)
+							.map(schemaIdentifier -> schemaIdentifier.lookupNotNullIn(compensationGroupSchemaTable))
+							.ifPresent(schema -> InterfaceWrapperHelper.setValue(productCategory, COLUMNNAME_C_CompensationGroup_Schema_ID, schema.getC_CompensationGroup_Schema_ID()));
 
 					saveRecord(productCategory);
 					productCategoryTable.putOrReplace(identifier, productCategory);

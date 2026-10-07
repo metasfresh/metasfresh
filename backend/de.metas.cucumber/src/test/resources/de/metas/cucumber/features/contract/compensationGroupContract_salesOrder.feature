@@ -616,3 +616,39 @@ Feature: Contract-triggered compensation group on sales-order completion
       | de.metas.handlingunits.model.validator.C_Order                                              |
       | de.metas.contracts.compensationGroup.contract.interceptor.C_Order_ContractCompensationGroup |
       | de.metas.freighcost.interceptor.C_Order                                                     |
+
+  # ##############################################################################################
+  # A calibration rule matching the order's customer does not touch the contract-created group
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S26881_TC13_ContractGroup
+  Scenario: A contract-created group gets today's template quantities and no calibration although a rule matches the customer
+    Given metasfresh contains M_Products:
+      | Identifier   | OPT.M_Product_Category_ID.Identifier |
+      | bonusProduct | pfandCategory                        |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_bonus   | contractPLV                       | bonusProduct            | 100      | PCE               | Normal                        |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_bonus   | mainSchema                    | bonusProduct | 4   | PCE      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | rule_10    | 10    | storeBP       | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderCalib   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_calGoods | orderCalib            | goodsProduct            | 1          |
+
+    When the order identified by orderCalib is completed
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | M_Product_ID |
+      | orderCalib | ol_calBonus    | bonusProduct |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | ol_calBonus    | bonusProduct | 4              | null                                   | null                                        | null                                      |
