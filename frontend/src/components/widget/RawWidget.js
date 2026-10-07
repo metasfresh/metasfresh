@@ -522,6 +522,17 @@ export class RawWidget extends PureComponent {
         e.preventDefault();
       }
 
+      // an invalid decimal number is refused below: keep the key from a table row, which would take the typed text
+      if (
+        isDecimalNumberField(widgetType) &&
+        !(
+          isValidDecimalNumberString(value) &&
+          isValidDecimalNumberString(valueTo)
+        )
+      ) {
+        e.stopPropagation();
+      }
+
       return key === 'Tab'
         ? this.handleBlur(e)
         : this.handlePatch(widgetField, value, id, valueTo);

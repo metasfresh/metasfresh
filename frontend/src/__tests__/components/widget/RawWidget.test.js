@@ -845,6 +845,34 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).not.toHaveBeenCalled();
     });
 
+    it.each([
+      ['3.57', 0],
+      ['3,57', 1],
+    ])(
+      'lets the table row see Enter on %s only when it is a valid number (the row would take the typed text)',
+      (typed, expectedRowKeyDowns) => {
+        const rowKeyDownSpy = jest.fn();
+        const props = createDummyProps({
+          ...amountLayout,
+          widgetData: [{ ...amountData, value: '2.5' }],
+          propagateEnterKeyEvent: true,
+        });
+        const wrapper = mount(
+          <div onKeyDown={rowKeyDownSpy}>
+            <RawWidget {...props} />
+          </div>
+        );
+        wrapper.find('input').simulate('change', { target: { value: typed } });
+
+        wrapper.find('input').simulate('keyDown', {
+          key: 'Enter',
+          target: { value: typed },
+        });
+
+        expect(rowKeyDownSpy).toHaveBeenCalledTimes(expectedRowKeyDowns);
+      }
+    );
+
     it('shows an empty amount as an empty text', () => {
       const props = createDummyProps({
         ...amountLayout,

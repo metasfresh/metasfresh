@@ -196,6 +196,9 @@ describe('MasterWidget component', () => {
       expect(patchSpy).not.toHaveBeenCalled();
       expect(wrapper.state('edited')).toBe(false);
       expect(wrapper.state('value')).toEqual('2.5');
+      expect(props.updatePropertyValue).toHaveBeenLastCalledWith(
+        expect.objectContaining({ property: 'DiscountAmt', value: '2.5' })
+      );
 
       wrapper.setProps({
         widgetData: [{ ...props.widgetData[0], value: '2.6' }],
