@@ -511,6 +511,26 @@ public class C_Order_StepDef
 		return order;
 	}
 
+	/**
+	 * Arms a one-time DB deadlock for the next completion of the given order: that completion fails after its
+	 * {@code AFTER_COMPLETE} interceptors ran, and the document engine rolls it back and retries it.
+	 */
+	@And("^the next completion of the order identified by (.*) runs into a DB deadlock once$")
+	public void order_next_completion_runs_into_deadlock(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
+	@And("^the completion of the order identified by (.*) did run into the DB deadlock$")
+	public void order_completion_did_run_into_deadlock(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		assertThat(C_Order_SimulatedDeadlockOnCompletion.isArmed(OrderId.ofRepoId(order.getC_Order_ID())))
+				.as("the armed DB deadlock was hit by a completion of order %s", orderIdentifier)
+				.isFalse();
+	}
+
 	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
