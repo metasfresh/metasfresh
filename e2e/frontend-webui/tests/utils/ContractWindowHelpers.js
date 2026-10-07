@@ -53,14 +53,13 @@ export async function withFieldCommit(page, fieldName, action, expectedKey = und
 /**
  * Records, in order, the reason of every rejected save (PATCH) in the given window, as the server returned it,
  * so that a spec can compare the message shown in the dialog with it instead of with a localized text.
+ * `stop()` stops recording and resolves once every response received so far has been read, so `reasons` is then complete.
  * @returns { reasons, stop }
  */
 export function recordRejectedSaveReasons(page, windowId) {
   const reasons = [];
-  const listener = async (response) => {
-    if (response.request().method() !== 'PATCH' || !response.url().includes(`/window/${windowId}/`)) {
-      return;
-    }
+  const pendingReads = [];
+  const readReason = async (response) => {
     try {
       const body = await response.json();
       if (!response.ok()) {
@@ -77,8 +76,19 @@ export function recordRejectedSaveReasons(page, windowId) {
       /* not a document response */
     }
   };
+  const listener = (response) => {
+    if (response.request().method() === 'PATCH' && response.url().includes(`/window/${windowId}/`)) {
+      pendingReads.push(readReason(response));
+    }
+  };
   page.on('response', listener);
-  return { reasons, stop: () => page.off('response', listener) };
+  return {
+    reasons,
+    stop: async () => {
+      page.off('response', listener);
+      await Promise.all(pendingReads);
+    },
+  };
 }
 
 export async function openNewRecord(page, windowId) {
