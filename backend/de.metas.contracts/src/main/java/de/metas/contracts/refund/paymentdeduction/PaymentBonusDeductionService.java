@@ -51,6 +51,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -177,10 +179,10 @@ public class PaymentBonusDeductionService
 					.filter(line -> line.getM_Product_ID() > 0)
 					.forEach(line -> lineRecordsByInvoiceId.put(invoiceId, line));
 		}
-		final ImmutableSet<OrderLineId> contractCompensationOrderLineIds = retrieveContractCompensationOrderLineIds(lineRecordsByInvoiceId.build().values());
+		final ImmutableSet<Integer> contractCompensationInvoiceLineIds = retrieveContractCompensationInvoiceLineIds(lineRecordsByInvoiceId.build().values());
 		final ImmutableListMultimap<InvoiceId, I_C_InvoiceLine> lineRecords = ImmutableListMultimap.copyOf(Multimaps.filterValues(
 				lineRecordsByInvoiceId.build(),
-				line -> !contractCompensationOrderLineIds.contains(OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))));
+				line -> !contractCompensationInvoiceLineIds.contains(line.getC_InvoiceLine_ID())));
 
 		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> categoryIdAndAncestorsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(
 				lineRecords.values().stream().map(line -> ProductId.ofRepoId(line.getM_Product_ID())).collect(ImmutableSet.toImmutableSet()));
@@ -196,30 +198,43 @@ public class PaymentBonusDeductionService
 	}
 
 	/**
-	 * @return the order lines of the given invoice lines that are the discount line of a compensation group that a contract created on the order (the on-invoice bonus).
+	 * @return the IDs of the given invoice lines that are the discount line of a compensation group that a contract created on the order (the on-invoice bonus).
 	 *         They are not part of any base: the bonus at payment is computed on the goods value before that discount.
-	 *         A discount line of a group the user put together (no contract) stays in the base.
+	 *         A line is recognised through the invoice candidates it was created from ({@code C_Invoice_Line_Alloc}), because invoicing may
+	 *         aggregate the discount lines of several orders into one invoice line without order line; it is left out if all of them are such discount lines.
+	 *         A discount line of a group the user put together (no contract) stays in the base, as does a line that no invoice candidate created.
 	 */
-	private ImmutableSet<OrderLineId> retrieveContractCompensationOrderLineIds(@NonNull final Collection<I_C_InvoiceLine> lines)
+	private ImmutableSet<Integer> retrieveContractCompensationInvoiceLineIds(@NonNull final Collection<I_C_InvoiceLine> lines)
 	{
-		final ImmutableSet<OrderLineId> orderLineIds = lines.stream()
-				.map(line -> OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (orderLineIds.isEmpty())
+		if (lines.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		final ImmutableSet<Integer> invoiceLineIds = lines.stream().map(I_C_InvoiceLine::getC_InvoiceLine_ID).collect(ImmutableSet.toImmutableSet());
+		final ImmutableListMultimap<Integer, Integer> candidateIdsByInvoiceLineId = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_InvoiceLine_ID, invoiceLineIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(I_C_Invoice_Line_Alloc::getC_InvoiceLine_ID, I_C_Invoice_Line_Alloc::getC_Invoice_Candidate_ID));
+		if (candidateIdsByInvoiceLineId.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final ImmutableMap<OrderLineId, GroupId> groupIdsOfCompensationLines = orderDAO.retrieveOrderLinesByIds(orderLineIds).stream()
-				.filter(orderLine -> orderLine.isGroupCompensationLine() && orderLine.getC_Order_CompensationGroup_ID() > 0)
+		final ImmutableMap<Integer, GroupId> groupIdsOfCompensationCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, ImmutableSet.copyOf(candidateIdsByInvoiceLineId.values()))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine, true)
+				.create()
+				.stream()
+				.filter(candidate -> candidate.getC_Order_ID() > 0 && candidate.getC_Order_CompensationGroup_ID() > 0)
 				.collect(ImmutableMap.toImmutableMap(
-						orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()),
-						orderLine -> OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderLine.getC_Order_ID()), orderLine.getC_Order_CompensationGroup_ID())));
-		final ImmutableSet<GroupId> contractCreatedGroupIds = OrderGroupRepository.filterContractCreatedGroupIds(ImmutableSet.copyOf(groupIdsOfCompensationLines.values()));
+						I_C_Invoice_Candidate::getC_Invoice_Candidate_ID,
+						candidate -> OrderGroupRepository.createGroupId(OrderId.ofRepoId(candidate.getC_Order_ID()), candidate.getC_Order_CompensationGroup_ID())));
+		final ImmutableSet<GroupId> contractCreatedGroupIds = OrderGroupRepository.filterContractCreatedGroupIds(ImmutableSet.copyOf(groupIdsOfCompensationCandidates.values()));
 
-		return groupIdsOfCompensationLines.entrySet().stream()
-				.filter(entry -> contractCreatedGroupIds.contains(entry.getValue()))
+		return candidateIdsByInvoiceLineId.asMap().entrySet().stream()
+				.filter(entry -> entry.getValue().stream().allMatch(candidateId -> contractCreatedGroupIds.contains(groupIdsOfCompensationCandidates.get(candidateId))))
 				.map(Map.Entry::getKey)
 				.collect(ImmutableSet.toImmutableSet());
 	}

@@ -51,6 +51,8 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_DocType;
@@ -161,12 +163,26 @@ class PaymentBonusDeductionServiceTest
 		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
-		createInvoiceLine(invoiceId, fruit, "-3", createCompensationOrderLine(createCompensationGroupContract()));
+		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(createCompensationGroupContract(), true));
 
-		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
+		assertThat(computeNetBonus(invoiceId)).isEqualByComparingTo("2.60"); // 2.6 % of the 100 goods, not of 97
+	}
 
-		final PaymentBonusDeductionLine line = CollectionUtils.singleElement(deduction.getLines());
-		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.60"); // 2.6 % of the 100 goods, not of 97
+	/**
+	 * Invoicing can aggregate the discount lines of several orders into one invoice line, which then has no order line;
+	 * the line is still recognised through its invoice candidates.
+	 */
+	@Test
+	void contractCompensationLinesAggregatedIntoOneLineWithoutOrderLine_areNotInTheBase()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		final I_C_Flatrate_Term contract = createCompensationGroupContract();
+		final I_C_InvoiceLine aggregatedLine = createInvoiceLineOfCandidates(invoiceId, "-6", createCandidateInGroup(contract, true), createCandidateInGroup(contract, true));
+		assertThat(aggregatedLine.getC_OrderLine_ID()).isLessThanOrEqualTo(0); // guard
+
+		assertThat(computeNetBonus(invoiceId)).isEqualByComparingTo("2.60");
 	}
 
 	/**
@@ -178,12 +194,51 @@ class PaymentBonusDeductionServiceTest
 		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
 		final InvoiceId invoiceId = createSalesInvoice();
 		createInvoiceLine(invoiceId, fruit, "100", null);
-		createInvoiceLine(invoiceId, fruit, "-3", createCompensationOrderLine(null));
+		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(null, true));
 
+		assertThat(computeNetBonus(invoiceId)).isEqualByComparingTo("2.52"); // 2.6 % of 97 = 2.522
+	}
+
+	/**
+	 * The goods of a contract-created group are the base; only the group's discount line is left out.
+	 */
+	@Test
+	void goodsLineOfAContractGroup_staysInTheBase()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final I_C_Flatrate_Term contract = createCompensationGroupContract();
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLineOfCandidates(invoiceId, "100", createCandidateInGroup(contract, false));
+		createInvoiceLineOfCandidates(invoiceId, "-3", createCandidateInGroup(contract, true));
+
+		assertThat(computeNetBonus(invoiceId)).isEqualByComparingTo("2.60");
+	}
+
+	/**
+	 * The discount lines of several invoices are recognised in one go; each invoice's bonus is on its own goods.
+	 */
+	@Test
+	void calculatorOfSeveralInvoices_leavesOutTheContractCompensationLineOfEach()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final I_C_Flatrate_Term contract = createCompensationGroupContract();
+		final InvoiceId invoiceId1 = createSalesInvoice();
+		createInvoiceLine(invoiceId1, fruit, "100", null);
+		createInvoiceLineOfCandidates(invoiceId1, "-3", createCandidateInGroup(contract, true));
+		final InvoiceId invoiceId2 = createSalesInvoice();
+		createInvoiceLine(invoiceId2, fruit, "200", null);
+		createInvoiceLineOfCandidates(invoiceId2, "-6", createCandidateInGroup(contract, true));
+
+		final PaymentBonusDeductionService.Calculator calculator = service.newCalculator(ImmutableSet.of(invoiceId1, invoiceId2));
+
+		assertThat(calculator.computeForInvoice(invoiceId1).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("2.60");
+		assertThat(calculator.computeForInvoice(invoiceId2).get().getNetAmount().toBigDecimal()).isEqualByComparingTo("5.20");
+	}
+
+	private BigDecimal computeNetBonus(@NonNull final InvoiceId invoiceId)
+	{
 		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
-
-		final PaymentBonusDeductionLine line = CollectionUtils.singleElement(deduction.getLines());
-		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.52"); // 2.6 % of 97 = 2.522
+		return CollectionUtils.singleElement(deduction.getLines()).getNetAmt().toBigDecimal();
 	}
 
 	@Test
@@ -693,9 +748,12 @@ class PaymentBonusDeductionServiceTest
 	}
 
 	/**
+	 * The invoice candidate of an order line in a compensation group of its own order.
+	 *
 	 * @param compensationGroupContract the contract that created the group; {@code null} for a group the user put together
+	 * @param compensationLine          {@code true} for the group's discount line, {@code false} for one of its goods
 	 */
-	private I_C_OrderLine createCompensationOrderLine(@Nullable final I_C_Flatrate_Term compensationGroupContract)
+	private I_C_Invoice_Candidate createCandidateInGroup(@Nullable final I_C_Flatrate_Term compensationGroupContract, final boolean compensationLine)
 	{
 		final I_C_OrderLine orderLine = createOrderLine(customerId);
 
@@ -708,9 +766,39 @@ class PaymentBonusDeductionServiceTest
 		saveRecord(group);
 
 		orderLine.setC_Order_CompensationGroup_ID(group.getC_Order_CompensationGroup_ID());
-		orderLine.setIsGroupCompensationLine(true);
+		orderLine.setIsGroupCompensationLine(compensationLine);
 		saveRecord(orderLine);
-		return orderLine;
+
+		final I_C_Invoice_Candidate candidate = newInstance(I_C_Invoice_Candidate.class);
+		candidate.setC_Order_ID(orderLine.getC_Order_ID());
+		candidate.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		candidate.setC_Order_CompensationGroup_ID(group.getC_Order_CompensationGroup_ID());
+		candidate.setIsGroupCompensationLine(compensationLine);
+		saveRecord(candidate);
+		return candidate;
+	}
+
+	/**
+	 * An invoice line created from the given invoice candidates, linked to them like invoicing does ({@code C_Invoice_Line_Alloc}).
+	 * It refers to the candidate's order line only if there is exactly one candidate.
+	 */
+	private I_C_InvoiceLine createInvoiceLineOfCandidates(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final String lineNetAmt,
+			@NonNull final I_C_Invoice_Candidate... candidates)
+	{
+		final I_C_OrderLine orderLine = candidates.length == 1
+				? InterfaceWrapperHelper.load(candidates[0].getC_OrderLine_ID(), I_C_OrderLine.class)
+				: null;
+		final I_C_InvoiceLine invoiceLine = createInvoiceLine(invoiceId, fruit, lineNetAmt, orderLine);
+		for (final I_C_Invoice_Candidate candidate : candidates)
+		{
+			final I_C_Invoice_Line_Alloc alloc = newInstance(I_C_Invoice_Line_Alloc.class);
+			alloc.setC_Invoice_Candidate_ID(candidate.getC_Invoice_Candidate_ID());
+			alloc.setC_InvoiceLine_ID(invoiceLine.getC_InvoiceLine_ID());
+			saveRecord(alloc);
+		}
+		return invoiceLine;
 	}
 
 	private I_C_InvoiceLine createInvoiceLine(
