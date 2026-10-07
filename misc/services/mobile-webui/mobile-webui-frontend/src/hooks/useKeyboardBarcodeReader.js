@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
 // Abandon window for a stuck/truncated streamed QR partial (see the note in the effect below).
@@ -12,12 +12,27 @@ export const IDLE_ABANDON_MS = 15000;
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
+  // Optional observer of the growing buffer (used by the hook tests); UI state should use isReadInProgress.
   onReadInProgress,
   rateMs = 50,
   minLength = 10,
   idleAbandonMs = IDLE_ABANDON_MS,
   disabled = false,
 }) => {
+  // Whether a scan is being read right now (first char received, not yet completed or dropped). The only
+  // state of this hook: it changes twice per scan, so a consumer can show "scan in progress" without
+  // re-rendering per keystroke.
+  const [isReadInProgress, setReadInProgress] = useState(false);
+  // The callbacks are read through refs, so a consumer re-render (e.g. caused by isReadInProgress) does
+  // not tear down and re-attach the window listener and idle timer mid-scan. The refs are updated after
+  // each commit, not during render (React: refs must not be written while rendering).
+  const onReadDoneRef = useRef(onReadDone);
+  const onReadInProgressRef = useRef(onReadInProgress);
+  useLayoutEffect(() => {
+    onReadDoneRef.current = onReadDone;
+    onReadInProgressRef.current = onReadInProgress;
+  });
+
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
@@ -55,6 +70,7 @@ export const useKeyboardBarcodeReader = ({
 
     const resetBuffer = () => {
       bufferRef.current = '';
+      setReadInProgress(false);
       lastKeyTimeRef.current = 0;
       lastKeyEventTimeRef.current = 0;
       lastKeyHadEventTimeRef.current = false;
@@ -81,7 +97,7 @@ export const useKeyboardBarcodeReader = ({
       };
       resetBuffer();
       if (code && (!shouldEnforceMinLength || !minLength || code.length >= minLength)) {
-        onReadDone(code, stats);
+        onReadDoneRef.current(code, stats);
       }
     };
 
@@ -100,15 +116,16 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
+          // Reset before firing onReadDone, as completeScan does: the callback may unmount this component.
+          resetBuffer();
           // A paste has no per-character delivery: null, not zero, which would read as instant.
-          onReadDone(clipboardText, {
+          onReadDoneRef.current(clipboardText, {
             scanDurationMs: null,
             scanCharCount: clipboardText.length,
             scanMaxCharGapMs: null,
             scanMaxProcessingGapMs: null,
             scanChunkCount: null,
           });
-          resetBuffer();
           return;
         } catch (error) {
           console.error('Failed to read clipboard:', error);
@@ -196,11 +213,10 @@ export const useKeyboardBarcodeReader = ({
         }
 
         bufferRef.current += event.key;
-        onReadInProgress?.(bufferRef.current);
-        // Prevent the browser from also inserting the character into a focused input.
-        // The hook handles value updates via onReadInProgress. Without this, the character
-        // would be inserted twice: once by onReadInProgress and once by the browser's default action.
-        // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
+        setReadInProgress(true);
+        onReadInProgressRef.current?.(bufferRef.current);
+        // Prevent the browser from also inserting the character into a focused input: the scan lives in
+        // the buffer only. (Before the readOnly→inputMode="none" change, readOnly prevented the insertion.)
         event.preventDefault();
         lastKeyTimeRef.current = now;
         lastKeyEventTimeRef.current = eventTimeMs;
@@ -254,5 +270,7 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [onReadDone, onReadInProgress, rateMs, minLength, idleAbandonMs, disabled]);
+  }, [rateMs, minLength, idleAbandonMs, disabled]);
+
+  return { isReadInProgress };
 };
