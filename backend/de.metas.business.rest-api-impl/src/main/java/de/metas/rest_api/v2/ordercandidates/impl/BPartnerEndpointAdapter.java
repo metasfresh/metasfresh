@@ -63,18 +63,7 @@ final class BPartnerEndpointAdapter
 			return Optional.empty();
 		}
 
-		final ResponseEntity<JsonResponseComposite> response = bpartnerRestController
-				.retrieveBPartner(orgCode, jsonBPartnerInfo.getBPartnerIdentifier());
-
-		final MetasfreshId bPartnerId = Optional.ofNullable(response)
-				.map(ResponseEntity::getBody)
-				.map(JsonResponseComposite::getBpartner)
-				.map(JsonResponseBPartner::getMetasfreshId)
-				.map(JsonMetasfreshId::getValue)
-				.map(MetasfreshId::of)
-				.orElseThrow(() -> new AdempiereException("No BPartner found for the given identifier!")
-						.appendParametersToMessage()
-						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier()));
+		final MetasfreshId bPartnerId = getBPartnerMetasfreshId(orgCode, jsonBPartnerInfo.getBPartnerIdentifier());
 
 		final ResponseEntity<JsonResponseLocation> locationResponse = bpartnerRestController
 				.retrieveBPartnerLocation(orgCode, jsonBPartnerInfo.getBPartnerIdentifier(), jsonBPartnerInfo.getBPartnerLocationIdentifier());
@@ -93,6 +82,22 @@ final class BPartnerEndpointAdapter
 		final BPartnerInfo bPartnerInfo = asBPartnerInfo(bPartnerId, jsonResponseLocation, jsonResponseContact);
 
 		return Optional.of(bPartnerInfo);
+	}
+
+	@NonNull
+	public MetasfreshId getBPartnerMetasfreshId(@Nullable final String orgCode, @NonNull final String bpartnerIdentifier)
+	{
+		final ResponseEntity<JsonResponseComposite> response = bpartnerRestController.retrieveBPartner(orgCode, bpartnerIdentifier);
+
+		return Optional.ofNullable(response)
+				.map(ResponseEntity::getBody)
+				.map(JsonResponseComposite::getBpartner)
+				.map(JsonResponseBPartner::getMetasfreshId)
+				.map(JsonMetasfreshId::getValue)
+				.map(MetasfreshId::of)
+				.orElseThrow(() -> new AdempiereException("No BPartner found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", bpartnerIdentifier));
 	}
 
 	@NonNull

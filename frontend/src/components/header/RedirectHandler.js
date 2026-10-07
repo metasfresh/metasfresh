@@ -13,6 +13,7 @@ import { useLocation } from 'react-router';
 import { isObject } from 'lodash/lang';
 import { trl } from '../../utils/locale';
 import { markMasterDataAsChanged } from '../../actions/WindowActions';
+import { logDiagEvent } from '../../utils/diagnostics';
 
 const isCypress = () => navigator.userAgent.includes('Cypress');
 
@@ -56,6 +57,15 @@ const RedirectHandler = () => {
   // Handle programmatic redirects
   useEffect(() => {
     if (targetUrl) {
+      const resolvedUrl = isObject(targetUrl) ? targetUrl.url : targetUrl;
+      logDiagEvent('redirect', {
+        reason: 'targetUrl',
+        targetUrl: resolvedUrl,
+        setWindowLocation: isObject(targetUrl)
+          ? !!targetUrl.setWindowLocation
+          : false,
+      });
+
       // dispatch(clearMasterData());
       dispatch(markMasterDataAsChanged());
 
@@ -79,6 +89,11 @@ const RedirectHandler = () => {
     if (currentPath !== previousPath) {
       sessionStorage.setItem(KEY_PreviousPath, currentPath);
       if (isWarnOnPageUnload && !confirmDiscardChanges()) {
+        logDiagEvent('redirect', {
+          reason: 'revertToPrevious',
+          previousPath,
+          currentPath,
+        });
         history.push(previousPath); // Revert back to previous page
       }
     }
@@ -89,10 +104,24 @@ const RedirectHandler = () => {
   useEffect(() => {
     if (attemptedUrl) {
       if (isDocumentNotSaved) {
-        confirmDiscardChanges()
-          ? dispatch(confirmRedirect())
-          : dispatch(cancelRedirect());
+        if (confirmDiscardChanges()) {
+          logDiagEvent('redirect', {
+            reason: 'attemptedUrl_confirmed',
+            attemptedUrl,
+          });
+          dispatch(confirmRedirect());
+        } else {
+          logDiagEvent('redirect', {
+            reason: 'attemptedUrl_cancelled',
+            attemptedUrl,
+          });
+          dispatch(cancelRedirect());
+        }
       } else {
+        logDiagEvent('redirect', {
+          reason: 'attemptedUrl_autoConfirmed',
+          attemptedUrl,
+        });
         dispatch(confirmRedirect());
       }
     }

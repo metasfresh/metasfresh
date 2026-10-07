@@ -218,7 +218,11 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 		//
 		// Assign Role
-		final RoleId roleId = RoleId.ofRepoIdOrNull(importRecord.getAD_Role_ID());
+		// NOTE: we must use getValueOrNull because getAD_Role_ID() returns 0 for NULL,
+		// and RoleId.ofRepoIdOrNull(0) returns SYSTEM (System Administrator) instead of null.
+		// See https://github.com/metasfresh/mf15/issues/3948
+		final Integer roleRepoId = InterfaceWrapperHelper.getValueOrNull(importRecord, I_I_User.COLUMNNAME_AD_Role_ID);
+		final RoleId roleId = roleRepoId != null ? RoleId.ofRepoIdOrNull(roleRepoId) : null;
 
 		if (roleId != null)
 		{

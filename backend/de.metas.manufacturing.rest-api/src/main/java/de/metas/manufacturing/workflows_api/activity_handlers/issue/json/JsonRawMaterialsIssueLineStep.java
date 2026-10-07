@@ -30,15 +30,20 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String uom;
 	@NonNull BigDecimal qtyHUCapacity;
 	@NonNull BigDecimal qtyToIssue;
+	// The BOM line's remaining demand (incl. tolerance) converted to this step's stocking UOM and rounded UP.
+	// Caps the mobile Qty input, which is entered in the stocking UOM. See RawMaterialsIssueLine.getRemainingQtyToIssueMaxInUOM.
+	@Nullable BigDecimal qtyToIssueMax;
 	@Nullable BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
 	@Nullable JsonScaleTolerance scaleTolerance;
 	@Nullable JsonDisplayableQRCode huQRCode;
+	boolean isAllowEmptying;
 
-	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
+	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, @Nullable BigDecimal qtyToIssueMax, JsonOpts jsonOpts)
 	{
 		final JsonRawMaterialsIssueLineStepBuilder builder = builder()
+				.qtyToIssueMax(qtyToIssueMax)
 				.id(String.valueOf(step.getId().getRepoId()))
 				.isAlternativeIssue(step.isAlternativeIssue())
 				.productId(String.valueOf(step.getProductId().getRepoId()))
@@ -51,7 +56,8 @@ public class JsonRawMaterialsIssueLineStep
 				.huId(step.getIssueFromHU().getId().toHUValue())
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
-				.qtyToIssue(step.getQtyToIssue().toBigDecimal());
+				.qtyToIssue(step.getQtyToIssue().toBigDecimal())
+				.isAllowEmptying(step.isAllowEmptying());
 
 		final PPOrderIssueSchedule.Issued issued = step.getIssued();
 		if (issued != null)

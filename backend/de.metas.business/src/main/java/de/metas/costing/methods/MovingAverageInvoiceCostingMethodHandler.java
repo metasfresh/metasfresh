@@ -22,6 +22,7 @@
 
 package de.metas.costing.methods;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
@@ -114,7 +115,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
@@ -150,7 +151,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final InOutLineId receipLineId = request.getDocumentRef().getId(InOutLineId.class);
 		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
@@ -186,7 +187,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
@@ -202,7 +203,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
@@ -305,7 +306,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		@Nullable final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
@@ -331,14 +332,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 				requestEffective = request.withAmount(effectiveAmt);
 
-				//noinspection StatementWithEmptyBody
-				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
+				// NOTE: if explicit cost price is provided then use it
+				// we are no longer checking for " && currentCosts.getCurrentQty().isZero()"
+				// because we agreed that is the responsibility of whom is setting the explicit cost price
+				// to decide if it's suitable
+				if (explicitCostPrice != null)
 				{
 					currentCosts.setOwnCostPrice(explicitCostPrice);
-				}
-				else
-				{
-					// Do not change an existing positive cost price if there is also a positive qty
 				}
 			}
 
@@ -390,7 +390,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	protected MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
 		if (costElement == null)
@@ -401,7 +401,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
 		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
 
-		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCostForUpdate(outboundSegmentAndElement);
 		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = utils.convertToUOM(
@@ -461,7 +461,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			utils.saveCurrentCost(outboundCurrentCosts);
 
 			// Inbound cost
-			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCostForUpdate(inboundSegmentAndElement);
 			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
 			inboundResult = utils.createCostDetailRecordWithChangedCosts(
 					inboundCostDetailRequest,
@@ -490,20 +490,46 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final InvoiceId invoiceId = matchInv.getInvoiceId();
 		final boolean isReversal = invoiceBL.isReversal(invoiceId);
 
-		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
+		// Matched qty for this invoice line. isReversal (invoice-level) flips the sign the reversal MatchInv
+		// stored back to the original receipt's orientation. This is >= 0 for a plain purchase match, but a
+		// credit-memo / material-return match can be negative; computeMatchInvSplit reshapes the on-hand clamp
+		// only for the >= 0 (plain receipt) case and leaves the negative-qty case's split untouched.
+		final Quantity receiptQty = request.getQty().negateIf(isReversal);
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
+		return computeMatchInvSplit(invoicedAmt, amtDifference, receiptQty, currentCost)
+				.negateIf(isReversal);
+	}
+
+	/**
+	 * Splits the invoice-vs-receipt price difference: the still-in-stock share adjusts the on-hand cost price, the
+	 * shipped remainder spills to COGS.
+	 */
+	@VisibleForTesting
+	static CostAmountDetailed computeMatchInvSplit(
+			@NonNull final CostAmount invoicedAmt,
+			@NonNull final CostAmount amtDifference,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CurrentCost currentCost)
+	{
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
 
-		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
+		// For a plain purchase match (receiptQty >= 0) a negative on-hand cannot adjust the on-hand cost price,
+		// so clamp it to 0 => the whole difference becomes period cost (COGS), never capitalized. A credit-memo /
+		// material-return match (receiptQty < 0) keeps the pre-existing, un-clamped split unchanged (this method
+		// is behaviour-preserving there — the clamp is a no-op for a negative matched qty).
+		final Quantity onHandForSplit = receiptQty.signum() >= 0
+				? currentCost.getCurrentQty().toZeroIfNegative()
+				: currentCost.getCurrentQty();
+		final Quantity qtyStillInStock = onHandForSplit.min(receiptQty);
 		if (amtDifference.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
@@ -533,8 +559,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.mainAmt(invoicedAmt)
 				.costAdjustmentAmt(costAdjustmentAmt)
 				.alreadyShippedAmt(alreadyShippedAmt)
-				.build()
-				.negateIf(isReversal);
+				.build();
 	}
 
 	private CostAmount getReceiptAmount(
@@ -599,7 +624,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
-		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request.getCostSegmentAndElement());
 
 		final CostAmount negateAmount = request.getAmt().negate();
 		if (isInboundTrx)

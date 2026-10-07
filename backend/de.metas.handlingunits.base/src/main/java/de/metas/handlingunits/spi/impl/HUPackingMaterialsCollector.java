@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -106,6 +107,17 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private boolean errorIfHuIsAdded = false;
 
 	/**
+	 * When {@code true}, {@link #mkCandidateKey(I_M_HU_PackingMaterial, int, I_M_HU, IHUPackingMaterialCollectorSource)}
+	 * also keys on the in-scope source's {@code C_Project_ID}, so packing material collected for different projects
+	 * lands in different candidates instead of being merged into one.
+	 * <p>
+	 * <b>The remove path is not project-aware:</b> {@link #requirePackingMaterialForTU(I_M_HU)} /
+	 * {@link #requirePackingMaterialForLU(I_M_HU)} always pass a {@code null} source, so with this flag ON their key
+	 * would not match the add-key of a project-keyed candidate. Do not enable it for a collector that uses the remove path.
+	 */
+	private boolean isConsiderProject = false;
+
+	/**
 	 *
 	 * @param huContext may be <code>null</code>.<br>
 	 *            Provide a HU context if you need to keep track of the HU's {@link I_M_Material_Tracking#COLUMNNAME_M_Material_Tracking_ID M_Material_Tracking_ID} while collecting.
@@ -129,6 +141,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.candidatesSortComparator = other.candidatesSortComparator;
 		this.disabled = other.disabled;
 		this.errorIfHuIsAdded = other.errorIfHuIsAdded;
+		this.isConsiderProject = other.isConsiderProject;
 	}
 
 	@Override
@@ -255,7 +268,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			}
 
 			final int materialTrackingId = retrieveMaterialTrackingId(hu); // 07734
-			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
+			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu, huPackingMaterialCollectorsource);
 			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 			HUPackingMaterialDocumentLineCandidate innerCandidate = null;
 			I_M_HU_PI_Item_Product materialItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
@@ -270,7 +283,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				{
 					if (includedPackingMaterial != null && includedPackingMaterial.getM_HU_PackingMaterial_ID() != huPackingMaterial.getM_HU_PackingMaterial_ID())
 					{
-						final ArrayKey includedKey = mkCandidateKey(includedPackingMaterial, materialTrackingId, hu);
+						final ArrayKey includedKey = mkCandidateKey(includedPackingMaterial, materialTrackingId, hu, huPackingMaterialCollectorsource);
 						innerCandidate = key2candidates.computeIfAbsent(includedKey, k -> createHUPackingMaterialDocumentLineCandidate(includedPackingMaterial, materialTrackingId, hu));
 					}
 
@@ -394,7 +407,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * @param count how many to add
 	 * @param huPackingMaterialCollectorSource
 	 */
-	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
+	public void addM_HU_PI(@NonNull final I_M_HU_PI huPI, final int count, @Nullable final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
 		if (disabled)
 		{
@@ -421,7 +434,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 			final int materialTrackingId = -1; // N/A
 			final I_M_HU hu = null; // N/A
-			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
+			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu, huPackingMaterialCollectorSource);
 
 			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 
@@ -441,15 +454,16 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private ArrayKey mkCandidateKey(
 			final I_M_HU_PackingMaterial huPackingMaterial,
 			final int materialTrackingId,
-			final I_M_HU hu)
+			final I_M_HU hu,
+			@Nullable final IHUPackingMaterialCollectorSource source)
 	{
-		final int productId = huPackingMaterial.getM_Product_ID();
-		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
+		final int productId = huPackingMaterial.getM_Product_ID() <= 0 ? -1 : huPackingMaterial.getM_Product_ID();
+		final int locatorId = hu == null || hu.getM_Locator_ID() <= 0 ? -1 : hu.getM_Locator_ID();
 
-		return Util.mkKey(
-				productId <= 0 ? -1 : productId,
-				locatorId <= 0 ? -1 : locatorId,
-				materialTrackingId);
+		// Without the project split, the key has three parts only, so that its hash, and with it the order of the candidates, is the project-agnostic one
+		return isConsiderProject
+				? Util.mkKey(productId, locatorId, materialTrackingId, ProjectId.toRepoId(source == null ? null : source.getProjectId()))
+				: Util.mkKey(productId, locatorId, materialTrackingId);
 	}
 
 	/**
@@ -749,6 +763,16 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
 	}
 
+	public void setConsiderProject(final boolean isConsiderProject)
+	{
+		this.isConsiderProject = isConsiderProject;
+	}
+
+	public boolean isConsiderProject()
+	{
+		return isConsiderProject;
+	}
+
 	/**
 	 * Creates a new collector starting from this point.
 	 *
@@ -766,6 +790,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		// we are just sharing the "seen"s list to prevent adding to new collector, HUs which were already added to this (aka parent) collector.
 		collectorNew.seenM_HU_IDs_ToAdd = new HashSet<>(seenM_HU_IDs_ToAdd);
 		collectorNew.seenM_HU_IDs_ToRemove = new HashSet<>(seenM_HU_IDs_ToRemove);
+
+		collectorNew.isConsiderProject = isConsiderProject;
 
 		return collectorNew;
 	}

@@ -28,6 +28,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -54,7 +55,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.CalculateTaxResult;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -105,6 +107,18 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
+	private IDocTypeBL _docTypeBL;
+
+	private IDocTypeBL getDocTypeBL()
+	{
+		IDocTypeBL docTypeBL = this._docTypeBL;
+		if (docTypeBL == null)
+		{
+			docTypeBL = this._docTypeBL = Services.get(IDocTypeBL.class);
+		}
+		return docTypeBL;
+	}
+
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -810,10 +824,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			setC_DocType_ID(getC_DocTypeTarget_ID());
 		}
-		if (getC_DocType_ID() <= 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
+		if (docTypeId == null)
 		{
 			throw new AdempiereException("No Document Type");
 		}
+
+		setIsFinancial(getDocTypeBL().isFinancial(docTypeId));
 
 		// explodeBOM(); // task 09030: we don't really want to explode the BOM, least of all this uncontrolled way after invoice-candidates-way.
 
@@ -920,27 +937,29 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final MTax tax = iTax.getTax();
 			if (tax.isSummary())
 			{
-				final MTax[] cTaxes = tax.getChildTaxes(false);    // Multiple taxes
-				for (final MTax cTax : cTaxes)
+				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
 				{
-					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, TaxUtils.from(cTax));
+					final Tax childTax = TaxUtils.from(childTaxRecord);
+					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, childTax);
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
+					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
 					newITax.setC_Invoice(this);
-					newITax.setC_Tax_ID(cTax.getC_Tax_ID());
+					newITax.setC_Tax_ID(childTaxRecord.getC_Tax_ID());
 					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
-					newITax.setIsDocumentLevel(cTax.isDocumentLevel());
+					newITax.setIsDocumentLevel(childTaxRecord.isDocumentLevel());
+					newITax.setIsReverseCharge(childTax.isReverseCharge());
 					newITax.setTaxBaseAmt(taxBaseAmt);
-					newITax.setTaxAmt(taxAmt);
+					newITax.setTaxAmt(calculateTaxResult.getTaxAmount());
+					newITax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
 					newITax.saveEx(trxName);
 					//
 					if (!taxIncluded)
 					{
-						grandTotal = grandTotal.add(taxAmt);
+						grandTotal = grandTotal.add(calculateTaxResult.getTaxAmount());
 					}
 				}
 

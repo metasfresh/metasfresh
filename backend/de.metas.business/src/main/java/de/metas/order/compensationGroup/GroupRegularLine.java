@@ -2,9 +2,12 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,6 +38,9 @@ public class GroupRegularLine
 {
 	/** Repository ID */
 	RepoIdAware repoId;
-	
+
 	@NonNull BigDecimal lineNetAmt;
+
+	/** The line's product category and all its ancestor categories; empty if unknown */
+	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
 }

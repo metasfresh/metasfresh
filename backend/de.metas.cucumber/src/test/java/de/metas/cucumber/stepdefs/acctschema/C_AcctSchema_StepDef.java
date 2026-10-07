@@ -22,10 +22,15 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.currency.CurrencyCode;
@@ -34,24 +39,82 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 
+import javax.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 
 @RequiredArgsConstructor
+/**
+ * Loads and updates {@code C_AcctSchema}. The costing method is global state shared by every scenario on
+ * the executor, so an override made here is recorded and put back by the {@code @After} hook below.
+ */
 public class C_AcctSchema_StepDef
 {
+	private static final long COSTING_METHOD_MAX_WAIT_SECONDS = 10;
+	private static final long COSTING_METHOD_RECHECK_INTERVAL_MILLIS = 250;
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+
+	/** The costing method is global state shared by every scenario on the executor; see the @After below. */
+	@NonNull private final List<CostingMethodOverride> costingMethodOverrides = new ArrayList<>();
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+
+	/**
+	 * {@code C_AcctSchema_ID} -> the settings the schema had before this scenario's first {@code update C_AcctSchema},
+	 * so {@link #restoreAcctSchemas()} can put them back.
+	 */
+	private final Map<Integer, AcctSchemaSettings> settingsBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * Restores the costing level and currency of every accounting schema this scenario updated. The costing method is
+	 * restored by {@link #resetCostingMethodOverrides()}, which also waits until the restored method is effective.
+	 *
+	 * <p>The schema is shared by every scenario and feature that runs on the same database, so a setting left behind
+	 * would leak into whatever runs next: e.g. a feature that pins {@code CostingLevel=C} would make a later feature
+	 * that relies on the seed's level run under client-level costing. Steps that update the schema in a Background
+	 * set it again for every scenario.
+	 */
+	@After
+	public void restoreAcctSchemas()
+	{
+		settingsBeforeScenario.forEach((acctSchemaId, settings) -> {
+			final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+			acctSchema.setCostingLevel(settings.getCostingLevel());
+			if (acctSchema.getC_Currency_ID() != settings.getCurrencyRepoId())
+			{
+				acctSchema.setC_Currency_ID(settings.getCurrencyRepoId());
+				DISABLE_CHECK_CURRENCY.setValue(acctSchema, Boolean.TRUE);
+			}
+			InterfaceWrapperHelper.saveRecord(acctSchema);
+		});
+		settingsBeforeScenario.clear();
+	}
+
+	@Value
+	private static class AcctSchemaSettings
+	{
+		String costingLevel;
+		int currencyRepoId;
+	}
 
 	@And("load C_AcctSchema:")
 	public void load_C_AcctSchemas(@NonNull final DataTable dataTable)
@@ -77,18 +140,31 @@ public class C_AcctSchema_StepDef
 				.forEach(this::loadAndUpdate);
 	}
 
-	private void loadAndUpdate(final DataTableRow row)
+	private void loadAndUpdate(final DataTableRow row) throws InterruptedException
 	{
 		loadAcctSchema(row);
 		updateAcctSchema(row);
 	}
 
-	private void updateAcctSchema(final DataTableRow row)
+	private void updateAcctSchema(final DataTableRow row) throws InterruptedException
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID());
+		settingsBeforeScenario.computeIfAbsent(acctSchemaId.getRepoId(), acctSchemaRepoId -> {
+			final I_C_AcctSchema current = InterfaceWrapperHelper.load(acctSchemaRepoId, I_C_AcctSchema.class);
+			return new AcctSchemaSettings(current.getCostingLevel(), current.getC_Currency_ID());
+		});
 
-		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> acctSchema.setCostingMethod(costingMethod.getCode()));
+		final CostingMethod costingMethod = row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).orElse(null);
+		if (costingMethod != null)
+		{
+			costingMethodOverrides.add(new CostingMethodOverride(acctSchemaId, acctSchema.getCostingMethod()));
+			acctSchema.setCostingMethod(costingMethod.getCode());
+		}
+		row.getAsOptionalString(I_C_AcctSchema.COLUMNNAME_CostingLevel)
+				.map(CostingLevel::ofCode)
+				.ifPresent(costingLevel -> acctSchema.setCostingLevel(costingLevel.getCode()));
 
 		row.getAsOptionalString("C_Currency_ID")
 				.map(CurrencyCode::ofThreeLetterCode)
@@ -100,10 +176,109 @@ public class C_AcctSchema_StepDef
 
 		InterfaceWrapperHelper.saveRecord(acctSchema);
 
+		if (costingMethod != null)
+		{
+			makeCostingMethodEffective(acctSchemaId, costingMethod);
+		}
+
 		acctSchemaTable.putOrReplace(identifier, acctSchema);
 
 		row.getAsOptionalBoolean("IsRepostCreatedDocs")
 				.ifTrue(this::repostCreatedDocuments);
+	}
+
+	/**
+	 * Restores any {@code CostingMethod} overrides back to the value the schema carried before. Fires for
+	 * every scenario regardless of pass/fail, so a scenario that changes the costing method cannot leak it
+	 * to the rest of the executor even when it fails part-way; no-op when nothing was overridden.
+	 */
+	@After
+	public void resetCostingMethodOverrides() throws InterruptedException
+	{
+		// Unwound last-first: a scenario can override the same schema more than once (its Background, then the
+		// scenario body), and only reverse order puts back the value that was there before any of them.
+		Throwable failure = null;
+		for (int i = costingMethodOverrides.size() - 1; i >= 0; i--)
+		{
+			try
+			{
+				restore(costingMethodOverrides.get(i));
+			}
+			catch (final RuntimeException | AssertionError e)
+			{
+				// Keep unwinding whatever the failure was: giving up here would leave every override earlier in
+				// the list in place for each scenario that follows, which is the leak this hook exists to prevent.
+				failure = failure != null ? failure : e;
+			}
+		}
+		costingMethodOverrides.clear();
+
+		if (failure instanceof AssertionError)
+		{
+			throw (AssertionError)failure;
+		}
+		else if (failure != null)
+		{
+			throw (RuntimeException)failure;
+		}
+	}
+
+	private void restore(@NonNull final CostingMethodOverride override) throws InterruptedException
+	{
+		// Reset before loading too: a cached model still carrying the pre-scenario value would make setting that
+		// value a no-op, so the save would emit no UPDATE and the row would keep the overridden one.
+		CacheMgt.get().reset(I_C_AcctSchema.Table_Name, override.getAcctSchemaId().getRepoId());
+
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(override.getAcctSchemaId(), I_C_AcctSchema.class);
+		acctSchema.setCostingMethod(override.getOriginalCostingMethod());
+		InterfaceWrapperHelper.saveRecord(acctSchema);
+
+		makeCostingMethodEffective(override.getAcctSchemaId(), CostingMethod.ofNullableCode(override.getOriginalCostingMethod()));
+	}
+
+	/**
+	 * Makes {@code costingMethod} effective for readers, not merely persisted.
+	 * <p>
+	 * The costing method is global state shared by every scenario on the executor, and {@code saveRecord} emits no
+	 * UPDATE when the column already holds the wanted value. Without an UPDATE nothing invalidates
+	 * {@link IAcctSchemaDAO}'s cache, which a preceding scenario can have left holding the costing method IT set.
+	 * <p>
+	 * A single reset does not settle it either: {@link IAcctSchemaDAO} caches all schemas under one key, and a
+	 * reader whose load of that key was already in flight when we wrote stores its pre-write snapshot <em>after</em>
+	 * our reset - an entry that then sticks until the next invalidation. So reset until the DAO reports what the row
+	 * now holds. That converges as soon as those readers are done; a costing method that never becomes effective
+	 * fails here, at the step that owns it, instead of silently mis-costing a later scenario.
+	 */
+	private void makeCostingMethodEffective(@NonNull final AcctSchemaId acctSchemaId, @Nullable final CostingMethod costingMethod) throws InterruptedException
+	{
+		CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
+
+		if (costingMethod == null)
+		{
+			return;
+		}
+
+		StepDefUtil.tryAndWait(
+				COSTING_METHOD_MAX_WAIT_SECONDS,
+				COSTING_METHOD_RECHECK_INTERVAL_MILLIS,
+				() -> {
+					CacheMgt.get().reset(I_C_AcctSchema.Table_Name, acctSchemaId.getRepoId());
+					return costingMethod.equals(getEffectiveCostingMethod(acctSchemaId));
+				},
+				() -> System.out.println("C_AcctSchema_ID=" + acctSchemaId.getRepoId() + " reports "
+						+ getEffectiveCostingMethod(acctSchemaId) + ", waiting for " + costingMethod));
+	}
+
+	private CostingMethod getEffectiveCostingMethod(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemaDAO.getById(acctSchemaId).getCosting().getCostingMethod();
+	}
+
+	@Value
+	private static class CostingMethodOverride
+	{
+		AcctSchemaId acctSchemaId;
+		String originalCostingMethod;
 	}
 
 	private void loadAcctSchema(@NonNull final DataTableRow row)

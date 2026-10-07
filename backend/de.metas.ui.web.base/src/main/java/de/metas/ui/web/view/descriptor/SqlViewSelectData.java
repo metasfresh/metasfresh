@@ -66,6 +66,7 @@ public class SqlViewSelectData
 	public static final String COLUMNNAME_IsRecordMissing = COLUMNNAME_Paging_Prefix + "IsRecordMissing";
 
 	private final String sqlTableName;
+	private final String sqlTableAlias;
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
 	private final ImmutableSet<String> displayFieldNames;
 	private final ImmutableMap<String, SqlViewRowFieldBinding> fieldsByFieldName;
@@ -88,6 +89,7 @@ public class SqlViewSelectData
 			@Nullable final SqlViewGroupingBinding groupingBinding)
 	{
 		this.sqlTableName = sqlTableName;
+		this.sqlTableAlias = sqlTableAlias;
 		this.keyColumnNamesMap = keyColumnNamesMap;
 		this.displayFieldNames = ImmutableSet.copyOf(displayFieldNames);
 		this.fieldsByFieldName = Maps.uniqueIndex(allFields, SqlViewRowFieldBinding::getFieldName);
@@ -158,7 +160,7 @@ public class SqlViewSelectData
 	{
 		if (groupingBinding == null)
 		{
-			return buildSqlSelect_WithoutGrouping(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields);
+			return buildSqlSelect_WithoutGrouping(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields, null);
 		}
 		else
 		{
@@ -166,12 +168,20 @@ public class SqlViewSelectData
 		}
 	}
 
+	/**
+	 * @param sourceRelationSql when non-null, the row payload is sourced from this relation (e.g. a
+	 *        set-returning function) instead of the plain view/table {@code sqlTableName}. The relation is
+	 *        aliased with {@code sqlTableName}, so every field / display / key expression (which qualifies
+	 *        against {@code sqlTableName}) resolves unchanged. Any {@code ?} placeholders it contains are
+	 *        bound by the caller, ahead of the UUID parameter.
+	 */
 	private static IStringExpression buildSqlSelect_WithoutGrouping(
 			@NonNull final String sqlTableName,
 			@NonNull final String sqlTableAlias,
 			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			@NonNull final Collection<String> displayFieldNames,
-			@NonNull final Collection<SqlViewRowFieldBinding> allFields)
+			@NonNull final Collection<SqlViewRowFieldBinding> allFields,
+			@Nullable final String sourceRelationSql)
 	{
 		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
@@ -211,12 +221,63 @@ public class SqlViewSelectData
 				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "sel." + columnName + " AS " + COLUMNNAME_Paging_Prefix + columnName))
 				.append("\n , " + keyColumnNamesMap.getSqlIsNullExpression(sqlTableName) + " AS " + COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+				.append("\n   LEFT OUTER JOIN " + (sourceRelationSql != null ? sourceRelationSql + " " : "") + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
 				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
 				.append("\n ) " + sqlTableAlias); // FROM
 
 		return sql.build().caching();
+	}
+
+	/**
+	 * Builds the same page-render SQL as {@link #selectByPage()}, but sources the row payload from
+	 * a caller-provided <b>relation</b> (typically a parameterized set-returning function) instead of the
+	 * fully materialized view. Because the relation is aliased with the view's own table name, the generated
+	 * column / display / key expressions are identical to the standard render — output is byte-identical to
+	 * the view render for the same rows (proven for {@code MD_Stock_PerWeek_V} vs {@code MD_Stock_PerWeek_fn}).
+	 * <p>
+	 * Only supported for non-grouping bindings.
+	 *
+	 * @param sourceRelationSql relation appended right after {@code LEFT OUTER JOIN}, e.g. {@code "MD_Stock_PerWeek_fn(?,?)"}
+	 * @param sourceRelationParams values bound to the {@code ?} placeholders in {@code sourceRelationSql}, in order
+	 */
+	public SqlAndParams selectByPageFromSourceRelation(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			@NonNull final String sourceRelationSql,
+			@NonNull final List<Object> sourceRelationParams,
+			@NonNull final String viewSelectionId,
+			final int firstRowZeroBased,
+			final int pageLength)
+	{
+		Check.assumeNull(sqlSelectLines, "grouping bindings are not supported by selectByPageFromSourceRelation");
+		Check.assume(firstRowZeroBased >= 0, "firstRow >= 0 but it was {}", firstRowZeroBased);
+		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
+
+		final int firstSeqNo = firstRowZeroBased + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
+		final int lastSeqNo = firstRowZeroBased + pageLength;
+
+		final IStringExpression sqlSelectByPage = buildSqlSelect_WithoutGrouping(
+				sqlTableName,
+				sqlTableAlias,
+				keyColumnNamesMap,
+				displayFieldNames,
+				fieldsByFieldName.values(),
+				sourceRelationSql)
+				.toComposer()
+				.append("\n WHERE ")
+				// NOTE: already filtered by UUID
+				.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
+				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
+				.build();
+
+		final String sql = sqlSelectByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+
+		final List<Object> sqlParams = new ArrayList<>(sourceRelationParams.size() + 3);
+		sqlParams.addAll(sourceRelationParams);
+		sqlParams.add(viewSelectionId);
+		sqlParams.add(firstSeqNo);
+		sqlParams.add(lastSeqNo);
+		return SqlAndParams.of(sql, sqlParams);
 	}
 
 	private static IStringExpression buildSqlSelect_WithGrouping(
@@ -452,6 +513,30 @@ public class SqlViewSelectData
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
+	/**
+	 * Builds SQL to retrieve distinct field values for facet filters.
+	 * <p>
+	 * gh#28680: When a display value is present (e.g. AD_User name lookup for CreatedBy),
+	 * the query is structured as:
+	 * <pre>
+	 * SELECT t.CreatedBy, (SELECT Name FROM AD_User WHERE AD_User_ID=t.CreatedBy) AS CreatedBy$Display
+	 * FROM (
+	 *   SELECT DISTINCT view.CreatedBy
+	 *   FROM T_WEBUI_ViewSelection sel INNER JOIN view ON (...)
+	 *   WHERE sel.UUID=?
+	 * ) t
+	 * LIMIT ?
+	 * </pre>
+	 * The inner subquery computes DISTINCT on the raw value column only (cheap — just integers),
+	 * producing ~10 rows. The display subquery then runs only for those few distinct values.
+	 * <p>
+	 * Previously, the display subquery ran for ALL rows (e.g. 52k) before DISTINCT removed
+	 * duplicates — 52k subquery executions for ~10 results (89 seconds on a real dataset).
+	 * With this restructuring: ~10 executions, under 1 second.
+	 * <p>
+	 * When no display value is present, DISTINCT is applied directly in the outer SELECT
+	 * (no expensive subquery to defer, so no restructuring needed).
+	 */
 	public SqlAndParams selectFieldValues(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			@NonNull final String selectionId,
@@ -478,30 +563,42 @@ public class SqlViewSelectData
 			sqlDisplayValue = null;
 		}
 
-		final CompositeStringExpression.Builder sqlExpression = IStringExpression.composer()
-				.append("SELECT DISTINCT ")
-				.append(sqlValue.getColumnNameAlias());
-		if (sqlDisplayValue != null)
-		{
-			sqlExpression.append(", ").append(sqlDisplayValue.getColumnNameAlias());
-		}
+		final CompositeStringExpression.Builder sqlExpression;
 
-		sqlExpression
-				.append("\n FROM (")
-				.append("\n SELECT ")
-				.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias());
 		if (sqlDisplayValue != null)
 		{
-			sqlExpression
-					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias());
+			// gh#28680: Performance optimization — compute DISTINCT first, then display values.
+			// Previously, the display subquery (e.g., AD_User lookup) ran for ALL rows (52k+)
+			// before DISTINCT reduced them to ~10 values. Now we first get distinct values,
+			// then compute display only for those few values.
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT ")
+					.append("t.").append(sqlValue.getColumnNameAlias())
+					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias("t").toStringExpressionWithColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT DISTINCT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n) t")
+					.append("\n LIMIT ?");
 		}
-		sqlExpression.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
-				.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
-				.append("\n) t")
-				.append("\n LIMIT ?");
+		else
+		{
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT DISTINCT ")
+					.append(sqlValue.getColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
+					.append("\n) t")
+					.append("\n LIMIT ?");
+		}
 
 		final String sql = sqlExpression.build()
 				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);

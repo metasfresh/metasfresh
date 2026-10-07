@@ -1,8 +1,9 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
+import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -198,13 +199,196 @@ export class SalesOrderPage {
    * IMPORTANT: Parent record must be saved before calling this method.
    * Use waitForTabAllowsNew() or call selectCustomer() first which waits for save.
    *
+   * CONSTRAINT: do NOT call this twice with the same `product` on the same order. Success, and the
+   * retry's idempotency guard, are both decided by "a grid row for this product exists" - which
+   * cannot tell one call's row from another's. A second call for the same product would therefore
+   * see the first call's row and report success without adding anything. A spec that genuinely needs
+   * two lines of one product must drive batch entry itself.
+   *
    * @param {Object} params - Order line parameters
    * @param {string} params.product - Product code or name
    * @param {string|number} params.quantity - Quantity to order
    * @param {string} params.recordId - Optional record ID (will extract from URL if not provided)
    */
-  static async addOrderLine({ product, quantity, recordId }) {
+  static async addOrderLine({ product, quantity, recordId, maxAttempts = 3 }) {
     return await test.step(`SalesOrderPage - Add order line: ${product} x ${quantity}`, async () => {
+      const page = getPage();
+
+      // Get record ID if not provided
+      const effectiveRecordId = recordId || this.getRecordId();
+
+      // Wait for tab to allow creating new records
+      // Tab ID for Sales Order Lines: AD_Tab-187
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+        maxRetries: 15,
+        retryDelayMs: 1000,
+      });
+
+      console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
+
+      // Matches the grid row for the product this call is adding. Used both to confirm success and -
+      // before every retry - to make the retry idempotent.
+      const productRow = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: product }) })
+          .first();
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
+
+        // A previous attempt may have succeeded on the server and only rendered after this method
+        // gave up waiting. Re-adding then would silently duplicate the line, so check first - with a
+        // short wait rather than an instantaneous read, because the reload that precedes this may
+        // still be settling.
+        const alreadyPresent =
+          attempt > 1 &&
+          (await productRow()
+            .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+            .then(() => true)
+            .catch(() => false));
+        if (alreadyPresent) {
+          console.log(`Order line for ${product} is present after all - not adding it again`);
+          return;
+        }
+
+        // Scroll to batch entry button (may be below the fold in single-section layout)
+        const batchEntryButton = page.getByTestId('batch-entry-toggle');
+        await batchEntryButton.scrollIntoViewIfNeeded();
+        await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        // Click batch entry toggle
+        await batchEntryButton.click();
+        await page.waitForTimeout(500);
+
+        // Wait for batch entry form
+        const quickInputVisible = await page
+          .locator('.quick-input-container')
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
+
+        if (!quickInputVisible) {
+          console.log(`Quick input container not visible on attempt ${attempt}, retrying...`);
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(1000);
+          continue;
+        }
+
+        const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+        await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await productInput.click();
+
+        // Wait for initial loading spinner to disappear (product list being loaded)
+        await page
+          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        await page.waitForTimeout(300);
+
+        // Fill the product code/name
+        await productInput.fill(product);
+        await page.waitForTimeout(1000);
+
+        // Wait for any search spinner to disappear
+        await page
+          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        await page.waitForTimeout(500);
+
+        // Click the option by text - check it's visible first
+        const dropdownOption = page.locator('.input-dropdown-list-option').getByText(product).first();
+        const optionVisible = await dropdownOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
+
+        if (!optionVisible) {
+          console.log(`Product dropdown option not visible on attempt ${attempt}, retrying...`);
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(500);
+          await batchEntryButton.click().catch(() => {});
+          await page.waitForTimeout(1000);
+          await page.keyboard.press('F5');
+          await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+          await page.waitForTimeout(2000);
+          continue;
+        }
+
+        await dropdownOption.click();
+        await page.waitForTimeout(500);
+
+        // Fill quantity — scope to .quick-input-container to avoid matching other spinbuttons
+        const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+        await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+        await quantityInput.click();
+        await quantityInput.fill(quantity.toString());
+        await page.waitForTimeout(300);
+
+        // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+
+        // Wait for spinners
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Close the batch entry modal (only if still open)
+        const isStillOpen = await page.locator('.quick-input-container').isVisible().catch(() => false);
+        if (isStillOpen) {
+          await page.getByTestId('batch-entry-toggle').click();
+          await page.waitForTimeout(1000);
+        }
+
+        // Verify THIS product's line was added. `rowCount > 0` is not enough: it is already true
+        // whenever an earlier addOrderLine call added a DIFFERENT line, so a silently-failed dropdown
+        // selection on a second call would be reported as success and leave the requested product off
+        // the order - measured at ~10% of runs, where a two-line fixture ended up with one line and
+        // the downstream assertions failed far from the cause.
+        const rowCount = await page.locator('table tbody tr').count();
+        // Waited on with the SLOW timeout deliberately: a miss here costs a full reload-and-retry
+        // cycle, so being impatient is more expensive than waiting a little longer.
+        const addedProductRowPresent = await productRow()
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+          .then(() => true)
+          .catch(() => false);
+        if (addedProductRowPresent) {
+          console.log(
+            `Order line added successfully on attempt ${attempt} (${rowCount} row(s), ${product} present)`
+          );
+          return;
+        }
+
+        console.log(`Order line for ${product} not found after attempt ${attempt}, reloading page...`);
+        await page.keyboard.press('F5');
+        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to add order line after ${maxAttempts} attempts`);
+    });
+  }
+
+  /**
+   * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
+   * the caller can inspect what the backend defaulted into it.
+   *
+   * {@link addOrderLine} submits and closes the form, so it cannot be used to read a defaulted field.
+   * The two deliberately do NOT share an implementation here: addOrderLine carries a retry/reload loop
+   * that this helper must not inherit, because a reload would discard the very defaulted state the
+   * caller is about to read.
+   *
+   * @param {Object} params
+   * @param {string} params.product - Product code or name
+   * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   */
+  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+    return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
       // Get record ID if not provided
@@ -275,60 +459,110 @@ export class SalesOrderPage {
       // This avoids clicking on "Search for more..." or other non-record options
       await page.locator('.input-dropdown-list-option').getByText(product).first().click();
 
-      // Wait for product to be selected and form to update
-      await page.waitForTimeout(500);
+      // The product callout runs server-side and patches the quick-input document; give it time to
+      // come back before the caller reads any field it may have defaulted.
+      await page.waitForTimeout(1500);
+    });
+  }
 
-      // Fill quantity using spinbutton role (language-independent)
+  /**
+   * @returns {Promise<string>} the displayed value of the packing-instruction
+   *   (`M_HU_PI_Item_Product_ID`) field in the open quick-entry form — empty string when unset.
+   *   Call after {@link openQuickEntryAndSelectProduct}.
+   */
+  static async getQuickEntryPackingInstruction() {
+    return await test.step('SalesOrderPage - Read quick-entry packing instruction', async () => {
+      const page = getPage();
+
+      const field = page.locator('.quick-input-container #lookup_M_HU_PI_Item_Product_ID input.input-field');
+      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await field.inputValue()).trim();
+    });
+  }
+
+  /**
+   * Submit the order line from the quick-entry form opened by
+   * {@link openQuickEntryAndSelectProduct}, then close the form.
+   */
+  static async submitQuickEntryLine({ quantity }) {
+    return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
+      const page = getPage();
+
       await page.getByRole('spinbutton').fill(quantity.toString());
-
-      // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
       await page.keyboard.press('Enter');
-
-      // Wait for the line to be added
       await page.waitForTimeout(500);
 
-      // Close the batch entry modal
-      // Language-independent: Use data-testid from TableFilter.js
-      const closeButton = page.getByTestId('batch-entry-toggle');
-      await closeButton.click();
-
-      // Wait for the modal to close
+      await page.getByTestId('batch-entry-toggle').click();
       await page.waitForTimeout(500);
     });
   }
 
   /**
    * Complete the sales order.
+   * Retries up to maxAttempts times, using language-independent data-testid selectors
+   * to detect whether the Complete (CO) action is still available.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum retry attempts (default: 3)
    */
-  static async complete() {
+  static async complete({ maxAttempts = 3 } = {}) {
     return await test.step('SalesOrderPage - Complete order', async () => {
       const page = getPage();
 
-      // Click the document status button (e.g., "Drafted") in the upper right header
-      // This opens the document action dropdown with options like Complete, Close, Void, etc.
-      // Language-independent: Use data-testid
-      await page.getByTestId('status-button').click();
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const coOption = page.getByTestId('status-CO');
 
-      // Wait for the action dropdown to appear
-      await page.waitForTimeout(500);
+        // Check if dropdown is already open from a previous failed attempt
+        const isAlreadyOpen = await coOption.isVisible().catch(() => false);
+        if (!isAlreadyOpen) {
+          // Click the document status button to open the action dropdown
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+        }
 
-      // Click "Complete" action in the dropdown
-      // Language-independent: Use data-testid (CO = Complete document action key)
-      await page.getByTestId('status-CO').click();
+        // Language-independent: check if Complete action is available
+        const coVisible = await coOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
 
-      // Wait for the completion process (can take a few seconds)
-      await page.waitForTimeout(3000);
+        if (!coVisible) {
+          // No CO action means document is already completed (or non-completable)
+          console.log(`Complete action (status-CO) not available — document likely already completed`);
+          await page.keyboard.press('Escape');
+          return;
+        }
 
-      // Wait for any processing indicators to disappear
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({
-          state: 'detached',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if indicator doesn't exist
-        });
+        console.log(`Complete attempt ${attempt}/${maxAttempts}`);
+
+        // Click "Complete" action (CO = Complete document action key)
+        await coOption.click();
+
+        // Wait for the completion process
+        await page.waitForTimeout(3000);
+
+        // Wait for any processing indicators to disappear
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Language-independent verification: open dropdown and check if CO is still there
+        await page.getByTestId('status-button').click();
+        await page.waitForTimeout(500);
+        const stillHasCO = await coOption.isVisible().catch(() => false);
+        await page.keyboard.press('Escape');
+
+        if (!stillHasCO) {
+          console.log(`Order completed successfully on attempt ${attempt}`);
+          return;
+        }
+
+        console.log(`Order still shows CO action after attempt ${attempt}, retrying...`);
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to complete order after ${maxAttempts} attempts`);
     });
   }
 
@@ -349,164 +583,62 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Shipment Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   * Open the related Shipment Candidate (Shipment Schedule) using Alt+6.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedShipmentCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment Schedule link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: M_ShipmentSchedule, Fallback: AD_RelationType_ID-540170 (C_Order_to_M_ShipmentSchedule)
-      const link = page.locator(
-        '[data-cy="reference-M_ShipmentSchedule"], [data-cy="reference-AD_RelationType_ID-540170"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override windows
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipmentCandidate({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT_SCHEDULE,
+      stepName: 'SalesOrderPage - Open related shipment candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      refreshOnRetry,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
   /**
    * Open the related Shipment using Alt+6.
-   * @param {number} waitTime - Time to wait for shipment to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedShipment(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Order_to_M_InOut_SO, Fallback: AD_RelationType_ID-540159
-      const link = page.locator(
-        '[data-cy="reference-C_Order_to_M_InOut_SO"], [data-cy="reference-AD_RelationType_ID-540159"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override window 169 (M_InOut)
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipment({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT,
+      stepName: 'SalesOrderPage - Open related shipment (Alt+6)',
+      maxRetries,
+      retryDelay,
+      refreshOnRetry,
+      navigateToDetail: false, // Stay on list view - test will call ShipmentPage.openDetailView() explicitly
     });
   }
 
   /**
    * Open the related Invoice Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedInvoiceCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice Candidate link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Invoice_Candidate_Sales, Fallback: AD_RelationType_ID-540119
-      const link = page.locator(
-        '[data-cy="reference-C_Invoice_Candidate_Sales"], [data-cy="reference-AD_RelationType_ID-540119"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override windows
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_INVOICE_CANDIDATES,
+      stepName: 'SalesOrderPage - Open related invoice candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      refreshOnRetry,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
@@ -592,62 +724,23 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Invoice using Alt+6.
+   * Open the related Invoice (Customer Invoice) using Alt+6.
    * This navigates to the invoice created from the invoice candidates.
-   * @param {number} waitTime - Time to wait for invoice to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedInvoice(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Order_to_C_Invoice_SO, Fallback: AD_RelationType_ID-540160
-      const invoiceLink = page.locator(
-        '[data-cy="reference-C_Order_to_C_Invoice_SO"], [data-cy="reference-AD_RelationType_ID-540160"]'
-      ).first();
-
-      await invoiceLink.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await invoiceLink.click();
-
-      // Use flexible window ID pattern - custom projects may override window 167 (C_Invoice)
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoice({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_CUSTOMER_INVOICE,
+      stepName: 'SalesOrderPage - Open related invoice (Alt+6)',
+      maxRetries,
+      retryDelay,
+      refreshOnRetry,
+      navigateToDetail: false, // Stay on list view - test will call InvoicePage.openDetailView() explicitly
     });
   }
 }

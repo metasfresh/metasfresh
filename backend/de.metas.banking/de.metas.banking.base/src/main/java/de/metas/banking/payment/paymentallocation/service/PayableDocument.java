@@ -23,6 +23,7 @@
 package de.metas.banking.payment.paymentallocation.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -110,7 +111,13 @@ public class PayableDocument
 	private final LocalDate date;
 
 	@Getter
+	private final LocalDate dateAcct;
+
+	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
+
+	@Getter
+	private final WriteOffType writeOffType;
 
 	@Builder
 	private PayableDocument(
@@ -127,7 +134,9 @@ public class PayableDocument
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate date,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+			@Nullable final LocalDate dateAcct,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
+			@Nullable final WriteOffType writeOffType
 	)
 	{
 		final OrgId orgId = clientAndOrgId.getOrgId();
@@ -179,7 +188,9 @@ public class PayableDocument
 
 		this.clientAndOrgId = clientAndOrgId;
 		this.date = date;
+		this.dateAcct = dateAcct != null ? dateAcct : date;
 		this.currencyConversionTypeId = currencyConversionTypeId;
+		this.writeOffType = writeOffType != null ? writeOffType : WriteOffType.WriteOff;
 	}
 
 	public CurrencyId getCurrencyId()

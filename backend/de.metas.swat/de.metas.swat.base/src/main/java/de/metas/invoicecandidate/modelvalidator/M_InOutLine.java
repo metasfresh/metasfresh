@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -34,6 +35,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,20 +47,19 @@ import java.util.List;
 
 @Interceptor(I_M_InOutLine.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOutLine
 {
-	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
-	public M_InOutLine(@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService)
-	{
-		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
-	}
+	@NonNull private final InvoiceCandidateRecordService invoiceCandidateRecordService;
+
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void deleteC_InvoiceCandidate_InOutLines(final I_M_InOutLine inOutLine)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInOutLineInclInactive(inOutLine);
 
 		for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
@@ -96,15 +97,17 @@ public class M_InOutLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createC_InvoiceCandidate_InOutLines(final I_M_InOutLine inOutLine)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		//
 		// Get Order Line
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
 		if (orderLineId == null)
 		{
 			return; // nothing to do
+		}
+
+		if (inOutBL.isCustomerReturn(inOutLine))
+		{
+			return;
 		}
 
 		//

@@ -202,6 +202,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 	@Builder
 	protected static class CustomPostgRESTParameters
 	{
+		/**
+		 * If true, then the postgREST invocation result is stored in the folder specified by the postgREST-Config.
+		 */
 		boolean storeJsonFile;
 
 		/**

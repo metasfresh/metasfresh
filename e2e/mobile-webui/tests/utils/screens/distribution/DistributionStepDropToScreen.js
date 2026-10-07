@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'DistributionStepDropToScreen';
@@ -8,7 +8,7 @@ const containerElement = () => page.locator('#DistributionStepDropToScreen');
 
 export const DistributionStepDropToScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for Screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {

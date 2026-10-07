@@ -3,6 +3,7 @@ package de.metas.shipping.api.impl;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -17,12 +18,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+
+	@Override
+	public void save(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)
+	{
+		shipperTransportationDAO.save(shipperTransportationRecord);
+	}
 
 	@Override
 	public I_M_ShippingPackage createShippingPackage(final ShipperTransportationId shipperTransportationId, final I_M_Package mpackage)
@@ -89,5 +97,19 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 		shipperTransportation.setPickupTimeFrom(shipper.getPickupTimeFrom());
 		shipperTransportation.setPickupTimeTo(shipper.getPickupTimeTo());
+	}
+
+	@Override
+	public void unlinkShipmentIfOrphaned(@Nullable final InOutId inOutId, @Nullable final ShipperTransportationId shipperTransportationId)
+	{
+		if (inOutId == null || shipperTransportationId == null)
+		{
+			return;
+		}
+
+		if (!shipperTransportationDAO.hasActiveShippingPackage(inOutId, shipperTransportationId))
+		{
+			shipperTransportationDAO.clearShipperTransportationIdIfMatches(inOutId, shipperTransportationId);
+		}
 	}
 }

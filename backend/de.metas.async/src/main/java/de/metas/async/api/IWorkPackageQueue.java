@@ -58,7 +58,7 @@ public interface IWorkPackageQueue
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
-	 *  Retrieve the number of processable workpackages using a DB-query.
+	 * Retrieve the number of processable workpackages using a DB-query.
 	 */
 	int size();
 

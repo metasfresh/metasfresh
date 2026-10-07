@@ -26,7 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -345,6 +348,60 @@ public class BPartnerEffectiveBLTest
 		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation3");
 	}
 
+	/**
+	 * Regression guard: a BP-Group-level InvoiceRule+IsAutoInvoice default must reach
+	 * the partner's effective resolution for a sales order when the partner has no own value set.
+	 *
+	 * Scenario: C_BPartner with null InvoiceRule + null IsAutoInvoice,
+	 * assigned to a C_BP_Group that has InvoiceRule=AfterDelivery and IsAutoInvoice='Y'.
+	 */
+	@Test
+	public void getEffectiveValue_bpGroupInvoiceRuleAndIsAutoInvoice_reachesEffectiveForSales()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpGroup_InvoiceRule(InvoiceRule.AfterDelivery)
+				.bpGroup_isAutoInvoice(true)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isAfterDelivery())
+				.as("BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
+				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES))
+				.as("BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
+				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE))
+				.as("group IsAutoInvoice=Y must NOT propagate to the purchase side")
+				.isFalse();
+	}
+
+	@Test
+	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(0);
+	}
+
+	@Test
+	public void getPurchaseTransportDays_valueSetOnBPartner_returnsValue()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		partner.setPO_TransportDays(5);
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(5);
+	}
+
 	// ------- getEffectiveBillBPartner tests -------
 
 	@Test
@@ -392,7 +449,9 @@ public class BPartnerEffectiveBLTest
 		relation.setIsActive(true);
 		saveRecord(relation);
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(
+				memberBPId,
+				BPartnerLocationId.ofRepoId(memberBPId, memberBillToLoc.getC_BPartner_Location_ID()));
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(memberBillToBPId, memberBillToBPLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -422,7 +481,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -459,7 +518,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -479,9 +538,149 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
 		assertThat(resolution).isNull();
+	}
+
+	/**
+	 * One active bill-to relation is allowed per partner location (unique index C_BP_Relation_UC_IsBillTo),
+	 * so the relation is resolved for the given partner location.
+	 */
+	@Test
+	public void getEffectiveBillBPartner_perLocationRelations_resolvedByGivenLocation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId memberLocB = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocY1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, memberLocB, billLocY1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocA), billLocX1);
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocB), billLocY1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_givenLocationWithoutRelation_usesPartnerWideRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId memberLocC = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberLocC), billLocZ1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_noLocationGiven_usesPartnerWideRelationOnly()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null), billLocZ1);
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_noLocationGiven_ignoresPerLocationRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null)).isNull();
+	}
+
+	private static I_C_BP_Group createPlainBPGroup()
+	{
+		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		plainGroup.setIsDeviatingBillBPartner(false);
+		saveRecord(plainGroup);
+		return plainGroup;
+	}
+
+	private static I_C_BPartner createBPartner(@Nullable final I_C_BP_Group bpGroup)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		if (bpGroup != null)
+		{
+			bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		}
+		saveRecord(bpartner);
+		return bpartner;
+	}
+
+	private static BPartnerLocationId createLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(location);
+		return BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+	}
+
+	private static void createBillToRelation(
+			final I_C_BPartner bpartner,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationId billLocationId)
+	{
+		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		relation.setC_BPartnerRelation_ID(billLocationId.getBpartnerId().getRepoId());
+		relation.setC_BPartnerRelation_Location_ID(billLocationId.getRepoId());
+		relation.setIsBillTo(true);
+		relation.setIsActive(true);
+		saveRecord(relation);
+	}
+
+	private static void assertBillTo(@Nullable final BillBPartnerResolution resolution, final BPartnerLocationId expectedBillLocationId)
+	{
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(expectedBillLocationId.getBpartnerId());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocationId);
+	}
+
+	@Test
+	public void getEffectiveValue_deliveryAndFreight()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpartner_DeliveryRule(DeliveryRule.MANUAL)
+				.bpartner_DeliveryViaRule(DeliveryViaRule.Shipper)
+				.bpartner_poDeliveryViaRule(DeliveryViaRule.NormalPost)
+				.bpartner_FreightCostRule(FreightCostRule.Line)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+
+		// DeliveryRule is sales-only: the getter returns null for purchase so no caller can leak the sales value
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.SALES)).isEqualTo(DeliveryRule.MANUAL);
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.PURCHASE)).isNull();
+
+		// DeliveryViaRule has an SO/PO split (DeliveryViaRule vs PO_DeliveryViaRule)
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.SALES)).isEqualTo(DeliveryViaRule.Shipper);
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.PURCHASE)).isEqualTo(DeliveryViaRule.NormalPost);
+
+		// FreightCostRule is not SOTrx-split
+		assertThat(bPartnerEffective.getFreightCostRule()).isEqualTo(FreightCostRule.Line);
 	}
 
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
@@ -497,6 +696,10 @@ public class BPartnerEffectiveBLTest
 			@Nullable final Boolean bpartner_isAutoInvoice,
 			@Nullable final Incoterms bpartner_incoterms,
 			@Nullable final Incoterms bpartner_poIncoterms,
+			@Nullable final DeliveryRule bpartner_DeliveryRule,
+			@Nullable final DeliveryViaRule bpartner_DeliveryViaRule,
+			@Nullable final DeliveryViaRule bpartner_poDeliveryViaRule,
+			@Nullable final FreightCostRule bpartner_FreightCostRule,
 			@Nullable final PricingSystemId bpGroup_PricingSystemId,
 			@Nullable final PricingSystemId bpGroup_poPricingSystemId,
 			@Nullable final PaymentTermId bpGroup_PaymentTermId,
@@ -565,6 +768,10 @@ public class BPartnerEffectiveBLTest
 		partner.setIncotermLocation(extractIncotermsLocation(bpartner_incoterms));
 		partner.setC_Incoterms_Vendor_ID(createIncoterms(bpartner_poIncoterms));
 		partner.setPO_IncotermLocation(extractIncotermsLocation(bpartner_poIncoterms));
+		partner.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner_DeliveryRule));
+		partner.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_DeliveryViaRule));
+		partner.setPO_DeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_poDeliveryViaRule));
+		partner.setFreightCostRule(FreightCostRule.toCodeOrNull(bpartner_FreightCostRule));
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());
@@ -583,6 +790,50 @@ public class BPartnerEffectiveBLTest
 		saveRecord(incotermsRecord);
 
 		return incotermsRecord.getC_Incoterms_ID();
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSet_returnsValue()
+	{
+		final BPartnerId vendorId = createVendor(5);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(5);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnNotSet_returnsEmpty()
+	{
+		final BPartnerId vendorId = createVendor(null);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).isEmpty();
+	}
+
+	/**
+	 * Guards the zero-boundary at the BL layer: an explicit {@code PO_TransportDays = 0} on
+	 * the vendor must surface as {@code Optional.of(0)}, not collapse to {@code Optional.empty()}.
+	 * If the DAO's {@code InterfaceWrapperHelper.isNull} check regresses (e.g. POJOWrapper starts
+	 * treating int-zero as null), the candidate handler's three-tier chain would silently
+	 * fall through to {@code PP_Product_Planning.DeliveryTime_Promised} instead of using the
+	 * explicitly-configured 0 — a behavioural regression.
+	 */
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSetToZero_returnsZero()
+	{
+		final BPartnerId vendorId = createVendor(0);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(0);
+	}
+
+	private BPartnerId createVendor(final Integer poTransportDays)
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		vendor.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		if (poTransportDays != null)
+		{
+			vendor.setPO_TransportDays(poTransportDays);
+		}
+		saveRecord(vendor);
+		return BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
 	}
 
 	@Nullable

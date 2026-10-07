@@ -24,6 +24,7 @@ package de.metas.handlingunits;
 
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -61,4 +62,5 @@ public interface IPackingMaterialDocumentLineSource
 	 */
 	BigDecimal getQtyLU();
 
+	@Nullable ProjectId getProjectId();
 }

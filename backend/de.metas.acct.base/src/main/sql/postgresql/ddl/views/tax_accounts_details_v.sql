@@ -28,7 +28,13 @@ AS
 WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
                       FROM C_Tax_Acct ta
                                INNER JOIN C_ValidCombination vc
-                                          ON vc.C_ValidCombination_ID IN (ta.T_Due_Acct, ta.T_Credit_Acct))
+                                          ON vc.C_ValidCombination_ID IN (ta.T_Due_Acct, ta.T_Credit_Acct)
+                      UNION
+
+                        SELECT C_ElementValue_ID from C_ElementValue
+                        WHERE AccountConceptualName IN ('T_Due_Acct', 'T_Credit_Acct')
+
+                      )
 SELECT fa.vatcode,
        fa.accountno,
        fa.accountname,
@@ -37,12 +43,25 @@ SELECT fa.vatcode,
        fa.taxname,
        fa.taxrate,
        fa.bpName,
-       fa.taxamt,
+       -- RC symmetric reporting: on reverse-charge taxes, the output (T_Due_Acct) leg mirrors
+       -- the input (T_Credit_Acct) leg. §13b UStG + §17(1) UStG require both KZ 84/85 and KZ 67
+       -- to show the same (signed) tax amount after any adjustment.
+       (CASE
+            WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
+                THEN -fa.taxamt
+                ELSE  fa.taxamt
+        END) AS taxamt,
        fa.currency,
        (CASE
             WHEN DocBaseType IN ('APC', 'ARI') THEN -TaxBaseAmt
             WHEN DocBaseType IN ('ARC', 'API') THEN  TaxBaseAmt
-                                               ELSE SIGN(TaxAmt) * ABS(TaxBaseAmt) -- we need the absolut value in order to be able to enforce tax sign
+            -- Allocation (CMA) rows land here. Under the default ledger-sign convention the
+            -- back-computed base would diverge between the two RC legs (one positive, one
+            -- negative). Flip sign on the RC output leg so the declaration base mirrors the
+            -- input leg.
+            WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
+                THEN -SIGN(TaxAmt) * ABS(TaxBaseAmt)
+                ELSE  SIGN(TaxAmt) * ABS(TaxBaseAmt) -- we need the absolut value in order to be able to enforce tax sign
         END) AS TaxBaseAmt,
        fa.source_currency,
        fa.C_Tax_ID,
@@ -53,7 +72,10 @@ SELECT fa.vatcode,
        fa.source_currency_id,
        fa.ad_table_id,
        fa.record_id,
-       fa.ad_org_id
+       fa.ad_org_id,
+       -- Exposed so downstream consumers (e.g. de_metas_acct.report_taxaccounts)
+       -- can branch on reverse-charge without having to join C_Tax again.
+       fa.isreversecharge
 FROM (SELECT fa.vatcode                    AS vatcode,
              ev.value                      AS accountno,
              ev.name                       AS accountname,
@@ -91,6 +113,7 @@ FROM (SELECT fa.vatcode                    AS vatcode,
              c.iso_code                    AS source_currency,
              cr.iso_code                   AS currency,
              fa.DocBaseType,
+             tax.IsReverseCharge           AS isreversecharge,
              fa.C_Tax_ID,
              fa.account_id,
              fa.postingtype,
@@ -114,7 +137,6 @@ FROM (SELECT fa.vatcode                    AS vatcode,
                INNER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = fa.ad_client_id
                INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                INNER JOIN C_Currency cr ON acs.C_Currency_ID = cr.C_Currency_ID) AS fa
-         LEFT OUTER JOIN tax_accounts ON (tax_accounts.C_ElementValue_ID = fa.account_id AND fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')))
-WHERE (fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')) AND tax_accounts.C_ElementValue_ID IS NOT NULL)
+    WHERE (exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;

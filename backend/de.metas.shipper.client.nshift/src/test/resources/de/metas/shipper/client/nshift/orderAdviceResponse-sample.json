@@ -1,0 +1,55 @@
+{
+  "Shipment" : {
+    "ShpCSID" : 676212277,
+    "InstallationID" : "32009699615",
+    "Kind" : 1,
+    "OrderNo" : "1",
+    "PickupDt" : "2026-06-15T00:00:00",
+    "ImportDt" : "2026-06-15T21:18:31",
+    "Weight" : 30000,
+    "ProdConceptID" : 9303,
+    "ProdCSID" : 10672,
+    "Addresses" : [ {
+      "Kind" : 1,
+      "Name1" : "metas.ro SRL",
+      "City" : "Timisoara",
+      "CountryCode" : "RO"
+    } ],
+    "Lines" : [ {
+      "LineCSID" : 715185876,
+      "LineWeight" : 10000,
+      "GoodsTypeID" : 2,
+      "GoodsTypeName" : "Customer supplied package",
+      "GoodsTypeKey1" : "02",
+      "GoodsTypeKey2" : "01",
+      "Pkgs" : [ {
+        "PkgCSID" : 811833093,
+        "ItemNo" : 1,
+        "TrackingURL" : "https://www.ups.com/track?loc=&tracknum="
+      } ],
+      "References" : [ {
+        "Kind" : 23,
+        "Value" : "Test Product"
+      } ]
+    }, {
+      "LineCSID" : 715185877,
+      "LineWeight" : 20000,
+      "GoodsTypeID" : 2,
+      "GoodsTypeName" : "Customer supplied package",
+      "GoodsTypeKey1" : "02",
+      "GoodsTypeKey2" : "01",
+      "Pkgs" : [ {
+        "PkgCSID" : 811833094,
+        "ItemNo" : 1,
+        "TrackingURL" : "https://www.ups.com/track?loc=&tracknum="
+      } ],
+      "References" : [ {
+        "Kind" : 23,
+        "Value" : "Test Product 2,Test Product 3"
+      } ]
+    } ],
+    "TrackingURL" : "https://www.ups.com/track?loc=&tracknum="
+  },
+  "Status" : "0 - Success",
+  "CorrelationID" : "8f6e3c7b-7369-4c8f-bbf6-50d4452fdf30"
+}

@@ -31,8 +31,10 @@ import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
@@ -47,16 +49,24 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
@@ -67,16 +77,27 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 public class HUOrderBL implements IHUOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(HUOrderBL.class);
+
+	private static final String SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI =
+			"de.metas.handlingunits.order.CopyStorageRelevantAttributesToOrderLineASI";
+
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 	private final ProjectRepository projectRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void updateOrderLine(final de.metas.interfaces.I_C_OrderLine olPO, final String columnName)
@@ -541,20 +562,73 @@ public class HUOrderBL implements IHUOrderBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 		if (huIds.isEmpty())
 		{
-			setProjectIdAndSave(orderLine, null);
+			final ProjectId orderLineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+			if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+			{
+				// if there's a project ID assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line regardless of what the sysconfig says
+				// otherwise we will be allowed to pick HUs with any project ID
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
+				attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+			}
+			else
+			{
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
+			}
+			orderDAO.save(orderLine);
 			return;
 		}
-		final ProjectId projectId = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project)
+		final Optional<String> projectAttrValue = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project);
+		final ProjectId projectId = projectAttrValue
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);
 
-		setProjectIdAndSave(orderLine, projectId);
-	}
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
+		{
+			// ASIs are considered immutable, so always create a new one
+			final ImmutableAttributeSet commonStorageRelevantAttributes = huAttributesBL.extractCommonStorageRelevantAttributeSet(huIds);
+			final AttributeSetInstanceId asiId = commonStorageRelevantAttributes.isEmpty()
+					? AttributeSetInstanceId.NONE
+					: AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(commonStorageRelevantAttributes).getM_AttributeSetInstance_ID());
+			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+		}
 
-	private void setProjectIdAndSave(@NonNull final I_C_OrderLine orderLine, @Nullable final ProjectId projectId)
-	{
 		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		orderDAO.save(orderLine);
+	}
+
+	@Override
+	@Nullable
+	public Quantity getCapacityPerTUInStockUOMFallback(
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final ProductId productId)
+	{
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+
+		final I_C_Order orderRecord = orderDAO.getById(salesOrderAndLineId.getOrderId(), I_C_Order.class);
+		final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(
+				salesOrderAndLineId.getOrderLineRepoId(),
+				de.metas.handlingunits.model.I_C_OrderLine.class);
+
+		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
+		if (tuPIItemProduct == null)
+		{
+			return null;
+		}
+
+		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				productId,
+				stockUomId,
+				null/* bpartnerId */,
+				false/* noLUForVirtualTU */);
+
+		// Pass a zero stock qty so the result reflects the packing instruction's CU-per-TU rather than
+		// any on-hand stock. The order-line-QtyItemCapacity branch is handled by the reservation command.
+		final Quantity zeroStockQty = Quantitys.of(BigDecimal.ZERO, stockUomId);
+		final Quantity capacityPerTU = IHUPIItemProductBL.getQtyCUsPerTUInStockUOM(orderLineRecord, zeroStockQty, lutuConfigurationInStockUOM);
+
+		return capacityPerTU != null && capacityPerTU.signum() > 0 ? capacityPerTU : null;
 	}
 
 }

@@ -4,9 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -19,16 +26,20 @@ import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -45,6 +56,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -60,7 +72,10 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PPOrderSourceHUService sourceHUService;
@@ -86,6 +101,8 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	@NonNull
 	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
+
+	public IUOMConversionBL getUOMConversionBL() {return uomConversionBL;}
 
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 
@@ -176,5 +193,64 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	{
 		final ImmutableSet<HuId> huIds = sourceHUService.getSourceHUIds(ppOrderId);
 		return handlingUnitsBL.getLocatorIds(huIds);
+	}
+
+	public HUPIItemProduct getTUPIItemProduct(@NonNull final HUPIItemProductId id)
+	{
+		return huPIItemProductDAO.getById(id);
+	}
+
+	public Optional<HUPIItemProductId> getDefaultTUPIItemProductId(@NonNull final ProductId productId, @NonNull final Instant date)
+	{
+		final I_M_HU_PI_Item_Product defaultPIIP = huPIItemProductDAO.retrieveDefaultForProduct(productId, date.atZone(SystemTime.zoneId()));
+		return defaultPIIP != null
+				? Optional.of(HUPIItemProductId.ofRepoId(defaultPIIP.getM_HU_PI_Item_Product_ID()))
+				: Optional.empty();
+	}
+
+	public Optional<HUPIItemProductId> getSalesOrderTUPIItemProductId(@NonNull final OrderLineId salesOrderLineId)
+	{
+		final I_C_OrderLine salesOrderLine = orderDAO.getOrderLineById(salesOrderLineId, I_C_OrderLine.class);
+		return salesOrderLine != null
+				? HUPIItemProductId.optionalOfRepoId(salesOrderLine.getM_HU_PI_Item_Product_ID())
+				: Optional.empty();
+	}
+
+	/**
+	 * @return {@code true} if the HU's shape (not aggregate, a {@link HUType#TransportUnit} or
+	 * {@link HUType#VirtualPI} carrying at most one product storage) allows it to later be written off
+	 * via the "empty (auto. inventory)" reason. The client-config gate (whether emptying is offered at
+	 * all) is deliberately not applied here -- it is resolved once per request by the caller.
+	 */
+	public boolean isEmptyingEligible(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		return isEmptyingEligible(hu);
+	}
+
+	private boolean isEmptyingEligible(@NonNull final I_M_HU hu)
+	{
+		if (handlingUnitsBL.isAggregateHU(hu)) { return false; }          // orthogonal to unit type
+
+		final HUType huType = HUType.ofCodeOrNull(handlingUnitsBL.getHU_UnitType(hu));
+		if (huType == null) { return false; }                             // getHU_UnitType is @Nullable
+
+		switch (huType)
+		{
+			case TransportUnit:
+			case VirtualPI:
+				return isSingleProductStorage(hu);
+			case LoadLogistiqueUnit:
+				return false;
+		}
+
+		// No default: case above -- every current HUType is handled explicitly. A future unit type
+		// added to the enum without a matching case here fails loudly instead of silently returning false.
+		throw new AdempiereException("Unhandled HUType: " + huType);
+	}
+
+	private boolean isSingleProductStorage(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.getStorageFactory().getProductStorages(hu).size() <= 1;
 	}
 }

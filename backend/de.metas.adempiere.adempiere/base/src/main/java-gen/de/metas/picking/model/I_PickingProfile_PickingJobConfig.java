@@ -122,6 +122,29 @@ public interface I_PickingProfile_PickingJobConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Block layout.
+	 * Shows the values of this entry on their own lines in the job-list entry, with no separator, instead of a single comma-separated line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBlockLayout (boolean IsBlockLayout);
+
+	/**
+	 * Get Block layout.
+	 * Shows the values of this entry on their own lines in the job-list entry, with no separator, instead of a single comma-separated line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBlockLayout();
+
+	ModelColumn<I_PickingProfile_PickingJobConfig, Object> COLUMN_IsBlockLayout = new ModelColumn<>(I_PickingProfile_PickingJobConfig.class, "IsBlockLayout", null);
+	String COLUMNNAME_IsBlockLayout = "IsBlockLayout";
+
+	/**
 	 * Set Display in detailed view.
 	 *
 	 * <br>Type: YesNo
@@ -180,10 +203,6 @@ public interface I_PickingProfile_PickingJobConfig
 	 * <br>Virtual Column: false
 	 */
 	int getMobileUI_UserProfile_Picking_ID();
-
-	org.compiere.model.I_MobileUI_UserProfile_Picking getMobileUI_UserProfile_Picking();
-
-	void setMobileUI_UserProfile_Picking(org.compiere.model.I_MobileUI_UserProfile_Picking MobileUI_UserProfile_Picking);
 
 	ModelColumn<I_PickingProfile_PickingJobConfig, org.compiere.model.I_MobileUI_UserProfile_Picking> COLUMN_MobileUI_UserProfile_Picking_ID = new ModelColumn<>(I_PickingProfile_PickingJobConfig.class, "MobileUI_UserProfile_Picking_ID", org.compiere.model.I_MobileUI_UserProfile_Picking.class);
 	String COLUMNNAME_MobileUI_UserProfile_Picking_ID = "MobileUI_UserProfile_Picking_ID";

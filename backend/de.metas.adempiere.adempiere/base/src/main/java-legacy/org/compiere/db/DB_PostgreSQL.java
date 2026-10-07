@@ -21,6 +21,7 @@
  */
 package org.compiere.db;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -52,6 +53,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * PostgreSQL Database Port
@@ -119,6 +121,29 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	/** Logger */
 	private static final Logger log = LogManager.getLogger(DB_PostgreSQL.class);
 	private int m_maxBusyConnectionsThreshold = 0;
+
+	/**
+	 * Minimum interval between two "busy connections found ... Running finalizations" detailed log+finalization blocks.
+	 * <p>
+	 * Under connection-pool saturation, {@link #getCachedConnection(CConnection, boolean, int)} would otherwise emit the
+	 * full {@link #getStatus()} dump (every busy connection's checkout stacktrace), run {@link Runtime#runFinalization()}
+	 * and log all of it at WARN on EVERY single checkout - i.e. thousands of times per minute. That turns a pool-saturation
+	 * symptom into a multi-GB/day log + GC storm. We rate-limit the whole side-effect block to at most once per this interval.
+	 * <p>
+	 * Configured via a plain system property (parsed as millis) so it stays low-level: this code path runs before/around
+	 * connection acquisition, so we deliberately do NOT use {@code SystemTime} / {@code SysConfig} / any higher-level service here.
+	 */
+	private static final String SYSTEM_PROPERTY_BusyConnectionsLogIntervalMillis = "db.postgresql.busyConnectionsLogIntervalMillis";
+	private static final long BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT = Duration.ofSeconds(60).toMillis();
+	private static final long BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS = SystemUtils.getSystemProperty(
+			SYSTEM_PROPERTY_BusyConnectionsLogIntervalMillis,
+			BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT);
+
+	/**
+	 * Timestamp (epoch millis, {@link System#currentTimeMillis()} - NOT {@code SystemTime}, see above) of the last time we
+	 * ran the detailed busy-connections log+finalization block. {@code 0} means "never ran".
+	 */
+	private final AtomicLong _busyConnectionsLogLastRunMillis = new AtomicLong(0);
 
 	/**
 	 * PostgreSQL Database
@@ -462,20 +487,29 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			{
 				// metas-ts: i think running the finalizer won't be a big help, but anyways, exhausting the connection pool is usually an issue
 				// suggestions to consider:
-				// * allow it to be configured for certain scenarios
+				// * allow it to be configured for certain scenarios -> done: rate-limited + the interval is configurable (see BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS)
 				// * only log, but don't even try the finalizing
-				final String statusBefore = getStatus();
+				//
+				// IMPORTANT: this whole block (full getStatus() dump = every busy connection's checkout stacktrace, runFinalization(),
+				// and the WARN that logs all of it) is rate-limited to at most once per BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS.
+				// Without the gate, under pool saturation it would fire on EVERY checkout (thousands/min) and produce a multi-GB/day
+				// log + GC storm that turns pool-saturation into heap death. The connection acquisition above is deliberately left
+				// untouched - only this logging/finalization side-effect is throttled.
+				if (tryAcquireBusyConnectionsLogSlot(System.currentTimeMillis(), BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS))
+				{
+					final String statusBefore = getStatus();
 
-				// hengsin: make a best effort to reclaim leak connection
-				Runtime.getRuntime().runFinalization();
+					// hengsin: make a best effort to reclaim leak connection
+					Runtime.getRuntime().runFinalization();
 
-				final String statusAfter = getStatus();
+					final String statusAfter = getStatus();
 
-				final Thread currentThread = Thread.currentThread();
-				log.warn(numConnections + " busy connections found (>= " + maxBusyconnectionsThreshold + "). Running finalizations..."
-						+ "\n # Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
-						+ "\n # Status(initial): " + statusBefore
-						+ "\n # Status(after finalizations started): " + statusAfter);
+					final Thread currentThread = Thread.currentThread();
+					log.warn(numConnections + " busy connections found (>= " + maxBusyconnectionsThreshold + "). Running finalizations..."
+							+ "\n # Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
+							+ "\n # Status(initial): " + statusBefore
+							+ "\n # Status(after finalizations started): " + statusAfter);
+				}
 			}
 
 			connOk = true;
@@ -499,6 +533,38 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			}
 		}
 	}    // getCachedConnection
+
+	/**
+	 * Rate-limit guard for the busy-connections log+finalization block. Returns {@code true} (and atomically claims the
+	 * slot) only if at least {@link #BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS} elapsed since the last claim; otherwise {@code false}.
+	 * <p>
+	 * Extracted as a package-visible method (taking {@code nowMillis} and {@code intervalMillis} as parameters rather than
+	 * reading the clock / the configured interval internally) so the throttle logic is unit-testable without touching the
+	 * connection pool, the wall clock, or any system property.
+	 * Concurrency-safe via {@link AtomicLong#compareAndSet(long, long)}: under a saturation storm many threads may pass the
+	 * elapsed check at once, but only the one that wins the CAS proceeds; the rest fall through and just acquire their connection.
+	 * <p>
+	 * A non-positive {@code intervalMillis} (e.g. a misconfigured {@code db.postgresql.busyConnectionsLogIntervalMillis}=0)
+	 * is clamped to {@link #BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT} so the throttle can never be accidentally disabled
+	 * (which would re-open the multi-GB/day log + GC storm this guard exists to prevent).
+	 *
+	 * @param nowMillis      current time in epoch millis (the caller passes {@link System#currentTimeMillis()} - intentionally
+	 *                       NOT {@code SystemTime}, since this is low-level infra running before/around connection acquisition)
+	 * @param intervalMillis minimum interval between two claims; non-positive values are treated as "use the default"
+	 */
+	@VisibleForTesting
+	boolean tryAcquireBusyConnectionsLogSlot(final long nowMillis, final long intervalMillis)
+	{
+		final long effectiveIntervalMillis = intervalMillis > 0 ? intervalMillis : BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT;
+
+		final long lastRun = _busyConnectionsLogLastRunMillis.get();
+		if (lastRun != 0 && (nowMillis - lastRun) < effectiveIntervalMillis)
+		{
+			return false;
+		}
+
+		return _busyConnectionsLogLastRunMillis.compareAndSet(lastRun, nowMillis);
+	}
 
 	/**
 	 * Gets current {@link DataSource}.
@@ -1008,6 +1074,22 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 
 		return String.valueOf(pgBackendPID);
+	}
+
+	@Override
+	public List<String> getFunctionsLike(@NonNull final String namePattern)
+	{
+		final String sql = "SELECT p.proname"
+				+ " FROM pg_proc p"
+				+ " JOIN pg_namespace n ON n.oid = p.pronamespace"
+				+ " WHERE n.nspname = current_schema()"
+				+ " AND p.proname LIKE lower(?)"
+				+ " ORDER BY p.proname";
+
+		return DB.retrieveRowsOutOfTrx(
+				sql,
+				java.util.Collections.singletonList(namePattern),
+				rs -> rs.getString("proname"));
 	}
 
 	private static List<String> getAquiredConnectionInfos(final ComboPooledDataSource dataSource) throws Exception

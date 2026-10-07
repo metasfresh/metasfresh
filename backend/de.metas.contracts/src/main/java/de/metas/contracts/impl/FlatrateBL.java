@@ -24,6 +24,8 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerContactId;
@@ -36,10 +38,13 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
@@ -48,6 +53,9 @@ import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettings;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupTermRepository;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
@@ -67,6 +75,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -116,6 +125,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -132,6 +142,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -178,10 +189,13 @@ public class FlatrateBL implements IFlatrateBL
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
+	private static final AdMessageKey MSG_CompensationGroup_OverlappingTerm = AdMessageKey.of("ContractCompensationGroup_OverlappingTerm");
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -193,6 +207,9 @@ public class FlatrateBL implements IFlatrateBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	private final SpringContextHolder.Lazy<ContractCompensationGroupSettingsRepository> compensationGroupSettingsRepository = SpringContextHolder.lazyBean(ContractCompensationGroupSettingsRepository.class);
+	private final SpringContextHolder.Lazy<ContractCompensationGroupTermRepository> compensationGroupTermRepository = SpringContextHolder.lazyBean(ContractCompensationGroupTermRepository.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -743,7 +760,7 @@ public class FlatrateBL implements IFlatrateBL
 				endDate,
 				UomId.ofRepoId(uom.getC_UOM_ID()));
 
-		final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(
+		final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
 
 		for (final I_C_Period periodOfTerm : periodsOfTerm)
@@ -827,8 +844,6 @@ public class FlatrateBL implements IFlatrateBL
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
 		int counter = 0;
-
-		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
 		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
@@ -1397,7 +1412,11 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp endDate = computeEndDate(transition, term);
-		term.setEndDate(endDate);
+		if (endDate != null)
+		{
+			term.setEndDate(endDate);
+		}
+		// TermDuration 0: the end date is not computed; keep the entered one (checkEndDateNotNull refuses a missing one)
 	}
 
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
@@ -1431,7 +1450,7 @@ public class FlatrateBL implements IFlatrateBL
 			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
 			for (int i = 0; i < termDuration; i++)
 			{
-				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
+				final List<I_C_Period> periodsContainingDay = calendarDAO.retrievePeriods(
 						InterfaceWrapperHelper.getCtx(transition), calendar, currentFirstDay, currentFirstDay, InterfaceWrapperHelper.getTrxName(transition));
 
 				Check.errorIf(periodsContainingDay.isEmpty(), "Date {} does not exist in calendar={}", currentFirstDay, calendar);
@@ -1440,7 +1459,7 @@ public class FlatrateBL implements IFlatrateBL
 				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
-				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
+				lastDayOfTerm = calendarBL.getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()));
 
 				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
 			}
@@ -1503,6 +1522,10 @@ public class FlatrateBL implements IFlatrateBL
 		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE.equals(transition.getTermOfNoticeUnit()))
 		{
 			noticeDate = TimeUtil.addDays(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_JahrE.equals(transition.getTermOfNoticeUnit()))
+		{
+			noticeDate = TimeUtil.addYears(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
 		}
 		else
 		{
@@ -1631,9 +1654,12 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" is neither customer nor vendor;");
 			dontCreateTerm = true;
 		}
+		final boolean isCompensationGroup = TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP;
 		if (productAndCategoryId == null)
 		{
-			if (!flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
+			// CompensationGroup terms rely on the dated overlap check (assertNoOverlappingCompensationGroupTerm)
+			// instead of this undated, one-term-per-partner-and-conditions check.
+			if (!isCompensationGroup && !flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
@@ -1695,7 +1721,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated later
+		newTerm.setEndDate(endDate); // null when not requested; a duration>0 transition computes it in validatePeriods before the save
 
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoId(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 				billPartnerLocation.getC_BPartner_Location_ID(),
@@ -1801,9 +1827,14 @@ public class FlatrateBL implements IFlatrateBL
 
 		// These contract types do not match "other" ICs such as ICs that trigger a commission, or IC that belong to a vendor's empty package (pallette/TU).
 		// Therefore they can overlap without causing us any problems.
+		// CompensationGroup terms carry no product by design; their own doc-type- and invoice-partner-scoped
+		// overlap check (assertNoOverlappingCompensationGroupTerm) is this type's sole overlap authority, so
+		// a term that happens to carry a product (e.g. set via REST/DB) is never wrongly rejected against a
+		// sister term of a disjoint document type by this generic, product-keyed check.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
+				|| TypeConditions.COMPENSATION_GROUP.getCode().equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
@@ -2046,6 +2077,58 @@ public class FlatrateBL implements IFlatrateBL
 				.setParameter("bpartnerId", billPartnerId)
 				.setParameter("orgId", term.getAD_Org_ID())
 				.setParameter("existingContractIds", existingContractsOfTargetType);
+	}
+
+	@Override
+	@Nullable
+	public Timestamp getEndDateToApply(@NonNull final I_C_Flatrate_Conditions conditions, @Nullable final Timestamp enteredEndDate)
+	{
+		if (enteredEndDate == null || conditions.getC_Flatrate_Transition_ID() <= 0)
+		{
+			return null;
+		}
+		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
+		return transition.getTermDuration() == 0 ? enteredEndDate : null;
+	}
+
+	@Override
+	public void assertNoOverlappingCompensationGroupTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (term.getEndDate() == null)
+		{
+			return; // not ready yet
+		}
+
+		final ImmutableSet<DocTypeId> docTypeIds = getCompensationGroupDocTypeIds(term);
+		if (docTypeIds.isEmpty())
+		{
+			return; // no doc types to overlap on
+		}
+
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+		final LocalDate startDate = TimeUtil.asLocalDate(term.getStartDate());
+		final LocalDate endDate = TimeUtil.asLocalDate(term.getEndDate());
+		final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+
+		final List<I_C_Flatrate_Term> overlappingTerms = compensationGroupTermRepository.get().findActiveTermsOverlapping(billPartnerId, startDate, endDate, termId);
+
+		for (final I_C_Flatrate_Term overlappingTerm : overlappingTerms)
+		{
+			final ImmutableSet<DocTypeId> overlappingDocTypeIds = getCompensationGroupDocTypeIds(overlappingTerm);
+			if (!Sets.intersection(docTypeIds, overlappingDocTypeIds).isEmpty())
+			{
+				throw new AdempiereException(MSG_CompensationGroup_OverlappingTerm, overlappingTerm.getDocumentNo())
+						.markAsUserValidationError();
+			}
+		}
+	}
+
+	/** @return the compensation-group settings' document type ids the given term's conditions carry, or an empty set when the conditions carry no compensation-group settings. */
+	private ImmutableSet<DocTypeId> getCompensationGroupDocTypeIds(@NonNull final I_C_Flatrate_Term term)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+		final ContractCompensationGroupSettings settings = compensationGroupSettingsRepository.get().getByConditionsId(conditionsId);
+		return settings != null ? settings.getDocTypeIds() : ImmutableSet.of();
 	}
 
 	@Override

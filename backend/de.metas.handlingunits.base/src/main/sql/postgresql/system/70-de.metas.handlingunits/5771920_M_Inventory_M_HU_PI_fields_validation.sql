@@ -24,6 +24,9 @@ AND EXISTS (SELECT 1
 UPDATE AD_Column SET AD_Val_Rule_ID=540745,Updated=TO_TIMESTAMP('2025-10-01 11:43:39.902000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=556506
 ;
 
+DO $$
+BEGIN
+
 -- Name: M_HU_PI LU matching M_HU_PI_Item_Product_ID
 -- 2025-10-01T12:00:09.577Z
 INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540746,'    EXISTS (SELECT 1
@@ -48,6 +51,11 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,Crea
                                                  AND tu_pi.IsActive = ''Y''))
 ',TO_TIMESTAMP('2025-10-01 12:00:09.271000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y','M_HU_PI LU matching M_HU_PI_Item_Product_ID','S',TO_TIMESTAMP('2025-10-01 12:00:09.271000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+EXCEPTION WHEN unique_violation THEN
+
+    RAISE NOTICE 'valRule M_HU_PI LU matching M_HU_PI_Item_Product_ID already exists, skipping insert'; --ported valRule only to hotfix branch 5785520_update_c_orderLine_LU_valRule.sql
+end $$;
 
 -- Column: M_InventoryLine.M_LU_HU_PI_ID
 -- 2025-10-01T12:00:58.362Z

@@ -18,7 +18,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_C
                 Description            Character Varying,
                 bp_product_no          character varying(30),
                 bp_product_name        character varying(100),
-                line                   numeric
+                line                   numeric,
+                PriceEntered           Numeric,
+                QtyPattern             text
             )
 AS
 $$
@@ -35,69 +37,86 @@ SELECT Attributes,
        iol.Description,
        bp_product_no,
        bp_product_name,
-       MAX(iol.line)    AS line
-
-FROM (
-         SELECT a.Attributes,
-                COALESCE(pt.Name, p.name)                              AS Name,
-                iol.qtyenteredtu                                       AS HUQty,
-                hupi.name                                              AS HUName,
-                iol.MovementQty                                        AS MovementQty,
-                COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOMSymbol,
-                uom.StdPrecision,
-                iol.QualityDiscountPercent,
-                iol.QualityNote,
-                iol.Description,
-                -- in case there is no C_BPartner_Product, fallback to the default ones
-                COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS bp_product_no,
-                COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS bp_product_name,
-
-                iol.line                                               AS line
+       MAX(iol.line)    AS line,
+       iol.PriceEntered,
+       CASE
+           WHEN StdPrecision = 0
+               THEN '#,##0'
+               ELSE SUBSTRING('#,##0.000' FROM 0 FOR 7 + StdPrecision :: integer)
+       END              AS QtyPattern
 
 
-         FROM M_Inout io --customer return
+FROM (SELECT a.Attributes,
+             COALESCE(pt.Name, p.name)                              AS Name,
+             iol.qtyenteredtu                                       AS HUQty,
+             hupi.name                                              AS HUName,
+             iol.MovementQty                                        AS MovementQty,
+             COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOMSymbol,
+             uom.StdPrecision,
+             iol.QualityDiscountPercent,
+             iol.QualityNote,
+             iol.Description,
+             -- in case there is no C_BPartner_Product, fallback to the default ones
+             COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS bp_product_no,
+             COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS bp_product_name,
 
-                  INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
+             iol.line                                               AS line,
+             COALESCE(ic.PriceEntered_Override, ic.PriceEntered)    AS PriceEntered
+      FROM M_Inout io --customer return
 
-                  INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID
-                  LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
-                  LEFT JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-                  LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
-                  LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-             AND p.M_Product_ID = bpp.M_Product_ID
+               INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
+
+               INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID
+               LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language
+               LEFT JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+               LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
+               LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+          AND p.M_Product_ID = bpp.M_Product_ID
 
 
-             -- Unit of measurement & its translation
-                  INNER JOIN C_UOM uom ON iol.C_UOM_ID = uom.C_UOM_ID
-                  LEFT OUTER JOIN C_UOM_Trl uomt ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language AND uomt.isActive = 'Y'
+               LEFT OUTER JOIN (SELECT AVG(ic.PriceEntered_Override) AS PriceEntered_Override,
+                                       AVG(ic.PriceEntered)          AS PriceEntered,
+                                       AVG(ic.PriceActual_Override)  AS PriceActual_Override,
+                                       AVG(ic.PriceActual)           AS PriceActual,
+                                       AVG(ic.Discount_Override)     AS Discount_Override,
+                                       AVG(ic.Discount)              AS Discount,
+                                       Price_UOM_ID,
+                                       iciol.M_InOutLine_ID
+                                FROM C_InvoiceCandidate_InOutLine iciol
+                                         INNER JOIN C_Invoice_Candidate ic
+                                                    ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID
+                                         INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID
+                                WHERE iol.M_InOut_ID = p_Record_ID
+                                GROUP BY Price_UOM_ID, iciol.M_InOutLine_ID) ic ON iol.M_InOutLine_ID = ic.M_InOutLine_ID
 
-                  LEFT OUTER JOIN M_HU_PI_Item_Product hupi ON iol.M_HU_PI_Item_Product_ID = hupi.M_HU_PI_Item_Product_ID
+          -- Unit of measurement & its translation
+               INNER JOIN C_UOM uom ON iol.C_UOM_ID = uom.C_UOM_ID
+               LEFT OUTER JOIN C_UOM_Trl uomt ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language
 
-             -- Attributes
-                  LEFT OUTER JOIN LATERAL
-             (
-             SELECT /** Jasper Servlet runs under linux, jasper client under windows (mostly). both have different fonts therefore, when
+               LEFT OUTER JOIN M_HU_PI_Item_Product hupi ON iol.M_HU_PI_Item_Product_ID = hupi.M_HU_PI_Item_Product_ID
+
+          -- Attributes
+               LEFT OUTER JOIN LATERAL
+          (
+          SELECT /** Jasper Servlet runs under linux, jasper client under windows (mostly). both have different fonts therefore, when
 		  * having more than 2 lines, the field is too short to display all lines in the windows font to avoid this I add an extra
 		  * line as soon as the attributes string has more than 15 characters (which is still very likely to fit in two lines)
 		  */
-                 CASE WHEN LENGTH(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes,
-                 M_AttributeSetInstance_ID,
-                 M_InOutLine_ID
-             FROM (
-                      SELECT STRING_AGG(att.ai_value, ', ' ORDER BY att.M_AttributeSetInstance_ID, LENGTH(att.ai_value), att.ai_value) AS Attributes,
-                             att.M_AttributeSetInstance_ID,
-                             iol.M_InOutLine_ID
-                      FROM Report.fresh_Attributes att
-                      WHERE att.IsPrintedInDocument = 'Y'
-                        AND iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
-                      GROUP BY att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
-                  ) x
-             ) a ON TRUE
+              CASE WHEN LENGTH(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes,
+              M_AttributeSetInstance_ID,
+              M_InOutLine_ID
+          FROM (SELECT STRING_AGG(att.ai_value, ', ' ORDER BY att.M_AttributeSetInstance_ID, LENGTH(att.ai_value), att.ai_value) AS Attributes,
+                       att.M_AttributeSetInstance_ID,
+                       iol.M_InOutLine_ID
+                FROM Report.fresh_Attributes att
+                WHERE att.IsPrintedInDocument = 'Y'
+                  AND iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+                GROUP BY att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID) x
+          ) a ON TRUE
 
 
-         WHERE COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
-           AND io.M_InOut_ID = p_record_id
-     ) iol
+      WHERE COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
+        AND io.M_InOut_ID = p_record_id) iol
 
 
 GROUP BY Attributes,
@@ -109,7 +128,8 @@ GROUP BY Attributes,
          QualityNote,
          iol.Description,
          bp_product_no,
-         bp_product_name
+         bp_product_name,
+         iol.PriceEntered
 $$
     LANGUAGE sql STABLE
 ;

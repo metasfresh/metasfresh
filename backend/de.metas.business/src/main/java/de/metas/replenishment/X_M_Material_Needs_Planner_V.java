@@ -120,13 +120,26 @@ public class X_M_Material_Needs_Planner_V extends org.compiere.model.PO implemen
 	}
 
 	@Override
+	public void setQtyATP (final @Nullable BigDecimal QtyATP)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyATP, QtyATP);
+	}
+
+	@Override
+	public BigDecimal getQtyATP()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyATP);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQuantityOnHand (final @Nullable BigDecimal QuantityOnHand)
 	{
 		set_ValueNoCheck (COLUMNNAME_QuantityOnHand, QuantityOnHand);
 	}
 
 	@Override
-	public BigDecimal getQuantityOnHand() 
+	public BigDecimal getQuantityOnHand()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QuantityOnHand);
 		return bd != null ? bd : BigDecimal.ZERO;

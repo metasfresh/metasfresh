@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.paymentschedule.OrderAndPayScheduleId;
+import de.metas.order.paymentschedule.core.OrderAndPayScheduleId;
 import de.metas.payment.paymentterm.PayScheduleId;
 import de.metas.util.Check;
 import lombok.Builder;

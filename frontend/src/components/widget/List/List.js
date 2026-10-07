@@ -11,7 +11,7 @@ import {
 import { getViewAttributeDropdown } from '../../../api';
 import RawList from './RawList';
 
-class ListWidget extends Component {
+export class ListWidget extends Component {
   previousValue = '';
 
   constructor(props) {
@@ -71,6 +71,29 @@ class ListWidget extends Component {
           !doNotOpenOnFocus && list.length > 1 && this.activate();
         }
       }
+    }
+
+    // The edge above never fires again inside a mounted window: a new document neither remounts
+    // this widget nor changes `autoFocus`, and blurring has meanwhile turned the widget's own
+    // `autoFocus` state off. Realign it with the prop and focus again - but only for a document
+    // in a window, and not for a quick-input row (the header's first field is the one that must
+    // get the focus) nor a composed lookup's sub-list (its parent decides which sub-field is in
+    // turn, and React updates this child first). Nor while this list already holds the focus:
+    // focusing it again would also reopen its dropdown, under a user who is working in it.
+    //
+    // `entity`, not `isModal`: `WidgetRenderer` never forwards `isModal` to this widget, so an
+    // `isModal` check here would silently never fire.
+    if (
+      prevProps.dataId !== this.props.dataId &&
+      this.props.autoFocus &&
+      this.props.entity === 'window' &&
+      this.props.subentity !== 'quickInput' &&
+      !this.props.lookupList &&
+      !this.state.listFocused
+    ) {
+      this.setState({ autoFocus: true });
+      this.handleFocus();
+      !doNotOpenOnFocus && list.length > 1 && this.activate();
     }
   }
 

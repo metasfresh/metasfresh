@@ -40,7 +40,7 @@ export const OrderLine = ({
 
   useEffect(() => {
     if (selected && elementRef?.current?.scrollIntoView) {
-      elementRef.current.scrollIntoView({ behaviour: 'smooth', block: 'end', inline: 'end' });
+      elementRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }
   }, [selected]);
 
@@ -53,14 +53,21 @@ export const OrderLine = ({
   return (
     <div
       className={cx('line', { 'line-selected': selected, 'line-new': isNew })}
+      data-testid="pos-order-line"
       ref={elementRef}
       onClick={fireOnClick}
     >
       <div className="main">
-        <div className="productName">{productName}</div>
-        <div className="amount">{amountStr}</div>
+        <div className="productName" data-testid="pos-order-line-product-name">
+          {productName}
+        </div>
+        <div className="amount" data-testid="pos-order-line-amount">
+          {amountStr}
+        </div>
       </div>
-      <div className="description">{description}</div>
+      <div className="description" data-testid="pos-order-line-description">
+        {description}
+      </div>
     </div>
   );
 };

@@ -22,7 +22,9 @@ package de.metas.calendar.impl;
  * #L%
  */
 
+import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.YearId;
 import de.metas.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Calendar;
@@ -55,6 +57,7 @@ public class CalendarBLTest extends CalendarTestBase
 
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
+		period1.setPeriodNo(1);
 		period1.setEndDate(TimeUtil.getDay(2013, 12, 31));
 		period1.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period1);
@@ -75,6 +78,7 @@ public class CalendarBLTest extends CalendarTestBase
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 5));
+		period2.setPeriodNo(2);
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
 		period2.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period2);
@@ -105,12 +109,14 @@ public class CalendarBLTest extends CalendarTestBase
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
+		period1.setPeriodNo(1);
 		period1.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period1);
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 6));
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
+		period2.setPeriodNo(2);
 		period2.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period2);
 
@@ -121,11 +127,12 @@ public class CalendarBLTest extends CalendarTestBase
 
 		final I_C_Period period3 = db.newInstance(I_C_Period.class);
 		period3.setStartDate(TimeUtil.getDay(2014, 2, 1));
+		period3.setPeriodNo(1);
 		period3.setEndDate(TimeUtil.getDay(2014, 12, 31));
 		period3.setC_Year_ID(year2.getC_Year_ID());
 		db.save(period3);
 
-		boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
+		final boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
 
 		Assertions.assertFalse(isCalendarNoGaps, "Calendar has no gaps");
 	}
@@ -144,16 +151,18 @@ public class CalendarBLTest extends CalendarTestBase
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
+		period1.setPeriodNo(1);
 		period1.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period1);
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 7));
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
+		period2.setPeriodNo(2);
 		period2.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period2);
 
-		boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
+		final boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
 		Assertions.assertFalse(isCalendarNoGaps, "Calendar has no gaps");
 	}
 
@@ -171,12 +180,14 @@ public class CalendarBLTest extends CalendarTestBase
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
+		period1.setPeriodNo(1);
 		period1.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period1);
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 6));
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
+		period2.setPeriodNo(2);
 		period2.setC_Year_ID(year1.getC_Year_ID());
 		db.save(period2);
 
@@ -188,10 +199,11 @@ public class CalendarBLTest extends CalendarTestBase
 		final I_C_Period period3 = db.newInstance(I_C_Period.class);
 		period3.setStartDate(TimeUtil.getDay(2014, 1, 1));
 		period3.setEndDate(TimeUtil.getDay(2014, 12, 31));
+		period3.setPeriodNo(1);
 		period3.setC_Year_ID(year2.getC_Year_ID());
 		db.save(period3);
 
-		boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
+		final boolean isCalendarNoGaps = Services.get(ICalendarBL.class).isCalendarNoGaps(calendar1);
 		Assertions.assertTrue(isCalendarNoGaps, "Calendar has gaps");
 	}
 
@@ -210,12 +222,14 @@ public class CalendarBLTest extends CalendarTestBase
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
 		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setPeriodNo(1);
 		db.save(period1);
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 6));
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
 		period2.setC_Year_ID(year1.getC_Year_ID());
+		period2.setPeriodNo(2);
 		db.save(period2);
 
 		boolean isCalendarNoOverlaps = Services.get(ICalendarBL.class).isCalendarNoOverlaps(calendar1);
@@ -230,6 +244,7 @@ public class CalendarBLTest extends CalendarTestBase
 		period3.setStartDate(TimeUtil.getDay(2013, 4, 4));
 		period3.setEndDate(TimeUtil.getDay(2013, 6, 6));
 		period3.setC_Year_ID(year2.getC_Year_ID());
+		period3.setPeriodNo(1);
 		db.save(period3);
 
 		isCalendarNoOverlaps = Services.get(ICalendarBL.class).isCalendarNoOverlaps(calendar1);
@@ -247,12 +262,14 @@ public class CalendarBLTest extends CalendarTestBase
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
 		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setPeriodNo(1);
 		db.save(period1);
 
 		final I_C_Period period2 = db.newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 6));
 		period2.setEndDate(TimeUtil.getDay(2013, 12, 31));
 		period2.setC_Year_ID(year1.getC_Year_ID());
+		period2.setPeriodNo(2);
 		db.save(period2);
 
 		boolean isYearNoGaps = Services.get(ICalendarBL.class).isYearNoGaps(year1);
@@ -268,34 +285,44 @@ public class CalendarBLTest extends CalendarTestBase
 	@Test
 	public void testGetLastDayOfYear()
 	{
+		final I_C_Calendar calendar = db.newInstance(I_C_Calendar.class);
+		db.save(calendar);
+
 		// first year
 		final I_C_Year year1 = db.newInstance(I_C_Year.class);
+		year1.setC_Calendar_ID(calendar.getC_Calendar_ID());
 		db.save(year1);
 
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
 		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setPeriodNo(1);
 		db.save(period1);
 
-		Timestamp lastDayOfYear = Services.get(ICalendarBL.class).getLastDayOfYear(year1);
+		final Timestamp lastDayOfYear = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(calendar.getC_Calendar_ID()), year1.getC_Year_ID()));
 		Assertions.assertEquals(0, lastDayOfYear.compareTo(TimeUtil.getDay(2013, 5, 5)), "Wrong last day of year");
 	}
 
 	@Test
 	public void testGetFirstDayOfYear()
 	{
+		final I_C_Calendar calendar = db.newInstance(I_C_Calendar.class);
+		db.save(calendar);
+
 		// first year
 		final I_C_Year year1 = db.newInstance(I_C_Year.class);
+		year1.setC_Calendar_ID(calendar.getC_Calendar_ID());
 		db.save(year1);
 
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 5));
 		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setPeriodNo(1);
 		db.save(period1);
 
-		Timestamp firstDayOfYear = Services.get(ICalendarBL.class).getFirstDayOfYear(year1);
-		Assertions.assertEquals(0, firstDayOfYear.compareTo(TimeUtil.getDay(2013, 1, 1)), "Wrong last day of year");
+		final Timestamp firstDayOfYear = Services.get(ICalendarBL.class).getFirstDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(calendar.getC_Calendar_ID()), year1.getC_Year_ID()));
+		Assertions.assertEquals(0, firstDayOfYear.compareTo(TimeUtil.getDay(2013, 1, 1)), "Wrong first day of year");
 	}
 }

@@ -54,7 +54,9 @@ SKIP_MIGRATION_SCRIPTS_TEST="${SKIP_MIGRATION_SCRIPTS_TEST:-true}"
 BACKEND_PARAMS="-DSKIP_MIGRATION_SCRIPTS_TEST=${SKIP_MIGRATION_SCRIPTS_TEST}"
 
 # Default Maven goals (used if no goals provided as arguments)
-DEFAULT_GOALS='clean install'
+# Incremental build by default (no clean) for faster development cycles
+# Use --clean flag or pass "clean install" explicitly for full clean builds
+DEFAULT_GOALS='install'
 
 # ============================================================================
 # Functions
@@ -103,6 +105,8 @@ IMPORTANT - FULL BUILD DURATION:
 
 OPTIONS:
     -h, --help              Show this help message
+    --clean                 Clean before building (adds 'clean' goal)
+                            By default, builds are incremental (no clean)
     --deps-only             Build only core dependencies (parent-pom, de-metas-common)
                             Fast option for installing dependencies (~2-3 minutes)
     --skip-tests            Skip running tests (adds -DskipTests)
@@ -113,12 +117,13 @@ MAVEN_GOALS:
     Examples: "test", "clean install", "verify", "package"
 
 EXAMPLES:
-    $(basename "$0")                          # Default: clean install (full build)
+    $(basename "$0")                          # Default: incremental install (no clean)
+    $(basename "$0") --clean                  # Full clean install
     $(basename "$0") --deps-only              # Install only dependencies (parent-pom, de-metas-common)
     $(basename "$0") test                     # Run tests only
     $(basename "$0") clean verify             # Clean and verify
-    $(basename "$0") --skip-tests install     # Install without tests
-    $(basename "$0") --parallel clean install # Parallel build
+    $(basename "$0") --skip-tests             # Install without tests
+    $(basename "$0") --parallel --clean       # Parallel clean build
 
 ENVIRONMENT VARIABLES:
     JAVA8_HOME                      Java 8 installation for parent-pom, de-metas-common, backend
@@ -145,12 +150,17 @@ EOF
 MAVEN_GOALS=""
 SKIP_TESTS=""
 DEPS_ONLY=false
+DO_CLEAN=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         -h|--help)
             show_help
             exit 0
+            ;;
+        --clean)
+            DO_CLEAN=true
+            shift
             ;;
         --deps-only)
             DEPS_ONLY=true
@@ -175,6 +185,11 @@ done
 # Use default goals if none provided
 if [ -z "$MAVEN_GOALS" ]; then
     MAVEN_GOALS="$DEFAULT_GOALS"
+fi
+
+# Prepend 'clean' if --clean flag was used
+if [ "$DO_CLEAN" = true ]; then
+    MAVEN_GOALS="clean $MAVEN_GOALS"
 fi
 
 # If deps-only mode, force skip tests and skip test compilation

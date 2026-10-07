@@ -1,14 +1,22 @@
 package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractComparableAssert;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -79,6 +87,44 @@ public class BPartnerDAOTest
 				.containsEntry(BPartnerId.ofRepoId(bPartnerRecord2.getC_BPartner_ID()), 24);
 	}
 
+	/**
+	 * A partner without an own bill-to location and with exactly one location-bound bill-to relation
+	 * resolves to that relation's location (behaviour before the per-location bill-to relation resolution).
+	 */
+	@Test
+	public void retrieveBillToLocation_singleLocationBoundRelation_usedWhenNoOwnBillToLocation()
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		saveRecord(partner);
+		final BPartnerId partnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final I_C_BPartner_Location partnerLocation = newInstance(I_C_BPartner_Location.class);
+		partnerLocation.setC_BPartner_ID(partnerId.getRepoId());
+		partnerLocation.setIsBillTo(false);
+		saveRecord(partnerLocation);
+
+		final I_C_BPartner billPartner = newInstance(I_C_BPartner.class);
+		saveRecord(billPartner);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(billPartner.getC_BPartner_ID());
+		final I_C_BPartner_Location billLocation = newInstance(I_C_BPartner_Location.class);
+		billLocation.setC_BPartner_ID(billPartnerId.getRepoId());
+		saveRecord(billLocation);
+
+		BPRelation.builder()
+				.billTo(true)
+				.bpartnerId(partnerId)
+				.bpLocationId(BPartnerLocationId.ofRepoId(partnerId, partnerLocation.getC_BPartner_Location_ID()))
+				.relBPartnerId(billPartnerId)
+				.relBPLocationId(BPartnerLocationId.ofRepoId(billPartnerId, billLocation.getC_BPartner_Location_ID()))
+				.name("billTo")
+				.build()
+				.createRecord();
+
+		final I_C_BPartner_Location result = bpartnerDAO.retrieveBillToLocation(Env.getCtx(), partnerId.getRepoId(), true, null);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getC_BPartner_Location_ID()).isEqualTo(billLocation.getC_BPartner_Location_ID());
+	}
+
 	@Test
 	public void retrieveBPartnerIdByName()
 	{
@@ -88,6 +134,59 @@ public class BPartnerDAOTest
 		assertRetrieveBPartnerIdByName("BPartner 1").isEqualTo(bpartnerId1);
 		assertRetrieveBPartnerIdByName("BPartner 2").isEqualTo(bpartnerId2);
 		assertRetrieveBPartnerIdByName("BPartner").isNull();
+	}
+
+	@Test
+	public void retrieveBPartnerIdBy_gln_glnLookupOnlyActive()
+	{
+		final GLN gln = GLN.ofString("gln-dao-active-only");
+		final BPartnerId inactiveBPartnerId = createBPartnerWithName("Inactive BPartner");
+		final BPartnerId activeBPartnerId = createBPartnerWithName("Active BPartner");
+		final I_C_BPartner inactiveBPartner = bpartnerDAO.getById(inactiveBPartnerId);
+		inactiveBPartner.setIsActive(false);
+		saveRecord(inactiveBPartner);
+		createLocationWithGLN(inactiveBPartnerId, gln);
+		createLocationWithGLN(activeBPartnerId, gln);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.gln(gln)
+				.onlyOrgId(OrgId.ANY)
+				.glnLookupOnlyActive(true)
+				.failIfNotExists(false)
+				.build();
+
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null)).isEqualTo(activeBPartnerId);
+	}
+
+	/**
+	 * Partner maintenance (e.g. the bpartner REST upsert/retrieve) uses the default query; it must still find a partner that only an inactive partner's location carries.
+	 */
+	@Test
+	public void retrieveBPartnerIdsBy_gln_default_stillFindsInactiveBPartner()
+	{
+		final GLN gln = GLN.ofString("gln-dao-inactive-only");
+		final BPartnerId inactiveBPartnerId = createBPartnerWithName("Inactive BPartner");
+		final I_C_BPartner inactiveBPartner = bpartnerDAO.getById(inactiveBPartnerId);
+		inactiveBPartner.setIsActive(false);
+		saveRecord(inactiveBPartner);
+		createLocationWithGLN(inactiveBPartnerId, gln);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.gln(gln)
+				.onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build();
+
+		assertThat(bpartnerDAO.retrieveBPartnerIdsBy(query)).containsExactly(inactiveBPartnerId);
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query)).contains(inactiveBPartnerId);
+	}
+
+	private void createLocationWithGLN(final BPartnerId bpartnerId, final GLN gln)
+	{
+		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartnerId.getRepoId());
+		location.setGLN(gln.getCode());
+		saveRecord(location);
 	}
 
 	private AbstractComparableAssert<?, BPartnerId> assertRetrieveBPartnerIdByName(final String queryBPName)
@@ -118,10 +217,256 @@ public class BPartnerDAOTest
 						+ " The search was restricted to the following orgIds (empty means no restriction): [20, 0]");
 	}
 
+	@Test
+	public void getBPartnerIdByValue_disambiguateByCustomerFlag()
+	{
+		// Create two BPartners with same Value: one customer, one vendor
+		final BPartnerId customerId = createBPartnerWithValueAndFlags("SHARED_VAL", true, false);
+		final BPartnerId vendorId = createBPartnerWithValueAndFlags("SHARED_VAL", false, true);
+
+		// With isCustomerFilter=true, should find the customer
+		final BPartnerQuery customerQuery = BPartnerQuery.builder()
+				.bpartnerValue("SHARED_VAL")
+				.onlyOrgId(OrgId.ANY)
+				.isCustomerFilter(true)
+				.build();
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(customerQuery).orElse(null))
+				.isEqualTo(customerId);
+
+		// With isVendorFilter=true, should find the vendor
+		final BPartnerQuery vendorQuery = BPartnerQuery.builder()
+				.bpartnerValue("SHARED_VAL")
+				.onlyOrgId(OrgId.ANY)
+				.isVendorFilter(true)
+				.build();
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(vendorQuery).orElse(null))
+				.isEqualTo(vendorId);
+	}
+
+	@Test
+	public void getBPartnerIdByValue_singleResult_noDisambiguationNeeded()
+	{
+		final BPartnerId bpartnerId = createBPartnerWithValueAndFlags("UNIQUE_VAL", true, false);
+
+		// Even without filter, single result should be returned
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("UNIQUE_VAL")
+				.onlyOrgId(OrgId.ANY)
+				.build();
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
+				.isEqualTo(bpartnerId);
+	}
+
+	@Test
+	public void getBPartnerIdByValue_duplicateWithNoFilter_throwsException()
+	{
+		// Two BPartners with same Value, no filter — should throw because disambiguation is not possible
+		createBPartnerWithValueAndFlags("DUP_VAL", true, false);
+		createBPartnerWithValueAndFlags("DUP_VAL", false, true);
+
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("DUP_VAL")
+				.onlyOrgId(OrgId.ANY)
+				.build();
+
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("DUP_VAL");
+	}
+
+	@Test
+	public void getBPartnerIdByName_disambiguateByVendorFlag()
+	{
+		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setName("Shared Name");
+		customer.setIsCustomer(true);
+		customer.setIsVendor(false);
+		saveRecord(customer);
+
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setName("Shared Name");
+		vendor.setIsCustomer(false);
+		vendor.setIsVendor(true);
+		saveRecord(vendor);
+
+		final BPartnerQuery vendorQuery = BPartnerQuery.builder()
+				.bpartnerName("Shared Name")
+				.onlyOrgId(OrgId.ANY)
+				.isVendorFilter(true)
+				.build();
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(vendorQuery).orElse(null))
+				.isEqualTo(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()));
+	}
+
+	// =====================================================================================
+	// Tests for #1, #2, #3 — retrieveBPartnerByValue throws on duplicates
+	// (ESR import, PO-from-SO, and pricing schema import all catch this exception)
+	// =====================================================================================
+
+	@Test
+	public void retrieveBPartnerByValue_throwsOnDuplicates()
+	{
+		// Given: two BPartners with same Value (customer + vendor)
+		createBPartnerWithValueAndFlags("SHARED", true, false);
+		createBPartnerWithValueAndFlags("SHARED", false, true);
+
+		// When/Then: retrieveBPartnerByValue uses firstOnly() which throws
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), "SHARED"))
+				.isInstanceOf(DBMoreThanOneRecordsFoundException.class);
+	}
+
+	@Test
+	public void retrieveBPartnerByValue_worksForUniqueValue()
+	{
+		// Given: a single BPartner with a unique Value
+		final BPartnerId bpartnerId = createBPartnerWithValueAndFlags("UNIQUE", true, false);
+
+		// When
+		final I_C_BPartner result = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), "UNIQUE");
+
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(BPartnerId.ofRepoId(result.getC_BPartner_ID())).isEqualTo(bpartnerId);
+	}
+
+	@Test
+	public void retrieveBPartnerByValue_returnsNullForMissing()
+	{
+		// When
+		final I_C_BPartner result = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), "NONEXISTENT");
+
+		// Then
+		assertThat(result).isNull();
+	}
+
+	// =====================================================================================
+	// Tests for disambiguation edge cases
+	// =====================================================================================
+
+	@Test
+	public void getBPartnerIdByValue_bothCustomerAndVendor_filterForCustomer()
+	{
+		// Given: one BPartner that is BOTH customer and vendor, plus a vendor-only
+		final BPartnerId bothId = createBPartnerWithValueAndFlags("MULTI", true, true);
+		final BPartnerId vendorOnlyId = createBPartnerWithValueAndFlags("MULTI", false, true);
+
+		// When: filter for customer
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("MULTI")
+				.onlyOrgId(OrgId.ANY)
+				.isCustomerFilter(true)
+				.build();
+
+		// Then: should find the one that IS a customer (bothId)
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
+				.isEqualTo(bothId);
+	}
+
+	@Test
+	public void getBPartnerIdByValue_disambiguationFailsGracefully_throwsException()
+	{
+		// Given: two BPartners both marked as customer
+		createBPartnerWithValueAndFlags("AMBIG", true, false);
+		createBPartnerWithValueAndFlags("AMBIG", true, false);
+
+		// When: filter for customer — still ambiguous (both match)
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("AMBIG")
+				.onlyOrgId(OrgId.ANY)
+				.isCustomerFilter(true)
+				.build();
+
+		// Then: throws because disambiguation still yields >1 result
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("AMBIG");
+	}
+
+	@Test
+	public void getBPartnerIdByValue_filterForVendor_noMatchThrowsException()
+	{
+		// Given: two BPartners, both customers (no vendor)
+		createBPartnerWithValueAndFlags("CUST_ONLY", true, false);
+		createBPartnerWithValueAndFlags("CUST_ONLY", true, false);
+
+		// When: filter for vendor — no match among candidates
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("CUST_ONLY")
+				.onlyOrgId(OrgId.ANY)
+				.isVendorFilter(true)
+				.build();
+
+		// Then: disambiguation returns empty, but still ambiguous — throws
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("CUST_ONLY");
+	}
+
+	@Test
+	public void getBPartnerIdByName_disambiguateByCustomerFlag()
+	{
+		// Given
+		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setName("Shared Name 2");
+		customer.setIsCustomer(true);
+		customer.setIsVendor(false);
+		saveRecord(customer);
+
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setName("Shared Name 2");
+		vendor.setIsCustomer(false);
+		vendor.setIsVendor(true);
+		saveRecord(vendor);
+
+		// When: filter for customer by name
+		final BPartnerQuery customerQuery = BPartnerQuery.builder()
+				.bpartnerName("Shared Name 2")
+				.onlyOrgId(OrgId.ANY)
+				.isCustomerFilter(true)
+				.build();
+
+		// Then
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(customerQuery).orElse(null))
+				.isEqualTo(BPartnerId.ofRepoId(customer.getC_BPartner_ID()));
+	}
+
+	@Test
+	public void getBPartnerIdByValue_combinedFilters()
+	{
+		// Given: vendor-only, customer-only, and both
+		createBPartnerWithValueAndFlags("COMBO", false, true);   // vendor
+		createBPartnerWithValueAndFlags("COMBO", true, false);   // customer
+		final BPartnerId bothId = createBPartnerWithValueAndFlags("COMBO", true, true); // both
+
+		// When: filter for both customer AND vendor
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("COMBO")
+				.onlyOrgId(OrgId.ANY)
+				.isCustomerFilter(true)
+				.isVendorFilter(true)
+				.build();
+
+		// Then: only the "both" partner matches both filters
+		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
+				.isEqualTo(bothId);
+	}
+
 	private BPartnerId createBPartnerWithName(final String name)
 	{
 		final I_C_BPartner record = newInstance(I_C_BPartner.class);
 		record.setName(name);
+		saveRecord(record);
+
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
+	}
+
+	private BPartnerId createBPartnerWithValueAndFlags(final String value, final boolean isCustomer, final boolean isVendor)
+	{
+		final I_C_BPartner record = newInstance(I_C_BPartner.class);
+		record.setValue(value);
+		record.setName(value);
+		record.setIsCustomer(isCustomer);
+		record.setIsVendor(isVendor);
 		saveRecord(record);
 
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());

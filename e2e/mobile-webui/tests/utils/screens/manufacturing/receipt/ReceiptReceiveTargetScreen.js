@@ -1,4 +1,4 @@
-import { page } from '../../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptNewHUScreen } from './ReceiptNewHUScreen';
@@ -10,11 +10,15 @@ const containerElement = () => page.locator('#ReceiptReceiveTargetScreen');
 
 export const ReceiptReceiveTargetScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    expectNotVisible: async () => await test.step(`${NAME} - Expect screen NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
     }),
 
     clickNewHUButton: async () => await test.step(`${NAME} - Click new HU button`, async () => {

@@ -51,13 +51,7 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-				.orElse(null);
-		if (salesOrderLine == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
-		}
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ProductId productId = salesOrderLine.getProductId();
 		final Quantity unreservableQty = retrieveUnreservableQuantity(productId);
 		if (unreservableQty.signum() <= 0)
@@ -72,14 +66,14 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	{
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
-		return huReservationService.retrieveUnreservableQty(request);
+		return huReservationService.retrieveActualReservedQty(request);
 	}
 
 	@Override
 	@RunOutOfTrx // the service we invoke creates its own transaction
 	protected String doIt()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 
 		final ImmutableSet<HuId> selectedReservedHUs = streamSelectedHUIds(HUEditorRowFilter.ALL)
 				.collect(ImmutableSet.toImmutableSet());

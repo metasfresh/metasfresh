@@ -33,4 +33,8 @@ public enum IssuingToleranceValueType implements ReferenceListAwareEnum
 	}
 
 	public static String toCode(@Nullable final IssuingToleranceValueType type) {return type != null ? type.getCode() : null;}
+
+	public boolean isPercentage() {return this == PERCENTAGE;}
+
+	public boolean isQuantity() {return this == QUANTITY;}
 }

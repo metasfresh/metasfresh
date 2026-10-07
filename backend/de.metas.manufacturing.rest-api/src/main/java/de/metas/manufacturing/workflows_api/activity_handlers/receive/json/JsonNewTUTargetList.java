@@ -22,17 +22,40 @@
 
 package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Builder
-@Jacksonized
 public class JsonNewTUTargetList
 {
 	@NonNull List<JsonNewTUTarget> values;
+	@Nullable String emptyReason;
+
+	public static JsonNewTUTargetList ofList(@NonNull final List<JsonNewTUTarget> values)
+	{
+		return builder().values(values).build();
+	}
+
+	public static JsonNewTUTargetList emptyBecause(@NonNull final String emptyReason)
+	{
+		Check.assumeNotEmpty(emptyReason, "emptyReason");
+		return builder().emptyReason(emptyReason).build();
+	}
+
+	@Builder
+	@Jacksonized
+	private JsonNewTUTargetList(
+			@Nullable final List<JsonNewTUTarget> values,
+			@Nullable final String emptyReason)
+	{
+		this.values = values != null ? ImmutableList.copyOf(values) : ImmutableList.of();
+		this.emptyReason = emptyReason;
+	}
 }

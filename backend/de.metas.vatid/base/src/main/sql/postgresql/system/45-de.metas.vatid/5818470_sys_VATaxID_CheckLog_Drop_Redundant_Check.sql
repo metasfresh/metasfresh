@@ -1,0 +1,7 @@
+-- VAT-ID online check: keep the physical CHECK on VATaxIDStatus (reversing this script's original
+-- decision to drop it). A belt-and-braces CHECK alongside the AD_Reference_ID=17 list binding is the
+-- mandated pattern for every reference-list-backed column, matching what VATaxID_Config.OnServiceUnavailable
+-- already keeps for the sibling table (see 5818250). The CHECK is the defensive second layer for any
+-- write path that bypasses AD-level validation (e.g. a raw SQL update), not a redundant duplicate to be
+-- cleaned up. This script is now a no-op: the constraint it used to drop stays in place, as created by
+-- migration 5818420.

@@ -23,13 +23,14 @@
 package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -70,6 +71,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -88,9 +90,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -147,7 +150,6 @@ class BankStatementPaymentBLTest
 		bankRepo = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
-		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
@@ -158,6 +160,15 @@ class BankStatementPaymentBLTest
 	{
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		createClientInfo(acctSchemaId);
+	}
+
+	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		save(clientInfo);
 	}
 
 	private BPartnerId createCustomer()

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
+import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
@@ -50,8 +51,12 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -135,12 +140,14 @@ public class HandlingUnitsService
 	private final HULabelService huLabelService;
 	private final HUTransformService huTransformService;
 	private final InventoryCandidateService inventoryCandidateService;
+	private final HUGraiService huGraiService;
 
 	public HandlingUnitsService(
 			@NonNull final HUQRCodesService huQRCodeService,
 			@NonNull final HUQtyService huQtyService,
 			@NonNull final HULabelService huLabelService,
-			@NonNull final InventoryCandidateService inventoryCandidateService)
+			@NonNull final InventoryCandidateService inventoryCandidateService,
+			@NonNull final HUGraiService huGraiService)
 	{
 		this.huQRCodeService = huQRCodeService;
 		this.huQtyService = huQtyService;
@@ -149,6 +156,7 @@ public class HandlingUnitsService
 				.huQRCodesService(huQRCodeService)
 				.build();
 		this.inventoryCandidateService = inventoryCandidateService;
+		this.huGraiService = huGraiService;
 	}
 
 	public JsonHUList getFullHUsList(
@@ -264,7 +272,10 @@ public class HandlingUnitsService
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getKey());
 
-			huAttributesBL.updateHUAttributeRecursive(huId, attributeCode, attribute.getValue(), null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(attributeCode)
+					.attributeValue(attribute.getValue())
+					.build());
 		}
 	}
 
@@ -907,5 +918,23 @@ public class HandlingUnitsService
 				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
 				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
 				.orElse(false);
+	}
+
+	@NonNull
+	public JsonGRAICodesResponse getGRAIs(@NonNull final HuId huId)
+	{
+		final HUGraiSnapshot snapshot = huGraiService.getSnapshot(huId).orElseThrow();
+		return JsonGRAICodesResponse.builder()
+				.huId(huId.getRepoId())
+				.graiCodes(snapshot.getAllGrais().toStringList())
+				.tuCount(snapshot.getTUCount().toInt())
+				.build();
+	}
+
+	@NonNull
+	public JsonGRAICodesResponse setGRAIs(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
+	{
+		huGraiService.setGrais(huId, graiSet);
+		return getGRAIs(huId);
 	}
 }

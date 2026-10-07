@@ -206,7 +206,7 @@ public class JsonRetrieverService
 		this.greetingRepository = greetingRepository;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
+		this.cache = new BPartnerCompositeCacheByLookupKey();
 	}
 
 	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final OrgId orgId, @NonNull final IdentifierString bpartnerIdentifier)
@@ -430,7 +430,7 @@ public class JsonRetrieverService
 					.remitTo(location.isRemitTo())
 					.handoverLocation(location.isHandOverLocation())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
-					.visitorsAddress(location.isVisitorsAddress())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)

@@ -11,6 +11,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -56,6 +57,7 @@ public class InvoiceHeaderImplBuilder
 
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
+	private LocalDate _overrideDueDate;
 
 	@Getter
 	private int AD_Org_ID;
@@ -108,6 +110,14 @@ public class InvoiceHeaderImplBuilder
 
 	private String incotermLocation;
 
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCodeId;
+
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCode2Id;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -135,6 +145,7 @@ public class InvoiceHeaderImplBuilder
 		// Dates
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
+		invoiceHeader.setOverrideDueDate(getOverrideDueDate());
 
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
@@ -161,6 +172,10 @@ public class InvoiceHeaderImplBuilder
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		// promotion codes
+		invoiceHeader.setPromotionCodeId(getPromotionCodeId());
+		invoiceHeader.setPromotionCode2Id(getPromotionCode2Id());
 
 		return invoiceHeader;
 	}
@@ -189,6 +204,16 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Incoterms_ID(final int incoterms_id)
 	{
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public void setPromotionCodeId(@Nullable final PromotionCodeId promotionCodeId)
+	{
+		this.promotionCodeId = checkOverride("PromotionCodeId", this.promotionCodeId, promotionCodeId);
+	}
+
+	public void setPromotionCode2Id(@Nullable final PromotionCodeId promotionCode2Id)
+	{
+		this.promotionCode2Id = checkOverride("PromotionCode2Id", this.promotionCode2Id, promotionCode2Id);
 	}
 
 	public String getIncotermLocation()
@@ -293,6 +318,11 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
+	public LocalDate getOverrideDueDate()
+	{
+		return _overrideDueDate;
+	}
+
 	public void setPaymentRule(@Nullable final String paymentRule)
 	{
 		this.paymentRule = paymentRule;
@@ -301,6 +331,11 @@ public class InvoiceHeaderImplBuilder
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
 	}
 
 	public void setAD_Org_ID(final int adOrgId)

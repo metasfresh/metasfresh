@@ -24,11 +24,13 @@ package org.adempiere.ad.dao.impl;
 
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryOrderBy;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.Comparator;
+import java.util.function.UnaryOperator;
 
 @Immutable
 @EqualsAndHashCode
@@ -71,11 +73,15 @@ public final class SqlQueryOrderBy implements IQueryOrderBy
 
 	@Override
 	@Deprecated
-	public String toString() {return getSql();}
+	@NonNull
+	public String toString() {return orderBy != null ? orderBy : "";}
 
 	@Override
 	public String getSql() {return orderBy;}
 
+	public String getSql(@NonNull final UnaryOperator<String> columnNameMapper) {return orderBy;}
+
 	@Override
+	@NonNull
 	public Comparator<Object> getComparator() {throw new UnsupportedOperationException("SqlQueryOrderBy does not support Comparator");}
 }

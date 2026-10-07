@@ -36,11 +36,4 @@ public interface I_C_Order extends de.metas.order.model.I_C_Order
 	void setEDI_Desadv (I_EDI_Desadv EDI_Desadv);
 	I_EDI_Desadv getEDI_Desadv();
 	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-	
-	boolean isEdiEnabled();
-	void setIsEdiEnabled(boolean IsEdiEnabled);
-	// @formatter:on
 }

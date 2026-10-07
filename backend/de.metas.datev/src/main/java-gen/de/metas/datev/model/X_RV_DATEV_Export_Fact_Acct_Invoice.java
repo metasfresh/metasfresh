@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -277796288L;
+	private static final long serialVersionUID = 1643198872L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -48,6 +48,18 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	}
 
 	@Override
+	public void setAdditionalDescription (final @Nullable java.lang.String AdditionalDescription)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdditionalDescription, AdditionalDescription);
+	}
+
+	@Override
+	public java.lang.String getAdditionalDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdditionalDescription);
+	}
+
+	@Override
 	public void setAmt (final @Nullable BigDecimal Amt)
 	{
 		set_ValueNoCheck (COLUMNNAME_Amt, Amt);
@@ -71,6 +83,18 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmtSource);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setBP_Account_Place (final @Nullable java.lang.String BP_Account_Place)
+	{
+		set_ValueNoCheck (COLUMNNAME_BP_Account_Place, BP_Account_Place);
+	}
+
+	@Override
+	public java.lang.String getBP_Account_Place() 
+	{
+		return get_ValueAsString(COLUMNNAME_BP_Account_Place);
 	}
 
 	@Override
@@ -261,6 +285,19 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	}
 
 	@Override
+	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
+	{
+		set_ValueNoCheck (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getCurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setDateAcct (final @Nullable java.sql.Timestamp DateAcct)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateAcct, DateAcct);
@@ -361,8 +398,8 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -379,6 +416,12 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	/** BOM & Formula = BOM */
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** AnalysisReport = QMA */
+	public static final String DOCBASETYPE_AnalysisReport = "QMA";
+	/** APProFormaInvoice = APF */
+	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -425,6 +468,19 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public java.sql.Timestamp getDueDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setGrossAmt (final BigDecimal GrossAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_GrossAmt, GrossAmt);
+	}
+
+	@Override
+	public BigDecimal getGrossAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

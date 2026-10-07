@@ -138,6 +138,8 @@ public class C_AllocationLine_StepDef
 				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(amount));
 		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
 				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(amount));
+		row.getAsOptionalString(I_C_AllocationLine.COLUMNNAME_WriteOffType)
+				.ifPresent(writeOffType -> softly.assertThat(allocationLine.getWriteOffType()).as("WriteOffType").isEqualTo(writeOffType));
 
 		softly.assertAll();
 

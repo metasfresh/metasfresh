@@ -1,0 +1,227 @@
+-- 2023-02-02T22:43:05.121Z
+INSERT INTO AD_ImpFormat (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,FileCharset,FormatType,IsActive,IsManualImport,IsMultiLine,Name,Processing,SkipFirstNRows,Updated,UpdatedBy) VALUES (0,540078,0,542292,TO_TIMESTAMP('2023-02-03 00:43:04','YYYY-MM-DD HH24:MI:SS'),100,'utf-8','C','Y','N','N','Delivery Planning Import','N',1,TO_TIMESTAMP('2023-02-03 00:43:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:46:26.944Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585784,540078,541806,0,TO_TIMESTAMP('2023-02-03 00:46:26','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','DocumentNo',10,TO_TIMESTAMP('2023-02-03 00:46:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:46:56.490Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585786,540078,541807,0,TO_TIMESTAMP('2023-02-03 00:46:56','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','ShipToLocation_Name',20,TO_TIMESTAMP('2023-02-03 00:46:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:47:31.002Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585787,540078,541808,0,TO_TIMESTAMP('2023-02-03 00:47:31','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','ProductName',30,TO_TIMESTAMP('2023-02-03 00:47:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:47:52.069Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585788,540078,541809,0,TO_TIMESTAMP('2023-02-03 00:47:52','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','ProductCode',40,TO_TIMESTAMP('2023-02-03 00:47:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:48:30.368Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585789,540078,541810,0,TO_TIMESTAMP('2023-02-03 00:48:30','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','WarehouseName',50,TO_TIMESTAMP('2023-02-03 00:48:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:48:50.026Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585790,540078,541811,0,TO_TIMESTAMP('2023-02-03 00:48:50','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','OriginCountry',60,TO_TIMESTAMP('2023-02-03 00:48:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:49:13.917Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585791,540078,541812,0,TO_TIMESTAMP('2023-02-03 00:49:13','YYYY-MM-DD HH24:MI:SS'),100,'D','.','N','Y','DeliveryDate',70,TO_TIMESTAMP('2023-02-03 00:49:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:49:28.397Z
+UPDATE AD_ImpFormat_Row SET DataFormat='YYYY-MM-DD',Updated=TO_TIMESTAMP('2023-02-03 00:49:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541812
+;
+
+-- 2023-02-02T22:51:13.361Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585792,540078,541813,0,TO_TIMESTAMP('2023-02-03 00:51:13','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','Batch',80,TO_TIMESTAMP('2023-02-03 00:51:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:51:26.822Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585793,540078,541814,0,TO_TIMESTAMP('2023-02-03 00:51:26','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','ReleaseNo',90,TO_TIMESTAMP('2023-02-03 00:51:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:51:54.828Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585794,540078,541815,0,TO_TIMESTAMP('2023-02-03 00:51:54','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','Planned Loading Date',100,TO_TIMESTAMP('2023-02-03 00:51:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:51:58.824Z
+UPDATE AD_ImpFormat_Row SET DataType='D',Updated=TO_TIMESTAMP('2023-02-03 00:51:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541815
+;
+
+-- 2023-02-02T22:52:04.322Z
+UPDATE AD_ImpFormat_Row SET DataFormat='YYYY-MM-DD',Updated=TO_TIMESTAMP('2023-02-03 00:52:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541815
+;
+
+-- 2023-02-02T22:52:27.746Z
+UPDATE AD_ImpFormat_Row SET Name='Delivery Instruction Document No',Updated=TO_TIMESTAMP('2023-02-03 00:52:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541806
+;
+
+-- 2023-02-02T22:52:36.441Z
+UPDATE AD_ImpFormat_Row SET Name='Ship-to location',Updated=TO_TIMESTAMP('2023-02-03 00:52:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541807
+;
+
+-- 2023-02-02T22:52:42.908Z
+UPDATE AD_ImpFormat_Row SET Name='Material name',Updated=TO_TIMESTAMP('2023-02-03 00:52:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541808
+;
+
+-- 2023-02-02T22:52:50.136Z
+UPDATE AD_ImpFormat_Row SET Name='Material code',Updated=TO_TIMESTAMP('2023-02-03 00:52:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541809
+;
+
+-- 2023-02-02T22:52:58.138Z
+UPDATE AD_ImpFormat_Row SET Name='Warehouse',Updated=TO_TIMESTAMP('2023-02-03 00:52:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541810
+;
+
+-- 2023-02-02T22:53:04.385Z
+UPDATE AD_ImpFormat_Row SET Name='Country of Origin',Updated=TO_TIMESTAMP('2023-02-03 00:53:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541811
+;
+
+-- 2023-02-02T22:53:11.541Z
+UPDATE AD_ImpFormat_Row SET Name='Delivery Date',Updated=TO_TIMESTAMP('2023-02-03 00:53:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541812
+;
+
+-- 2023-02-02T22:53:18.272Z
+UPDATE AD_ImpFormat_Row SET Name='Batch number',Updated=TO_TIMESTAMP('2023-02-03 00:53:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541813
+;
+
+-- 2023-02-02T22:53:24.798Z
+UPDATE AD_ImpFormat_Row SET Name='Release No',Updated=TO_TIMESTAMP('2023-02-03 00:53:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541814
+;
+
+-- 2023-02-02T22:53:36.543Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585795,540078,541816,0,TO_TIMESTAMP('2023-02-03 00:53:36','YYYY-MM-DD HH24:MI:SS'),100,'D','.','N','Y','Actual Loading Date',110,TO_TIMESTAMP('2023-02-03 00:53:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:53:43.305Z
+UPDATE AD_ImpFormat_Row SET DataFormat='YYYY-MM-DD',Updated=TO_TIMESTAMP('2023-02-03 00:53:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541816
+;
+
+-- 2023-02-02T22:54:08.389Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585796,540078,541817,0,TO_TIMESTAMP('2023-02-03 00:54:08','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N','Y','Planned Loading Quantity',120,TO_TIMESTAMP('2023-02-03 00:54:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:54:34.193Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585797,540078,541818,0,TO_TIMESTAMP('2023-02-03 00:54:34','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N','Y','Actual Loading Quantity',130,TO_TIMESTAMP('2023-02-03 00:54:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:54:54.512Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585798,540078,541819,0,TO_TIMESTAMP('2023-02-03 00:54:54','YYYY-MM-DD HH24:MI:SS'),100,'D','.','N','Y','Planned Delivery Date',140,TO_TIMESTAMP('2023-02-03 00:54:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:55:00.234Z
+UPDATE AD_ImpFormat_Row SET DataFormat='YYYY-MM-DD',Updated=TO_TIMESTAMP('2023-02-03 00:55:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541819
+;
+
+-- 2023-02-02T22:56:21.716Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585799,540078,541820,0,TO_TIMESTAMP('2023-02-03 00:56:21','YYYY-MM-DD HH24:MI:SS'),100,'D','.','N','Y','Actual Delivery Date',150,TO_TIMESTAMP('2023-02-03 00:56:21','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:56:27.301Z
+UPDATE AD_ImpFormat_Row SET DataFormat='YYYY-MM-DD',Updated=TO_TIMESTAMP('2023-02-03 00:56:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541820
+;
+
+-- 2023-02-02T22:56:42.963Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585800,540078,541821,0,TO_TIMESTAMP('2023-02-03 00:56:42','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N','Y','Planned Discharge Quantity',160,TO_TIMESTAMP('2023-02-03 00:56:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T22:56:57.240Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,585801,540078,541822,0,TO_TIMESTAMP('2023-02-03 00:56:57','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N','Y','Actual Discharge Quantity',170,TO_TIMESTAMP('2023-02-03 00:56:57','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T23:00:01.955Z
+INSERT INTO C_DataImport (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,C_DataImport_ID,Created,CreatedBy,DataImport_ConfigType,InternalName,IsActive,Updated,UpdatedBy) VALUES (1000000,540078,1000000,540022,TO_TIMESTAMP('2023-02-03 01:00:01','YYYY-MM-DD HH24:MI:SS'),100,'S','Delivery Planning','Y',TO_TIMESTAMP('2023-02-03 01:00:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-03T09:57:22.020Z
+UPDATE AD_ImpFormat_Row SET StartNo=1,Updated=TO_TIMESTAMP('2023-02-03 11:57:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541806
+;
+
+-- 2023-02-03T09:57:25.092Z
+UPDATE AD_ImpFormat_Row SET StartNo=2,Updated=TO_TIMESTAMP('2023-02-03 11:57:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541807
+;
+
+-- 2023-02-03T09:57:26.726Z
+UPDATE AD_ImpFormat_Row SET StartNo=3,Updated=TO_TIMESTAMP('2023-02-03 11:57:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541808
+;
+
+-- 2023-02-03T09:57:28.190Z
+UPDATE AD_ImpFormat_Row SET StartNo=4,Updated=TO_TIMESTAMP('2023-02-03 11:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541809
+;
+
+-- 2023-02-03T09:57:30.291Z
+UPDATE AD_ImpFormat_Row SET StartNo=5,Updated=TO_TIMESTAMP('2023-02-03 11:57:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541810
+;
+
+-- 2023-02-03T09:57:31.296Z
+UPDATE AD_ImpFormat_Row SET StartNo=6,Updated=TO_TIMESTAMP('2023-02-03 11:57:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541811
+;
+
+-- 2023-02-03T09:57:32.536Z
+UPDATE AD_ImpFormat_Row SET StartNo=7,Updated=TO_TIMESTAMP('2023-02-03 11:57:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541812
+;
+
+-- 2023-02-03T09:57:35.999Z
+UPDATE AD_ImpFormat_Row SET StartNo=8,Updated=TO_TIMESTAMP('2023-02-03 11:57:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541813
+;
+
+-- 2023-02-03T09:57:37.907Z
+UPDATE AD_ImpFormat_Row SET StartNo=9,Updated=TO_TIMESTAMP('2023-02-03 11:57:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541814
+;
+
+-- 2023-02-03T09:57:40.454Z
+UPDATE AD_ImpFormat_Row SET StartNo=10,Updated=TO_TIMESTAMP('2023-02-03 11:57:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541815
+;
+
+-- 2023-02-03T09:57:41.454Z
+UPDATE AD_ImpFormat_Row SET StartNo=11,Updated=TO_TIMESTAMP('2023-02-03 11:57:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541816
+;
+
+-- 2023-02-03T09:57:43.016Z
+UPDATE AD_ImpFormat_Row SET StartNo=12,Updated=TO_TIMESTAMP('2023-02-03 11:57:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541817
+;
+
+-- 2023-02-03T09:57:45.643Z
+UPDATE AD_ImpFormat_Row SET StartNo=13,Updated=TO_TIMESTAMP('2023-02-03 11:57:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541818
+;
+
+-- 2023-02-03T09:57:46.767Z
+UPDATE AD_ImpFormat_Row SET StartNo=14,Updated=TO_TIMESTAMP('2023-02-03 11:57:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541819
+;
+
+-- 2023-02-03T09:57:48.196Z
+UPDATE AD_ImpFormat_Row SET StartNo=15,Updated=TO_TIMESTAMP('2023-02-03 11:57:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541820
+;
+
+-- 2023-02-03T09:57:50.315Z
+UPDATE AD_ImpFormat_Row SET StartNo=16,Updated=TO_TIMESTAMP('2023-02-03 11:57:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541821
+;
+
+-- 2023-02-03T09:57:52.150Z
+UPDATE AD_ImpFormat_Row SET StartNo=17,Updated=TO_TIMESTAMP('2023-02-03 11:57:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541822
+;
+
+-- 2023-02-03T10:03:11.398Z
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2023-02-03 12:03:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541812
+;
+
+-- 2023-02-03T10:03:12.598Z
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2023-02-03 12:03:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541815
+;
+
+-- 2023-02-03T10:03:14.065Z
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2023-02-03 12:03:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541816
+;
+
+-- 2023-02-03T10:03:15.300Z
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2023-02-03 12:03:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541819
+;
+
+-- 2023-02-03T10:03:17.664Z
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2023-02-03 12:03:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541820
+;
+
+-- 2023-02-03T10:33:33.215Z
+UPDATE AD_ImpFormat SET IsManualImport='Y',Updated=TO_TIMESTAMP('2023-02-03 12:33:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_ID=540078
+;

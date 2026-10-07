@@ -20,6 +20,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository Tables: C_Invoice_Acct
+ * Repository Cluster: InvoiceAcctRepository (sole owner)
+ */
 @Repository
 public class InvoiceAcctRepository
 {
@@ -116,5 +120,73 @@ public class InvoiceAcctRepository
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
 		record.setC_InvoiceLine_ID(InvoiceAndLineId.toRepoId(from.getInvoiceAndLineId()));
 		record.setAccountName(from.getAccountConceptualName() != null ? from.getAccountConceptualName().getAsString() : null);
+	}
+
+	/**
+	 * Surgical upsert for a single (schema, invoice, line, concept) tuple.
+	 * <ul>
+	 * <li>No existing row → insert new active row.</li>
+	 * <li>Existing row with same {@code elementValueId} → no-op (idempotent).</li>
+	 * <li>Existing row with different {@code elementValueId} → deactivate it, then insert new active row.</li>
+	 * </ul>
+	 * Never touches rows belonging to other (schema / invoice / line / concept) tuples.
+	 * Cache is reset automatically after any write (the CCache table-change listener on C_Invoice_Acct fires on save).
+	 */
+	public void createOrUpdateLineOverride(
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
+			@NonNull final OrgId orgId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final AccountConceptualName accountConceptualName,
+			@NonNull final ElementValueId elementValueId)
+	{
+		final InvoiceId invoiceId = invoiceAndLineId.getInvoiceId();
+
+		// Query for the exact (schema, invoice, line, concept) tuple — active rows only.
+		final List<I_C_Invoice_Acct> existing = queryBL
+				.createQueryBuilder(I_C_Invoice_Acct.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID, invoiceAndLineId)
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_AccountName, accountConceptualName.getAsString())
+				.create()
+				.list();
+
+		boolean exactMatchFound = false;
+		for (final I_C_Invoice_Acct row : existing)
+		{
+			if (ElementValueId.equals(ElementValueId.ofRepoIdOrNull(row.getC_ElementValue_ID()), elementValueId))
+			{
+				// Exact match — keep it, but keep scanning so any contradicting row is still deactivated.
+				// (The tuple index is not UNIQUE and manual rows are possible, so more than one active
+				// row for the same tuple can exist; returning on the first match would leave a
+				// contradicting row active → an ambiguous per-line override.)
+				exactMatchFound = true;
+			}
+			else
+			{
+				// Different account → deactivate.
+				row.setIsActive(false);
+				InterfaceWrapperHelper.save(row);
+			}
+		}
+		if (exactMatchFound)
+		{
+			// A matching active row already exists (any contradictors deactivated above) — nothing to insert.
+			return;
+		}
+
+		// Insert new active row.
+		final I_C_Invoice_Acct newRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class);
+		newRecord.setC_Invoice_ID(invoiceId.getRepoId());
+		newRecord.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
+		newRecord.setAD_Org_ID(orgId.getRepoId());
+		newRecord.setC_AcctSchema_ID(acctSchemaId.getRepoId());
+		newRecord.setAccountName(accountConceptualName.getAsString());
+		newRecord.setC_ElementValue_ID(elementValueId.getRepoId());
+		newRecord.setIsActive(true);
+		InterfaceWrapperHelper.save(newRecord);
+		// No explicit cache eviction needed: this CCache is registered on C_Invoice_Acct.Table_Name,
+		// so saving the row above already fires the table-change listener that resets it.
 	}
 }

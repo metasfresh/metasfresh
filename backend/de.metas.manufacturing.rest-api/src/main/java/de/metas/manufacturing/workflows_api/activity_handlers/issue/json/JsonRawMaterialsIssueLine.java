@@ -51,7 +51,10 @@ public class JsonRawMaterialsIssueLine
 				.readOnly(!from.isAllowManualIssue())
 				.steps(from.getSteps()
 						.stream()
-						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))
+						.map(step -> JsonRawMaterialsIssueLineStep.of(
+								step,
+								from.getRemainingQtyToIssueMaxInUOM(step.getQtyToIssue().getUomId()).toBigDecimal(),
+								jsonOpts))
 						.collect(ImmutableList.toImmutableList()));
 	}
 }

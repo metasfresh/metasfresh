@@ -100,6 +100,7 @@
         <module>de.metas.global_qrcode.api</module>
         <module>de.metas.global_qrcode.services</module>
         <module>de.metas.business</module>
+        <module>de.metas.architecture-tests</module>
 
         <module>de.metas.business.rest-api</module>
         <module>de.metas.business.rest-api-impl</module>
@@ -142,6 +143,8 @@
         <module>de.metas.invoice_gateway.api</module>
         <module>de.metas.invoice_gateway.spi</module>
 
+        <module>de.metas.einvoice.base</module>
+
         <module>de.metas.inbound.mail</module>
 
         <module>de.metas.fresh</module>
@@ -179,6 +182,9 @@
 
         <module>de.metas.swat</module>
 
+        <module>de.metas.deliveryplanning.base</module>
+        <module>de.metas.deliveryplanning.webui</module>
+
         <module>de.metas.serviceprovider</module>
 
         <module>de.metas.shipper.gateway.commons</module>
@@ -193,6 +199,8 @@
 
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
+
+        <module>de.metas.vatid</module>
 
         <module>de.metas.vendor.gateway.api</module>
 
@@ -238,6 +246,7 @@
 
         <module>de.metas.frontend-testing</module>
         <module>de.metas.qualitymgmt</module>
+
     </modules>
 
     <dependencyManagement>

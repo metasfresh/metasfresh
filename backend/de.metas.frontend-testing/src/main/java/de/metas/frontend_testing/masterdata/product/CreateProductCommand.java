@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -39,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
@@ -52,8 +55,10 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -75,13 +80,13 @@ public class CreateProductCommand
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
+	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for isSkipDefaultCosts
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
 
 	@NonNull private final Identifier identifier;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
-	@NonNull private final ProductCategoryId productCategoryId = MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 
 	public JsonCreateProductResponse execute()
 	{
@@ -93,6 +98,7 @@ public class CreateProductCommand
 		createPrices(productId, productUomId);
 		createBPartnerProducts(productId);
 		createBOM(productRecord);
+		deleteDefaultCostsIfRequested(productRecord);
 
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
@@ -126,17 +132,74 @@ public class CreateProductCommand
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
-		productRecord.setProductType(ProductType.Item.getCode());
-		productRecord.setIsStocked(true);
-		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		final ProductType productType = resolveProductType(request.getType());
+		productRecord.setProductType(productType.getCode());
+		// Explicit request override wins; otherwise Items are stocked, non-items are not.
+		final Boolean explicitIsStocked = request.getIsStocked();
+		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked : productType.isItem());
+		final Boolean isSelfPacked = request.getIsSelfPacked();
+		if (isSelfPacked != null)
+		{
+			productRecord.setIsSelfPacked(isSelfPacked);
+		}
+		final Boolean isSerialNoPicked = request.getIsSerialNoPicked();
+		if (isSerialNoPicked != null)
+		{
+			productRecord.setIsSerialNoPicked(isSerialNoPicked);
+		}
+		productRecord.setM_Product_Category_ID(resolveProductCategoryId().getRepoId());
+		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
+		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
+
+		// Set M_AttributeSet_ID if attributeSetName is provided
+		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
+		if (attributeSetName != null)
+		{
+			final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+					.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnly(I_M_AttributeSet.class);
+
+			if (attributeSet == null)
+			{
+				throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
+			}
+
+			productRecord.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
+		}
+
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 		context.putIdentifier(identifier, productId);
 
 		return productRecord;
+	}
+
+	/**
+	 * Resolves the product's category: the per-run {@link JsonCreateProductRequest#getProductCategory()} when the
+	 * request names one (looked up from the context, which the {@code productCategories} section populated), else the
+	 * shared {@link MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID} default (backward-compatible for every product
+	 * that omits it).
+	 */
+	private ProductCategoryId resolveProductCategoryId()
+	{
+		final Identifier productCategory = request.getProductCategory();
+		if (productCategory != null)
+		{
+			return context.getId(productCategory, ProductCategoryId.class);
+		}
+		return MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 	}
 
 	private String generateValue()
@@ -300,6 +363,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 
@@ -408,7 +472,54 @@ public class CreateProductCommand
 			lineRecord.setPickingInstruction(line.getPickingInstruction());
 		}
 
+		if (line.getIssuingTolerancePerc() != null)
+		{
+			lineRecord.setIsEnforceIssuingTolerance(true);
+			lineRecord.setIssuingTolerance_ValueType(X_PP_Product_BOMLine.ISSUINGTOLERANCE_VALUETYPE_Percentage);
+			lineRecord.setIssuingTolerance_Perc(line.getIssuingTolerancePerc());
+		}
+
 		saveRecord(lineRecord);
+	}
+
+	/**
+	 * Map the request's {@code type} field to a {@link ProductType}.
+	 * Accepts both the enum name ({@code "Item"}, {@code "Service"}, …) and the AD ref-list code
+	 * ({@code "I"}, {@code "S"}, …). Falls back to {@link ProductType#Item} when {@code null}/blank.
+	 */
+	private static ProductType resolveProductType(@Nullable final String requestType)
+	{
+		final String trimmed = StringUtils.trimBlankToNull(requestType);
+		if (trimmed == null)
+		{
+			return ProductType.Item;
+		}
+		// Try enum-name matching first (case-insensitive) — "Item", "Service", "Resource", …
+		for (final ProductType candidate : ProductType.values())
+		{
+			if (candidate.name().equalsIgnoreCase(trimmed))
+			{
+				return candidate;
+			}
+		}
+		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
+		// which is the right behaviour for an invalid type — surface it to the caller.
+		return ProductType.ofCode(trimmed);
+	}
+
+	/**
+	 * When the request asks to skip default costs, leaves the product without any {@code M_Cost} row,
+	 * like a migrated product. Must run after the last product save, which would create them again.
+	 */
+	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		if (!Boolean.TRUE.equals(request.getIsSkipDefaultCosts()))
+		{
+			return;
+		}
+
+		currentCostsRepository.deleteForProduct(productRecord);
+		logger.info("Deleted default M_Cost rows for product {} (isSkipDefaultCosts=true)", productRecord.getValue());
 	}
 
 	private void renamePreviousEAN13ProductCodes()

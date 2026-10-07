@@ -33,6 +33,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Product;
 
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
@@ -67,8 +68,12 @@ public class M_HU_Storage_StepDef
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final HuId huId = huTable.getId(row.getAsIdentifier(COLUMNNAME_M_HU_ID));
 
-			final I_M_HU_Storage huStorageRecord = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-					.addEqualsFilter(COLUMN_M_HU_ID, huId)
+			final IQueryBuilder<I_M_HU_Storage> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class)
+					.addEqualsFilter(COLUMN_M_HU_ID, huId);
+			row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+					.map(productTable::getId)
+					.ifPresent(productId -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productId));
+			final I_M_HU_Storage huStorageRecord = queryBuilder
 					.orderByDescending(COLUMN_M_HU_ID)
 					.create()
 					.firstOnlyOrNull(I_M_HU_Storage.class);

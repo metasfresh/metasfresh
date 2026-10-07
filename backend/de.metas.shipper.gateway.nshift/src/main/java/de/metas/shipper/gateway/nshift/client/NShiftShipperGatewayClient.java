@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -31,14 +32,20 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
+import de.metas.common.util.StringUtils;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
+import de.metas.shipper.gateway.commons.CarrierProductAllocationService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
+import de.metas.shipper.gateway.commons.servicelevel.ShipperServiceLevelConfigList;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
+import de.metas.shipper.gateway.spi.ShipperConfigRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -48,13 +55,16 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.mpackage.PackageId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_Carrier_Config;
 import org.slf4j.Logger;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -65,7 +75,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
-	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipmentDispatchService shipmentDispatchService;
 	@NonNull private final ShipAdvisorService shipAdvisorService;
 	//TODO Adrian to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
 	@NonNull private final JsonShipperConverter jsonConverter;
@@ -74,6 +84,9 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final ShipperConfig shipperConfig;
 	@NonNull private final ShipperMappingConfigList mappingConfigs;
+	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
+	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final CarrierProductAllocationService carrierProductAllocationService;
 
 	@Override
 	@NonNull
@@ -86,13 +99,17 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs
-		);
+		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
+		final boolean isManual = isManual(schedules);
+		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
+				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
+				schedules,
+				isManual);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try
 		{
-			response = shipmentService.createShipment(deliveryRequestJson);
+			response = shipmentDispatchService.createShipment(deliveryRequestJson);
 			logger.debug("Received nShift response: {}", response);
 		}
 		catch (final AdempiereException ex)
@@ -113,7 +130,89 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		{
 			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
 		}
-		return updateDeliveryOrder(deliveryOrder, response);
+
+		// nShift re-resolved the carrier at ship time: persist what was shipped into the carrier-product
+		// allocations (only if missing) so it becomes selectable in manual advise, and overwrite the order's
+		// carrier with the resolved value (product + services always; goods type only when unambiguous).
+		// TODO: the carrier overwrite is applied at delivery-order level — move it to line level in a later iteration.
+		DeliveryOrder resolvedDeliveryOrder = deliveryOrder;
+		if (!isManual)
+		{
+			final CarrierProductAllocationService.ResolvedCarrier resolvedCarrier = carrierProductAllocationService.persistResolvedAllocations(
+					deliveryOrder.getShipperId(),
+					response.getShipperProduct(),
+					response.getResolvedGoodsTypes(),
+					response.getResolvedServices());
+			if (resolvedCarrier != null)
+			{
+				resolvedDeliveryOrder = deliveryOrder.withResolvedCarrier(
+						resolvedCarrier.getShipperProduct(),
+						resolvedCarrier.getGoodsTypes(),
+						resolvedCarrier.getServices());
+			}
+		}
+
+		return updateDeliveryOrder(resolvedDeliveryOrder, response);
+	}
+
+	private List<ShipmentSchedule> loadSchedules(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		// batch-load the schedules for all parcel packages once, rather than per package
+		final ImmutableSet<PackageId> packageIds = deliveryOrder.getDeliveryOrderParcels()
+				.stream()
+				.map(DeliveryOrderParcel::getPackageId)
+				.collect(ImmutableSet.toImmutableSet());
+		return ImmutableList.copyOf(shipmentScheduleRepository.loadByPackageIds(packageIds).values());
+	}
+
+	/**
+	 * Patches the shipper config of the given request with isManual, isSelectionRules and ServiceLevel
+	 * when shipping rules are active (see {@link #isManual}).
+	 */
+	private JsonDeliveryRequest applyShippingRuleOptions(
+			@NonNull final JsonDeliveryRequest request,
+			@NonNull final List<ShipmentSchedule> schedules,
+			final boolean isManual)
+	{
+		JsonShipperConfig patchedConfig;
+		if (isManual)
+		{
+			//needs to be changed to false for the manual case
+			patchedConfig = request.getShipperConfig()
+					.withAdditionalProperty(NShiftConstants.SELECTION_RULES, StringUtils.ofBoolean(false))
+					.withAdditionalProperty(NShiftConstants.MANUAL, StringUtils.ofBoolean(true));
+		}
+		else
+		{
+			patchedConfig = request.getShipperConfig()
+					.withAdditionalProperty(NShiftConstants.MANUAL, StringUtils.ofBoolean(false));
+
+			final ExternalSystemId externalSystemId = schedules.stream()
+					.map(ShipmentSchedule::getExternalSystemId)
+					.filter(Objects::nonNull)
+					.findFirst()
+					.orElse(null);
+
+			final String serviceLevel = serviceLevelConfigs.getEffectiveServiceLevel(
+					ShipperConfigRequest.builder().externalSystemId(externalSystemId).build()).orElse(null);
+
+			if (serviceLevel != null)
+			{
+				patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
+			}
+		}
+
+		return request.toBuilder().shipperConfig(patchedConfig).build();
+	}
+
+	private boolean isManual(@NonNull final List<ShipmentSchedule> schedules)
+	{
+		if (schedules.isEmpty())
+		{
+			return false;
+		}
+		return schedules.stream()
+				.anyMatch(sched -> sched.getCarrierAdvisingStatus().isManual());
 	}
 
 	/**
@@ -137,7 +236,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem)
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
-		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
+		final byte[] labelPdfBase64 = jsonDeliveryResponseItem.getLabelPdfBase64();
+		final byte[] labelData = labelPdfBase64 != null ? Base64.getDecoder().decode(labelPdfBase64) : null;
 		final String trackingUrl = jsonDeliveryResponseItem.getTrackingUrl();
 
 		return line.toBuilder()
@@ -179,9 +279,13 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	public JsonShipperConfig getJsonShipperConfig()
+	@Override
+	public JsonShipperConfig getJsonShipperConfigEffective(@NonNull final ShipperConfigRequest request)
 	{
-		return jsonConverter.toJsonShipperConfig(shipperConfig);
+		final JsonShipperConfig baseConfig = jsonConverter.toJsonShipperConfig(shipperConfig);
+		return serviceLevelConfigs.getEffectiveServiceLevel(request)
+				.map(effectiveLevel -> baseConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, effectiveLevel))
+				.orElse(baseConfig);
 	}
 
 }

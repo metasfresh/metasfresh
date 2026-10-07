@@ -35,6 +35,11 @@ public interface I_M_InOut extends de.metas.inout.model.I_M_InOut, I_EDI_Documen
 
 	void setEDI_Desadv (I_EDI_Desadv EDI_Desadv);
 	I_EDI_Desadv getEDI_Desadv();
+
+	String COLUMNNAME_EDI_AD_PInstance_ID = "EDI_AD_PInstance_ID";
+
+	void setEDI_AD_PInstance_ID (int EDI_AD_PInstance_ID);
+	int getEDI_AD_PInstance_ID();
 	// @formatter:on
 
 }

@@ -695,7 +695,7 @@ export class ReceiptCandidatesPage {
       // Wait for screen-freeze overlay to be removed (compound selector for element with both classes)
       await page.locator('.screen-freeze.raw-modal').waitFor({
         state: 'detached',
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
+        timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {
         // Try again with individual selectors
         console.log('Compound selector detach failed, trying individual selectors');

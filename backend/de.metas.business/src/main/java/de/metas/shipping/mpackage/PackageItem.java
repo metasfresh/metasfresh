@@ -22,6 +22,7 @@
 
 package de.metas.shipping.mpackage;
 
+import de.metas.inout.InOutAndLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -29,6 +30,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +41,8 @@ public class PackageItem
 	@NonNull ProductId productId;
 	@Nullable Quantity quantity;
 	@NonNull OrderAndLineId orderAndLineId;
+	@NonNull InOutAndLineId inOutAndLineId;
+	@NonNull AttributeSetInstanceId inOutLineASIId;
 
 	public OrderLineId getOrderLineId() {return orderAndLineId.getOrderLineId();}
 }

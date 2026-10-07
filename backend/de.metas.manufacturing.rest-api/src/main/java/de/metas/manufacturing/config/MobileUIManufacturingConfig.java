@@ -1,9 +1,11 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -14,12 +16,99 @@ public class MobileUIManufacturingConfig
 {
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
+	@Nullable ReceiveUnitType receiveUnitType;
+
+	/**
+	 * The editable-attribute list (global-only, v1 - {@code MobileUI_MFG_Config_Attribute} active rows in
+	 * {@code SeqNo} order), replacing the retired per-attribute boolean flags. Empty when no config row exists
+	 * or none of its child rows are active.
+	 */
+	@NonNull ImmutableList<AttributeCode> editableAttributeCodesInOrder;
+
+	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToLU;
+	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
+	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
+	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
+	@NonNull OptionalBoolean isAllowReceiveWithoutPackingItem;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
+
+	@NonNull
+	public ReceiveUnitType getReceiveUnitTypeEffective()
+	{
+		return receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+	}
+
+	public boolean getIsAllowFinishedGoodsReceiveToLUEffective()
+	{
+		return isAllowFinishedGoodsReceiveToLU.orElseTrue();
+	}
+
+	public boolean getIsAllowFinishedGoodsReceiveToTUEffective()
+	{
+		return isAllowFinishedGoodsReceiveToTU.orElseTrue();
+	}
+
+	public boolean getIsSkipFinishedGoodsReceiveTargetStepEffective()
+	{
+		return isSkipFinishedGoodsReceiveTargetStep.orElseFalse();
+	}
+
+	public boolean getIsCaptureCatchWeightAtReceiptEffective()
+	{
+		return isCaptureCatchWeightAtReceipt.orElseTrue();
+	}
+
+	/** Opt-in, hence FALSE by default. */
+	public boolean getIsAllowReceiveWithoutPackingItemEffective()
+	{
+		return isAllowReceiveWithoutPackingItem.orElseFalse();
+	}
+
+	/**
+	 * @param isMainFinishedGood {@code false} for a co-/by-product line. Three of the five flags exempt such a line;
+	 *                           catch weight and receive-without-packing-item do not — they apply to every line.
+	 */
+	@NonNull
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
+	{
+		// Three of the four flags exempt co-/by-products, and the polarity differs because "exempt" means the
+		// opposite thing per flag: for the two allow-flags the co-/by-product must stay PERMITTED (it is
+		// legitimately received into a TU, including an infinite-capacity one), whereas for the skip-flag it must
+		// keep its target chooser, i.e. NOT skip. That exemption is a deliberately conservative default - those
+		// co-/by-product paths keep exactly today's behaviour.
+		//
+		// Catch weight is deliberately NOT exempt: it applies to every line. Nothing is lost by not weighing at
+		// receipt, because the weight of a catch-weight product is captured later at picking
+		// (PickingJobPickCommand takes it from the operator), which is the whole point of switching it off here.
+		// A product-data fallback would be meaningless: a nominal weight is exactly what a catch-weight product
+		// declares untrustworthy - for anything else the kg/piece UOM conversion already answers it.
+		//
+		// Receive-without-packing-item is not exempt either, for the opposite reason: it is opt-in and off by
+		// default, so exempting a line would force the extra target ON everywhere - what the flag exists to avoid.
+		return FinishedGoodsReceiveLineConfig.builder()
+				.allowReceiveToLU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToLUEffective())
+				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
+				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
+				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
+				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
+				.build();
+	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
+				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
+				.editableAttributeCodesInOrder(!this.editableAttributeCodesInOrder.isEmpty() ? this.editableAttributeCodesInOrder : other.editableAttributeCodesInOrder)
+				.isAllowFinishedGoodsReceiveToLU(this.isAllowFinishedGoodsReceiveToLU.ifUnknown(other.isAllowFinishedGoodsReceiveToLU))
+				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
+				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
+				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
+				.isAllowReceiveWithoutPackingItem(this.isAllowReceiveWithoutPackingItem.ifUnknown(other.isAllowReceiveWithoutPackingItem))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
 				.build();
 		if (result.equals(this))
 		{

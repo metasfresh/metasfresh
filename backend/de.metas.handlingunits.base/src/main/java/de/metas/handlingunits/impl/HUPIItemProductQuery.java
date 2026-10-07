@@ -23,6 +23,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
@@ -46,9 +47,8 @@ import java.util.Set;
 /* package */ final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
-	private ImmutableSet<ProductId> onlyProductIds = null;
-	@Nullable
-	private PriceListVersionId priceListVersionId = null;
+	@Nullable private ImmutableSet<ProductId> onlyProductIds = null;
+	@Nullable private PriceListVersionId priceListVersionId = null;
 	private int bpartnerId = -1;
 	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
@@ -67,6 +67,15 @@ import java.util.Set;
 	@Getter
 	@Setter
 	private boolean defaultForProduct;
+
+	@Getter
+	@Setter
+	@Nullable
+	private GTIN gtin = null;
+
+	@Getter
+	@Setter
+	private boolean onlyActiveProduct = false;
 
 	@Override
 	public int getM_HU_PI_Item_ID()
@@ -116,7 +125,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public void setOnlyProductIds(final Collection<ProductId> productIds)
+	public void setOnlyProductIds(@Nullable final Collection<ProductId> productIds)
 	{
 		this.onlyProductIds = productIds != null ? ImmutableSet.copyOf(productIds) : null;
 	}

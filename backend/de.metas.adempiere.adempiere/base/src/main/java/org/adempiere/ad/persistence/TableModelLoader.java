@@ -22,7 +22,9 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.logging.LogManager;
@@ -47,6 +49,7 @@ import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -63,6 +66,28 @@ public final class TableModelLoader
 
 	private static final Logger log = LogManager.getLogger(TableModelLoader.class);
 	private final TableModelClassLoader tableModelClassLoader = TableModelClassLoader.instance;
+
+	/**
+	 * Max number of record IDs to load per "IN (?,?,...)" query, to stay below the PostgreSQL/JDBC
+	 * 2-byte bind-parameter limit (max 32767 params per statement). Larger sets are loaded in chunks.
+	 * Set well below that cap with headroom (not AT the limit, so an off-by-one or a future extra bind
+	 * param can't reintroduce the overflow), yet large enough to keep the chunk count low — an ~83k-id
+	 * load becomes 3 queries, not 84. It only ever engages for loads that would otherwise fail.
+	 * MUST stay &lt;= 32767 or the very bug this guards against returns (see {@code TableModelLoaderChunkingTest}).
+	 */
+	@VisibleForTesting
+	static final int MAX_IDS_PER_QUERY = 30000;
+
+	/**
+	 * @return {@code true} if {@code recordIdCount} record IDs can be loaded in one query (the fast path),
+	 * i.e. the count stays within {@link #MAX_IDS_PER_QUERY}; {@code false} if the load must be chunked.
+	 * This is the exact decision {@link #getPOs} uses to pick the fast path vs. chunked loading.
+	 */
+	@VisibleForTesting
+	static boolean isSingleQueryLoad(final int recordIdCount)
+	{
+		return recordIdCount <= MAX_IDS_PER_QUERY;
+	}
 
 	private TableModelLoader()
 	{
@@ -174,35 +199,69 @@ public final class TableModelLoader
 		{
 			final POInfo poInfo = POInfo.getPOInfo(tableName);
 
-			final List<Object> sqlParams = new ArrayList<>();
-			final String sql = poInfo.buildSelect()
-					.append(" WHERE ").append(DB.buildSqlList(poInfo.getSingleKeyColumnName(), recordIdsToLoad, sqlParams))
-					.toString();
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
+			// Avoid the PostgreSQL/JDBC 2-byte bind-parameter limit (max 32767 params per statement).
+			// A single "IN (?,?,...)" with all IDs overflows once there are ~32k+ IDs, failing with
+			// "Tried to send an out-of-range integer as a 2-byte value". Load in chunks when needed.
+			// Fast path: for the common (small) case run exactly as before (single query, no partitioning/copy).
+			if (isSingleQueryLoad(recordIdsToLoad.size()))
 			{
-				pstmt = DB.prepareStatement(sql, trxName);
-				DB.setParameters(pstmt, sqlParams);
-				rs = pstmt.executeQuery();
-				while (rs.next())
+				loadPOsFromDB(ctx, tableName, poInfo, recordIdsToLoad, trxName, result);
+			}
+			else
+			{
+				for (final List<Integer> recordIdsChunk : Iterables.partition(recordIdsToLoad, MAX_IDS_PER_QUERY))
 				{
-					final PO po = getPO(ctx, tableName, rs, trxName);
-					result.add(po);
+					loadPOsFromDB(ctx, tableName, poInfo, recordIdsChunk, trxName, result);
 				}
-			}
-			catch (Exception ex)
-			{
-				throw new DBException(ex, sql, sqlParams);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
 			}
 		}
 
 		//
 		return result;
+	}
+
+	/**
+	 * Loads the POs with the given (already cache-missed) IDs directly from the database and appends them to {@code result}.
+	 * The number of IDs must not exceed the JDBC bind-parameter limit; callers split larger sets into chunks
+	 * (see {@link #MAX_IDS_PER_QUERY}).
+	 * <p>
+	 * NOTE: each chunk is loaded by an independent SQL statement, so under READ COMMITTED there is no
+	 * cross-chunk MVCC snapshot consistency for loads &gt; {@link #MAX_IDS_PER_QUERY} ids. A caller needing an
+	 * atomic snapshot across a huge id set must arrange it itself (e.g. REPEATABLE READ).
+	 */
+	private void loadPOsFromDB(
+			final Properties ctx,
+			@NonNull final String tableName,
+			@NonNull final POInfo poInfo,
+			@NonNull final Collection<Integer> recordIds,
+			final String trxName,
+			@NonNull final List<PO> result)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = poInfo.buildSelect()
+				.append(" WHERE ").append(DB.buildSqlList(poInfo.getSingleKeyColumnName(), recordIds, sqlParams))
+				.toString();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				final PO po = getPO(ctx, tableName, rs, trxName);
+				result.add(po);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	/**

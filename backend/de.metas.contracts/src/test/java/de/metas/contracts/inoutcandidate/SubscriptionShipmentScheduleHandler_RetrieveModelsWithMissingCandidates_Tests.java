@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -132,7 +133,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertOnlyFirstRecordIsReturned()
 	{
-		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, QueryLimit.NO_LIMIT));
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isInstanceOf(I_C_SubscriptionProgress.class);
@@ -143,7 +144,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertBothRecordsAreReturned()
 	{
-		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, QueryLimit.NO_LIMIT));
 		assertThat(secondResult).hasSize(2);
 
 		assertThat(secondResult).allSatisfy(r -> {

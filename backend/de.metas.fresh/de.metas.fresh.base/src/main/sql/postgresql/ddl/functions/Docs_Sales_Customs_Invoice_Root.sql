@@ -5,7 +5,8 @@ RETURNS TABLE
 	DocStatus character(2),
 	PrintName character varying(60),
 	countrycode character(2),
-	displayhu text
+	displayhu text,
+	isFactoringPartner character(1)
 	)
 AS
 $$	
@@ -26,11 +27,13 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhu
+	END as displayhu,
+	bp.IsFactoring AS isFactoringPartner
 FROM
 	C_Customs_Invoice  i
 	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
 	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = i.C_BPartner_ID
 
 	LEFT OUTER JOIN AD_OrgInfo orginfo ON orginfo.ad_org_id = i.ad_org_id AND orginfo.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner_Location org_loc ON orginfo.Orgbp_Location_ID = org_loc.C_BPartner_Location_ID AND org_loc.isActive = 'Y'

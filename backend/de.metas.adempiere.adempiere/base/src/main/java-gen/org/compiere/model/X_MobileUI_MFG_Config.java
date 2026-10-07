@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 896845343L;
+	private static final long serialVersionUID = 1213926478L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -35,6 +35,42 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsAllowEmptyingHUs (final boolean IsAllowEmptyingHUs)
+	{
+		set_Value (COLUMNNAME_IsAllowEmptyingHUs, IsAllowEmptyingHUs);
+	}
+
+	@Override
+	public boolean isAllowEmptyingHUs() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowEmptyingHUs);
+	}
+
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToLU (final boolean IsAllowFinishedGoodsReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToLU, IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToTU (final boolean IsAllowFinishedGoodsReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToTU, IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToTU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
 	public void setIsAllowIssuingAnyHU (final boolean IsAllowIssuingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
@@ -44,6 +80,42 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isAllowIssuingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowIssuingAnyHU);
+	}
+
+	@Override
+	public void setIsAllowReceiveWithoutPackingItem (final boolean IsAllowReceiveWithoutPackingItem)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveWithoutPackingItem, IsAllowReceiveWithoutPackingItem);
+	}
+
+	@Override
+	public boolean isAllowReceiveWithoutPackingItem() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveWithoutPackingItem);
+	}
+
+	@Override
+	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
+	{
+		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public boolean isCaptureCatchWeightAtReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
+	{
+		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);
+	}
+
+	@Override
+	public boolean isConfirmEmptyingHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmEmptyingHU);
 	}
 
 	@Override
@@ -59,6 +131,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsSkipFinishedGoodsReceiveTargetStep (final boolean IsSkipFinishedGoodsReceiveTargetStep)
+	{
+		set_Value (COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep, IsSkipFinishedGoodsReceiveTargetStep);
+	}
+
+	@Override
+	public boolean isSkipFinishedGoodsReceiveTargetStep() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep);
+	}
+
+	@Override
 	public void setMobileUI_MFG_Config_ID (final int MobileUI_MFG_Config_ID)
 	{
 		if (MobileUI_MFG_Config_ID < 1) 
@@ -71,5 +155,26 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public int getMobileUI_MFG_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MobileUI_MFG_Config_ID);
+	}
+
+	/** 
+	 * ReceiveUnitType AD_Reference_ID=542051
+	 * Reference name: ReceiveUnitType
+	 */
+	public static final int RECEIVEUNITTYPE_AD_Reference_ID=542051;
+	/** CU = CU */
+	public static final String RECEIVEUNITTYPE_CU = "CU";
+	/** TU = TU */
+	public static final String RECEIVEUNITTYPE_TU = "TU";
+	@Override
+	public void setReceiveUnitType (final java.lang.String ReceiveUnitType)
+	{
+		set_Value (COLUMNNAME_ReceiveUnitType, ReceiveUnitType);
+	}
+
+	@Override
+	public java.lang.String getReceiveUnitType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ReceiveUnitType);
 	}
 }

@@ -1,15 +1,13 @@
 package de.metas.material.cockpit.stock;
 
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
-
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -37,16 +35,9 @@ import de.metas.product.ProductId;
 @Builder
 public class StockDataItem
 {
-	@NonNull
-	ProductId productId;
+	@NonNull ProductId productId;
+	@NonNull WarehouseId warehouseId;
+	@NonNull AttributesKey storageAttributesKey;
 
-	@NonNull
-	WarehouseId warehouseId;
-
-	@NonNull
-	AttributesKey storageAttributesKey;
-
-	@NonNull
-	BigDecimal qtyOnHand;
-
+	@NonNull BigDecimal qtyOnHand;
 }

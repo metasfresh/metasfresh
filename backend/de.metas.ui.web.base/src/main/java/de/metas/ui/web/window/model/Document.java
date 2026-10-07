@@ -1178,6 +1178,11 @@ public final class Document
 
 		if (readonlyRevaluator.isReadonly(documentField))
 		{
+			if (Objects.equals(value, documentField.getValue()))
+			{
+				return;
+			}
+
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
 
@@ -1662,6 +1667,11 @@ public final class Document
 	public Collection<IIncludedDocumentsCollection> getIncludedDocumentsCollections()
 	{
 		return includedDocuments.values();
+	}
+
+	public boolean hasUnsavedNewIncludedDocuments()
+	{
+		return getIncludedDocumentsCollections().stream().anyMatch(IIncludedDocumentsCollection::hasNewDocumentsWithChanges);
 	}
 
 	/* package */ Document createIncludedDocument(final DetailId detailId)

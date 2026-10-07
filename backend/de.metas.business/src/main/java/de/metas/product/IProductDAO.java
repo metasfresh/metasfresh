@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.gs1.ean13.EAN13ProductCode;
@@ -117,6 +118,17 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);
 
+	/**
+	 * Finds the first active {@link org.compiere.model.I_M_Product} row matching the given barcode value
+	 * against {@code GTIN}, {@code EAN13_ProductCode}, or {@code UPC} columns (OR logic).
+	 * Ordered by {@code M_Product_ID} ascending; the first row's product is returned.
+	 *
+	 * @param gtin the GTIN/EAN13/UPC value to match
+	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull GTIN gtin);
+
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
@@ -200,11 +212,27 @@ public interface IProductDAO extends ISingletonService
 
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
+	/**
+	 * @return the given product category id plus all of its ancestor category ids (cycle-safe: an ancestor loop is broken off,
+	 * yielding just the ids seen up to that point, instead of looping forever).
+	 */
+	@NonNull
+	ImmutableSet<ProductCategoryId> getProductCategoryIdAndAncestors(@NonNull ProductCategoryId productCategoryId);
+
+	/**
+	 * Batch variant of {@link #getProductCategoryIdAndAncestors(ProductCategoryId)}: resolves the products' categories in one query.
+	 *
+	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
+	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
+	 */
+	@NonNull
+	ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> getProductCategoryIdAndAncestorsByProductIds(@NonNull Set<ProductId> productIds);
+
 	Stream<I_M_Product_Category> streamAllProductCategories();
 
 	String getProductCategoryNameById(ProductCategoryId id);
 
-	ProductId getProductIdByResourceId(ResourceId resourceId);
+	Optional<ProductId> getProductIdByResourceId(ResourceId resourceId);
 
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, Consumer<I_M_Product> productUpdater);
 
@@ -229,4 +257,15 @@ public interface IProductDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+
+	/**
+	 * Like {@link #getByIdsInTrx(Set)}, but does <b>not</b> filter out inactive records — mirroring
+	 * {@link #getByIdInTrx(ProductId)}, which also loads a product regardless of its {@code IsActive} flag.
+	 * <p>
+	 * Use this where a batch check has to behave exactly like N single-product checks; a product can be
+	 * deactivated while documents still reference it, and dropping it from the batch would silently skip it.
+	 * Ids with no product at all are simply absent from the result.
+	 */
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull Set<ProductId> productIds);
 }

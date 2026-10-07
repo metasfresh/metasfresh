@@ -12,6 +12,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -24,6 +25,7 @@ import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -32,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -40,7 +43,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -75,6 +77,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class OrderFactory
 {
+	private static final Logger logger = LogManager.getLogger(OrderFactory.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -189,16 +192,6 @@ public class OrderFactory
 			final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
 			orderLineBuilders.add(orderLineBuilder);
 			return orderLineBuilder;
-		}
-	}
-
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
-	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
-		{
-			return orderLineBuilders.stream()
-					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
-					.findFirst();
 		}
 	}
 
@@ -380,6 +373,44 @@ public class OrderFactory
 	{
 		assertNotBuilt();
 		order.setC_Campaign_ID(campaignId);
+		return this;
+	}
+
+	/**
+	 * Sets dropship fields on the purchase order from explicit partner/location/user IDs.
+	 * Used when dropship info is stored on the purchase candidate's aggregation key.
+	 */
+	public OrderFactory dropShip(
+			@Nullable final BPartnerId dropShipBPartnerId,
+			@Nullable final BPartnerLocationId dropShipLocationId,
+			@Nullable final UserId dropShipUserId)
+	{
+		assertNotBuilt();
+		order.setIsDropShip(true);
+
+		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartnerId));
+		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipLocationId));
+		order.setDropShip_User_ID(UserId.toRepoId(dropShipUserId));
+
+		try
+		{
+			final WarehouseId dropshipWarehouseId = orgDAO.getOrgDropshipWarehouseId(getOrgId());
+			if (dropshipWarehouseId != null)
+			{
+				order.setM_Warehouse_ID(dropshipWarehouseId.getRepoId());
+			}
+			else
+			{
+				logger.warn("No dropship warehouse configured for org {}. Keeping the current warehouse.", getOrgId());
+				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to retrieve dropship warehouse for org {}. Keeping the current warehouse.", getOrgId(), ex);
+			Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+		}
+
 		return this;
 	}
 

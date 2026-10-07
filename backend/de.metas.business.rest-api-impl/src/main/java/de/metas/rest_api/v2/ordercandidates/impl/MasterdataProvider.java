@@ -26,7 +26,9 @@ import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
@@ -67,6 +69,8 @@ import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -78,9 +82,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -93,6 +99,7 @@ public final class MasterdataProvider
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@NonNull private final PermissionService permissionService;
 	@NonNull private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
@@ -173,12 +180,103 @@ public final class MasterdataProvider
 						.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo));
 	}
 
+	/**
+	 * A {@code gln-} partner or location identifier is resolved among active partners and active locations only;
+	 * it is then passed on as metasfresh-id. Other identifiers are passed on unchanged.
+	 */
 	public Optional<BPartnerInfo> getBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@Nullable final OrgId orgId)
 	{
+		if (jsonBPartnerInfo == null)
+		{
+			return Optional.empty();
+		}
+
 		final String orgCode = orgId != null ? orgDAO.retrieveOrgValue(orgId) : null;
-		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfo, orgCode);
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = resolveGLNIdentifiersAmongActiveRecords(jsonBPartnerInfo, orgId, orgCode);
+		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfoToUse, orgCode);
+	}
+
+	@NonNull
+	private JsonRequestBPartnerLocationAndContact resolveGLNIdentifiersAmongActiveRecords(
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			@Nullable final OrgId orgId,
+			@Nullable final String orgCode)
+	{
+		// Lombok's @NonNull on the DTO getters does not apply to requests deserialized from JSON (a missing property arrives as null), so check explicitly.
+		if (jsonBPartnerInfo.getBPartnerIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		if (jsonBPartnerInfo.getBPartnerLocationIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerLocationIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerIdentifier());
+		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerLocationIdentifier());
+		final boolean bpartnerIsGLN = ExternalIdentifier.Type.GLN.equals(bpartnerIdentifier.getType());
+		final boolean locationIsGLN = ExternalIdentifier.Type.GLN.equals(locationIdentifier.getType());
+		if (!bpartnerIsGLN && !locationIsGLN)
+		{
+			return jsonBPartnerInfo;
+		}
+
+		final BPartnerId bpartnerId = bpartnerIsGLN
+				? getActiveBPartnerIdByGLN(bpartnerIdentifier.asGLN(), orgId, jsonBPartnerInfo)
+				: BPartnerId.ofRepoId(bpartnerEndpointAdapter.getBPartnerMetasfreshId(orgCode, jsonBPartnerInfo.getBPartnerIdentifier()).getValue());
+
+		final String locationIdentifierToUse = locationIsGLN
+				? String.valueOf(getActiveBPartnerLocationIdByGLN(bpartnerId, locationIdentifier.asGLN(), jsonBPartnerInfo).getRepoId())
+				: jsonBPartnerInfo.getBPartnerLocationIdentifier();
+
+		return JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(String.valueOf(bpartnerId.getRepoId()))
+				.bPartnerLocationIdentifier(locationIdentifierToUse)
+				.contactIdentifier(jsonBPartnerInfo.getContactIdentifier())
+				.build();
+	}
+
+	@NonNull
+	private BPartnerId getActiveBPartnerIdByGLN(
+			@NonNull final GLN gln,
+			@Nullable final OrgId orgId,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		final OrgId orgIdToUse = orgId != null ? orgId : Env.getOrgId(); // same fallback as the bpartner REST endpoint for a missing orgCode
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.onlyOrgId(orgIdToUse)
+				.onlyOrgId(OrgId.ANY)
+				.gln(gln)
+				.glnLookupOnlyActive(true)
+				.failIfNotExists(false)
+				.build();
+
+		return bPartnerDAO.retrieveBPartnerIdBy(query)
+				.orElseThrow(() -> new AdempiereException("No BPartner found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier()));
+	}
+
+	@NonNull
+	private BPartnerLocationId getActiveBPartnerLocationIdByGLN(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final GLN gln,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		return bPartnerDAO.retrieveBPartnerLocations(bpartnerId) // active locations only
+				.stream()
+				.filter(location -> GLN.equals(GLN.ofNullableString(location.getGLN()), gln))
+				.map(location -> BPartnerLocationId.ofRepoId(bpartnerId, location.getC_BPartner_Location_ID()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No BPartnerLocation found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier())
+						.setParameter("BPartnerLocationIdentifier", jsonBPartnerInfo.getBPartnerLocationIdentifier()));
 	}
 
 	@NonNull
@@ -214,6 +312,15 @@ public final class MasterdataProvider
 			@NonNull final OrgId orgId)
 	{
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+	}
+
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date, bpartnerId);
 	}
 
 	@Nullable
@@ -450,5 +557,38 @@ public final class MasterdataProvider
 									@NonNull final BPartnerId bPartnerId)
 	{
 		return bPartnerMasterdataProvider.getIncoterms(request, orgId, bPartnerId);
+	}
+
+	@NonNull
+	public TaxCategoryId getTaxCategoryId(
+			@NonNull final IdentifierString taxCategoryIdentifier,
+			@NonNull final Object parent)
+	{
+		final Optional<TaxCategoryId> taxCategoryId;
+		switch (taxCategoryIdentifier.getType())
+		{
+			case INTERNALNAME:
+				taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
+				break;
+			case METASFRESH_ID:
+				taxCategoryId = taxBL.getActiveTaxCategoryIdById(taxCategoryIdentifier.asMetasfreshId(TaxCategoryId::ofRepoId));
+				break;
+			default:
+				throw new InvalidIdentifierException(taxCategoryIdentifier);
+		}
+
+		return taxCategoryId
+				// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+				// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve
+				// it like any other category - by its id, and (since this branch makes InternalName writable) by its
+				// internal name too. It must not be resolvable through the API: the sentinel would travel into the tax
+				// query and only surface there as an ordinary "no tax matched", instead of telling the caller that the
+				// identifier they sent names no tax category.
+				.filter(id -> !TaxCategoryId.NOT_FOUND.equals(id))
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("TaxCategory")
+						.resourceIdentifier(taxCategoryIdentifier.toJson())
+						.parentResource(parent)
+						.build());
 	}
 }

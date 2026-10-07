@@ -14,11 +14,22 @@ const SimpleList = ({
   onSelect,
   onOpenDropdown,
   className,
+  keepFocused = false,
 }) => {
-  const [isFocused, setIsFocused] = useState(false);
+  // Start focused (opt-in) so the first click only has to toggle the dropdown open
+  // instead of focusing AND toggling in the same tick (which otherwise races the
+  // click-outside handler and swallows the first open). Mirrors the sibling Letter
+  // picker, which is driven with a persistent focused state and opens on first click.
+  const [isFocused, setIsFocused] = useState(keepFocused);
   const [isToggled, setIsToggled] = useState(false);
 
-  const listHash = useMemo(() => uuidv4(), [list]);
+  // Recompute the hash when the list OR the selected entry's key changes, so RawList's
+  // componentDidUpdate re-runs setSelectedValue and re-highlights the applied entry
+  // (it gates on listHash !== prevListHash). Depend on `selected?.key` (value), NOT the
+  // `selected` object identity: consumers that build `selected` as a fresh object literal
+  // each render would otherwise regenerate the hash on every unrelated re-render and
+  // reorder an open dropdown under the cursor.
+  const listHash = useMemo(() => uuidv4(), [list, selected?.key]);
 
   return (
     <RawList
@@ -46,6 +57,7 @@ SimpleList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func,
   className: PropTypes.string,
+  keepFocused: PropTypes.bool,
 };
 
 export default SimpleList;

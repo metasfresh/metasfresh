@@ -86,6 +86,30 @@ test('Happy case', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
     });
 
+    // While the job is still open, the picked CU already carries the consignee: the mobile pick
+    // materialises the pick-target with packForShipping=true, which stamps the ship-to BPartner +
+    // location at PICK time (PackToHUsProducer.setupPackToDestinationCommonOptions). So the consignee
+    // is present from the 'S' state through 'E'. The pickings block binds the vhu1 alias (via VHU_ID)
+    // AND gates on the P1 shipment schedule becoming valid, so the hus read below is not a pre-commit race.
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    // All three schedules must be listed (the picking assert requires every schedule of
+                    // the job to be covered); only P1 is picked so far, P2/P3 have no qtyPicked records.
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P2: { qtyPicked: [] },
+                    P3: { qtyPicked: [] },
+                }
+            }
+        },
+        hus: {
+            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await test.step("Pick line 2", async () => {
         await PickingJobScreen.pickHU({
             isScanDirectly: true,
@@ -126,9 +150,9 @@ test('Happy case', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' } },
-            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' } },
-            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

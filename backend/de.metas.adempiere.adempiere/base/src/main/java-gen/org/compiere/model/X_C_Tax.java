@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -935528783L;
+	private static final long serialVersionUID = -961582257L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -185,6 +185,37 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return get_ValueAsString(COLUMNNAME_DuplicateTax);
 	}
 
+	/** 
+	 * EN16931VATCategory AD_Reference_ID=542109
+	 * Reference name: EN16931VATCategory
+	 */
+	public static final int EN16931VATCATEGORY_AD_Reference_ID=542109;
+	/** S = S */
+	public static final String EN16931VATCATEGORY_S = "S";
+	/** Z = Z */
+	public static final String EN16931VATCATEGORY_Z = "Z";
+	/** E = E */
+	public static final String EN16931VATCATEGORY_E = "E";
+	/** AE = AE */
+	public static final String EN16931VATCATEGORY_AE = "AE";
+	/** K = K */
+	public static final String EN16931VATCATEGORY_K = "K";
+	/** G = G */
+	public static final String EN16931VATCATEGORY_G = "G";
+	/** O = O */
+	public static final String EN16931VATCATEGORY_O = "O";
+	@Override
+	public void setEN16931VATCategory (final @Nullable java.lang.String EN16931VATCategory)
+	{
+		set_Value (COLUMNNAME_EN16931VATCategory, EN16931VATCategory);
+	}
+
+	@Override
+	public java.lang.String getEN16931VATCategory() 
+	{
+		return get_ValueAsString(COLUMNNAME_EN16931VATCategory);
+	}
+
 	@Override
 	public void setIsDefault (final boolean IsDefault)
 	{
@@ -231,15 +262,15 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public void setIsSalesTax (final boolean IsSalesTax)
+	public void setIsReverseCharge (final boolean IsReverseCharge)
 	{
-		set_Value (COLUMNNAME_IsSalesTax, IsSalesTax);
+		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
 	}
 
 	@Override
-	public boolean isSalesTax() 
+	public boolean isReverseCharge() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSalesTax);
+		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
 	}
 
 	/** 
@@ -349,7 +380,7 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	/** No = N */
 	public static final String REQUIRESTAXCERTIFICATE_No = "N";
 	@Override
-	public void setRequiresTaxCertificate (final java.lang.String RequiresTaxCertificate)
+	public void setRequiresTaxCertificate (final @Nullable java.lang.String RequiresTaxCertificate)
 	{
 		set_Value (COLUMNNAME_RequiresTaxCertificate, RequiresTaxCertificate);
 	}

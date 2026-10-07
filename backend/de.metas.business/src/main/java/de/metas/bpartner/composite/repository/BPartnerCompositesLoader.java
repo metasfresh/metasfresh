@@ -13,6 +13,8 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
@@ -26,6 +28,7 @@ import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.composite.SalesRepContact;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.CreditLimitType;
@@ -56,7 +59,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -336,6 +338,7 @@ final class BPartnerCompositesLoader
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
 				.salesRepContact(getSalesRepContact(bpartnerRecord))
+				.discountPrinted(bpartnerRecord.isDiscountPrinted())
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
@@ -360,8 +363,8 @@ final class BPartnerCompositesLoader
 				//
 				.changeLog(recordChangeLog)
 				//
-				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
-				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
+				.creditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()))
+				.debtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()))
 				//
 				.build();
 	}
@@ -399,6 +402,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.attention(trimBlankToNull(bPartnerLocationRecord.getAttention()))
 				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
@@ -621,6 +625,7 @@ final class BPartnerCompositesLoader
 				.accountZip(bankAccountRecord.getA_Zip())
 				.accountCity(bankAccountRecord.getA_City())
 				.accountCountry(bankAccountRecord.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(bankAccountRecord.getBPBankAcctUse()))
 				.build();
 	}
 

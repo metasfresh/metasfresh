@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_CompensationGroup_Schema extends org.compiere.model.PO implements I_C_CompensationGroup_Schema, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -765492642L;
+	private static final long serialVersionUID = -191391952L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_Schema (final Properties ctx, final int C_CompensationGroup_Schema_ID, @Nullable final String trxName)
@@ -62,6 +62,30 @@ public class X_C_CompensationGroup_Schema extends org.compiere.model.PO implemen
 	public int getC_CompensationGroup_Schema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_ID);
+	}
+
+	@Override
+	public void setIsAdditive (final boolean IsAdditive)
+	{
+		set_Value (COLUMNNAME_IsAdditive, IsAdditive);
+	}
+
+	@Override
+	public boolean isAdditive() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAdditive);
+	}
+
+	@Override
+	public void setIsInheritPackingInstruction (final boolean IsInheritPackingInstruction)
+	{
+		set_Value (COLUMNNAME_IsInheritPackingInstruction, IsInheritPackingInstruction);
+	}
+
+	@Override
+	public boolean isInheritPackingInstruction() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInheritPackingInstruction);
 	}
 
 	@Override

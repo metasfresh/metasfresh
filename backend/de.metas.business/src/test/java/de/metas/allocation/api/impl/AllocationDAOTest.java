@@ -41,13 +41,13 @@ class AllocationDAOTest
 	}
 
 	@NonNull
-	private Money euro(String amount) {return Money.of(amount, EUR);}
+	private Money euro(final String amount) {return Money.of(amount, EUR);}
 
 	@Nested
 	class retrieveOpenAmtInInvoiceCurrency
 	{
 		@SuppressWarnings("SameParameterValue")
-		I_C_Invoice createInvoice(InvoiceDocBaseType docBaseType, final String grandTotal)
+		I_C_Invoice createInvoice(final InvoiceDocBaseType docBaseType, final String grandTotal)
 		{
 			final DocTypeId docTypeId = createDocType(docBaseType);
 			final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
@@ -55,6 +55,7 @@ class AllocationDAOTest
 			invoice.setIsSOTrx(docBaseType.isSales());
 			invoice.setGrandTotal(new BigDecimal(grandTotal));
 			invoice.setC_Currency_ID(EUR.getRepoId());
+			invoice.setIsFinancial(docBaseType.isFinancial());
 			InterfaceWrapperHelper.saveRecord(invoice);
 
 			return invoice;
@@ -71,7 +72,7 @@ class AllocationDAOTest
 			return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 		}
 
-		void createAllocation(I_C_Invoice invoice, String amount)
+		void createAllocation(final I_C_Invoice invoice, final String amount)
 		{
 			final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
 			allocHdr.setC_Currency_ID(EUR.getRepoId());
@@ -143,6 +144,17 @@ class AllocationDAOTest
 					.isEqualByComparingTo(euro("90"));
 			Assertions.assertThat(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true))
 					.isEqualByComparingTo(euro("-90"));
+		}
+
+		@Test
+		void PurchaseProformaInvoice()
+		{
+			final I_C_Invoice invoice = createInvoice(InvoiceDocBaseType.PurchaseProFormaInvoice, "100");
+
+			Assertions.assertThat(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, false))
+					.isEqualByComparingTo(euro("0"));
+			Assertions.assertThat(allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true))
+					.isEqualByComparingTo(euro("0"));
 		}
 	}
 }

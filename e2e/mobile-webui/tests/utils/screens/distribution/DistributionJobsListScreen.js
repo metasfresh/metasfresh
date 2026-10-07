@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForVideo } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -7,23 +7,32 @@ import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { DistributionJobsDropAllScreen } from './DistributionJobsDropAllScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { JOB_START_ARRIVAL_TIMEOUT, JOB_START_TAP_ATTEMPTS, recoverToLauncherList } from '../jobStartRecovery';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFLaunchersScreen');
+// The job (workflow-process) screen reached after starting a launcher. This id mirrors the private
+// containerElement in DistributionJobScreen.js — keep the two in sync if that screen id changes.
+/** @returns {import('@playwright/test').Locator} */
+const jobScreenElement = () => page.locator('#WFProcessScreen');
 
 export const DistributionJobsListScreen = {
-    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout });
+    }),
+
+    openFilters: async () => await test.step(`${NAME} - Open filters`, async () => {
+        await page.locator('#filter-button').tap();
+        await DistributionJobsListFiltersScreen.waitForScreen();
     }),
 
     filterByFacetId: async ({
                                 facetId,
                                 expectHitCount
                             }) => await test.step(`${NAME} - Filter by facet "${facetId}"`, async () => {
-        await page.locator('#filter-button').tap();
-        await DistributionJobsListFiltersScreen.waitForScreen();
+        await DistributionJobsListScreen.openFilters();
         await DistributionJobsListFiltersScreen.filterByFacetId({ facetId, expectHitCount });
         await DistributionJobsListScreen.waitForScreen();
     }),
@@ -42,31 +51,84 @@ export const DistributionJobsListScreen = {
 
     startJob: async ({ launcherTestId }) => {
         return await test.step(`${NAME} Start job for testId "${launcherTestId}"`, async () => {
-            await page.getByTestId(launcherTestId).tap();
+            for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
+                await page.getByTestId(launcherTestId).tap();
+                const hasArrived = await jobScreenElement()
+                    .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
+                    .then(() => true, () => false);
+                if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                    break;
+                }
+                if ((await recoverToLauncherList({ applicationId: 'distribution' })) === 'unknown') {
+                    break;
+                }
+            }
             await DistributionJobScreen.waitForScreen();
         });
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be attached`, async () => {
-            for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
-            }
-        });
+        await waitForExpectedButtonsVisible(expectationsArray);
 
         //
-        // Check it again to make sure all expected buttons are still there and there is one of each
+        // Check it again to make sure all expected buttons are still there and there is one of each.
+        // An expectation that names the job -- by testId, captionContains or caption -- is looked up BY
+        // that name, so the check does not depend on the jobs rendering in the same order the array
+        // lists them. An expectation that names nothing ("a button") is still looked up positionally.
         for (let i = 0; i < expectationsArray.length; i++) {
             const expectation = expectationsArray[i];
+            const identifiesTheJob = expectation.testId != null || expectation.captionContains != null
+                || expectation.caption != null;
             await expectJobButton({
                 name: `${i + 1}/${expectationsArray.length}`,
-                button: locateJobButtons({ index: i + 1 }),
+                button: identifiesTheJob ? locateJobButtons(expectation) : locateJobButtons({ index: i + 1 }),
                 expectation
             });
         }
 
         //
         // Make sure we have the expected number of buttons
+        // NOTE: we do this at the end because expect does not wait for the elements to stabilize
+        await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+
+        // The offered jobs are the result this screen exists to show, and the checks above settle
+        // within ~110-170ms -- two or three sampled frames out of the ~400 in a 16s recording -- so
+        // without this hold the list the test just proved is effectively unfindable in the video.
+        await holdForVideo();
+    }),
+
+    // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which
+    // launchers are offered), NOT ordering assertions. Each expectation is located by its
+    // testId rather than by slot, so a non-deterministic launcher render order cannot flake
+    // the check (the rendered launcher order has no id tiebreaker and can swap two launchers
+    // that are both present). Still asserts exact membership (each expected
+    // testId present exactly once, per-button props match) and exact count (no extras) — only
+    // the slot order is relaxed. Every expectation must carry a testId to be locatable.
+    expectJobButtonsInAnyOrder: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons (any order)`, async () => {
+        // Order-independent matching locates each button by its testId, so every expectation
+        // must carry one — otherwise locateJobButtons() would fall back to matching ALL buttons
+        // and silently skip the identity check. Fail fast rather than degrade to "match anything".
+        for (const expectation of expectationsArray) {
+            if (expectation.testId == null) {
+                throw new Error('expectJobButtonsInAnyOrder: every expectation must carry a testId');
+            }
+        }
+
+        await waitForExpectedButtonsVisible(expectationsArray);
+
+        //
+        // Each expected button exists exactly once and matches its per-button expectations.
+        // Located by testId (order-independent), so slot order is irrelevant.
+        for (const expectation of expectationsArray) {
+            await expectJobButton({
+                name: `${expectation.testId}`,
+                button: locateJobButtons({ testId: expectation.testId }),
+                expectation
+            });
+        }
+
+        //
+        // Make sure we have the expected number of buttons (no unexpected extras).
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
@@ -110,6 +172,25 @@ export const DistributionJobsListScreen = {
         await DistributionJobsDropAllScreen.waitForScreen();
         await DistributionJobsDropAllScreen.dropAll({ dropToQRCode })
     }),
+
+    clickReleaseTrolleyButton: async () => await test.step(`${NAME} - Click 'Release trolley' footer button`, async () => {
+        await page.getByTestId('release-trolley-button').tap();
+    }),
+
+    expectReleaseTrolleyButtonVisible: async ({ visible }) => await test.step(`${NAME} - Expect release-trolley-button visible=${visible}`, async () => {
+        const btn = page.getByTestId('release-trolley-button');
+        if (visible) {
+            await expect(btn).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(btn).not.toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    expectTrolleyScanScreen: async () => await test.step(`${NAME} - Expect trolley scan screen (no trolley held)`, async () => {
+        // After release, the screen returns to the trolley-scan state.
+        // The barcode scanner input (#input-text) should be attached, waiting for a trolley scan.
+        await page.locator('#input-text').waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
 };
 
 //
@@ -118,13 +199,38 @@ export const DistributionJobsListScreen = {
 //
 //
 
-const locateJobButtons = ({ index, testId } = {}) => {
+// Wait until every expected launcher button is VISIBLE (painted, spinner gone) — not merely
+// attached — so the worker actually SEES the offered job. Shared by expectJobButtons and
+// expectJobButtonsInAnyOrder; order-independent (each expectation located on its own).
+const waitForExpectedButtonsVisible = async (expectationsArray) => await test.step(`Wait for all expected buttons to be visible`, async () => {
+    for (const expectation of expectationsArray) {
+        await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }
+});
+
+// `captionContains` identifies a job by a STABLE substring of its caption (typically the product
+// name) for jobs that have no masterdata key to give them a testId -- e.g. the ones the replenishment
+// engine generates from `autoDistributionOrder`. Prefer `testId` whenever the fixture declares the
+// job; prefer this over `caption`, whose exact-text match also pins qty/locator/priority formatting
+// that the assertion does not care about.
+const locateJobButtons = ({ index, testId, captionContains, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (testId != null) {
         selector += `[data-testid="${testId}"]`;
     }
 
     let locator = page.locator(selector);
+
+    if (captionContains != null) {
+        locator = locator.filter({ hasText: captionContains });
+    }
+
+    // `caption` is an EXACT-match expectation (expectJobButton asserts it with toHaveText), but as a
+    // locator it can only narrow by substring -- which is enough to pick the right button out of the
+    // list, with exactness still enforced downstream. Same split the picking screen uses.
+    if (caption != null) {
+        locator = locator.filter({ hasText: caption });
+    }
 
     if (index != null) {
         locator = locator.nth(index - 1);
@@ -134,7 +240,7 @@ const locateJobButtons = ({ index, testId } = {}) => {
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    await button.waitFor({ state: 'visible', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
 
     if (expectation.testId != null) {
@@ -143,6 +249,10 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
 
     if (expectation.caption != null) {
         await expect(button).toHaveText(expectation.caption);
+    }
+
+    if (expectation.captionContains != null) {
+        await expect(button).toContainText(expectation.captionContains);
     }
 
     if (expectation.disabled != null) {

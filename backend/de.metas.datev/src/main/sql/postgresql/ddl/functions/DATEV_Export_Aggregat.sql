@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS datev_export_aggregat(p_datev_export_id numeric);
+
 CREATE FUNCTION datev_export_aggregat(p_datev_export_id numeric)
     RETURNS TABLE
             (
@@ -18,7 +20,7 @@ CREATE FUNCTION datev_export_aggregat(p_datev_export_id numeric)
 AS
 $$
 SELECT SUM(ex.amt)               AS "Umsatz (ohne Soll-/Haben-Kennzeichen)",
-       ex.DebitOrCreditIndicator AS "Soll-/Haben-Kennzeichen",
+       ex.BP_Account_Place AS "Soll-/Haben-Kennzeichen",
        ex.currency               AS "Währung",
        ex.dr_account             AS Konto,
        CASE
@@ -34,14 +36,13 @@ SELECT SUM(ex.amt)               AS "Umsatz (ohne Soll-/Haben-Kennzeichen)",
        ci.poreference            AS referenz
 
 FROM datev_exportline ex
-         LEFT JOIN fact_acct acc ON acc.fact_acct_id = ex.fact_acct_id
-         LEFT JOIN c_Tax tax ON acc.c_tax_id = tax.c_tax_id
+         LEFT JOIN c_Tax tax ON ex.c_tax_id = tax.c_tax_id
          LEFT JOIN c_country c ON tax.to_country_id = c.c_country_id
          LEFT JOIN c_invoice ci ON ex.c_invoice_id = ci.c_invoice_id
 
 WHERE ex.datev_export_id = p_datev_export_id
 
-GROUP BY ex.DebitOrCreditIndicator, ex.currency, ex.dr_account, ex.dateacct, ex.documentno, tax.rate, c.countrycode, tax.name, ci.poreference
+GROUP BY ex.BP_Account_Place, ex.currency, ex.dr_account, ex.dateacct, ex.documentno, tax.rate, c.countrycode, tax.name, ci.poreference
 $$
 ;
 

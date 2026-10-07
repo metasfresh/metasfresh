@@ -6,6 +6,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
@@ -265,6 +266,56 @@ public class ImmutableAttributeSetTest
 				.build();
 
 		assertThat(attributeSet.getValueAsBigDecimal(attributeKey)).isEqualTo(expectedValue);
+	}
+
+	/**
+	 * Verifies that a NUMBER attribute whose ValueNumber is SQL-NULL (never set) is returned as {@code null},
+	 * not as {@code BigDecimal.ZERO}. The root cause is {@code AttributeSetInstanceBL.extractAttributeInstanceValue}
+	 * returning {@code BigDecimal.ZERO} for a never-set {@code ValueNumber} column, because
+	 * {@code X_M_AttributeInstance.getValueNumber()} coerces SQL-NULL to {@code BigDecimal.ZERO}; that coerced zero
+	 * then becomes the spurious HU filter "MonthsUntilExpiry = 0" that hides fresh stock. This test verifies the fix:
+	 * {@code InterfaceWrapperHelper.getValueOrNull} now preserves SQL-NULL as Java {@code null} in that branch.
+	 *
+	 * Also verifies that a genuinely set value of {@code 0} is still returned as {@code 0}.
+	 */
+	@Test
+	public void testNumericAsi_unsetIsNull_setZeroIsZero()
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final I_M_Attribute numericAttr = attributesTestHelper.createM_Attribute("MonthsUntilExpiry", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+
+		// --- Case 1: ValueNumber is left unset (SQL-NULL) ---
+		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
+		save(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+
+		// Create an attribute instance but do NOT call setValueNumber — ValueNumber stays SQL-NULL.
+		final I_M_AttributeInstance aiUnset = newInstance(I_M_AttributeInstance.class);
+		aiUnset.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		aiUnset.setM_Attribute_ID(numericAttr.getM_Attribute_ID());
+		save(aiUnset);
+
+		final ImmutableAttributeSet attrSetUnset = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+		assertThat(attrSetUnset.getValueAsBigDecimal(numericAttr.getValue()))
+				.as("unset ValueNumber must be null, not zero")
+				.isNull();
+
+		// --- Case 2: ValueNumber explicitly set to 0 ---
+		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi2);
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+
+		final I_M_AttributeInstance aiZero = newInstance(I_M_AttributeInstance.class);
+		aiZero.setM_AttributeSetInstance_ID(asi2Id.getRepoId());
+		aiZero.setM_Attribute_ID(numericAttr.getM_Attribute_ID());
+		aiZero.setValueNumber(BigDecimal.ZERO);
+		save(aiZero);
+
+		final ImmutableAttributeSet attrSetZero = attributeSetInstanceBL.getImmutableAttributeSetById(asi2Id);
+		assertThat(attrSetZero.getValueAsBigDecimal(numericAttr.getValue()))
+				.as("explicitly-set ValueNumber=0 must be returned as zero")
+				.isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 }

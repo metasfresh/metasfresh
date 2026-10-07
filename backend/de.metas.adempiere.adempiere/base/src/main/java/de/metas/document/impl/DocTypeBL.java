@@ -2,6 +2,8 @@ package de.metas.document.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -167,6 +169,17 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isFinancial(@NonNull final DocTypeId docTypeId)
+	{
+		return getDocBaseType(docTypeId).isFinancial();
+	}
+
+	private DocBaseType getDocBaseType(@NonNull final DocTypeId docTypeId)
+	{
+		return DocBaseType.ofCode(docTypesRepo.getById(docTypeId).getDocBaseType());
+	}
+
+	@Override
 	public void save(@NonNull final I_C_DocType dt)
 	{
 		docTypesRepo.save(dt);
@@ -201,5 +214,11 @@ public class DocTypeBL implements IDocTypeBL
 		save(newDocType);
 
 		return DocTypeId.ofRepoId(newDocType.getC_DocType_ID());
+	}
+
+	@Override
+	public @NonNull DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getDocBaseAndSubTypeById(docTypeId);
 	}
 }

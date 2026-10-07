@@ -12,6 +12,9 @@ WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'M
 DELETE FROM C_DocType_Trl
 WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'MMP');
 
+DELETE FROM c_doctype_sequence
+WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'MMP');
+
 -- Delete the DocType record(s)
 DELETE FROM C_DocType WHERE DocBaseType = 'MMP';
 

@@ -20,6 +20,19 @@ export const ApplicationsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    // Assert the home menu is NOT displayed — used to prove a workflow start did not bounce the
+    // operator back to the root menu.
+    expectNotDisplayed: async () => await test.step(`${NAME} - Expect NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
+    expectLogoutButtonReachable: async () => await test.step(`${NAME} - Expect logout button reachable by scrolling`, async () => {
+        const logoutButton = page.locator('#logout-button');
+        await expect(logoutButton).toBeVisible();
+        await logoutButton.scrollIntoViewIfNeeded();
+        await expect(logoutButton).toBeInViewport();
+    }),
+
     startApplication: async (applicationId) => await test.step(`${NAME} - Start application ${applicationId}`, async () => {
         await page.locator('#' + applicationId + '-button').tap();
     }),
@@ -42,5 +55,9 @@ export const ApplicationsListScreen = {
 
     scanBarcode: async (barcode) => await test.step(`${NAME} - Scan barcode`, async () => {
         await BarcodeScannerComponent.type(barcode);
+    }),
+
+    scanBarcodeViaIME: async (barcode) => await test.step(`${NAME} - Scan barcode via IME`, async () => {
+        await BarcodeScannerComponent.typeViaIME(barcode);
     }),
 }

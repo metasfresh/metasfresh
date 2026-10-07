@@ -10,6 +10,7 @@ Feature: Jasper Report Tests
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
@@ -94,7 +95,7 @@ Feature: Jasper Report Tests
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
       | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | hu1     | rs1                  | receipt1   |
@@ -187,6 +188,108 @@ Feature: Jasper Report Tests
     And The jasper process is run
       | Value        | Record_ID    |
       | C_DunningDoc | dunningDoc_1 |
+
+  @S0471_300
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  Scenario: Delivery Instruction Report Test
+    And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseStd              | StdWarehouse | warehouseStdLocation                  |
+    And contains M_Shippers
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.DatePromised     | M_Warehouse_ID | M_PricingSystem_ID |
+      | so_di      | true    | customer      | 2025-04-01  | 2025-04-10T00:00:00Z | warehouseStd   | ps_1               |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | so_di_l1   | so_di      | product      | 10         | shipper_DHL                 |
+    And the order identified by so_di is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | shipmentSchedule_di | so_di_l1       | N             | warehouseStd   |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_di    | so_di_l1       |
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstruction_di     | deliveryPlanning_di    | true       |
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstruction_di                | shipper_DHL             | customer                       | customerLocation               | CO            |
+    And The jasper process is run
+      | Value                         | Record_ID              |
+      | Delivery instructions(Jasper) | deliveryInstruction_di |
+
+  @S0471_400
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'WH' (Warehouse) order-checkup document: OrderCheckupBL#createReportBuilders builds it per
+  # order line only when the product resolves a manufacturing/trading PP_Product_Planning that carries a
+  # workflow/routing (getMfgProductPlanning -> retrieveManufacturingOrTradingPlanning). The order's own
+  # warehouse also carries a PP_Plant_ID here -- needed only because "the order-checkup reports are
+  # generated" always requires the 'PL' (Plant) document to build too; the 'WH' one is what this scenario
+  # asserts and removing the PP_Product_Plannings row below is what must make it fail. Scenario-scoped
+  # fixtures only, so the shared Background 'wh'/'product' -- which carry neither prerequisite -- stay
+  # untouched for the sibling scenarios above.
+  Scenario: Order Checkup Warehouse Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID | S_Resource_ID | IsManufactured | IsTraded |
+      | product      | checkupPlant  | true           | false    |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderWh | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderWhL1 | checkupOrderWh | product      | 10         |
+    And the order identified by checkupOrderWh is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderWh"
+    And The jasper process is run
+      | Value                       | Record_ID                 |
+      | C_Order_MFGWarehouse_Report | checkupOrderWh_checkup_WH |
+    Then an AD_Archive exists for the record identified by "checkupOrderWh_checkup_WH"
+
+  @S0471_500
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'PL' (Plant) order-checkup document: OrderCheckupBL#createReportBuilders builds it whenever
+  # the order's OWN M_Warehouse resolves a PP_Plant_ID -- independent of any PP_Product_Planning (no
+  # manufacturing/trading planning is set up for 'product' here on purpose, to prove that). Scenario-scoped
+  # warehouse+plant, so the shared Background 'wh' (no PP_Plant_ID) stays untouched for the sibling
+  # scenarios above.
+  Scenario: Order Checkup Plant Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderPl | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderPlL1 | checkupOrderPl | product      | 10         |
+    And the order identified by checkupOrderPl is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderPl"
+    And The jasper process is run
+      | Value                       | Record_ID              |
+      | C_Order_MFGWarehouse_Report | checkupOrderPl_checkup |
+    Then an AD_Archive exists for the record identified by "checkupOrderPl_checkup"
 
   @from:cucumber
 @allure.label.epic:E0191_System_Reporting

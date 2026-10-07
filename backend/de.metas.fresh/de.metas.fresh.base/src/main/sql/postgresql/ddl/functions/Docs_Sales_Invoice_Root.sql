@@ -13,7 +13,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 C_Currency_ID          numeric,
                 displayhu              text,
                 isCreditMemo           character(1),
-                isFactoringPartner character(1)
+                isFactoringPartner character(1),
+                isHeaderQRHidden CHARACTER(1)
             )
 AS
 $$
@@ -39,7 +40,8 @@ SELECT i.AD_Org_ID,
                THEN 'Y'
                ELSE 'N'
        END                                                                                                                                            AS isCreditMemo,
-      IsFactoring
+      IsFactoring,
+       report.IsHiddenReportElement(i.C_DocTypeTarget_ID, 'Invoice_Header_QR') AS isHeaderQRHidden
 FROM C_Invoice i
          INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
          LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
