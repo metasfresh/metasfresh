@@ -8,6 +8,8 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 
 const QTY_TUS_ON_PALLET = 60; // = PI qtyTUsPerLU; the HU is created full (backend rejects an explicit qty together with packingInstructions)
 const QTY_TO_PICK = 4;
+// German session (the customer's language); the line button shows the catch weight in this locale (decimal comma)
+const LANGUAGE = 'de_DE';
 
 /**
  * Pallet PI whose only LU->TU item is bound to the customer (no generic item), 1 piece per TU.
@@ -17,9 +19,9 @@ const QTY_TO_PICK = 4;
  */
 const createMasterdata = async ({ tuHasPartner }) => {
     return await Backend.createMasterdata({
-        language: "en_US",
+        language: LANGUAGE,
         request: {
-            login: { user: { language: "en_US" } },
+            login: { user: { language: LANGUAGE } },
             mobileConfig: {
                 picking: {
                     aggregationType: "sales_order",
@@ -89,7 +91,7 @@ const runScenario = async ({ tuHasPartner }) => {
             qrCode: stockPalletQRCode,
             catchWeightQRCode: ['LMQ#1#3.020#09.11.2031#243'],
         });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${QTY_TO_PICK} TU`, qtyPicked: '1 TU', qtyPickedCatchWeight: '3.02 kg' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${QTY_TO_PICK} TU`, qtyPicked: '1 TU', qtyPickedCatchWeight: '3,02 kg' });
     });
 
     await test.step("Pick 2nd TU: scan the stock pallet again, then a 2nd weight label (existing picking pallet)", async () => {
@@ -97,7 +99,7 @@ const runScenario = async ({ tuHasPartner }) => {
             qrCode: stockPalletQRCode,
             catchWeightQRCode: ['LMQ#1#3.358#09.11.2031#243'],
         });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${QTY_TO_PICK} TU`, qtyPicked: '2 TU', qtyPickedCatchWeight: '6.378 kg' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: `${QTY_TO_PICK} TU`, qtyPicked: '2 TU', qtyPickedCatchWeight: '6,378 kg' });
     });
 
     await test.step("Verify: both TUs on ONE picking pallet, the rest stays on the source pallet", async () => {
