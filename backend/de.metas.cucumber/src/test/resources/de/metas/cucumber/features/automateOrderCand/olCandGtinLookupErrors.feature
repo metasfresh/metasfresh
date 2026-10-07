@@ -32,8 +32,8 @@ Feature: order candidate bulk request with product identifiers that cannot be re
   @allure.label.feature:F00120_Sales_Order_Candidate
   Scenario: two of three lines have a GTIN that is only on packing instructions not valid on the delivery date; both are reported, nothing is created
     # line 10: GTIN is the product's own GTIN and is also on packing instructions (partner / without partner) of two products
-    # line 20: GTIN only on packing instructions (partner / without partner) that are valid long before the delivery date
-    # line 30: GTIN only on packing instructions (partner / without partner) that become valid after the delivery date
+    # line 20: GTIN only on packing instructions (partner / without partner) that become valid after the delivery date (2022-09-01)
+    # line 30: GTIN only on packing instructions (partner / without partner) that become valid after the delivery date (2026-06-30 / 2026-08-01)
     Given metasfresh contains M_Products:
       | Identifier     | Name                   | IsStocked |
       | p_A_S32656_10  | gtinErrorsA_S32656_10  | true      |
