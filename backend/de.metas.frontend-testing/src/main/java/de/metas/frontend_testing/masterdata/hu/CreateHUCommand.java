@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -7,6 +8,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -22,6 +24,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -47,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 public class CreateHUCommand
@@ -291,12 +295,26 @@ public class CreateHUCommand
 		updateIncludedHUsBPartner(hu, tuBPartnerId);
 	}
 
+	/**
+	 * Walks the HU tree level by level, so it costs two queries per level instead of two per HU.
+	 */
 	private void updateIncludedHUsBPartner(final I_M_HU parentHU, @Nullable final BPartnerId bpartnerId)
 	{
-		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(parentHU))
+		ImmutableSet<HuId> parentHUIds = ImmutableSet.of(HuId.ofRepoId(parentHU.getM_HU_ID()));
+		while (!parentHUIds.isEmpty())
 		{
-			setBPartner(includedHU, bpartnerId);
-			updateIncludedHUsBPartner(includedHU, bpartnerId);
+			final ImmutableSet<HuItemId> parentItemIds = handlingUnitsDAO.retrieveAllItemsNoCache(parentHUIds)
+					.stream()
+					.filter(I_M_HU_Item::isActive)
+					.map(item -> HuItemId.ofRepoId(item.getM_HU_Item_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+
+			final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveAllIncludedHUsNoCache(parentItemIds);
+			includedHUs.forEach(includedHU -> setBPartner(includedHU, bpartnerId));
+
+			parentHUIds = includedHUs.stream()
+					.map(includedHU -> HuId.ofRepoId(includedHU.getM_HU_ID()))
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 
