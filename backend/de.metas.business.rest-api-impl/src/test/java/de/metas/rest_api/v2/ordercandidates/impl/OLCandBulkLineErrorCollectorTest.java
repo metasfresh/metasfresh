@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.web.exception.MissingResourceException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -68,7 +69,7 @@ class OLCandBulkLineErrorCollectorTest
 	}
 
 	@Nested
-	class mapAll
+	public class mapAll
 	{
 		@Test
 		void all_lines_ok_returns_results()
@@ -108,7 +109,7 @@ class OLCandBulkLineErrorCollectorTest
 								+ "Line 3 (externalLineId=ext-3, externalHeaderId=hdr-1): no product for gtin-B");
 						assertThat(e.getCause()).isNull();
 						assertThat(e.getErrors().get(0).getCause()).isNull();
-						assertThat(e.getErrors().get(0)).isInstanceOfSatisfying(org.adempiere.exceptions.AdempiereException.class, ae -> {
+						assertThat(e.getErrors().get(0)).isInstanceOfSatisfying(AdempiereException.class, ae -> {
 							assertThat(ae.getParameters()).containsEntry("line", 1)
 									.containsEntry("externalLineId", "ext-1")
 									.containsEntry("externalHeaderId", "hdr-1");
@@ -168,10 +169,38 @@ class OLCandBulkLineErrorCollectorTest
 					.isInstanceOfSatisfying(OLCandBulkCreateException.class, e -> {
 						assertThat(e.getErrors().get(0).getMessage())
 								.isEqualTo("Line - (externalLineId=-, externalHeaderId=hdr-1): no product");
-						assertThat(e.getErrors().get(0)).isInstanceOfSatisfying(org.adempiere.exceptions.AdempiereException.class, ae -> {
+						assertThat(e.getErrors().get(0)).isInstanceOfSatisfying(AdempiereException.class, ae -> {
 							assertThat(ae.getParameters()).containsOnlyKeys("externalHeaderId");
 						});
 					});
+		}
+
+		@Test
+		void empty_input_returns_empty()
+		{
+			final ImmutableList<String> result = OLCandBulkLineErrorCollector.mapAll(
+					ImmutableList.<Integer>of(),
+					line -> "r" + line,
+					OLCandBulkLineErrorCollectorTest::refOf);
+
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void other_error_without_message_shows_class_name_in_aggregate_text()
+		{
+			final Function<Integer, String> mapper = line -> {
+				if (line == 1)
+				{
+					throw productNotFound("no product");
+				}
+				throw new IllegalStateException();
+			};
+
+			assertThatThrownBy(() -> OLCandBulkLineErrorCollector.mapAll(ImmutableList.of(1, 2), mapper, OLCandBulkLineErrorCollectorTest::refOf))
+					.isInstanceOfSatisfying(OLCandBulkCreateException.class, e -> assertThat(e.getMessage())
+							.isEqualTo("2 order-candidate line(s) could not be created: "
+									+ "Line 1 (externalLineId=ext-1, externalHeaderId=hdr-1): no product | IllegalStateException"));
 		}
 
 		@Test

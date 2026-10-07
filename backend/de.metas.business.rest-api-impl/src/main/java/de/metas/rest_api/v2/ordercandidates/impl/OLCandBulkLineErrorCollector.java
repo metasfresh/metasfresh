@@ -63,6 +63,7 @@ public class OLCandBulkLineErrorCollector
 				{
 					throw e;
 				}
+				// in errors: part of the API answer; suppressed: keeps its stack trace in logs/AD_Issue
 				errors.add(e);
 				final OLCandBulkCreateException aggregate = new OLCandBulkCreateException(ImmutableList.copyOf(errors));
 				aggregate.addSuppressed(e);

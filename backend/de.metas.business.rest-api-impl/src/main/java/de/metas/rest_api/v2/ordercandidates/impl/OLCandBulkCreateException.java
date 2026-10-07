@@ -44,6 +44,11 @@ public class OLCandBulkCreateException extends AdempiereException
 	private static String buildMessage(final ImmutableList<Throwable> errors)
 	{
 		return errors.size() + " order-candidate line(s) could not be created: "
-				+ errors.stream().map(Throwable::getMessage).collect(Collectors.joining(" | "));
+				+ errors.stream().map(OLCandBulkCreateException::messageOf).collect(Collectors.joining(" | "));
+	}
+
+	private static String messageOf(final Throwable error)
+	{
+		return error.getMessage() != null ? error.getMessage() : error.getClass().getSimpleName();
 	}
 }
