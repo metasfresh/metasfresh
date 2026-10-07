@@ -147,10 +147,6 @@ class TableRow extends PureComponent {
         if (property === fieldName) {
           const widgetData = prepareWidgetData(item, fieldsByName);
           if (widgetData) {
-            this.setState({
-              valueBeforeEditing: this.getFieldValue(fieldName) ?? '',
-            });
-
             this.handleEditProperty({
               event: null,
               property,
@@ -178,11 +174,6 @@ class TableRow extends PureComponent {
 
   handleDoubleClick = () => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
-    // The value to restore on Escape is captured from the stored field data
-    // when the cell enters edit mode (see _editProperty) - never from
-    // e.target.textContent, which is the locale-formatted display text
-    // ("10,00" in de_DE) and is rejected by an <input type="number">.
 
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
@@ -217,7 +208,6 @@ class TableRow extends PureComponent {
           // Letters and digits only: activation replaces the cell content, so Space and
           // punctuation must not activate.
           if (
-            typeof event.key === 'string' &&
             ACTIVATION_KEY_REGEX.test(event.key) &&
             !event.ctrlKey &&
             !event.altKey &&

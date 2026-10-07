@@ -80,11 +80,8 @@ class TableCell extends PureComponent {
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
     const widgetType = tableCellData?.widgetType;
 
-    // 'Address' is object-valued ({key,caption}) and, like 'ProductAttributes',
-    // commits its value through the <Attributes> button-overlay — never through
-    // the grid-nav raw-text row-write. Flag it as an attribute widget so
-    // TableRow's Tab/Enter handlers skip that write; otherwise the button's raw
-    // (empty) text clobbers the {key,caption} object -> silent data loss.
+    // 'Address', like 'ProductAttributes', holds a {key, caption} object that is edited in the
+    // attribute overlay, never as the cell's text
     const isAttributeWidget =
       widgetType === 'ProductAttributes' || widgetType === 'Address';
 
@@ -168,7 +165,7 @@ class TableCell extends PureComponent {
   /**
    * @method renderStaticContent
    * @summary The cell's read-only presentation. Rendered visibly when the cell is not being
-   * edited, and as an invisible width keeper next to the editor while it is (see render).
+   * edited, and as an invisible width keeper next to the editor while it is.
    *
    * @param {boolean} isWidthKeeper - true for the invisible copy rendered while editing
    */

@@ -35,12 +35,19 @@ function createInitProps(customProps) {
   };
 }
 
-function typeKeyEvent({ key, keyCode, ctrlKey = false, altKey = false }) {
+function typeKeyEvent({
+  key,
+  keyCode,
+  ctrlKey = false,
+  altKey = false,
+  metaKey = false,
+}) {
   return {
     key,
     keyCode,
     ctrlKey,
     altKey,
+    metaKey,
     target: { value: key },
     persist: jest.fn(),
     stopPropagation: jest.fn(),
@@ -104,6 +111,15 @@ describe('TableRow — type-to-activate gate keys off event.key (numpad-0)', () 
       typeKeyEvent({ key: '0', keyCode: 48, altKey: true })
     );
     expect(altWrapper.instance().state.edited).not.toBe(PROPERTY);
+  });
+
+  it('does NOT activate on Cmd (meta) + printable key, e.g. Cmd+V on a Mac', () => {
+    const wrapper = shallow(<TableRow {...createInitProps()} />);
+    fireKeyDown(
+      wrapper.instance(),
+      typeKeyEvent({ key: 'v', keyCode: 86, metaKey: true })
+    );
+    expect(wrapper.instance().state.edited).not.toBe(PROPERTY);
   });
 });
 

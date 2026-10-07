@@ -163,9 +163,8 @@ export function getSizeClass(col) {
 }
 
 // combobox (Lookup/List — Search resolves to Lookup upstream) minimum-usable width: below this, the
-// open dropdown editor is unusable. The editor itself shrinks to the column width in the grid
-// (`.table-cell .input-dropdown-container { min-width: 0 }`, table.scss), so the floor only has to
-// keep the trigger + a few characters visible (90px).
+// open dropdown editor is unusable. The editor itself shrinks to the column width in the grid, so
+// the floor only has to keep the trigger + a few characters visible (90px).
 export const COMBOBOX_MIN_WIDTH_PX = 90;
 export const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
 
@@ -512,8 +511,6 @@ export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
 /**
  * @method getTdValue
  * @summary Get the displayed content of the table divider based on the widgetData provided.
- * Also computed while the cell is being edited: the grid keeps an invisible copy of it next to
- * the editor so the column keeps its width (TableCell.renderStaticContent).
  *
  * @param {array} widgetData
  * @param {object} item

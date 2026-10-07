@@ -761,6 +761,7 @@ RawWidget.propTypes = {
   type: PropTypes.string,
   updated: PropTypes.bool,
   isModal: PropTypes.bool,
+  dataSource: PropTypes.string,
   modalVisible: PropTypes.bool.isRequired,
   filterWidget: PropTypes.bool,
   filterId: PropTypes.string,

@@ -7,11 +7,12 @@ import fixtures from '../../../../test_setup/fixtures/table/table_item_props.jso
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Tab or Enter on a Lookup cell does not write the editor's raw text over the cell's
+ * Tab or Enter on a Lookup or List cell does not write the editor's raw text over the cell's
  * {key, caption} value; on a scalar (text/number) cell it writes the typed value.
  */
 
 const LOOKUP_PROPERTY = 'M_Product_ID'; // fixture: value = { key, caption } (object-valued)
+const LIST_PROPERTY = 'C_UOM_ID'; // fixture: a List field, value = { key, caption }
 const SCALAR_PROPERTY = 'QtyEntered'; // fixture: value = "3" (scalar)
 const RAW_EDITOR_TEXT = '1000001_TestProduct1'; // raw string an active editor input holds
 const SCALAR_EDITOR_TEXT = '53'; // scalar cell's committed value
@@ -77,6 +78,31 @@ describe('TableRow — object-valued cell type-guard on Tab/Enter', () => {
     lookupWrites.forEach((payload) => {
       expect(typeof payload.value).not.toBe('string');
     });
+  });
+
+  it('does NOT write a raw string over an object-valued List cell on Tab or Enter', () => {
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+    instance.setState({ edited: LIST_PROPERTY });
+
+    instance.handleKeyDown({
+      event: keyEvent('Tab', 'Stk'),
+      property: LIST_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+    instance.setState({ edited: LIST_PROPERTY });
+    instance.handleKeyDown({
+      event: keyEvent('Enter', 'Stk'),
+      property: LIST_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+
+    expect(callsForProperty(updatePropertyValue, LIST_PROPERTY)).toEqual([]);
   });
 
   it('commits a scalar cell value on Tab', () => {

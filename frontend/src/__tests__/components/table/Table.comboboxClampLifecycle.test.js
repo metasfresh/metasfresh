@@ -104,7 +104,7 @@ describe('Table — combobox load-time clamp survives async columns []->populate
     wrapper.setProps({ columns: populatedColumns });
     wrapper.update();
 
-    // The stored sub-floor combobox width must now be clamped to the 90px floor.
+    // The stored sub-floor combobox width is clamped to the 90px floor.
     expect(
       instance.state.columnWidths[COMBOBOX_FIELD]
     ).toBe(90);

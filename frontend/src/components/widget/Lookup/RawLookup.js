@@ -236,7 +236,6 @@ export class RawLookup extends Component {
     const { defaultValue } = this.props;
 
     this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
-    this.setState({ inputTextOnFocus: this.inputSearch.value });
 
     this.handleDropdownBlur(isMouseEvent);
   };
