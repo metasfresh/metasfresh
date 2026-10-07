@@ -61,7 +61,6 @@ pull_request_rules:
       - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
       - or: &ALL_BASE_BRANCHES # this rule should apply to the project-branches from above
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
-              # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_uat
               - base=task_force_uat
