@@ -717,6 +717,7 @@ describe('RawWidget component', () => {
     });
 
     afterEach(() => {
+      jest.restoreAllMocks();
       initNumeralLocales('en', {
         numberDecimalSeparator: '.',
         numberGroupingSeparator: ',',
@@ -810,14 +811,85 @@ describe('RawWidget component', () => {
         wrapper.find('input').simulate('change', { target: { value: typed } });
 
         pressEnter(wrapper.find('input'), typed);
-        wrapper.find('input').simulate('blur', { target: { value: typed } });
+        // the field shows the stored amount again, without touching the parent's state (MasterWidget's `edited`)
+        expect(wrapper.find('input').props().value).toEqual('2,5');
+        expect(handleChangeSpy).toHaveBeenCalledTimes(1); // the typing only
+
+        wrapper
+          .find('input')
+          .simulate('blur', { target: { value: wrapper.find('input').props().value } });
 
         expect(handlePatchSpy).not.toHaveBeenCalled();
         expect(notificationsDispatched(dispatchSpy)).toHaveLength(1);
-        expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2.5', undefined, undefined);
         dispatchSpy.mockRestore();
       }
     );
+
+    it('shows an empty amount as an empty text', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: null }],
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      expect(wrapper.find('input').props().value).toEqual('');
+    });
+
+    it('shows the stored amount once the patched value comes back (typed 1.000 -> 1000)', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('change', { target: { value: '1.000' } });
+      pressEnter(wrapper.find('input'), '1.000');
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1000' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('1000');
+    });
+
+    const amountRangeFilterProps = (extra) =>
+      createDummyProps({
+        ...amountLayout,
+        fields: [{ field: 'DiscountAmt', parameterName: 'DiscountAmt', emptyText: 'none' }],
+        widgetData: [{ ...amountData, value: '2.5', valueTo: null }],
+        range: true,
+        filterWidget: true,
+        ...extra,
+      });
+
+    it('hands both ends of a range filter to the parent the session way while one end is typed', () => {
+      const handleChangeSpy = jest.fn();
+      const wrapper = mount(<RawWidget {...amountRangeFilterProps({ handleChange: handleChangeSpy })} />);
+
+      expect(wrapper.find('input').at(0).props().value).toEqual('2,5');
+      wrapper.find('input').at(1).simulate('change', { target: { value: '3,5' } });
+
+      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '3,5');
+    });
+
+    it('restores a range filter end that was refused, the session way', () => {
+      const dispatchSpy = jest.spyOn(store, 'dispatch');
+      const handleChangeSpy = jest.fn();
+      const handlePatchSpy = jest.fn();
+      const wrapper = mount(
+        <RawWidget
+          {...amountRangeFilterProps({ handleChange: handleChangeSpy, handlePatch: handlePatchSpy })}
+        />
+      );
+
+      wrapper.find('input').at(0).simulate('change', { target: { value: '3.57' } });
+      pressEnter(wrapper.find('input').at(0), '3.57');
+
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '');
+      expect(notificationsDispatched(dispatchSpy)).toHaveLength(1);
+      dispatchSpy.mockRestore();
+    });
 
     it('patches both ends of an amount range filter (valueTo too)', () => {
       const handlePatchSpy = jest.fn();
@@ -991,6 +1063,10 @@ describe('RawWidget component', () => {
         numberDecimalSeparator: '.',
         numberGroupingSeparator: ',',
       });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
     });
 
     it('refuses 1,5 (a comma that is no grouping) with a visible error, instead of storing 15', () => {

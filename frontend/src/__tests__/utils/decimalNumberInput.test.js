@@ -3,6 +3,7 @@ import {
   normalizeDecimalNumberString,
   isAllowedDecimalNumberInput,
   formatDecimalNumberForEditing,
+  isValidDecimalNumberString,
 } from '../../utils/locale';
 
 // The separators a user session reports (see JSONUserSessionLocale) for a German and an English user
@@ -180,5 +181,23 @@ describe('formatDecimalNumberForEditing', () => {
       expect(normalizeDecimalNumberString(formatDecimalNumberForEditing(stored, DE), DE)).toEqual(stored);
       expect(normalizeDecimalNumberString(formatDecimalNumberForEditing(stored, EN), EN)).toEqual(stored);
     });
+  });
+});
+
+describe('isValidDecimalNumberString', () => {
+  it('accepts the session decimal separator and grouping in groups of three', () => {
+    ['3,57', '1.000', '1.234,56', '-5', '', '-', ' 1 234,5 '].forEach((text) =>
+      expect(isValidDecimalNumberString(text, DE)).toBe(true)
+    );
+    expect(isValidDecimalNumberString(undefined, DE)).toBe(true);
+  });
+
+  it('refuses a separator that is no valid grouping', () => {
+    ['3.57', '1.2', '1,234.56', '1,2,3'].forEach((text) =>
+      expect(isValidDecimalNumberString(text, DE)).toBe(false)
+    );
+    ['1,5', '3,57', '12,34', '1.2.3'].forEach((text) =>
+      expect(isValidDecimalNumberString(text, EN)).toBe(false)
+    );
   });
 });

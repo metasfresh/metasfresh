@@ -394,6 +394,21 @@ describe('Filters tests', () => {
       typeQtyFrom('3,5');
       expect(displayedQtyFrom()).toEqual('3,5');
 
+      // typing the other end keeps this one
+      act(() => {
+        wrapper
+          .find('.form-field-QtyDelivered input')
+          .at(1)
+          .simulate('change', { target: { value: '4,5' } });
+      });
+      wrapper.update();
+      const qtyDeliveredState = wrapper
+        .find('FiltersItem')
+        .state()
+        .filter.parameters.find((p) => p.parameterName === 'QtyDelivered');
+      expect([qtyDeliveredState.value, qtyDeliveredState.valueTo]).toEqual(['3.5', '4.5']);
+      expect(displayedQtyFrom()).toEqual('3,5');
+
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
