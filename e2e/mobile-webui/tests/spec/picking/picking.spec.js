@@ -786,10 +786,10 @@ test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
 // until this window elapses, then flushed as the QR_NOT_RECOGNIZED error. A low value keeps the E2E fast
 // while still exercising the real held-then-abandoned path.
 //
-// It must be comfortably SHORT: expectErrorToast() gives the assertion only ~2 s of grace after pickHU()
+// It must stay SHORT: expectErrorToast() waits for the toast up to TOAST_GRACE_TIMEOUT (20 s) after pickHU()
 // returns (which, on the direct-scan HEAD path, is almost immediately — the scan dispatch is synchronous
 // and no qty dialog opens). The abandon flush → backend round-trip → error-toast render must all land
-// inside that budget under CI load, so the window is set well below it. The hook's idle interval ticks
+// inside that budget under CI load, so the window is set far below it. The hook's idle interval ticks
 // every rateMs*2 (rateMs = the 300 ms debounce default here → 600 ms), so 500 ms fires reliably on the
 // first tick (~600 ms) with large margin, and still sits above rateMs so it never trips the normal
 // debounce flush. (The window is deliberately tiny for the test ONLY because this HEAD is dispatched as
@@ -997,7 +997,7 @@ test('Scan LM QR code without lot number → user-friendly error', async ({ page
         // Wait for the API response before returning: type() dispatches keyboard events
         // synchronously and returns immediately, but the barcode hook flushes the buffer
         // on an interval (~600ms). A blur/refocus timer in BarcodeScannerComponent can
-        // reset that interval, pushing the API call past expectErrorToast's 2 s grace window.
+        // reset that interval, pushing the API call past expectErrorToast's grace window (TOAST_GRACE_TIMEOUT, 20 s).
         const responsePromise = page.waitForResponse(
             resp => resp.url().includes('/picking/nextEligibleLineToPack'),
             { timeout: 5000 }
@@ -1043,7 +1043,7 @@ test('Scan LM QR code with unknown lot number → user-friendly error', async ({
     // this external lot number in stock → PICKING_NO_HU_FOR_EXTERNAL_LOT.
     await expectErrorToast('Scan LMQ QR code with unknown lot', async () => {
         // Same reason as the test above: wait for the API response so the toast
-        // arrives within expectErrorToast's 2 s grace window.
+        // arrives within expectErrorToast's grace window (TOAST_GRACE_TIMEOUT, 20 s).
         const responsePromise = page.waitForResponse(
             resp => resp.url().includes('/picking/nextEligibleLineToPack'),
             { timeout: 5000 }
@@ -1621,7 +1621,7 @@ test('Scan destroyed HU QR code during picking → user-friendly error', async (
 
     await expectErrorToast('Scan depleted (destroyed) HU', async () => {
         // Wait for the API response before returning: the barcode hook flushes on a
-        // ~600ms interval, which may push the API call past expectErrorToast's 2 s grace window.
+        // ~600ms interval, which may push the API call past expectErrorToast's grace window (TOAST_GRACE_TIMEOUT, 20 s).
         const responsePromise = page.waitForResponse(
             resp => resp.url().includes('/picking/nextEligibleLineToPack'),
             { timeout: 5000 }
