@@ -4,6 +4,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
@@ -64,6 +65,17 @@ public class CreateCompensationGroupSchemaCommand
 			}
 		}
 
+		final List<JsonCompensationGroupSchemaCompensationLine> compensationLines = request.getCompensationLines();
+		if (compensationLines != null)
+		{
+			int seqNo = 10;
+			for (final JsonCompensationGroupSchemaCompensationLine compensationLine : compensationLines)
+			{
+				createCompensationLine(schemaId, compensationLine, seqNo);
+				seqNo += 10;
+			}
+		}
+
 		return JsonCompensationGroupSchemaResponse.builder()
 				.id(schemaId)
 				.name(name)
@@ -101,6 +113,23 @@ public class CreateCompensationGroupSchemaCommand
 		record.setIsWithoutCharge(Boolean.TRUE.equals(line.getIsWithoutCharge()));
 		record.setIsAllowSeparateInvoicing(Boolean.TRUE.equals(line.getIsAllowSeparateInvoicing()));
 		record.setIsHideWhenPrinting(Boolean.TRUE.equals(line.getIsHideWhenPrinting()));
+		InterfaceWrapperHelper.save(record);
+	}
+
+	private void createCompensationLine(
+			@NonNull final GroupTemplateId schemaId,
+			@NonNull final JsonCompensationGroupSchemaCompensationLine line,
+			final int seqNo)
+	{
+		final ProductId productId = context.getId(line.getProduct(), ProductId.class);
+
+		final I_C_CompensationGroup_SchemaLine record = InterfaceWrapperHelper.newInstance(I_C_CompensationGroup_SchemaLine.class);
+		record.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
+		record.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
+		record.setM_Product_ID(productId.getRepoId());
+		record.setCompleteOrderDiscount(line.getPercentage());
+		record.setSeqNo(seqNo);
+		record.setIsActive(true);
 		InterfaceWrapperHelper.save(record);
 	}
 }
