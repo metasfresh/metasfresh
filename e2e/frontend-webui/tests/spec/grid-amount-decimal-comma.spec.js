@@ -33,7 +33,7 @@ testCases.forEach(({ language, label, typed }) => {
     test(`typing ${typed} into a grid amount cell stores ${EXPECTED_AMOUNT} (${label})`, async ({ page }) => {
       allure.epic('E0294: Frontend WebUI');
       allure.tag('F50000: Frontend WebUI');
-      allure.tag('F50000');
+      allure.tag(language);
       allure.story('Decimal separator in amount editors');
       allure.severity('critical');
 
@@ -93,39 +93,31 @@ testCases.forEach(({ language, label, typed }) => {
       const discountCell = invoiceRow.locator('[data-cy="cell-discountAmt"]');
       await discountCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      const patchRequests = [];
-      page.on('request', (req) => {
-        if (req.method() === 'PATCH' && (req.postData() || '').includes('discountAmt')) {
-          patchRequests.push(JSON.parse(req.postData()));
-        }
-      });
-
+      let patchRequest = null;
       let patchResponseBody = null;
       await test.step(`type ${typed} into the discount amount cell and press Enter`, async () => {
         await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // select the row
-        await discountCell.click();
+        await discountCell.dblclick(); // on a selected row, a double click opens the in-row editor
         const input = discountCell.locator('input');
-        if ((await input.count()) === 0) {
-          await discountCell.dblclick();
-        }
-        await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(input).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await input.press('Control+a');
         await input.pressSequentially(typed, { delay: 80 });
 
         // what the user typed is what the editor holds (a browser number input would show 357 here)
         expect(await input.inputValue(), 'text in the amount editor after typing').toBe(typed);
 
-        const patchResponse = page.waitForResponse(
-          (resp) =>
-            resp.request().method() === 'PATCH' && (resp.request().postData() || '').includes('discountAmt'),
-          { timeout: SLOW_ACTION_TIMEOUT }
-        );
+        const isDiscountPatch = (req) => req.method() === 'PATCH' && (req.postData() || '').includes('discountAmt');
+        const patchRequested = page.waitForRequest(isDiscountPatch, { timeout: SLOW_ACTION_TIMEOUT });
+        const patchResponded = page.waitForResponse((resp) => isDiscountPatch(resp.request()), {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
         await input.press('Enter');
-        patchResponseBody = await (await patchResponse).json();
+        patchRequest = JSON.parse((await patchRequested).postData());
+        patchResponseBody = await (await patchResponded).json();
       });
 
       // the PATCH carries the dot-decimal the backend expects
-      expect(patchRequests.flat(), 'PATCH sent for discountAmt').toContainEqual(
+      expect(patchRequest, 'PATCH sent for discountAmt').toContainEqual(
         expect.objectContaining({ path: 'discountAmt', value: '3.57' })
       );
 

@@ -133,6 +133,11 @@ export function normalizeDecimalNumberString(
       '.',
       ',',
     ])}.${fractionPart}`;
+  } else if (
+    decimal === '.' &&
+    trimmed.indexOf('.') !== trimmed.lastIndexOf('.')
+  ) {
+    return trimmed; // ambiguous: more than one decimal point
   } else if (trimmed.indexOf('.') === trimmed.lastIndexOf('.')) {
     return removeSeparators(
       trimmed,

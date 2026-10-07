@@ -68,6 +68,10 @@ describe('normalizeDecimalNumberString', () => {
     expect(normalizeDecimalNumberString('1.234.567,8', DE)).toEqual('1234567.8'); // dots before the comma are grouping
   });
 
+  it('leaves an English text with more than one decimal point untouched', () => {
+    expect(normalizeDecimalNumberString('1.2.3', EN)).toEqual('1.2.3');
+  });
+
   it('uses the separators of the logged-in user session by default', () => {
     initNumeralLocales('de', {
       numberDecimalSeparator: ',',
