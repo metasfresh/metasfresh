@@ -197,18 +197,36 @@ function isFieldPatch(response, fieldName, key) {
 
 /**
  * Open a list field and pick its first offered option.
- * @returns the key of the picked option
+ *
+ * A field that offers a single option selects it by itself as soon as its values have loaded
+ * (ListWidget.requestListData, forceSelection): the PATCH then goes out on the input click and the
+ * dropdown may close before the option can be clicked. So the commit is awaited from the input click
+ * on (like {@link selectOptionByKey}), and the option is clicked only if it shows up before that commit.
+ * @returns the key of the picked option, read from the committed PATCH
  */
 export async function selectFirstListOption(page, scope, fieldName) {
   const input = scope.locator(`.form-field-${fieldName} input`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await input.click();
   const option = page.locator('.input-dropdown-list [data-testid^="option-"]').first();
-  await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  const key = (await option.getAttribute('data-testid')).substring('option-'.length);
-  await withFieldCommit(page, fieldName, () => option.click(), key);
+  let committed = false;
+  const response = await withFieldCommit(page, fieldName, async () => {
+    const autoCommit = page.waitForResponse((r) => isFieldPatch(r, fieldName, undefined), { timeout: SLOW_ACTION_TIMEOUT })
+      .then(() => { committed = true; }, () => {});
+    await input.click();
+    const optionShown = option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }).then(() => true, () => false);
+    await Promise.race([autoCommit, optionShown]);
+    if (!committed) {
+      await option.click();
+    }
+  });
+  if (committed && (await page.locator('.input-dropdown-list').count()) > 0) {
+    // the auto-selected value is committed, but the dropdown may stay open; leave the field
+    // (Escape would close an enclosing modal)
+    await input.press('Tab');
+  }
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
-  return key;
+  const change = response.request().postDataJSON().find((c) => c.path === fieldName);
+  return lookupKey(change.value);
 }
 
 /** Type into a lookup field and wait until the typeahead result for the full search text has arrived. */
