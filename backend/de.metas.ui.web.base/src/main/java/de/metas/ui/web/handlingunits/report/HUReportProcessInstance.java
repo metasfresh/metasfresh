@@ -2,12 +2,18 @@ package de.metas.ui.web.handlingunits.report;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import de.metas.report.PrintCopies;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
@@ -31,10 +37,13 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IAutoCloseable;
 
 import java.util.ArrayList;
@@ -73,6 +82,14 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	public static final String PARAM_Copies = "Copies";
 	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
 	public static final String PARAM_IsPrintPreview = "IsPrintPreview";
+
+	/** Hardcoded: only the SSCC label report (AD_Process.Value='HU_Labels_SSCC_LU') triggers SSCC filtering */
+	private static final String SSCC_LABEL_PROCESS_VALUE = "HU_Labels_SSCC_LU";
+	static final AdMessageKey MSG_NoSSCC = AdMessageKey.of("HU_Labels_SSCC_LU.NoSSCC");
+
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final DocumentId instanceId;
 	private final ViewRowIdsSelection viewRowIdsSelection;
@@ -163,11 +180,12 @@ final class HUReportProcessInstance implements IProcessInstanceController
 
 		final ViewId viewId = viewRowIdsSelection.getViewId();
 		final HUReportAwareView view = HUReportAwareViews.cast(viewsRepo.getView(viewId));
+		final List<HUToReport> husToReport = filterHUsForSSCCReportIfNeeded(extractHUsToReport(view));
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
 				.adJasperProcessId(getJasperProcess_ID())
 				.printPreview(isPrintPreview())
-				.executeNow(reportAdProcessId, extractHUsToReport(view));
+				.executeNow(reportAdProcessId, husToReport);
 
 		final ADProcessPostProcessService postProcessService = ADProcessPostProcessService.builder()
 				.viewsRepo(viewsRepo)
@@ -293,6 +311,37 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		}
 	}
 
+
+	private List<HUToReport> filterHUsForSSCCReportIfNeeded(@NonNull final List<HUToReport> husToReport)
+	{
+		if (!isSSCCLabelReport())
+		{
+			return husToReport;
+		}
+
+		final List<HUToReport> husWithSSCC = husToReport.stream()
+				.filter(huToReport -> hasSSCC18Attribute(huToReport.getHUId()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (husWithSSCC.isEmpty())
+		{
+			throw new AdempiereException(MSG_NoSSCC);
+		}
+
+		return husWithSSCC;
+	}
+
+	private boolean hasSSCC18Attribute(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final String sscc = huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_SSCC18_Value);
+		return !Check.isBlank(sscc);
+	}
+
+	private boolean isSSCCLabelReport()
+	{
+		return SSCC_LABEL_PROCESS_VALUE.equals(adProcessDAO.getById(reportAdProcessId).getValue());
+	}
 
 	@Override
 	public synchronized ProcessInstanceResult getExecutionResult()
