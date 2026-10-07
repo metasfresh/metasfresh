@@ -38,9 +38,9 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationLoadTests;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -51,10 +51,10 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.assertj.core.api.Assertions;
-import org.compiere.model.I_C_BPartner;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,14 +68,16 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.HUAssertions.assertThat;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUTransformServiceTests
@@ -1404,6 +1406,32 @@ public class HUTransformServiceTests
 		return count;
 	}
 
+	private Set<Integer> retrieveChildHUIds(@NonNull final I_M_HU lu)
+	{
+		return Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu).stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Asserts the partner of the TUs that the move added below the LU. The partner is only used to find the LU item; it must not be stamped onto them.
+	 * Their partner is the one the HU builder inherits from the target LU (none if the target LU has no partner), never the partner resolved from the source.
+	 */
+	private void assertNewTUsHavePartner(@NonNull final I_M_HU lu, @NonNull final Set<Integer> childHUIdsBeforeMove, @Nullable final BPartnerId expectedPartnerId)
+	{
+		final List<I_M_HU> newTUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu).stream()
+				.filter(tu -> !childHUIdsBeforeMove.contains(tu.getM_HU_ID()))
+				.collect(Collectors.toList());
+		Assertions.assertThat(newTUs).as("TUs added to the target LU").isNotEmpty();
+		for (final I_M_HU tu : newTUs)
+		{
+			refresh(tu);
+			Assertions.assertThat(BPartnerId.ofRepoIdOrNull(tu.getC_BPartner_ID()))
+					.as("C_BPartner_ID of new TU " + tu.getM_HU_ID() + " (the fix must not stamp the resolved partner onto moved TUs)")
+					.isEqualTo(expectedPartnerId);
+		}
+	}
+
 	private void luExtractTUs(@NonNull final I_M_HU sourceLU, final int qtyTUs, @NonNull final HUTransformService.TargetLU targetLU)
 	{
 		huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
@@ -1435,9 +1463,11 @@ public class HUTransformServiceTests
 		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
 		final I_M_HU targetLU = createPallet(fixture, partnerP, null, 1);
 
+		final Set<Integer> childrenBefore = retrieveChildHUIds(targetLU);
 		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
 
 		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		assertNewTUsHavePartner(targetLU, childrenBefore, partnerP); // inherited from the target LU (partner P), as before the fix
 		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
 	}
 
@@ -1453,9 +1483,11 @@ public class HUTransformServiceTests
 		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
 		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
 
+		final Set<Integer> childrenBefore = retrieveChildHUIds(targetLU);
 		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
 
 		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		assertNewTUsHavePartner(targetLU, childrenBefore, null); // target LU has no partner; the partner P resolved from the source LU must NOT be stamped
 		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
 	}
 
@@ -1651,6 +1683,59 @@ public class HUTransformServiceTests
 		assertLuExtractTUsFails(sourceLU, 1, HUTransformService.TargetLU.ofNewLU(fixture.piLU), MSG_TU_NOT_CONFIGURED_FOR_LU);
 
 		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(5);
+	}
+
+	/**
+	 * Standalone TU (not on any pallet) moved onto an existing pallet: the partner resolves only from the target pallet (none here),
+	 * so a generic item is found and the move works as before.
+	 */
+	@Test
+	public void tuToExistingLU_standaloneTU_genericItem_works()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final PalletFixture fixture = createPalletFixture(null);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+		final I_M_HU standaloneTU = createStandaloneTU(fixture);
+
+		huTransformService.tuToExistingLU(standaloneTU, QtyTU.ONE, targetLU);
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(standaloneTU).getM_HU_ID()).isEqualTo(targetLU.getM_HU_ID());
+	}
+
+	/**
+	 * Standalone TU (no pallet to take a partner from) onto an existing pallet without partner, where the only item is partner-bound: unchanged error, nothing moved.
+	 */
+	@Test
+	public void tuToExistingLU_standaloneTU_itemBoundToPartnerOnly_fails()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+		final I_M_HU standaloneTU = createStandaloneTU(fixture);
+
+		Assertions.assertThatThrownBy(() -> huTransformService.tuToExistingLU(standaloneTU, QtyTU.ONE, targetLU))
+				.hasMessageContaining(MSG_LU_CANNOT_STACK_TU);
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(1);
+	}
+
+	private I_M_HU createStandaloneTU(@NonNull final PalletFixture fixture)
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final LUTUProducerDestination producer = new LUTUProducerDestination();
+		producer.setLocatorId(data.defaultLocatorId);
+		producer.setNoLU();
+		producer.setTUPI(fixture.piTU);
+		producer.addCUPerTU(data.helper.pSaladProductId, BigDecimal.ONE, data.helper.uomEach);
+		data.helper.load(producer, data.helper.pSaladProductId, BigDecimal.ONE, data.helper.uomEach);
+
+		final I_M_HU tu = producer.getCreatedHUs().get(0);
+		huStatusBL.setHUStatus(data.helper.createMutableHUContextOutOfTransaction(), tu, X_M_HU.HUSTATUS_Active);
+		saveRecord(tu);
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(tu).getM_HU_ID()).as("guard: standalone").isEqualTo(tu.getM_HU_ID());
+		return tu;
 	}
 
 	@SuppressWarnings("deprecation")

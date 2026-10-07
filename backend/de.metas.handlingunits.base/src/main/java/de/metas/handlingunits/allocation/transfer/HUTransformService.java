@@ -601,7 +601,15 @@ public class HUTransformService
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
 				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
-				lutuProducer.setBPartnerId(luItemBPartnerId);
+				// the partner is only used to find the right (possibly partner-bound) LU->TU item; it is NOT stamped onto the created TUs
+				if (luItemBPartnerId != null)
+				{
+					handlingUnitsDAO.retrieveFirstPIItem(
+									handlingUnitsBL.getEffectivePackingInstructionsId(luHU),
+									handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU),
+									luItemBPartnerId)
+							.ifPresent(lutuProducer::setLUItemPI);
+				}
 				lutuProducer.addCUPerTU(tuCapacity);
 
 				HULoader.builder()
@@ -1154,7 +1162,7 @@ public class HUTransformService
 		}
 
 		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(sourceTuHU);
-		if (topLevelParent == null || topLevelParent.getM_HU_ID() == sourceTuHU.getM_HU_ID())
+		if (topLevelParent == null || HuId.equals(HuId.ofRepoId(topLevelParent.getM_HU_ID()), HuId.ofRepoId(sourceTuHU.getM_HU_ID())))
 		{
 			return null;
 		}
