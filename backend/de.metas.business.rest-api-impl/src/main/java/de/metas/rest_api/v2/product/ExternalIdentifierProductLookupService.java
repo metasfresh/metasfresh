@@ -46,8 +46,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -57,9 +55,9 @@ import java.util.stream.Collectors;
 @Service
 public class ExternalIdentifierProductLookupService
 {
-	private static final String MSG_GTIN_UNKNOWN = "No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner,"
+	private static final String GTIN_UNKNOWN_TEXT_FORMAT = "No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner,"
 			+ " no active partner product (C_BPartner_Product) and no active product (M_Product) carries GTIN %s.";
-	private static final String MSG_GTIN_ONLY_ON_PIIPS_NOT_VALID_ON_DATE = "GTIN %s is only on packing instructions that are not valid on the delivery date %s: %s.";
+	private static final String GTIN_NOT_VALID_ON_DATE_TEXT_FORMAT = "GTIN %s is only on packing instructions that are not valid on the delivery date %s: %s.";
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -156,15 +154,16 @@ public class ExternalIdentifierProductLookupService
 	{
 		final GTIN gtin = GTIN.ofString(gtinIdentifier.asGTIN());
 		final List<I_M_HU_PI_Item_Product> piips = huPIItemProductDAO.retrieveByGtinIgnoringDate(gtin, bpartnerId);
+		// date is null when the order candidate request has no dateRequired (JsonConverters)
 		if (piips.isEmpty() || date == null)
 		{
-			return String.format(MSG_GTIN_UNKNOWN, gtin.getAsString());
+			return String.format(GTIN_UNKNOWN_TEXT_FORMAT, gtin.getAsString());
 		}
 
 		final String piipsDescription = piips.stream()
 				.map(piip -> toDescription(piip, date))
 				.collect(Collectors.joining(", "));
-		return String.format(MSG_GTIN_ONLY_ON_PIIPS_NOT_VALID_ON_DATE, gtin.getAsString(), date.toLocalDate(), piipsDescription);
+		return String.format(GTIN_NOT_VALID_ON_DATE_TEXT_FORMAT, gtin.getAsString(), date.toLocalDate(), piipsDescription);
 	}
 
 	private static String toDescription(@NonNull final I_M_HU_PI_Item_Product piip, @NonNull final ZonedDateTime date)
@@ -172,16 +171,11 @@ public class ExternalIdentifierProductLookupService
 		final StringBuilder description = new StringBuilder("M_HU_PI_Item_Product_ID=")
 				.append(piip.getM_HU_PI_Item_Product_ID())
 				.append(" valid from ")
-				.append(toLocalDate(piip.getValidFrom(), date));
+				.append(TimeUtil.asLocalDate(piip.getValidFrom(), date.getZone()));
 		if (piip.getValidTo() != null)
 		{
-			description.append(" to ").append(toLocalDate(piip.getValidTo(), date));
+			description.append(" to ").append(TimeUtil.asLocalDate(piip.getValidTo(), date.getZone()));
 		}
 		return description.toString();
-	}
-
-	private static LocalDate toLocalDate(@NonNull final Timestamp timestamp, @NonNull final ZonedDateTime date)
-	{
-		return TimeUtil.asZonedDateTime(timestamp, date.getZone()).toLocalDate();
 	}
 }

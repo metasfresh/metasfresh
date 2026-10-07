@@ -50,6 +50,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExternalIdentifierProductLookupServiceTest
 {
+	private static final String UNKNOWN_GTIN_TEXT_PREFIX = "No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner, no active partner product (C_BPartner_Product) and no active product (M_Product) carries GTIN ";
+	private static final ZoneId ORG_ZONE = ZoneId.of("Europe/Berlin");
+	private static final ZonedDateTime DELIVERY_DATE = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
 	private ExternalIdentifierProductLookupService productLookupService;
 	
 	@BeforeEach
@@ -634,11 +638,6 @@ public class ExternalIdentifierProductLookupServiceTest
 		assertThat(result.get().getProductId()).isEqualTo(ProductId.ofRepoId(gtinProduct.getM_Product_ID()));
 		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.VIRTUAL_HU);
 	}
-
-	private static final String UNKNOWN_GTIN_TEXT_PREFIX = "No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner, no active partner product (C_BPartner_Product) and no active product (M_Product) carries GTIN ";
-
-	private static final ZoneId ORG_ZONE = ZoneId.of("Europe/Berlin");
-	private static final ZonedDateTime DELIVERY_DATE = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
 
 	private static Timestamp orgMidnight(final String date)
 	{
