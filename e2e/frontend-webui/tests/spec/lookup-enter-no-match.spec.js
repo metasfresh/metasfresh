@@ -22,7 +22,7 @@ import {
  *
  * Covered in every layout that uses the shared Lookup: the order-line grid, the order-line form
  * opened with Alt+E ("Erweiterte Erfassung"), and three Lookup fields of the order header form.
- * A deliberate clear (delete the text, leave the field) still clears.
+ * A deliberate clear (delete the text, leave the field) clears it.
  *
  * Features tested:
  * - F5010: Order Lines Grid
@@ -179,7 +179,7 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
     });
   });
 
-  test('Order header form: three Lookup fields keep their value; emptying a field still clears it', async ({ page }) => {
+  test('Order header form: three Lookup fields keep their value; emptying a field clears it', async ({ page }) => {
     allure.epic('E0500: Sales Orders');
     allure.tag('F5010: Order Lines Grid');
     allure.tag('F5010');
@@ -208,9 +208,9 @@ test.describe('Lookup — Enter with text that matches nothing keeps the previou
       });
     }
 
-    await test.step('Header M_PricingSystem_ID: emptying the text and leaving the field still clears it', async () => {
-      // The deliberate clear: delete the text and leave the field (Tab). Note: empty text + Enter
-      // does not clear today - Enter picks the highlighted first entry of the list; unchanged here.
+    await test.step('Header M_PricingSystem_ID: emptying the text and leaving the field clears it', async () => {
+      // The deliberate clear: delete the text and leave the field (Tab). Empty text + Enter does
+      // not clear: Enter picks the highlighted first list entry.
       const input = page.locator('#lookup_M_PricingSystem_ID input.input-field').first();
       await input.click();
       await page.keyboard.press('ControlOrMeta+a');

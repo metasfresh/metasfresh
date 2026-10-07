@@ -385,7 +385,7 @@
     }
   }
 
-  /* The editor's inputs: no minimum width and no horizontal padding of their own. */
+  /* border-box: the editor's 26px height includes its padding and border */
   .input-primary,
   .input-secondary,
   .input-dropdown-container {

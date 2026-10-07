@@ -24,7 +24,7 @@ export async function createMasterdata(language = DEFAULT_LANGUAGE) {
   return await Backend.createMasterdata({
     request: {
       login: {
-        user: { language, firstname: 'BF', lastname: 'Harness' },
+        user: { language, firstname: 'E2E', lastname: 'Tester' },
       },
       bpartners: {
         CUSTOMER1: {
