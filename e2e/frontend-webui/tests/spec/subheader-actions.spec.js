@@ -196,7 +196,7 @@ Tests the SubHeader panel and its action buttons:
           await dropdownOption.click();
           await page.waitForTimeout(1000);
 
-          const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+          const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
           await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
           await quantityInput.click();
           await quantityInput.fill('5');

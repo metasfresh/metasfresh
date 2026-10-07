@@ -29,8 +29,8 @@ const PAYMENT_ALLOCATION_FROM_INVOICE_ACTION = 'PaymentView_Launcher_From_C_Invo
 
 /** How the grid renders an amount with the separators of each session language */
 const DISPLAYED = {
-  de_DE: { '3.57': '3,57', 1000: '1.000,00', 0: '0,00' },
-  en_US: { '3.57': '3.57', 0: '0.00' },
+  de_DE: { '3.57': '3,57', 1000: '1.000,00' },
+  en_US: { '3.57': '3.57' },
 };
 
 const setupAllure = (language) => {
@@ -114,24 +114,28 @@ const typeAndExpectStored = async (page, { invoiceDocumentNo, typed, patched, la
   });
 };
 
-/** Types an invalid amount, presses Enter and asserts it is refused: no PATCH, a visible error, the amount kept */
-const typeAndExpectRefused = async (page, { invoiceDocumentNo, typed, keptEditText, keptDisplayed }) => {
+/**
+ * Types an invalid amount, presses the key (Enter, Tab or ArrowDown) and asserts it is refused: a visible error, the
+ * editor stays open and focused showing the kept amount, no PATCH - also not when the editor is left afterwards
+ */
+const typeAndExpectRefused = async (page, { invoiceDocumentNo, typed, key = 'Enter', keptEditText, keptDisplayed }) => {
   const cell = discountCellOf(page, invoiceDocumentNo);
 
-  await test.step(`type ${typed}: refused with a visible error, the amount is kept`, async () => {
+  await test.step(`type ${typed} and press ${key}: refused with a visible error, the amount is kept`, async () => {
     const patches = [];
     const collectPatch = (req) => isDiscountPatch(req) && patches.push(req.postData());
     page.on('request', collectPatch);
 
     const input = await openDiscountEditor(cell);
     await typeIntoEditor(input, typed);
-    await input.press('Enter');
+    await input.press(key);
 
     // the error names what was typed, which is no localized text
     await expect(page.locator('.notification-item.error', { hasText: typed }).first()).toBeVisible({
       timeout: SLOW_ACTION_TIMEOUT,
     });
     await expect(input, 'the editor shows the kept amount again').toHaveValue(keptEditText);
+    await expect(input, 'the editor keeps the focus').toBeFocused();
     await expectDisplayedDiscount(cell, keptDisplayed);
 
     page.off('request', collectPatch);
@@ -211,7 +215,7 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
     await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '3,57', keptDisplayed: '3,57' });
   });
 
-  test('German session: 1.000 is 1000, 3.57 is refused with a visible error', async ({ page }) => {
+  test('German session: 1.000 is 1000, 3.57 is refused on Enter, Tab and ArrowDown with a visible error', async ({ page }) => {
     setupAllure('de_DE');
     test.setTimeout(120000);
     await page.setViewportSize({ width: 2400, height: 1000 });
@@ -220,12 +224,19 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
     await openAllocationViewOfInvoice(page, invoice.id);
     const invoiceDocumentNo = invoice.documentNo;
     await typeAndExpectStored(page, { invoiceDocumentNo, typed: '1.000', patched: '1000', language: 'de_DE' });
-    await typeAndExpectRefused(page, {
-      invoiceDocumentNo,
-      typed: '3.57',
-      keptEditText: '1000',
-      keptDisplayed: DISPLAYED.de_DE[1000],
-    });
+    for (const [typed, key] of [
+      ['3.57', 'Enter'],
+      ['2.5', 'Tab'],
+      ['4.5', 'ArrowDown'],
+    ]) {
+      await typeAndExpectRefused(page, {
+        invoiceDocumentNo,
+        typed,
+        key,
+        keptEditText: '1000',
+        keptDisplayed: DISPLAYED.de_DE[1000],
+      });
+    }
     await focusAndLeaveUntouched(page, { invoiceDocumentNo, expectedEditText: '1000', keptDisplayed: '1.000,00' });
   });
 
@@ -243,6 +254,57 @@ test.describe.serial('Grid in-row amount editor - separators of the session', ()
       typed: '1,5',
       keptEditText: '3.57',
       keptDisplayed: DISPLAYED.en_US['3.57'],
+    });
+  });
+});
+
+test.describe('Quick input - separators of the session', () => {
+  test('German session: a refused quantity adds no order line', async ({ page }) => {
+    setupAllure('de_DE');
+    test.setTimeout(180000);
+
+    const masterdata = await loginAs('de_DE', {
+      bpartners: {
+        CUSTOMER1: { isVendor: false, isCustomer: true, isSoPriceList: true, name: 'Customer' },
+      },
+      products: {
+        Product1: { name: 'PROD', type: 'Item', prices: [{ price: 50.0, currencyCode: 'EUR' }] },
+      },
+    });
+
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.openQuickEntryAndSelectProduct({
+      product: masterdata.products.Product1.productCode,
+      recordId,
+    });
+
+    await test.step('type 1.5 into the quantity and press Enter: refused, nothing is added', async () => {
+      const completeRequested = page
+        .waitForRequest((req) => req.url().includes('/quickInput/') && req.url().endsWith('/complete'), {
+          timeout: 5000,
+        })
+        .catch(() => null);
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
+      await quantityInput.click();
+      await quantityInput.press('ControlOrMeta+a');
+      await quantityInput.pressSequentially('1.5', { delay: 80 });
+      await quantityInput.press('Enter');
+
+      await expect(page.locator('.notification-item.error', { hasText: '1.5' }).first()).toBeVisible({
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await expect(quantityInput, 'the quantity no longer holds the refused text').not.toHaveValue('1.5');
+      expect(await completeRequested, 'request adding the order line').toBeNull();
+    });
+
+    await test.step('the order has no line', async () => {
+      await page.getByTestId('batch-entry-toggle').click(); // close the quick input
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`);
+      await page.getByTestId('status-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.table-flex-wrapper table').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('.table-flex-wrapper table tbody tr [data-cy="cell-M_Product_ID"]')).toHaveCount(0);
     });
   });
 });

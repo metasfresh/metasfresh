@@ -323,8 +323,8 @@ export class PurchaseOrderPage {
         await dropdownOption.click();
         await page.waitForTimeout(500);
 
-        // Fill quantity — scope to .quick-input-container to avoid matching other spinbuttons
-        const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+        // Fill quantity — the decimal input of the quick input (a text input with inputmode=decimal)
+        const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
         await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
         await quantityInput.click();
         await quantityInput.fill(quantity.toString());
