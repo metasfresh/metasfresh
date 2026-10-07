@@ -147,7 +147,7 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 		final BigDecimal qty = row.getAsOptionalBigDecimal("Qty").orElse(BigDecimal.ONE);
 
 		final GroupCalibrations calibrations = row.getAsOptionalBoolean("Calibrated").orElseFalse()
-				? calibrationService.computeCalibrations(order, groupTemplate, qty)
+				? calibrationService.computeCalibrations(order, groupTemplate)
 				: null;
 
 		final Group group = orderGroupsRepo.prepareNewGroup()

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -46,6 +48,11 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.order.compensationGroup.calibration.CalibrationRule;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
+import de.metas.organization.OrgId;
+import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -511,6 +518,159 @@ public class OrderGroupRepositoryTest
 
 		assertThat(compensationLinePO.getDiscount()).isEqualByComparingTo(BigDecimal.ZERO);
 		assertThat(compensationLinePO.isManualDiscount()).isTrue();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Calibration: the factor is a 100-based percent; the base qty (template qty x menu qty)
+	// is rounded half-up to the UOM precision before the factor is applied, also on lines without a rule.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void calibration_matchingRule_roundsBaseThenAppliesPercent()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.375", 2);
+		final CalibrationRule rule = calibrationRule(7, "120");
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, rule));
+
+		// 0.375 -> 0.38 (precision 2), 0.38 x 120 % = 0.456 -> 0.46
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.46");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.38");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("120");
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
+	}
+
+	@Test
+	void calibration_menuQtyAndPercent()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.25", 2);
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("1500"), templateLine, calibrationRule(7, "80")));
+
+		// mock case: 1500 x 0.25 LTR x 80 % = 300
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+	}
+
+	@Test
+	void calibration_noMatchingRule_storesFactor100AndRoundedBase()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, null));
+
+		// half-up: RoundingMode.UP would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.12");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
+	}
+
+	@Test
+	void calibration_notCalibrated_qtyRoundedHalfUpAndNoCalibrationValues()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.125", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.13");
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
+	}
+
+	@Test
+	void calibration_notCalibrated_notUp()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
+
+		// same as MOrderLine.setQtyEntered (half-up); RoundingMode.UP would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+	}
+
+	@Test
+	void calibration_factorZero_keepsLineWithQtyZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "3", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("2"), templateLine, calibrationRule(7, "0")));
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("6");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0");
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
+	}
+
+	@Test
+	void calibration_baseRoundsToZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.004", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "100")));
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void calibration_resultRoundsToZero_precision0()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "1", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "40")));
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("1");
+	}
+
+	@Test
+	void calibration_negativeMenuQty_halfUpAwayFromZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "3", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("-1"), templateLine, calibrationRule(7, "50")));
+
+		// -3 x 50 % = -1.5 -> -2
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("-2");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("-3");
+	}
+
+	private GroupTemplateRegularLine templateLine(final int templateLineId, final String qty, final int uomPrecision)
+	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setStdPrecision(uomPrecision);
+		saveRecord(uom);
+		return GroupTemplateRegularLine.builder()
+				.id(GroupTemplateRegularLineId.ofRepoId(templateLineId))
+				.productId(productId)
+				.qty(Quantity.of(new BigDecimal(qty), uom))
+				.build();
+	}
+
+	private static CalibrationRule calibrationRule(final int ruleId, final String factorPercent)
+	{
+		return CalibrationRule.builder()
+				.id(CalibrationRuleId.ofRepoId(ruleId))
+				.orgId(OrgId.ANY)
+				.bpartnerId(BPartnerId.ofRepoId(1))
+				.factor(Percent.of(new BigDecimal(factorPercent)))
+				.build();
+	}
+
+	private static RetrieveOrCreateGroupRequest calibratedRequest(
+			final BigDecimal qtyMultiplier,
+			final GroupTemplateRegularLine templateLine,
+			@Nullable final CalibrationRule rule)
+	{
+		return RetrieveOrCreateGroupRequest.builder()
+				.newGroupTemplate(GroupTemplate.builder().name("test-template").regularLinesToAdd(Collections.singletonList(templateLine)).build())
+				.qtyMultiplier(qtyMultiplier)
+				.calibrations(GroupCalibrations.of(
+						ImmutableSet.of(templateLine.getId()),
+						rule != null ? ImmutableMap.of(templateLine.getId(), rule) : ImmutableMap.of()))
+				.build();
 	}
 
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────

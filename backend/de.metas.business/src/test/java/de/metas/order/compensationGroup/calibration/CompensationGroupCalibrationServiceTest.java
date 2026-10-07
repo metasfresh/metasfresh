@@ -106,7 +106,7 @@ class CompensationGroupCalibrationServiceTest
 	void purchaseOrder_isNotCalibrated()
 	{
 		final ProductId p = product(false);
-		rule(p, "0.5");
+		rule(p, "50");
 		assertThat(service.computeCalibrations(order(false), template(line(p, "100")))).isSameAs(GroupCalibrations.NONE);
 	}
 
@@ -115,8 +115,18 @@ class CompensationGroupCalibrationServiceTest
 	{
 		final ProductId p = product(false);
 		final GroupTemplateRegularLine l = line(p, "100");
-		final CalibrationRule c = service.computeCalibrations(order(true), template(l)).getByTemplateLineId(l.getId()).orElse(null);
-		assertThat(c).isNull();
+		final GroupCalibrations calibrations = service.computeCalibrations(order(true), template(l));
+		// the line is calibrated (it stores factor 100), but no rule matched
+		assertThat(calibrations.isCalibrated(l.getId())).isTrue();
+		assertThat(calibrations.getByTemplateLineId(l.getId())).isEmpty();
+	}
+
+	@Test
+	void purchaseOrder_noLineIsCalibrated()
+	{
+		final ProductId p = product(false);
+		final GroupTemplateRegularLine l = line(p, "100");
+		assertThat(service.computeCalibrations(order(false), template(l)).isCalibrated(l.getId())).isFalse();
 	}
 
 	@Test
@@ -127,8 +137,8 @@ class CompensationGroupCalibrationServiceTest
 		final GroupTemplateRegularLine l = line(p, "100");
 		final CalibrationRule c = service.computeCalibrations(order(true), template(l)).getByTemplateLineId(l.getId()).get();
 		assertThat(c.getFactor()).isEqualTo(Percent.of(50));
-		// assertThat(c.getCalibratedQty().toBigDecimal()).isEqualByComparingTo("100");
-		// assertThat(c.getUncalibratedQty().toBigDecimal()).isEqualByComparingTo("200");
+		// 100 x menu qty 2 = 200 (uncalibrated), x 50 % = 100
+		assertThat(c.computeQtyCalibrated(Quantity.of(new BigDecimal("200"), uom)).toBigDecimal()).isEqualByComparingTo("100");
 		assertThat(c.getId()).isEqualTo(CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID()));
 	}
 
@@ -140,22 +150,18 @@ class CompensationGroupCalibrationServiceTest
 		final GroupTemplateRegularLine l = line(p, "100");
 		final CalibrationRule c = service.computeCalibrations(order(true), template(l)).getByTemplateLineId(l.getId()).get();
 		assertThat(c.getFactor()).isEqualTo(Percent.ZERO);
-		// assertThat(c.getCalibratedQty().toBigDecimal()).isEqualTo(new BigDecimal("0.00"));
-		// assertThat(c.getUncalibratedQty().toBigDecimal()).isEqualTo(new BigDecimal("100.00"));
+		assertThat(c.computeQtyCalibrated(Quantity.of(new BigDecimal("100"), uom)).toBigDecimal()).isEqualByComparingTo("0");
 		assertThat(c.getId()).isEqualTo(CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID()));
 	}
 
 	@Test
-	void menuLine_hasNoEntryEvenWithMatchingRule()
+	void menuLine_isNotCalibratedEvenWithMatchingRule()
 	{
 		final ProductId menu = product(true);
-		rule(menu, "0.5");
+		rule(menu, "50");
 		final GroupTemplateRegularLine l = line(menu, "1");
-		assertThat(
-				service.computeCalibrations(
-						order(true), 
-						template(l))
-						.getByTemplateLineId(l.getId())
-		).isEmpty();
+		final GroupCalibrations calibrations = service.computeCalibrations(order(true), template(l));
+		assertThat(calibrations.isCalibrated(l.getId())).isFalse();
+		assertThat(calibrations.getByTemplateLineId(l.getId())).isEmpty();
 	}
 }

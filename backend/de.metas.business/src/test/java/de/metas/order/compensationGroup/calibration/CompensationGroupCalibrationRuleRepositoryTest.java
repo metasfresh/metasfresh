@@ -45,7 +45,7 @@ class CompensationGroupCalibrationRuleRepositoryTest
 		record.setSeqNo(seqNo);
 		record.setIsActive(active);
 		record.setC_BPartner_ID(1);
-		record.setGroupCompensationCalibrationFactor(BigDecimal.ONE);
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("100"));
 		saveRecord(record);
 		return record.getC_CompensationGroup_CalibrationRule_ID();
 	}

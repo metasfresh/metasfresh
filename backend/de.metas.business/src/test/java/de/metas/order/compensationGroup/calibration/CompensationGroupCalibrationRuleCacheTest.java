@@ -29,12 +29,12 @@ class CompensationGroupCalibrationRuleCacheTest
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		record.setSeqNo(10);
 		record.setC_BPartner_ID(1);
-		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.5"));
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("50"));
 		saveRecord(record);
 		assertThat(repository.getActiveRules().asList()).hasSize(1);
 		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualTo(Percent.of(50));
 
-		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("80"));
 		saveRecord(record);
 		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualTo(Percent.of(80));
 
@@ -45,7 +45,7 @@ class CompensationGroupCalibrationRuleCacheTest
 		final I_C_CompensationGroup_CalibrationRule added = newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		added.setSeqNo(20);
 		added.setC_BPartner_ID(2);
-		added.setGroupCompensationCalibrationFactor(BigDecimal.ONE);
+		added.setGroupCompensationCalibrationFactor(new BigDecimal("100"));
 		saveRecord(added);
 		assertThat(repository.getActiveRules().asList()).hasSize(1);
 	}

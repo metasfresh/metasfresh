@@ -18,6 +18,7 @@ import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
@@ -49,6 +50,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -939,8 +941,10 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final I_C_Order targetOrder,
 			@NonNull final RetrieveOrCreateGroupRequest request)
 	{
-		final CalibrationRule calibrationRule = request.getCalibrations() != null
-				? request.getCalibrations().getByTemplateLineId(from.getId()).orElse(null)
+		final GroupCalibrations calibrations = request.getCalibrations();
+		final boolean isCalibrated = calibrations != null && calibrations.isCalibrated(from.getId());
+		final CalibrationRule calibrationRule = isCalibrated
+				? calibrations.getByTemplateLineId(from.getId()).orElse(null)
 				: null;
 
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(targetOrder);
@@ -948,15 +952,26 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 
-		Quantity qtyEntered = from.getQty().multiply(request.getQtyMultiplier()).roundToUOMPrecision();
-		if (calibrationRule != null)
+		// half-up, like MOrderLine.setQtyEntered; the UOM's own rounding mode (UP) would round 0.121 to 0.13
+		final Quantity qtyBase = from.getQty().multiply(request.getQtyMultiplier());
+		Quantity qtyEntered = qtyBase.setScale(qtyBase.getUOMPrecision(), RoundingMode.HALF_UP);
+		if (isCalibrated)
 		{
 			final Quantity qtyEnteredUncalibrated = qtyEntered;
-			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
+			final Percent factor;
+			if (calibrationRule != null)
+			{
+				qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
+				factor = calibrationRule.getFactor();
+			}
+			else
+			{
+				factor = Percent.ONE_HUNDRED; // calibrated, but no rule matched: the qty stays as it is
+			}
 
 			// the calibration columns are not updateable: they are only set while the line is new
-			orderLine.setGroupCompensationCalibrationFactor(calibrationRule.getFactor().toBigDecimal());
-			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
+			orderLine.setGroupCompensationCalibrationFactor(factor.toBigDecimal());
+			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule != null ? calibrationRule.getId() : null));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
 		}
 
