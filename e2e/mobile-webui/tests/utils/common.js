@@ -53,6 +53,16 @@ export const step = async (title, func) => await test.step(title, async () => aw
 
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
+
+/**
+ * Clear the error-watcher state. Playwright runs every spec in ONE worker process, so this module's
+ * state is shared by all tests; a leaked non-zero id makes every later runAndWatchForErrors take the
+ * "already watching" short-circuit and arm NO watcher at all. Called per test from the page fixture.
+ */
+export const resetErrorWatchers = () => {
+    currentErrorWatcherId = 0;
+};
+
 const runAndWatchForErrors = async (func) => {
     if (currentErrorWatcherId > 0) {
         // console.log(`Already watching for errors (watcherId=${currentErrorWatcherId}), calling the function directly`);
@@ -68,8 +78,12 @@ const runAndWatchForErrors = async (func) => {
             ErrorToast.waitToPopup(
                 async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
-                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // The toast belongs to an INNER, expected-error watcher. Returning here would
+                        // RESOLVE this branch and settle the enclosing Promise.race, silently abandoning
+                        // the rest of func() — every remaining step and assertion of the caller would be
+                        // skipped and the test would pass vacuously. Never settle: hang this branch and
+                        // let the inner watcher consume the toast and func() decide the outcome.
+                        await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
@@ -83,8 +97,12 @@ const runAndWatchForErrors = async (func) => {
             }),
         ]);
     } finally {
-        currentErrorWatcherId = 0;
-        // console.log(`Stop watching for errors (watcherId=${watcherId}), set back previous watcher id (0)`);
+        // Only release the slot if we still own it. Promise.race does not cancel the losing branch, so an
+        // abandoned branch can run this finally long after the winner unwound — writing a stale id back
+        // over whatever the next caller (or the next TEST) had set.
+        if (currentErrorWatcherId === watcherId) {
+            currentErrorWatcherId = 0;
+        }
     }
 }
 
@@ -96,20 +114,44 @@ export const expectErrorToastIf = async (condition, title, func, toastValidator)
     }
 };
 
+/**
+ * Grace timeout for the toast to appear AFTER func() has returned cleanly.
+ *
+ * Some flows render the error toast well after the action that triggers it returns:
+ * the GRAI scanner debounces ~1500ms before issuing the REST call, and func() in those
+ * tests returns almost immediately (the target screen is already in the DOM, so its
+ * waitForScreen() resolves at once). A fixed sleep-then-throw raced the toast wait and,
+ * under CI load, the sleep could win even though the (correct) toast appeared shortly
+ * after — a false "not detected". We instead actively wait for the toast element for this
+ * long, so a late-but-correct toast always wins. Must comfortably exceed the GRAI debounce
+ * plus CI scheduling jitter.
+ */
+const TOAST_GRACE_TIMEOUT = SLOW_ACTION_TIMEOUT; // 20s
+
 export const expectErrorToast = async (title, func, toastValidator) => {
     const watcherId = ++nextErrorWatcherId;
 
     return await test.step(`Expect error: ${title} (watcherId=${watcherId})`, async () => {
         const executeFuncFailOnSuccess = async () => {
             await func();
-            // Grace period: if func() returned cleanly but a toast is still pending, give
-            // React time to render before declaring "not detected". The original Promise.race
-            // could lose against a ~20ms-late toast render under CI load, producing false
-            // "not detected" failures. The hang-on-error semantic of Promise.race
-            // is preserved: if func() never returns (waiting for a screen that won't come),
-            // we never reach this sleep and the toast branch wins as before.
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            throw new Error(`Expected error toast not detected (watcherId=${watcherId})`);
+            // Grace period: func() returned cleanly but a toast may still be pending render
+            // (e.g. the GRAI scanner debounces ~1500ms before its REST call, yet func() returns
+            // immediately because the target screen is already on-screen). Instead of sleeping a
+            // fixed time and then throwing — which raced the toast wait and could lose to a
+            // late-but-correct toast under CI load — we actively wait for the toast element to
+            // attach. If it appears, this branch resolves (never throwing) and lets the parallel
+            // ErrorToast.waitToPopup branch validate + close it; only a genuine timeout (no toast
+            // within TOAST_GRACE_TIMEOUT) declares "not detected". The hang-on-error semantic of
+            // Promise.race is preserved: if func() never returns (waiting for a screen that won't
+            // come because the error fired instead), we never reach here and the toast branch wins.
+            try {
+                await ErrorToast.waitToPopup(undefined, TOAST_GRACE_TIMEOUT);
+            } catch {
+                throw new Error(`Expected error toast not detected (watcherId=${watcherId})`);
+            }
+            // Toast appeared after func() returned: yield to let the sibling waitToPopup branch
+            // (which carries the validator + closePopup) win the race and assert on it.
+            await new Promise(() => {});
         }
 
         const prevWatcherId = currentErrorWatcherId;
@@ -120,8 +162,12 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 executeFuncFailOnSuccess(),
                 ErrorToast.waitToPopup(async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
-                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                        return;
+                        // The toast belongs to a MORE DEEPLY NESTED expectErrorToast. Same reasoning as in
+                        // runAndWatchForErrors: returning would resolve this branch, settle our own
+                        // Promise.race and abandon executeFuncFailOnSuccess() — the caller would carry on
+                        // believing OUR expected error was validated, when the inner one consumed a
+                        // different toast. Hang instead; only our own toast or func() may settle this race.
+                        await new Promise(() => {});
                     }
 
                     const textContent = await toastLocator.textContent();
@@ -135,7 +181,10 @@ export const expectErrorToast = async (title, func, toastValidator) => {
                 })
             ]);
         } finally {
-            currentErrorWatcherId = prevWatcherId;
+            // Same ownership check as runAndWatchForErrors: never restore over a newer owner.
+            if (currentErrorWatcherId === watcherId) {
+                currentErrorWatcherId = prevWatcherId;
+            }
             // console.log(`Stop expecting errors (watcherId=${watcherId}), set back previous watcher id (${prevWatcherId})`);
         }
     });
