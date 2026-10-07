@@ -13,15 +13,9 @@ import {
 } from '../utils/OrderLineHarness';
 
 /**
- * Narrow number grid cell: in edit mode the WHOLE value must be visible, not only its tail.
- *
- * The no-layout-jump fix lets the in-grid editor shrink to the cell's static width. In a narrow
- * number column (e.g. the price, `td-sm`) the editor wrapper's own horizontal padding then left
- * the input too little room, so "12,50" scrolled and only "50" stayed visible while editing. The
- * saved value was never affected (display only); this guards the display and the unchanged value.
- *
- * The padding is dropped only for the borderless number-style editor: a bordered editor (e.g. the
- * LongText `Description`) keeps its inner padding, so its text never sits flush against its border.
+ * Narrow number grid cell: in edit mode the whole value is visible, not only its tail, and the
+ * value is unchanged after leaving the cell. A bordered editor (e.g. the LongText `Description`)
+ * keeps its inner padding.
  */
 const NUMBER_COLUMN = 'PriceEntered';
 const BORDERED_TEXT_COLUMN = 'Description';

@@ -1,6 +1,6 @@
 import { clampColumnWidth } from '../../../components/table/TableHeader';
 
-describe('grid column manual-resize clamp (BF-B4b)', () => {
+describe('grid column drag-resize clamp', () => {
   it('clamps a combobox (Lookup) column dragged to 80px up to the 90px floor', () => {
     expect(clampColumnWidth({ widgetType: 'Lookup', px: 80 })).toBe(90);
   });

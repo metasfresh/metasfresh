@@ -8,26 +8,9 @@ import TableCell from '../../../components/table/TableCell';
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Address grid cells must not be clobbered to a raw string on Tab/Enter.
- *
- * An `Address` cell is object-valued ({key,caption}) and renders through the
- * SAME <Attributes> button-overlay as `ProductAttributes` (WidgetRenderer:
- * attributeType="address" vs "pattribute") — its value commits through that
- * overlay, never through the grid-nav raw-text row-write. But TableCell only
- * flagged `ProductAttributes` as an attribute widget, so on an Address cell it
- * emitted isAttributeWidget=false; TableRow's Tab/Enter handlers then wrote the
- * editor's raw text (e.g. the empty button value "") over the {key,caption}
- * object via updatePropertyValue -> silent data loss.
- *
- * Concrete failure pinned here:
- *   1) TableCell.handleKeyDown must classify an Address cell as an attribute
- *      widget (isAttributeWidget === true) — the fix locus.
- *   2) Fed that flag, TableRow's Tab/Enter handlers must skip the raw-text
- *      row-write for the Address cell (no clobber), exactly as for
- *      ProductAttributes.
- *
- * `Address` object-value commits via the overlay (like ProductAttributes), so
- * skipping the nav-layer raw-text write is correct and loses nothing.
+ * An Address cell is treated as an attribute cell, like ProductAttributes: Tab or Enter on it does
+ * not write the editor's raw text over its {key, caption} value. A Lookup cell is not an
+ * attribute cell.
  */
 
 const ADDRESS_PROPERTY = 'C_BPartner_Location_ID_Address';
@@ -140,7 +123,7 @@ describe('TableCell/TableRow — Address object-valued cell guard on Tab/Enter',
     );
   });
 
-  it('still flags a non-attribute Lookup cell as isAttributeWidget=false (regression control)', () => {
+  it('flags a Lookup cell as isAttributeWidget=false', () => {
     const onKeyDown = jest.fn();
     const cell = shallow(
       <TableCell

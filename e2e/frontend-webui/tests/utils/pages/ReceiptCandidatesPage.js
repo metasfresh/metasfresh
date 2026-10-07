@@ -885,19 +885,9 @@ export class ReceiptCandidatesPage {
           const rowCount = await allTabRows.count();
           console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
 
-          // Step 3: Select the row, then right-click a ZOOM-CAPABLE cell.
-          // ROOT CAUSE of the CI flake: the "Zoom Into" context-menu item is rendered
-          // only when the CELL that was right-clicked belongs to a field that supports
-          // zoom-into (frontend TableContextMenu.js: `isShowZoomIntoOption =
-          // contextMenu.supportZoomInto`, sourced from the right-clicked TableCell).
-          // Right-clicking the row *centre* (the old code) lands on an arbitrary cell
-          // that usually has no zoom target, so the menu opens WITHOUT a Zoom Into item
-          // and the wait times out — intermittently, depending on which cell the centre
-          // happened to hit. M_InOut_ID is a Search reference to the receipt document,
-          // so its cell reliably offers "Zoom Into" -> the Material Receipt (window 184).
-          // (Zoom-into resolution, getZoomIntoWindow -> window.open _blank, reads the
-          // selected row; right-click already auto-selects, but we still select up-front
-          // below to avoid racing that auto-select.)
+          // Step 3: Select the row, then right-click a zoom-capable cell. The context menu offers
+          // "Zoom Into" only for a right-clicked cell whose field supports zoom-into
+          // (TableContextMenu.js); M_InOut_ID references the receipt, so its cell does.
           await tabTableRow.scrollIntoViewIfNeeded().catch(() => {});
           await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
@@ -906,8 +896,6 @@ export class ReceiptCandidatesPage {
           const zoomCell = tabTableRow.locator('[data-cy="cell-M_InOut_ID"]').first();
           const hasZoomCell = (await zoomCell.count()) > 0;
           if (!hasZoomCell) {
-            // Diagnostic: the fallback reverts to the old row-centre right-click, which
-            // is the behaviour the flake fix avoids — surface it if it ever happens.
             console.log(
               'M_InOut_ID cell not found in allocation row; falling back to row-centre right-click'
             );
@@ -950,7 +938,7 @@ export class ReceiptCandidatesPage {
               isMenuReady = true;
               break;
             } catch (menuError) {
-              console.log(
+            console.log(
                 `Zoom Into item not ready on menu-open attempt ${menuAttempt}/${MENU_OPEN_ATTEMPTS}: ${menuError.message}`
               );
               // Dismiss any stale/half-open menu so the re-open starts clean.

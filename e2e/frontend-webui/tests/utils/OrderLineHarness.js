@@ -5,13 +5,8 @@ import { SALES_ORDER_WINDOW_ID } from './WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from './WebAPIValidation';
 
 /**
- * Thin E2E harness for the core Sales Order Line grid (window `SALES_ORDER_WINDOW_ID` / Order
- * Line tab `ORDER_LINE_TAB_ID`) — the window every plain-core customer opens, present on the core
- * `-preloaded` CI image.
- *
- * Shared by `auftragsposition-bugfix.spec.js` and any spec extending its coverage (e.g. the
- * layout-jump geometry leg) — kept in a plain utils module, not re-exported from a `.spec.js`
- * file, so importing it never re-registers another file's `test()` cases.
+ * Helpers to open the sales order window (`SALES_ORDER_WINDOW_ID`) and seed an order with lines
+ * (order-line tab `ORDER_LINE_TAB_ID`). A plain module, so importing it registers no test cases.
  */
 
 export const ORDER_LINE_TAB_ID = 'AD_Tab-187';

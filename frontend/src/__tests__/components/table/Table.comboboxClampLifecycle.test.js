@@ -13,21 +13,8 @@ import tablesHandler from '../../../reducers/tables';
 import Table from '../../../components/table/Table';
 
 /**
- * Load-time combobox stored-width clamp must survive the async column-metadata
- * path (BF-B4c).
- *
- * On a normal tab-open the table mounts BEFORE the view/tab column metadata is
- * reduced, so `Table.componentDidMount` runs `clampComboboxColumnWidths` with
- * `columns === []` -> empty widgetTypeByField -> a stored sub-90 combobox width
- * is returned UN-clamped and lands in `state.columnWidths`. Column metadata then
- * arrives moments later (columns []->populated) for the SAME window/view.
- *
- * Concrete failure pinned here: a returning user with a stored sub-90 combobox
- * width (localStorage columnWidths_<windowId>_<viewId>) never gets it clamped,
- * because the only post-mount re-clamp fired on a windowId/viewId change, not on
- * the columns []->populated transition. The stored 60px then wins in TableCell,
- * the 90px floor is skipped, and the combobox dropdown overlaps the next
- * column (AC13 Partiecode overlap) again.
+ * A stored combobox column width below 90px is raised to 90px also when the table mounts before
+ * its column metadata arrives: the clamp runs again once the columns become available.
  */
 
 const mockStore = configureStore([]);

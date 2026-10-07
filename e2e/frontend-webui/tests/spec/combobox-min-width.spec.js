@@ -13,26 +13,14 @@ import {
 } from '../utils/OrderLineHarness';
 
 /**
- * Combobox grid-column minimum-usable-width (TC11/TC12), on the core Sales Order Line grid.
+ * Combobox (Lookup/List) column minimum width on the sales order-line grid:
+ * - dragged as narrow as possible, a combobox column stops at 90px, any other column at 50px;
+ * - the open combobox editor stays inside its cell and does not widen the column;
+ * - a stored combobox width below 90px loads as 90px; a stored width of another column loads as stored.
  *
- * A combobox (Lookup/List) grid column must never render — nor be dragged, nor be restored
- * from a stored width — narrower than its 90px minimum-usable width. Inside a grid cell the open
- * dropdown editor (`.input-dropdown-container`) shrinks to the column width instead of keeping its
- * global 200px form floor, so it never spills into the neighbour column and never widens the
- * column when the cell enters edit mode (the reported Partiecode widening). A non-combobox column keeps the flat 50px `MIN_COLUMN_WIDTH` clamp and its stored
- * width unmodified — the floor is combobox-only.
- *
- * Targets the order-line grid (window `SALES_ORDER_WINDOW_ID` / tab `AD_Tab-187`, via
- * `OrderLineHarness`) rather than a top-level list view (e.g. Business Partner): a top-level
- * list view's grid row opens the record on double-click (`supportOpenRecord`), which navigates
- * away from the grid entirely before the cell editor can be measured. The order-line grid is an
- * embedded/inline tab grid — double-clicking a cell opens its editor in place. `M_Product_ID`
- * is this grid's only Lookup/Search (combobox) column; `QtyEntered` is a representative
- * non-combobox column.
- *
- * Previously written with no live stack available and never run before this pass — now run
- * green against the local stack; retargeted from a top-level list view (which failed on the
- * open-record navigation above) and extended with the load-time stored-width case (BF-B4c).
+ * `M_Product_ID` is the grid's combobox column, `QtyEntered` the other column. The order-line grid
+ * is used because double-clicking a cell there opens its editor (in a top-level list view it opens
+ * the record).
  *
  * Features tested:
  * - F50000: Resizable Table Columns
@@ -47,11 +35,7 @@ const FLAT_MIN_WIDTH_PX = 50;
 async function dragResizeAsNarrowAsPossible(page, fieldName) {
   const handle = page.getByTestId(`resize-handle-${fieldName}`);
   await handle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  // The order-line grid scrolls horizontally; a column further right than the current scroll
-  // position is off the container's visible clip box, so raw `page.mouse` coordinates at its
-  // (unscrolled) boundingBox hit nothing (`elementFromPoint` returns null there) and the drag
-  // silently no-ops. Scroll the handle into view first so its boundingBox is the real on-screen
-  // position.
+  // a scrolled-out handle is not hit at its bounding box; scroll it into view first
   await handle.scrollIntoViewIfNeeded();
 
   const handleBox = await handle.boundingBox();
@@ -87,7 +71,7 @@ async function seedOrderLineGrid(page) {
 }
 
 test.describe('Combobox grid-column resize clamp', () => {
-  test('Manual drag-resize clamps a combobox column at 90px and a non-combobox column at 50px; the open editor neither spills nor widens the column (AC22, AC19, AC15)', async ({
+  test('Dragged as narrow as possible, a combobox column stops at 90px and another column at 50px; the open combobox editor stays inside the cell', async ({
     page,
   }) => {
     allure.epic('E0500: Sales Orders');
@@ -96,22 +80,16 @@ test.describe('Combobox grid-column resize clamp', () => {
     allure.story('Combobox column drag-resize floor (90px)');
     allure.severity('critical');
     allure.description(`
-## TC12 — Combobox resize clamp at 90px (measured)
-
-1. Drag the combobox (\`${COMBOBOX_FIELD}\`) column's resize handle as narrow as possible on the
-   order-line grid — its width must clamp at exactly the 90px floor (not the flat 50px
-   \`MIN_COLUMN_WIDTH\`, and not wider), its open cell editor must stay within the cell (no
-   overlap into the next column), and opening the editor must not widen the column.
-2. Drag the non-combobox (\`${NON_COMBOBOX_FIELD}\`) column's resize handle as narrow as possible
-   — its width must clamp at the flat 50px \`MIN_COLUMN_WIDTH\`, unchanged (the floor is
-   combobox-only).
+1. Drag the combobox column (\`${COMBOBOX_FIELD}\`) as narrow as possible: it stops at 90px.
+2. Drag the other column (\`${NON_COMBOBOX_FIELD}\`) as narrow as possible: it stops at 50px.
+3. Open the combobox cell's editor: it stays inside the cell and the column keeps its width.
     `);
 
     test.setTimeout(120000);
 
     await seedOrderLineGrid(page);
 
-    await test.step('Combobox column clamps at the 90px floor, not 50px', async () => {
+    await test.step('The combobox column stops at 90px', async () => {
       await dragResizeAsNarrowAsPossible(page, COMBOBOX_FIELD);
 
       const comboboxTh = page.getByTestId(`column-${COMBOBOX_FIELD}`);
@@ -128,11 +106,9 @@ test.describe('Combobox grid-column resize clamp', () => {
       ).toBeLessThanOrEqual(COMBOBOX_MIN_WIDTH_PX + WIDTH_TOLERANCE_PX);
     });
 
-    // Drag-resize the non-combobox column BEFORE opening the combobox cell's editor below: a
-    // resize immediately after closing an open dropdown (Escape) intermittently under-drags,
-    // because the dropdown's own closing/backdrop teardown briefly intercepts the drag's
-    // leading mousemove events — same drag mechanism, so order (not the clamp) was the cause.
-    await test.step('Non-combobox column keeps clamping at the flat 50px floor', async () => {
+    // resize before opening the combobox editor: right after a dropdown closes, its backdrop can
+    // still catch the drag's first mouse moves
+    await test.step('The other column stops at 50px', async () => {
       await dragResizeAsNarrowAsPossible(page, NON_COMBOBOX_FIELD);
 
       const nonComboboxTh = page.getByTestId(`column-${NON_COMBOBOX_FIELD}`);
@@ -160,9 +136,7 @@ test.describe('Combobox grid-column resize clamp', () => {
       const editorBox = await editor.boundingBox();
       console.log(`[INFO] cell bounds: ${JSON.stringify(cellBox)}; editor bounds: ${JSON.stringify(editorBox)}`);
 
-      // Inside a grid cell the editor's `.input-dropdown-container` drops its global 200px form
-      // min-width (`table.scss`) and shrinks to the cell. The tolerance only absorbs sub-pixel
-      // rounding — the reported defect is a dozens-of-px overlap / widening.
+      // the tolerance absorbs sub-pixel rounding only
       const OVERLAP_TOLERANCE_PX = 3;
       expect(
         editorBox.x + editorBox.width,
@@ -177,7 +151,7 @@ test.describe('Combobox grid-column resize clamp', () => {
     });
   });
 
-  test('A stored combobox width below the floor is clamped up to 90px on load; a stored non-combobox width is unaffected (AC21, BF-B4c)', async ({
+  test('A stored combobox width below 90px loads as 90px; a stored width of another column loads as stored', async ({
     page,
   }) => {
     allure.epic('E0500: Sales Orders');
@@ -186,13 +160,8 @@ test.describe('Combobox grid-column resize clamp', () => {
     allure.story('Combobox column load-time stored-width clamp (90px)');
     allure.severity('critical');
     allure.description(`
-## TC11 (stored-width leg) — Combobox load-time stored-width clamp
-
-The manual-resize clamp (TC12 above) prevents a NEW drag from ever storing a combobox width
-below 90px, so a sub-floor width can only exist as a PERSISTED value from before this fix (or
-a returning session). Write such a value directly into the same \`localStorage\` key the grid
-itself reads on mount, reload, and confirm the combobox column loads clamped to 90px while an
-equally-low stored NON-combobox width is left untouched.
+Store a combobox width below 90px and an equally low width of another column in the grid's
+\`localStorage\` key, reload: the combobox column shows 90px, the other column its stored width.
     `);
 
     test.setTimeout(120000);
@@ -219,8 +188,7 @@ equally-low stored NON-combobox width is left untouched.
     expect(storageKey, 'the order-line grid must persist column widths under a columnWidths_* localStorage key').toBeTruthy();
     console.log(`[INFO] resolved columnWidths localStorage key: ${storageKey}`);
 
-    // Force BOTH a below-floor combobox width and a legitimate (unaffected) non-combobox width
-    // into the stored map, simulating a width persisted before the BF-B4a/b floor existed.
+    // store a combobox width below 90px and an equally low width of the other column
     const BELOW_FLOOR_COMBOBOX_WIDTH = 60;
     const NON_COMBOBOX_STORED_WIDTH = 80;
     await page.evaluate(

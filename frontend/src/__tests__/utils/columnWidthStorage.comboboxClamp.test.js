@@ -9,7 +9,7 @@ const textColumn = (fieldName) => ({
   widgetType: 'Text',
 });
 
-describe('combobox load-time stored-width clamp (BF-B4c)', () => {
+describe('stored combobox column width clamp on load', () => {
   it('clamps a stored combobox column width below 90px up to the 90px floor', () => {
     const columnWidths = { Partiecode: 60 };
     const columns = [comboboxColumn('Partiecode')];

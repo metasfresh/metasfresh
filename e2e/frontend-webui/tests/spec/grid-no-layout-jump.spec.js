@@ -13,20 +13,12 @@ import {
 } from '../utils/OrderLineHarness';
 
 /**
- * Geometry regression: entering edit mode on a grid cell must not change the row's or the
- * cell's rendered height/width. Reuses the thin bugfix E2E harness (login/open-order/add-line)
- * that also backs `auftragsposition-bugfix.spec.js` — the reusable helpers live in
- * `../utils/OrderLineHarness`; this file only adds the geometry-specific leg, in both languages
- * (specs must be language-independent).
- *
- * The measured column is `QtyEntered` (a plain numeric grid cell, not the Search/Lookup
- * combobox column) — the reported defect is generic to ANY grid cell entering edit mode, not
- * specific to the combobox floor covered elsewhere.
+ * Opening a grid cell's editor (`QtyEntered`, a number cell) changes neither the row height nor the
+ * cell size, in German and English.
  */
 
 const GEOMETRY_COLUMN = 'QtyEntered';
-// Sub-pixel rendering rounding is the only expected source of difference; anything above this
-// is the reported row-height/column-width jump, not noise.
+// sub-pixel rounding
 const TOLERANCE_PX = 1;
 
 // The button-shaped Attribute widget (ProductAttributes / Address) renders a <button>, not an
@@ -104,11 +96,8 @@ width must be unchanged (within ${TOLERANCE_PX}px of sub-pixel rounding).
         }
       );
 
-      // AC16: the operator relies on native browser focus to see the active cell — the
-      // geometry fix must not trade the jump for a hidden focus ring. An element's OWN
-      // `overflow` never clips its OWN outline (only a container can clip a descendant's), so
-      // this walks from the focused editor's PARENT up to the cell: none of those wrapping
-      // elements (the ones the height/padding pin touches) may clip via `overflow:hidden`/`clip`.
+      // The focus ring shows the active cell. Only a container clips a descendant's outline, so
+      // no element from the focused editor's parent up to the cell may clip (overflow hidden/clip).
       await test.step('Focus ring is not clipped by the trimmed editor box', async () => {
         const clippedBy = await cell.evaluate((td) => {
           const active = document.activeElement;
@@ -167,13 +156,9 @@ width must be unchanged (within ${TOLERANCE_PX}px of sub-pixel rounding).
 });
 
 /**
- * Geometry regression, button-shaped widget: the Attribute column (`M_AttributeSetInstance_ID`,
- * widget type `ProductAttributes`) renders a `<button>` inside `.attributes-in-table` on
- * activation, not an `<input>` — a different DOM shape from `GEOMETRY_COLUMN` above. The
- * `.table-cell .form-group-table:not(.widgetType-LongText)` height cap in `table.scss` applies
- * here too (the widget class is `widgetType-ProductAttributes`, not `widgetType-LongText`), so
- * this asserts the same row/cell stability AND that the button itself is not clipped or pushed
- * past the row's bottom edge by that cap.
+ * Opening the Attribute cell (`M_AttributeSetInstance_ID`, a ProductAttributes widget rendered as a
+ * `<button>`) changes neither the row height nor the column width, and the button stays inside the
+ * row.
  */
 testCases.forEach(({ language, label }) => {
   test.describe(`Sales order-line grid — no layout jump on Attribute cell activation (${label})`, () => {

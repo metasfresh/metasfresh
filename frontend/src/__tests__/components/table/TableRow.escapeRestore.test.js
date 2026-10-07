@@ -7,19 +7,11 @@ import fixtures from '../../../../test_setup/fixtures/table/table_item_props.jso
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Escape after opening a grid cell editor must restore the STORED field value,
- * never the cell's displayed text.
+ * Escape after opening a grid cell's editor puts back the stored field value (e.g. "3.00"), not
+ * the displayed text ("3,00" in de_DE, which a number input rejects).
  *
- * Concrete failure pinned here: in de_DE a number cell displays "3,00" while
- * its stored value is "3.00". Double-clicking the cell used to remember the
- * displayed text (`e.target.textContent`) as the value before editing; Escape
- * then wrote "3,00" into the `<input type="number">`, which the browser
- * rejects (value becomes ""), and the following blur PATCHed an empty price
- * ("Fill mandatory fields: Price").
- *
- * The double-click sequence is replayed exactly as the browser fires it: the
- * cell's onDoubleClick (TableCell -> TableRow.handleEditProperty) first, then
- * the row's onDoubleClick (TableRow.handleDoubleClick) as the event bubbles.
+ * A double-click is replayed as the browser fires it: the cell's onDoubleClick first, then the
+ * row's.
  */
 
 const NUMBER_PROPERTY = 'PriceEntered'; // fixture: CostPrice, stored "3.00"

@@ -17,8 +17,8 @@ import {
  *
  * Real-life case: an order line has product P1. The user starts typing in the product field, the
  * text finds nothing ("Keine Ergebnisse gefunden."), and they press Enter. The product must stay
- * P1 — exactly what already happens when they leave with Tab or a click — instead of being
- * cleared ("Erforderliche Felder ausfüllen: Produkt").
+ * P1, as when they leave with Tab or a click; it is not cleared ("Erforderliche Felder ausfüllen:
+ * Produkt").
  *
  * Covered in every layout that uses the shared Lookup: the order-line grid, the order-line form
  * opened with Alt+E ("Erweiterte Erfassung"), and three Lookup fields of the order header form.

@@ -17,9 +17,8 @@ import {
  *
  * Real-life case: a user double-clicks the price of an order line ("12,50"), changes their mind
  * and presses Escape. The price must stay 12,50 — no change is sent to the server and no
- * "Erforderliche Felder ausfüllen: Preis" message appears. Before the fix, the German display text
- * "12,50" was put back into the number editor, which rejects a decimal comma, so the price was
- * sent as empty.
+ * "Erforderliche Felder ausfüllen: Preis" message appears. The value put back is the stored number,
+ * not the German display text "12,50", which a number editor rejects.
  *
  * Features tested:
  * - F5010: Order Lines Grid

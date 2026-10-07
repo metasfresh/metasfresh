@@ -13,23 +13,10 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 
 /**
- * Column-invariant regression guard (BF-B5, TC9 + TC10) — proving the layout-jump CSS fix and
- * the combobox width floor did NOT break the two pre-existing column-sizing invariants:
- *
- * - AC19 (TC9): manual drag-resize still works and PERSISTS across a reload, above the floor
- *   the only new lower bound is the combobox 90px clamp; a non-combobox column still clamps
- *   at the flat 50px floor.
- * - AC20 (TC10): the WidgetSize S/M/L(/XL/XXL) `td-*` size-class bands still render within their
- *   configured pixel ranges for non-combobox columns.
- *
- * The extreme-clamp mechanics themselves (combobox 90px / non-combobox 50px, plus the
- * open-editor-no-overlap check) are already exercised in depth by `combobox-min-width.spec.js`
- * — this spec's clamp assertions are a light, non-duplicated re-affirmation alongside the
- * genuinely new coverage here: persistence across a reload, and the size-class bands.
- *
- * Targets the order-line grid (core window/tab, via `OrderLineHarness`) — see
- * `combobox-min-width.spec.js` for why an embedded/inline tab grid is used instead of a
- * top-level list view (double-click there opens the record instead of the cell editor).
+ * Grid column sizing on the sales order-line grid:
+ * - a drag-resized column keeps its width after a reload; at the narrowest, a combobox column
+ *   stops at 90px and any other column at 50px;
+ * - without a custom width, a column renders within the pixel range of its `td-*` size class.
  *
  * Features tested:
  * - F50000: Resizable Table Columns
@@ -40,8 +27,7 @@ const SECOND_BAND_FIELD = 'Description'; // a LongText-family widget on this gri
 const COMBOBOX_MIN_WIDTH_PX = 90;
 const FLAT_MIN_WIDTH_PX = 50;
 
-// `td-*` band pixel ranges as defined in `table.scss` (`:249-284`) — asserted here as fixed
-// literals (not imported from source) so this test independently proves the CSS wasn't touched.
+// `td-*` size-class pixel ranges (table.scss), as literals so a change to them fails this test
 const SIZE_BANDS_PX = {
   'td-sm': [60, 144],
   'td-md': [144, 225],
@@ -73,8 +59,7 @@ async function seedOrderLineGrid(page) {
 async function dragColumn(page, fieldName, deltaPx) {
   const handle = page.getByTestId(`resize-handle-${fieldName}`);
   await handle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  // Off-screen (scrolled-out) columns don't hit-test at their unscrolled boundingBox — see
-  // combobox-min-width.spec.js's `dragResizeAsNarrowAsPossible` for the same fix + root cause.
+  // a scrolled-out handle is not hit at its bounding box; scroll it into view first
   await handle.scrollIntoViewIfNeeded();
 
   const handleBox = await handle.boundingBox();
@@ -88,23 +73,19 @@ async function dragColumn(page, fieldName, deltaPx) {
   await page.waitForTimeout(300);
 }
 
-test.describe('Column-invariant regression guard', () => {
-  test('Manual drag-resize persists across a reload; combobox and non-combobox clamps hold (AC19)', async ({
+test.describe('Grid column sizing', () => {
+  test('A drag-resized width persists across a reload; at the narrowest a combobox column stops at 90px, any other column at 50px', async ({
     page,
   }) => {
     allure.epic('E0500: Sales Orders');
     allure.tag('F5010: Order Lines Grid');
     allure.tag('F5010');
-    allure.story('Column drag-resize persists + clamps preserved');
+    allure.story('Column drag-resize persists and stops at the minimum width');
     allure.severity('critical');
     allure.description(`
-## TC9 — Manual drag-resize preserved (measured)
-
-1. Drag a non-combobox column by a known delta; the new width persists across a page reload
-   (not merely visible immediately after the drag).
-2. Above the floor, both a combobox and a non-combobox column still resize freely; at the
-   extreme the non-combobox column clamps at the flat 50px floor and the combobox column at
-   90px — the only new lower bound introduced by this milestone.
+1. Drag a non-combobox column by a known delta: its width changes by that delta and persists across a reload.
+2. Drag it as narrow as possible: it stops at 50px.
+3. Drag a combobox column as narrow as possible: it stops at 90px.
     `);
 
     test.setTimeout(120000);
@@ -125,7 +106,7 @@ test.describe('Column-invariant regression guard', () => {
 
       expect(
         Math.abs(afterDragBox.width - (baselineBox.width + DRAG_DELTA_PX)),
-        'the column width must change by ~the drag delta — resize must not be disabled/blocked'
+        'the column width must change by the drag delta'
       ).toBeLessThanOrEqual(3);
     });
 
@@ -149,7 +130,7 @@ test.describe('Column-invariant regression guard', () => {
       ).toBeLessThanOrEqual(2);
     });
 
-    await test.step('At the extreme, the non-combobox column still clamps at the flat 50px floor', async () => {
+    await test.step('At the narrowest, the non-combobox column stops at 50px', async () => {
       await dragColumn(page, NON_COMBOBOX_FIELD, -600);
 
       const clampedBox = await page.getByTestId(`column-${NON_COMBOBOX_FIELD}`).boundingBox();
@@ -161,7 +142,7 @@ test.describe('Column-invariant regression guard', () => {
       ).toBeLessThanOrEqual(FLAT_MIN_WIDTH_PX + 5);
     });
 
-    await test.step('At the extreme, the combobox column still clamps at 90px (the only new lower bound)', async () => {
+    await test.step('At the narrowest, the combobox column stops at 90px', async () => {
       await dragColumn(page, COMBOBOX_FIELD, -600);
 
       const clampedBox = await page.getByTestId(`column-${COMBOBOX_FIELD}`).boundingBox();
@@ -174,23 +155,18 @@ test.describe('Column-invariant regression guard', () => {
     });
   });
 
-  test('WidgetSize td-* bands render within their configured pixel ranges for non-combobox columns (AC20)', async ({
+  test('Without a custom width, a column renders within the pixel range of its td-* size class', async ({
     page,
   }) => {
     allure.epic('E0500: Sales Orders');
     allure.tag('F5010: Order Lines Grid');
     allure.tag('F5010');
-    allure.story('WidgetSize S/M/L bands preserved');
+    allure.story('Column width within its size-class range');
     allure.severity('normal');
     allure.description(`
-## TC10 — WidgetSize td-* bands preserved (measured)
-
-At default (no custom width), a non-combobox column's rendered width must fall within its
-computed size-class's band (\`table.scss\`): td-sm 60-144px, td-md 144-225px, td-lg 225-350px,
-td-xl 350-500px, td-xxl 500-800px. This test discovers each field's ACTUAL rendered \`td-*\`
-class (rather than assuming one) and asserts its width against that class's own range — proving
-the band system itself still applies its configured ranges, whichever band a given field falls
-into (\`${NON_COMBOBOX_FIELD}\` and \`${SECOND_BAND_FIELD}\` land in different bands on this grid).
+Without a custom width, \`${NON_COMBOBOX_FIELD}\` and \`${SECOND_BAND_FIELD}\` (two different size classes)
+each render within the range of the \`td-*\` class they carry: td-sm 60-144px, td-md 144-225px,
+td-lg 225-350px, td-xl 350-500px, td-xxl 500-800px.
     `);
 
     test.setTimeout(120000);

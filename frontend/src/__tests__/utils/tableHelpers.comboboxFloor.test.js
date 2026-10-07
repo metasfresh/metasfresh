@@ -1,6 +1,6 @@
 import { getSizeClass, getSizeStyle } from '../../utils/tableHelpers';
 
-describe('combobox size-resolution floor (BF-B4a)', () => {
+describe('combobox column minimum width', () => {
   // The combobox floor is 90px. Only the td-sm band (60px) is below it; td-md (144px) clears it.
   it.each(['Lookup', 'List'])('floors a %s column at WidgetSize=S (td-sm, 60px) to exactly 90px', (widgetType) => {
     const col = { widgetType, size: 'S' };

@@ -4,16 +4,10 @@ import { shallow } from 'enzyme';
 import TableCell from '../../../components/table/TableCell';
 
 /**
- * Two TableCell behaviours of the grid inline-edit fixes that are otherwise only reachable through
- * a live grid:
- *
- * 1) Address backdrop lock. An Address cell edits through the same <Attributes> overlay as
- *    ProductAttributes. When the overlay reports its backdrop state, the cell must NOT call the
- *    grid's onClickOutside - otherwise a click inside the overlay tears it down mid-edit.
- *
- * 2) Combobox 90px floor applied inline. A Lookup/List column whose size band is narrower than the
- *    90px combobox minimum (WidgetSize S = td-sm, 60px) gets an inline `min-width: 90px` on its
- *    <td> when no stored column width exists; a stored width still wins.
+ * 1) An Address cell's editor overlay reporting its backdrop does not trigger the grid's
+ *    onClickOutside, so a click inside the overlay keeps it open.
+ * 2) A Lookup/List column of size S (60px) gets an inline `min-width: 90px` on its <td> when no
+ *    column width is stored; a stored width wins.
  */
 
 const PROPERTY = 'SomeField';
@@ -51,7 +45,7 @@ describe('TableCell — backdrop lock', () => {
     }
   );
 
-  it('still closes a plain Text editor (regression control)', () => {
+  it('closes a plain Text editor', () => {
     const props = cellProps({ widgetType: 'Text' });
     const wrapper = shallow(<TableCell {...props} />);
 

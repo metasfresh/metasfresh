@@ -4,20 +4,9 @@ import { mount } from 'enzyme';
 import { RawLookup } from '../../../../components/widget/Lookup/RawLookup';
 
 /**
- * Enter on a filled Lookup whose typed text matches nothing must put the
- * PREVIOUS value back - the same outcome as Tab / click-away
- * (handleInputTextBlur) - instead of committing null.
- *
- * Concrete failure pinned here: a filled Lookup (e.g. order line Product),
- * user types "qzzx" (no search results), presses Enter. The typeahead
- * leaves nothing selected (populateTypeaheadData -> selected = null, or
- * values[0] = undefined in a modal), SelectionDropdown hands that to
- * onSelect on Enter, and handleSelect committed onChange(field, null) ->
- * PATCH null -> a mandatory field is cleared ("Fill mandatory fields").
- * This is shared Lookup code: grid cells and single-row forms alike.
- *
- * A deliberate clear must keep working: empty text + Enter, and picking the
- * "none" entry, still commit null.
+ * Enter on a filled Lookup whose typed text matches nothing puts the previous value back, as
+ * leaving the field does, and commits nothing. A deliberate clear (empty text + Enter, or picking
+ * the "none" entry) still commits null.
  */
 
 const PREVIOUS = { key: '2005598', caption: '1000001_TestProduct1' };
@@ -107,7 +96,7 @@ describe('RawLookup — Enter with typed text that matches nothing', () => {
   });
 });
 
-describe('RawLookup — deliberate clear still clears (regression control)', () => {
+describe('RawLookup — a deliberate clear commits null', () => {
   it('empty text + Enter with nothing selected commits null', () => {
     const { instance, onChange } = mountFilledLookup({ mandatory: false });
 

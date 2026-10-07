@@ -7,23 +7,8 @@ import fixtures from '../../../../test_setup/fixtures/table/table_item_props.jso
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Space (and any printable key) on an attribute-family grid cell must not enter
- * the raw-text edit path.
- *
- * The type-to-activate gate (letters/digits from event.key) routes such a key
- * into handleKeyDown_RegularChar, which calls
- * handleEditProperty({ select: true }) -> _editProperty calls
- * `this.selectedCell.clearValue()`. For an object-valued attribute cell
- * (ProductAttributes / Address, whose value is {key,caption} and commits through
- * the <Attributes> overlay) that clears the widget's value on activation =
- * silent data loss — the same clobber class the Tab/Enter guards already prevent.
- *
- * Concrete failure pinned here: a letter (or Space) on a ProductAttributes
- * cell that is the active cell (selectedCell set) sets `edited` to the
- * attribute property AND calls clearValue() on it. The fix mirrors the
- * Tab/Enter isAttributeWidget guard: skip the raw-text edit path for
- * attribute widgets. Scalar cells still activate on a letter key
- * (regression control below).
+ * A printable key (a letter, or Space) on an attribute cell (ProductAttributes, Address) neither
+ * opens a text edit nor clears the cell's value; on a scalar cell a letter opens the edit.
  */
 
 const ATTR_PROPERTY = 'M_AttributeSetInstance_ID'; // fixture: ProductAttributes, object-valued
@@ -94,7 +79,7 @@ describe('TableRow — Space/printable key must not raw-text-edit an attribute c
     expect(clearValue).not.toHaveBeenCalled();
   });
 
-  it('still activates a scalar cell on a letter key (regression control)', () => {
+  it('activates a scalar cell on a letter key', () => {
     const wrapper = shallow(<TableRow {...createInitProps()} />);
     const instance = wrapper.instance();
 

@@ -7,24 +7,8 @@ import fixtures from '../../../../test_setup/fixtures/table/table_item_props.jso
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Type-guard: the grid row nav layer must not clobber an object-valued
- * Lookup/Search cell with the editor's raw text on Tab/Enter.
- *
- * A grid Lookup/Search cell holds an OBJECT value ({key, caption}). Today, on
- * Tab/Enter, TableRow.handleKeyDown_Tab and handleKeyDown_Enter write
- * `event.target.value` (the editor's RAW TEXT string) over that object via
- * `updatePropertyValue`, so after the user advances away and back the cell
- * renders the literal string it was clobbered with (e.g. "undefined").
- *
- * Concrete failure pinned here: an object-valued (Lookup/List) cell overwritten
- * by a raw string on Tab/Enter. Scalar (text/number) cells MUST still commit
- * their raw value. TableRow is the grid-only row component (used solely by
- * Table.js, renders a <tr>, dataSource="table"); single-row/detail forms use a
- * different component, so this guard is inherently grid-mode scoped.
- *
- * Shallow rendering exercises the real handleKeyDown -> handleKeyDown_Tab /
- * handleKeyDown_Enter code path (the write locus) without deep-mounting the
- * Redux-connected cell editor.
+ * Tab or Enter on a Lookup cell does not write the editor's raw text over the cell's
+ * {key, caption} value; on a scalar (text/number) cell it writes the typed value.
  */
 
 const LOOKUP_PROPERTY = 'M_Product_ID'; // fixture: value = { key, caption } (object-valued)
@@ -95,7 +79,7 @@ describe('TableRow — object-valued cell type-guard on Tab/Enter', () => {
     });
   });
 
-  it('still commits a scalar cell value on Tab (regression control)', () => {
+  it('commits a scalar cell value on Tab', () => {
     const updatePropertyValue = jest.fn();
     const wrapper = shallow(
       <TableRow {...createInitProps({ updatePropertyValue })} />

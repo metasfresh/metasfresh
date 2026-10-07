@@ -9,13 +9,8 @@ import TableCell from '../../../components/table/TableCell';
 import TableRow from '../../../components/table/TableRow';
 
 /**
- * Opening a grid cell editor must not change the column width.
- *
- * Concrete failure pinned here: a column sized by its value (e.g. a long product name, 291px)
- * snapped to its band minimum (225px) the moment its cell was opened, because the static value
- * was removed and the editor (which takes no width of its own in a grid cell) left nothing to
- * hold the width. The cell therefore keeps an invisible copy of its static content next to the
- * editor - which needs the displayed value (tdValue) to still be computed while editing.
+ * While a grid cell's editor is open, the cell also renders an invisible copy of its displayed
+ * value, so a column sized by that value (e.g. a long product name) keeps its width.
  */
 
 const CAPTION = 'testfirma WebUI AG';

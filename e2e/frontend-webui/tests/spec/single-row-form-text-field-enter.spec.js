@@ -9,56 +9,27 @@ import { waitForRecordSaved, getFieldData } from '../utils/WebAPIValidation';
 import { createMasterdata, gotoOrderList, createNewOrder, selectOrderCustomer } from '../utils/OrderLineHarness';
 
 /**
- * Form-regression guard (BF-F2, TC6) — proves the grid-only scoping of this milestone's changes
- * by construction AND by a real-flow assertion, not by claim alone.
- *
- * BY CONSTRUCTION (code audit): the grid fixes of this milestone are grid-table-layer only —
- * `frontend/src/components/table/{Table,TableCell,TableHeader,TableRow}.js`,
- * `frontend/src/utils/{columnWidthStorage,tableHelpers}.js`, and `frontend/src/assets/css/table.scss`.
- * A single-row form field's `<input>` is never a descendant of `Table`/`TableRow`/`TableCell`, so
- * the object-valued type-guard (grid `Tab`/`Enter` handlers), the numpad-0 activation gate, the
- * layout-jump CSS (scoped to the in-grid editor box), and the combobox width floor (grid `td-*`
- * header/cell classes) have no code path into a form field at all. The ONE deliberate exception is
- * the shared `RawLookup.js` (Enter on a Lookup text that matches nothing keeps the previous value,
- * in grid AND forms alike) — covered by `lookup-enter-no-match.spec.js`, and not touching the plain
- * text field driven below.
- *
- * BY REAL-FLOW ASSERTION (this spec): drives the order HEADER (a single-row/detail form, not a
- * grid) exactly as a user would — type into an empty field, press Enter, type into an
- * already-filled field — and asserts the pre-existing, unchanged RawWidget behaviour
- * (`RawWidget.handleKeyDown`, untouched by this milestone): Enter commits the value via a PATCH
- * and calls `event.preventDefault()`, so focus stays on the SAME field — there is no grid-style
- * cross-cell "advance" (that model does not exist for single-row forms, before or after this
- * milestone), and typing edits in place rather than replacing the field outright.
+ * A text field of a single-row form (the sales order header): Enter saves the value and keeps the
+ * focus on that field; typing into a filled field edits its value in place.
  *
  * Features tested:
- * - F5010: Order Lines Grid (this milestone's changes stay scoped to it — proven negatively here)
+ * - F5010: Order Lines Grid
  */
 const HEADER_TEXT_FIELD = 'POReference';
 
-test.describe('Single-row detail form regression guard', () => {
-  test('A single-row form field: Enter commits without cross-cell advance; typing into a filled field edits in place (AC10, TC6)', async ({
+test.describe('Single-row form text field', () => {
+  test('Enter saves the value and keeps the focus on the field; typing into a filled field edits it in place', async ({
     page,
   }) => {
     allure.epic('E0500: Sales Orders');
     allure.tag('F5010: Order Lines Grid');
     allure.tag('F5010');
-    allure.story('Form-regression guard — single-row form unchanged');
+    allure.story('Single-row form text field: Enter and typing');
     allure.severity('critical');
     allure.description(`
-## TC6 — Single-row detail form unchanged (form regression)
-
-1. Open the Sales Order HEADER (a single-row/detail form, not a grid).
-2. Type into an empty text field and press Enter — the value must commit (PATCH lands) and
-   focus must stay on the SAME field (no grid-style cross-cell advance; single-row forms have no
-   such nav model).
-3. Type into the now-filled field again — the edit must apply in place (append), not replace/
-   clear the field.
-
-Grounded in a code audit (see the header comment in this file): the grid fixes are grid-table-layer
-only (\`Table\`/\`TableRow\`/\`TableCell\`/\`TableHeader\` + \`columnWidthStorage\`/\`tableHelpers\` +
-\`table.scss\`); \`RawWidget\`, which renders the text field driven here, was not touched (the one
-shared change, in \`RawLookup\`, is covered by \`lookup-enter-no-match.spec.js\`).
+1. Open a new sales order (a single-row form).
+2. Type into the empty "${HEADER_TEXT_FIELD}" field and press Enter: the value is saved and the focus stays on the field.
+3. Type into the now filled field: the text is appended, not replacing the value; Enter saves it.
     `);
 
     test.setTimeout(120000);
@@ -72,15 +43,13 @@ shared change, in \`RawLookup\`, is covered by \`lookup-enter-no-match.spec.js\`
 
     await gotoOrderList();
     const recordId = await createNewOrder();
-    // Fills mandatory header fields (BPartner/Warehouse/Currency/etc. auto-derive from the
-    // customer) so the record is VALID and SAVED — required before waitForRecordSaved below
-    // (per this suite's "Record Validity Check" rule); irrelevant to what this test asserts.
+    // the customer fills the remaining mandatory header fields, so the order can be saved
     await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
 
     const headerField = page.locator(`.form-field-${HEADER_TEXT_FIELD} input.input-field`).first();
     await headerField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    const firstValue = `TC6-${Date.now()}`;
+    const firstValue = `POREF-${Date.now()}`;
 
     await test.step('Typing into an empty field and pressing Enter commits it, focus stays on the same field', async () => {
       await headerField.click();
@@ -107,7 +76,7 @@ shared change, in \`RawLookup\`, is covered by \`lookup-enter-no-match.spec.js\`
 
       expect(
         isSameFieldFocused,
-        'Enter on a single-row form field must NOT advance focus to a different field (no grid-style cross-cell advance exists here)'
+        'Enter must keep the focus on the same field'
       ).toBe(true);
 
       await waitForRecordSaved(SALES_ORDER_WINDOW_ID, recordId, { maxRetries: 20, retryDelayMs: 1000 });
