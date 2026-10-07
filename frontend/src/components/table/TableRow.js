@@ -107,14 +107,16 @@ class TableRow extends PureComponent {
   /**
    * @method writeScalarFieldValue
    * @summary Writes the given scalar (text or number) value into the row's field via
-   * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget).
+   * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget)
+   * or when the value is undefined, i.e. the key event did not come from an input element (no
+   * active editor, or an editor such as Labels whose key target is a contentEditable span).
    *
    * @param {string} property - the cell's field name
    * @param {*} value - a text or number value
    * @returns {boolean} true if the value was written
    */
   writeScalarFieldValue = (property, value) => {
-    if (this.isObjectValuedWidget(property)) {
+    if (value === undefined || this.isObjectValuedWidget(property)) {
       return false;
     }
 
@@ -262,12 +264,7 @@ class TableRow extends PureComponent {
       return;
     }
 
-    // this test is for a case when user is navigating around the table
-    // without activating the field. Then there's no widget (input), so the value
-    // is undefined and we don't have to worry about it.
-    if (typeof event.target.value !== 'undefined') {
-      this.writeScalarFieldValue(property, event.target.value);
-    }
+    this.writeScalarFieldValue(property, event.target.value);
     if (edited === property) {
       event.stopPropagation();
       this.handleEditProperty({ event });

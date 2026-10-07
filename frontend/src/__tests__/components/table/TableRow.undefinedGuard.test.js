@@ -8,7 +8,8 @@ import TableRow from '../../../components/table/TableRow';
 
 /**
  * Tab or Enter on a Lookup or List cell does not write the editor's raw text over the cell's
- * {key, caption} value; on a scalar (text/number) cell it writes the typed value.
+ * {key, caption} value; on a scalar (text/number) cell it writes the typed value. A key target
+ * without a value (no input element) writes nothing.
  */
 
 const LOOKUP_PROPERTY = 'M_Product_ID'; // fixture: value = { key, caption } (object-valued)
@@ -103,6 +104,73 @@ describe('TableRow — object-valued cell type-guard on Tab/Enter', () => {
     });
 
     expect(callsForProperty(updatePropertyValue, LIST_PROPERTY)).toEqual([]);
+  });
+
+  it('writes nothing on Enter in an open editor whose key target has no value', () => {
+    // e.g. the Labels editor: its key target is a contentEditable <span>, which has no .value
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+    instance.setState({ edited: SCALAR_PROPERTY });
+
+    instance.handleKeyDown({
+      event: {
+        key: 'Enter',
+        target: { textContent: 'chip' },
+        stopPropagation: jest.fn(),
+        persist: jest.fn(),
+      },
+      property: SCALAR_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+
+    expect(callsForProperty(updatePropertyValue, SCALAR_PROPERTY)).toEqual([]);
+  });
+
+  it('writes nothing on Tab from a cell without an open editor', () => {
+    // navigating across cells: the key target is the cell itself, which has no .value
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+
+    instance.handleKeyDown({
+      event: {
+        key: 'Tab',
+        target: {},
+        stopPropagation: jest.fn(),
+        persist: jest.fn(),
+      },
+      property: SCALAR_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+
+    expect(callsForProperty(updatePropertyValue, SCALAR_PROPERTY)).toEqual([]);
+  });
+
+  it('commits a scalar cell value on Enter in an open editor', () => {
+    const updatePropertyValue = jest.fn();
+    const wrapper = shallow(
+      <TableRow {...createInitProps({ updatePropertyValue })} />
+    );
+    const instance = wrapper.instance();
+    instance.setState({ edited: SCALAR_PROPERTY });
+
+    instance.handleKeyDown({
+      event: keyEvent('Enter', SCALAR_EDITOR_TEXT),
+      property: SCALAR_PROPERTY,
+      readonly: false,
+      isAttributeWidget: false,
+    });
+
+    const scalarWrites = callsForProperty(updatePropertyValue, SCALAR_PROPERTY);
+    expect(scalarWrites).toHaveLength(1);
+    expect(scalarWrites[0].value).toBe(SCALAR_EDITOR_TEXT);
   });
 
   it('commits a scalar cell value on Tab', () => {
