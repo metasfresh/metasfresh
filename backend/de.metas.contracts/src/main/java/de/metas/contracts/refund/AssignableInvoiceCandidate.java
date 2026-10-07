@@ -85,6 +85,12 @@ public class AssignableInvoiceCandidate
 	/** Like {@link #getQuantity()}, but contains the old quantity, if the underlying record was just changed. */
 	Quantity quantityOld;
 
+	/**
+	 * {@code true} for the discount line of a compensation group that a contract created on the order.
+	 * Such a line is no refund base: a refund is computed on the goods value before that on-invoice discount.
+	 */
+	boolean contractCompensationLine;
+
 	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
@@ -101,6 +107,7 @@ public class AssignableInvoiceCandidate
 			final int precision,
 			@NonNull final Quantity quantity,
 			@Nullable final Quantity quantityOld,
+			final boolean contractCompensationLine,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
@@ -114,6 +121,7 @@ public class AssignableInvoiceCandidate
 		this.precision = Check.assumeGreaterOrEqualToZero(precision, "precision");
 		this.quantity = quantity;
 		this.quantityOld = coalesce(quantityOld, quantity);
+		this.contractCompensationLine = contractCompensationLine;
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
