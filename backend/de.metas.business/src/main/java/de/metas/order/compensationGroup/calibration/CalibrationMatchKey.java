@@ -18,7 +18,7 @@ public class CalibrationMatchKey
 {
 	@NonNull OrgId orgId;
 	@NonNull BPartnerId bpartnerId;
-	@Nullable BPGroupId bpGroupId;
+	@NonNull BPGroupId bpGroupId;
 	@NonNull ProductId productId;
 	@NonNull ProductCategoryId productCategoryId;
 	@Nullable GroupTemplateId groupTemplateId;

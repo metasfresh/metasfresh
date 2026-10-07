@@ -5,13 +5,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateRegularLine;
 import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
+import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
-import de.metas.order.model.I_C_CompensationGroup_Schema;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -76,14 +77,15 @@ class CompensationGroupCalibrationServiceTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private void rule(final ProductId productId, final String factor)
+	private I_C_CompensationGroup_CalibrationRule rule(final ProductId productId, final String factor)
 	{
-		final de.metas.order.model.I_C_CompensationGroup_CalibrationRule rule = newInstance(de.metas.order.model.I_C_CompensationGroup_CalibrationRule.class);
+		final I_C_CompensationGroup_CalibrationRule rule = newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		rule.setSeqNo(10);
 		rule.setC_BPartner_ID(bpartnerId);
 		rule.setM_Product_ID(productId.getRepoId());
 		rule.setGroupCompensationCalibrationFactor(new BigDecimal(factor));
 		saveRecord(rule);
+		return rule;
 	}
 
 	private GroupTemplateRegularLine line(final ProductId productId, final String qty)
@@ -124,13 +126,13 @@ class CompensationGroupCalibrationServiceTest
 	void matchingRule_scalesAndStoresRule()
 	{
 		final ProductId p = product(false);
-		rule(p, "0.5");
+		final I_C_CompensationGroup_CalibrationRule rule = rule(p, "0.5");
 		final GroupTemplateRegularLine l = line(p, "100");
 		final LineCalibration c = service.computeCalibrations(order(true), template(l), new BigDecimal("2")).getByTemplateLineId(l.getId()).get();
 		assertThat(c.getFactor()).isEqualByComparingTo("0.5");
 		assertThat(c.getCalibratedQty()).isEqualByComparingTo("100");
 		assertThat(c.getUncalibratedQty()).isEqualByComparingTo("200");
-		assertThat(c.getRuleId()).isNotNull();
+		assertThat(c.getRuleId()).isEqualTo(CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID()));
 	}
 
 	@Test

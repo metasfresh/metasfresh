@@ -8,9 +8,7 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateRegularLine;
 import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -25,7 +23,6 @@ public class CompensationGroupCalibrationService
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final CompensationGroupCalibrationRuleRepository ruleRepository;
 
@@ -62,7 +59,7 @@ public class CompensationGroupCalibrationService
 					.bpartnerId(bpartnerId)
 					.bpGroupId(bpGroupId)
 					.productId(line.getProductId())
-					.productCategoryId(ProductCategoryId.ofRepoId(productBL.getById(line.getProductId()).getM_Product_Category_ID()))
+					.productCategoryId(productsRepo.retrieveProductCategoryByProductId(line.getProductId()))
 					.groupTemplateId(template.getId())
 					.build();
 
