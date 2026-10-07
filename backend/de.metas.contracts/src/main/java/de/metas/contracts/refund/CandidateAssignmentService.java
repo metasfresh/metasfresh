@@ -142,8 +142,15 @@ public class CandidateAssignmentService
 				additionalChangedCandidates.build());
 	}
 
+	/**
+	 * The discount line of a contract-created compensation group matches no refund contract: the refund base is the goods value before that discount.
+	 */
 	private ImmutableList<RefundContract> retrieveMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
+		if (assignableCandidate.isContractCompensationLine())
+		{
+			return ImmutableList.of();
+		}
 		return refundContractRepository.getByQuery(RefundContractQuery.of(assignableCandidate))
 				.stream()
 				// the customer deducts that bonus at payment; it is booked at the payment allocation, not invoiced
