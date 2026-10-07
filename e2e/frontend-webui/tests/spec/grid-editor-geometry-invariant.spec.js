@@ -186,8 +186,9 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     }, TOLERANCE_PX);
 
     await leave(page);
-    // a List editor in a modal grid stays open when the modal's title is clicked; every other
-    // editor closes
+    // a List editor in a modal grid stays open when the modal's title is clicked (unchanged
+    // behaviour of the List editor); every other editor closes. Its "after leaving" geometry is
+    // therefore measured with the editor still open.
     const staysOpen = leave === leaveByClickingModalTitle && widgetType === 'List';
     if (!staysOpen) {
       await cell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });

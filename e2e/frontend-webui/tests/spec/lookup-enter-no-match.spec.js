@@ -55,6 +55,7 @@ function clearingPatchesFor(patches, field) {
 /** Replace the focused Lookup's text with `text` and wait until its list shows "no results". */
 async function typeNonMatchingText(page, input) {
   const answered = waitForTypeaheadAnswer(page, NON_MATCHING_TEXT);
+  answered.catch(() => {}); // awaited below; avoids an unhandled rejection if typing fails first
   await input.click();
   await page.keyboard.press('ControlOrMeta+a');
   await input.pressSequentially(NON_MATCHING_TEXT, { delay: 20 });

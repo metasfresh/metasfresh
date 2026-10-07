@@ -372,7 +372,7 @@
 
     /*
      * The rules below size the cell's own widget. `:not(.attributes-dropdown *)` keeps them off the
-     * widgets of the attribute popup, which is rendered inside the cell (Attributes.js).
+     * widgets of the attribute popup, which is rendered inside the cell.
      */
     .input-primary:not(.attributes-dropdown *),
     .input-secondary:not(.attributes-dropdown *),

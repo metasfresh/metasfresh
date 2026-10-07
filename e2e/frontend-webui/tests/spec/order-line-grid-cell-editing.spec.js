@@ -257,6 +257,7 @@ literal "undefined".
 
         // the typed text is added to the cell's text: the query ends with it
         const answered = waitForTypeaheadAnswer(page, (query) => query.endsWith(NON_MATCHING_TEXT));
+        answered.catch(() => {}); // awaited below; avoids an unhandled rejection if typing fails first
         await editorInput.pressSequentially(NON_MATCHING_TEXT, { delay: 30 });
         await answered;
         await expect(page.locator('.input-dropdown-list .input-dropdown-list-header')).toBeVisible({

@@ -12,17 +12,31 @@ export const getPage = () => global.currentPage;
 
 /**
  * Waits until the page has run every task queued so far (event handlers, promise callbacks, one
- * timer turn). A request the UI starts while handling an action - e.g. the PATCH a field sends
- * when it is left - has then been reported to Playwright's `request` listeners, so a check that
- * "no request was sent" can run right after it.
+ * timer turn) and Playwright has been told about every request those tasks started. It then sends
+ * a marker request from the page and waits for it: requests are reported in the order the page
+ * starts them, so a request the UI started while handling an action - e.g. the PATCH a field sends
+ * when it is left - has been reported to `request` listeners before the marker. A check that "no
+ * request was sent" can run right after it.
  */
 export async function flushPendingUiTasks(page) {
+  const marker = `ui-flush-barrier-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const markerSent = page.waitForRequest((request) => request.url().includes(marker), {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
   await page.evaluate(
-    () =>
+    (markerParam) =>
       new Promise((resolve) => {
-        requestAnimationFrame(() => setTimeout(resolve, 0));
-      })
+        requestAnimationFrame(() =>
+          setTimeout(() => {
+            // only the request matters, not its answer
+            fetch(`/favicon.ico?${markerParam}`, { method: 'HEAD' }).catch(() => {});
+            resolve();
+          }, 0)
+        );
+      }),
+    marker
   );
+  await markerSent;
 }
 
 /**

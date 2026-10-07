@@ -71,10 +71,8 @@ describe('RawLookup — Enter with typed text that matches nothing', () => {
   });
 
   it('filter widget, not applied yet: restores the value picked in the filter', () => {
-    // The wiring of a view filter: FiltersItem hands its filter parameter to Lookup as both the
-    // field descriptor and the widget data, plus `updateItems`, which writes a picked value into
-    // the parameter's `defaultValue`. For a not-applied filter, Lookup passes that `defaultValue`
-    // on to RawLookup.
+    // A not-applied view filter keeps the picked value in its parameter's `defaultValue`
+    // (`updateItems`), and Lookup restores from that `defaultValue`.
     const parameter = {
       field: 'C_BPartner_ID',
       parameterName: 'C_BPartner_ID',
