@@ -186,13 +186,14 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     }, TOLERANCE_PX);
 
     await leave(page);
-    // a List editor in a modal grid stays open when the modal's title is clicked (unchanged
-    // behaviour of the List editor); every other editor closes. Its "after leaving" geometry is
-    // therefore measured with the editor still open.
+    // A List editor in a modal grid stays open when the modal's title is clicked; every other
+    // editor closes. For that List editor the second measurement is taken with the editor still
+    // open, and its phase is named accordingly.
     const staysOpen = leave === leaveByClickingModalTitle && widgetType === 'List';
     if (!staysOpen) {
       await cell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }
+    const leavePhase = staysOpen ? 'after clicking the modal title, editor still open' : 'after leaving';
     await flushPendingUiTasks(page);
     const afterLeave = await measureRow(row);
     const componentAfterLeave = await measureComponentBox(cell);
@@ -201,9 +202,9 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
     const cellViolations = [
       ...controlsOutsideCell.map((detail) => `${cellId} while editing: editor control outside the cell: ${detail}`),
       ...compareComponentBox('while editing', cellId, componentBefore, componentInEdit),
-      ...compareComponentBox('after leaving', cellId, componentBefore, componentAfterLeave),
+      ...compareComponentBox(leavePhase, cellId, componentBefore, componentAfterLeave),
       ...compareGeometry('while editing', cellId, before, inEdit),
-      ...compareGeometry('after leaving', cellId, before, afterLeave),
+      ...compareGeometry(leavePhase, cellId, before, afterLeave),
     ];
     console.log(
       `[GEOMETRY:${label}] ${cellId} (${widgetType}): ${cellViolations.length ? cellViolations.join('; ') : 'unchanged'}`
