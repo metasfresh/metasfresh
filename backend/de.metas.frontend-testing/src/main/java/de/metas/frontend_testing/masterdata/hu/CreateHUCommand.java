@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -8,6 +9,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -19,8 +21,6 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -39,11 +39,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -274,8 +273,8 @@ public class CreateHUCommand
 	}
 
 	/**
-	 * The LU gets {@code request.bpartner}; every HU below it (aggregate TUs, TUs and their VHUs) gets {@code request.tuBPartner}
-	 * (NULL when absent).
+	 * The top-level HU (the LU, or the TU when the packing instructions have no LU) gets {@code request.bpartner};
+	 * every HU below it (aggregate TUs, TUs and their VHUs) gets {@code request.tuBPartner} (NULL when absent).
 	 */
 	private void updateBPartners(final HuId huId)
 	{
@@ -302,7 +301,14 @@ public class CreateHUCommand
 
 	private static void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
 	{
-		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		final int bpartnerRepoId = BPartnerId.toRepoId(bpartnerId);
+		if (hu.getC_BPartner_ID() == bpartnerRepoId)
+		{
+			return;
+		}
+
+		hu.setC_BPartner_ID(bpartnerRepoId);
+		hu.setC_BPartner_Location_ID(-1); // the location inherited from the source CU belongs to the previous partner
 		InterfaceWrapperHelper.saveRecord(hu);
 	}
 

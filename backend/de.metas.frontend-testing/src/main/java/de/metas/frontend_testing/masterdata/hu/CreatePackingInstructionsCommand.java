@@ -1,8 +1,8 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
@@ -32,14 +32,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -91,6 +91,7 @@ public class CreatePackingInstructionsCommand
 		}
 		else
 		{
+			Check.assumeNull(request.getBpartner(), "bpartner is only supported together with lu: {}", request);
 			lu = null;
 			luPIItem = null;
 			luPIItemTestId = null;
@@ -187,7 +188,7 @@ public class CreatePackingInstructionsCommand
 		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
 		if (bpartnerIdentifier != null)
 		{
-			luPIItemRecord.setC_BPartner_ID(context.getId(bpartnerIdentifier, BPartnerId.class).getRepoId());
+			luPIItemRecord.setC_BPartner_ID(BPartnerId.toRepoId(context.getId(bpartnerIdentifier, BPartnerId.class)));
 		}
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
