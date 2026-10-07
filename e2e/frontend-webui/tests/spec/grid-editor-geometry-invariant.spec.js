@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { BusinessPartnerPage } from '../utils/pages/BusinessPartnerPage';
-import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForWebFonts } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { createMasterdata, ORDER_LINE_TAB_ID } from '../utils/OrderLineHarness';
@@ -152,6 +152,7 @@ async function assertEveryEditorKeepsGeometry(page, row, expectedWidgetTypes, la
 
   const violations = [];
   const exercised = {};
+  await waitForWebFonts(page); // a font arriving later re-lays out the grid
 
   for (const cellId of cellIds) {
     const cell = row.locator(`[data-cy="${cellId}"]`);

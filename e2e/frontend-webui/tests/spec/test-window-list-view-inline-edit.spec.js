@@ -4,7 +4,13 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import {
+  FRONTEND_BASE_URL,
+  SLOW_ACTION_TIMEOUT,
+  VERY_SLOW_ACTION_TIMEOUT,
+  flushPendingUiTasks,
+  waitForWebFonts,
+} from '../utils/common';
 import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 import { TEST_WINDOW_ID } from '../utils/WindowIds';
 
@@ -163,6 +169,7 @@ test.describe('Test window list view — inline edit of Amount and Quantity (de_
 
       await test.step(`${column.field}: edit field, type, Escape — layout unchanged, value kept`, async () => {
         await expect(cell).toHaveText(column.storedText);
+        await waitForWebFonts(page); // the column headers' font changes the column widths when it arrives
         const before = await measure(row, cell);
 
         const input = await openEditorFromContextMenu(page, cell);

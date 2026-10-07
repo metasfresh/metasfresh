@@ -43,6 +43,15 @@ export async function flushPendingUiTasks(page) {
 }
 
 /**
+ * Waits until the page has finished loading every web font it has started to load. A text set in
+ * a font that arrives later is laid out again with the font's own metrics, so a geometry baseline
+ * must be measured after this.
+ */
+export async function waitForWebFonts(page) {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+}
+
+/**
  * Resolves when a Lookup's typeahead answered a query: a GET with `?query=` for a document field,
  * a POST with `{query}` for a view-filter parameter.
  *

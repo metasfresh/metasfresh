@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, waitForWebFonts } from '../utils/common';
 import { createMasterdata } from '../utils/OrderLineHarness';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
@@ -66,6 +66,7 @@ width must be unchanged (within ${TOLERANCE_PX}px of sub-pixel rounding).
       const { rowRectBefore, cellRectBefore } = await test.step(
         'Capture static row + cell geometry',
         async () => {
+          await waitForWebFonts(page); // a font arriving later re-lays out the grid
           const rowRectBefore = await row.boundingBox();
           const cellRectBefore = await cell.boundingBox();
           expect(rowRectBefore, 'row must be measurable before activation').not.toBeNull();
@@ -197,6 +198,7 @@ the row's bottom edge (no visual bleed into the row below).
       const { rowRectBefore, cellRectBefore } = await test.step(
         'Capture static row + cell geometry',
         async () => {
+          await waitForWebFonts(page); // a font arriving later re-lays out the grid
           const rowRectBefore = await row.boundingBox();
           const cellRectBefore = await cell.boundingBox();
           expect(rowRectBefore, 'row must be measurable before activation').not.toBeNull();
