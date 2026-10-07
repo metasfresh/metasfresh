@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, waitForWebFonts } from '../utils/common';
 import { createMasterdata } from '../utils/OrderLineHarness';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
@@ -52,6 +52,7 @@ editor (\`${BORDERED_TEXT_COLUMN}\`) must keep its inner padding (text not flush
 
     const cell = page.locator(`[data-cy="cell-${NUMBER_COLUMN}"]`).first();
     await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await waitForWebFonts(page); // the overflow check below depends on the font's glyph widths
 
     const staticText = ((await cell.textContent()) || '').trim();
     const staticBox = await cell.boundingBox();
