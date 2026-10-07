@@ -89,7 +89,11 @@ export const PickingJobScreen = {
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
-        await page.getByTestId('targetLU-button').tap();
+        const luTargetButton = page.getByTestId('targetLU-button');
+        // Capture mode only (UAT_CAPTURE): the button renders below the fold, so the tap would appear in no
+        // recorded frame; scroll it into view and hold it there before tapping it.
+        await revealForCaptureIfEnabled(luTargetButton);
+        await luTargetButton.tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         if (!lu) throw new Error("No LU specified.");
