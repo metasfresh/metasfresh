@@ -267,6 +267,8 @@ public class C_OLCand_StepDef
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected bpartner location<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing instruction<br>
 	 *   <b>IsError</b> — (optional) expected error flag<br>
+	 *   <b>IsManualQtyItemCapacity</b> — (optional) expected flag whether the candidate's own QtyItemCapacity is used<br>
+	 *   <b>QtyItemCapacityInternal</b> — (optional) expected TU capacity from the master data<br>
 	 *   <b>QtyEntered, DeliveryRule, DeliveryViaRule, POReference, Processed, PriceActual, …</b> — (optional) asserted when present<br>
 	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Product_StepDefData, M_HU_PI_Item_Product_StepDefData
 	 * @cucumber.example
@@ -321,6 +323,11 @@ public class C_OLCand_StepDef
 			row.getAsOptionalString(COLUMNNAME_IsError)
 					.map(StringUtils::toBoolean)
 					.ifPresent(isError -> softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError));
+			row.getAsOptionalString(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity)
+					.map(StringUtils::toBoolean)
+					.ifPresent(isManual -> softly.assertThat(olCand.isManualQtyItemCapacity()).as(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity).isEqualTo(isManual));
+			row.getAsOptionalBigDecimal(I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal)
+					.ifPresent(qty -> softly.assertThat(olCand.getQtyItemCapacityInternal()).as(I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal).isEqualByComparingTo(qty));
 
 			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 			softly.assertThat(olCand.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);

@@ -79,5 +79,136 @@ Feature: order candidate in TU whose packing instruction comes from the price
       | C_OLCand_ID.Identifier |
       | olCand_S32404_10       |
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | IsError |
-      | olCand_S32404_10       | p_S32404_10             | piip_S32404_10                         | N       |
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | IsError | IsManualQtyItemCapacity | QtyItemCapacityInternal |
+      | olCand_S32404_10       | p_S32404_10             | piip_S32404_10                         | N       | N                       | 3                       |
+
+  @Id:S32404_20
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @topic:orderCandidate
+  Scenario: the order carries its own capacity, but the packing instruction from the price has a finite capacity: the master data capacity is used
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                       | IsStocked |
+      | p_32404_20  | olCandTUCapacity_32404_20 | true      |
+    And update M_Product:
+      | M_Product_ID.Identifier | GTIN          |
+      | p_32404_20             | 4000000324201 |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | p_32404_20             | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name                 | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | piip_32404_20                     | PCE                   | 3008003                    | p_32404_20             | 3   | 2021-04-01 | false                  | false                 | Karton x 3 PCE 32404_20 | false                   | false                     |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | pp_32404_20  | 2002141                           | p_32404_20             | 10.0     | KGM               | Normal                        | piip_32404_20 |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_32404_20  | customer_32404_20  | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_32404_20  | 4000000324218 | customer_32404_20       | true                | true         |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "32404_20",
+            "externalLineId": "32404_20_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000324218",
+                "bpartnerLocationIdentifier": "gln-4000000324218"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000324201",
+            "qty": 1,
+            "uomCode": "TU",
+            "qtyItemCapacity": 5,
+            "poReference": "32404_20",
+            "line": 1,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_32404_20       |
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | IsError | IsManualQtyItemCapacity | QtyItemCapacityInternal |
+      | olCand_32404_20       | p_32404_20             | piip_32404_20                         | N       | N                       | 3                       |
+
+  @Id:S32404_30
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @topic:orderCandidate
+  Scenario: the price has no packing instruction: the capacity from the order is used
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                       | IsStocked |
+      | p_32404_30  | olCandTUCapacity_32404_30 | true      |
+    And update M_Product:
+      | M_Product_ID.Identifier | GTIN          |
+      | p_32404_30             | 4000000324300 |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | p_32404_30             | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_32404_30  | 2002141                           | p_32404_30             | 10.0     | KGM               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_32404_30  | customer_32404_30  | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_32404_30  | 4000000324317 | customer_32404_30       | true                | true         |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "32404_30",
+            "externalLineId": "32404_30_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000324317",
+                "bpartnerLocationIdentifier": "gln-4000000324317"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000324300",
+            "qty": 1,
+            "uomCode": "TU",
+            "qtyItemCapacity": 5,
+            "poReference": "32404_30",
+            "line": 1,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_32404_30       |
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | IsError | IsManualQtyItemCapacity |
+      | olCand_32404_30       | p_32404_30             | N       | Y                       |

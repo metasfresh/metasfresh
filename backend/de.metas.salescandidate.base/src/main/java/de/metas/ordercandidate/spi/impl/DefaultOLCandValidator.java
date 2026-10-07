@@ -308,12 +308,12 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	 */
 	private void setPackingInstructionFromPricing(@NonNull final I_C_OLCand olCand, @NonNull final IPricingResult pricingResult)
 	{
-		final int packingInstructionRepoId = HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId());
-		if (packingInstructionRepoId == olCand.getM_HU_PI_Item_Product_ID())
+		final HUPIItemProductId packingInstructionId = pricingResult.getPackingMaterialId();
+		if (HUPIItemProductId.equals(packingInstructionId, HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID())))
 		{
 			return;
 		}
-		olCand.setM_HU_PI_Item_Product_ID(packingInstructionRepoId);
+		olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(packingInstructionId));
 		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
 	}
 
