@@ -36,13 +36,6 @@ export const getRefusedNumberText = (container) => {
 };
 
 /**
- * @param {Element} container e.g. a quick input form or a process modal
- * @returns {boolean} whether the container holds an input whose number was refused
- */
-export const hasRefusedNumberInput = (container) =>
-  getRefusedNumberText(container) !== null;
-
-/**
  * @summary The notification that tells the user why a typed or pasted number was not taken over, the session way
  * @param {string} refusedText
  * @returns {{title: string, message: string}}

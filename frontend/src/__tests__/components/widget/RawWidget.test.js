@@ -9,7 +9,7 @@ from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
 import { initNumeralLocales } from '../../../utils/locale';
-import { hasRefusedNumberInput } from '../../../utils/refusedNumberInputs';
+import { getRefusedNumberText } from '../../../utils/refusedNumberInputs';
 
 const createDummyProps = function(props) {
   return {
@@ -1019,12 +1019,12 @@ describe('RawWidget component', () => {
       wrapper.find('input').simulate('keyDown', { key: 'Enter', target: wrapper.find('input').getDOMNode(), preventDefault });
 
       expect(preventDefault).toHaveBeenCalled();
-      expect(hasRefusedNumberInput(form)).toBe(true);
+      expect(getRefusedNumberText(form)).not.toBeNull();
 
       const input = wrapper.find('input').getDOMNode();
       input.value = '3,5'; // typed into the refused input itself, as the browser reports it
       wrapper.find('input').simulate('change', { target: input });
-      expect(hasRefusedNumberInput(form)).toBe(false);
+      expect(getRefusedNumberText(form)).toBeNull();
       wrapper.detach();
       container.remove();
     });
@@ -1049,15 +1049,15 @@ describe('RawWidget component', () => {
       };
       const fromInput = typeInto(0, '3.57');
       wrapper.find('input').at(0).simulate('keyDown', { key: 'Enter', target: fromInput, preventDefault: jest.fn() });
-      expect(hasRefusedNumberInput(container)).toBe(true);
+      expect(getRefusedNumberText(container)).not.toBeNull();
 
       typeInto(1, '5,5');
-      expect(hasRefusedNumberInput(container)).toBe(true);
+      expect(getRefusedNumberText(container)).not.toBeNull();
 
       const detachedFromInput = wrapper.find('input').at(0).getDOMNode();
       wrapper.unmount();
       container.appendChild(detachedFromInput); // still in the page, e.g. kept by another widget: no longer marked
-      expect(hasRefusedNumberInput(container)).toBe(false);
+      expect(getRefusedNumberText(container)).toBeNull();
       container.remove();
     });
 
