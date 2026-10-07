@@ -518,3 +518,451 @@ Feature: order candidate bulk request with product identifiers that cannot be re
         ]
       }
       """
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @allure.label.feature:F00120_Sales_Order_Candidate
+  @Id:S32656_20
+  Scenario: product error on one line and an unknown GLN on another; both are reported in line order, nothing is created
+    # line 20: GTIN only on a packing instruction that becomes valid after the delivery date (2022-09-01)
+    # line 30: unknown gln- partner
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                  | IsStocked |
+      | pA_S32656_20 | gtinErrorsA_S32656_20 | true      |
+      | pB_S32656_20 | gtinErrorsB_S32656_20 | true      |
+    And update M_Product:
+      | M_Product_ID.Identifier | GTIN          |
+      | pB_S32656_20            | 4000000326854 |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_S32656_20 | customer_S32656_20 | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_S32656_20 | 4000000326830 | customer_S32656_20       | true                | true         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
+      | piipA_S32656_20 | PCE | 3008003 | pA_S32656_20 | customer_S32656_20 | 20 | 2022-09-01 | 4000000326823 | piipA_S32656_20 |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_20_ext",
+            "externalLineId": "00020",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326830",
+                "bpartnerLocationIdentifier": "gln-4000000326830"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326830",
+                "bpartnerLocationIdentifier": "gln-4000000326830"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326830",
+                "bpartnerLocationIdentifier": "gln-4000000326830"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326823",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_20_ext",
+            "line": 20,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_20_ext",
+            "externalLineId": "00030",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326847",
+                "bpartnerLocationIdentifier": "gln-4000000326847"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326847",
+                "bpartnerLocationIdentifier": "gln-4000000326847"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326847",
+                "bpartnerLocationIdentifier": "gln-4000000326847"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326854",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_20_ext",
+            "line": 30,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then the metasfresh REST-API responds with
+"""
+{
+    "errors": [
+        {
+            "message": "Line 20 (externalLineId=00020, externalHeaderId=S32656_20_ext): The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-4000000326823 -  could not be found. GTIN 4000000326823 is only on packing instructions that are not valid on the delivery date 2021-04-15: M_HU_PI_Item_Product_ID=@piipA_S32656_20@ valid from 2022-09-01."
+        },
+        {
+            "message": "No BPartner found for the given identifier!\nAdditional parameters:\n BPartnerIdentifier: gln-4000000326847"
+        }
+    ]
+}
+"""
+    And exactly 0 C_OLCand exist for externalHeaderId 'S32656_20_ext'
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @allure.label.feature:F00120_Sales_Order_Candidate
+  @Id:S32656_40
+  Scenario: unknown val- product and a gtin- product that is not valid on the delivery date; both are reported with their line
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                  | IsStocked |
+      | pA_S32656_40 | gtinErrorsA_S32656_40 | true      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_S32656_40 | customer_S32656_40 | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_S32656_40 | 4000000326878 | customer_S32656_40       | true                | true         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
+      | piipA_S32656_40 | PCE | 3008003 | pA_S32656_40 | customer_S32656_40 | 20 | 2022-09-01 | 4000000326861 | piipA_S32656_40 |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_40_ext",
+            "externalLineId": "00010",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "val-NO_SUCH_PRODUCT_S32656_40",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_40_ext",
+            "line": 10,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_40_ext",
+            "externalLineId": "00020",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326878",
+                "bpartnerLocationIdentifier": "gln-4000000326878"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326861",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_40_ext",
+            "line": 20,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then the metasfresh REST-API responds with
+"""
+{
+    "errors": [
+        {
+            "message": "Line 10 (externalLineId=00010, externalHeaderId=S32656_40_ext): The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=val-NO_SUCH_PRODUCT_S32656_40 -  could not be found."
+        },
+        {
+            "message": "Line 20 (externalLineId=00020, externalHeaderId=S32656_40_ext): The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-4000000326861 -  could not be found. GTIN 4000000326861 is only on packing instructions that are not valid on the delivery date 2021-04-15: M_HU_PI_Item_Product_ID=@piipA_S32656_40@ valid from 2022-09-01."
+        }
+    ]
+}
+"""
+    And exactly 0 C_OLCand exist for externalHeaderId 'S32656_40_ext'
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @allure.label.feature:F00120_Sales_Order_Candidate
+  @Id:S32656_45
+  Scenario: single line with a GTIN that is on no product; the error names the line and says the GTIN is unknown
+    Given metasfresh contains M_Products:
+      | Identifier  | Name                 | IsStocked |
+      | p_S32656_45 | gtinErrors_S32656_45 | true      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_S32656_45 | customer_S32656_45 | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN   | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_S32656_45 | 4000000326892 | customer_S32656_45       | true                | true         |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_45_ext",
+            "externalLineId": "00010",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326892",
+                "bpartnerLocationIdentifier": "gln-4000000326892"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326892",
+                "bpartnerLocationIdentifier": "gln-4000000326892"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326892",
+                "bpartnerLocationIdentifier": "gln-4000000326892"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326885",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_45_ext",
+            "line": 10,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then the metasfresh REST-API responds with
+"""
+{
+    "errors": [
+        {
+            "message": "Line 10 (externalLineId=00010, externalHeaderId=S32656_45_ext): The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-4000000326885 -  could not be found. No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner, no active partner product (C_BPartner_Product) and no active product (M_Product) carries GTIN 4000000326885."
+        }
+    ]
+}
+"""
+    And exactly 0 C_OLCand exist for externalHeaderId 'S32656_45_ext'
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+  # ##########################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @allure.label.feature:F00120_Sales_Order_Candidate
+  @Id:S32656_60
+  Scenario: a line that was already created is skipped; only the new failing line is reported
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                  | IsStocked |
+      | pA_S32656_60 | gtinErrorsA_S32656_60 | true      |
+      | pB_S32656_60 | gtinErrorsB_S32656_60 | true      |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | ppA_S32656_60 | 2002141                           | pA_S32656_60            | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_S32656_60 | customer_S32656_60 | N            | Y              | 2000837                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | location_S32656_60 | 4000000326922 | customer_S32656_60       | true                | true         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | Qty | ValidFrom  | GTIN | REST.Context |
+      | piipA_S32656_60 | PCE | 3008003 | pA_S32656_60 | customer_S32656_60 | 20 | 2021-03-01 | 4000000326908 | piipA_S32656_60 |
+      | piipB_S32656_60 | PCE | 3008003 | pB_S32656_60 | customer_S32656_60 | 20 | 2022-09-01 | 4000000326915 | piipB_S32656_60 |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_60_ext",
+            "externalLineId": "00010",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326908",
+            "qty": 18,
+            "uomCode": "TU",
+            "poReference": "S32656_60_ext",
+            "line": 10,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCandA_S32656_60      |
+    And exactly 1 C_OLCand exist for externalHeaderId 'S32656_60_ext'
+
+    # same header again: line 00010 already exists, line 00020 is new and its GTIN is not valid on the delivery date
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '400' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_60_ext",
+            "externalLineId": "00010",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326908",
+            "qty": 18,
+            "uomCode": "TU",
+            "poReference": "S32656_60_ext",
+            "line": 10,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "S32656_60_ext",
+            "externalLineId": "00020",
+            "externalSystemCode": "Other",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dropShipBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "handOverBPartner": {
+                "bpartnerIdentifier": "gln-4000000326922",
+                "bpartnerLocationIdentifier": "gln-4000000326922"
+            },
+            "dateRequired": "2021-04-15",
+            "dateOrdered": "2021-04-15",
+            "dateCandidate": "2021-04-15",
+            "orderDocType": "SalesOrder",
+            "productIdentifier": "gtin-4000000326915",
+            "qty": 5,
+            "uomCode": "TU",
+            "poReference": "S32656_60_ext",
+            "line": 20,
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then the metasfresh REST-API responds with
+"""
+{
+    "errors": [
+        {
+            "message": "Line 20 (externalLineId=00020, externalHeaderId=S32656_60_ext): The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-4000000326915 -  could not be found. GTIN 4000000326915 is only on packing instructions that are not valid on the delivery date 2021-04-15: M_HU_PI_Item_Product_ID=@piipB_S32656_60@ valid from 2022-09-01."
+        }
+    ]
+}
+"""
+    And exactly 1 C_OLCand exist for externalHeaderId 'S32656_60_ext'
