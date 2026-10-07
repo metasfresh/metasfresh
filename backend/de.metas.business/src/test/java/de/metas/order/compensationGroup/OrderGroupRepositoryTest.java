@@ -93,6 +93,7 @@ import de.metas.util.Services;
 public class OrderGroupRepositoryTest
 {
 	private static final String REASON_TEXT = OrderLineReasonForWithoutCharge.BundleComponent.getCode();
+	private static final int PACKED_LINE_PI_ITEM_PRODUCT_ID = 540001;
 
 	private UomId uomId;
 	private ProductId productId;
@@ -616,8 +617,6 @@ public class OrderGroupRepositoryTest
 			return result;
 		}
 	}
-
-	private static final int PACKED_LINE_PI_ITEM_PRODUCT_ID = 540001;
 
 	/** @return a group with one regular line that has a packing instruction and one discount line whose schema line has the given packing-material category (may be null) */
 	private GroupId createGroupWithPackedRegularLine(@Nullable final ProductCategoryId packingMaterialCategoryId)
