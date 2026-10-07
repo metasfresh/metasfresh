@@ -30,9 +30,9 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.util.Check;
+import de.metas.error.AdIssueId;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
@@ -147,13 +147,14 @@ public class OrderCandidatesRestController
 			final OLCandBulkCreateException bulkException = (OLCandBulkCreateException)ex;
 			// only the aggregate is logged (=> marked with the AD_Issue id); hand that id on to the items
 			final AdIssueId adIssueId = bulkException.getAdIssueId();
+			if (adIssueId != null)
+			{
+				for (final Throwable error : bulkException.getErrors())
+				{
+					IssueReportableExceptions.markReportedIfPossible(error, adIssueId);
+				}
+			}
 			return JsonOLCandCreateBulkResponse.errors(bulkException.getErrors().stream()
-					.peek(error -> {
-						if (adIssueId != null)
-						{
-							IssueReportableExceptions.markReportedIfPossible(error, adIssueId);
-						}
-					})
 					.map(error -> JsonErrors.ofThrowable(error, adLanguage))
 					.collect(ImmutableList.toImmutableList()));
 		}
