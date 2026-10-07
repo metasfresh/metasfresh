@@ -147,10 +147,8 @@ class MobileConfigPickingCommand
 
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
-		if (from.getCatchWeightTUPickingEnabled() != null)
-		{
-			builder.isCatchWeightTUPickingEnabled(from.getCatchWeightTUPickingEnabled());
-		}
+		// not sticky: a spec that omits it gets the default (false), so one spec enabling it does not leak into later specs
+		builder.isCatchWeightTUPickingEnabled(Boolean.TRUE.equals(from.getCatchWeightTUPickingEnabled()));
 
 		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
 
