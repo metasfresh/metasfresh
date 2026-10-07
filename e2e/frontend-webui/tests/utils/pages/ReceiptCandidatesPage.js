@@ -938,7 +938,7 @@ export class ReceiptCandidatesPage {
               isMenuReady = true;
               break;
             } catch (menuError) {
-            console.log(
+              console.log(
                 `Zoom Into item not ready on menu-open attempt ${menuAttempt}/${MENU_OPEN_ATTEMPTS}: ${menuError.message}`
               );
               // Dismiss any stale/half-open menu so the re-open starts clean.
