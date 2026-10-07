@@ -80,7 +80,8 @@ test.describe('Grid Address cell — editing through the address popup', () => {
           (response.request().postData() || '').includes(ADDRESS_COLUMN),
         { timeout: SLOW_ACTION_TIMEOUT }
       );
-      await page.mouse.click(5, 5);
+      // a plain field label of the master form: a neutral spot outside the popup and the grid
+      await page.locator('.panel-primary .form-field-Value .form-control-label').click();
       await popup.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
       await addressSaved;
 
