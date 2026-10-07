@@ -619,6 +619,105 @@ Feature: Compensation group calibration
 
   # ##########################################################################################
   # ##########################################################################################
+  # A rule deactivated after use stays on the line that already refers to it; new orders do not match it
+  @from:cucumber
+  @Id:S26881_TC15_DeactivatedRuleStaysOnLine
+  Scenario: A rule deactivated after use stays on its existing line and is not matched by a new order
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name           |
+      | schema_1   | CalibDeactUsed |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
+      | rule_10    | 10    | cust_x        | 0.7                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_1    | true    | cust_x        | 2026-10-07  |
+      | order_2    | true    | cust_x        | 2026-10-07  |
+    And create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_1    | schema_1                      | 1   | Y          | Product         |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | rule_10                                    |
+
+    When deactivate C_CompensationGroup_CalibrationRule:
+      | Identifier |
+      | rule_10    |
+
+    # the existing line keeps the rule and the factor
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | rule_10                                    |
+
+    # a new order of the same customer does not match the deactivated rule
+    When create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_2    | schema_1                      | 1   | Y          | Product         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 200            | 1                                      | 200                                         | null                                       |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # The percentage discount follows the calibrated quantities and a Qty edit of a calibrated line
+  @from:cucumber
+  @Id:S26881_TC11
+  Scenario: The percentage discount follows the calibration and a Qty edit, the stored calibration stays
+    Given metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name         |
+      | schema_1   | CalibPercent |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
+      | tl_fisch   | schema_1                      | fisch        | 1   | PCE      | 10    |
+      | tl_reis    | schema_1                      | reis         | 200 | GRM      | 20    |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | OPT.CompleteOrderDiscount | OPT.SeqNo |
+      | sl_disc    | schema_1                      | discount     | 10                        | 30        |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
+      | rule_10    | 10    | cust_x        | reis         | 0.5                                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order_x    | true    | cust_x        | 2026-10-07  |
+
+    When create compensation group from schema template:
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_x    | schema_1                      | 10  | Y          | Product         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis | reis         | 1000           | 0.5                                    | 2000                                        | rule_10                                    |
+      | schema_ol_fisch | fisch       | 10             | 1                                      | 10                                          | null                                       |
+    # 10 % of the net of the regular lines: 10 PCE x 5 EUR + 1000 GRM x 1 EUR = 1050 EUR
+    And validate C_OrderLine:
+      | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
+      | schema_comp_discount | discount     | true                        | -105      |
+
+    # the clerk adjusts the quantity of the calibrated line
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | schema_ol_reis            | 1200           |
+    # read the lines fresh: the discount line is rewritten by the group, not by the edit
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID       | M_Product_ID |
+      | order_x    | schema_ol_reis       | reis         |
+      | order_x    | schema_ol_fisch      | fisch        |
+      | order_x    | schema_comp_discount | discount     |
+    # 10 % of 10 PCE x 5 EUR + 1200 GRM x 1 EUR = 1250 EUR; factor, rule and uncalibrated quantity stay
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_reis  | reis         | 1200           | 0.5                                    | 2000                                        | rule_10                                    |
+      | schema_ol_fisch | fisch        | 10             | 1                                      | 10                                          | null                                       |
+    And validate C_OrderLine:
+      | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
+      | schema_comp_discount | discount     | true                        | -125      |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
   # Factor 0 leaves a component out, the percentage discount follows the remaining net
   @from:cucumber
   @Id:S26881_TC14_FactorZero
