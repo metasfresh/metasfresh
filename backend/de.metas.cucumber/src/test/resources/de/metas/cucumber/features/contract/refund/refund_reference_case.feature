@@ -112,12 +112,12 @@ Feature: Refund reference case: a partner with several parallel periodic refund 
     # sales 4000, purchase 3000: every term refunds the full value, none reduces another
     Then after not more than 60s, refund C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | IsSOTrx | NetAmtToInvoice | DateToInvoice | DocBaseType | M_Product_ID |
-      | salesYear3             | term3Year          | Y       | 120             | 2027-06-30    | ARC         | bonusWare    |
-      | salesYearSmall         | termSmall          | Y       | 5               | 2027-06-30    | ARC         | bonusWare    |
+      | salesYear3             | term3Year          | Y       | 120             | 2026-12-31    | ARC         | bonusWare    |
+      | salesYearSmall         | termSmall          | Y       | 5               | 2026-12-31    | ARC         | bonusWare    |
       | salesQuarter           | termQuart          | Y       | 40              | 2026-09-30    | ARC         | bonusWare    |
       | salesPack              | termPack           | Y       | 12              | 2026-09-30    | ARC         | bonusPack    |
-      | purchaseYear3          | term3Year          | N       | 90              | 2027-06-30    | APC         | bonusWare    |
-      | purchaseYearSmall      | termSmall          | N       | 3.75            | 2027-06-30    | APC         | bonusWare    |
+      | purchaseYear3          | term3Year          | N       | 90              | 2026-12-31    | APC         | bonusWare    |
+      | purchaseYearSmall      | termSmall          | N       | 3.75            | 2026-12-31    | APC         | bonusWare    |
       | purchaseQuarter        | termQuart          | N       | 30              | 2026-09-30    | APC         | bonusWare    |
       | purchasePack           | termPack           | N       | 9               | 2026-09-30    | APC         | bonusPack    |
     And after not more than 60s, C_Invoice_Candidate_Assignments are found:
@@ -253,8 +253,8 @@ Feature: Refund reference case: a partner with several parallel periodic refund 
     # (on 4000 - 120 = 3880 they would be 116.40, 4.85, 38.80 and 11.64)
     And after not more than 60s, refund C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | IsSOTrx | NetAmtToInvoice | DateToInvoice | DocBaseType | M_Product_ID |
-      | salesYear3             | term3Year          | Y       | 120             | 2027-06-30    | ARC         | bonusWare    |
-      | salesYearSmall         | termSmall          | Y       | 5               | 2027-06-30    | ARC         | bonusWare    |
+      | salesYear3             | term3Year          | Y       | 120             | 2026-12-31    | ARC         | bonusWare    |
+      | salesYearSmall         | termSmall          | Y       | 5               | 2026-12-31    | ARC         | bonusWare    |
       | salesQuarter           | termQuart          | Y       | 40              | 2026-09-30    | ARC         | bonusWare    |
       | salesPack              | termPack           | Y       | 12              | 2026-09-30    | ARC         | bonusPack    |
     And after not more than 60s, C_Invoice_Candidate_Assignments are found:

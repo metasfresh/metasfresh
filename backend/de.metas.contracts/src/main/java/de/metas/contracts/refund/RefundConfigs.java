@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -53,6 +55,7 @@ public class RefundConfigs
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_RECIPIENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusRecipient");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
+	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
@@ -148,6 +151,19 @@ public class RefundConfigs
 			return null;
 		}
 		return singleElement(productIds);
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods (see {@link RefundContract#computeNextInvoiceDate}),
+	 * so the schedule's distance has to divide the year: 1, 2, 3, 4, 6 or 12 months. Checked when a refund line is saved.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final RefundConfig refundConfig)
+	{
+		final InvoiceSchedule invoiceSchedule = refundConfig.getInvoiceSchedule();
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()) && 12 % invoiceSchedule.getInvoiceDistance() != 0)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE).markAsUserValidationError();
+		}
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)

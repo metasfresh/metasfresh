@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class RefundConfigsTest
@@ -71,6 +72,45 @@ public class RefundConfigsTest
 				.bonusRecipient(bonusRecipient)
 				.productCategoryId(productCategoryId == null ? null : ProductCategoryId.ofRepoId(productCategoryId))
 				.build();
+	}
+
+	/** refund periods are calendar periods, so a monthly schedule's distance has to divide the year: 1, 2, 3, 4, 6 or 12 months */
+	@Test
+	public void assertValid_monthlyScheduleWhoseDistanceDoesNotDivideTheYear_fails()
+	{
+		final RefundConfig config = config(null, 1, 0).toBuilder()
+				.invoiceSchedule(INVOICE_SCHEDULE.toBuilder().invoiceDistance(5).build())
+				.build();
+
+		assertThatThrownBy(() -> RefundConfigs.assertInvoiceDistanceDividesTheYear(config))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE.toAD_Message());
+				});
+	}
+
+	@Test
+	public void assertValid_monthlyScheduleWhoseDistanceDividesTheYear_isValid()
+	{
+		for (final int distance : new int[] { 1, 2, 3, 4, 6, 12 })
+		{
+			final RefundConfig config = config(null, 1, 0).toBuilder()
+					.invoiceSchedule(INVOICE_SCHEDULE.toBuilder().invoiceDistance(distance).build())
+					.build();
+			assertThatCode(() -> RefundConfigs.assertInvoiceDistanceDividesTheYear(config)).as("distance %s", distance).doesNotThrowAnyException();
+		}
+	}
+
+	/** the calendar periods are for monthly schedules only; a daily schedule keeps any distance */
+	@Test
+	public void assertValid_dailyScheduleWithAnyDistance_isValid()
+	{
+		final RefundConfig config = config(null, 1, 0).toBuilder()
+				.invoiceSchedule(INVOICE_SCHEDULE.toBuilder().frequency(Frequency.DAILY).invoiceDistance(5).build())
+				.build();
+		assertThatCode(() -> RefundConfigs.assertInvoiceDistanceDividesTheYear(config)).doesNotThrowAnyException();
 	}
 
 	@Test

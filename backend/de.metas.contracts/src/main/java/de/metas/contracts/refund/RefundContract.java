@@ -4,6 +4,7 @@ import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -138,21 +139,23 @@ public class RefundContract
 	}
 
 	/**
-	 * With this instance's {@code StartDate} as basis, the method returns the first date that is
-	 * after or at the given {@code currentDate} and that is aligned with this instance's invoice schedule.
+	 * @return the end of the refund period that contains the given date (or of the first period, if the date is before this contract's start).
+	 * For a monthly schedule the periods are calendar periods of the schedule's distance in months (month, quarter, half-year, year;
+	 * the year is January to December); the schedule's invoice day does not matter. The first period starts with the contract.
+	 * Other schedules count their periods from the contract's start date.
 	 */
 	public NextInvoiceDate computeNextInvoiceDate(@NonNull final LocalDate currentDate)
 	{
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 
-		final LocalDate firstPeriodEnd = invoiceSchedule.calculateNextDateToInvoice(startDate);
-
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
 		{
-			return new NextInvoiceDate(invoiceSchedule, computeMonthlyPeriodEnd(invoiceSchedule, firstPeriodEnd, currentDate));
+			final YearMonth lastMonth = computeCalendarPeriodFirstMonth(invoiceSchedule, latestOf(currentDate, startDate))
+					.plusMonths(invoiceSchedule.getInvoiceDistance() - 1);
+			return new NextInvoiceDate(invoiceSchedule, lastMonth.atEndOfMonth());
 		}
 
-		LocalDate date = firstPeriodEnd;
+		LocalDate date = invoiceSchedule.calculateNextDateToInvoice(startDate);
 		while (date.isBefore(currentDate))
 		{
 			// ask from the day after the period end, because from the end itself, the schedule might return the same date again
@@ -172,6 +175,12 @@ public class RefundContract
 	 */
 	public LocalDate computeCurrentPeriodStart(@NonNull final LocalDate date)
 	{
+		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
+		{
+			return latestOf(computeCalendarPeriodFirstMonth(invoiceSchedule, date).atDay(1), startDate);
+		}
+
 		LocalDate periodStart = startDate;
 		LocalDate periodEnd = computeNextInvoiceDate(periodStart).getDateToInvoice();
 		while (periodEnd.isBefore(date))
@@ -182,25 +191,17 @@ public class RefundContract
 		return periodStart;
 	}
 
-	/**
-	 * Every period end is computed from the first one: its month plus a multiple of the schedule's distance, with the invoice day clamped to that month's length.
-	 * Stepping from one end to the next would carry a clamped day (e.g. the 30th after a short month) into the following periods.
-	 */
-	private static LocalDate computeMonthlyPeriodEnd(
-			@NonNull final InvoiceSchedule invoiceSchedule,
-			@NonNull final LocalDate firstPeriodEnd,
-			@NonNull final LocalDate currentDate)
+	/** @return the first month of the calendar period of {@code invoiceDistance} months that contains the given date; the distance divides 12 (see {@link RefundConfigs#assertValid}) */
+	private static YearMonth computeCalendarPeriodFirstMonth(@NonNull final InvoiceSchedule invoiceSchedule, @NonNull final LocalDate date)
 	{
-		final LocalDate firstPeriodEndMonth = firstPeriodEnd.withDayOfMonth(1);
-		for (int periodIndex = 0;; periodIndex++)
-		{
-			final LocalDate month = firstPeriodEndMonth.plusMonths((long)periodIndex * invoiceSchedule.getInvoiceDistance());
-			final LocalDate periodEnd = month.withDayOfMonth(Math.min(invoiceSchedule.getInvoiceDayOfMonth(), month.lengthOfMonth()));
-			if (!periodEnd.isBefore(currentDate))
-			{
-				return periodEnd;
-			}
-		}
+		final int months = invoiceSchedule.getInvoiceDistance();
+		final int periodIndex = (date.getMonthValue() - 1) / months;
+		return YearMonth.of(date.getYear(), periodIndex * months + 1);
+	}
+
+	private static LocalDate latestOf(@NonNull final LocalDate date1, @NonNull final LocalDate date2)
+	{
+		return date1.isAfter(date2) ? date1 : date2;
 	}
 
 	@Value
