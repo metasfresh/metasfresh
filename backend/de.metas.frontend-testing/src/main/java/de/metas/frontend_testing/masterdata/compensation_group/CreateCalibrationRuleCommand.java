@@ -9,13 +9,10 @@ import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery.Aggregate;
 
 import javax.annotation.Nullable;
 
@@ -27,9 +24,7 @@ import javax.annotation.Nullable;
 @Builder
 public class CreateCalibrationRuleCommand
 {
-	private static final int SEQNO_STEP = 10;
-
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final CalibrationRuleMasterdataRepository repository = new CalibrationRuleMasterdataRepository();
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCalibrationRuleRequest request;
@@ -40,7 +35,7 @@ public class CreateCalibrationRuleCommand
 		final I_C_CompensationGroup_CalibrationRule rule = InterfaceWrapperHelper.newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		rule.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		rule.setIsActive(true);
-		rule.setSeqNo(request.getSeqNo() != null ? request.getSeqNo() : nextSeqNo());
+		rule.setSeqNo(request.getSeqNo() != null ? request.getSeqNo() : repository.nextSeqNo());
 		// Only the named selectors are set; the others stay unset (null), i.e. "any".
 		final BPartnerId bpartnerId = resolve(request.getBpartner(), BPartnerId.class);
 		if (bpartnerId != null)
@@ -68,7 +63,7 @@ public class CreateCalibrationRuleCommand
 			rule.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
 		}
 		rule.setGroupCompensationCalibrationFactor(request.getFactor());
-		InterfaceWrapperHelper.saveRecord(rule);
+		repository.save(rule);
 
 		final CalibrationRuleId ruleId = CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID());
 		context.putIdentifier(identifier, ruleId);
@@ -79,13 +74,5 @@ public class CreateCalibrationRuleCommand
 	private <T extends RepoIdAware> T resolve(@Nullable final Identifier selector, @NonNull final Class<T> idClass)
 	{
 		return selector == null ? null : context.getId(selector, idClass);
-	}
-
-	private int nextSeqNo()
-	{
-		final Integer max = queryBL.createQueryBuilder(I_C_CompensationGroup_CalibrationRule.class)
-				.create()
-				.aggregate(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
-		return (max == null ? 0 : max) + SEQNO_STEP;
 	}
 }
