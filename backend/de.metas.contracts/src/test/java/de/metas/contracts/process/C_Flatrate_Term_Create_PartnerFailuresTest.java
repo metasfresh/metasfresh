@@ -156,8 +156,8 @@ class C_Flatrate_Term_Create_PartnerFailuresTest
 	@Test
 	void messageTexts_substituteAllPlaceholders() throws Exception
 	{
-		final Path dir = Paths.get("src/main/sql/postgresql/system/50-de.metas.contracts");
-		final Pattern statement = Pattern.compile("(?s)(?:UPDATE AD_Message_Trl SET MsgText='((?:[^']|'')*)'.*?AD_Language='(\\w+)' AND AD_Message_ID=(\\d+))|(?:UPDATE AD_Message SET MsgText='((?:[^']|'')*)'.*?AD_Message_ID=(\\d+))");
+		final Path dir = moduleDir().resolve("src/main/sql/postgresql/system/50-de.metas.contracts");
+		final Pattern statement = Pattern.compile("(?s)(?:UPDATE AD_Message_Trl SET MsgText='((?:[^']|'')*)'.*?AD_Language='(\\w+)' AND AD_Message_ID=(\\d+))|(?:UPDATE AD_Message SET MsgText='((?:[^']|'')*)'.*?AD_Message_ID=(\\d+))|(?:INSERT INTO AD_Message \\([^)]*\\) VALUES \\(0,(\\d+) /\\*From ID Server\\*/,0,TO_TIMESTAMP\\('[^']*','[^']*'\\),100,'[^']*','Y','((?:[^']|'')*)')");
 		final Map<String, String> effectiveTexts = new TreeMap<>();
 		final List<Path> scripts = new ArrayList<>();
 		try (java.util.stream.Stream<Path> files = Files.list(dir))
@@ -173,6 +173,10 @@ class C_Flatrate_Term_Create_PartnerFailuresTest
 				{
 					effectiveTexts.put(m.group(3) + "/" + m.group(2), m.group(1).replace("''", "'"));
 				}
+				else if (m.group(7) != null)
+				{
+					effectiveTexts.put(m.group(6) + "/base", m.group(7).replace("''", "'"));
+				}
 				else
 				{
 					effectiveTexts.put(m.group(5) + "/base", m.group(4).replace("''", "'"));
@@ -180,11 +184,23 @@ class C_Flatrate_Term_Create_PartnerFailuresTest
 			}
 		}
 
-		assertThat(effectiveTexts.keySet()).as("fr_CH text of the failures heading is covered").contains("545912/fr_CH", "545877/fr_CH", "545913/fr_CH");
+		assertThat(effectiveTexts.keySet()).as("fr_CH text of the failures heading is covered").contains("545912/fr_CH", "545877/fr_CH", "545913/fr_CH", "545912/base", "545913/base", "545877/base");
 		effectiveTexts.forEach((key, text) -> {
 			final String formatted = MessageFormat.format(text, "A", "B", "C", "D");
 			assertThat(formatted).as(key + ": " + text).doesNotContain("{");
 		});
+	}
+
+	/** The de.metas.contracts module directory, found from the test class location, so the test does not depend on the working directory. */
+	private static Path moduleDir() throws Exception
+	{
+		Path dir = Paths.get(C_Flatrate_Term_Create_PartnerFailuresTest.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+		while (dir != null && !Files.isDirectory(dir.resolve("src/main/sql")))
+		{
+			dir = dir.getParent();
+		}
+		assertThat(dir).as("module directory above the test classes").isNotNull();
+		return dir;
 	}
 
 	private String runDoIt(final C_Flatrate_Term_Create process)
