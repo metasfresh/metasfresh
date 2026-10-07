@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
+import { TEST_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Inline edit in a top-level list view: the `Test` window's Amount and Quantity columns (de_DE).
@@ -23,7 +24,6 @@ import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/Web
  * - F5010: Order Lines Grid
  */
 
-const TEST_WINDOW_ID = '127';
 const TOLERANCE_PX = 1;
 const VIEWPORT = { width: 1920, height: 1080 };
 
@@ -202,7 +202,8 @@ test.describe('Test window list view — inline edit of Amount and Quantity (de_
           })
           .toBe(column.saved);
 
-        // Enter saves and keeps the editor open; Escape now leaves it on the saved value
+        // Enter saves and keeps the editor open; Escape then leaves it on the saved value
+        await expect(cell.locator('.form-group').first(), `${column.field} editor stays open after Enter`).toBeVisible();
         await page.keyboard.press('Escape');
         await cell.locator('.form-group').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
         await expect(cell, `${column.field} shows the saved value`).toHaveText(column.savedText, {
