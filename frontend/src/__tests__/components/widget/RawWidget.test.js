@@ -799,21 +799,21 @@ describe('RawWidget component', () => {
       (typed) => {
         const dispatchSpy = jest.spyOn(store, 'dispatch');
         const handlePatchSpy = jest.fn();
-        const handleChangeSpy = jest.fn();
+        const handleRestoreSpy = jest.fn();
         const props = createDummyProps({
           ...amountLayout,
           widgetData: [{ ...amountData, value: '2.5' }],
           handlePatch: handlePatchSpy,
-          handleChange: handleChangeSpy,
+          handleRestore: handleRestoreSpy,
         });
         const wrapper = mount(<RawWidget {...props} />);
         wrapper.find('input').simulate('focus');
         wrapper.find('input').simulate('change', { target: { value: typed } });
 
         pressEnter(wrapper.find('input'), typed);
-        // the field shows the stored amount again, without touching the parent's state (MasterWidget's `edited`)
+        // the field shows the stored amount again, and the parent forgets the typed text
         expect(wrapper.find('input').props().value).toEqual('2,5');
-        expect(handleChangeSpy).toHaveBeenCalledTimes(1); // the typing only
+        expect(handleRestoreSpy).toHaveBeenCalledWith('DiscountAmt', '2.5');
 
         wrapper
           .find('input')
@@ -824,6 +824,26 @@ describe('RawWidget component', () => {
         dispatchSpy.mockRestore();
       }
     );
+
+    it('does not patch an untouched amount that changed from outside while it had the focus', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '2.5' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '2.6' }] });
+      wrapper.update();
+      expect(wrapper.find('input').props().value).toEqual('2,6');
+
+      wrapper
+        .find('input')
+        .simulate('blur', { target: { value: wrapper.find('input').props().value } });
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+    });
 
     it('shows an empty amount as an empty text', () => {
       const props = createDummyProps({

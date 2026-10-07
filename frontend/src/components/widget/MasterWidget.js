@@ -218,6 +218,45 @@ class MasterWidget extends PureComponent {
   };
 
   /**
+   * @method handleRestore
+   * @summary Forgets what the user typed and shows the stored value again, as if nothing had been typed - e.g. after
+   *          RawWidget refused an invalid number. Unlike `handleChange` it leaves the widget not `edited`, so later
+   *          changes from outside are shown again.
+   * @param {*} property
+   * @param {*} storedValue
+   */
+  handleRestore = (property, storedValue) => {
+    const {
+      updatePropertyValue,
+      tabId,
+      rowId,
+      isModal,
+      relativeDocId,
+      entity,
+      viewId,
+      dataId,
+      windowId,
+      disconnected,
+    } = this.props;
+
+    this.setState({ edited: false, value: storedValue }, () => {
+      updatePropertyValue({
+        windowId,
+        docId: dataId,
+        property,
+        value: storedValue,
+        tabId,
+        rowId: rowId === 'NEW' ? relativeDocId : rowId,
+        isModal,
+        entity,
+        tableId: getTableId({ windowId, docId: dataId, tabId, viewId }),
+        disconnected,
+        action: 'change',
+      });
+    });
+  };
+
+  /**
    * @method handleProcess
    * @summary handle process function, opens the corresponding modal
    * @param {*} caption
@@ -294,6 +333,7 @@ class MasterWidget extends PureComponent {
         handleBlur={this.handleBlur}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
+        handleRestore={this.handleRestore}
         handleProcess={this.handleProcess}
         handleZoomInto={this.handleZoomInto}
         onBlurWidget={this.handleBlurWidget}

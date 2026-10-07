@@ -402,7 +402,7 @@ export class RawWidget extends PureComponent {
    *          groups thousands) is not patched: the user is told why, and the field shows the stored value again
    */
   refuseInvalidNumber = ({ property, id, invalidText, isValueToInvalid }) => {
-    const { handleChange, filterWidget, range } = this.props;
+    const { handleChange, handleRestore, filterWidget, range } = this.props;
     const keptValueText =
       formatDecimalNumberForEditing(this.state.cachedValue) ?? '';
 
@@ -444,8 +444,9 @@ export class RawWidget extends PureComponent {
       this.setState({ typedText: null, typedTextTo: null });
       handleChange?.(property, value, id, valueTo);
     } else {
-      // a document is not told: its `edited` state would then ignore later changes from outside until the next patch
+      // the parent (MasterWidget) forgets the typed text too, without becoming `edited` as on a change
       this.setState({ typedText: null, typedTextTo: null, keptValueText });
+      handleRestore?.(property, this.state.cachedValue);
     }
   };
 
@@ -1018,6 +1019,7 @@ RawWidget.propTypes = {
   onBlurWidget: PropTypes.func,
   handleProcess: PropTypes.func,
   handleChange: PropTypes.func,
+  handleRestore: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   handleZoomInto: PropTypes.func,
   onShow: PropTypes.func,
