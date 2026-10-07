@@ -1,7 +1,6 @@
 queue_rules:
   - name: default
     conditions:
-      - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
@@ -17,7 +16,6 @@ pull_request_rules:
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
-     # Please keep in sync with the branches at .testspace.yml
        - base=adorable_badger_uat
        - base=ant_pharm_uat
        - base=anxious_hippos_uat
@@ -260,7 +258,6 @@ pull_request_rules:
 
   - name: Automatic squash-merge successful PRs into the base-branch
     conditions:
-      - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
       - or: *ALL_BASE_BRANCHES
       - or:
@@ -274,7 +271,6 @@ pull_request_rules:
 # This rule is for the derivitative PRs that we created further up (note the label)
   - name: Automatic merge PRs labeled with `ops:merge_towards_master` into the respective `_uat` or `master`-branch
     conditions:
-      - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
       - or:
         - or: *PROJECT_BRANCHES_UAT
