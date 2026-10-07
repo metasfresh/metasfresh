@@ -76,12 +76,6 @@ public class CompensationGroupCalibrationService
 					.build();
 
 			final CalibrationRule rule = rules.findFirstMatching(key).orElse(null);
-			if (rule != null && rule.getFactor().isZero())
-			{
-				result.put(line.getId(), LineCalibration.SKIP);
-				continue;
-			}
-
 			result.put(line.getId(), calibrate(
 					line.getQty().multiply(qtyMultiplier),
 					rule != null ? rule.getFactor() : Percent.ONE_HUNDRED,
@@ -90,10 +84,7 @@ public class CompensationGroupCalibrationService
 		return GroupCalibrations.of(result.build());
 	}
 
-	/**
-	 * Scales the base quantity by the factor, rounding HALF_UP to the UOM precision.
-	 * A base quantity that is not zero after rounding never calibrates down to zero: it is floored to the smallest unit of the precision, keeping the sign.
-	 */
+	/** Scales the base quantity by the factor, rounding HALF_UP to the UOM precision. */
 	@VisibleForTesting
 	static LineCalibration calibrate(
 			@NonNull final Quantity baseQty,
@@ -101,17 +92,9 @@ public class CompensationGroupCalibrationService
 			@Nullable final CalibrationRuleId ruleId)
 	{
 		final UOMPrecision precision = baseQty.getUOMPrecision();
-		final Quantity uncalibratedQty = baseQty.setScale(precision, RoundingMode.HALF_UP);
-		Quantity calibratedQty = baseQty.multiply(factor.toBigDecimal().movePointLeft(2)).setScale(precision, RoundingMode.HALF_UP);
-		if (!uncalibratedQty.isZero() && calibratedQty.isZero())
-		{
-			final BigDecimal smallestUnit = BigDecimal.ONE.movePointLeft(precision.toInt()).multiply(BigDecimal.valueOf(baseQty.signum()));
-			calibratedQty = Quantity.of(smallestUnit, baseQty.getUOM());
-		}
-
 		return LineCalibration.builder()
-				.calibratedQty(calibratedQty)
-				.uncalibratedQty(uncalibratedQty)
+				.calibratedQty(baseQty.multiply(factor.toBigDecimal().movePointLeft(2)).setScale(precision, RoundingMode.HALF_UP))
+				.uncalibratedQty(baseQty.setScale(precision, RoundingMode.HALF_UP))
 				.factor(factor)
 				.ruleId(ruleId)
 				.build();

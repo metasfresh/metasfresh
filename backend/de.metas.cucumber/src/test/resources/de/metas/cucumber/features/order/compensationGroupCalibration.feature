@@ -6,8 +6,7 @@ Feature: Compensation group calibration
 
   Components of a compensation group created from a schema scale with the first matching calibration rule.
   - Qty = template Qty x menu Qty x factor, rounded half-up to the UOM precision.
-  - A positive factor never rounds a component down to 0: one UOM step is the minimum.
-  - Factor 0 leaves the component out.
+  - A result that rounds to 0, and a factor of 0, create the component line with Qty 0; there is no minimum step.
   - The menu line (a product that carries a schema) is never calibrated.
   - Purchase orders are never calibrated.
 
@@ -410,10 +409,10 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # Rounding half-up per UOM precision and the one-step minimum
+  # Rounding half-up per UOM precision; a result that rounds to 0 gives a line with Qty 0
   @from:cucumber
   @Id:S26881_TC10
-  Scenario: Calibrated quantities round half-up to the UOM precision with one step as the minimum
+  Scenario: Calibrated quantities round half-up to the UOM precision and a result that rounds to 0 keeps its line with Qty 0
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name       |
       | schema_1   | CalibRound |
@@ -443,9 +442,9 @@ Feature: Compensation group calibration
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated |
       | schema_ol_pce_a | pce_a        | 2              | 0.5                                    | 3                                           |
       | schema_ol_pce_b | pce_b        | 1              | 0.3                                    | 4                                           |
-      | schema_ol_fisch | fisch        | 1              | 0.4                                    | 1                                           |
+      | schema_ol_fisch | fisch        | 0              | 0.4                                    | 1                                           |
       | schema_ol_kraft | kraft        | 0.10           | 0.667                                  | 0.15                                        |
-      | schema_ol_gram  | gram         | 0.01           | 0.4                                    | 0.01                                        |
+      | schema_ol_gram  | gram         | 0              | 0.4                                    | 0.01                                        |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_10   | schema_1                      | 10  | Y          | Product         |
@@ -700,10 +699,10 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # Factor 0 leaves a component out, the percentage discount follows the remaining net
+  # Factor 0 keeps the component line with Qty 0; the percentage discount follows the net, also after the clerk types a Qty
   @from:cucumber
   @Id:S26881_TC14_FactorZero
-  Scenario: A component with factor 0 is left out and the discount follows the remaining net
+  Scenario: A component with factor 0 gets a line with Qty 0, the discount follows the net and the order can be completed
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name       |
       | schema_1   | CalibZero  |
@@ -724,23 +723,48 @@ Feature: Compensation group calibration
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_x    | schema_1                      | 1   | Y          | Product         |
-    Then validate C_Order has no C_OrderLine for M_Product:
-      | C_Order_ID | M_Product_ID |
-      | order_x    | fisch        |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_fisch | fisch        | 0              | 0                                      | 1                                           | rule_zero                                  |
+      | schema_ol_reis  | reis         | 200            | 1                                      | 200                                         | null                                       |
+    # 10 % of the net of the regular lines: 0 PCE x 5 EUR + 200 GRM x 1 EUR = 200 EUR
     And validate C_OrderLine:
-      | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 1                                      | null                                       |
-    # 10 % of the net of the remaining lines: 200 GRM x 1 EUR = 200 EUR
+      | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
+      | schema_comp_discount | discount     | true                        | -20       |
+
+    # the clerk types a quantity on the line with Qty 0
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | schema_ol_fisch           | 1              |
+    # read the lines fresh: the discount line is rewritten by the group, not by the edit
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID       | M_Product_ID |
+      | order_x    | schema_ol_fisch      | fisch        |
+      | order_x    | schema_ol_reis       | reis         |
+      | order_x    | schema_comp_discount | discount     |
+    # 10 % of 1 PCE x 5 EUR + 200 GRM x 1 EUR = 205 EUR; factor, rule and uncalibrated quantity stay
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_fisch | fisch        | 1              | 0                                      | 1                                           | rule_zero                                  |
     And validate C_OrderLine:
-      | C_OrderLine_ID     | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
-      | schema_comp_discount | discount   | true                        | -20       |
+      | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
+      | schema_comp_discount | discount     | true                        | -20.5     |
+
+    # a line with Qty 0 does not block completing the order
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | schema_ol_fisch           | 0              |
+    And the order identified by order_x is completed
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_fisch | fisch        | 0              | 0                                      | rule_zero                                  |
 
 
   # ##########################################################################################
-  # All components left out: only the menu line remains
+  # Every component at factor 0 next to a menu line: all lines are created, the components with Qty 0
   @from:cucumber
-  @Id:S26881_TC14_AllLeftOutWithMenuLine
-  Scenario: All components left out leave only the menu line
+  @Id:S26881_TC14_AllZeroWithMenuLine
+  Scenario: All components at factor 0 keep their lines with Qty 0 next to the menu line
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name         |
       | schema_1   | CalibAllMenu |
@@ -766,20 +790,18 @@ Feature: Compensation group calibration
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_x    | schema_1                      | 3   | Y          | Product         |
-    Then validate C_Order has no C_OrderLine for M_Product:
-      | C_Order_ID | M_Product_ID |
-      | order_x    | fisch        |
-      | order_x    | reis         |
-    And validate C_OrderLine:
-      | C_OrderLine_ID   | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_menu_1 | menu_1       | 3              | null                                   | null                                       |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID   | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_menu_1 | menu_1       | 3              | null                                   | null                                        | null                                       |
+      | schema_ol_fisch  | fisch        | 0              | 0                                      | 3                                           | rule_fisch                                 |
+      | schema_ol_reis   | reis         | 0              | 0                                      | 600                                         | rule_reis                                  |
 
 
   # ##########################################################################################
-  # All components left out and no menu line: nothing to order
+  # Every component at factor 0 and no menu line: all component lines are created with Qty 0, no error
   @from:cucumber
-  @Id:S26881_TC14_AllLeftOutWithoutMenuLine
-  Scenario: All components left out without a menu line is refused
+  @Id:S26881_TC14_AllZeroWithoutMenuLine
+  Scenario: All components at factor 0 without a menu line are created with Qty 0
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name          |
       | schema_1   | CalibAllNoMnu |
@@ -795,8 +817,12 @@ Feature: Compensation group calibration
       | order_x    | true    | cust_x        | 2026-10-07  |
 
     When create compensation group from schema template:
-      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy | ErrorMessageKey                                          |
-      | order_x    | schema_1                      | 1   | Y          | Product         | C_CompensationGroup_CalibrationRule_AllComponentsLeftOut |
+      | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
+      | order_x    | schema_1                      | 1   | Y          | Product         |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | schema_ol_fisch | fisch        | 0              | 0                                      | 1                                           | rule_zero                                  |
+      | schema_ol_reis  | reis         | 0              | 0                                      | 200                                         | rule_zero                                  |
 
 
   # ##########################################################################################

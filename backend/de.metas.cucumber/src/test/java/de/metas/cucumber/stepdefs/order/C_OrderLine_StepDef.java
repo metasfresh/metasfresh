@@ -880,39 +880,6 @@ public class C_OrderLine_StepDef
 		orderLineTable.putOrReplace(lineIdentifier, firstLine);
 	}
 
-	/**
-	 * Asserts that an order has no line at all for the given product, e.g. a component that was left out of a group.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order<br>
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product that must not appear on any line of the order<br>
-	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And validate C_Order has no C_OrderLine for M_Product:
-	 *   | C_Order_ID | M_Product_ID |
-	 *   | order      | fish_fillet  |
-	 * </pre>
-	 */
-	@And("validate C_Order has no C_OrderLine for M_Product:")
-	public void validate_C_Order_has_no_C_OrderLine_for_M_Product(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_Order order = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
-			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
-			final ProductId productId = productTable.getIdOptional(productIdentifier)
-					.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
-
-			final int count = queryBL.createQueryBuilderOutOfTrx(I_C_OrderLine.class)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, productId.getRepoId())
-					.create()
-					.count();
-			assertThat(count).as("number of C_OrderLines of product %s in order %s", productIdentifier.getAsString(), order.getC_Order_ID()).isZero();
-		});
-	}
-
 	@Given("metasfresh contains C_OrderLine expecting error:")
 	public void metasfresh_contains_c_order_lines_expecting_error(@NonNull final DataTable dataTable)
 	{

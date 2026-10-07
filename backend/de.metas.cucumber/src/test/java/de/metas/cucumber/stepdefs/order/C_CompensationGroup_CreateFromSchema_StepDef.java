@@ -57,9 +57,6 @@ import org.compiere.model.I_C_OrderLine;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
-
-import static de.metas.cucumber.stepdefs.order.ExpectedErrorMessageKeyAssert.assertFailsWithMessageKey;
 
 /**
  * Step definitions for creating compensation groups from schema templates and applying PI inheritance.
@@ -124,27 +121,15 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	 * <ul>
 	 *   <li>{@code IdentifyLinesBy} — {@code Product} to register each created regular line as
 	 *       {@code schema_ol_<product identifier>} and each compensation (discount / surcharge) line as
-	 *       {@code schema_comp_<product identifier>} instead of by position; the positions shift when a
-	 *       component is left out by calibration (default: by position)</li>
+	 *       {@code schema_comp_<product identifier>} instead of by position (default: by position)</li>
 	 *   <li>{@code Calibrated} — {@code Y} to apply the calibration rules the way quick input and order candidates do
 	 *       (default {@code N}: the group is created uncalibrated, as the other group creators do)</li>
-	 *   <li>{@code ErrorMessageKey} — AD_Message key of the error the creation is expected to be refused with</li>
 	 * </ul>
 	 */
 	@When("create compensation group from schema template:")
 	public void createGroupFromSchemaTemplate(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final Optional<String> expectedErrorMessageKey = row.getAsOptionalString("ErrorMessageKey");
-			if (expectedErrorMessageKey.isPresent())
-			{
-				assertFailsWithMessageKey(expectedErrorMessageKey.get(), () -> createGroupFromSchemaTemplate(row));
-			}
-			else
-			{
-				createGroupFromSchemaTemplate(row);
-			}
-		});
+		DataTableRows.of(dataTable).forEach(this::createGroupFromSchemaTemplate);
 	}
 
 	private void createGroupFromSchemaTemplate(@NonNull final DataTableRow row)

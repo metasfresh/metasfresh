@@ -1,8 +1,8 @@
 package de.metas.order.compensationGroup.calibration;
 
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
-import org.adempiere.test.AdempiereTestHelper;
 import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

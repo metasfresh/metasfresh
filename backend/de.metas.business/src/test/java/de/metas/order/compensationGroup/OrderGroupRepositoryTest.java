@@ -3,9 +3,7 @@ package de.metas.order.compensationGroup;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.math.BigDecimal;
@@ -19,8 +17,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import de.metas.util.lang.Percent;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -35,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
@@ -51,8 +46,6 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
-import de.metas.order.compensationGroup.calibration.GroupCalibrations;
-import de.metas.order.compensationGroup.calibration.LineCalibration;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -520,49 +513,7 @@ public class OrderGroupRepositoryTest
 		assertThat(compensationLinePO.isManualDiscount()).isTrue();
 	}
 
-	@Test
-	void retrieveOrCreateGroup_allComponentsLeftOut_isRefusedAsUserValidationError()
-	{
-		final GroupTemplateRegularLine leftOutLine = buildTemplateLine(1, null);
-
-		assertThatThrownBy(() -> repo.retrieveOrCreateGroup(groupRequest(
-				ImmutableList.of(leftOutLine),
-				ImmutableMap.of(leftOutLine.getId(), LineCalibration.SKIP))))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("C_CompensationGroup_CalibrationRule_AllComponentsLeftOut")
-				.matches(AdempiereException::isUserValidationError, "is user validation error");
-	}
-
-	@Test
-	void retrieveOrCreateGroup_allComponentsLeftOut_whileOtherLineDoesNotMatchContractConditions()
-	{
-		final GroupTemplateRegularLine leftOutLine = buildTemplateLine(1, null);
-		final GroupTemplateRegularLine contractOnlyLine = buildTemplateLine(2, ConditionsId.ofRepoId(42));
-
-		assertThatThrownBy(() -> repo.retrieveOrCreateGroup(groupRequest(
-				ImmutableList.of(leftOutLine, contractOnlyLine),
-				ImmutableMap.of(
-						leftOutLine.getId(), LineCalibration.SKIP,
-						contractOnlyLine.getId(), LineCalibration.builder().factor(Percent.ONE_HUNDRED).build()))))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("C_CompensationGroup_CalibrationRule_AllComponentsLeftOut");
-	}
-
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────
-
-	private RetrieveOrCreateGroupRequest groupRequest(
-			final List<GroupTemplateRegularLine> templateLines,
-			final ImmutableMap<GroupTemplateRegularLineId, LineCalibration> calibrations)
-	{
-		return RetrieveOrCreateGroupRequest.builder()
-				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
-				.newGroupTemplate(GroupTemplate.builder()
-						.name("test-template")
-						.regularLinesToAdd(templateLines)
-						.build())
-				.calibrations(GroupCalibrations.of(calibrations))
-				.build();
-	}
 
 	private GroupTemplateRegularLine buildTemplateLine(final boolean isWithoutCharge)
 	{
@@ -572,17 +523,6 @@ public class OrderGroupRepositoryTest
 				.productId(productId)
 				.qty(Quantity.of(BigDecimal.ONE, uom))
 				.isWithoutCharge(isWithoutCharge)
-				.build();
-	}
-
-	private GroupTemplateRegularLine buildTemplateLine(final int templateLineRepoId, @Nullable final ConditionsId contractConditionsId)
-	{
-		final I_C_UOM uom = org.adempiere.model.InterfaceWrapperHelper.load(uomId.getRepoId(), I_C_UOM.class);
-		return GroupTemplateRegularLine.builder()
-				.id(GroupTemplateRegularLineId.ofRepoId(templateLineRepoId))
-				.productId(productId)
-				.qty(Quantity.of(BigDecimal.ONE, uom))
-				.contractConditionsId(contractConditionsId)
 				.build();
 	}
 

@@ -21,10 +21,4 @@ public class GroupCalibrations
 	{
 		return Optional.ofNullable(byTemplateLineId.get(id));
 	}
-
-	/** @return {@code true} if there is at least one entry and all of them are {@link LineCalibration#SKIP} */
-	public boolean isAllSkipped()
-	{
-		return !byTemplateLineId.isEmpty() && byTemplateLineId.values().stream().allMatch(LineCalibration::isSkip);
-	}
 }
