@@ -23,6 +23,8 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -38,7 +40,9 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
@@ -46,6 +50,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_BPartner;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -57,6 +63,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Node;
 import org.xmlunit.assertj3.XmlAssert;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +72,9 @@ import java.util.function.Consumer;
 
 import static de.metas.handlingunits.HUAssertions.assertThat;
 import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @ExtendWith(AdempiereTestWatcher.class)
@@ -1285,6 +1294,363 @@ public class HUTransformServiceTests
 		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
 		XmlAssert.assertThat(newCuXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
 		XmlAssert.assertThat(newCuXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("5.000");
+	}
+
+	// ------------------------------------------------------------------------------------------------
+	// Taking whole TUs out of a pallet that holds an aggregate TU, onto a new/existing pallet, via luExtractTUs(...)
+	// (the route used by mobile picking). Pallet->TU items may be bound to a partner.
+	// ------------------------------------------------------------------------------------------------
+
+	private static final String ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = "ERR_LU_HAS_NO_TU_SUB_PACK_INSTR";
+	private static final String MSG_TU_NOT_CONFIGURED_FOR_LU = "is not configured to be stored into LU";
+	private static final String MSG_LU_CANNOT_STACK_TU = "cannot stack TU";
+
+	private static class PalletFixture
+	{
+		I_M_HU_PI piLU;
+		I_M_HU_PI piTU;
+		I_M_HU_PI_Item luItem;
+	}
+
+	private BPartnerId createBPartner(@NonNull final String name)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setValue(name);
+		bpartner.setName(name);
+		saveRecord(bpartner);
+		return BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+	}
+
+	/**
+	 * @param itemPartner partner the Pallet to TU item is bound to; {@code null} for a generic item
+	 */
+	private PalletFixture createPalletFixture(@Nullable final BPartnerId itemPartner)
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final PalletFixture fixture = new PalletFixture();
+		fixture.piTU = data.helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI_Item tuMaterialItem = data.helper.createHU_PI_Item_Material(fixture.piTU);
+		data.helper.assignProduct(tuMaterialItem, data.helper.pSaladProductId, BigDecimal.ONE, data.helper.uomEach);
+		data.helper.createHU_PI_Item_PackingMaterial(fixture.piTU, data.helper.pmIFCO);
+
+		fixture.piLU = data.helper.createHUDefinition("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		fixture.luItem = data.helper.createHU_PI_Item_IncludedHU(fixture.piLU, fixture.piTU, new BigDecimal("100"), itemPartner);
+		data.helper.createHU_PI_Item_PackingMaterial(fixture.piLU, data.helper.pmPalet);
+		return fixture;
+	}
+
+	/**
+	 * Creates an active pallet that holds {@code qtyTUs} TUs of 1 piece each (as one aggregate TU).
+	 *
+	 * @param luPartner partner of the pallet; {@code null} for none
+	 * @param tuPartner partner of the TUs (and the HUs below them); {@code null} for none
+	 */
+	private I_M_HU createPallet(
+			@NonNull final PalletFixture fixture,
+			@Nullable final BPartnerId luPartner,
+			@Nullable final BPartnerId tuPartner,
+			final int qtyTUs)
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final LUTUProducerDestination producer = new LUTUProducerDestination();
+		producer.setLocatorId(data.defaultLocatorId);
+		producer.setLUItemPI(fixture.luItem);
+		producer.setLUPI(fixture.piLU);
+		producer.setTUPI(fixture.piTU);
+		producer.setMaxTUsPerLU(Integer.MAX_VALUE);
+		producer.addCUPerTU(data.helper.pSaladProductId, BigDecimal.ONE, data.helper.uomEach);
+		producer.setBPartnerId(luPartner);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal(qtyTUs), data.helper.uomEach);
+
+		final I_M_HU lu = producer.getCreatedHUs().get(0);
+		huStatusBL.setHUStatus(data.helper.createMutableHUContextOutOfTransaction(), lu, X_M_HU.HUSTATUS_Active);
+		lu.setC_BPartner_ID(BPartnerId.toRepoId(luPartner));
+		saveRecord(lu);
+		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(lu))
+		{
+			tu.setC_BPartner_ID(BPartnerId.toRepoId(tuPartner));
+			tu.setHUStatus(X_M_HU.HUSTATUS_Active);
+			saveRecord(tu);
+			for (final I_M_HU vhu : handlingUnitsDAO.retrieveIncludedHUs(tu))
+			{
+				vhu.setC_BPartner_ID(BPartnerId.toRepoId(tuPartner));
+				vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
+				saveRecord(vhu);
+			}
+		}
+		return lu;
+	}
+
+	private static void deactivate(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		piItem.setIsActive(false);
+		saveRecord(piItem);
+		// unit tests have no model-change cache invalidation; without this the cached PI items still list the item as active
+		CacheMgt.get().reset();
+	}
+
+	private int countTUs(@NonNull final I_M_HU lu)
+	{
+		int count = 0;
+		for (final I_M_HU child : Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu))
+		{
+			if (handlingUnitsBL.isTransportUnitOrAggregate(child))
+			{
+				count += handlingUnitsBL.getTUsCount(child).toInt();
+			}
+		}
+		return count;
+	}
+
+	private void luExtractTUs(@NonNull final I_M_HU sourceLU, final int qtyTUs, @NonNull final HUTransformService.TargetLU targetLU)
+	{
+		huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ofInt(qtyTUs))
+				.targetLU(targetLU)
+				.build());
+	}
+
+	private void assertLuExtractTUsFails(
+			@NonNull final I_M_HU sourceLU,
+			final int qtyTUs,
+			@NonNull final HUTransformService.TargetLU targetLU,
+			@NonNull final String expectedMessagePart)
+	{
+		Assertions.assertThatThrownBy(() -> luExtractTUs(sourceLU, qtyTUs, targetLU))
+				.hasMessageContaining(expectedMessagePart);
+	}
+
+	/**
+	 * TC1 a: existing target pallet with partner P; item bound to P only; the TU itself has no partner.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_withPartner_itemBoundToThatPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, partnerP, null, 1);
+
+		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC1 b: existing target pallet without partner -> falls back to the source pallet's partner P; item bound to P only.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_withoutPartner_fallsBackToSourceLUPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+
+		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC1 c: new target pallet of the same PI -> source pallet's partner P; item bound to P only; the TU itself has no partner.
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_fallsBackToSourceLUPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+
+		final LUTUResult result = huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ONE)
+				.targetLU(HUTransformService.TargetLU.ofNewLU(fixture.piLU))
+				.build());
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		Assertions.assertThat(countTUs(result.getLURecords().get(0))).as("TUs on new target LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC1 d: precedence. TU with its own partner X on a source pallet with partner Y; item bound to X; new target pallet -> the TU's own partner wins (as before).
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_tuOwnPartnerWinsOverSourceLUPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerX = createBPartner("Customer");
+		final BPartnerId partnerY = createBPartner("OtherCustomer");
+		final PalletFixture fixture = createPalletFixture(partnerX);
+		final I_M_HU sourceLU = createPallet(fixture, partnerY, partnerX, 5);
+
+		final LUTUResult result = huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ONE)
+				.targetLU(HUTransformService.TargetLU.ofNewLU(fixture.piLU))
+				.build());
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		Assertions.assertThat(countTUs(result.getLURecords().get(0))).as("TUs on new target LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC1 e: precedence. Existing target pallet with partner X; TU (and source pallet) with partner Y; item bound to X -> the target pallet's partner wins.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_targetLUPartnerWinsOverTUPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerX = createBPartner("Customer");
+		final BPartnerId partnerY = createBPartner("OtherCustomer");
+		final PalletFixture fixture = createPalletFixture(partnerX);
+		final I_M_HU sourceLU = createPallet(fixture, partnerY, partnerY, 5);
+		final I_M_HU targetLU = createPallet(fixture, partnerX, null, 1);
+
+		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC1 f: extract ALL remaining TUs of the aggregate onto an existing pallet without partner (attach path); source pallet partner P; item bound to P only.
+	 */
+	@Test
+	public void luExtractTUs_allTUsOfAggregate_toExistingLUWithoutPartner()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 3);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+
+		luExtractTUs(sourceLU, 3, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(4);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(0);
+	}
+
+	/**
+	 * TC3 a: generic item (no partner) -> existing target pallet works.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_genericItem()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(null);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+
+		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(2);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC3 a: generic item (no partner) -> new target pallet works.
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_genericItem()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(null);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+
+		final LUTUResult result = huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ONE)
+				.targetLU(HUTransformService.TargetLU.ofNewLU(fixture.piLU))
+				.build());
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		Assertions.assertThat(countTUs(result.getLURecords().get(0))).as("TUs on new target LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(4);
+	}
+
+	/**
+	 * TC3 b: the only item is bound to a different partner -> existing target pallet: error, nothing moved.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_itemBoundToOtherPartnerOnly_fails()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final BPartnerId otherPartner = createBPartner("OtherCustomer");
+		final PalletFixture fixture = createPalletFixture(otherPartner);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, partnerP, null, 1);
+
+		assertLuExtractTUsFails(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU), ERR_LU_HAS_NO_TU_SUB_PACK_INSTR);
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(5);
+	}
+
+	/**
+	 * TC3 b: the only item is bound to a different partner -> new target pallet: error, nothing moved.
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_itemBoundToOtherPartnerOnly_fails()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final BPartnerId otherPartner = createBPartner("OtherCustomer");
+		final PalletFixture fixture = createPalletFixture(otherPartner);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+
+		assertLuExtractTUsFails(sourceLU, 1, HUTransformService.TargetLU.ofNewLU(fixture.piLU), MSG_TU_NOT_CONFIGURED_FOR_LU);
+
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(5);
+	}
+
+	/**
+	 * TC3 b: no item at all for the TU -> existing target pallet: error, nothing moved.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLU_noItem_fails()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, partnerP, null, 1);
+		deactivate(fixture.luItem); // the pallet has no (active) item for the TU anymore
+
+		assertLuExtractTUsFails(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU), ERR_LU_HAS_NO_TU_SUB_PACK_INSTR);
+
+		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(1);
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(5);
+	}
+
+	/**
+	 * TC3 b: no item at all for the TU -> new target pallet: error, nothing moved.
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_noItem_fails()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		deactivate(fixture.luItem); // the pallet has no (active) item for the TU anymore
+
+		assertLuExtractTUsFails(sourceLU, 1, HUTransformService.TargetLU.ofNewLU(fixture.piLU), MSG_TU_NOT_CONFIGURED_FOR_LU);
+
+		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(5);
 	}
 
 	@SuppressWarnings("deprecation")

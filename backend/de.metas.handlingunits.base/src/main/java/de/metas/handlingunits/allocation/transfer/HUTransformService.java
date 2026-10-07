@@ -566,6 +566,9 @@ public class HUTransformService
 		LUTUResult result = LUTUResult.EMPTY;
 		final List<I_M_HU> tuHUsToAttachToLU;
 
+		// resolve before any de-aggregation/split, which would detach the TU from the pallet it is taken from
+		final BPartnerId luItemBPartnerId = resolveBPartnerForLUItem(luHU, sourceTuHU);
+
 		final boolean qtyTuExceedsSourceTuHU = qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0;
 		if (qtyTuExceedsSourceTuHU)
 		{
@@ -598,6 +601,7 @@ public class HUTransformService
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
 				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
+				lutuProducer.setBPartnerId(luItemBPartnerId);
 				lutuProducer.addCUPerTU(tuCapacity);
 
 				HULoader.builder()
@@ -624,7 +628,15 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
-			final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			if (luPIItem == null && luItemBPartnerId != null)
+			{
+				luPIItem = handlingUnitsDAO.retrieveFirstPIItem(
+								handlingUnitsBL.getEffectivePackingInstructionsId(luHU),
+								HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
+								luItemBPartnerId)
+						.orElse(null);
+			}
 			if (luPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
@@ -1111,11 +1123,42 @@ public class HUTransformService
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
 		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
-		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
+		final BPartnerId bpartnerId = resolveBPartnerForLUItem(null, sourceTuHU);
 
 		final I_M_HU_PI_Item luPIItem = getLuPIItem(luPIId, tuPIId, bpartnerId);
 
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
+	}
+
+	/**
+	 * Resolves the partner used to look up a partner-bound LU to TU packing instructions item.
+	 * Precedence: the target LU's partner, then the source TU's own partner, then the partner of the pallet the source TU sits on.
+	 * The last one is needed because the partner of a partner-bound item is often only set on the pallet, not on the TUs taken off it.
+	 */
+	@Nullable
+	private BPartnerId resolveBPartnerForLUItem(@Nullable final I_M_HU targetLU, @NonNull final I_M_HU sourceTuHU)
+	{
+		if (targetLU != null)
+		{
+			final BPartnerId targetLUBPartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(targetLU);
+			if (targetLUBPartnerId != null)
+			{
+				return targetLUBPartnerId;
+			}
+		}
+
+		final BPartnerId tuBPartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
+		if (tuBPartnerId != null)
+		{
+			return tuBPartnerId;
+		}
+
+		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(sourceTuHU);
+		if (topLevelParent == null || topLevelParent.getM_HU_ID() == sourceTuHU.getM_HU_ID())
+		{
+			return null;
+		}
+		return IHandlingUnitsBL.extractBPartnerIdOrNull(topLevelParent);
 	}
 
 	private I_M_HU_PI_Item getLuPIItem(
