@@ -94,22 +94,43 @@ class TableRow extends PureComponent {
 
   /**
    * @method isObjectValuedWidget
-   * @summary True for grid cells whose value is a {key,caption} object
-   * (Lookup/List; Search resolves to Lookup at field level).
-   *
-   * The grid nav row-write on Tab/Enter commits `event.target.value` (the
-   * editor's raw text string). For these object-valued cells that raw string
-   * would clobber the {key,caption} object, so the cell renders literal
-   * "undefined"/stale text after the user advances away and back. The active
-   * editing widget (RawLookup/RawList at selection) owns their commit, so the
-   * nav layer must skip the row-write for them. Scalar (text/number) cells are
-   * unaffected and still commit.
+   * @summary True when the field's value is a {key, caption} object, i.e. its widget is a
+   * Lookup or a List.
    *
    * @param {string} fieldName - the cell's field name
    */
   isObjectValuedWidget = (fieldName) => {
     const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
     return widgetType === 'Lookup' || widgetType === 'List';
+  };
+
+  /**
+   * @method updateRawPropertyValue
+   * @summary Writes the given raw (text or number) value into the row's field. Writes nothing
+   * for an object-valued field (see isObjectValuedWidget), whose {key, caption} value a raw
+   * value would replace.
+   *
+   * @param {string} property - the cell's field name
+   * @param {*} value - the raw value
+   * @returns {boolean} true if the value was written
+   */
+  updateRawPropertyValue = (property, value) => {
+    if (this.isObjectValuedWidget(property)) {
+      return false;
+    }
+
+    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
+      this.props;
+    updatePropertyValue({
+      property,
+      value,
+      tabId,
+      rowId,
+      isModal: modalVisible,
+      entity,
+      tableId,
+    });
+    return true;
   };
 
   /**
@@ -193,15 +214,9 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          // Activate on a single letter or digit, read from event.key rather
-          // than String.fromCharCode(event.keyCode): keyCode-based mapping is
-          // wrong for the numeric keypad (numpad-0 is keyCode 96, which maps
-          // to a backtick), while event.key reports the produced character
-          // ("0" for both numpad-0 and main-row-0). The gate is deliberately
-          // limited to letters/digits (incl. non-ASCII letters): activation
-          // selects the cell content, which clears a filled value, so Space
-          // and punctuation (- . , + / *) must not activate. Non-printable
-          // keys report a multi-character name and never match.
+          // event.key, not keyCode: a numpad key reports its character ("0") only in event.key.
+          // Letters and digits only: activation replaces the cell content, so Space and
+          // punctuation must not activate.
           if (
             typeof event.key === 'string' &&
             ACTIVATION_KEY_REGEX.test(event.key) &&
@@ -227,8 +242,6 @@ class TableRow extends PureComponent {
       return;
     }
 
-    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
-      this.props;
     const { edited } = this.state;
     const inputContent = event.target.value;
 
@@ -251,29 +264,11 @@ class TableRow extends PureComponent {
       {
         valueBeforeEditing: fieldValue,
       },
-      () => {
-        // Skip the raw-string row-write for object-valued (Lookup/List) cells:
-        // it would clobber the {key,caption} object -> literal "undefined" on
-        // re-entry. Their own widget owns the commit at selection.
-        if (this.isObjectValuedWidget(property)) {
-          return;
-        }
-        updatePropertyValue({
-          property,
-          value: inputContent,
-          tabId,
-          rowId,
-          isModal: modalVisible,
-          entity,
-          tableId,
-        });
-      }
+      () => this.updateRawPropertyValue(property, inputContent)
     );
   };
 
   handleKeyDown_Tab = ({ event, property, isAttributeWidget }) => {
-    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
-      this.props;
     const { edited } = this.state;
 
     // if ProductAttributes widget is visible, skip over Tab navigation here
@@ -284,22 +279,8 @@ class TableRow extends PureComponent {
     // this test is for a case when user is navigating around the table
     // without activating the field. Then there's no widget (input), so the value
     // is undefined and we don't have to worry about it.
-    // Also skip the raw-string row-write for object-valued (Lookup/List) cells:
-    // it would clobber the {key,caption} object -> literal "undefined" on
-    // re-entry. Their own widget owns the commit at selection.
-    if (
-      typeof event.target.value !== 'undefined' &&
-      !this.isObjectValuedWidget(property)
-    ) {
-      updatePropertyValue({
-        property,
-        value: event.target.value,
-        tabId,
-        rowId,
-        isModal: modalVisible,
-        entity,
-        tableId,
-      });
+    if (typeof event.target.value !== 'undefined') {
+      this.updateRawPropertyValue(property, event.target.value);
     }
     if (edited === property) {
       event.stopPropagation();
@@ -308,33 +289,11 @@ class TableRow extends PureComponent {
   };
 
   handleKeyDown_Escape = ({ event, property }) => {
-    const {
-      changeListenOnTrue,
-      rowId,
-      tabId,
-      entity,
-      modalVisible,
-      tableId,
-      updatePropertyValue,
-    } = this.props;
+    const { changeListenOnTrue } = this.props;
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      // Object-valued (Lookup/List) cells: their widget owns the value (it
-      // restores or commits it itself), and the row's remembered value can be
-      // the editor's raw text (Enter) - writing it back would clobber the
-      // {key,caption} object. Just close the editor; the stored value shows.
-      if (!this.isObjectValuedWidget(property)) {
-        updatePropertyValue({
-          property,
-          value: valueBeforeEditing,
-          tabId,
-          rowId,
-          isModal: modalVisible,
-          entity,
-          tableId,
-        });
-
+      if (this.updateRawPropertyValue(property, valueBeforeEditing)) {
         // reset the field value to the previous one, so that we won't
         // overwrite it
         event.target.value = valueBeforeEditing;
@@ -357,12 +316,8 @@ class TableRow extends PureComponent {
     readonly,
     isAttributeWidget,
   }) => {
-    // Object-valued attribute widgets (ProductAttributes/Address) commit through
-    // the <Attributes> overlay, not the raw-text edit path. Routing an
-    // activation key (a letter/digit accepted by the gate above)
-    // into handleEditProperty({ select: true }) would clearValue() the widget
-    // and clobber its {key,caption} value (silent data loss). Skip it here,
-    // mirroring the Tab/Enter isAttributeWidget guards.
+    // an attribute widget (ProductAttributes, Address) is edited in its own overlay; a
+    // select-and-type edit would clear its value
     if (isAttributeWidget) {
       return;
     }
