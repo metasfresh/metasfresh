@@ -83,6 +83,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -2117,7 +2118,13 @@ public class FlatrateBL implements IFlatrateBL
 			final ImmutableSet<DocTypeId> overlappingDocTypeIds = getCompensationGroupDocTypeIds(overlappingTerm);
 			if (!Sets.intersection(docTypeIds, overlappingDocTypeIds).isEmpty())
 			{
-				throw new AdempiereException(MSG_CompensationGroup_OverlappingTerm, overlappingTerm.getDocumentNo())
+				final I_C_BPartner billPartner = bPartnerDAO.getById(billPartnerId);
+				throw new AdempiereException(
+						MSG_CompensationGroup_OverlappingTerm,
+						overlappingTerm.getDocumentNo(),
+						billPartner.getValue() + " " + billPartner.getName(),
+						TranslatableStrings.date(TimeUtil.asLocalDate(overlappingTerm.getStartDate())),
+						TranslatableStrings.date(TimeUtil.asLocalDate(overlappingTerm.getEndDate())))
 						.markAsUserValidationError();
 			}
 		}

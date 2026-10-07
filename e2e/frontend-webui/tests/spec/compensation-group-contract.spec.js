@@ -546,10 +546,6 @@ test.describe('Compensation-group contract — create through the WebUI and comp
   test('creating a contract that overlaps an existing one tells the operator why it was refused', async ({ page }) => {
     allure.epic('E0170: Contract Management');
     allure.story('Overlapping compensation-group contract is refused with a visible reason');
-    // Known gap: the refusal is only written to the process log and the screen shows nothing.
-    // The expected failure is the reason assertion of step 2 (no error notification with the reason); steps 1 and 3
-    // must pass, so a broken setup is not masked. Remove test.fail() together with that fix.
-    test.fail();
     allure.severity('critical');
     test.setTimeout(20 * 60 * 1000);
     page.setDefaultTimeout(60 * 1000);
