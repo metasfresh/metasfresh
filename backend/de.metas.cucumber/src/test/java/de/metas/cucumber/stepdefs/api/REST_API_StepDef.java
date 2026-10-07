@@ -25,19 +25,25 @@ package de.metas.cucumber.stepdefs.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonTestResponse;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.compiere.model.I_AD_Role;
 import org.compiere.util.Evaluatees;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -49,21 +55,39 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class REST_API_StepDef
 {
 	private String userAuthToken;
 
-	private final TestContext testContext;
-
-	public REST_API_StepDef(final TestContext testContext)
-	{
-		this.testContext = testContext;
-	}
+	@NonNull private final TestContext testContext;
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
+	}
+
+	/**
+	 * Identifier-based counterpart of the name-based token step above: resolves a role registered earlier
+	 * (e.g. by {@code metasfresh contains AD_Roles including the WebUI role:}) via the {@code AD_Role_StepDefData}
+	 * table and mints the auth token from its actual name. This lets a scenario create a role with an
+	 * auto-generated (replay-safe) name and still obtain a token for it, since the generated name is never
+	 * known to the feature text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Role_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'
+	 * </pre>
+	 */
+	@Given("the existing user with login {string} receives a random a API token for the existing role with identifier {string}")
+	public void the_existing_user_has_the_authtoken_by_role_identifier(@NonNull final String userLogin, @NonNull final String roleIdentifier)
+	{
+		final I_AD_Role role = roleTable.get(roleIdentifier);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, role.getName());
 	}
 
 	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
@@ -289,6 +313,40 @@ public class REST_API_StepDef
 	public void store_rest_endpointPath(@NonNull final String endpointPath)
 	{
 		testContext.setEndpointPath(resolveContextVariables(endpointPath));
+	}
+
+	/**
+	 * Asserts that the error message of the LAST response contains every value of the data table.
+	 *
+	 * <p>The counterpart for a {@code POST} of the error assertions that
+	 * {@code a PUT request with below payload is sent to metasfresh REST-API … containing …} makes inline:
+	 * it asserts nothing about the request, so it composes with any of the request steps above, and it
+	 * needs no {@code AD_Message} error code — an exception that carries none (e.g. a missing-property or
+	 * no-tax-found rejection) can still be pinned down by what its message says. Several rows are asserted
+	 * against the same single {@code JsonErrorItem}, which is how a message naming more than one thing
+	 * (a rate AND a category AND a scope) is checked. Values may use {@code @contextVariable@}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Value</b> — (required) substring the error message must contain<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the metasfresh REST-API error message contains:
+	 *   | Value             |
+	 *   | 19                |
+	 *   | int-Transport     |
+	 * </pre>
+	 */
+	@Then("the metasfresh REST-API error message contains:")
+	public void the_metasfresh_REST_API_error_message_contains(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final JsonError jsonError = testContext.getApiResponseBodyAs(JsonError.class);
+		final JsonErrorItem errorItem = CollectionUtils.singleElement(jsonError.getErrors());
+		final String actualMessage = errorItem.getMessage();
+
+		DataTableRows.of(dataTable).forEach(row -> assertThat(actualMessage)
+				.as(() -> "Error message of " + jsonError)
+				.contains(resolveContextVariables(row.getAsString("Value"))));
 	}
 
 	/**

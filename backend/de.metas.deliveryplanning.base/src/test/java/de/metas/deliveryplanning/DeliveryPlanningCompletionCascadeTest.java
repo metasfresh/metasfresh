@@ -29,11 +29,12 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import java.time.Instant;
 import lombok.NonNull;
@@ -43,6 +44,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,8 +52,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +76,9 @@ class DeliveryPlanningCompletionCascadeTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -83,10 +88,15 @@ class DeliveryPlanningCompletionCascadeTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -143,6 +153,12 @@ class DeliveryPlanningCompletionCascadeTest
 	private DeliveryPlanningId createDeliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
+		// C_BPartner_ID is mandatory on the table too, so a fixture must supply one
+		record.setC_BPartner_ID(2000000);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setIsClosed(closed);
 		InterfaceWrapperHelper.save(record);
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
@@ -150,12 +166,13 @@ class DeliveryPlanningCompletionCascadeTest
 
 	private void allocate(@NonNull final ShipperTransportationId deliveryInstructionId, @NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
+		deliveryInstructionService.createAllocations(deliveryInstructionId, ImmutableList.of(
 				DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(deliveryPlanningId)
-						.productId(ProductId.ofRepoId(540010))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(540010))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.build())
 						.build()));
 	}
 
@@ -212,7 +229,7 @@ class DeliveryPlanningCompletionCascadeTest
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
 		allocate(deliveryInstructionId, createDeliveryPlanning(false));
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT);
+		deliveryInstructionService.deactivateAllocations(deliveryInstructionId, REMOVED_AT);
 
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
 
@@ -353,8 +370,8 @@ class DeliveryPlanningCompletionCascadeTest
 		// exactly ONE batch load, carrying ALL THREE allocated plannings - not a per-planning loop, and not a
 		// batch that silently drops the instruction's other lines
 		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Collection<DeliveryPlanningId>> batchLoadedIds = ArgumentCaptor.forClass(Collection.class);
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getByIds(batchLoadedIds.capture());
+		final ArgumentCaptor<Set<DeliveryPlanningId>> batchLoadedIds = ArgumentCaptor.forClass(Set.class);
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getRecordsByIds(batchLoadedIds.capture());
 		assertThat(batchLoadedIds.getValue()).containsExactlyInAnyOrder(first, second, third);
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getById(Mockito.any());
 	}
@@ -379,6 +396,6 @@ class DeliveryPlanningCompletionCascadeTest
 		// TWO calls over the same 2 ids are expected: the deactivation resets those plannings' dates (one batch
 		// load), and the deferred invalidation reads them again afterwards (a second, unrelated batch load)
 		Mockito.verify(deliveryPlanningRepository, Mockito.times(2))
-				.getByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
+				.getRecordsByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
 	}
 }

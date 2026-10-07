@@ -1,5 +1,6 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,8 +37,7 @@ class MobileUIManufacturingConfigTest
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.UNKNOWN)
 				.isAllowIssuingAnyHU(OptionalBoolean.UNKNOWN)
-				.isBestBeforeDateEditable(OptionalBoolean.UNKNOWN)
-				.isLotNumberEditable(OptionalBoolean.UNKNOWN)
+				.editableAttributeCodesInOrder(ImmutableList.of())
 				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
@@ -67,8 +67,6 @@ class MobileUIManufacturingConfigTest
 		record.setIsActive(true);
 		record.setIsScanResourceRequired(false);
 		record.setIsAllowIssuingAnyHU(false);
-		record.setIsBestBeforeDateEditable(true);
-		record.setIsLotNumberEditable(true);
 		record.setIsAllowFinishedGoodsReceiveToLU(isAllowFinishedGoodsReceiveToLU);
 		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
 		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);

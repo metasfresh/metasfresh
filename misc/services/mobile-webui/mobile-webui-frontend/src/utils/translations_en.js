@@ -13,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -122,6 +127,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'This will write off the remaining %(qty)s and empty the HU. Continue?',
+    },
     picking: {
       PickingLine: 'Packing line',
       PickFromManufacturingOrder: 'Manufacture',
@@ -144,6 +152,7 @@ const translations = {
       scanSerialNoAgain: 'Scan again',
       serialNoCount: '%(scanned)s of %(total)s scanned',
       serialNoCountExtra: '(%(extra)s too many)',
+      serialNoAlreadyScanned: 'Serial number already scanned',
       serialNoScanDone: 'Done',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',

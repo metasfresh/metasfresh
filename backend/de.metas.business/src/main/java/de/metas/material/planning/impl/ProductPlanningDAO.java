@@ -135,6 +135,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.leadTimeDays(record.getDeliveryTime_Promised().intValueExact())
 				.isManufactured(StringUtils.toBoolean(record.getIsManufactured()))
 				.isManufacturedLot4Lot(record.isManufacturedLot4Lot())
+				.isTraded(StringUtils.toBoolean(record.getIsTraded()))
 				.isPurchased(StringUtils.toBoolean(record.getIsPurchased()))
 				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
@@ -171,6 +172,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setDeliveryTime_Promised(BigDecimal.valueOf(from.getLeadTimeDays()));
 		record.setIsManufactured(StringUtils.ofBoolean(from.isManufactured()));
 		record.setIsManufacturedLot4Lot(from.isManufacturedLot4Lot());
+		record.setIsTraded(StringUtils.ofBoolean(from.isTraded()));
 		record.setIsPurchased(StringUtils.ofBoolean(from.isPurchased()));
 		record.setMaxManufacturedQtyPerOrderDispo(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().toBigDecimal() : null);
 		record.setMaxManufacturedQtyPerOrderDispo_UOM_ID(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().getUomId().getRepoId() : -1);

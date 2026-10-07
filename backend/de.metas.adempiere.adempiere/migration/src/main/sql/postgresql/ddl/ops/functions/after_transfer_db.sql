@@ -51,6 +51,12 @@ BEGIN
     UPDATE externalsystem_config SET isactive = 'N' WHERE TRUE;
     RAISE NOTICE '% !! Deactivated ExternalSystem records !!', CLOCK_TIMESTAMP();
 
+    -- Switch nShift test mode back ON. A productive instance has it switched OFF by hand, so a database copied
+    -- from production arrives with 'N' and must be forced back to 'Y' here: otherwise a test system inheriting
+    -- production data could book real, unmarked shipments with the carrier.
+    UPDATE Carrier_Config SET IsTestMode = 'Y' WHERE TRUE;
+    RAISE NOTICE '% !! Switched Carrier_Config test mode ON !!', CLOCK_TIMESTAMP();
+
     UPDATE ad_scheduler
     SET isactive = 'N'
     WHERE ad_scheduler_id IN (

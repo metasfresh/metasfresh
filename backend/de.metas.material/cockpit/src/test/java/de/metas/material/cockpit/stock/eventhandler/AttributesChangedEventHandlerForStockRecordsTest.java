@@ -5,6 +5,7 @@ import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
+import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
@@ -69,7 +70,7 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		stockDataUpdateRequestHandler = new StockDataUpdateRequestHandler(Mockito.mock(PostMaterialEventService.class));
+		stockDataUpdateRequestHandler = new StockDataUpdateRequestHandler(Mockito.mock(PostMaterialEventService.class), new StockRepository());
 	}
 
 	@Test

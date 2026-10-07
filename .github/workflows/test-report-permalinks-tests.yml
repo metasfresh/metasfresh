@@ -52,3 +52,6 @@ jobs:
 
       - name: Run resolver tests (node)
         run: node tests/permalink.test.js
+
+      - name: Run coverage-page tests (node)
+        run: node tests/coverage.test.js

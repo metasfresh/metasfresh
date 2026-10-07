@@ -11,6 +11,9 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.attribute.json.JsonAttribute;
+import de.metas.handlingunits.attribute.json.JsonAttributeListValue;
+import de.metas.handlingunits.attribute.json.JsonAttributeValueType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -50,6 +53,8 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.api.Attribute;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.Params;
 import org.compiere.model.I_C_UOM;
@@ -81,6 +86,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	@NonNull private final ProductAllergensService productAllergensService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final MaterialReceiptEditableAttributes editableAttributes;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -101,7 +108,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
-						.valueObj("readAttributes", config.getEditableAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
@@ -195,7 +201,60 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
 				.catchWeightUomSymbol(catchWeightUomSymbol)
+				.editableAttributes(buildEditableAttributes(line.getProductId(), config, adLanguage))
 				.build();
+	}
+
+	/**
+	 * Builds the generic, per-line editable-attribute list: the config's editable-attribute codes, restricted to
+	 * this product's {@code M_AttributeSet} and to instance-level attributes only, in the config's {@code SeqNo}
+	 * order ({@link MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()} is already ordered). Applies
+	 * uniformly to every line, main finished good or co-/by-product alike. No value is carried yet — nothing has
+	 * been entered by the operator at this stage.
+	 * <p>
+	 * The allow-list resolution itself lives in {@link MaterialReceiptEditableAttributes} so that the receive-time
+	 * fail-loud guard ({@code ManufacturingJobService#receiveGoods}) validates against the exact same list this
+	 * method offers — no drift between what the UI offers and what the server accepts.
+	 */
+	@NonNull
+	@VisibleForTesting
+	List<JsonAttribute> buildEditableAttributes(
+			@NonNull final ProductId productId,
+			@NonNull final MobileUIManufacturingConfig config,
+			@NonNull final String adLanguage)
+	{
+		return editableAttributes.getEditableAttributes(productId, config)
+				.stream()
+				.map(attribute -> toJsonAttribute(attribute, adLanguage))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private JsonAttribute toJsonAttribute(@NonNull final Attribute attribute, @NonNull final String adLanguage)
+	{
+		final JsonAttributeValueType valueType = JsonAttributeValueType.of(attribute.getValueType());
+		final List<JsonAttributeListValue> listValues = valueType == JsonAttributeValueType.LIST
+				? toJsonListValues(attribute, adLanguage)
+				: null;
+
+		return JsonAttribute.builder()
+				.code(attribute.getAttributeCode())
+				.caption(attribute.getDisplayName().translate(adLanguage))
+				.valueType(valueType)
+				.listValues(listValues)
+				.build();
+	}
+
+	@NonNull
+	private List<JsonAttributeListValue> toJsonListValues(@NonNull final Attribute attribute, @NonNull final String adLanguage)
+	{
+		return attributeDAO.retrieveAttributeValues(attribute)
+				.stream()
+				.map(listValue -> JsonAttributeListValue.builder()
+						.value(listValue.getValue())
+						.caption(listValue.getNameTrl().translate(adLanguage))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableList<JsonHazardSymbol> getJsonHazardSymbols(final @NonNull ProductId productId, final String adLanguage)

@@ -134,4 +134,32 @@ class EAN13Test
 			}
 		}
 	}
+
+	@Nested
+	class PrefixClassification
+	{
+		@Test
+		void prefix28_isVariable()
+		{
+			final EAN13 ean13 = EAN13.ofString("2859414004825").get();
+			assertThat(ean13.isVariable()).isTrue();
+			assertThat(ean13.isFixed()).isFalse();
+		}
+
+		@Test
+		void prefix29_isVariable()
+		{
+			final EAN13 ean13 = EAN13.ofString("2912345005009").get();
+			assertThat(ean13.isVariable()).isTrue();
+			assertThat(ean13.isFixed()).isFalse();
+		}
+
+		@Test
+		void prefix761_isFixed_notVariable()
+		{
+			final EAN13 ean13 = EAN13.ofString("7617027667210").get();
+			assertThat(ean13.isVariable()).isFalse();
+			assertThat(ean13.isFixed()).isTrue();
+		}
+	}
 }

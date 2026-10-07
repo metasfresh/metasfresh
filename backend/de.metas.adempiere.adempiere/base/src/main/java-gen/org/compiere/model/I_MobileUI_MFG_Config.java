@@ -98,6 +98,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowEmptyingHUs (boolean IsAllowEmptyingHUs);
+
+	/**
+	 * Get Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowEmptyingHUs();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowEmptyingHUs = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowEmptyingHUs", null);
+	String COLUMNNAME_IsAllowEmptyingHUs = "IsAllowEmptyingHUs";
+
+	/**
 	 * Set Finished goods: allow receiving to LU.
 	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
 	 *
@@ -190,29 +213,6 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsBestBeforeDateEditable (boolean IsBestBeforeDateEditable);
-
-	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isBestBeforeDateEditable();
-
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
-
-	/**
 	 * Set Capture catch weight.
 	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
@@ -236,27 +236,27 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Set Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsLotNumberEditable (boolean IsLotNumberEditable);
+	void setIsConfirmEmptyingHU (boolean IsConfirmEmptyingHU);
 
 	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Get Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isLotNumberEditable();
+	boolean isConfirmEmptyingHU();
 
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsConfirmEmptyingHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsConfirmEmptyingHU", null);
+	String COLUMNNAME_IsConfirmEmptyingHU = "IsConfirmEmptyingHU";
 
 	/**
 	 * Set Workstation Scan Required.

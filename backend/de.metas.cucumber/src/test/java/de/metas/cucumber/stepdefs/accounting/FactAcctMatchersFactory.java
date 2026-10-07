@@ -15,6 +15,7 @@ import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.invoice.InvoiceId;
@@ -49,6 +50,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_ElementValue_StepDefData elementValueTable;
+	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 
 	public FactAcctMatchers createLineMatchers(@NonNull final DataTable table)
 	{
@@ -82,6 +84,13 @@ public class FactAcctMatchersFactory
 		final String accountConceptualNameStr = row.getAsString(I_Fact_Acct.COLUMNNAME_AccountConceptualName);
 		final AccountConceptualName accountConceptualName = "*".equals(accountConceptualNameStr) ? null : AccountConceptualName.ofString(accountConceptualNameStr);
 
+		// A bare `0` or `-` in the Qty column means "the fact line's Qty must be zero, UOM-agnostic" — for
+		// amount-only postings (e.g. a cost revaluation) whose fact lines carry no C_UOM_ID. Any other value keeps
+		// the existing "<n> <UOM>" behaviour (getAsOptionalQuantity throws without a UOM, so no existing test uses a
+		// bare number here — this branch cannot hijack an existing assertion).
+		final String qtyStr = row.getAsOptionalString(I_Fact_Acct.COLUMNNAME_Qty).map(String::trim).orElse(null);
+		final boolean expectZeroQty = "0".equals(qtyStr) || "-".equals(qtyStr);
+
 		return FactAcctLineMatcher.builder()
 				.row(row)
 				.accountConceptualName(accountConceptualName)
@@ -89,7 +98,8 @@ public class FactAcctMatchersFactory
 				.amtAcctCr(row.getAsOptionalBigDecimal(I_Fact_Acct.COLUMNNAME_AmtAcctCr).orElse(null))
 				.amtSourceDr(row.getAsOptionalMoney(I_Fact_Acct.COLUMNNAME_AmtSourceDr, moneyService::getCurrencyIdByCurrencyCode).orElse(null))
 				.amtSourceCr(row.getAsOptionalMoney(I_Fact_Acct.COLUMNNAME_AmtSourceCr, moneyService::getCurrencyIdByCurrencyCode).orElse(null))
-				.qty(row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
+				.qty(expectZeroQty ? null : row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
+				.expectZeroQty(expectZeroQty)
 				.documentRef(documentRef)
 				.taxId(extractTaxId(row))
 				.vatCode(extractVatCode(row))
@@ -98,6 +108,8 @@ public class FactAcctMatchersFactory
 				.invoiceId(extractInvoiceId(row))
 				.accountId(extractAccountId(row))
 				.locatorId(extractLocatorId(row))
+				.dateAcct(row.getAsOptionalLocalDate(I_Fact_Acct.COLUMNNAME_DateAcct).orElse(null))
+				.acctSchemaId(row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID).map(acctSchemaTable::getId).orElse(null))
 				.build();
 	}
 

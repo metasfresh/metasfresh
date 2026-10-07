@@ -10,6 +10,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.DeliveryRule;
@@ -71,6 +73,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 	@NonNull private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	@NonNull private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer = SpringContextHolder.instance.getBean(ProcessOLCandsWorkpackageEnqueuer.class);
 	@NonNull private final AsyncBatchService asyncBatchService = SpringContextHolder.instance.getBean(AsyncBatchService.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private POSOrderId _posOrderId = null; // lazy
@@ -178,6 +181,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 				// TODO optimize the retrieves below
 				.dataSourceId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(DATA_SOURCE_INTERNAL_NAME))
 				.dataDestId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME))
+				.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.Other))
 				//
 				.build();
 	}

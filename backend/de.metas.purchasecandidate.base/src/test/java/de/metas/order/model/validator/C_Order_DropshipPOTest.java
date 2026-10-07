@@ -22,10 +22,13 @@
 
 package de.metas.order.model.validator;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
@@ -73,6 +76,7 @@ class C_Order_DropshipPOTest
 	private IWarehouseDAO warehouseDAO;
 	private VendorProductInfoService vendorProductInfoService;
 	private DropshipPOFromSOService dropshipPOFromSOService;
+	private OrderGroupRepository orderGroupRepository;
 
 	private C_Order_DropshipPO interceptor;
 
@@ -86,11 +90,12 @@ class C_Order_DropshipPOTest
 		warehouseDAO = mock(IWarehouseDAO.class);
 		vendorProductInfoService = mock(VendorProductInfoService.class);
 		dropshipPOFromSOService = mock(DropshipPOFromSOService.class);
+		orderGroupRepository = mock(OrderGroupRepository.class);
 
 		Services.registerService(IOrderBL.class, orderBL);
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
 
-		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService, vendorProductInfoService);
+		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService, vendorProductInfoService, orderGroupRepository);
 	}
 
 	// -----------------------------------------------------------------------
@@ -135,6 +140,24 @@ class C_Order_DropshipPOTest
 	{
 		final I_C_OrderLine ol = mock(I_C_OrderLine.class);
 		when(ol.getLine()).thenReturn(lineNo);
+		when(ol.getC_BPartner_Vendor_ID()).thenReturn(0); // no explicit vendor
+		when(ol.getM_Product_ID()).thenReturn(productId);
+		return ol;
+	}
+
+	/**
+	 * Builds a mock compensation (discount) OrderLine — {@code IsGroupCompensationLine=true},
+	 * belonging to the given group of the given order, no vendor, a real product. Whether it needs a
+	 * vendor depends on whether its {@link GroupId} is contract-created, stubbed separately on
+	 * {@code orderGroupRepository}.
+	 */
+	private I_C_OrderLine buildCompensationLine(final int lineNo, final int orderId, final int groupId, final int productId)
+	{
+		final I_C_OrderLine ol = mock(I_C_OrderLine.class);
+		when(ol.getLine()).thenReturn(lineNo);
+		when(ol.isGroupCompensationLine()).thenReturn(true);
+		when(ol.getC_Order_ID()).thenReturn(orderId);
+		when(ol.getC_Order_CompensationGroup_ID()).thenReturn(groupId);
 		when(ol.getC_BPartner_Vendor_ID()).thenReturn(0); // no explicit vendor
 		when(ol.getM_Product_ID()).thenReturn(productId);
 		return ol;
@@ -360,5 +383,79 @@ class C_Order_DropshipPOTest
 
 		// Then: service called exactly once with the in-memory SO instance
 		verify(dropshipPOFromSOService).createDropshipPOForSO(order);
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (g): BEFORE_COMPLETE — a CONTRACT compensation line (Flatrate_Term_ID > 0) with no
+	// vendor is skipped entirely, without consulting the vendor-lookup service.
+	// -----------------------------------------------------------------------
+
+	@Test
+	void validateVendorsBeforeComplete_contractCompensationLineWithoutVendor_isSkipped()
+	{
+		// Given: a dropship SO whose only line is a compensation (discount) line belonging to a
+		// group whose header was stamped with a C_Flatrate_Term_ID (contract-created)
+		final int orderId = 7001;
+		final int warehouseId = 500;
+		final int groupId = 900;
+		final int productId = 55;
+
+		final I_C_Order order = buildOrder(orderId, warehouseId, true);
+		final I_M_Warehouse warehouse = buildWarehouse(true);
+		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
+
+		final I_C_OrderLine compensationLine = buildCompensationLine(10, orderId, groupId, productId);
+		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
+				.thenReturn(Collections.singletonList(compensationLine));
+
+		final GroupId expectedGroupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderId), groupId);
+		when(orderGroupRepository.retrieveContractCreatedGroupIds(Collections.singleton(expectedGroupId)))
+				.thenReturn(ImmutableSet.of(expectedGroupId)); // contract-created group
+
+		// When: validation runs — must not throw
+		interceptor.validateVendorsBeforeComplete(order);
+
+		// Then: the vendor lookup must never be consulted for this line
+		verify(vendorProductInfoService, never()).getDefaultVendorProductInfo(any(), any());
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (h): BEFORE_COMPLETE — a MANUAL (non-contract) compensation line, i.e. its group's
+	// C_Flatrate_Term_ID is 0, is still vendor-checked exactly like a regular line.
+	// -----------------------------------------------------------------------
+
+	@Test
+	void validateVendorsBeforeComplete_manualCompensationLineWithoutVendor_stillThrows()
+	{
+		// Given: a dropship SO whose only line is a compensation (discount) line belonging to a
+		// MANUALLY created group (its header's C_Flatrate_Term_ID is 0 — no contract behind it)
+		final int orderId = 7002;
+		final int warehouseId = 500;
+		final int groupId = 901;
+		final int productId = 66;
+
+		final I_C_Order order = buildOrder(orderId, warehouseId, true);
+		final I_M_Warehouse warehouse = buildWarehouse(true);
+		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
+
+		final I_C_OrderLine compensationLine = buildCompensationLine(20, orderId, groupId, productId);
+		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
+				.thenReturn(Collections.singletonList(compensationLine));
+
+		final GroupId expectedGroupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderId), groupId);
+		when(orderGroupRepository.retrieveContractCreatedGroupIds(Collections.singleton(expectedGroupId)))
+				.thenReturn(ImmutableSet.of()); // manually-created group: no contract
+
+		when(vendorProductInfoService.getDefaultVendorProductInfo(
+				ProductId.ofRepoId(productId),
+				OrgId.ofRepoId(ORG_ID)))
+				.thenReturn(Optional.empty());
+
+		// When / Then: the line is checked exactly like a regular one — no vendor, no default → throws
+		assertThatThrownBy(() -> interceptor.validateVendorsBeforeComplete(order))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(ex.getMessage())
+						.as("Exception message must reference line 20")
+						.contains("20"));
 	}
 }

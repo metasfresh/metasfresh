@@ -57,6 +57,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -154,6 +155,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *                            by the schedule gate, regardless of {@code ignoreInvoiceSchedule}).
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
+
+	/**
+	 * Like {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean, boolean)}, but yields the reason.
+	 *
+	 * @return the translated skip reason, or {@code null} if the candidate is NOT skipped.
+	 */
+	@Nullable
+	String getInvoicingSkipReasonOrNull(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
@@ -439,6 +448,11 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
 
+	/**
+	 * @return the candidate's net amount invoiced as its invoice line allocations say right now, i.e. without waiting for its {@code NetAmtInvoiced} to be updated
+	 */
+	BigDecimal computeNetAmtInvoiced(I_C_Invoice_Candidate ic);
+
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
 	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
@@ -484,4 +498,20 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
 	 */
 	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
+
+	/**
+	 * Retrieves the invoice candidates associated with the given inout line. Thin delegate to
+	 * {@code IInvoiceCandDAO#retrieveInvoiceCandidatesForInOutLine} so a caller that already collaborates with
+	 * {@link IInvoiceCandBL} routes through the BL instead of also injecting the DAO of the same aggregate.
+	 */
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(org.compiere.model.I_M_InOutLine inOutLine);
+
+	/** Saves the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#save} (see {@link #retrieveInvoiceCandidatesForInOutLine}). */
+	void save(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Flags the given invoice candidate for asynchronous recompute. Thin delegate to {@code IInvoiceCandDAO#invalidateCand}. */
+	void invalidateCand(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Retrieves the invoice lines generated from the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#retrieveIlForIc}. */
+	List<org.compiere.model.I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
 }

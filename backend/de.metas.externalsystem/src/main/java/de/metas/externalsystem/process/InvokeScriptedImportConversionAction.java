@@ -52,17 +52,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * "Call" process for scripted-import conversion ({@code AD_Process 585512}, attached at the parent
  * {@code ExternalSystem_Config} and the child {@code ExternalSystem_Config_ScriptedImportConversion}).
  * <p>
  * The {@code External_Request} parameter is a Start/Stop <i>intent</i>; the concrete camel command
- * (REST vs SFTP) is derived per child from that child's endpoint transport, because a parent may
- * have several import children with different transports. Run on the parent it iterates all active
- * children; run on a child (or via {@code childConfigId}) it targets that single child.
+ * is derived per child from that child's endpoint transport, because a parent may have several
+ * import children with different transports. Run on the parent it iterates all active children; run
+ * on a child (or via {@code childConfigId}) it targets that single child.
  */
 public class InvokeScriptedImportConversionAction extends AlterExternalSystemServiceStatusAction
 {
@@ -98,7 +100,7 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 			try
 			{
 				// Record the expected status (Active/Inactive) FIRST -- it is the source of truth the startup
-				// reconciler acts on -- then trigger the concrete route (enable/disable REST or SFTP polling).
+				// reconciler acts on -- then trigger the concrete route for this child's transport.
 				externalServices.handleStatusUpdateIfRequired(parentId, command);
 				externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
 
@@ -138,11 +140,17 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 			return command.getIntent();
 		}
 
+		// Both accepted-value lists are derived from their enums rather than spelled out: a transport
+		// added later brings its two commands along with it instead of leaving a stale literal here.
 		throw new AdempiereException("No ScriptedImportConversion intent or command for External_Request")
 				.appendParametersToMessage()
 				.setParameter("External_Request", externalRequest)
-				.setParameter("acceptedIntents", "start, stop")
-				.setParameter("acceptedCommands", "enableRestAPI, disableRestAPI, enableSftpPolling, disableSftpPolling");
+				.setParameter("acceptedIntents", Arrays.stream(ScriptedImportConversionIntent.values())
+						.map(ScriptedImportConversionIntent::getCode)
+						.collect(Collectors.joining(", ")))
+				.setParameter("acceptedCommands", Arrays.stream(ScriptedImportConversionCommand.values())
+						.map(ScriptedImportConversionCommand::getValue)
+						.collect(Collectors.joining(", ")));
 	}
 
 	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)

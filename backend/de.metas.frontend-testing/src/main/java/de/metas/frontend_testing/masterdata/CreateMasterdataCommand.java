@@ -3,6 +3,9 @@ package de.metas.frontend_testing.masterdata;
 import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
+import de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -19,6 +22,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageResponse;
+import de.metas.frontend_testing.masterdata.hu_package.PackageCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
@@ -37,13 +43,19 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
+import de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand;
+import de.metas.frontend_testing.masterdata.product.CreateProductCategoryCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryResponse;
 import de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand;
 import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
@@ -57,6 +69,9 @@ import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
 import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.role.CreateRoleCommand;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -74,6 +89,7 @@ import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest;
 import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse;
 import de.metas.frontend_testing.masterdata.vatid.VATaxIDCheckLogCreateCommand;
 import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseEmptiesCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
@@ -85,6 +101,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -101,28 +118,42 @@ public class CreateMasterdataCommand
 	@NonNull private final JsonCreateMasterdataRequest request;
 
 	private final MasterdataContext context = new MasterdataContext();
+	/**
+	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 */
+	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
 		// Apply sysconfigs early (before any masterdata creation)
-		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+		previousSysconfigs.putAll(applySysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
 
 		// IMPORTANT: the order is very important
+		// Roles come BEFORE login: a login user may reference a role by identifier (JsonLoginUserRequest.role),
+		// which must already exist in the context. Everything created below may then be reachable through that role.
+		final ImmutableMap<String, JsonCreateRoleResponse> roles = createRoles();
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
 		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
+		// Product categories (and their attribute sets) must exist BEFORE attributes (which link into a set by
+		// name) and BEFORE products (which reference a category by identifier).
+		final ImmutableMap<String, JsonProductCategoryResponse> productCategories = createProductCategories();
+		final ImmutableMap<String, JsonCreateAttributeResponse> attributes = createAttributes();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
+		// POS terminals: applied after bpartners (walk-in customer identifier) and products (priced into the
+		// terminal's own M_PriceList_Version).
+		final ImmutableMap<String, JsonPOSTerminalResponse> posTerminals = createPOSTerminals();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
@@ -137,7 +168,11 @@ public class CreateMasterdataCommand
 		// (the DD_NetworkDistributionLine requires one). Keep it before the sales orders, whose picking-job
 		// schedules trigger the replenishment.
 		configureWarehouseReplenishment();
+
+		// Post-pass: needs every warehouse AND the shippers (a DD_NetworkDistributionLine requires one).
+		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		registerOrderIdsInContext(salesOrders);
@@ -158,14 +193,18 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
+				.roles(roles.isEmpty() ? null : roles)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
 				.bpartners(bpartners)
 				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
+				.productCategories(productCategories.isEmpty() ? null : productCategories)
+				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
+				.posTerminals(posTerminals.isEmpty() ? null : posTerminals)
 				.resources(resources)
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
@@ -174,6 +213,7 @@ public class CreateMasterdataCommand
 				.packingInstructions(packingInstructions)
 				.shippers(shippers)
 				.handlingUnits(hus)
+				.packages(packages)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.purchaseOrders(purchaseOrders)
@@ -214,6 +254,21 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	private ImmutableMap<String, JsonCreateRoleResponse> createRoles()
+	{
+		return process(request.getRoles(), this::createRole);
+	}
+
+	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
+	{
+		return CreateRoleCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonCreateBPartnerResponse> createBPartners()
 	{
 		return process(request.getBpartners(), this::createBPartner);
@@ -223,6 +278,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -290,6 +346,36 @@ public class CreateMasterdataCommand
 		});
 	}
 
+	private ImmutableMap<String, JsonProductCategoryResponse> createProductCategories()
+	{
+		return process(request.getProductCategories(), this::createProductCategory);
+	}
+
+	private JsonProductCategoryResponse createProductCategory(final String identifier, final JsonProductCategoryRequest request)
+	{
+		return CreateProductCategoryCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateAttributeResponse> createAttributes()
+	{
+		return process(request.getAttributes(), this::createAttribute);
+	}
+
+	private JsonCreateAttributeResponse createAttribute(final String identifier, final JsonCreateAttributeRequest request)
+	{
+		return CreateAttributeCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
 	{
 		ApplyUOMStdPrecisionsCommand.of(request.getUoms(), request.getProducts()).execute();
@@ -300,7 +386,36 @@ public class CreateMasterdataCommand
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
+				.currentCostsRepository(services.currentCostsRepository)
 				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
+	{
+		final Map<String, JsonPOSTerminalRequest> posTerminals = request.getPosTerminals();
+		if (posTerminals != null)
+		{
+			CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(posTerminals.values());
+		}
+		return process(posTerminals, this::createPOSTerminal);
+	}
+
+	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)
+	{
+		return CreatePOSTerminalCommand.builder()
+				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
+				.productPriceRepository(services.productPriceRepository)
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
+				.posTerminalRepository(services.posTerminalRepository)
+				.chargeRepository(services.chargeRepository)
+				.bankRepository(services.bankRepository)
+				.context(context)
+				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()
@@ -389,6 +504,25 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	/**
+	 * Post-pass: needs every warehouse (the empties target is named by identifier) and the shippers
+	 * (the DD_NetworkDistributionLine requires one).
+	 */
+	private void configureWarehouseEmpties()
+	{
+		if (request.getWarehouses() == null)
+		{
+			return;
+		}
+
+		ConfigureWarehouseEmptiesCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.context(context)
+				.requests(request.getWarehouses())
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
 	{
 		if (request.getWorkplaces() == null) {return ImmutableMap.of();}
@@ -463,6 +597,22 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPackageResponse> createPackages()
+	{
+		return process(request.getPackages(), this::createPackage);
+	}
+
+	private JsonPackageResponse createPackage(final String identifier, final JsonPackageRequest request)
+	{
+		return PackageCommand.builder()
+				.inOutPackageRepository(services.inOutPackageRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}
@@ -571,6 +721,7 @@ public class CreateMasterdataCommand
 		return InvoiceCreateCommand.builder()
 				.context(context)
 				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 725042776L;
+	private static final long serialVersionUID = 1213926478L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setIsAllowEmptyingHUs (final boolean IsAllowEmptyingHUs)
+	{
+		set_Value (COLUMNNAME_IsAllowEmptyingHUs, IsAllowEmptyingHUs);
+	}
+
+	@Override
+	public boolean isAllowEmptyingHUs() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowEmptyingHUs);
 	}
 
 	@Override
@@ -83,18 +95,6 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsBestBeforeDateEditable (final boolean IsBestBeforeDateEditable)
-	{
-		set_Value (COLUMNNAME_IsBestBeforeDateEditable, IsBestBeforeDateEditable);
-	}
-
-	@Override
-	public boolean isBestBeforeDateEditable() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsBestBeforeDateEditable);
-	}
-
-	@Override
 	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
 	{
 		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
@@ -107,15 +107,15 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsLotNumberEditable (final boolean IsLotNumberEditable)
+	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
 	{
-		set_Value (COLUMNNAME_IsLotNumberEditable, IsLotNumberEditable);
+		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);
 	}
 
 	@Override
-	public boolean isLotNumberEditable() 
+	public boolean isConfirmEmptyingHU() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsLotNumberEditable);
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmEmptyingHU);
 	}
 
 	@Override

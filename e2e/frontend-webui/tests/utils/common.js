@@ -11,6 +11,19 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 export const getPage = () => global.currentPage;
 
 /**
+ * Collect uncaught page errors and console.error entries from `page` for a hard
+ * zero-error assertion at the end of a scenario. Attach BEFORE navigating.
+ */
+export function collectPageErrors(page) {
+  const errors = [];
+  page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`);
+  });
+  return errors;
+}
+
+/**
  * Wrap a test step function with automatic error detection.
  * If an error toast appears during execution, the step will fail.
  */
@@ -88,3 +101,22 @@ export const expectErrorToast = async (title, func) =>
       // Error toast appeared, test passes
     }
   });
+
+/**
+ * True only for a deliberate evidence-capture run (`UAT_CAPTURE=1 npx playwright test ...`).
+ * Unset in normal and CI runs.
+ */
+export const isUatCapture = () => !!process.env.UAT_CAPTURE && process.env.UAT_CAPTURE !== '0';
+
+/**
+ * Keep the current screen painted for `ms` so the video recorder captures a state the test would
+ * otherwise leave within a frame or two (an open result list, an entered value, a tooltip).
+ * No-op unless UAT_CAPTURE is set, so normal and CI runs keep their full speed.
+ * Call it from page objects only, never from a spec.
+ */
+export const holdForCaptureIfEnabled = async (ms = 1500) => {
+  if (!isUatCapture()) {
+    return;
+  }
+  await getPage().waitForTimeout(ms);
+};

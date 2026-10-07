@@ -61,6 +61,7 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
         <input
           ref={queryStringRef}
           type="text"
+          data-testid="pos-product-search-input"
           value={queryString}
           placeholder={_('placeholder')}
           disabled={!isEnabled}

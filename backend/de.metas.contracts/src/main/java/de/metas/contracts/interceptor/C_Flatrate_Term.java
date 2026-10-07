@@ -686,6 +686,11 @@ public class C_Flatrate_Term
 	public void ensureOneContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		ensureOneContractOfGivenType(term);
+
+		if (TypeConditions.ofCode(term.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP)
+		{
+			flatrateBL.assertNoOverlappingCompensationGroupTerm(term);
+		}
 	}
 
 	private void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term)

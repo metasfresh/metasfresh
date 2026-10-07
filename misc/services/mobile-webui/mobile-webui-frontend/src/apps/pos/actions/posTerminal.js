@@ -45,6 +45,7 @@ export const usePOSTerminal = ({ refresh } = { refresh: false }) => {
       console.log('closeJournal', { cookiePOSTerminalId, cashClosingBalance, closingNote });
       dispatch(closeJournal({ posTerminalId: cookiePOSTerminalId, cashClosingBalance, closingNote }));
     },
+    reload: () => dispatch(updatePOSTerminalFromBackend({ posTerminalId: cookiePOSTerminalId })),
     setPOSTerminalId: (newPOSTerminalId) => {
       Cookies.set(COOKIE_posTerminalId, newPOSTerminalId, { expires: 365 });
       if (newPOSTerminalId !== posTerminal.id) {

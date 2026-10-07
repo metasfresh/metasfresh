@@ -75,6 +75,10 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
       | Identifier        | Value                |
       | msgInvoicingError | Event_InvoicingError |
 
+    # The note is looked up with firstOnly(), so drop any Event_InvoicingError note this DB already
+    # carries (e.g. from an earlier local run of this feature); otherwise the lookup finds two rows.
+    And AD_Note table is reset
+
     # A failing candidate is never processed, so the "wait until processed" variant would only time out.
     When process invoice candidates and verify C_Invoice_Candidate is not processed after 30s
       | C_Invoice_Candidate_ID.Identifier |
@@ -181,3 +185,151 @@ Feature: A failing "Create Invoices" run reports back to the user who started it
     And after not more than 60s, validate AD_Note:
       | Identifier | AD_Message_ID.Identifier | OPT.AD_User_ID.Identifier |
       | note_1     | msgInvoicingError        | user_metasfresh           |
+
+  @Id:S0163_300
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: A "Create Invoices" run reports the candidate the enqueuer silently skipped
+    # The enqueuer's quantity skip (QtyOrdered <> 0 with QtyToInvoice = 0), NOT the credit stop of the
+    # scenario above -- that candidate is enqueued and fails later, in a different code path.
+    Given metasfresh contains M_Products:
+      | Identifier | Name              |
+      | p_sk_1     | salesProduct_sk_1 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                   | Value                   | OPT.IsActive |
+      | ps_sk_1    | sk_pricing_system_name | sk_pricing_system_value | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_sk_1    | ps_sk_1                       | DE                        | EUR                 | sk_price_list_name | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_sk_1   | pl_sk_1                   | sk_salesOrder-PLV | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_sk_1    | plv_sk_1                          | p_sk_1                  | 10.0     | PCE               | Normal                        |
+
+    # Different bill partners: the same partner would aggregate into one invoice header.
+    And metasfresh contains C_BPartners:
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_sk_good   | sk_GoodCustomer    | N            | Y              | ps_sk_1                       |
+      | customer_sk_skip   | sk_SkippedCustomer | N            | Y              | ps_sk_1                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN              | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_sk_good   | sk_bPLocation_g  | customer_sk_good         | Y                   | Y                   |
+      | l_sk_skip   | sk_bPLocation_s  | customer_sk_skip         | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | o_sk_good  | true    | customer_sk_good         | 2021-04-17  |
+      | o_sk_skip  | true    | customer_sk_skip         | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_sk_good | o_sk_good             | p_sk_1                  | 10         |
+      | ol_sk_skip | o_sk_skip             | p_sk_1                  | 10         |
+    And the order identified by o_sk_good is completed
+    And the order identified by o_sk_skip is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_sk_good                        | ol_sk_good                | 0            |
+      | ic_sk_skip                        | ol_sk_skip                | 0            |
+
+    # Immediate = invoiceable without a delivery; the past DateToInvoice_Override clears the date gate,
+    # which is evaluated BEFORE the quantity branch and would otherwise mask the reason under test.
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
+      | ic_sk_good                        | I                        | 2021-04-18                 |
+      | ic_sk_skip                        | I                        | 2021-04-18                 |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_sk_good                        | ol_sk_good                | 10           |
+      | ic_sk_skip                        | ol_sk_skip                | 10           |
+
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
+      | ic_sk_skip                        | 0                         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_sk_skip                        | ol_sk_skip                | 0            |
+
+    # The real process: InvoiceService discards the enqueue result, so the summary is not observable there.
+    When run the invoicing process for invoice candidates:
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_sk_good,ic_sk_skip             |
+
+    # 1 of the 2 selected candidates was not invoiced.
+    Then the invoicing run summary contains:
+      | 1 von 2 |
+
+    # Skipped is not an error. (The good candidate's invoice is covered by the scenario above; the queue
+    # processor is off here, so this one asserts the report only.)
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | IsInvoicingError | OPT.Processed |
+      | ic_sk_skip                        | false            | false         |
+
+  @Id:S0163_400
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: A "Create Invoices" run whose WHOLE selection is skipped still says why
+    # Nothing enqueued at all: the enqueuer throws InvoiceGenerate_No_Candidates_Selected, which used to
+    # carry no reason.
+    Given metasfresh contains M_Products:
+      | Identifier | Name              |
+      | p_al_1     | salesProduct_al_1 |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                   | Value                   | OPT.IsActive |
+      | ps_al_1    | al_pricing_system_name | al_pricing_system_value | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_al_1    | ps_al_1                       | DE                        | EUR                 | al_price_list_name | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_al_1   | pl_al_1                   | al_salesOrder-PLV | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_al_1    | plv_al_1                          | p_al_1                  | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier       | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer_al_1    | al_Customer     | N            | Y              | ps_al_1                       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN             | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_al_1     | al_bPLocation_1 | customer_al_1            | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | o_al_1     | true    | customer_al_1            | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_al_1    | o_al_1                | p_al_1                  | 10         |
+    And the order identified by o_al_1 is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 0            |
+
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
+      | ic_al_1                           | I                        | 2021-04-18                 |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 10           |
+
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
+      | ic_al_1                           | 0                         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_al_1                           | ol_al_1                   | 0            |
+
+    When run the invoicing process and expect nothing invoiced for invoice candidates:
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_al_1                           |
+
+    # The error must carry the reason, not just "nothing selectable".
+    Then the invoicing run summary contains:
+      | 1 von 1                              |
+      | abzurechnende Menge gleich 0          |

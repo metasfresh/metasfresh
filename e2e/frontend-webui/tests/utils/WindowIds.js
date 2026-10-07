@@ -45,6 +45,30 @@ export const INVOICE_CANDIDATE_WINDOW_ID = 540983;
  */
 export const TRANSPORT_ORDER_WINDOW_ID = 540020;
 
+/**
+ * Delivery Planning (Lieferplanung), window 541632, tab 546674
+ * Table: M_Delivery_Planning - one row per order line to be moved; owns the four quantity figures the delivery
+ * instruction's Versandpaket line mirrors.
+ */
+export const DELIVERY_PLANNING_WINDOW_ID = 541632;
+
+/**
+ * Delivery Instruction (Lieferanweisungen), window 541657, root tab 546732
+ * Table: M_ShipperTransportation; included tab 546736 "Versandpaket" (M_ShippingPackage) carries the mirrored
+ * quantity figures.
+ * Note: window 540020 "Transport Auftrag" is the OTHER window over the same table.
+ */
+export const DELIVERY_INSTRUCTION_WINDOW_ID = 541657;
+
+/**
+ * Receipt Disposition including Delivery Planning (Wareneingangsdisposition inkl. Lieferplanung), window 542190
+ * Table: RV_ReceiptDisposition_DeliveryPlanning (AD_Table_ID=542644) - a union view over incoming delivery
+ * plannings and unplanned receipt schedules, single tab.
+ * Note: window 541954 "Wareneingangsdisposition Logistik" is the OTHER, delivery-planning-only window - both
+ * windows' specs read this file, so the two names must not be swapped here.
+ */
+export const RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID = 542190;
+
 // ============================================================================
 // MASTER DATA WINDOWS
 // ============================================================================
@@ -70,6 +94,24 @@ export const BUSINESS_PARTNER_WINDOW_ID = 123;
  * Note: Used in existing product.spec.js tests
  */
 export const PRODUCT_WINDOW_ID = 140;
+
+/**
+ * Currency Rate window (Waehrungskurs)
+ * Table: C_Conversion_Rate (ad_window_id)
+ * Window ID: 116 (main tab AD_Tab_ID=198 "Wechselkurs")
+ * Description: Exchange rates. Its first field C_Currency_ID is a List dropdown, which makes it
+ * the reference window for first-field behaviour of the dropdown widget.
+ */
+export const CURRENCY_RATE_WINDOW_ID = 116;
+
+/**
+ * Product Costs window (Produktkosten)
+ * Table: M_Product (main tab AD_Tab_ID=700, TabLevel 0)
+ * Window ID: 344
+ * Description: Core product-costing master-data window. Carries the co-product
+ * cost-distribution field CoProductCostDistributionPercent (AD_Field 784982, on tab 700).
+ */
+export const PRODUCT_COST_WINDOW_ID = 344;
 
 /**
  * Resource window (Ressource)

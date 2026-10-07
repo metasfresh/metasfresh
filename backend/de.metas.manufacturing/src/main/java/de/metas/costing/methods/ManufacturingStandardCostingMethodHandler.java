@@ -109,6 +109,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		// not the containsAmtType fix applied to the other handlers: Standard costing never accumulates
+		// PP_Order_Cost, so PPOrderCostDifferenceDistributor.distribute() never creates a
+		// CostDifferenceDistribution collector here today (COSTING_METHODS_WITH_ORDER_COSTS excludes
+		// Standard) — but if that ever changes, this reversal path would need the same fix.
 		if (!existingCostDetails.isEmpty())
 		{
 			// make sure DateAcct is up-to-date

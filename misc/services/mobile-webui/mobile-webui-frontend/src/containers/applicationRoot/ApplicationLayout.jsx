@@ -1,5 +1,4 @@
 import { ViewHeader } from '../ViewHeader';
-import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -59,7 +58,6 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     return (
       <div className="app-container app-container-fullscreen">
         <Component />
-        <ScreenToaster />
         <ShelfLifeConfirmDialogHost />
       </div>
     );
@@ -82,7 +80,6 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-content">
         <ViewHeader />
         <Component />
-        <ScreenToaster />
         <ShelfLifeConfirmDialogHost />
       </div>
       <div className="app-footer">

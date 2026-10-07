@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
@@ -8,16 +9,20 @@ import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCod
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
 import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
@@ -61,6 +66,14 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+
+	/**
+	 * Purpose-built roles, applied BEFORE {@code login} so a login user can reference one by identifier
+	 * ({@link de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest#getRole()}); later-created
+	 * masterdata may then be reachable through that role. See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
+	 */
+	@Nullable Map<String, JsonCreateRoleRequest> roles;
+
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
@@ -68,7 +81,35 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
+
+	/**
+	 * Creates a per-run {@code M_Product_Category} and (optionally) an {@code M_AttributeSet} as its attribute set.
+	 * Applied BEFORE {@code attributes} and {@code products}, so an {@code attributes} entry can link into the
+	 * category's set by name and a product can point at the category
+	 * ({@link de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest#getProductCategory()}). This
+	 * is how a spec gets an attribute offered on the mobile mfg receive dialog, which resolves the applicable
+	 * attribute set from the product's CATEGORY, not from {@code M_Product.M_AttributeSet_ID}. See
+	 * {@link de.metas.frontend_testing.masterdata.product.CreateProductCategoryCommand}.
+	 */
+	@Nullable Map<String, JsonProductCategoryRequest> productCategories;
+
+	/**
+	 * Creates (or upserts, by {@code Value}) an {@code M_Attribute} - a LIST-type one included, with its allowed
+	 * values - and optionally links it into an existing {@code M_AttributeSet} by name. Applied before
+	 * {@code products}, so a product's {@code attributeSetName} can rely on the attribute already being a
+	 * member of that set. See {@link de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand}.
+	 */
+	@Nullable Map<String, JsonCreateAttributeRequest> attributes;
+
 	@Nullable Map<String, JsonCreateProductRequest> products;
+
+	/**
+	 * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing. Applied AFTER {@code products}
+	 * (whose identifiers it may reference to price them into its own {@code M_PriceList_Version}) and
+	 * {@code bpartners} (whose identifiers it may reference as the walk-in customer). See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand}.
+	 */
+	@Nullable Map<String, JsonPOSTerminalRequest> posTerminals;
 
 	/**
 	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
@@ -85,6 +126,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
 	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
+	@Nullable Map<String, JsonPackageRequest> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonPurchaseOrderCreateRequest> purchaseOrders;

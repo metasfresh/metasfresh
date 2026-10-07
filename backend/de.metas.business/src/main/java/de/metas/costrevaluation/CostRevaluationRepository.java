@@ -18,6 +18,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -42,6 +43,10 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: M_CostRevaluation, M_CostRevaluationLine, M_CostRevaluation_Detail
+ * Repository Cluster: CostRevaluationRepository
+ */
 @Repository
 public class CostRevaluationRepository
 {
@@ -130,6 +135,43 @@ public class CostRevaluationRepository
 	}
 
 	/**
+	 * Creates a line for the given {@link CurrentCost}, with the given {@code newCostPrice}.
+	 * Does not check for an already existing line of the product; see {@link #hasActiveLineForProduct}.
+	 */
+	@NonNull
+	public CostRevaluationLineId createLineForCurrentCost(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CostAmount newCostPrice)
+	{
+		final CostRevaluationLineKey key = extractCostRevaluationLineKey(currentCost);
+
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
+		record.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
+		record.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
+		record.setIsRevaluated(false);
+
+		updateRecordFrom(record, currentCost);
+		record.setNewCostPrice(newCostPrice.toBigDecimal());
+
+		InterfaceWrapperHelper.save(record);
+
+		return extractCostRevaluationLineId(record);
+	}
+
+	/**
+	 * Deactivated lines are ignored.
+	 */
+	public boolean hasActiveLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.anyMatch();
+	}
+
+	/**
 	 * {@code CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}: one line per
 	 * source-element {@code CurrentCost} (incl. zero-on-hand), with the line's {@code M_CostElement_ID} set to the target element.
 	 */
@@ -155,7 +197,7 @@ public class CostRevaluationRepository
 
 		final CostPrice costPrice = sourceCurrentCost.getCostPrice();
 		// Only the own price is copied here; the lower-level (components) cost is deliberately NOT persisted at line
-		// level (M_CostRevaluationLine has no LL column, as in the Calculated path) — it is re-read at complete time
+		// level (M_CostRevaluationLine has no LL column, as in the Manual path) — it is re-read at complete time
 		// (see CostRevaluationService.createDetailsForCopyFromCostElement).
 		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
 		// Always mirror the source's own price (value-neutral copy, not a user-adjustable revaluation).
@@ -373,6 +415,49 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
+	/**
+	 * Marks a line as evaluated and writes, in one save, the stock on hand and the current cost price it was evaluated with
+	 * and the value difference computed from them.
+	 */
+	public void saveEvaluated(
+			@NonNull final CostRevaluationLineId lineId,
+			@NonNull final Quantity currentQty,
+			@NonNull final CostAmount currentCostPrice,
+			@NonNull final CostAmount deltaAmt)
+	{
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
+		record.setIsRevaluated(true);
+		record.setCurrentQty(currentQty.toBigDecimal());
+		record.setCurrentCostPrice(currentCostPrice.toBigDecimal());
+		record.setDeltaAmt(deltaAmt.toBigDecimal());
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Updates the line's {@link CostRevaluationDetailType#CurrentCostBeforeRevaluation} row with the given values; the new cost price is kept.
+	 */
+	public void updateBeforeRevaluationDetail(
+			@NonNull final CostRevaluationLineId lineId,
+			@NonNull final Quantity qty,
+			@NonNull final CostAmount oldCostPrice,
+			@NonNull final CostAmount oldAmount,
+			@NonNull final CostAmount newAmount,
+			@NonNull final CostAmount deltaAmount)
+	{
+		final I_M_CostRevaluation_Detail record = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, lineId)
+				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_RevaluationType, CostRevaluationDetailType.CurrentCostBeforeRevaluation.getCode())
+				.create()
+				.firstOnlyNotNull(I_M_CostRevaluation_Detail.class);
+
+		record.setQty(qty.toBigDecimal());
+		record.setOldCostPrice(oldCostPrice.toBigDecimal());
+		record.setOldAmt(oldAmount.toBigDecimal());
+		record.setNewAmt(newAmount.toBigDecimal());
+		record.setDeltaAmt(deltaAmount.toBigDecimal());
+		InterfaceWrapperHelper.save(record);
+	}
+
 	public void save(@NonNull final CostRevaluationLine line)
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(line.getId(), I_M_CostRevaluationLine.class);
@@ -380,5 +465,4 @@ public class CostRevaluationRepository
 		record.setDeltaAmt(line.getDeltaAmountToBook().toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 	}
-
 }

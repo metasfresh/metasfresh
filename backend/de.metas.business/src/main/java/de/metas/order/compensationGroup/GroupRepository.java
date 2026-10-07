@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import lombok.Builder;
@@ -54,6 +55,7 @@ public interface GroupRepository
 		@NonNull @Singular ImmutableSet<OrderLineId> orderLineIds;
 		@NonNull GroupTemplate newGroupTemplate;
 		@Nullable ConditionsId newContractConditionsId;
+		@Nullable FlatrateTermId newFlatrateTermId;
 		@NonNull @Builder.Default BigDecimal qtyMultiplier = ONE;
 	}
 }

@@ -53,7 +53,7 @@ public interface I_C_CompensationGroup_SchemaLine
 
 	/**
 	 * Set Break Value.
-	 * Mindestmenge ab der die Kondition gilt
+	 * Low Value of trade discount break level
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -63,7 +63,7 @@ public interface I_C_CompensationGroup_SchemaLine
 
 	/**
 	 * Get Break Value.
-	 * Mindestmenge ab der die Kondition gilt
+	 * Low Value of trade discount break level
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -100,7 +100,8 @@ public interface I_C_CompensationGroup_SchemaLine
 	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
 
 	/**
-	 * Set Compensation Group Schema Line.
+	 * Set Compensations.
+	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -109,7 +110,8 @@ public interface I_C_CompensationGroup_SchemaLine
 	void setC_CompensationGroup_SchemaLine_ID (int C_CompensationGroup_SchemaLine_ID);
 
 	/**
-	 * Get Compensation Group Schema Line.
+	 * Get Compensations.
+	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +144,7 @@ public interface I_C_CompensationGroup_SchemaLine
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set Gesamtauftragsrabatt %.
+	 * Set Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -151,7 +153,7 @@ public interface I_C_CompensationGroup_SchemaLine
 	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
 
 	/**
-	 * Get Gesamtauftragsrabatt %.
+	 * Get Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -209,6 +211,28 @@ public interface I_C_CompensationGroup_SchemaLine
 
 	ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_IsActive = new ModelColumn<>(I_C_CompensationGroup_SchemaLine.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Category_ID();
+
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
 	 * Set Product.

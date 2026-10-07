@@ -157,16 +157,7 @@ const App = () => {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
-            const errorMessenger = (code) => {
-              switch (code) {
-                case 500:
-                  return 'Server error';
-                case 400:
-                  return 'Client error';
-              }
-            };
-            const { data, status } = error.response;
-            const errorTitle = errorMessenger(status);
+            const { data } = error.response;
             const message = data.message ? data.message : '';
 
             // eslint-disable-next-line no-console
@@ -181,10 +172,8 @@ const App = () => {
 
             if (data.userFriendlyError) {
               if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
-                // Deliberately not errorTitle: that resolves to 'Server error' for a 500, which is the
-                // framing this presentation mode exists to avoid. The server now sends a translated
-                // userMessageTitle (a shared "Information" caption for this presentation mode) alongside
-                // the message; fall back to '' when it's absent so an old/older backend still renders.
+                // The server sends a translated userMessageTitle (a shared "Information" caption for this
+                // presentation mode) alongside the message; the '' fallback keeps an older backend (no title) rendering.
                 dispatch(
                   showAcknowledgeDialog(
                     data.userMessageTitle || '',
@@ -192,13 +181,13 @@ const App = () => {
                   )
                 );
               } else {
+                // A user-friendly error is shown as-is, never prefixed with the HTTP status (e.g. "Server error" for a 500)
                 dispatch(
                   addNotification(
                     'Error: ' + message.split(' ', 4).join(' ') + '...',
                     data.message,
                     5000,
-                    'error',
-                    errorTitle
+                    'error'
                   )
                 );
               }

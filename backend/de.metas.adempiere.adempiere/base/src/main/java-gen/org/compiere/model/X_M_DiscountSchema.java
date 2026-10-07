@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_DiscountSchema, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 174899977L;
+	private static final long serialVersionUID = -1279818812L;
 
     /** Standard Constructor */
     public X_M_DiscountSchema (final Properties ctx, final int M_DiscountSchema_ID, @Nullable final String trxName)
@@ -167,6 +167,18 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	}
 
 	@Override
+	public void setIsSkipInactivePrices (final boolean IsSkipInactivePrices)
+	{
+		set_Value (COLUMNNAME_IsSkipInactivePrices, IsSkipInactivePrices);
+	}
+
+	@Override
+	public boolean isSkipInactivePrices() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipInactivePrices);
+	}
+
+	@Override
 	public org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge getM_DiscountSchema_Calculated_Surcharge()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID, org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge.class);
@@ -254,5 +266,17 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
+	}
+
+	@Override
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
+	{
+		set_Value (COLUMNNAME_ValidTo, ValidTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
 	}
 }

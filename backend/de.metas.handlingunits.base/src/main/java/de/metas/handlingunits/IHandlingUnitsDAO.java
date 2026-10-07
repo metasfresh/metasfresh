@@ -202,6 +202,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
+	 * @return the packing materials referenced by the given packing instructions' PI items; empty if none
+	 */
+	ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull HuPackingInstructionsId huPIId, @Nullable BPartnerId bpartnerId);
+
+	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
 	 * @param version    mandatory. Only return items that reference this version.
@@ -363,6 +368,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	void save(@NonNull I_M_HU_PI_Item piItem);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 

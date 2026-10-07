@@ -65,7 +65,11 @@ const BarcodeScannerComponent = ({
 
       let resolvedResult;
       if (resolveScannedBarcode) {
+        // No Promise wrapper: that would add a microtask tick to the call being timed. Client-side
+        // because the server's audit excludes network transit.
+        const resolveStartedAt = Date.now();
         resolvedResult = await resolveScannedBarcode({ scannedBarcode });
+        uiTrace.putContext({ resolveDurationMs: Date.now() - resolveStartedAt });
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }

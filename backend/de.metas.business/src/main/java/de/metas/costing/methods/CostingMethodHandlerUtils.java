@@ -13,6 +13,8 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostPriceUOMConverter;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -91,6 +93,41 @@ public class CostingMethodHandlerUtils
 		return uomConversionBL;
 	}
 
+	public CostPriceUOMConverter getCostPriceUOMConverter()
+	{
+		return this::convertCostPriceToUom;
+	}
+
+	/**
+	 * Converts a {@link CostPrice} to {@code targetUomId} using the product's UOM conversion, mirroring
+	 * {@code OrderBOMCostCalculatorRepository.convertCostPrice}: a price scales inversely to quantity, so each
+	 * cost amount is round-tripped through a {@link ProductPrice} and {@link IUOMConversionBL#convertProductPriceToUom}.
+	 */
+	@NonNull
+	public CostPrice convertCostPriceToUom(
+			@NonNull final CostPrice costPrice,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
+	{
+		if (UomId.equals(costPrice.getUomId(), targetUomId))
+		{
+			return costPrice;
+		}
+
+		final UomId fromUomId = costPrice.getUomId();
+		final CurrencyPrecision costingPrecision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(fromUomId)
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = uomConversionBL.convertProductPriceToUom(productPrice, targetUomId, costingPrecision);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
+	}
+
 	@NonNull
 	public ProductPrice convertToUOM(
 			@NonNull final ProductPrice costPrice,
@@ -166,6 +203,12 @@ public class CostingMethodHandlerUtils
 	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetails(request);
+	}
+
+	/** Narrower than an emptiness check: a distribution reversal persists its 3 legs via separate same-document calls, so a sibling leg's row must not be mistaken for this one's. */
+	public boolean containsAmtType(@NonNull final List<CostDetail> costDetails, @NonNull final CostAmountType amtType)
+	{
+		return costDetails.stream().anyMatch(costDetail -> costDetail.getAmtType() == amtType);
 	}
 
 	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)

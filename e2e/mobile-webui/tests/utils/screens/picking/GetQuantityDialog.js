@@ -1,7 +1,8 @@
-import { test } from "../../../../playwright.config";
+import { test, testContext } from "../../../../playwright.config";
 import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
+import { ErrorToast } from "../../dialogs/ErrorToast";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -28,6 +29,11 @@ export const GetQuantityDialog = {
     expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
         const testId = `userInfo_${captionKey}`;
         await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
+    // The caption shown in front of the qty input (the <th> of the row holding #qty-input).
+    expectQtyCaption: async (expected) => await test.step(`${NAME} - Expect qty caption '${expected}'`, async () => {
+        await expect(containerElement().locator('tr:has(#qty-input) > th')).toHaveText(expected);
     }),
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
@@ -62,6 +68,69 @@ export const GetQuantityDialog = {
 
     expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    // ---------------------------------------------------------------------------------------------
+    // Generic editable-attributes section (EditableAttributesSection). Used by the mfg receive dialog,
+    // where Lot / Best-before / any configured attribute render as attr-<code>-field inside
+    // editable-attributes-section - NOT via the picking-only dedicated lotNo/bestBeforeDate rows above.
+    //
+    // Every method below accepts EITHER a raw M_Attribute code (e.g. a well-known system attribute like
+    // 'Lot-Nummer' / 'HU_BestBeforeDate') OR a masterdata identifier (a createMasterdata `attributes`
+    // map-key, e.g. 'sizeAttr'). A known identifier resolves to its response-reported per-run code
+    // (masterdata.attributes.<id>.attributeValue); anything else falls back to the raw code. This is the
+    // single resolution point, so specs reference attributes by identifier and never hardcode a per-run
+    // Value string. See resolveAttributeCode() at the bottom of this file.
+    // ---------------------------------------------------------------------------------------------
+    expectEditableAttributeVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
+        await expect(page.getByTestId(`attr-${code}-field`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributeNotVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' not visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
+        await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
+    }),
+
+    typeEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        await clickAndType(field, value);
+    }),
+
+    // Date-type editable attribute (renders the DateInput component). Same DD.MM.YYYY display-format
+    // contract as the dedicated best-before field; fill() sets the whole value in one event.
+    typeEditableAttributeDate: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable date attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        await field.tap();
+        await field.fill(value);
+    }),
+
+    // LIST-type editable attribute (renders a native <select>). `value` is the M_AttributeValue.Value code.
+    selectEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Select editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        // The frontend holds the operator's selection across a background reload, so a single select
+        // and verify is enough - the option the operator picked must be the one the control holds.
+        await field.selectOption(value);
+        await expect(field).toHaveValue(value);
+    }),
+
+    expectEditableAttributesSectionVisible: async () => await test.step(`${NAME} - Expect editable-attributes section visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributesSectionNotVisible: async () => await test.step(`${NAME} - Expect editable-attributes section not visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toHaveCount(0);
+    }),
+
+    // Asserts the rendered order of the editable-attributes section's rows (attr-<code>-row) equals the
+    // given order — proves SeqNo (config order), not e.g. alphabetical, drives field order. Each entry may
+    // be a raw code or a masterdata identifier (resolved to its per-run code, same as the methods above).
+    expectEditableAttributesOrder: async (codesOrIdentifiersInOrder) => await test.step(`${NAME} - Expect editable attributes in order '${codesOrIdentifiersInOrder.join(', ')}'`, async () => {
+        const expectedCodes = codesOrIdentifiersInOrder.map(resolveAttributeCode);
+        const rows = page.locator('[data-testid="editable-attributes-section"] [data-testid$="-row"]');
+        const actualTestIds = await rows.evaluateAll((elements) => elements.map((el) => el.getAttribute('data-testid')));
+        const actualCodes = actualTestIds.map((testId) => testId.replace(/^attr-/, '').replace(/-row$/, ''));
+        expect(actualCodes).toEqual(expectedCodes);
     }),
 
     expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
@@ -100,17 +169,27 @@ export const GetQuantityDialog = {
         await page.getByTestId('serialNo-scan-done-button').tap();
     }),
 
-    // Scans a serial that is already present; asserts the chip count does NOT change (silent dedup).
-    scanDuplicateSerialNo: async (serialNo) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
+    // Scans a serial that is already present; asserts the chip count does NOT change (dedup), and —
+    // when expectedError is given — asserts the duplicate-scan error toast.
+    scanDuplicateSerialNo: async (serialNo, { expectedError } = {}) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
         const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
             && await page.getByTestId('serialNo-scan-again-button').isVisible();
         await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
         await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         const before = await page.getByTestId('serialNo-chip').count();
-        await BarcodeScannerComponent.type({ scannedCode: serialNo });
-        // give the hook time to flush, then assert the count is unchanged (dedup)
-        await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
-        await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await BarcodeScannerComponent.type({ scannedCode: serialNo });
+                // give the hook time to flush, then assert the count is unchanged (dedup)
+                await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
+                await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+
         await page.getByTestId('serialNo-scan-done-button').tap();
     }),
 
@@ -175,6 +254,36 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
+    expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
+    }),
+
+    /**
+     * `offered: false` on a single reason (above) passes even if only that one reason were filtered
+     * out of an otherwise-rendered group. Use this alongside it when the scenario expects the WHOLE
+     * reason group to be absent (e.g. a zero-target step, where the group only renders once
+     * `qtyRejected > 0` — `GetQuantityDialog.jsx`), so the test documents "no reasons at all" rather
+     * than "at least this one is filtered".
+     */
+    expectQtyRejectedReasonsGroupVisible: async ({ visible }) => await test.step(`${NAME} - Expect qty-rejected-reasons group visible=${visible}`, async () => {
+        const group = page.locator('#qty-rejected');
+        if (visible) {
+            await expect(group).toBeVisible();
+        } else {
+            await expect(group).toHaveCount(0);
+        }
+    }),
+
+    expectQtyNotFoundReasonCaption: async ({ reason, caption }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' caption '${caption}'`, async () => {
+        const label = page.getByTestId(`qty-reason-radio-${reason}`).locator('xpath=..');
+        await expect(label).toContainText(caption);
+    }),
+
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
         let doneButton = page.getByTestId('done-button');
 
@@ -210,6 +319,50 @@ export const GetQuantityDialog = {
     // which keeps this qty dialog open until that follow-up is resolved.
     clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
         await page.getByTestId('done-button').tap();
+    }),
+
+    /**
+     * Presses Done for a submit the BACKEND is expected to refuse, and asserts the refusal exactly as
+     * the mobile UI actually renders it: the error toast carrying the server message, with the dialog
+     * left open underneath (nothing was booked, so the operator stays on the step).
+     *
+     * Deliberately NOT `clickDone({ expectedError })`: that helper's own flow requires the dialog to
+     * CLOSE and then dismisses the toast via `.Toastify__close-button--error`. Neither is possible for
+     * a server-side refusal on this screen — the dialog stays mounted, and a metasfresh
+     * `AdempiereException` toast renders its full "Additional parameters: ..." dump, which on the
+     * mobile viewport is taller than the screen, so the toast's close button sits outside the viewport
+     * and `tap()` never becomes actionable ("element is outside of the viewport").
+     *
+     * The toast is therefore left standing: it covers the whole screen, so no further UI interaction
+     * is possible after this call — assert the backend state and end the test.
+     *
+     * While the toast stands, any LATER call wrapped in `common.step()` (the exported `step()`, via
+     * `runAndWatchForErrors`) throws "Unexpected error toast detected" the moment it starts watching —
+     * so callers must use plain `test.step` calls after this one, exactly as `Backend.expect` does
+     * (`screens/Backend.js`), never `step()`.
+     */
+    clickDoneExpectingBackendRefusal: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expecting the backend to refuse with '${expectedError}'`, async () => {
+        await page.getByTestId('done-button').tap();
+
+        await expect(ErrorToast.locator())
+            .toContainText(expectedError, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        // Nothing was booked, so the operator is not navigated away.
+        await expect(containerElement()).toBeVisible();
+    }),
+
+    /**
+     * Presses Done and captures the POST request body it fires (matched by a URL substring) — for
+     * asserting a wire-level field with no visible UI counterpart (e.g.
+     * `issueTo.huWeightGrossBeforeIssue` on the manufacturing issue event).
+     * @returns {Promise<object>} the parsed JSON request body.
+     */
+    clickDoneAndCaptureRequestBody: async ({ urlFragment }) => await test.step(`${NAME} - Press OK (capture request '${urlFragment}')`, async () => {
+        const [request] = await Promise.all([
+            page.waitForRequest((req) => req.url().includes(urlFragment) && req.method() === 'POST'),
+            GetQuantityDialog.clickDone(),
+        ]);
+        return request.postDataJSON();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
@@ -300,6 +453,13 @@ export const GetQuantityDialog = {
 //
 //
 //
+
+// Resolves a code-or-identifier to the actual M_Attribute code used in the attr-<code>-field testId.
+// A masterdata identifier (a createMasterdata `attributes` map-key registered in the last response)
+// resolves to its per-run Value (masterdata.attributes.<id>.attributeValue); anything else - notably a
+// well-known system code such as 'Lot-Nummer' or 'HU_BestBeforeDate' - is returned unchanged.
+const resolveAttributeCode = (codeOrIdentifier) =>
+    testContext.lastMasterdata?.attributes?.[codeOrIdentifier]?.attributeValue ?? codeOrIdentifier;
 
 const expectMissingOrDisabled = async (locator) => {
     // Element should either not exist (dialog already closed) or be disabled (dialog closing).
