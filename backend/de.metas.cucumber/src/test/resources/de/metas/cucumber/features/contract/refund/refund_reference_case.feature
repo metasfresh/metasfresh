@@ -263,3 +263,5 @@ Feature: Refund reference case: a partner with several parallel periodic refund 
       | salesYearSmall              | salesIC                         | termSmall          | 5                   |
       | salesQuarter                | salesIC                         | termQuart          | 40                  |
       | salesPack                   | salesIC                         | termPack           | 12                  |
+    # the on-invoice bonus line is in no refund base
+    And the C_Invoice_Candidate identified by bonusIC has no C_Invoice_Candidate_Assignment
