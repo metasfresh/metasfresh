@@ -39,6 +39,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationLoadTests;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -1572,6 +1573,70 @@ public class HUTransformServiceTests
 
 		Assertions.assertThat(countTUs(targetLU)).as("TUs on target LU").isEqualTo(4);
 		Assertions.assertThat(countTUs(sourceLU)).as("TUs remaining on source LU").isEqualTo(0);
+	}
+
+	/**
+	 * Pallet PI with BOTH a generic item (created first, so the lowest id) and an item bound to {@code partner}; returns the partner-bound one in {@code partnerItemHolder[0]}.
+	 */
+	private PalletFixture createPalletFixtureWithGenericAndPartnerItem(@NonNull final BPartnerId partner, final I_M_HU_PI_Item[] partnerItemHolder)
+	{
+		final PalletFixture fixture = createPalletFixture(null); // generic item, Qty 100
+		partnerItemHolder[0] = testsBase.getData().helper.createHU_PI_Item_IncludedHU(fixture.piLU, fixture.piTU, BigDecimal.TEN, partner);
+		return fixture;
+	}
+
+	private Set<Integer> retrieveLUItemPIItemIds(@NonNull final I_M_HU lu)
+	{
+		return Services.get(IHandlingUnitsDAO.class).retrieveItems(lu).stream()
+				.filter(huItem -> huItem.getM_HU_PI_Item_ID() > 0)
+				.map(I_M_HU_Item::getM_HU_PI_Item_ID)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Both a generic and a partner-bound item exist, new target pallet -> the item bound to the resolved partner (the source pallet's) wins, deterministically.
+	 */
+	@Test
+	public void luExtractTUs_toNewLU_prefersPartnerBoundItemOverGenericItem()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final I_M_HU_PI_Item[] partnerItem = new I_M_HU_PI_Item[1];
+		final PalletFixture fixture = createPalletFixtureWithGenericAndPartnerItem(partnerP, partnerItem);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+
+		final LUTUResult result = huTransformService.luExtractTUs(HUTransformService.LUExtractTUsRequest.builder()
+				.sourceLU(sourceLU)
+				.qtyTU(QtyTU.ONE)
+				.targetLU(HUTransformService.TargetLU.ofNewLU(fixture.piLU))
+				.build());
+
+		Assertions.assertThat(result.getLURecords()).hasSize(1);
+		Assertions.assertThat(retrieveLUItemPIItemIds(result.getLURecords().get(0)))
+				.as("M_HU_PI_Item_IDs of the new LU's items")
+				.contains(partnerItem[0].getM_HU_PI_Item_ID())
+				.doesNotContain(fixture.luItem.getM_HU_PI_Item_ID());
+	}
+
+	/**
+	 * Both a generic and a partner-bound item exist, existing target pallet without partner (aggregate branch) -> the item created on the target LU is the partner-bound one.
+	 */
+	@Test
+	public void luExtractTUs_toExistingLUWithoutPartner_prefersPartnerBoundItemOverGenericItem()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final I_M_HU_PI_Item[] partnerItem = new I_M_HU_PI_Item[1];
+		final PalletFixture fixture = createPalletFixtureWithGenericAndPartnerItem(partnerP, partnerItem);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 5);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+		Assertions.assertThat(retrieveLUItemPIItemIds(targetLU)).as("precondition: target LU only has the generic item").doesNotContain(partnerItem[0].getM_HU_PI_Item_ID());
+
+		luExtractTUs(sourceLU, 1, HUTransformService.TargetLU.ofExistingLU(targetLU));
+
+		Assertions.assertThat(retrieveLUItemPIItemIds(targetLU))
+				.as("M_HU_PI_Item_IDs of the target LU's items")
+				.contains(partnerItem[0].getM_HU_PI_Item_ID());
 	}
 
 	/**

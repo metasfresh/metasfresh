@@ -73,6 +73,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
@@ -115,6 +116,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -1170,11 +1172,26 @@ public class HUTransformService
 			@NonNull final HuPackingInstructionsId tuPIId,
 			@NonNull final BPartnerId bpartnerId)
 	{
-		return handlingUnitsDAO.retrievePIItems(luHU.getM_HU_PI_Version(), bpartnerId)
+		return retrieveFirstLUItem(luHU.getM_HU_PI_Version(), tuPIId, bpartnerId);
+	}
+
+	/**
+	 * Picks the LU to TU item (item type HU) of the given LU version that fits the partner.
+	 * If both a generic item and one bound to the partner exist, the partner-bound one wins; remaining ties are broken by lowest M_HU_PI_Item_ID, so that the outcome is deterministic.
+	 *
+	 * @param tuPIId if {@code null}, the included packing instructions are not constrained
+	 */
+	private Optional<I_M_HU_PI_Item> retrieveFirstLUItem(
+			@NonNull final I_M_HU_PI_Version luPIVersion,
+			@Nullable final HuPackingInstructionsId tuPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsDAO.retrievePIItems(luPIVersion, bpartnerId)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(piItem.getItemType()))
-				.filter(piItem -> HuPackingInstructionsId.equals(HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID()), tuPIId))
-				.findFirst();
+				.filter(piItem -> tuPIId == null || HuPackingInstructionsId.equals(HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID()), tuPIId))
+				.min(Comparator.comparing((I_M_HU_PI_Item piItem) -> piItem.getC_BPartner_ID() > 0 ? 0 : 1) // partner-bound before generic
+						.thenComparingInt(I_M_HU_PI_Item::getM_HU_PI_Item_ID));
 	}
 
 	private I_M_HU_PI_Item getLuPIItem(
@@ -1182,9 +1199,10 @@ public class HUTransformService
 			@NonNull final HuPackingInstructionsId tuPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		final I_M_HU_PI_Version luPIVersion = handlingUnitsDAO.retrievePICurrentVersion(luPIId);
 		if (tuPIId.isRealPackingInstructions())
 		{
-			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+			return retrieveFirstLUItem(luPIVersion, tuPIId, bpartnerId)
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String tuPIName = handlingUnitsBL.getPIName(tuPIId);
@@ -1194,7 +1212,7 @@ public class HUTransformService
 		}
 		else
 		{
-			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+			return retrieveFirstLUItem(luPIVersion, null, bpartnerId)
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String bpartnerName = bpartnerId != null ? bpartnerDAO.getBPartnerNameById(bpartnerId) : "*";
