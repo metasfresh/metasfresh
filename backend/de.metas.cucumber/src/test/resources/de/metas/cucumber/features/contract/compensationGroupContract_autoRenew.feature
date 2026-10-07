@@ -72,11 +72,10 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier      | Name             | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | bonusConditions | Bonus conditions | CompensationGroup | oneYearTrans                            | bonusSettings                                          |
-    # DropShip_BPartner_ID is set on purpose: FlatrateBL.createNewTerm throws an NPE when extending a term without a
-    # drop-ship partner (known defect, handled separately). Imported and partner-created contracts always have one.
+    # entered without a drop-ship partner (optional for this contract type)
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | firstTerm  | bonusConditions                     | invoicePartner              | invoicePartner                      | 2026-01-01 | 2026-12-31 | DR            | false         |
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | firstTerm  | bonusConditions                     | invoicePartner              | 2026-01-01 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by firstTerm is completed
 
     # the notice date has passed
@@ -126,11 +125,10 @@ Feature: Automatic renewal of a compensation-group contract by the scheduled con
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier      | Name             | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | bonusConditions | Bonus conditions | CompensationGroup | zeroDurTrans                            | bonusSettings                                          |
-    # DropShip_BPartner_ID is set on purpose: FlatrateBL.createNewTerm throws an NPE when extending a term without a
-    # drop-ship partner (known defect, handled separately). Imported and partner-created contracts always have one.
+    # entered without a drop-ship partner (optional for this contract type)
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | firstTerm  | bonusConditions                     | invoicePartner              | invoicePartner                      | 2026-01-01 | 2026-12-31 | DR            | false         |
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | firstTerm  | bonusConditions                     | invoicePartner              | 2026-01-01 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by firstTerm is completed
 
     # the notice date has passed
