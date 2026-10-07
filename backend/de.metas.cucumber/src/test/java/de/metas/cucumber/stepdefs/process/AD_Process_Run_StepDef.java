@@ -168,7 +168,15 @@ public class AD_Process_Run_StepDef
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
 		assertThat(processId).as("AD_Process with Value=%s must exist", processValue).isNotNull();
+		return newProcessInfoBuilder(processId);
+	}
 
+	/**
+	 * Same as {@link #newProcessInfoBuilder(String)} for an already resolved process, so other step-defs running a
+	 * process the way a user's session would (client context + {@code WebUI} role) share this one implementation.
+	 */
+	public ProcessInfo.ProcessInfoBuilder newProcessInfoBuilder(@NonNull final AdProcessId processId)
+	{
 		final ClientId clientId = Env.getClientId();
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)

@@ -71,7 +71,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # One base menu serves three customers (per-age-group quantities, group rule vs customer rule)
   @from:cucumber
   @Id:S26881_TC3
@@ -131,7 +130,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # First match by SeqNo: customer rule above group rule, also on a quotation
   @from:cucumber
   @Id:S26881_TC4_SeqNo
@@ -175,7 +173,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # Equal SeqNo: the rule with the lower ID wins
   @from:cucumber
   @Id:S26881_TC4_Tie
@@ -203,7 +200,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A rule with customer AND group matches only when both fit
   @from:cucumber
   @Id:S26881_TC4_PartnerAndGroup
@@ -229,7 +225,6 @@ Feature: Compensation group calibration
       | schema_ol_reis | reis         | 200            | 1                                      | 200                                         | null                                       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # Rules of the order's organisation and of organisation * apply, rules of another organisation do not
   @from:cucumber
@@ -275,7 +270,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A general rule above a specific one hides it (intended)
   @from:cucumber
   @Id:S26881_TC5
@@ -304,7 +298,6 @@ Feature: Compensation group calibration
       | schema_ol_reis | reis         | 160            | 0.8                                    | 200                                         | rule_general                               |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # Category rule matches the exact category only, not its child categories
   @from:cucumber
@@ -355,7 +348,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # Schema rule: the same component calibrates in one schema and not in another
   @from:cucumber
   @Id:S26881_TC7
@@ -390,7 +382,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # No matching rule: quantities exactly as without calibration
   @from:cucumber
   @Id:S26881_TC8
@@ -418,7 +409,6 @@ Feature: Compensation group calibration
       | schema_ol_kraft | kraft        | 0              | 1                                      | 0                                           | null                                       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # Rounding half-up per UOM precision and the one-step minimum
   @from:cucumber
@@ -465,7 +455,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A template quantity that already rounds to 0 stays 0 although the factor is positive
   @from:cucumber
   @Id:S26881_TC10_TemplateQtyRoundsToZero
@@ -491,7 +480,6 @@ Feature: Compensation group calibration
       | schema_ol_kraft | kraft        | 0              | 0.5                                    | 0                                           | rule_half                                  |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # Fractional menu quantity
   @from:cucumber
@@ -520,7 +508,6 @@ Feature: Compensation group calibration
       | schema_ol_pce_a | pce_a        | 1              | 0.5                                    | 3                                           | rule_half                                  |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # The same menu entered twice in one order
   @from:cucumber
@@ -553,7 +540,6 @@ Feature: Compensation group calibration
       | schema_ol_reis | reis         | 300            | 0.5                                    | rule_half                                  |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # A rule created after a first order applies to the next order only
   @from:cucumber
@@ -588,7 +574,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A deactivated rule is not matched
   @from:cucumber
   @Id:S26881_TC15_DeactivatedRule
@@ -617,7 +602,6 @@ Feature: Compensation group calibration
       | schema_ol_reis | reis         | 200            | 1                                      | 200                                         | null                                       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # A rule deactivated after use stays on the line that already refers to it; new orders do not match it
   @from:cucumber
@@ -661,7 +645,6 @@ Feature: Compensation group calibration
       | schema_ol_reis | reis         | 200            | 1                                      | 200                                         | null                                       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # The percentage discount follows the calibrated quantities and a Qty edit of a calibrated line
   @from:cucumber
@@ -717,7 +700,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # Factor 0 leaves a component out, the percentage discount follows the remaining net
   @from:cucumber
   @Id:S26881_TC14_FactorZero
@@ -754,7 +736,6 @@ Feature: Compensation group calibration
       | schema_comp_discount | discount   | true                        | -20       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # All components left out: only the menu line remains
   @from:cucumber
@@ -795,7 +776,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # All components left out and no menu line: nothing to order
   @from:cucumber
   @Id:S26881_TC14_AllLeftOutWithoutMenuLine
@@ -819,7 +799,6 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         | C_CompensationGroup_CalibrationRule_AllComponentsLeftOut |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # The menu line carries the schema of the group: never calibrated, even if a rule matches it
   @from:cucumber
@@ -854,7 +833,6 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # The menu line carries another schema, matched by a customer + product rule: still not calibrated
   @from:cucumber
   @Id:S26881_MenuLineOtherSchema
@@ -887,7 +865,6 @@ Feature: Compensation group calibration
       | schema_ol_menu_2 | menu_2       | 6              | null                                   | null                                        | null                                       |
 
 
-  # ##########################################################################################
   # ##########################################################################################
   # Purchase orders are never calibrated, even for a partner that is customer and vendor
   @from:cucumber
@@ -930,13 +907,12 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # Existing order lines keep their calibration when the rule or the order's customer changes
   @from:cucumber
   @Id:S26881_TC13_ExistingLinesUnchanged
   Scenario: A changed rule factor and a changed customer leave the lines of a draft order as they are
     Given metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name         |
+      | Identifier | Name          |
       | schema_1   | CalibExisting |
     And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
       | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
@@ -982,14 +958,13 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A copied order keeps the lines' quantity, factor and rule, without a new match
   @from:cucumber
   @Id:S26881_TC13_CopiedOrder
   Scenario: A copied order keeps the calibration of the original lines although the rule has changed
     Given metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name       |
-      | schema_1   | CalibCopy  |
+      | Identifier | Name      |
+      | schema_1   | CalibCopy |
     And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
       | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
@@ -1019,14 +994,13 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # A sales order created from a calibrated quotation keeps the lines' quantity, factor and rule
   @from:cucumber
   @Id:S26881_TC13_SalesOrderFromQuotation
   Scenario: A sales order created from a calibrated quotation keeps the calibration of the quotation lines
     Given metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name        |
-      | schema_1   | CalibQuote  |
+      | Identifier | Name       |
+      | schema_1   | CalibQuote |
     And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
       | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
@@ -1057,14 +1031,13 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # ##########################################################################################
   # The action grouping existing lines by product category is not calibrated
   @from:cucumber
   @Id:S26881_TC13_MultiGroupsProcess
   Scenario: Grouping order lines by the schema of their product category adds uncalibrated template lines
     Given metasfresh contains C_CompensationGroup_Schema:
-      | Identifier | Name           |
-      | schema_1   | CalibMultiGrp  |
+      | Identifier | Name          |
+      | schema_1   | CalibMultiGrp |
     And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
       | Identifier | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |

@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
+import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
@@ -203,6 +204,7 @@ public class C_Order_StepDef
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final C_OrderLine_StepDef orderLineStepDef;
+	@NonNull private final AD_Process_Run_StepDef processRunStepDef;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemDataTable;
@@ -1440,19 +1442,7 @@ public class C_Order_StepDef
 					.adOrgId(proposal.getAD_Org_ID())
 					.build());
 
-			// executed under the client context and the "WebUI" role, as the user's session would; the default cucumber ctx matches no business records
-			final RoleId roleId = roleDAO.getUserRoles(Env.getLoggedUserId())
-					.stream()
-					.filter(role -> "WebUI".equals(role.getName()))
-					.map(Role::getId)
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + Env.getLoggedUserId()));
-
-			ProcessInfo.builder()
-					.setAD_Process_ID(adProcessDAO.retrieveProcessIdByClass(C_Order_CreateFromProposal.class).getRepoId())
-					.setClientId(Env.getClientId())
-					.setRoleId(roleId)
-					.setCreateTemporaryCtx()
+			processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(C_Order_CreateFromProposal.class))
 					.setRecord(TableRecordReference.of(I_C_Order.Table_Name, proposal.getC_Order_ID()))
 					.addParameter("C_DocType_ID", salesOrderDocTypeId.getRepoId())
 					.buildAndPrepareExecution()

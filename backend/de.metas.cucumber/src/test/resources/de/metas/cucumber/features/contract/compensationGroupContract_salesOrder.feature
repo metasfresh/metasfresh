@@ -626,6 +626,7 @@ Feature: Contract-triggered compensation group on sales-order completion
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S26881_TC13_ContractGroup
   Scenario: A contract-created group gets today's template quantities and no calibration although a rule matches the customer
+    # the Background's pfandCategory, mainSchema and contractPLV wire the contract-group trigger
     Given metasfresh contains M_Products:
       | Identifier   | OPT.M_Product_Category_ID.Identifier |
       | bonusProduct | pfandCategory                        |
