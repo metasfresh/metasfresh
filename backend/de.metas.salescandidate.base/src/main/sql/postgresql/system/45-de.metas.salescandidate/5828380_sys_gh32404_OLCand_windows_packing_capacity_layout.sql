@@ -56,3 +56,11 @@ UPDATE AD_Element_Trl SET Description='Capacity in the respective product''s uni
 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542232,'en_US')
 ;
+
+-- AD_Name 1000408 (field label of QtyItemCapacity in both windows, its only usages): en_US "Packing Capacity" -> "Packaging capacity",
+-- consistent with "Internal packaging capacity" and "Manual packaging capacity" shown next to it
+UPDATE AD_Element_Trl SET Name='Packaging capacity', PrintName='Packaging capacity', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-07 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=1000408 AND AD_Language='en_US'
+;
+
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1000408,'en_US')
+;
