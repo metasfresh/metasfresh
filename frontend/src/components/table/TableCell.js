@@ -166,10 +166,8 @@ class TableCell extends PureComponent {
    * @method renderStaticContent
    * @summary The cell's read-only presentation. Rendered visibly when the cell is not being
    * edited, and as an invisible width keeper next to the editor while it is.
-   *
-   * @param {boolean} isWidthKeeper - true for the invisible copy rendered while editing
    */
-  renderStaticContent = ({ isWidthKeeper }) => {
+  renderStaticContent = () => {
     const {
       item,
       cellExtended,
@@ -193,7 +191,7 @@ class TableCell extends PureComponent {
             extended: cellExtended,
           })}
           style={style}
-          title={isWidthKeeper ? undefined : getTdTitle({ item, description })}
+          title={getTdTitle({ item, description })}
         >
           <TableCellWidget {...{ tdValue, widgetType, tableCellData, rowId }} />
         </div>
@@ -201,10 +199,8 @@ class TableCell extends PureComponent {
           <WidgetTooltip
             iconName={tooltipWidget.tooltipIconName}
             text={tooltipData?.value}
-            isToggled={isWidthKeeper ? false : tooltipToggled}
-            onToggle={(tooltipOpen) =>
-              !isWidthKeeper && this.widgetTooltipToggle(tooltipOpen)
-            }
+            isToggled={tooltipToggled}
+            onToggle={(tooltipOpen) => this.widgetTooltipToggle(tooltipOpen)}
           />
         )}
       </div>
@@ -312,7 +308,7 @@ class TableCell extends PureComponent {
               minimum while editing.
             */}
             <div className="cell-width-keeper" aria-hidden="true">
-              {this.renderStaticContent({ isWidthKeeper: true })}
+              {this.renderStaticContent()}
             </div>
             <WidgetWrapper
               renderMaster={true}
@@ -351,7 +347,7 @@ class TableCell extends PureComponent {
             />
           </>
         ) : (
-          this.renderStaticContent({ isWidthKeeper: false })
+          this.renderStaticContent()
         )}
       </td>
     );
