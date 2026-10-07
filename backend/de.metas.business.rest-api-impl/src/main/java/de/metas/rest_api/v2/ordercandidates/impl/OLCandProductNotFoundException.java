@@ -32,4 +32,9 @@ public class OLCandProductNotFoundException extends AdempiereException
 	{
 		super(message);
 	}
+
+	public OLCandProductNotFoundException(@NonNull final ITranslatableString message, @NonNull final Throwable cause)
+	{
+		super(message, cause);
+	}
 }

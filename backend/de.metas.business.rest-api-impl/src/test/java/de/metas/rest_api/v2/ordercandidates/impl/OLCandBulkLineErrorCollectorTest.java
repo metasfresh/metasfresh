@@ -85,10 +85,12 @@ class OLCandBulkLineErrorCollectorTest
 		@Test
 		void two_product_errors_collected_in_order()
 		{
+			final OLCandProductNotFoundException original = productNotFound("no product for gtin-A");
+			original.setParameter("parentResource", "origin-A");
 			final Function<Integer, String> mapper = line -> {
 				if (line == 1)
 				{
-					throw productNotFound("no product for gtin-A");
+					throw original;
 				}
 				if (line == 3)
 				{
@@ -108,11 +110,13 @@ class OLCandBulkLineErrorCollectorTest
 								+ "Line 1 (externalLineId=ext-1, externalHeaderId=hdr-1): no product for gtin-A | "
 								+ "Line 3 (externalLineId=ext-3, externalHeaderId=hdr-1): no product for gtin-B");
 						assertThat(e.getCause()).isNull();
-						assertThat(e.getErrors().get(0).getCause()).isNull();
+						assertThat(e.getErrors().get(0).getCause()).isSameAs(original);
 						assertThat(e.getErrors().get(0)).isInstanceOfSatisfying(AdempiereException.class, ae -> {
 							assertThat(ae.getParameters()).containsEntry("line", 1)
 									.containsEntry("externalLineId", "ext-1")
-									.containsEntry("externalHeaderId", "hdr-1");
+									.containsEntry("externalHeaderId", "hdr-1")
+									.containsEntry("parentResource", "origin-A");
+							assertThat(ae.getStackTrace()).isEqualTo(original.getStackTrace());
 						});
 					});
 		}

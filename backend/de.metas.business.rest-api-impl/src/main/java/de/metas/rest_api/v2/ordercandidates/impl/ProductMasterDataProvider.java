@@ -149,7 +149,9 @@ public final class ProductMasterDataProvider
 			final String reason = productExternalIdentifier.getType() == ExternalIdentifier.Type.GTIN
 					? " " + productLookupService.explainUnresolvedGTIN(productExternalIdentifier, date, bpartnerId)
 					: "";
-			throw new OLCandProductNotFoundException(TranslatableStrings.constant(ex.getMessage() + reason));
+			final OLCandProductNotFoundException notFound = new OLCandProductNotFoundException(TranslatableStrings.constant(ex.getMessage() + reason), ex);
+			notFound.setParameters(ex.getParameters());
+			throw notFound;
 		}
 	}
 

@@ -84,7 +84,9 @@ public class OLCandBulkLineErrorCollector
 				"Line " + orAbsent(ref.getLine())
 						+ " (externalLineId=" + orAbsent(ref.getExternalLineId())
 						+ ", externalHeaderId=" + orAbsent(ref.getExternalHeaderId())
-						+ "): " + original.getMessage()));
+						+ "): " + original.getMessage()), original);
+		error.setParameters(original.getParameters());
+		error.setStackTrace(original.getStackTrace()); // the JSON stackTrace is taken from the item itself: point it at the lookup site
 		if (ref.getLine() != null)
 		{
 			error.setParameter("line", ref.getLine());

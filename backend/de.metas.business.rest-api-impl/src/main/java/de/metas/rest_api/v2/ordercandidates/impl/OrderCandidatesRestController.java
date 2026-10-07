@@ -32,6 +32,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.util.Check;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
@@ -44,6 +45,7 @@ import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.IssueReportableExceptions;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -142,7 +144,16 @@ public class OrderCandidatesRestController
 	{
 		if (ex instanceof OLCandBulkCreateException)
 		{
-			return JsonOLCandCreateBulkResponse.errors(((OLCandBulkCreateException)ex).getErrors().stream()
+			final OLCandBulkCreateException bulkException = (OLCandBulkCreateException)ex;
+			// only the aggregate is logged (=> marked with the AD_Issue id); hand that id on to the items
+			final AdIssueId adIssueId = bulkException.getAdIssueId();
+			return JsonOLCandCreateBulkResponse.errors(bulkException.getErrors().stream()
+					.peek(error -> {
+						if (adIssueId != null)
+						{
+							IssueReportableExceptions.markReportedIfPossible(error, adIssueId);
+						}
+					})
 					.map(error -> JsonErrors.ofThrowable(error, adLanguage))
 					.collect(ImmutableList.toImmutableList()));
 		}

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.TranslatableStrings;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -67,6 +68,50 @@ class OrderCandidatesRestControllerErrorResponseTest
 			assertThat(response.getErrors().get(0).getParameters()).containsEntry("line", "20").containsEntry("externalLineId", "00020");
 			assertThat(response.getErrors().get(1).getMessage()).isEqualTo("Line 30: gtin-C not resolvable");
 			assertThat(response.getErrors().get(1).getParameters()).containsEntry("line", "30").containsEntry("externalLineId", "00030");
+		}
+
+		@Test
+		void bulk_exception_issue_id_carried_on_every_item()
+		{
+			final OLCandBulkCreateException bulkException = new OLCandBulkCreateException(ImmutableList.of(
+					lineError("Line 20: gtin-B not resolvable", 20, "00020"),
+					lineError("Line 30: gtin-C not resolvable", 30, "00030")));
+			bulkException.markIssueReported(AdIssueId.ofRepoId(4711));
+
+			final JsonOLCandCreateBulkResponse response = OrderCandidatesRestController.toErrorResponse(bulkException, "en_US");
+
+			assertThat(response.getErrors()).hasSize(2);
+			assertThat(response.getErrors()).allSatisfy(error -> assertThat(error.getThrowable()).isInstanceOfSatisfying(
+					AdempiereException.class,
+					ae -> assertThat(ae.getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(4711))));
+		}
+
+		@Test
+		void bulk_exception_without_issue_id_leaves_items_unreported()
+		{
+			final OLCandBulkCreateException bulkException = new OLCandBulkCreateException(ImmutableList.of(
+					lineError("Line 20: gtin-B not resolvable", 20, "00020")));
+
+			final JsonOLCandCreateBulkResponse response = OrderCandidatesRestController.toErrorResponse(bulkException, "en_US");
+
+			assertThat(response.getErrors().get(0).getThrowable()).isInstanceOfSatisfying(
+					AdempiereException.class,
+					ae -> assertThat(ae.isIssueReported()).isFalse());
+		}
+
+		@Test
+		void mixed_product_errors_and_stopping_error_rendered_one_item_each_in_order()
+		{
+			final IllegalStateException stopper = new IllegalStateException("boom");
+			final OLCandBulkCreateException bulkException = new OLCandBulkCreateException(ImmutableList.of(
+					lineError("Line 20: gtin-B not resolvable", 20, "00020"),
+					lineError("Line 30: gtin-C not resolvable", 30, "00030"),
+					stopper));
+
+			final JsonOLCandCreateBulkResponse response = OrderCandidatesRestController.toErrorResponse(bulkException, "en_US");
+
+			assertThat(response.getErrors()).extracting(error -> error.getMessage())
+					.containsExactly("Line 20: gtin-B not resolvable", "Line 30: gtin-C not resolvable", "boom");
 		}
 
 		@Test
