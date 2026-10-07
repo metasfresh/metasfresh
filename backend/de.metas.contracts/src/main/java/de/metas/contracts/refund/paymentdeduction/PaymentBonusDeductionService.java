@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -32,6 +33,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePackingInstructions;
 import de.metas.order.OrderShipmentBPartners;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -174,7 +177,10 @@ public class PaymentBonusDeductionService
 					.filter(line -> line.getM_Product_ID() > 0)
 					.forEach(line -> lineRecordsByInvoiceId.put(invoiceId, line));
 		}
-		final ImmutableListMultimap<InvoiceId, I_C_InvoiceLine> lineRecords = lineRecordsByInvoiceId.build();
+		final ImmutableSet<OrderLineId> contractCompensationOrderLineIds = retrieveContractCompensationOrderLineIds(lineRecordsByInvoiceId.build().values());
+		final ImmutableListMultimap<InvoiceId, I_C_InvoiceLine> lineRecords = ImmutableListMultimap.copyOf(Multimaps.filterValues(
+				lineRecordsByInvoiceId.build(),
+				line -> !contractCompensationOrderLineIds.contains(OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))));
 
 		final ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> categoryIdAndAncestorsByProductId = productDAO.getProductCategoryIdAndAncestorsByProductIds(
 				lineRecords.values().stream().map(line -> ProductId.ofRepoId(line.getM_Product_ID())).collect(ImmutableSet.toImmutableSet()));
@@ -187,6 +193,35 @@ public class PaymentBonusDeductionService
 			lineRecords.get(invoiceId).forEach(line -> result.put(invoiceId, toInvoiceLineInfo(invoice, line, categoryIdAndAncestorsByProductId, precision)));
 		}
 		return result.build();
+	}
+
+	/**
+	 * @return the order lines of the given invoice lines that are the discount line of a compensation group that a contract created on the order (the on-invoice bonus).
+	 *         They are not part of any base: the bonus at payment is computed on the goods value before that discount.
+	 *         A discount line of a group the user put together (no contract) stays in the base.
+	 */
+	private ImmutableSet<OrderLineId> retrieveContractCompensationOrderLineIds(@NonNull final Collection<I_C_InvoiceLine> lines)
+	{
+		final ImmutableSet<OrderLineId> orderLineIds = lines.stream()
+				.map(line -> OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableMap<OrderLineId, GroupId> groupIdsOfCompensationLines = orderDAO.retrieveOrderLinesByIds(orderLineIds).stream()
+				.filter(orderLine -> orderLine.isGroupCompensationLine() && orderLine.getC_Order_CompensationGroup_ID() > 0)
+				.collect(ImmutableMap.toImmutableMap(
+						orderLine -> OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()),
+						orderLine -> OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderLine.getC_Order_ID()), orderLine.getC_Order_CompensationGroup_ID())));
+		final ImmutableSet<GroupId> contractCreatedGroupIds = OrderGroupRepository.filterContractCreatedGroupIds(ImmutableSet.copyOf(groupIdsOfCompensationLines.values()));
+
+		return groupIdsOfCompensationLines.entrySet().stream()
+				.filter(entry -> contractCreatedGroupIds.contains(entry.getValue()))
+				.map(Map.Entry::getKey)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
