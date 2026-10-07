@@ -603,3 +603,56 @@ describe('ViewActions thunks', () => {
 
   it.todo(`dispatches 'FILTER_VIEW_*' when the view is filtered`);
 });
+
+describe('patchViewAction', () => {
+  const windowId = '540759';
+  const viewId = '540759-a';
+  const rowId = '1000001';
+  const replyWithRow = (row) => {
+    const path = `/documentView/${windowId}/${viewId}/${rowId}/edit`;
+    nock(config.API_URL)
+      .defaultReplyHeaders({
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'PATCH',
+        'access-control-allow-headers': 'Content-Type',
+      })
+      .options(path) // the CORS preflight of the PATCH
+      .reply(200)
+      .patch(path)
+      .reply(200, row);
+  };
+  const notifications = (store) =>
+    store.getActions().filter((action) => action.type === ACTION_TYPES.ADD_NOTIFICATION);
+  const patchDiscount = (store) =>
+    store.dispatch(
+      viewActions.patchViewAction({ windowId, viewId, rowId, fieldName: 'discountAmt', value: '1,5' })
+    );
+
+  it('shows the error of a rejected row edit, also when it is no user friendly error', async () => {
+    const store = mockStore(createStore());
+    replyWithRow({ id: rowId, fieldsByName: {}, error: { message: 'Character , is neither a decimal digit number' } });
+
+    await patchDiscount(store);
+
+    expect(notifications(store)).toHaveLength(1);
+    expect(notifications(store)[0].msg).toEqual('Character , is neither a decimal digit number');
+  });
+
+  it('shows a user friendly error once', async () => {
+    const store = mockStore(createStore());
+    replyWithRow({ id: rowId, fieldsByName: {}, error: { message: 'Not allowed', userFriendlyError: true } });
+
+    await patchDiscount(store);
+
+    expect(notifications(store)).toHaveLength(1);
+  });
+
+  it('shows nothing when the row edit succeeded', async () => {
+    const store = mockStore(createStore());
+    replyWithRow({ id: rowId, fieldsByName: {} });
+
+    await patchDiscount(store);
+
+    expect(notifications(store)).toHaveLength(0);
+  });
+});

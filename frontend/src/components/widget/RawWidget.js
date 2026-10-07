@@ -2,6 +2,7 @@ import React, { createRef, PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
+import counterpart from 'counterpart';
 
 import {
   getWidgetField,
@@ -9,9 +10,14 @@ import {
   shouldPatch,
 } from '../../utils/widgetHelpers';
 import {
+  formatDecimalNumberForEditing,
+  getSessionNumberDelimiters,
   isAllowedDecimalNumberInput,
+  isValidDecimalNumberString,
   normalizeDecimalNumberString,
 } from '../../utils/locale';
+import { addNotification } from '../../actions/AppActions';
+import store from '../../store/store';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
@@ -21,6 +27,18 @@ import PropTypes from 'prop-types';
 
 /** Widget types with their own document-change focus rule; `WidgetRenderer` routes these to `Lookup`/`List`. */
 const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
+
+/**
+ * Tells whether a widget value is just what the user typed, coming back from the parent's state (as typed, or already
+ * converted to the dot-decimal, or empty while the typed text is no complete number) - and not a value from outside.
+ */
+const isEchoOfTypedText = (value, typedText) => {
+  const valueStr = value == null ? '' : String(value);
+  const typedValue = isValidDecimalNumberString(typedText)
+    ? normalizeDecimalNumberString(typedText)
+    : '';
+  return valueStr === typedText || valueStr === (typedValue ?? '');
+};
 
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
@@ -48,6 +66,9 @@ export class RawWidget extends PureComponent {
     this.state = {
       isFocused: false,
       cachedValue,
+      // a decimal number widget shows the text the user is typing, otherwise the stored value the session way
+      typedText: null,
+      typedTextTo: null,
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
@@ -89,6 +110,8 @@ export class RawWidget extends PureComponent {
     ) {
       this.resetCachedValue();
     }
+
+    this.forgetTypedTextOnOutsideChange(prevProps);
 
     // The mount-time focus above never runs again inside a mounted window, so repeat it when the
     // document changes - not while this widget holds the caret, not in a modal (there `dataId` is
@@ -280,12 +303,115 @@ export class RawWidget extends PureComponent {
    * @method handleBlur
    * @summary Wrapper around `handleBlurWithParams` to grab the missing parameters and avoid anonymous function in event handlers
    */
-  handleBlur = (e, isValueTo = false) => {
-    const { filterWidget, fields, id, widgetData } = this.props;
+  /**
+   * @method forgetTypedTextOnOutsideChange
+   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
+   *          that value again instead of what the user had typed
+   */
+  forgetTypedTextOnOutsideChange = (prevProps) => {
+    const { widgetType, widgetData } = this.props;
+    const { typedText, typedTextTo } = this.state;
+    if (!isDecimalNumberField(widgetType)) {
+      return;
+    }
 
+    const isOutsideChange = (key, text) =>
+      text !== null &&
+      prevProps.widgetData?.[0]?.[key] !== widgetData?.[0]?.[key] &&
+      !isEchoOfTypedText(widgetData?.[0]?.[key], text);
+
+    const isValueChanged = isOutsideChange('value', typedText);
+    const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
+    if (isValueChanged || isValueToChanged) {
+      this.setState({
+        ...(isValueChanged ? { typedText: null } : {}),
+        ...(isValueToChanged ? { typedTextTo: null } : {}),
+      });
+    }
+  };
+
+  /**
+   * @method getDecimalEditText
+   * @summary The text a decimal number widget shows for editing: what the user typed, else the stored value with the
+   *          session's decimal separator (de 3.57 -> '3,57')
+   */
+  getDecimalEditText = (isValueTo = false) => {
+    const { typedText, typedTextTo } = this.state;
+    const typed = isValueTo ? typedTextTo : typedText;
+    if (typed !== null) {
+      return typed;
+    }
+
+    const { data, widgetData } = this.props;
+    const stored = isValueTo
+      ? widgetData?.[0]?.valueTo
+      : data != null
+      ? data
+      : widgetData?.[0]?.value;
+    return formatDecimalNumberForEditing(stored);
+  };
+
+  /**
+   * @method getEventValues
+   * @summary The value and valueTo of an input event: the edited side from the input, the other side as shown
+   */
+  getEventValues = (e, isValueTo) => {
+    const { widgetType, widgetData } = this.props;
     const valueToSet = e.target.value;
-    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
-    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
+    if (isDecimalNumberField(widgetType)) {
+      return {
+        value: !isValueTo ? valueToSet : this.getDecimalEditText(false),
+        valueTo: isValueTo ? valueToSet : this.getDecimalEditText(true),
+      };
+    }
+    return {
+      value: !isValueTo ? valueToSet : widgetData?.[0]?.value,
+      valueTo: isValueTo ? valueToSet : widgetData?.[0]?.valueTo,
+    };
+  };
+
+  /**
+   * @method refuseInvalidNumber
+   * @summary A decimal number that is invalid with the session's separators (e.g. '3.57' in German, where the dot only
+   *          groups thousands) is not patched: the user is told why, and the field shows the stored value again
+   */
+  refuseInvalidNumber = ({ property, id, invalidText, value, valueTo }) => {
+    const { handleChange } = this.props;
+
+    if (this.lastRefusedNumberText !== invalidText) {
+      this.lastRefusedNumberText = invalidText;
+
+      const { decimal, thousands } = getSessionNumberDelimiters();
+      const params = {
+        text: invalidText,
+        decimal,
+        grouping: thousands,
+        example: `1${thousands}234${decimal}56`,
+      };
+      store.dispatch(
+        addNotification(
+          counterpart.translate('window.error.invalidNumber.title', {
+            fallback: 'Invalid number',
+          }),
+          counterpart.translate('window.error.invalidNumber.description', {
+            ...params,
+            fallback: `"${invalidText}" was not taken over: the decimal separator is "${decimal}", "${thousands}" is allowed only to group thousands in groups of three (e.g. ${params.example}).`,
+          }),
+          5000,
+          'error'
+        )
+      );
+    }
+
+    this.setState({ typedText: null, typedTextTo: null });
+    handleChange?.(property, value, id, valueTo);
+  };
+
+  handleBlur = (e, isValueTo = false) => {
+    const { filterWidget, fields, id } = this.props;
+
+    const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
@@ -318,13 +444,10 @@ export class RawWidget extends PureComponent {
       fields,
       closeTableField,
       id,
-      widgetData,
     } = this.props;
     const { key } = e;
 
-    const valueToSet = e.target.value;
-    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
-    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+    const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
@@ -367,11 +490,12 @@ export class RawWidget extends PureComponent {
     const widgetFieldName = getWidgetField({ filterWidget, fields });
 
     const valueToSet = e.target.value;
-    if (
-      isDecimalNumberField(widgetType) &&
-      !isAllowedDecimalNumberInput(valueToSet)
-    ) {
-      return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes (and pastes) ourselves
+    if (isDecimalNumberField(widgetType)) {
+      if (!isAllowedDecimalNumberInput(valueToSet)) {
+        return; // a decimal number widget is a text input, so we reject the non-numeric keystrokes (and pastes) ourselves
+      }
+      this.lastRefusedNumberText = null;
+      this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
     const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
     const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
@@ -400,6 +524,23 @@ export class RawWidget extends PureComponent {
 
     // the user typed the number with the separators of his locale (e.g. '3,57' in German), the backend expects '3.57'
     if (isDecimalNumberField(widgetType)) {
+      const isValueValid = isValidDecimalNumberString(value);
+      const isValueToValid = isValidDecimalNumberString(valueTo);
+      if (!isValueValid || !isValueToValid) {
+        this.refuseInvalidNumber({
+          property,
+          id,
+          invalidText: isValueValid ? valueTo : value,
+          value: isValueValid
+            ? normalizeDecimalNumberString(value)
+            : cachedValue,
+          valueTo: isValueToValid
+            ? normalizeDecimalNumberString(valueTo)
+            : null,
+        });
+        return Promise.resolve(null);
+      }
+
       value = normalizeDecimalNumberString(value);
       valueTo = normalizeDecimalNumberString(valueTo);
     }
@@ -514,12 +655,13 @@ export class RawWidget extends PureComponent {
     const widgetTitle =
       widgetData[0].widgetType === 'Password' ? null : widgetValue;
 
+    const isDecimalNumber = isDecimalNumberField(this.props.widgetType);
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
       className: 'input-field js-input-field',
-      value: widgetValue,
+      value: isDecimalNumber ? this.getDecimalEditText(false) : widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
       disabled: readonly,
@@ -542,6 +684,12 @@ export class RawWidget extends PureComponent {
           isMultiselect,
           widgetField,
           widgetProperties,
+          decimalRangeValues: isDecimalNumber
+            ? {
+                from: this.getDecimalEditText(false),
+                to: this.getDecimalEditText(true),
+              }
+            : undefined,
           showErrorBorder,
           isFocused,
           isFilterActive,

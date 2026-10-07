@@ -98,32 +98,22 @@ export function initNumeralLocales(lang, locale) {
  *          Read from the session locale itself and not from numeral, which keeps the separators of the first
  *          registration of a language for the whole tab.
  */
-const getSessionNumberDelimiters = () => sessionNumberDelimiters;
+export const getSessionNumberDelimiters = () => sessionNumberDelimiters;
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * @summary Converts a number the user typed with the separators of the session locale into the
- *          dot-decimal form the backend expects. Blanks (also no-break and narrow no-break spaces) are dropped first.
- *          The accepted forms:
- *          - a number with the session's decimal separator: de '3,57' -> '3.57', en '3.57' -> '3.57';
- *          - for a comma-decimal session, a number with a decimal point, because edit mode shows the stored value
- *            that way: de '3.57' -> '3.57', also de '1.234' -> '1.234';
- *          - a number grouped in valid groups of three digits: de '1.234,56' / '1.234.567', en '1,234.56' / '12,345'.
- *          Anything else (e.g. en '1,5', de '1.2.3', de '1,234.56') is ambiguous and is returned as typed, so that the
- *          backend rejects it instead of storing a wrong number. A text without any digit is read as empty.
+ * @summary Reads a number the user typed with the separators of the session locale. Blanks (also no-break and narrow
+ *          no-break spaces) are dropped first. Valid are only:
+ *          - a number with the session's decimal separator: de '3,57', en '3.57';
+ *          - a number grouped in valid groups of three digits: de '1.000' / '1.234,56', en '1,000' / '1,234.56'.
+ *          So in a German session a dot is a grouping separator only: '3.57' or '1.2' are invalid; English mirrors it.
  * @param {string} text the raw text from the input
  * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
- * @returns {string} the normalized number; an empty or missing value is returned as is
+ * @returns {string|null} the dot-decimal number the backend expects, '' when the text holds no digit (e.g. '-'),
+ *          or null when the text is no valid number
  */
-export function normalizeDecimalNumberString(
-  text,
-  delimiters = getSessionNumberDelimiters()
-) {
-  if (typeof text !== 'string' || !text) {
-    return text;
-  }
-
+const parseDecimalNumberString = (text, delimiters) => {
   const { decimal, thousands } = delimiters;
   const compact = text.replace(/\s/g, '');
   const sign = compact.startsWith('-') ? '-' : '';
@@ -135,8 +125,6 @@ export function normalizeDecimalNumberString(
     return ''; // e.g. a lone '-' or ',': nothing typed yet
   } else if (new RegExp(`^\\d*(${decimalPattern}\\d*)?$`).test(unsigned)) {
     return sign + unsigned.replace(decimal, '.');
-  } else if (decimal !== '.' && /^\d*\.\d*$/.test(unsigned)) {
-    return sign + unsigned;
   } else if (
     !isBlankGrouping &&
     new RegExp(
@@ -145,8 +133,62 @@ export function normalizeDecimalNumberString(
   ) {
     return sign + unsigned.split(thousands).join('').replace(decimal, '.');
   } else {
-    return text.trim(); // ambiguous: sent as typed, so that the backend rejects it
+    return null;
   }
+};
+
+/**
+ * @summary Converts a number the user typed with the separators of the session locale into the dot-decimal form the
+ *          backend expects, see {@link isValidDecimalNumberString} for what is valid. A text without any digit is read
+ *          as empty; an invalid text is returned as typed.
+ * @param {string} text the raw text from the input
+ * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ * @returns {string} the normalized number; an empty or missing value is returned as is
+ */
+export function normalizeDecimalNumberString(
+  text,
+  delimiters = getSessionNumberDelimiters()
+) {
+  if (typeof text !== 'string' || !text) {
+    return text;
+  }
+  return parseDecimalNumberString(text, delimiters) ?? text.trim();
+}
+
+/**
+ * @summary Tells whether a text the user typed is a valid number with the separators of the session locale:
+ *          the session's decimal separator, and grouping only in valid groups of three digits
+ *          (de '3,57', '1.000', '1.234,56'; not '3.57' or '1.2'). An empty value, or a text without any digit, is valid.
+ * @param {string} text
+ * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ */
+export function isValidDecimalNumberString(
+  text,
+  delimiters = getSessionNumberDelimiters()
+) {
+  return (
+    typeof text !== 'string' ||
+    !text ||
+    parseDecimalNumberString(text, delimiters) !== null
+  );
+}
+
+/**
+ * @summary Shows a stored (dot-decimal) number for editing, with the session's decimal separator and no grouping:
+ *          de 3.57 -> '3,57', 1234.5 -> '1234,5'. What it returns is read back by {@link normalizeDecimalNumberString}
+ *          as the same stored value. Any other text is returned untouched.
+ * @param {string|number} value
+ * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ */
+export function formatDecimalNumberForEditing(
+  value,
+  delimiters = getSessionNumberDelimiters()
+) {
+  const text = typeof value === 'number' ? String(value) : value;
+  if (typeof text !== 'string' || !/^-?\d+(\.\d+)?$/.test(text)) {
+    return text;
+  }
+  return text.replace('.', delimiters.decimal);
 }
 
 /**

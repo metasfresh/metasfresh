@@ -14,7 +14,10 @@ import {
   isDecimalNumberField,
   isFocusableWidgetType,
 } from '../../utils/widgetHelpers';
-import { normalizeDecimalNumberString } from '../../utils/locale';
+import {
+  isValidDecimalNumberString,
+  normalizeDecimalNumberString,
+} from '../../utils/locale';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
@@ -410,40 +413,11 @@ class FiltersItem extends PureComponent {
           return afcItem;
         });
       }
-      applyFilters(this.withDecimalNumbersNormalized(activeFilterClone), () => {
+      applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
       });
     }
-  };
-
-  /**
-   * @method withDecimalNumbersNormalized
-   * @summary The number filter fields keep the text as typed (e.g. '3,' or '-' on the way to '3,57' or '-5'),
-   *          so the decimal numbers are converted to the dot-decimal the backend expects only when the filter is applied.
-   * @param {object} filterToApply
-   */
-  withDecimalNumbersNormalized = (filterToApply) => {
-    const layoutParameters = this.state.filter?.parameters ?? [];
-    const getWidgetType = (parameter) =>
-      parameter.widgetType ??
-      layoutParameters.find(
-        (layoutParameter) =>
-          layoutParameter.parameterName === parameter.parameterName
-      )?.widgetType;
-
-    return {
-      ...filterToApply,
-      parameters: filterToApply.parameters.map((parameter) =>
-        isDecimalNumberField(getWidgetType(parameter))
-          ? {
-              ...parameter,
-              value: normalizeDecimalNumberString(parameter.value),
-              valueTo: normalizeDecimalNumberString(parameter.valueTo),
-            }
-          : parameter
-      ),
-    };
   };
 
   /**
@@ -640,11 +614,15 @@ class FiltersItem extends PureComponent {
                               Moment.isMoment(value)) ||
                             !DATE_FIELD_FORMATS[widgetType]
                           ) {
+                            // the field shows what is typed (see RawWidget), the filter keeps the number the backend expects
+                            const isDecimal = isDecimalNumberField(widgetType);
                             this.setValue(
                               property,
-                              value,
+                              isDecimal ? toDecimalFilterValue(value) : value,
                               id,
-                              valueTo,
+                              isDecimal
+                                ? toDecimalFilterValue(valueTo)
+                                : valueTo,
                               filter.filterId,
                               item.defaultValue
                             );
@@ -774,6 +752,15 @@ export default connect(null, {
 //
 //
 //
+
+/**
+ * A typed decimal number as the filter keeps it: the dot-decimal the backend expects, or null while the text is no valid
+ * number (e.g. '3.57' in German, refused by RawWidget when the field is left)
+ */
+const toDecimalFilterValue = (value) =>
+  typeof value !== 'string' || isValidDecimalNumberString(value)
+    ? normalizeDecimalNumberString(value)
+    : null;
 
 const toParameterValueArray = (parameter, value, valueTo) => {
   let parametersArray = Array.isArray(parameter) ? parameter : [parameter];

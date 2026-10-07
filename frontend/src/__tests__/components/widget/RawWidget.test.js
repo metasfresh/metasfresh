@@ -9,6 +9,8 @@ from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
 import { initNumeralLocales } from '../../../utils/locale';
+import store from '../../../store/store';
+import { ADD_NOTIFICATION } from '../../../constants/ActionTypes';
 
 const createDummyProps = function(props) {
   return {
@@ -746,7 +748,36 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1234.56', undefined, undefined);
     });
 
-    it('sends an ambiguous amount as typed, for the backend to reject it', () => {
+    const notificationsDispatched = (dispatchSpy) =>
+      dispatchSpy.mock.calls.filter(([action]) => action?.type === ADD_NOTIFICATION);
+
+    it('shows a stored amount with the decimal comma of the session while editing', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '3.57' }],
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      expect(wrapper.find('input').props().value).toEqual('3,57');
+    });
+
+    it('does not patch an untouched amount that is focused and left', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1234.5' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      const input = wrapper.find('input');
+
+      input.simulate('focus');
+      wrapper.find('input').simulate('blur', { target: { value: wrapper.find('input').props().value } });
+
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('keeps the typed text while typing and reads a dot in groups of three as grouping (1.000 -> 1000)', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({
         ...amountLayout,
@@ -755,9 +786,38 @@ describe('RawWidget component', () => {
       });
       const wrapper = mount(<RawWidget {...props} />);
 
-      pressEnter(wrapper.find('input'), '1,234.56');
-      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1,234.56', undefined, undefined);
+      wrapper.find('input').simulate('change', { target: { value: '1.000' } });
+      expect(wrapper.find('input').props().value).toEqual('1.000');
+
+      pressEnter(wrapper.find('input'), '1.000');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '1000', undefined, undefined);
     });
+
+    it.each(['3.57', '1,234.56'])(
+      'refuses %s (a dot that is no grouping): no patch, one visible error, and the stored amount is kept',
+      (typed) => {
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const handlePatchSpy = jest.fn();
+        const handleChangeSpy = jest.fn();
+        const props = createDummyProps({
+          ...amountLayout,
+          widgetData: [{ ...amountData, value: '2.5' }],
+          handlePatch: handlePatchSpy,
+          handleChange: handleChangeSpy,
+        });
+        const wrapper = mount(<RawWidget {...props} />);
+        wrapper.find('input').simulate('focus');
+        wrapper.find('input').simulate('change', { target: { value: typed } });
+
+        pressEnter(wrapper.find('input'), typed);
+        wrapper.find('input').simulate('blur', { target: { value: typed } });
+
+        expect(handlePatchSpy).not.toHaveBeenCalled();
+        expect(notificationsDispatched(dispatchSpy)).toHaveLength(1);
+        expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2.5', undefined, undefined);
+        dispatchSpy.mockRestore();
+      }
+    );
 
     it('patches both ends of an amount range filter (valueTo too)', () => {
       const handlePatchSpy = jest.fn();
@@ -933,10 +993,33 @@ describe('RawWidget component', () => {
       });
     });
 
+    it('refuses 1,5 (a comma that is no grouping) with a visible error, instead of storing 15', () => {
+      const dispatchSpy = jest.spyOn(store, 'dispatch');
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('keyDown', {
+        key: 'Enter',
+        target: { value: '1,5' },
+        preventDefault: jest.fn(),
+      });
+
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+      expect(
+        dispatchSpy.mock.calls.filter(([action]) => action?.type === ADD_NOTIFICATION)
+      ).toHaveLength(1);
+      dispatchSpy.mockRestore();
+    });
+
     it.each([
       ['3.57', '3.57'],
       ['1,234.5', '1234.5'],
-      ['1,5', '1,5'], // no valid grouping: sent as typed, so that the backend rejects it instead of storing 15
+      ['1,000', '1000'],
     ])('patches %s typed into an amount as %s', (typed, patched) => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({

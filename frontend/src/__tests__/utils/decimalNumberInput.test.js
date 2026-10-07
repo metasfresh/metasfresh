@@ -2,6 +2,7 @@ import {
   initNumeralLocales,
   normalizeDecimalNumberString,
   isAllowedDecimalNumberInput,
+  formatDecimalNumberForEditing,
 } from '../../utils/locale';
 
 // The separators a user session reports (see JSONUserSessionLocale) for a German and an English user
@@ -22,8 +23,15 @@ describe('normalizeDecimalNumberString', () => {
       expect(normalizeDecimalNumberString('3,57', DE)).toEqual('3.57');
     });
 
-    it('keeps accepting a dot decimal, as typed before', () => {
+    it('refuses a dot that is no valid grouping: sent as typed, for the backend to reject it', () => {
       expect(normalizeDecimalNumberString('3.57', DE)).toEqual('3.57');
+      expect(normalizeDecimalNumberString('1.2', DE)).toEqual('1.2');
+      expect(normalizeDecimalNumberString('-3.5', DE)).toEqual('-3.5');
+    });
+
+    it('reads a dot in valid groups of three digits as grouping', () => {
+      expect(normalizeDecimalNumberString('1.000', DE)).toEqual('1000');
+      expect(normalizeDecimalNumberString('1.234', DE)).toEqual('1234');
     });
 
     it('drops the dot grouping separators when a decimal comma is present', () => {
@@ -145,5 +153,32 @@ describe('isAllowedDecimalNumberInput', () => {
     expect(
       isAllowedDecimalNumberInput("1'234.56", { decimal: '.', thousands: "'" })
     ).toBe(true);
+  });
+});
+
+describe('formatDecimalNumberForEditing', () => {
+  it('shows a stored number with the decimal comma of a German session, without grouping', () => {
+    expect(formatDecimalNumberForEditing('3.57', DE)).toEqual('3,57');
+    expect(formatDecimalNumberForEditing('1234.5', DE)).toEqual('1234,5');
+    expect(formatDecimalNumberForEditing('-0.5', DE)).toEqual('-0,5');
+    expect(formatDecimalNumberForEditing('1000', DE)).toEqual('1000');
+    expect(formatDecimalNumberForEditing(3.57, DE)).toEqual('3,57');
+  });
+
+  it('shows a stored number unchanged in an English session', () => {
+    expect(formatDecimalNumberForEditing('1234.5', EN)).toEqual('1234.5');
+  });
+
+  it('leaves empty values and text that is no stored number untouched', () => {
+    expect(formatDecimalNumberForEditing('', DE)).toEqual('');
+    expect(formatDecimalNumberForEditing(null, DE)).toEqual(null);
+    expect(formatDecimalNumberForEditing('3,57', DE)).toEqual('3,57');
+  });
+
+  it('round-trips: what edit mode shows is read back as the stored value', () => {
+    ['3.57', '1234.5', '-0.5', '1000', '0', '1.000'].forEach((stored) => {
+      expect(normalizeDecimalNumberString(formatDecimalNumberForEditing(stored, DE), DE)).toEqual(stored);
+      expect(normalizeDecimalNumberString(formatDecimalNumberForEditing(stored, EN), EN)).toEqual(stored);
+    });
   });
 });
