@@ -82,8 +82,9 @@ export async function fillNumber(page, scope, fieldName, value) {
   return await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
+/** Type a date and commit it. The date widget reads a text with dashes as yyyy-MM-dd in every language. */
 export async function fillDate(page, scope, fieldName, date) {
-  const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+  const text = isoDate(date);
   const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
