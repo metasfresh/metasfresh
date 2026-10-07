@@ -28,20 +28,22 @@ let now;
 function mountReader(props = {}) {
   const onReadDone = jest.fn();
   const onReadInProgress = jest.fn();
+  // Latest isReadInProgress the hook returned (read after each act()).
+  const readState = { isReadInProgress: undefined };
 
   function TestComponent() {
-    useKeyboardBarcodeReader({
+    readState.isReadInProgress = useKeyboardBarcodeReader({
       onReadDone,
       onReadInProgress,
       rateMs: RATE_MS,
       minLength: MIN_LENGTH,
       ...props,
-    });
+    }).isReadInProgress;
     return null;
   }
 
   const utils = render(<TestComponent />);
-  return { onReadDone, onReadInProgress, ...utils };
+  return { onReadDone, onReadInProgress, readState, ...utils };
 }
 
 function pressKey(key, opts = {}) {
@@ -93,6 +95,32 @@ afterEach(() => {
 });
 
 describe('useKeyboardBarcodeReader', () => {
+  describe('isReadInProgress', () => {
+    it('is true from the first character of a plain code until the idle flush completes it', () => {
+      // Production Zebra devices send no terminator: a plain code completes only via the idle flush.
+      const { onReadDone, readState } = mountReader();
+      expect(readState.isReadInProgress).toBe(false);
+
+      typeString('4012345678901');
+      expect(readState.isReadInProgress).toBe(true);
+
+      goIdleAndTick();
+      expect(onReadDone).toHaveBeenCalledWith('4012345678901', expect.anything());
+      expect(readState.isReadInProgress).toBe(false);
+    });
+
+    it('is true while an HU QR code streams in and false once its content completes it', () => {
+      const { onReadDone, readState } = mountReader();
+
+      typeString(HU_QR.slice(0, -1));
+      expect(readState.isReadInProgress).toBe(true);
+
+      typeString(HU_QR.slice(-1));
+      expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.anything());
+      expect(readState.isReadInProgress).toBe(false);
+    });
+  });
+
   it('force-completes a complete HU QR on JSON-close WITHOUT waiting for the idle timer, despite a mid-scan gap', () => {
     const { onReadDone } = mountReader();
 
