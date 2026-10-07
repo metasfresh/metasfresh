@@ -16,6 +16,14 @@ const dispatchScanKeystrokes = async (chunk) => {
     }, chunk);
 };
 
+// Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') as one keydown/keyup on document.
+const dispatchScanTerminator = async (key) => {
+    await page.evaluate((k) => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+        document.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
+    }, key);
+};
+
 export const BarcodeScannerComponent = {
     waitToAttach: async ({ testId }) => await test.step(`${NAME} - Wait for input element to attach  (${testId})`, async () => {
         let selector = '#input-text';
@@ -105,10 +113,7 @@ export const BarcodeScannerComponent = {
         // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
         // hook recognises as "scan finished", force-completing the buffer immediately.
         if (terminator) {
-            await page.evaluate((key) => {
-                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
-                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
-            }, terminator);
+            await dispatchScanTerminator(terminator);
         }
     }),
 
@@ -198,6 +203,9 @@ export const BarcodeScannerComponent = {
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
+        // A keyboard (hardware) scan never writes into #input-text; the reader's explicit state is the
+        // signal that the scan was consumed.
+        await expect(page.locator('.scan-prompt.scan-in-progress')).toHaveCount(0);
     }),
 
     // Fills the visible editable input and presses Enter — exercises the manual-typing path
@@ -281,6 +289,38 @@ export const BarcodeScannerComponent = {
     // Asserts the manual-entry visible input is NOT rendered.
     expectManualEntryInputAbsent: async () => await test.step(`${NAME} - Expect manual-entry input absent`, async () => {
         await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    // Sends only the first part of a scan, without waiting for a scan target and without completing it,
+    // so a test can observe the screen while the scan is still being read.
+    typePartial: async (chunk) => await test.step(`${NAME} - Type partial scan`, async () => {
+        await dispatchScanKeystrokes(chunk);
+    }),
+
+    // Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') on its own, e.g. after typePartial().
+    typeTerminator: async (key) => await test.step(`${NAME} - Type end-of-scan key ${key}`, async () => {
+        await dispatchScanTerminator(key);
+    }),
+
+    // The visible scan prompt shows "scanning…" (and hides its idle caption) while a hardware scan is
+    // being read. Asserts what the user sees (CSS display), not only the state class.
+    expectScanInProgressShown: async (isShown) => await test.step(`${NAME} - Expect scan in progress ${isShown ? 'shown' : 'not shown'}`, async () => {
+        const progressCaption = page.locator('.hardware-mode-panel .scan-prompt-text-progress');
+        const idleCaption = page.locator('.hardware-mode-panel .scan-prompt-text-idle');
+        if (isShown) {
+            await expect(progressCaption).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+            await expect(idleCaption).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(idleCaption).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+            await expect(progressCaption).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    // Guards handheld scan speed: a keyboard scan must never be written into the off-screen input (each
+    // write costs a style recalc + layout per character on the handheld); the scan lives in the reader's
+    // buffer only.
+    expectHardwareInputEmpty: async () => await test.step(`${NAME} - Expect hardware input empty`, async () => {
+        await expect(page.locator('#input-text')).toHaveValue('', { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Asserts the manual-entry input does NOT have the readOnly attribute — the user must be able
