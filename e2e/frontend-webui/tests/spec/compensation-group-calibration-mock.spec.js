@@ -14,6 +14,7 @@ import {
     expectNoCalibrationGridColumn,
     lineRow,
     setLineQty,
+    setLineQtyInline,
 } from '../utils/compensationGroupCalibration';
 
 /**
@@ -123,8 +124,8 @@ test.describe('Compensation group calibration - mock case', () => {
             });
         });
 
-        await test.step('the clerk types Menge 375 on Rice_Pudding (the mock\'s value): factor 0,8, rule 10, uncalibrated 375 stay', async () => {
-            await setLineQty(page, rice, 375);
+        await test.step('the clerk types Menge 375 inline in the grid on Rice_Pudding (the mock\'s value): factor 0,8, rule 10, uncalibrated 375 stay', async () => {
+            await setLineQtyInline(page, rice, 375);
 
             await expectLineQty(page, rice, 375);
             await expectCalibrationGroup(page, rice, { factor: '0.8', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-override' });

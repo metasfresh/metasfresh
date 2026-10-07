@@ -274,3 +274,23 @@ export async function setLineQty(page, productCode, quantity) {
     await page.reload();
     await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
+
+/**
+ * Type a new Menge INLINE in the grid (the clerk's usual path): double-click the line's Menge cell, type, confirm with
+ * Enter, wait for the saved response, and reload so the grid shows what is stored.
+ */
+export async function setLineQtyInline(page, productCode, quantity) {
+    const cell = lineRow(page, productCode).locator('[data-cy="cell-QtyEntered"]');
+    await cell.dblclick();
+    const input = cell.locator('input');
+    await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await input.fill(String(quantity));
+    const saved = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url()) && response.ok(),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Enter');
+    await saved;
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
