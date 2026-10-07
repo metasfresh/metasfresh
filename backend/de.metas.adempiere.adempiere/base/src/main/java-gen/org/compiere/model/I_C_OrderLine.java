@@ -1151,7 +1151,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Calibration factor.
-	 * Factor the quantity of a compensation group component is multiplied by. 0 leaves the component out.
+	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1161,7 +1161,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Calibration factor.
-	 * Factor the quantity of a compensation group component is multiplied by. 0 leaves the component out.
+	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
