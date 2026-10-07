@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -190,6 +190,10 @@ export const PickingJobScreen = {
                 await expect(classes).toContain(expectedClassName);
             });
         }
+
+        // Capture mode only (UAT_CAPTURE): the line renders below the fold, so after a pick the picked
+        // quantity would appear in no recorded frame; scroll it into view and hold it there.
+        await revealForCaptureIfEnabled(lineButton);
     }),
 
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
