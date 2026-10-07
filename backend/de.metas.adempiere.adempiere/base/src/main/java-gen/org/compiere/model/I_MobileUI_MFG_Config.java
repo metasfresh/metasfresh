@@ -98,6 +98,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowEmptyingHUs (boolean IsAllowEmptyingHUs);
+
+	/**
+	 * Get Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowEmptyingHUs();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowEmptyingHUs = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowEmptyingHUs", null);
+	String COLUMNNAME_IsAllowEmptyingHUs = "IsAllowEmptyingHUs";
+
+	/**
 	 * Set No Raw Material Check.
 	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
@@ -142,6 +165,29 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsBestBeforeDateEditable", null);
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+
+	/**
+	 * Set Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConfirmEmptyingHU (boolean IsConfirmEmptyingHU);
+
+	/**
+	 * Get Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConfirmEmptyingHU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsConfirmEmptyingHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsConfirmEmptyingHU", null);
+	String COLUMNNAME_IsConfirmEmptyingHU = "IsConfirmEmptyingHU";
 
 	/**
 	 * Set Lot Number editable.

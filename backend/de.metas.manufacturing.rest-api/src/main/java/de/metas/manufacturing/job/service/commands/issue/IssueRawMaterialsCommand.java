@@ -14,6 +14,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
+
 public class IssueRawMaterialsCommand
 {
 	// Services
@@ -24,6 +27,8 @@ public class IssueRawMaterialsCommand
 
 	// Params
 	@NonNull private final PPOrderIssueScheduleProcessRequest request;
+	/** Optional extra validation of the step about to be issued; throws to refuse the issue. */
+	@Nullable private final Consumer<RawMaterialsIssueStep> stepGuard;
 
 	// State
 	@NonNull private ManufacturingJob job;
@@ -36,7 +41,8 @@ public class IssueRawMaterialsCommand
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
 			//
 			@NonNull final ManufacturingJob job,
-			@NonNull final PPOrderIssueScheduleProcessRequest request)
+			@NonNull final PPOrderIssueScheduleProcessRequest request,
+			@Nullable final Consumer<RawMaterialsIssueStep> stepGuard)
 	{
 		this.trxManager = trxManager;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
@@ -44,6 +50,7 @@ public class IssueRawMaterialsCommand
 
 		this.job = job;
 		this.request = request;
+		this.stepGuard = stepGuard;
 	}
 
 	public ManufacturingJob execute()
@@ -80,6 +87,10 @@ public class IssueRawMaterialsCommand
 	private RawMaterialsIssueStep issueToStep(final RawMaterialsIssueStep step)
 	{
 		step.assertNotIssued();
+		if (stepGuard != null)
+		{
+			stepGuard.accept(step);
+		}
 		final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
 		this.processed = true;
 

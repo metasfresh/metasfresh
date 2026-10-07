@@ -14,6 +14,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
@@ -82,6 +83,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -101,6 +103,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Service
@@ -131,6 +134,7 @@ public class ManufacturingJobService
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+	private static final AdMessageKey MSG_EmptyingNotAllowedForHU = AdMessageKey.of("de.metas.manufacturing.job.service.EmptyingNotAllowedForHU");
 
 	public static ManufacturingJobService newInstanceForUnitTesting()
 	{
@@ -493,10 +497,20 @@ public class ManufacturingJobService
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
+		// Re-check server-side: a replayed/crafted request could carry EMPTIED for a step whose
+		// HU is not eligible (e.g. an LU, an aggregate HU, a multi-product HU) or while the
+		// client config no longer offers emptying. Config is resolved only when the reason is
+		// actually EMPTIED -- no extra DB round-trip for every other raw-materials issue.
+		final QtyRejectedReasonCode reasonCode = request.getQtyRejectedReasonCode();
+		final Consumer<RawMaterialsIssueStep> stepGuard = QtyRejectedReasonCode.EMPTIED.equals(reasonCode)
+				? step -> assertEmptyingAllowed(step, resolveEmptyingHUsConfig(job), reasonCode)
+				: null;
+
 		return newIssueRawMaterialsCommand()
 				//
 				.job(job)
 				.request(request)
+				.stepGuard(stepGuard)
 				//
 				.build().execute();
 	}
@@ -507,6 +521,46 @@ public class ManufacturingJobService
 				.trxManager(trxManager)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.loadingAndSavingSupportServices(loadingAndSavingSupportServices);
+	}
+
+	/**
+	 * Pure guard for the write path: throws unless the step's HU shape ({@link RawMaterialsIssueStep#isAllowEmptying()},
+	 * decided at job-load time from the HU itself) AND the resolved client config both allow the "empty
+	 * (auto. inventory)" reason. A no-op for every other reason code -- the emptying rule applies only to
+	 * {@link QtyRejectedReasonCode#EMPTIED}.
+	 */
+	@VisibleForTesting
+	static void assertEmptyingAllowed(
+			@NonNull final RawMaterialsIssueStep step,
+			@NonNull final MobileUIManufacturingConfig config,
+			@Nullable final QtyRejectedReasonCode reasonCode)
+	{
+		if (!QtyRejectedReasonCode.EMPTIED.equals(reasonCode))
+		{
+			return;
+		}
+
+		if (!step.isAllowEmptying() || !config.getIsAllowEmptyingHUs().isTrue())
+		{
+			throw new AdempiereException(MSG_EmptyingNotAllowedForHU)
+					.markAsUserValidationError()
+					.setParameter("step", step)
+					.setParameter("config", config);
+		}
+	}
+
+	/**
+	 * Resolved once per issue request (from the job's own {@code AD_Client_ID}), mirroring
+	 * {@code RawMaterialsIssueActivityHandler.resolveEmptyingHUsConfig} on the render path -- both derive
+	 * the offer flag from the same client config, so the write path enforces exactly what the render path offered.
+	 */
+	private MobileUIManufacturingConfig resolveEmptyingHUsConfig(@NonNull final ManufacturingJob job)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(job.getPpOrderId());
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		final UserId responsibleId = job.getResponsibleId() != null ? job.getResponsibleId() : Env.getLoggedUserId();
+
+		return mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
 	}
 
 	public ManufacturingJob receiveGoods(

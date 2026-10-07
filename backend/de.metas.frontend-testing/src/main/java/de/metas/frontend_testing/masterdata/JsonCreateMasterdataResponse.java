@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationG
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageResponse;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
@@ -55,6 +56,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
 	@Nullable Map<String, JsonCreateShipperResponse> shippers;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
+	@NonNull Map<String, JsonPackageResponse> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
 	@NonNull Map<String, JsonPurchaseOrderCreateResponse> purchaseOrders;

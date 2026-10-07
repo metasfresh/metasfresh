@@ -1,6 +1,6 @@
 import {
   getLineByIdFromActivity,
-  getQtyRejectedReasonsFromActivity,
+  getQtyRejectedReasonsForStep,
   getScaleDeviceFromActivity,
   getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
@@ -42,13 +42,10 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
     ? Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax, qtyHUCapacity)
     : Math.min(stepQtyToIssue, qtyToIssueMax, qtyHUCapacity);
 
-  const isIssueWholeHU = qtyToIssueTarget >= qtyHUCapacity;
-
   console.log('RawMaterialIssueStepScanScreen.getPropsFromState', {
     qtyToIssueTarget,
     qtyToIssueMax,
     qtyHUCapacity,
-    isIssueWholeHU,
     qtyAlreadyOnScale,
     //
     line,
@@ -73,9 +70,17 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
     lineQtyToIssueRemaining,
     lineQtyIssued,
     isWeightable,
-    isIssueWholeHU,
     qtyAlreadyOnScale,
-    qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
+    // Offered on EVERY step: an HU holding more than the step needs is exactly the case an operator
+    // must be able to declare not-found / damaged / emptied on, so the list is never suppressed by
+    // the step's target being smaller than the HU's content. A reason is still ASKED FOR only once
+    // the entered qty falls short of the target (`qtyRejected > 0` in GetQuantityDialog.jsx).
+    //
+    // The step's own `allowEmptying` flag stays authoritative for the "empty (auto. inventory)" entry
+    // — the activity-wide list may still carry it for a step whose source HU must refuse it (e.g. a
+    // pallet's primary LU step). See JsonRawMaterialsIssueLineStep#isAllowEmptying (wire key
+    // `allowEmptying`).
+    qtyRejectedReasons: getQtyRejectedReasonsForStep(activity, step),
     scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
     scaleTolerance: isWeightable ? step.scaleTolerance : null,
   };

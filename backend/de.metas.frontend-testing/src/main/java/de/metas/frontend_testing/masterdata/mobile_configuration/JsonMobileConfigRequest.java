@@ -127,5 +127,9 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
 		@Nullable String receiveUnitType;
+
+		// Client-level (MobileUI_MFG_Config), not per-user: see MobileConfigManufacturingCommand.
+		@Nullable Boolean isAllowEmptyingHUs;
+		@Nullable Boolean isConfirmEmptyingHU;
 	}
 }

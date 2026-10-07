@@ -35,6 +35,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsAllowEmptyingHUs (final boolean IsAllowEmptyingHUs)
+	{
+		set_Value (COLUMNNAME_IsAllowEmptyingHUs, IsAllowEmptyingHUs);
+	}
+
+	@Override
+	public boolean isAllowEmptyingHUs() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowEmptyingHUs);
+	}
+
+	@Override
 	public void setIsAllowIssuingAnyHU (final boolean IsAllowIssuingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
@@ -56,6 +68,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isBestBeforeDateEditable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBestBeforeDateEditable);
+	}
+
+	@Override
+	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
+	{
+		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);
+	}
+
+	@Override
+	public boolean isConfirmEmptyingHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmEmptyingHU);
 	}
 
 	@Override
