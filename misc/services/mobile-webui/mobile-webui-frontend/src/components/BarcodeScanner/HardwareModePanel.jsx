@@ -173,15 +173,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   return (
     <div className={`hardware-mode-panel scan-prompt${isReadInProgress ? ' scan-in-progress' : ''}`}>
-      {/* FontAwesome SVG-with-JS (src/index.js → @fortawesome/fontawesome-free/js/all.min) mutates
-          <i className="fas …"> into <svg> in place. React's fiber keeps a stale stateNode pointer
-          to the detached <i>; if the conditional <input> below were ever a sibling needing
-          insertBefore against the icon, React would throw NotFoundError. Wrapping in <span>
-          (codebase convention — see ButtonWithIndicator.jsx) gives React a stable, React-owned
-          parent that FA never touches. */}
-      <span>
-        <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
-      </span>
+      <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
       {/* Caption swap — idle text by default, "Scanning in progress…" while the reader hook has a scan
           in progress (.scan-in-progress, see BarcodeScannerComponent.scss). Deliberately not derived
           from the input's content: writing scanned chars into the input costs a style recalc + layout

@@ -68,14 +68,14 @@ const ButtonWithIndicator = ({
         <div className="left-btn-side">
           {showWarningSign && (
             <span>
-              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing showWarningSign so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
+              {/* Inline wrapper keeps the icon on the text line; as a bare flex item it would sit 2px lower. */}
               <i className="fas fa-exclamation-triangle warning-sign" />
             </span>
           )}
           {typeFASIconName && (
             <span>
-              {/* IMPORTANT: the wrapping "span" needs to be here in case we are clearing typeFASIconName so to avoid: DOMException: Failed to execute 'removeChild' on 'Node'*/}
-              <i key="icon" className={`fas fa-solid ${typeFASIconName}`} />
+              {/* Inline wrapper keeps the icon on the text line; as a bare flex item it would sit 2px lower. */}
+              <i className={`fas fa-solid ${typeFASIconName}`} />
             </span>
           )}
         </div>
@@ -148,17 +148,8 @@ const Indicators = ({ completeStatus, indicator1, indicator2 }) => {
 
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
-      <Indicator
-        key={`indicator_${indicator1}_${completeStatus}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
-        testId="indicator"
-        indicator={indicator1}
-        completeStatus={completeStatus}
-      />
-      <Indicator
-        key={`indicator_${indicator2}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
-        testId="indicator2"
-        indicator={indicator2}
-      />
+      <Indicator testId="indicator" indicator={indicator1} completeStatus={completeStatus} />
+      <Indicator testId="indicator2" indicator={indicator2} />
     </div>
   );
 };
@@ -215,12 +206,7 @@ const Indicator = ({ testId: testIdParam, indicator, completeStatus }) => {
 
   if (!className) return null;
 
-  // IMPORTANT: Wrap in <span> because FontAwesome mutates the <i> into <svg>; without a stable wrapper React throws removeChild errors.
-  return (
-    <span>
-      <i data-testid={testId} className={className} />
-    </span>
-  );
+  return <i data-testid={testId} className={className} />;
 };
 Indicator.propTypes = {
   testId: PropTypes.string,
