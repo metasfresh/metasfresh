@@ -14,7 +14,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Set;
 
@@ -124,8 +134,57 @@ class C_Flatrate_Term_Create_PartnerFailuresTest
 
 		final String message = C_Flatrate_Term_Create.buildFailuresMessage(failures).translate("en_US");
 
-		assertThat(message).contains("P1: reason").contains("P20: reason").doesNotContain("P21: reason");
-		assertThat(message).contains("5");
+		final List<String> lines = Arrays.asList(message.split("\n"));
+		assertThat(lines.stream().filter(line -> line.endsWith(": reason")).count()).as("listed partners").isEqualTo(20);
+		assertThat(lines).contains("P1: reason", "P20: reason").doesNotContain("P21: reason");
+		assertThat(lines.get(lines.size() - 1)).as("the 'and N more' line").contains("C_Flatrate_Term_Create_AndNMore").contains("5");
+	}
+
+	@Test
+	void failureWithoutReason_noNullInMessage()
+	{
+		final String message = C_Flatrate_Term_Create.buildFailuresMessage(
+				ImmutableList.of(FlatrateTermCreator.PartnerFailure.of("P1", null))).translate("en_US");
+
+		assertThat(message).contains("P1").doesNotContain("null");
+	}
+
+	/**
+	 * The texts of the messages go through java.text.MessageFormat: a single apostrophe would swallow the placeholders.
+	 * Checks the effective (last written) text of every language of the messages used by this action and the overlap refusal.
+	 */
+	@Test
+	void messageTexts_substituteAllPlaceholders() throws Exception
+	{
+		final Path dir = Paths.get("src/main/sql/postgresql/system/50-de.metas.contracts");
+		final Pattern statement = Pattern.compile("(?s)(?:UPDATE AD_Message_Trl SET MsgText='((?:[^']|'')*)'.*?AD_Language='(\\w+)' AND AD_Message_ID=(\\d+))|(?:UPDATE AD_Message SET MsgText='((?:[^']|'')*)'.*?AD_Message_ID=(\\d+))");
+		final Map<String, String> effectiveTexts = new TreeMap<>();
+		final List<Path> scripts = new ArrayList<>();
+		try (java.util.stream.Stream<Path> files = Files.list(dir))
+		{
+			files.filter(f -> f.getFileName().toString().matches("58(26950|2841\\d|2842\\d|2843\\d)_.*\\.sql")).sorted().forEach(scripts::add);
+		}
+		for (final Path script : scripts)
+		{
+			final Matcher m = statement.matcher(new String(Files.readAllBytes(script), StandardCharsets.UTF_8));
+			while (m.find())
+			{
+				if (m.group(1) != null)
+				{
+					effectiveTexts.put(m.group(3) + "/" + m.group(2), m.group(1).replace("''", "'"));
+				}
+				else
+				{
+					effectiveTexts.put(m.group(5) + "/base", m.group(4).replace("''", "'"));
+				}
+			}
+		}
+
+		assertThat(effectiveTexts.keySet()).as("fr_CH text of the failures heading is covered").contains("545912/fr_CH", "545877/fr_CH", "545913/fr_CH");
+		effectiveTexts.forEach((key, text) -> {
+			final String formatted = MessageFormat.format(text, "A", "B", "C", "D");
+			assertThat(formatted).as(key + ": " + text).doesNotContain("{");
+		});
 	}
 
 	private String runDoIt(final C_Flatrate_Term_Create process)

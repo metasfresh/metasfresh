@@ -112,7 +112,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 		failures.stream()
 				.limit(MAX_FAILURES_SHOWN)
-				.forEach(failure -> message.append("\n").append(failure.getPartner() + ": " + failure.getReason()));
+				.forEach(failure -> message.append("\n").append(failure.getReason() == null ? failure.getPartner() : failure.getPartner() + ": " + failure.getReason()));
 
 		final int notShown = failures.size() - MAX_FAILURES_SHOWN;
 		if (notShown > 0)
