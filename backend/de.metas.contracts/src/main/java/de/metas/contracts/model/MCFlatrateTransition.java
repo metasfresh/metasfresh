@@ -214,6 +214,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements IDo
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);

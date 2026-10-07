@@ -2300,6 +2300,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());

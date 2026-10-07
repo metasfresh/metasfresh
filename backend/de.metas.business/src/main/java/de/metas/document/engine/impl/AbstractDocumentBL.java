@@ -1,5 +1,6 @@
 package de.metas.document.engine.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +58,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.DEFAULT;
+	private DeadlockRetryPolicy deadlockRetryPolicy = DeadlockRetryPolicy.DEFAULT;
+	private RetryModelSnapshotter retryModelSnapshotter = RetryModelSnapshotter.PO_SNAPSHOTTER;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -127,8 +129,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		{
 			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
 			// and runs on a document instance that does not carry the state of the rolled back attempt
-			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, this::getDocument);
-			processed = DEADLOCK_RETRY_POLICY.call(
+			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, this::getDocument, retryModelSnapshotter);
+			processed = deadlockRetryPolicy.call(
 					() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
 					document.getDocumentInfo());
 			attempts.transferOutcomeToCallerDocument();
@@ -177,6 +179,18 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 				setTrxName(document.getDocumentModel(), initialTrxName, true /* ignoreIfNotHandled */);
 			}
 		};
+	}
+
+	@VisibleForTesting
+	void setDeadlockRetryPolicy(@NonNull final DeadlockRetryPolicy deadlockRetryPolicy)
+	{
+		this.deadlockRetryPolicy = deadlockRetryPolicy;
+	}
+
+	@VisibleForTesting
+	void setRetryModelSnapshotter(@NonNull final RetryModelSnapshotter retryModelSnapshotter)
+	{
+		this.retryModelSnapshotter = retryModelSnapshotter;
 	}
 
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)

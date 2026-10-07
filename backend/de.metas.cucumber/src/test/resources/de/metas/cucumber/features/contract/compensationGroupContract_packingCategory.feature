@@ -659,7 +659,8 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
   # A completion that runs into a DB deadlock is rolled back and retried by the document engine;
   # the retried completion creates the same compensation group as an undisturbed one.
   # Same order and amounts as above, but both the first completion (drafted order) and the
-  # completion after the reactivation (in-progress order) run into one deadlock each.
+  # completion after the reactivation (in-progress order) run into one deadlock each;
+  # all steps work on the same order instance, as one caller would.
   # ##############################################################################################
 
   @from:cucumber
@@ -722,6 +723,9 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And the next completion of the order identified by orderRty runs into a DB deadlock once
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus |
+      | orderRty              | true      | CO        |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
@@ -745,8 +749,23 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And the next completion of the order identified by orderRty runs into a DB deadlock once
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus |
+      | orderRty              | true      | CO        |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_rtyGoodsBonus2         | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
       | ol_rtyCartonBonus2        | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | rtyTerm                           |
+
+    # the same order instance, after its retried completions, is reactivated and completed again without a deadlock
+    When the order identified by orderRty is reactivated
+    And the order identified by orderRty is completed
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus |
+      | orderRty              | true      | CO        |
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_rtyGoodsBonus3         | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
+      | ol_rtyCartonBonus3        | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | rtyTerm                           |

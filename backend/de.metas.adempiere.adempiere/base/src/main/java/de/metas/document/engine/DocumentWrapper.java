@@ -196,6 +196,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	@Override
 	public boolean reActivateIt()
 	{
+		justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_REACTIVATE);
 		handler.reactivateIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_REACTIVATE);

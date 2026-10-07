@@ -381,6 +381,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		log.info("reActivateIt - " + toString());
 
 		org.compiere.model.MDocType dt = org.compiere.model.MDocType.get(getCtx(), getC_DocType_ID());

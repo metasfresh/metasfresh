@@ -24,58 +24,112 @@ package de.metas.cucumber.stepdefs.order;
 
 import de.metas.order.OrderId;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.modelvalidator.IModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
+import javax.annotation.Nullable;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Makes the next completion of an armed order fail once with a DB deadlock (SQLSTATE {@code 40P01}) after the order was
- * prepared and completed in that attempt, so that the document engine rolls back and retries the completion, as it does
- * when PostgreSQL picks the completing transaction as a deadlock victim.
+ * Makes the next completion of an armed order fail once with a DB deadlock (SQLSTATE {@code 40P01}) in {@code AFTER_COMPLETE},
+ * so that the document engine rolls the completion back and retries it, as it does when PostgreSQL picks the completing
+ * transaction as a deadlock victim. Registered while at least one order is armed, see {@link #disarmAll()}.
  */
-@Interceptor(I_C_Order.class)
-final class C_Order_SimulatedDeadlockOnCompletion
+final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 {
 	private static final C_Order_SimulatedDeadlockOnCompletion INSTANCE = new C_Order_SimulatedDeadlockOnCompletion();
-	private static boolean registered = false;
 
-	private final Set<OrderId> armedOrderIds = ConcurrentHashMap.newKeySet();
+	private final Set<OrderId> armedOrderIds = new HashSet<>();
+	private final Set<OrderId> hitOrderIds = new HashSet<>();
+	/** the same wrapper for every registration, so that an engine never accumulates several of them */
+	private final ModelValidator validator = ModelInterceptor2ModelValidatorWrapper.wrapIfNeeded(this);
+	@Nullable private ModelValidationEngine registeredWithEngine = null;
 
 	private C_Order_SimulatedDeadlockOnCompletion() {}
 
 	static synchronized void arm(@NonNull final OrderId orderId)
 	{
-		if (!registered)
-		{
-			ModelValidationEngine.get().addModelValidator(INSTANCE);
-			registered = true;
-		}
+		INSTANCE.registerIfNeeded();
 		INSTANCE.armedOrderIds.add(orderId);
+		INSTANCE.hitOrderIds.remove(orderId);
 	}
 
 	/**
-	 * @return whether the deadlock is still pending for the given order, i.e. no completion of it has hit the deadlock yet
+	 * @return whether a completion of the given order ran into the deadlock since it was armed
 	 */
-	static boolean isArmed(@NonNull final OrderId orderId)
+	static synchronized boolean isHit(@NonNull final OrderId orderId)
 	{
-		return INSTANCE.armedOrderIds.contains(orderId);
+		return INSTANCE.hitOrderIds.contains(orderId);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(final I_C_Order order)
+	/**
+	 * Unregisters the interceptor and forgets all armed orders; to be called after each scenario.
+	 */
+	static synchronized void disarmAll()
 	{
-		if (armedOrderIds.remove(OrderId.ofRepoId(order.getC_Order_ID())))
+		INSTANCE.armedOrderIds.clear();
+		INSTANCE.hitOrderIds.clear();
+		INSTANCE.unregister();
+	}
+
+	private void registerIfNeeded()
+	{
+		final ModelValidationEngine engine = ModelValidationEngine.get();
+		if (registeredWithEngine == engine)
 		{
-			throw new AdempiereException(
-					"Simulated DB deadlock while completing C_Order_ID=" + order.getC_Order_ID(),
-					new SQLException("ERROR: deadlock detected (simulated)", "40P01"));
+			return;
 		}
+
+		unregister(); // the engine was re-created; don't leave the interceptor in the old one
+		engine.addDocValidate(I_C_Order.Table_Name, validator);
+		registeredWithEngine = engine;
+	}
+
+	private void unregister()
+	{
+		if (registeredWithEngine != null)
+		{
+			registeredWithEngine.removeDocValidate(I_C_Order.Table_Name, validator);
+		}
+		registeredWithEngine = null;
+	}
+
+	@Override
+	public void initialize(final IModelValidationEngine engine, final I_AD_Client client) {}
+
+	@Override
+	public int getAD_Client_ID() {return -1;}
+
+	@Override
+	public void onDocValidate(final Object model, final DocTimingType timing)
+	{
+		if (timing != DocTimingType.AFTER_COMPLETE)
+		{
+			return;
+		}
+
+		final OrderId orderId = OrderId.ofRepoId(InterfaceWrapperHelper.getId(model));
+		synchronized (C_Order_SimulatedDeadlockOnCompletion.class)
+		{
+			if (!armedOrderIds.remove(orderId))
+			{
+				return;
+			}
+			hitOrderIds.add(orderId);
+		}
+
+		throw new AdempiereException(
+				"Simulated DB deadlock while completing " + orderId,
+				new SQLException("ERROR: deadlock detected (simulated)", "40P01"));
 	}
 }

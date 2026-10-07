@@ -4761,6 +4761,14 @@ public abstract class PO
 	}
 
 	/**
+	 * Replaces this instance's dynamic attributes with a copy of the given instance's ones (the attribute values themselves are shared).
+	 */
+	public final void copyDynAttributesFrom(@NonNull final PO other)
+	{
+		m_dynAttrs = other.m_dynAttrs == null ? null : new HashMap<>(other.m_dynAttrs);
+	}
+
+	/**
 	 * Fire Model Change Event.
 	 * <p>
 	 * After event is fired, if the event was about replication, the replication flag will also be set to <code>false</code>.

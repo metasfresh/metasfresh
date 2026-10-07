@@ -629,6 +629,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		log.info("reActivateIt - " + toString());
 
 		// Before reActivate

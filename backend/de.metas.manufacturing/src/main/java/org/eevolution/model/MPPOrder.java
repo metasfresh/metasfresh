@@ -443,6 +443,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		if (ppOrderBL.isSomethingProcessed(this))
 		{
