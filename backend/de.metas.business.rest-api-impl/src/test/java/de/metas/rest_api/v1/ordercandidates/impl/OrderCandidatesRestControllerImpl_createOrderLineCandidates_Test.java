@@ -313,6 +313,12 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		{
 			return Optional.of(Quantitys.zero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
+
+		@Override
+		public boolean isInfiniteCapacityTU(@NonNull final I_C_OLCand olCand)
+		{
+			return true;
+		}
 	}
 
 	@Test
