@@ -163,9 +163,20 @@ public class CandidateAssignmentService
 	 * Assigns the given candidate if it matches a refund contract that it is not assigned to yet, e.g. because the contract was completed afterwards.
 	 * The assignment only goes to the current open period of the contract or a later one: past periods get no refund retroactively.
 	 * Does nothing if the candidate is assigned to all contracts that match it.
+	 * The discount line of a contract-created compensation group is no refund base: its assignments are removed.
 	 */
 	public void assignToNewlyMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
+		if (assignableCandidate.isContractCompensationLine())
+		{
+			// it became the discount line of a contract-created group (e.g. regrouped): no refund base, so a former assignment goes
+			if (assignableCandidate.isAssigned())
+			{
+				unassignCandidate(assignableCandidate);
+			}
+			return;
+		}
+
 		final ImmutableSet<FlatrateTermId> assignedContractIds = assignableCandidate.getAssignmentsToRefundCandidates().stream()
 				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
 				.collect(ImmutableSet.toImmutableSet());

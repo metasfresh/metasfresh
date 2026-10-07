@@ -244,9 +244,11 @@ test.describe('Refund contracts: refund lines in Vertragsbedingungen and product
         const modal = await openNewIncludedRow(page, REFUND_CONFIG_TAB_ID);
         await selectLookupByKey(page, modal, 'Bonus_Product_ID', bonus.productCode, bonus.id);
         await fillNumber(page, modal, 'RefundPercent', REFUND_PERCENT);
+        const rejectionsBeforeComplete = rejectedSaves.reasons.length;
         await selectFirstListOption(page, modal, 'C_InvoiceSchedule_ID');
         await selectListByKey(page, modal, 'M_Product_Category_ID', categoryBId);
-        rejectedSaves.stop();
+        await rejectedSaves.stop();
+        expect(rejectedSaves.reasons.length, 'the complete line is rejected').toBeGreaterThan(rejectionsBeforeComplete);
         const reason = rejectedSaves.reasons[rejectedSaves.reasons.length - 1];
         expect(reason, 'the rejecting save carries a reason').toBeTruthy();
 

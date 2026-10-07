@@ -291,6 +291,25 @@ public class CandidateAssignmentServiceTest
 		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("98");
 	}
 
+	/**
+	 * The invoice candidate update process (RefundInvoiceCandidateListener) also removes the refund assignment of a candidate that
+	 * became the discount line of a contract-created group, e.g. after its order line was regrouped.
+	 */
+	@Test
+	void assignToNewlyMatchingContracts_contractCompensationLine_staleAssignmentIsRemoved()
+	{
+		final AssignableInvoiceCandidate assignedCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+		final I_C_Invoice_Candidate record = load(assignedCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
+		turnIntoCompensationLine(record, createCompensationGroupContract());
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()));
+
+		assertThat(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()).getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("98");
+	}
+
 	private static I_C_Flatrate_Term createCompensationGroupContract()
 	{
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
