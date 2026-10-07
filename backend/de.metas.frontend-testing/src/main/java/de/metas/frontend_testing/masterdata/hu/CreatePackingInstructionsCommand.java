@@ -38,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
-
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;

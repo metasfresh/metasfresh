@@ -47,6 +47,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class CreateHUCommand
 {
@@ -301,13 +302,12 @@ public class CreateHUCommand
 
 	private static void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
 	{
-		final int bpartnerRepoId = BPartnerId.toRepoId(bpartnerId);
-		if (hu.getC_BPartner_ID() == bpartnerRepoId)
+		if (Objects.equals(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), bpartnerId))
 		{
 			return;
 		}
 
-		hu.setC_BPartner_ID(bpartnerRepoId);
+		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		hu.setC_BPartner_Location_ID(-1); // the location inherited from the source CU belongs to the previous partner
 		InterfaceWrapperHelper.saveRecord(hu);
 	}
