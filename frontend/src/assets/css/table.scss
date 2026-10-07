@@ -377,48 +377,44 @@
       padding-top: 2px;
       padding-bottom: 2px;
 
+      /* border-box: the editor's 26px height includes its padding and border */
+      box-sizing: border-box;
+
       /* the mandatory border (2px top + bottom) takes the place of the vertical padding */
       &.input-mandatory {
         padding-top: 0;
         padding-bottom: 0;
       }
     }
-  }
 
-  /* border-box: the editor's 26px height includes its padding and border */
-  .input-primary,
-  .input-secondary,
-  .input-dropdown-container {
-    box-sizing: border-box;
-  }
-
-  /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
-  input {
-    min-width: 0;
-  }
-
-  /* overrides the combobox's `min-width: 200px` (inputs.scss), which would widen a narrow column */
-  .input-dropdown-container {
-    min-width: 0;
-  }
-
-  /*
-   * A borderless editor gets the static value's full content width, so a value that fits when shown
-   * also fits when edited. A bordered editor (`.input-primary`, e.g. LongText) keeps its padding, and
-   * a mandatory editor's red border keeps a 2px gap.
-   */
-  .input-secondary {
-    padding-left: 0;
-    padding-right: 0;
-
-    &.input-mandatory {
-      padding-left: 2px;
-      padding-right: 2px;
+    /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
+    input {
+      min-width: 0;
     }
 
-    input {
+    /* overrides the combobox's `min-width: 200px` (inputs.scss), which would widen a narrow column */
+    .input-dropdown-container {
+      min-width: 0;
+    }
+
+    /*
+     * A borderless editor gets the static value's full content width, so a value that fits when
+     * shown also fits when edited. A bordered editor (`.input-primary`, e.g. LongText) keeps its
+     * padding, and a mandatory editor's red border keeps a 2px gap.
+     */
+    .input-secondary {
       padding-left: 0;
       padding-right: 0;
+
+      &.input-mandatory {
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+
+      input {
+        padding-left: 0;
+        padding-right: 0;
+      }
     }
   }
 
