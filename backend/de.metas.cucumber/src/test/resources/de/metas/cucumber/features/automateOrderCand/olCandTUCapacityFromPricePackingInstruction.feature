@@ -1,10 +1,10 @@
 @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+@F4550
 @topic:orderCandidate
 Feature: order candidate in TU whose packing instruction comes from the price
-## F00350: EDI
+## F4550: Sales Order Candidate (REST API)
   An ORDERS line identifies the product by its article GTIN and orders it in TU, without a capacity.
   No packing instruction carries that GTIN, so the candidate is created without one;
   the validation then takes the packing instruction from the product price.
@@ -18,9 +18,9 @@ Feature: order candidate in TU whose packing instruction comes from the price
 
   @Id:S32404_10
   @from:cucumber
-  @allure.label.epic:E0292_EDI
-  @allure.label.feature:F00350_EDI
-  @F00350
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @F4550
   @topic:orderCandidate
   Scenario: product identified by its article GTIN, ordered in TU without capacity; packing instruction from the price
     Given metasfresh contains M_Products:
@@ -84,9 +84,9 @@ Feature: order candidate in TU whose packing instruction comes from the price
 
   @Id:S32404_20
   @from:cucumber
-  @allure.label.epic:E0292_EDI
-  @allure.label.feature:F00350_EDI
-  @F00350
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @F4550
   @topic:orderCandidate
   Scenario: the order carries its own capacity, but the packing instruction from the price has a finite capacity: the master data capacity is used
     Given metasfresh contains M_Products:
@@ -151,9 +151,9 @@ Feature: order candidate in TU whose packing instruction comes from the price
 
   @Id:S32404_30
   @from:cucumber
-  @allure.label.epic:E0292_EDI
-  @allure.label.feature:F00350_EDI
-  @F00350
+  @allure.label.epic:E0291_REST_API
+  @allure.label.feature:F4550_Sales_Order_Candidate_REST_API
+  @F4550
   @topic:orderCandidate
   Scenario: the price has no packing instruction: the capacity from the order is used
     Given metasfresh contains M_Products:
