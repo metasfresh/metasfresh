@@ -9,7 +9,7 @@ import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -116,9 +116,9 @@ class CompensationGroupCalibrationServiceTest
 		final ProductId p = product(false);
 		final GroupTemplateRegularLine l = line(p, "100");
 		final LineCalibration c = service.computeCalibrations(order(true), template(l), new BigDecimal("2")).getByTemplateLineId(l.getId()).get();
-		assertThat(c.getFactor()).isEqualByComparingTo("1");
-		assertThat(c.getCalibratedQty()).isEqualByComparingTo("200");
-		assertThat(c.getUncalibratedQty()).isEqualByComparingTo("200");
+		assertThat(c.getFactor()).isEqualTo(Percent.ONE_HUNDRED);
+		assertThat(c.getCalibratedQty().toBigDecimal()).isEqualByComparingTo("200");
+		assertThat(c.getUncalibratedQty().toBigDecimal()).isEqualByComparingTo("200");
 		assertThat(c.getRuleId()).isNull();
 	}
 
@@ -129,9 +129,9 @@ class CompensationGroupCalibrationServiceTest
 		final I_C_CompensationGroup_CalibrationRule rule = rule(p, "0.5");
 		final GroupTemplateRegularLine l = line(p, "100");
 		final LineCalibration c = service.computeCalibrations(order(true), template(l), new BigDecimal("2")).getByTemplateLineId(l.getId()).get();
-		assertThat(c.getFactor()).isEqualByComparingTo("0.5");
-		assertThat(c.getCalibratedQty()).isEqualByComparingTo("100");
-		assertThat(c.getUncalibratedQty()).isEqualByComparingTo("200");
+		assertThat(c.getFactor()).isEqualTo(Percent.of(50));
+		assertThat(c.getCalibratedQty().toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(c.getUncalibratedQty().toBigDecimal()).isEqualByComparingTo("200");
 		assertThat(c.getRuleId()).isEqualTo(CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID()));
 	}
 
@@ -153,5 +153,77 @@ class CompensationGroupCalibrationServiceTest
 		rule(menu, "0.5");
 		final GroupTemplateRegularLine l = line(menu, "1");
 		assertThat(service.computeCalibrations(order(true), template(l), BigDecimal.ONE).getByTemplateLineId(l.getId())).isEmpty();
+	}
+
+	private LineCalibration compute(final String templateQty, final String menuQty, final String factor, final int precision)
+	{
+		final I_C_UOM uomWithPrecision = newInstance(I_C_UOM.class);
+		uomWithPrecision.setStdPrecision(precision);
+		saveRecord(uomWithPrecision);
+		return CompensationGroupCalibrationService.calibrate(
+				Quantity.of(new BigDecimal(templateQty), uomWithPrecision).multiply(new BigDecimal(menuQty)),
+				Percent.of(new BigDecimal(factor).movePointRight(2)),
+				null);
+	}
+
+	private static BigDecimal calibrated(final LineCalibration calibration) {return calibration.getCalibratedQty().toBigDecimal();}
+
+	@Test
+	void halfUp_exactHalf()
+	{
+		assertThat(calibrated(compute("3", "1", "0.5", 0))).isEqualTo(new BigDecimal("2"));
+	}
+
+	@Test
+	void halfUp_exactHalf_negative()
+	{
+		// HALF_UP rounds ties away from zero
+		assertThat(calibrated(compute("3", "-1", "0.5", 0))).isEqualTo(new BigDecimal("-2"));
+	}
+
+	@Test
+	void halfUp_notUp_boundary()
+	{
+		// RoundingMode.UP would give 0.13
+		assertThat(calibrated(compute("0.121", "1", "1", 2))).isEqualTo(new BigDecimal("0.12"));
+	}
+
+	@Test
+	void factorIsAppliedToTheUnroundedBase()
+	{
+		// 0.375 x 1.2 = 0.45 exactly; rounding the base before applying the factor would give 0.46
+		assertThat(calibrated(compute("0.375", "1", "1.2", 2))).isEqualTo(new BigDecimal("0.45"));
+	}
+
+	@Test
+	void zeroFloor_precision0()
+	{
+		assertThat(calibrated(compute("1", "1", "0.4", 0))).isEqualTo(new BigDecimal("1"));
+	}
+
+	@Test
+	void zeroFloor_precision2()
+	{
+		assertThat(calibrated(compute("0.01", "1", "0.4", 2))).isEqualTo(new BigDecimal("0.01"));
+	}
+
+	@Test
+	void zeroFloor_precision3()
+	{
+		assertThat(calibrated(compute("0.001", "1", "0.4", 3))).isEqualTo(new BigDecimal("0.001"));
+	}
+
+	@Test
+	void zeroFloor_notWhenBaseRoundsToZero()
+	{
+		final LineCalibration result = compute("0.004", "1", "1", 2);
+		assertThat(calibrated(result)).isEqualTo(new BigDecimal("0.00"));
+		assertThat(result.getUncalibratedQty().toBigDecimal()).isEqualTo(new BigDecimal("0.00"));
+	}
+
+	@Test
+	void zeroFloor_negativeKeepsSign()
+	{
+		assertThat(calibrated(compute("1", "-1", "0.4", 0))).isEqualTo(new BigDecimal("-1"));
 	}
 }

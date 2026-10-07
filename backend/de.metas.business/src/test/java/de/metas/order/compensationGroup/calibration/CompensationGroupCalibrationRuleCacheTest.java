@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup.calibration;
 
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import org.adempiere.test.AdempiereTestHelper;
+import de.metas.util.lang.Percent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,11 +32,11 @@ class CompensationGroupCalibrationRuleCacheTest
 		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.5"));
 		saveRecord(record);
 		assertThat(repository.getActiveRules().asList()).hasSize(1);
-		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualByComparingTo("0.5");
+		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualTo(Percent.of(50));
 
 		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
 		saveRecord(record);
-		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualByComparingTo("0.8");
+		assertThat(repository.getActiveRules().asList().get(0).getFactor()).isEqualTo(Percent.of(80));
 
 		record.setIsActive(false);
 		saveRecord(record);

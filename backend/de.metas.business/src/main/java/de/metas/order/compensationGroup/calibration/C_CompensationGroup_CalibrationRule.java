@@ -11,14 +11,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
 @Interceptor(I_C_CompensationGroup_CalibrationRule.class)
 public class C_CompensationGroup_CalibrationRule
 {
-	private static final AdMessageKey MSG_BPartnerOrGroupRequired = AdMessageKey.of("C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired");
-	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
 	private static final AdMessageKey MSG_UsedDeactivateInstead = AdMessageKey.of("C_CompensationGroup_CalibrationRule_UsedDeactivateInstead");
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -30,16 +26,7 @@ public class C_CompensationGroup_CalibrationRule
 					I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor })
 	public void validate(@NonNull final I_C_CompensationGroup_CalibrationRule rule)
 	{
-		if (rule.getC_BPartner_ID() <= 0 && rule.getC_BP_Group_ID() <= 0)
-		{
-			throw new AdempiereException(MSG_BPartnerOrGroupRequired).markAsUserValidationError();
-		}
-
-		final BigDecimal factor = rule.getGroupCompensationCalibrationFactor();
-		if (factor != null && factor.signum() < 0)
-		{
-			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
-		}
+		CompensationGroupCalibrationRuleRepository.fromRecord(rule);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

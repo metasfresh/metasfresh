@@ -962,10 +962,11 @@ public class OrderGroupRepository implements GroupRepository
 				: null;
 		if (calibration != null)
 		{
-			orderLine.setQtyEntered(calibration.getCalibratedQty());
+			orderLine.setQtyEntered(Quantity.toBigDecimal(calibration.getCalibratedQty()));
 			// the calibration columns are not updateable: they are only set while the line is new
-			orderLine.setGroupCompensationCalibrationFactor(calibration.getFactor());
-			orderLine.setGroupCompensationQtyEnteredUncalibrated(calibration.getUncalibratedQty());
+			final Percent factor = calibration.getFactor();
+			orderLine.setGroupCompensationCalibrationFactor(factor != null ? factor.toBigDecimal().movePointLeft(2) : null);
+			orderLine.setGroupCompensationQtyEnteredUncalibrated(Quantity.toBigDecimal(calibration.getUncalibratedQty()));
 			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibration.getRuleId()));
 		}
 		else

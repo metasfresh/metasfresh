@@ -6,12 +6,14 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CalibrationRulesTest
 {
@@ -24,7 +26,8 @@ class CalibrationRulesTest
 				.id(CalibrationRuleId.ofRepoId(id))
 				.seqNo(seqNo)
 				.orgId(OrgId.ANY)
-				.factor(BigDecimal.ONE);
+				.bpGroupId(BPGroupId.ofRepoId(20))
+				.factor(Percent.ONE_HUNDRED);
 	}
 
 	private static CalibrationMatchKey.CalibrationMatchKeyBuilder key()
@@ -42,6 +45,7 @@ class CalibrationRulesTest
 	void emptyColumnsMatchAnything()
 	{
 		assertThat(rule(1, 10).build().appliesTo(key().build())).isTrue();
+		assertThat(rule(1, 10).bpGroupId(null).bpartnerId(BPartnerId.ofRepoId(10)).build().appliesTo(key().build())).isTrue();
 	}
 
 	@Test
@@ -66,6 +70,22 @@ class CalibrationRulesTest
 		assertThat(rule(1, 10).orgId(ORG_A).build().appliesTo(key().build())).isTrue();
 		assertThat(rule(1, 10).orgId(ORG_B).build().appliesTo(key().build())).isFalse();
 		assertThat(rule(1, 10).orgId(OrgId.ANY).build().appliesTo(key().build())).isTrue();
+	}
+
+	@Test
+	void requiresBPartnerOrBPGroup()
+	{
+		assertThatThrownBy(() -> rule(1, 10).bpGroupId(null).build())
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired");
+	}
+
+	@Test
+	void rejectsNegativeFactor()
+	{
+		assertThatThrownBy(() -> rule(1, 10).factor(Percent.of(-1)).build())
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_CompensationGroup_CalibrationRule_NegativeFactor");
 	}
 
 	@Test

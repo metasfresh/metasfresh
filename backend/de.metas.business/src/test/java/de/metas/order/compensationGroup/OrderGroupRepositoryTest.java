@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
@@ -542,7 +543,7 @@ public class OrderGroupRepositoryTest
 				ImmutableList.of(leftOutLine, contractOnlyLine),
 				ImmutableMap.of(
 						leftOutLine.getId(), LineCalibration.SKIP,
-						contractOnlyLine.getId(), LineCalibration.builder().factor(BigDecimal.ONE).build()))))
+						contractOnlyLine.getId(), LineCalibration.builder().factor(Percent.ONE_HUNDRED).build()))))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("C_CompensationGroup_CalibrationRule_AllComponentsLeftOut");
 	}

@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup.calibration;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -16,7 +17,7 @@ public final class CalibrationRules
 {
 	private static final Comparator<CalibrationRule> ORDER = Comparator
 			.comparingInt(CalibrationRule::getSeqNo)
-			.thenComparingInt(rule -> rule.getId().getRepoId());
+			.thenComparingInt(rule -> CalibrationRuleId.toRepoId(rule.getId()));
 
 	private final ImmutableList<CalibrationRule> rules;
 
@@ -25,7 +26,8 @@ public final class CalibrationRules
 		this.rules = rules.stream().sorted(ORDER).collect(ImmutableList.toImmutableList());
 	}
 
-	public List<CalibrationRule> asList()
+	@VisibleForTesting
+	List<CalibrationRule> asList()
 	{
 		return rules;
 	}

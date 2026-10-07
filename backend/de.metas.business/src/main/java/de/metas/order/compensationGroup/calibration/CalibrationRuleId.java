@@ -7,6 +7,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class CalibrationRuleId implements RepoIdAware
@@ -40,5 +41,10 @@ public class CalibrationRuleId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final CalibrationRuleId id1, @Nullable final CalibrationRuleId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

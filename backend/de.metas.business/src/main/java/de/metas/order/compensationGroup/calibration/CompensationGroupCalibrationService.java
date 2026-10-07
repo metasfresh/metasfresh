@@ -10,24 +10,28 @@ import de.metas.order.compensationGroup.GroupTemplateRegularLine;
 import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.math.RoundingMode;
 
 @Service
+@RequiredArgsConstructor
 public class CompensationGroupCalibrationService
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final CompensationGroupCalibrationRuleRepository ruleRepository;
+	@NonNull private final CompensationGroupCalibrationRuleRepository ruleRepository;
 
 	@VisibleForTesting
 	public static CompensationGroupCalibrationService newInstanceForUnitTesting()
@@ -37,11 +41,6 @@ public class CompensationGroupCalibrationService
 		return SpringContextHolder.getBeanOrSupply(
 				CompensationGroupCalibrationService.class,
 				() -> new CompensationGroupCalibrationService(CompensationGroupCalibrationRuleRepository.newInstanceForUnitTesting()));
-	}
-
-	public CompensationGroupCalibrationService(@NonNull final CompensationGroupCalibrationRuleRepository ruleRepository)
-	{
-		this.ruleRepository = ruleRepository;
 	}
 
 	public GroupCalibrations computeCalibrations(
@@ -64,7 +63,7 @@ public class CompensationGroupCalibrationService
 		{
 			if (productsRepo.getGroupTemplateIdByProductId(line.getProductId()).isPresent())
 			{
-				continue; // the menu's own line is never calibrated
+				continue; // a line whose product has its own compensation group schema is never calibrated
 			}
 
 			final CalibrationMatchKey key = CalibrationMatchKey.builder()
@@ -76,27 +75,45 @@ public class CompensationGroupCalibrationService
 					.groupTemplateId(template.getId())
 					.build();
 
-			final Optional<CalibrationRule> rule = rules.findFirstMatching(key);
-			if (rule.isPresent() && rule.get().getFactor().signum() == 0)
+			final CalibrationRule rule = rules.findFirstMatching(key).orElse(null);
+			if (rule != null && rule.getFactor().isZero())
 			{
 				result.put(line.getId(), LineCalibration.SKIP);
 				continue;
 			}
 
-			final BigDecimal factor = rule.map(CalibrationRule::getFactor).orElse(BigDecimal.ONE);
-			final CalibratedQty qty = CalibratedQtyCalculator.compute(
-					line.getQty().toBigDecimal(),
-					qtyMultiplier,
-					factor,
-					uomDAO.getStandardPrecision(line.getQty().getUomId()).toInt());
-
-			result.put(line.getId(), LineCalibration.builder()
-					.calibratedQty(qty.getCalibrated())
-					.uncalibratedQty(qty.getUncalibrated())
-					.factor(factor)
-					.ruleId(rule.map(CalibrationRule::getId).orElse(null))
-					.build());
+			result.put(line.getId(), calibrate(
+					line.getQty().multiply(qtyMultiplier),
+					rule != null ? rule.getFactor() : Percent.ONE_HUNDRED,
+					rule != null ? rule.getId() : null));
 		}
 		return GroupCalibrations.of(result.build());
+	}
+
+	/**
+	 * Scales the base quantity by the factor, rounding HALF_UP to the UOM precision.
+	 * A base quantity that is not zero after rounding never calibrates down to zero: it is floored to the smallest unit of the precision, keeping the sign.
+	 */
+	@VisibleForTesting
+	static LineCalibration calibrate(
+			@NonNull final Quantity baseQty,
+			@NonNull final Percent factor,
+			@Nullable final CalibrationRuleId ruleId)
+	{
+		final UOMPrecision precision = baseQty.getUOMPrecision();
+		final Quantity uncalibratedQty = baseQty.setScale(precision, RoundingMode.HALF_UP);
+		Quantity calibratedQty = baseQty.multiply(factor.toBigDecimal().movePointLeft(2)).setScale(precision, RoundingMode.HALF_UP);
+		if (!uncalibratedQty.isZero() && calibratedQty.isZero())
+		{
+			final BigDecimal smallestUnit = BigDecimal.ONE.movePointLeft(precision.toInt()).multiply(BigDecimal.valueOf(baseQty.signum()));
+			calibratedQty = Quantity.of(smallestUnit, baseQty.getUOM());
+		}
+
+		return LineCalibration.builder()
+				.calibratedQty(calibratedQty)
+				.uncalibratedQty(uncalibratedQty)
+				.factor(factor)
+				.ruleId(ruleId)
+				.build();
 	}
 }

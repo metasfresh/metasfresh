@@ -2,22 +2,27 @@ package de.metas.order.compensationGroup.calibration;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
-@Builder
 public class CalibrationRule
 {
-	@NonNull CalibrationRuleId id;
+	private static final AdMessageKey MSG_BPartnerOrGroupRequired = AdMessageKey.of("C_CompensationGroup_CalibrationRule_BPartnerOrGroupRequired");
+	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
+
+	/** null while the rule is not saved yet */
+	@Nullable CalibrationRuleId id;
 	/** {@link OrgId#ANY} applies to every organization */
 	@NonNull OrgId orgId;
 	int seqNo;
@@ -26,20 +31,47 @@ public class CalibrationRule
 	@Nullable ProductId productId;
 	@Nullable ProductCategoryId productCategoryId;
 	@Nullable GroupTemplateId schemaId;
-	@NonNull BigDecimal factor;
+	@NonNull Percent factor;
+
+	@Builder
+	private CalibrationRule(
+			@Nullable final CalibrationRuleId id,
+			@NonNull final OrgId orgId,
+			final int seqNo,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final BPGroupId bpGroupId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			@Nullable final GroupTemplateId schemaId,
+			@NonNull final Percent factor)
+	{
+		if (bpartnerId == null && bpGroupId == null)
+		{
+			throw new AdempiereException(MSG_BPartnerOrGroupRequired).markAsUserValidationError();
+		}
+		if (factor.signum() < 0)
+		{
+			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
+		}
+
+		this.id = id;
+		this.orgId = orgId;
+		this.seqNo = seqNo;
+		this.bpartnerId = bpartnerId;
+		this.bpGroupId = bpGroupId;
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
+		this.schemaId = schemaId;
+		this.factor = factor;
+	}
 
 	public boolean appliesTo(@NonNull final CalibrationMatchKey key)
 	{
-		return (OrgId.ANY.equals(orgId) || orgId.equals(key.getOrgId()))
-				&& isNullOrEqual(bpartnerId, key.getBpartnerId())
-				&& isNullOrEqual(bpGroupId, key.getBpGroupId())
-				&& isNullOrEqual(productId, key.getProductId())
-				&& isNullOrEqual(productCategoryId, key.getProductCategoryId())
-				&& isNullOrEqual(schemaId, key.getGroupTemplateId());
-	}
-
-	private static <T> boolean isNullOrEqual(@Nullable final T ruleValue, @Nullable final T keyValue)
-	{
-		return ruleValue == null || ruleValue.equals(keyValue);
+		return (orgId.isAny() || OrgId.equals(orgId, key.getOrgId()))
+				&& (bpartnerId == null || BPartnerId.equals(bpartnerId, key.getBpartnerId()))
+				&& (bpGroupId == null || BPGroupId.equals(bpGroupId, key.getBpGroupId()))
+				&& (productId == null || ProductId.equals(productId, key.getProductId()))
+				&& (productCategoryId == null || ProductCategoryId.equals(productCategoryId, key.getProductCategoryId()))
+				&& (schemaId == null || GroupTemplateId.equals(schemaId, key.getGroupTemplateId()));
 	}
 }

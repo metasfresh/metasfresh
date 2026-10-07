@@ -10,6 +10,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
@@ -50,7 +51,6 @@ public class CompensationGroupCalibrationRuleRepository
 	{
 		final List<CalibrationRule> rules = queryBL.createQueryBuilder(I_C_CompensationGroup_CalibrationRule.class)
 				.addOnlyActiveRecordsFilter()
-				.create()
 				.stream()
 				.map(CompensationGroupCalibrationRuleRepository::fromRecord)
 				.collect(Collectors.toList());
@@ -58,10 +58,10 @@ public class CompensationGroupCalibrationRuleRepository
 	}
 
 	@NonNull
-	private static CalibrationRule fromRecord(@NonNull final I_C_CompensationGroup_CalibrationRule record)
+	static CalibrationRule fromRecord(@NonNull final I_C_CompensationGroup_CalibrationRule record)
 	{
 		return CalibrationRule.builder()
-				.id(CalibrationRuleId.ofRepoId(record.getC_CompensationGroup_CalibrationRule_ID()))
+				.id(CalibrationRuleId.ofRepoIdOrNull(record.getC_CompensationGroup_CalibrationRule_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
@@ -69,7 +69,7 @@ public class CompensationGroupCalibrationRuleRepository
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.schemaId(GroupTemplateId.ofRepoIdOrNull(record.getC_CompensationGroup_Schema_ID()))
-				.factor(record.getGroupCompensationCalibrationFactor())
+				.factor(Percent.of(record.getGroupCompensationCalibrationFactor().movePointRight(2)))
 				.build();
 	}
 }
