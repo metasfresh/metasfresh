@@ -36,6 +36,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import java.util.List;
 import lombok.Getter;
@@ -49,6 +50,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_DocType;
@@ -147,6 +149,41 @@ class PaymentBonusDeductionServiceTest
 		assertThat(line.getTax()).isEqualTo(BONUS_TAX);
 		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.60"); // 2.6 % of the 100 goods, not of the 50 packaging
 		assertThat(deduction.getGrossAmount().toBigDecimal()).isEqualByComparingTo("2.78"); // + 7 % VAT of the bonus product
+	}
+
+	/**
+	 * The discount line that a compensation-group contract put on the order (the on-invoice bonus) is not part of the base:
+	 * the bonus at payment is computed on the goods value before that on-invoice discount, even if the discount product is in the goods category.
+	 */
+	@Test
+	void contractCompensationLine_isNotInTheBase()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		createInvoiceLine(invoiceId, fruit, "-3", createCompensationOrderLine(createCompensationGroupContract()));
+
+		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
+
+		final PaymentBonusDeductionLine line = CollectionUtils.singleElement(deduction.getLines());
+		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.60"); // 2.6 % of the 100 goods, not of 97
+	}
+
+	/**
+	 * A discount line of a group the user put together on the order (no contract) reduces what the customer pays, so it stays in the base.
+	 */
+	@Test
+	void manualCompensationLine_staysInTheBase()
+	{
+		createDeductedAtPaymentTerm(customerId, X_C_Flatrate_RefundConfig.BONUSRECIPIENT_InvoicePartner, goodsCategory, "2.6", goodsBonusProduct);
+		final InvoiceId invoiceId = createSalesInvoice();
+		createInvoiceLine(invoiceId, fruit, "100", null);
+		createInvoiceLine(invoiceId, fruit, "-3", createCompensationOrderLine(null));
+
+		final PaymentBonusDeduction deduction = service.computeForInvoice(invoiceId).get();
+
+		final PaymentBonusDeductionLine line = CollectionUtils.singleElement(deduction.getLines());
+		assertThat(line.getNetAmt().toBigDecimal()).isEqualByComparingTo("2.52"); // 2.6 % of 97 = 2.522
 	}
 
 	@Test
@@ -643,6 +680,35 @@ class PaymentBonusDeductionServiceTest
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPIItemProductId));
+		saveRecord(orderLine);
+		return orderLine;
+	}
+
+	private static I_C_Flatrate_Term createCompensationGroupContract()
+	{
+		final I_C_Flatrate_Term contract = newInstance(I_C_Flatrate_Term.class);
+		contract.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
+		saveRecord(contract);
+		return contract;
+	}
+
+	/**
+	 * @param compensationGroupContract the contract that created the group; {@code null} for a group the user put together
+	 */
+	private I_C_OrderLine createCompensationOrderLine(@Nullable final I_C_Flatrate_Term compensationGroupContract)
+	{
+		final I_C_OrderLine orderLine = createOrderLine(customerId);
+
+		final I_C_Order_CompensationGroup group = newInstance(I_C_Order_CompensationGroup.class);
+		group.setC_Order_ID(orderLine.getC_Order_ID());
+		if (compensationGroupContract != null)
+		{
+			group.setC_Flatrate_Term_ID(compensationGroupContract.getC_Flatrate_Term_ID());
+		}
+		saveRecord(group);
+
+		orderLine.setC_Order_CompensationGroup_ID(group.getC_Order_CompensationGroup_ID());
+		orderLine.setIsGroupCompensationLine(true);
 		saveRecord(orderLine);
 		return orderLine;
 	}
