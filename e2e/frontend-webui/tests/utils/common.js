@@ -11,12 +11,15 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 export const getPage = () => global.currentPage;
 
 /**
- * Waits until the page has run every task queued so far (event handlers, promise callbacks, one
- * timer turn) and Playwright has been told about every request those tasks started. It then sends
- * a marker request from the page and waits for it: requests are reported in the order the page
- * starts them, so a request the UI started while handling an action - e.g. the PATCH a field sends
- * when it is left - has been reported to `request` listeners before the marker. A check that "no
- * request was sent" can run right after it.
+ * Waits for the next animation frame plus one timer turn, then sends a marker request from the
+ * page and waits until Playwright reports it. Requests are reported in the order the page starts
+ * them, so every request started before the marker - synchronously by an event handler, or by a
+ * promise callback or zero-delay timer already queued, e.g. the PATCH a field sends when it is
+ * left - has been reported to `request` listeners by then.
+ *
+ * A request the UI starts only after waiting for a server answer can still come later, so a
+ * check that "no request was sent" must be paired with an observable outcome (editor closed,
+ * value shown, value after a reload).
  */
 export async function flushPendingUiTasks(page) {
   const marker = `ui-flush-barrier-${Date.now()}-${Math.random().toString(36).slice(2)}`;
