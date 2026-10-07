@@ -544,6 +544,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	 * Single definition of the barcode-lookup policy, shared by {@link #findFirstByGtin(GTIN, BPartnerId, ZonedDateTime)}
 	 * and {@link #retrieveByGtinIgnoringDate(GTIN, BPartnerId)} so the two cannot drift apart.
 	 */
+	@NonNull
 	private IHUPIItemProductQuery createGtinLookupQuery(
 			@NonNull final GTIN gtin,
 			@Nullable final BPartnerId bpartnerId,

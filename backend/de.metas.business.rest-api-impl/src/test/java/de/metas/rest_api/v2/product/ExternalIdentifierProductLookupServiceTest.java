@@ -691,6 +691,19 @@ public class ExternalIdentifierProductLookupServiceTest
 		}
 
 		@Test
+		void piip_exists_but_no_date_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000008", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000008"), null, null);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000008.");
+		}
+
+		@Test
 		void only_on_other_partners_piip_is_unknown()
 		{
 			final I_M_Product product = createProduct("feta", true);

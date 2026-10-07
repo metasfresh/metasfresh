@@ -145,6 +145,8 @@ public class ExternalIdentifierProductLookupService
 
 	/**
 	 * Call only after {@link #lookupProductByGTIN} returned empty.
+	 * Validity dates in the text are shown as calendar dates (yyyy-MM-dd) while validity is checked on the full timestamp,
+	 * so a row valid from later the same day can read "valid from <same date>".
 	 */
 	@NonNull
 	public String explainUnresolvedGTIN(
