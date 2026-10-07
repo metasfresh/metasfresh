@@ -13,6 +13,7 @@ import {
 } from '../utils/common';
 import { WEBAPI_BASE_URL, assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 import { TEST_WINDOW_ID } from '../utils/WindowIds';
+import { VIEWPORT, compareComponentBox, compareGeometry, measureComponentBox, measureRow } from '../utils/GridGeometry';
 
 /**
  * Inline edit in a top-level list view: the `Test` window's Amount and Quantity columns (de_DE).
@@ -29,9 +30,6 @@ import { TEST_WINDOW_ID } from '../utils/WindowIds';
  * Features tested:
  * - F5010: Order Lines Grid
  */
-
-const TOLERANCE_PX = 1;
-const VIEWPORT = { width: 1920, height: 1080 };
 
 const COLUMNS = [
   {
@@ -74,52 +72,11 @@ async function readStoredValue(recordId, field) {
   return Number(fieldData?.value);
 }
 
-async function measureRow(row) {
-  return await row.evaluate((tr) => ({
-    rowHeight: tr.getBoundingClientRect().height,
-    columns: Array.from(tr.querySelectorAll('td')).map((td) => ({
-      cell: td.getAttribute('data-cy') || '(no data-cy)',
-      width: td.getBoundingClientRect().width,
-    })),
-  }));
-}
-
-/** the static value (`.cell-text-wrapper`) in display mode, the editor (`.form-group`) in edit mode */
-async function measureComponentBox(cell) {
-  return await cell.evaluate((td) => {
-    const editor = td.querySelector('.form-group');
-    const component = editor || td.querySelector(':scope > div:not(.cell-width-keeper) .cell-text-wrapper');
-    if (!component) {
-      return null;
-    }
-    const box = component.getBoundingClientRect();
-    return { kind: editor ? 'editor' : 'static', width: box.width, height: box.height };
-  });
-}
-
 function geometryViolations(phase, field, before, now) {
-  const violations = [];
-  if (!before.component || !now.component) {
-    violations.push(`${field} ${phase}: component box not measurable`);
-  } else {
-    ['width', 'height'].forEach((dimension) => {
-      if (Math.abs(now.component[dimension] - before.component[dimension]) > TOLERANCE_PX) {
-        violations.push(
-          `${field} ${phase}: component ${dimension} ${before.component.kind} ${before.component[dimension]} -> ${now.component.kind} ${now.component[dimension]}`
-        );
-      }
-    });
-  }
-  if (Math.abs(now.row.rowHeight - before.row.rowHeight) > TOLERANCE_PX) {
-    violations.push(`${field} ${phase}: row height ${before.row.rowHeight} -> ${now.row.rowHeight}`);
-  }
-  before.row.columns.forEach((column, i) => {
-    const nowWidth = now.row.columns[i] ? now.row.columns[i].width : NaN;
-    if (!(Math.abs(nowWidth - column.width) <= TOLERANCE_PX)) {
-      violations.push(`${field} ${phase}: column ${column.cell} width ${column.width} -> ${nowWidth}`);
-    }
-  });
-  return violations;
+  return [
+    ...compareComponentBox(phase, field, before.component, now.component),
+    ...compareGeometry(phase, field, before.row, now.row),
+  ];
 }
 
 async function measure(row, cell) {

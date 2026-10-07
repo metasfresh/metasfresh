@@ -9,6 +9,14 @@ import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { createMasterdata, ORDER_LINE_TAB_ID } from '../utils/OrderLineHarness';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
+import {
+  TOLERANCE_PX,
+  VIEWPORT,
+  compareComponentBox,
+  compareGeometry,
+  measureComponentBox,
+  measureRow,
+} from '../utils/GridGeometry';
 
 /**
  * Geometry invariant for EVERY grid editor type: entering edit mode on a cell and leaving it
@@ -40,13 +48,11 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * - F5010: Order Lines Grid
  */
 
-const TOLERANCE_PX = 1;
 /**
  * A vertically centred chip is offset from the box centre by 0 (or by 0.5px when the height
  * difference is odd); a real layout cause (a margin, a padding) moves it by at least 1px.
  */
 const CENTRING_TOLERANCE_PX = 0.5;
-const VIEWPORT = { width: 1920, height: 1080 };
 /** below the md breakpoint (frontend variables.scss `$breakpoint-md: 991px`) */
 const NARROW_VIEWPORT = { width: 900, height: 900 };
 /** the desktop row height (table.scss, `.desktop .table td` inside the md media query) */
@@ -65,61 +71,6 @@ const ORDER_LINE_EXPECTED_WIDGET_TYPES = [
   'Lookup',
 ];
 const ADDRESS_EXPECTED_WIDGET_TYPES = ['Text', 'Switch', 'YesNo'];
-
-async function measureRow(row) {
-  return await row.evaluate((tr) => ({
-    rowHeight: tr.getBoundingClientRect().height,
-    columns: Array.from(tr.querySelectorAll('td')).map((td) => ({
-      cell: td.getAttribute('data-cy') || '(no data-cy)',
-      width: td.getBoundingClientRect().width,
-    })),
-  }));
-}
-
-/**
- * The cell's component box: the visible static presentation (`.cell-text-wrapper`) in display mode,
- * the editor (its `.form-group` root) in edit mode. The invisible width keeper is not part of it.
- */
-async function measureComponentBox(cell) {
-  return await cell.evaluate((td) => {
-    const editor = td.querySelector('.form-group');
-    const component = editor || td.querySelector(':scope > div:not(.cell-width-keeper) .cell-text-wrapper');
-    if (!component) {
-      return null;
-    }
-    const box = component.getBoundingClientRect();
-    return { kind: editor ? 'editor' : 'static', width: box.width, height: box.height };
-  });
-}
-
-function compareComponentBox(phase, activatedCell, before, now) {
-  if (!before || !now) {
-    return [`${activatedCell} ${phase}: component box not measurable (${JSON.stringify({ before, now })})`];
-  }
-  const violations = [];
-  ['width', 'height'].forEach((dimension) => {
-    if (Math.abs(now[dimension] - before[dimension]) > TOLERANCE_PX) {
-      violations.push(
-        `${activatedCell} ${phase}: component ${dimension} ${before.kind} ${before[dimension]} -> ${now.kind} ${now[dimension]}`
-      );
-    }
-  });
-  return violations;
-}
-
-function compareGeometry(phase, activatedCell, before, now) {
-  const violations = [];
-  if (Math.abs(now.rowHeight - before.rowHeight) > TOLERANCE_PX) {
-    violations.push(`${activatedCell} ${phase}: row height ${before.rowHeight} -> ${now.rowHeight}`);
-  }
-  before.columns.forEach((column, i) => {
-    const nowWidth = now.columns[i] ? now.columns[i].width : NaN;
-    if (!(Math.abs(nowWidth - column.width) <= TOLERANCE_PX)) {
-      violations.push(`${activatedCell} ${phase}: column ${column.cell} width ${column.width} -> ${nowWidth}`);
-    }
-  });
-  return violations;
-}
 
 /** returns the editor's widget type, or null when the cell did not open an editor (read-only) */
 async function openEditor(page, cell) {
