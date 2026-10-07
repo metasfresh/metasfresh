@@ -60,6 +60,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupId;
@@ -168,6 +169,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepository = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
+	private final CompensationGroupCalibrationService calibrationService = SpringContextHolder.instance.getBean(CompensationGroupCalibrationService.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
@@ -801,9 +803,11 @@ class OLCandOrderFactory
 		// deliberately NOT used for generated lines (see below).
 		final ConditionsId flatrateConditionsId = ConditionsId.ofRepoIdOrNull(candidate.getFlatrateConditionsId());
 
+		final GroupTemplate groupTemplate = groupTemplateRepository.getById(groupTemplateId);
 		final Group group = orderGroupsRepository.prepareNewGroup()
-				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
+				.groupTemplate(groupTemplate)
 				.qty(orderedQty)
+				.calibrations(calibrationService.computeCalibrations(order, groupTemplate, orderedQty))
 				.createGroup(orderId, flatrateConditionsId);
 
 		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.

@@ -554,3 +554,112 @@ Feature: Explode a compensation-group-schema product into its component order li
       | orderLine_compound_subProductB | order_compound        | subProductB             | 6          | false                       |                                 | 3     | true      |
       | orderLine_compound_discount1   | order_compound        | discountProduct1        | 1          | true                        | 10                              | -3.80 | true      |
       | orderLine_compound_discount2   | order_compound        | discountProduct2        | 1          | true                        | 5                               | -1.71 | true      |
+
+
+  # ##########################################################################################
+  # ##########################################################################################
+  # A menu arriving as an order candidate is calibrated like the same menu entered in the sales order window
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00122_Sales_Order_Candidate_to_Order
+  @ghActions:run_on_executor3
+  @Id:S26881_TC12
+  Scenario: A compensation-group schema exploded from an order candidate is calibrated per customer
+    Given metasfresh contains C_UOMs:
+      | Identifier | X12DE355 | Name  | UOMSymbol | StdPrecision | CostingPrecision |
+      | uom_grm    | GRM      | Gramm | GRM       | 2            | 0                |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name      |
+      | ps_schema  | ps_schema |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_schema  | ps_schema                     | DE                        | EUR                 | pl_schema | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
+      | plv_schema | pl_schema                 | plv_schema | 2026-07-01 |
+
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 | IsStocked |
+      | reis       | GRM      | false     |
+      | haehnchen  | GRM      | false     |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier      | Name            |
+      | compGroupSchema | compGroupSchema |
+    And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
+      | Identifier          | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | Qty | C_UOM_ID | SeqNo |
+      | schemaTemplateLineA | compGroupSchema                          | reis                    | 200 | GRM      | 10    |
+      | schemaTemplateLineB | compGroupSchema                          | haehnchen               | 100 | GRM      | 20    |
+    And metasfresh contains M_Products:
+      | Identifier    | Name          | OPT.C_CompensationGroup_Schema_ID.Identifier |
+      | schemaProduct | schemaProduct | compGroupSchema                              |
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_schemaProduct | plv_schema                        | schemaProduct           | 15.00    | PCE               | Normal                        |
+      | pp_reis          | plv_schema                        | reis                    | 1.00     | GRM               | Normal                        |
+      | pp_haehnchen     | plv_schema                        | haehnchen               | 1.00     | GRM               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | Name     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           |
+      | customer   | customer | Y              | N            | ps_schema                     | customerLocation           | 4009900001234 |
+    And metasfresh contains C_CompensationGroup_CalibrationRule:
+      | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
+      | rule_10    | 10    | customer      | reis         | 0.5                                |
+      | rule_20    | 20    | customer      | haehnchen    | 0.6                                |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "schemaExplosion_calibrated",
+            "externalLineId": "schemaExplosion_calibrated_0",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4009900001234",
+                "bpartnerLocationIdentifier": "gln-4009900001234"
+            },
+            "dateRequired": "2026-08-01",
+            "dateOrdered": "2026-07-20",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-schemaProduct",
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "schemaExplosion_calibrated",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_calibrated      |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "schemaExplosion_calibrated",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_calibrated      |
+
+    # template 200 GRM x 0.5 = 100 GRM and 100 GRM x 0.6 = 60 GRM, each with its matched rule and the uncalibrated quantity
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | processed |
+      | orderLine_calibrated_reis    | order_calibrated      | reis                    | 100        | true      |
+      | orderLine_calibrated_haehnchen | order_calibrated    | haehnchen               | 60         | true      |
+    And validate C_OrderLine:
+      | C_OrderLine_ID                 | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
+      | orderLine_calibrated_reis      | reis         | 100            | 0.5                                    | 200                                         | rule_10                                    |
+      | orderLine_calibrated_haehnchen | haehnchen    | 60             | 0.6                                    | 100                                         | rule_20                                    |
