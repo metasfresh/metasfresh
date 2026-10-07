@@ -200,4 +200,118 @@ class AssertSalesOrderExpectationsCommandLinesTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("number of order lines of product");
 	}
+
+	@Test
+	void notCalibrated_matchesALineWithoutFactorRuleAndUncalibratedQty()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
+
+		assertThatCode(() -> assertLines(actual, expect("P1").qtyEntered(new BigDecimal("200")).calibrated(false).build()))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void notCalibrated_failsOnALineWithFactor1AndNoRule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GroupCompensationCalibrationFactor")
+				.hasMessageContaining("GroupCompensationQtyEnteredUncalibrated");
+	}
+
+	@Test
+	void notCalibrated_failsOnALineCarryingOnlyARule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, RULE_1, null));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_CompensationGroup_CalibrationRule_ID");
+	}
+
+	@Test
+	void calibrated_matchesALineWithFactorAndUncalibratedQty_withoutRule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
+
+		assertThatCode(() -> assertLines(actual, expect("P1").calibrated(true).build()))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void calibrated_failsOnAnUncalibratedLine()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(true).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GroupCompensationCalibrationFactor")
+				.hasMessageContaining("GroupCompensationQtyEnteredUncalibrated");
+	}
+
+	@Test
+	void notCalibrated_togetherWithAnExpectedCalibrationValue_isRejected()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).calibrationFactor(BigDecimal.ONE).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("calibrated=false cannot be combined");
+	}
+
+	@Test
+	void noRuleApplied_matchesACalibratedLineWithFactor1AndNoRule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
+
+		assertThatCode(() -> assertLines(actual, expect("P1")
+				.qtyEntered(new BigDecimal("200"))
+				.calibrationFactor(BigDecimal.ONE)
+				.qtyEnteredUncalibrated(new BigDecimal("200"))
+				.hasCalibrationRule(false)
+				.build()))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void noRuleApplied_failsOnALineCarryingARule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "100", "0.5", RULE_1, "200"));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(false).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_CompensationGroup_CalibrationRule_ID");
+	}
+
+	@Test
+	void ruleApplied_failsOnALineWithoutRule()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(true).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_CompensationGroup_CalibrationRule_ID");
+	}
+
+	@Test
+	void noRuleApplied_togetherWithAnExpectedRule_isRejected()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(false).calibrationRule(Identifier.ofString("R1")).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("hasCalibrationRule=false cannot be combined");
+	}
+
+	@Test
+	void anExpectedZeroFactor_failsOnALineWithoutFactor()
+	{
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", null, null, null));
+
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(BigDecimal.ZERO).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GroupCompensationCalibrationFactor");
+	}
 }

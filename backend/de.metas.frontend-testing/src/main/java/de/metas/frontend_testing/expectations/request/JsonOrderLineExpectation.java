@@ -43,4 +43,17 @@ public class JsonOrderLineExpectation
 	 * Expected C_OrderLine.GroupCompensationQtyEnteredUncalibrated.
 	 */
 	@Nullable BigDecimal qtyEnteredUncalibrated;
+
+	/**
+	 * {@code false}: the line carries no calibration (factor, rule and uncalibrated qty are all empty);
+	 * {@code true}: the line is calibrated (factor and uncalibrated qty are set, the rule may be empty).
+	 * {@code false} cannot be combined with an expected factor, rule or uncalibrated qty.
+	 */
+	@Nullable Boolean calibrated;
+
+	/**
+	 * {@code false}: C_OrderLine.C_CompensationGroup_CalibrationRule_ID is empty (e.g. calibrated with factor 1 because no rule matched);
+	 * {@code true}: some rule is stored. Cannot be combined with an expected {@link #calibrationRule}.
+	 */
+	@Nullable Boolean hasCalibrationRule;
 }

@@ -52,7 +52,11 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  *     // assert the order's compensation groups (by record id, e.g. an order created in the UI)
  *     '1000123': { compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }] },
  *     // assert order lines by product (masterdata keys), incl. the calibration data
- *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 1.5, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] }
+ *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 1.5, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] },
+ *     // assert an order line without calibration (no factor, no rule, no uncalibrated qty)
+ *     'SO4': { lines: [{ product: 'P1', qtyEntered: 10, calibrated: false }] },
+ *     // assert an order line calibrated without a rule (no rule matched: factor 1)
+ *     'SO5': { lines: [{ product: 'P1', qtyEntered: 10, calibrationFactor: 1, qtyEnteredUncalibrated: 10, hasCalibrationRule: false }] }
  *   }
  * });
  * </pre>
@@ -228,10 +232,24 @@ class AssertSalesOrderExpectationsCommand
 			@NonNull final MasterdataContext context)
 	{
 		final String lineDescription = "order line of product " + expectation.getProduct() + " C_OrderLine_ID=" + actual.getC_OrderLine_ID();
+		final boolean expectNotCalibrated = Boolean.FALSE.equals(expectation.getCalibrated());
+		if (expectNotCalibrated
+				&& (expectation.getCalibrationFactor() != null || expectation.getCalibrationRule() != null || expectation.getQtyEnteredUncalibrated() != null))
+		{
+			throw new AdempiereException("Expectation calibrated=false cannot be combined with an expected calibration factor, rule or uncalibrated qty: " + expectation);
+		}
+		if (Boolean.FALSE.equals(expectation.getHasCalibrationRule()) && expectation.getCalibrationRule() != null)
+		{
+			throw new AdempiereException("Expectation hasCalibrationRule=false cannot be combined with an expected calibration rule: " + expectation);
+		}
+
+		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored
+		final BigDecimal actualFactor = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
+		final BigDecimal actualQtyUncalibrated = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
 
 		assertDecimal("QtyEntered of " + lineDescription, actual.getQtyEntered(), expectation.getQtyEntered());
-		assertDecimal("GroupCompensationCalibrationFactor of " + lineDescription, actual.getGroupCompensationCalibrationFactor(), expectation.getCalibrationFactor());
-		assertDecimal("GroupCompensationQtyEnteredUncalibrated of " + lineDescription, actual.getGroupCompensationQtyEnteredUncalibrated(), expectation.getQtyEnteredUncalibrated());
+		assertDecimal("GroupCompensationCalibrationFactor of " + lineDescription, actualFactor, expectation.getCalibrationFactor());
+		assertDecimal("GroupCompensationQtyEnteredUncalibrated of " + lineDescription, actualQtyUncalibrated, expectation.getQtyEnteredUncalibrated());
 
 		if (expectation.getCalibrationRule() != null)
 		{
@@ -239,6 +257,38 @@ class AssertSalesOrderExpectationsCommand
 			assertThat(actual.getC_CompensationGroup_CalibrationRule_ID())
 					.as("C_CompensationGroup_CalibrationRule_ID of " + lineDescription)
 					.isEqualTo(expectedRuleId.getRepoId());
+		}
+
+		if (expectation.getCalibrated() != null)
+		{
+			assertCalibrated(expectation.getCalibrated(), actual, actualFactor, actualQtyUncalibrated, lineDescription);
+		}
+
+		if (expectation.getHasCalibrationRule() != null)
+		{
+			assertThat(CalibrationRuleId.ofRepoIdOrNull(actual.getC_CompensationGroup_CalibrationRule_ID()) != null)
+					.as("a C_CompensationGroup_CalibrationRule_ID is set on " + lineDescription)
+					.isEqualTo(expectation.getHasCalibrationRule());
+		}
+	}
+
+	private static void assertCalibrated(
+			final boolean expectCalibrated,
+			@NonNull final I_C_OrderLine actual,
+			@Nullable final BigDecimal factor,
+			@Nullable final BigDecimal qtyUncalibrated,
+			@NonNull final String lineDescription)
+	{
+		if (expectCalibrated)
+		{
+			assertThat(factor).as("GroupCompensationCalibrationFactor of calibrated " + lineDescription).isNotNull();
+			assertThat(qtyUncalibrated).as("GroupCompensationQtyEnteredUncalibrated of calibrated " + lineDescription).isNotNull();
+		}
+		else
+		{
+			assertThat(factor).as("GroupCompensationCalibrationFactor of not calibrated " + lineDescription).isNull();
+			assertThat(CalibrationRuleId.ofRepoIdOrNull(actual.getC_CompensationGroup_CalibrationRule_ID())).as("C_CompensationGroup_CalibrationRule_ID of not calibrated " + lineDescription).isNull();
+			assertThat(qtyUncalibrated).as("GroupCompensationQtyEnteredUncalibrated of not calibrated " + lineDescription).isNull();
 		}
 	}
 
