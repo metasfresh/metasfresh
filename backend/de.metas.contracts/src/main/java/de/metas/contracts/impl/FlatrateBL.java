@@ -1303,14 +1303,15 @@ public class FlatrateBL implements IFlatrateBL
 				.setFrom(ContractLocationHelper.extractBillToLocationId(currentTerm),
 						billContactId);
 
-		// the drop-ship partner is optional; a term without one gets a follow-up term without one
+		// the drop-ship partner, contact and location are optional; the follow-up term gets exactly those the current term has
+		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
+		nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 		final BPartnerLocationAndCaptureId dropshipLocationId = ContractLocationHelper.extractDropshipLocationId(currentTerm);
 		if (dropshipLocationId != null)
 		{
-			final BPartnerContactId dropshipContactId = BPartnerContactId.ofRepoIdOrNull(currentTerm.getDropShip_BPartner_ID(), currentTerm.getDropShip_User_ID());
 			ContractDocumentLocationAdapterFactory
 					.dropShipLocationAdapter(nextTerm)
-					.setFrom(dropshipLocationId, dropshipContactId);
+					.setFrom(dropshipLocationId);
 		}
 
 		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());

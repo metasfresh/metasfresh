@@ -2,9 +2,9 @@ package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
 import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupTermRepository;
-import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -101,6 +101,47 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@Test
 	public void extendContractWithoutDropShipPartner_test()
 	{
+		final I_C_Flatrate_Term contract = prepareCompensationGroupContractForTest();
+		contract.setDropShip_BPartner_ID(-1);
+		contract.setDropShip_Location_ID(-1);
+		contract.setDropShip_Location_Value_ID(-1);
+		contract.setDropShip_User_ID(-1);
+		save(contract);
+
+		final I_C_Flatrate_Term nextTerm = extendAndGetCompletedNextTerm(contract);
+
+		assertThat(nextTerm.getDropShip_BPartner_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_Value_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_User_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * A compensation-group term with a drop-ship partner and contact, but without a drop-ship location, can be extended;
+	 * its follow-up term has the same drop-ship partner and contact, and no drop-ship location either.
+	 */
+	@Test
+	public void extendContractWithDropShipPartnerButWithoutLocation_test()
+	{
+		final I_C_Flatrate_Term contract = prepareCompensationGroupContractForTest();
+		final int dropShipPartnerId = getBpartner().getC_BPartner_ID();
+		final int dropShipUserId = getUser().getAD_User_ID();
+		contract.setDropShip_BPartner_ID(dropShipPartnerId);
+		contract.setDropShip_Location_ID(-1);
+		contract.setDropShip_Location_Value_ID(-1);
+		contract.setDropShip_User_ID(dropShipUserId);
+		save(contract);
+
+		final I_C_Flatrate_Term nextTerm = extendAndGetCompletedNextTerm(contract);
+
+		assertThat(nextTerm.getDropShip_BPartner_ID()).isEqualTo(dropShipPartnerId);
+		assertThat(nextTerm.getDropShip_User_ID()).isEqualTo(dropShipUserId);
+		assertThat(nextTerm.getDropShip_Location_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_Value_ID()).isLessThanOrEqualTo(0);
+	}
+
+	private I_C_Flatrate_Term prepareCompensationGroupContractForTest()
+	{
 		SpringContextHolder.registerJUnitBean(new ContractCompensationGroupSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ContractCompensationGroupTermRepository());
 		addCalendarYear(2019); // unlike subscriptions, the follow-up term's periods are validated against the contract calendar
@@ -112,13 +153,11 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
 		save(conditions);
 
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProductAndCategoryId(), startDate);
-		contract.setDropShip_BPartner_ID(-1);
-		contract.setDropShip_Location_ID(-1);
-		contract.setDropShip_Location_Value_ID(-1);
-		contract.setDropShip_User_ID(-1);
-		save(contract);
+		return createFlatrateTerm(conditions, productAndPricingSystem.getProductAndCategoryId(), startDate);
+	}
 
+	private I_C_Flatrate_Term extendAndGetCompletedNextTerm(@NonNull final I_C_Flatrate_Term contract)
+	{
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
 				.contract(contract)
@@ -134,12 +173,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		assertThat(nextTerm.getType_Conditions()).isEqualTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
 		assertThat(nextTerm.getStartDate()).isEqualTo(TimeUtil.addDays(contract.getEndDate(), 1));
 		assertThat(nextTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		assertThat(nextTerm.getDropShip_BPartner_ID()).isLessThanOrEqualTo(0);
-		assertThat(nextTerm.getDropShip_Location_ID()).isLessThanOrEqualTo(0);
-		assertThat(nextTerm.getDropShip_Location_Value_ID()).isLessThanOrEqualTo(0);
-		assertThat(nextTerm.getDropShip_User_ID()).isLessThanOrEqualTo(0);
 		assertThat(nextTerm.getBill_BPartner_ID()).isEqualTo(contract.getBill_BPartner_ID());
 		assertThat(nextTerm.getBill_Location_ID()).isEqualTo(contract.getBill_Location_ID());
+		return nextTerm;
 	}
 
 	@Test
