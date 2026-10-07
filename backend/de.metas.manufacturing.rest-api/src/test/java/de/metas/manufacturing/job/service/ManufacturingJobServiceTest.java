@@ -1,23 +1,10 @@
 package de.metas.manufacturing.job.service;
 
-import de.metas.device.accessor.DeviceAccessorsHubFactory;
-import de.metas.device.config.DeviceConfigPoolFactory;
-import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
-import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
-import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
-import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
-import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
-import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.HUInfo;
 import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
@@ -121,6 +108,8 @@ class ManufacturingJobServiceTest
 			return MobileUIManufacturingConfig.builder()
 					.isScanResourceRequired(OptionalBoolean.FALSE)
 					.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+					.isBestBeforeDateEditable(OptionalBoolean.UNKNOWN)
+					.isLotNumberEditable(OptionalBoolean.UNKNOWN)
 					.isAllowEmptyingHUs(offerEmptyingHUs ? OptionalBoolean.TRUE : OptionalBoolean.FALSE)
 					.build();
 		}
