@@ -48,10 +48,10 @@ class TableCell extends PureComponent {
    */
   handleBackdropLock = (state) => {
     const { item } = this.props;
-    // 'Address' is object-valued and edits through the same <Attributes>
-    // button-overlay as 'ProductAttributes', so it must be treated as a
-    // backdrop-locking widget too; otherwise clicking outside would trigger the
-    // grid's onClickOutside and tear down the overlay mid-edit.
+    // 'Address' edits through the same <Attributes> button and popup as
+    // 'ProductAttributes' and behaves the same: when the popup closes, the cell
+    // stays in edit mode (the grid's onClickOutside is not called) until the
+    // user leaves it, e.g. with Escape.
     const widgetsList = ['ProductAttributes', 'Address', 'List', 'Lookup'];
 
     if (!widgetsList.includes(item.widgetType)) {

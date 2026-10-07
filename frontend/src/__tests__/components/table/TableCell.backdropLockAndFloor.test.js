@@ -4,8 +4,9 @@ import { shallow } from 'enzyme';
 import TableCell from '../../../components/table/TableCell';
 
 /**
- * 1) An Address cell's editor overlay reporting its backdrop does not trigger the grid's
- *    onClickOutside, so a click inside the overlay keeps it open.
+ * 1) A popup-editing cell (Address, ProductAttributes) and a List/Lookup cell do not call the
+ *    grid's onClickOutside when their editor reports `false` (e.g. the Address popup closed), so
+ *    the cell stays in edit mode.
  * 2) A Lookup/List column of size S (60px) gets an inline `min-width: 90px` on its <td> when no
  *    column width is stored; a stored width wins.
  */
@@ -34,7 +35,7 @@ function cellProps({ widgetType, size = 'M', ...overrides }) {
 
 describe('TableCell — backdrop lock', () => {
   it.each(['Address', 'ProductAttributes', 'List', 'Lookup'])(
-    'does not tear down a %s editor when its overlay reports the backdrop state',
+    'keeps a %s cell in edit mode when its editor reports false',
     (widgetType) => {
       const props = cellProps({ widgetType });
       const wrapper = shallow(<TableCell {...props} />);
