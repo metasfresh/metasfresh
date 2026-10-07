@@ -19,6 +19,8 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -41,6 +43,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -50,6 +54,7 @@ public class CreateHUCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -87,6 +92,7 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
+		updateBPartners(huId);
 		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
@@ -265,6 +271,39 @@ public class CreateHUCommand
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		return HuId.ofRepoId(newLU.getM_HU_ID());
+	}
+
+	/**
+	 * The LU gets {@code request.bpartner}; every HU below it (aggregate TUs, TUs and their VHUs) gets {@code request.tuBPartner}
+	 * (NULL when absent).
+	 */
+	private void updateBPartners(final HuId huId)
+	{
+		final BPartnerId luBPartnerId = request.getBpartner() != null ? context.getId(request.getBpartner(), BPartnerId.class) : null;
+		final BPartnerId tuBPartnerId = request.getTuBPartner() != null ? context.getId(request.getTuBPartner(), BPartnerId.class) : null;
+		if (luBPartnerId == null && tuBPartnerId == null)
+		{
+			return;
+		}
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		setBPartner(hu, luBPartnerId);
+		updateIncludedHUsBPartner(hu, tuBPartnerId);
+	}
+
+	private void updateIncludedHUsBPartner(final I_M_HU parentHU, @Nullable final BPartnerId bpartnerId)
+	{
+		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(parentHU))
+		{
+			setBPartner(includedHU, bpartnerId);
+			updateIncludedHUsBPartner(includedHU, bpartnerId);
+		}
+	}
+
+	private static void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
+	{
+		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		InterfaceWrapperHelper.saveRecord(hu);
 	}
 
 	private IAttributeStorage updateAttributes(final HuId huId)

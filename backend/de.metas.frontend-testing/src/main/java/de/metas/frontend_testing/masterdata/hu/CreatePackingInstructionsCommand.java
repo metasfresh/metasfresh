@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.hu;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
@@ -31,6 +32,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -83,7 +86,7 @@ public class CreatePackingInstructionsCommand
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), request.getBpartner());
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
 		else
@@ -175,13 +178,17 @@ public class CreatePackingInstructionsCommand
 				.build();
 	}
 
-	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
+	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU, @Nullable final Identifier bpartnerIdentifier)
 	{
 		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		luPIItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
 		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
 		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
 		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		if (bpartnerIdentifier != null)
+		{
+			luPIItemRecord.setC_BPartner_ID(context.getId(bpartnerIdentifier, BPartnerId.class).getRepoId());
+		}
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}

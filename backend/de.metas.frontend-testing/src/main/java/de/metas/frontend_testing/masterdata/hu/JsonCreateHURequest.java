@@ -18,6 +18,14 @@ public class JsonCreateHURequest
 	@Nullable Identifier warehouse;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
+	/**
+	 * Partner of the created LU (pallet). Identifier of a partner created in the same request.
+	 */
+	@Nullable Identifier bpartner;
+	/**
+	 * Partner of the TUs (and their VHUs) included in the created LU. Absent means no partner ({@code C_BPartner_ID} NULL).
+	 */
+	@Nullable Identifier tuBPartner;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;

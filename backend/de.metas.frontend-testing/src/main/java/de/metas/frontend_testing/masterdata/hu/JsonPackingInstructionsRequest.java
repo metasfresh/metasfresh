@@ -32,6 +32,14 @@ public class JsonPackingInstructionsRequest
 	int qtyTUsPerLU;
 
 	/**
+	 * Binds the LU->TU packing instruction item ({@code M_HU_PI_Item.C_BPartner_ID}) to this partner.
+	 * Identifier of a partner created in the same request's {@code bpartners} section.
+	 * <p>
+	 * LU requests only.
+	 */
+	@Nullable Identifier bpartner;
+
+	/**
 	 * Sets {@code M_HU_PI_Item_Product.IsDefaultForProduct} on the created CU-TU allocation — the
 	 * "Standard-Packvorschrift" that gets auto-defaulted onto document lines for this product.
 	 * <p>
