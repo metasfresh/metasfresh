@@ -21,9 +21,13 @@ import { InvoicePage } from '../utils/pages/InvoicePage';
  * edited in-row). One invoice serves both sessions: the German test creates it, the English test reuses it
  * (each opens its own allocation view, so the edits do not interfere). The invoice is created through the
  * invoice-candidate UI, because the `invoices` masterdata request times out waiting for the invoice.
+ * The tests therefore run serially: the English tests need the German one's invoice and are skipped when it fails
+ * (also when only they are selected with --grep). Every allocation view starts with a zero discount.
  */
 const PAYMENT_ALLOCATION_FROM_INVOICE_ACTION = 'PaymentView_Launcher_From_C_Invoice_SingleDocument';
 const EXPECTED_AMOUNT = 3.57;
+/** How the grid renders EXPECTED_AMOUNT and a zero amount with the separators of each session language */
+const DISPLAYED_AMOUNT = { de_DE: { expected: '3,57', zero: '0,00' }, en_US: { expected: '3.57', zero: '0.00' } };
 
 const setupAllure = (language) => {
   allure.epic('E0294: Frontend WebUI');
@@ -100,20 +104,13 @@ const expectDiscountStored = async ({ invoiceRow, discountCell, patchRequest, pa
   expect(Number(storedValues[storedValues.length - 1]), 'discountAmt stored by the server').toBe(EXPECTED_AMOUNT);
 
   await test.step('the grid cell shows the stored amount', async () => {
-    await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // leave the editor
-    await expect
-      .poll(async () => parseDisplayedAmount((await discountCell.innerText()).trim(), language), {
-        timeout: SLOW_ACTION_TIMEOUT,
-      })
-      .toBe(EXPECTED_AMOUNT);
+    await expectDisplayedDiscount({ invoiceRow, discountCell }, DISPLAYED_AMOUNT[language].expected);
   });
 };
 
-/** Parses a grid cell's amount text, formatted with the separators of the session language */
-const parseDisplayedAmount = (text, language) => {
-  const isDecimalComma = language.startsWith('de');
-  const normalized = isDecimalComma ? text.replace(/\./g, '').replace(',', '.') : text.replace(/,/g, '');
-  return Number(normalized.replace(/[^0-9.-]/g, ''));
+const expectDisplayedDiscount = async ({ invoiceRow, discountCell }, expectedText) => {
+  await invoiceRow.locator('[data-cy="cell-documentNo"]').click(); // leave the editor
+  await expect(discountCell).toHaveText(expectedText, { timeout: SLOW_ACTION_TIMEOUT });
 };
 
 test.describe.serial('Grid in-row amount editor - decimal separator of the session', () => {
@@ -184,18 +181,20 @@ test.describe.serial('Grid in-row amount editor - decimal separator of the sessi
     await loginAs('en_US');
 
     await openAllocationViewOfInvoice(page, invoice.id);
-    const { patchRequest, patchResponse } = await typeIntoDiscountCell(page, {
-      invoiceDocumentNo: invoice.documentNo,
-      typed: '1,5',
-    });
+    const edit = await typeIntoDiscountCell(page, { invoiceDocumentNo: invoice.documentNo, typed: '1,5' });
 
     // sent as typed, so that the backend rejects it ...
-    expect(patchRequest, 'PATCH sent for discountAmt').toContainEqual(
+    expect(edit.patchRequest, 'PATCH sent for discountAmt').toContainEqual(
       expect.objectContaining({ path: 'discountAmt', value: '1,5' })
     );
-    // ... and the row keeps its amount (each allocation view starts with a zero discount)
-    const body = await patchResponse.json();
+    // ... which an editable view answers with the unchanged row plus the error (HTTP 200, see ViewRowEditRestController)
+    expect(edit.patchResponse.status(), 'PATCH response status').toBe(200);
+    const body = await edit.patchResponse.json();
     const row = Array.isArray(body) ? body[0] : body;
-    expect(Number(row.fieldsByName.discountAmt.value), 'discountAmt kept by the server').toBe(0);
+    expect(row.error, 'the row edit reports an error').toBeTruthy();
+    expect(row.fieldsByName?.discountAmt?.value, 'discountAmt kept by the server').toBe('0');
+
+    // and the grid shows the unchanged amount
+    await expectDisplayedDiscount(edit, DISPLAYED_AMOUNT.en_US.zero);
   });
 });
