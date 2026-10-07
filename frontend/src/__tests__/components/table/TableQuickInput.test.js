@@ -117,13 +117,16 @@ describe('TableQuickInput', () => {
     const qtyInput = document.createElement('input');
     form.appendChild(qtyInput);
     document.body.appendChild(form);
-    markRefusedNumberInput(qtyInput); // e.g. '3.57' typed into the quantity in a German session
+    markRefusedNumberInput(qtyInput, '3.57'); // e.g. '3.57' typed into the quantity in a German session
 
     // all mandatory fields filled, so only the refused number can stop the submit
     const data = Object.fromEntries(
       Object.entries(initialProps.data).map(([name, field]) => [name, { ...field, mandatory: false }])
     );
-    const wrapper = shallow(<TableQuickInput {...initialProps} data={data} />);
+    const addNotification = jest.fn();
+    const wrapper = shallow(
+      <TableQuickInput {...initialProps} data={data} addNotification={addNotification} />
+    );
     const instance = wrapper.instance();
     instance.patchPromise = Promise.resolve();
     const preventDefault = jest.fn();
@@ -133,6 +136,13 @@ describe('TableQuickInput', () => {
     expect(preventDefault).toHaveBeenCalled();
     expect(wrapper.state('isSubmitPending')).toBeFalsy();
     expect(completeQuickInput).not.toHaveBeenCalled();
+    // the refusal toast may be gone by now: the user is told again why nothing happens
+    expect(addNotification).toHaveBeenCalledWith(
+      'Invalid number',
+      expect.stringContaining('"3.57"'),
+      5000,
+      'error'
+    );
     form.remove();
   });
 });

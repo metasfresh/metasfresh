@@ -12,7 +12,10 @@ import {
 } from '../../actions/TableQuickInputActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
-import { hasRefusedNumberInput } from '../../utils/refusedNumberInputs';
+import {
+  getRefusedNumberNotification,
+  getRefusedNumberText,
+} from '../../utils/refusedNumberInputs';
 
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
@@ -137,8 +140,12 @@ class TableQuickInput extends PureComponent {
 
     // a number the user typed was refused (see RawWidget): its field shows the stored value again, which must not be
     // taken as the user's input
-    if (hasRefusedNumberInput(e.currentTarget)) {
-      return;
+    const refusedNumberText = getRefusedNumberText(e.currentTarget);
+    if (refusedNumberText !== null) {
+      // the refusal toast may be gone by now: tell the user again why no line is added
+      const { title, message } =
+        getRefusedNumberNotification(refusedNumberText);
+      return addNotification(title, message, 5000, 'error');
     }
 
     // blur to make sure the field value is committed, events are fired, etc

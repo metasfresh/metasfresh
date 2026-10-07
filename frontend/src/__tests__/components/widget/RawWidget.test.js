@@ -961,6 +961,42 @@ describe('RawWidget component', () => {
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '4,5');
     });
 
+    it('restores the last valid text of a range filter end, not the text before a valid edit', () => {
+      const handleChangeSpy = jest.fn();
+      const wrapper = mount(
+        <RawWidget
+          {...amountRangeFilterProps({
+            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
+            handleChange: handleChangeSpy,
+            addNotification: jest.fn(),
+          })}
+        />
+      );
+
+      wrapper.find('input').at(0).simulate('change', { target: { value: '3,5' } });
+      wrapper.find('input').at(0).simulate('change', { target: { value: '3.57' } });
+      pressEnter(wrapper.find('input').at(0), '3.57');
+      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '3,5', undefined, '4,5');
+    });
+
+    it('restores the last valid text of a range filter "to" end, not the text before a valid edit', () => {
+      const handleChangeSpy = jest.fn();
+      const wrapper = mount(
+        <RawWidget
+          {...amountRangeFilterProps({
+            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
+            handleChange: handleChangeSpy,
+            addNotification: jest.fn(),
+          })}
+        />
+      );
+
+      wrapper.find('input').at(1).simulate('change', { target: { value: '5,5' } });
+      wrapper.find('input').at(1).simulate('change', { target: { value: '5.57' } });
+      pressEnter(wrapper.find('input').at(1), '5.57');
+      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '5,5');
+    });
+
     it('keeps the form from submitting on Enter on a refused amount, and marks the field as refused', () => {
       const preventDefault = jest.fn();
       const props = createDummyProps({
@@ -985,9 +1021,43 @@ describe('RawWidget component', () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(hasRefusedNumberInput(form)).toBe(true);
 
-      wrapper.find('input').simulate('change', { target: { value: '3,5' } });
+      const input = wrapper.find('input').getDOMNode();
+      input.value = '3,5'; // typed into the refused input itself, as the browser reports it
+      wrapper.find('input').simulate('change', { target: input });
       expect(hasRefusedNumberInput(form)).toBe(false);
       wrapper.detach();
+      container.remove();
+    });
+
+    it('keeps a refused range end marked while the other end is typed, and unmarks both ends when it goes', () => {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const wrapper = mount(
+        <RawWidget
+          {...amountRangeFilterProps({
+            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
+            addNotification: jest.fn(),
+          })}
+        />,
+        { attachTo: container }
+      );
+      const typeInto = (index, text) => {
+        const input = wrapper.find('input').at(index).getDOMNode();
+        input.value = text;
+        wrapper.find('input').at(index).simulate('change', { target: input });
+        return input;
+      };
+      const fromInput = typeInto(0, '3.57');
+      wrapper.find('input').at(0).simulate('keyDown', { key: 'Enter', target: fromInput, preventDefault: jest.fn() });
+      expect(hasRefusedNumberInput(container)).toBe(true);
+
+      typeInto(1, '5,5');
+      expect(hasRefusedNumberInput(container)).toBe(true);
+
+      const detachedFromInput = wrapper.find('input').at(0).getDOMNode();
+      wrapper.unmount();
+      container.appendChild(detachedFromInput); // still in the page, e.g. kept by another widget: no longer marked
+      expect(hasRefusedNumberInput(container)).toBe(false);
       container.remove();
     });
 
@@ -1086,6 +1156,25 @@ describe('RawWidget component', () => {
       pressEnter(wrapper.find('input'), '2,50');
 
       expect(handlePatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('patches an amount retyped after the server kept the stored value (e.g. it refused the first patch)', () => {
+      const handlePatchSpy = jest.fn(() => Promise.resolve(null));
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '2.5' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('change', { target: { value: '3,5' } });
+      pressEnter(wrapper.find('input'), '3,5');
+      // the stored value stays 2.5; the user types the same number again
+      wrapper.find('input').simulate('change', { target: { value: '3,50' } });
+      pressEnter(wrapper.find('input'), '3,50');
+
+      expect(handlePatchSpy).toHaveBeenCalledTimes(2);
+      expect(handlePatchSpy).toHaveBeenLastCalledWith('DiscountAmt', '3.50', undefined, undefined);
     });
 
     it('applies an untouched number filter on Enter (an inline filter applies on patch)', () => {

@@ -117,11 +117,10 @@ const getGroupingCharacters = (thousands) =>
  *          So in a German session a dot is a grouping separator only: '3.57', '1.2', '0.500' or '3 57' are invalid;
  *          English mirrors it.
  * @param {string} text the raw text from the input
- * @param {{decimal: string, thousands: string}} [delimiters] defaults to the session's separators
+ * @param {{decimal: string, thousands: string}} delimiters the separators to read the text with
  * @returns {string|null} the dot-decimal number the backend expects, '' when the text holds no digit (e.g. '-'),
  *          or null when the text is no valid number
  */
-
 const parseDecimalNumberString = (text, delimiters) => {
   const { decimal, thousands } = delimiters;
   const trimmed = text.trim();

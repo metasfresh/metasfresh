@@ -1,4 +1,5 @@
 import {
+  getRefusedNumberText,
   hasRefusedNumberInput,
   markRefusedNumberInput,
   unmarkRefusedNumberInput,
@@ -32,5 +33,19 @@ describe('refused number inputs', () => {
     form.remove();
 
     expect(hasRefusedNumberInput(form)).toBe(false);
+  });
+
+  it('tells which text was refused in a container', () => {
+    const form = document.createElement('form');
+    const input = document.createElement('input');
+    form.appendChild(input);
+    document.body.append(form);
+
+    expect(getRefusedNumberText(form)).toBeNull();
+    markRefusedNumberInput(input, '3.57');
+    expect(getRefusedNumberText(form)).toEqual('3.57');
+
+    unmarkRefusedNumberInput(input);
+    form.remove();
   });
 });

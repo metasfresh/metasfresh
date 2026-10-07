@@ -5,7 +5,11 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
-import { hasRefusedNumberInput } from '../../utils/refusedNumberInputs';
+import {
+  getRefusedNumberNotification,
+  getRefusedNumberText,
+} from '../../utils/refusedNumberInputs';
+import { addNotification } from '../../actions/AppActions';
 import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
@@ -492,7 +496,12 @@ class Modal extends Component {
 
     // a number the user typed into a parameter was refused (see RawWidget): the parameter shows its stored value
     // again, which must not be taken as the user's input
-    if (hasRefusedNumberInput(this.modalContentElement)) {
+    const refusedNumberText = getRefusedNumberText(this.modalContentElement);
+    if (refusedNumberText !== null) {
+      // the refusal toast may be gone by now: tell the user again why the process does not start
+      const { title, message } =
+        getRefusedNumberNotification(refusedNumberText);
+      dispatch(addNotification(title, message, 5000, 'error'));
       return;
     }
 

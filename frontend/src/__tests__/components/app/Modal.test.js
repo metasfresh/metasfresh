@@ -8,7 +8,10 @@ import nock from 'nock';
 import {
   ShortcutProvider
 } from '../../../components/keyshortcuts/ShortcutProvider';
-import { SET_PROCESS_STATE_PENDING } from '../../../constants/ActionTypes';
+import {
+  ADD_NOTIFICATION,
+  SET_PROCESS_STATE_PENDING,
+} from '../../../constants/ActionTypes';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import {
   initialState as windowHandlerState
@@ -138,11 +141,20 @@ describe('Modal test', () => {
     modalContent.appendChild(parameterInput);
     document.body.appendChild(modalContent);
     modal.modalContentElement = modalContent;
-    markRefusedNumberInput(parameterInput); // e.g. '3.57' typed into an amount parameter in a German session
+    markRefusedNumberInput(parameterInput, '3.57'); // e.g. '3.57' typed into an amount parameter in a German session
 
     await modal.handleStart();
 
     expect(startProcess).not.toHaveBeenCalled();
+    // the refusal toast may be gone by now: the user is told again why the process does not start
+    expect(store.getActions()).toContainEqual(
+      expect.objectContaining({
+        type: ADD_NOTIFICATION,
+        title: 'Invalid number',
+        msg: expect.stringContaining('"3.57"'),
+        notifType: 'error',
+      })
+    );
     modalContent.remove();
   });
 });

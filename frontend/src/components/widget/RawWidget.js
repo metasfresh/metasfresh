@@ -2,7 +2,6 @@ import React, { createRef, PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
-import counterpart from 'counterpart';
 
 import {
   getWidgetField,
@@ -11,12 +10,12 @@ import {
 } from '../../utils/widgetHelpers';
 import {
   formatDecimalNumberForEditing,
-  getSessionNumberDelimiters,
   isAllowedDecimalNumberInput,
   isValidDecimalNumberString,
   normalizeDecimalNumberString,
 } from '../../utils/locale';
 import {
+  getRefusedNumberNotification,
   markRefusedNumberInput,
   unmarkRefusedNumberInput,
 } from '../../utils/refusedNumberInputs';
@@ -79,6 +78,7 @@ export class RawWidget extends PureComponent {
     const cachedValue = RawWidget.getCachedValue(props);
 
     this.rawWidget = createRef(null);
+    this.refusedInputElements = new Set(); // the inputs of this widget (e.g. both ends of a range) marked as refused
 
     this.state = {
       isFocused: false,
@@ -110,7 +110,7 @@ export class RawWidget extends PureComponent {
 
   componentWillUnmount() {
     this.mounted = false;
-    unmarkRefusedNumberInput(this.inputElement);
+    this.refusedInputElements.forEach(unmarkRefusedNumberInput);
   }
 
   componentDidUpdate(prevProps) {
@@ -419,7 +419,8 @@ export class RawWidget extends PureComponent {
 
     this.notifyRefusedNumber(invalidText);
     // a form or modal must not go on with the stored value the field shows again, see refusedNumberInputs
-    markRefusedNumberInput(this.inputElement);
+    markRefusedNumberInput(this.inputElement, invalidText);
+    this.refusedInputElements.add(this.inputElement);
 
     if (filterWidget) {
       // a filter keeps no value for an invalid number, so it gets the ends shown before the typing back (read the session way)
@@ -457,24 +458,8 @@ export class RawWidget extends PureComponent {
     }
     this.lastRefusedNumberText = invalidText;
 
-    const { decimal, thousands } = getSessionNumberDelimiters();
-    const params = {
-      text: invalidText,
-      decimal,
-      grouping: thousands,
-      example: `1${thousands}234${decimal}56`,
-    };
-    addNotification?.(
-      counterpart.translate('window.error.invalidNumber.title', {
-        fallback: 'Invalid number',
-      }),
-      counterpart.translate('window.error.invalidNumber.description', {
-        ...params,
-        fallback: `"${invalidText}" was not taken over: the decimal separator is "${decimal}", "${thousands}" is allowed only to group thousands in groups of three (e.g. ${params.example}).`,
-      }),
-      5000,
-      'error'
-    );
+    const { title, message } = getRefusedNumberNotification(invalidText);
+    addNotification?.(title, message, 5000, 'error');
   };
 
   /**
@@ -588,13 +573,14 @@ export class RawWidget extends PureComponent {
         }
         return;
       }
-      if (isValueTo && this.state.typedTextTo === null) {
-        this.textToBeforeTyping = this.getDecimalEditText(true);
-      } else if (!isValueTo && this.state.typedText === null) {
-        this.textBeforeTyping = this.getDecimalEditText(false);
+      // the last valid text, so that a refusal goes back to what the field held right before the invalid typing
+      const shownText = this.getDecimalEditText(isValueTo);
+      if (isValidDecimalNumberString(shownText)) {
+        this[isValueTo ? 'textToBeforeTyping' : 'textBeforeTyping'] = shownText;
       }
       this.lastRefusedNumberText = null;
-      unmarkRefusedNumberInput(this.inputElement); // typed again: no longer refused
+      unmarkRefusedNumberInput(e.target); // typed again: no longer refused (the other end of a range may still be)
+      this.refusedInputElements.delete(e.target);
       this.inputElement = e.target;
       this.setState({
         [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet,
@@ -628,6 +614,7 @@ export class RawWidget extends PureComponent {
       widgetType,
       maxLength,
       widgetData,
+      data,
       filterWidget,
     } = this.props;
     const { cachedValue } = this.state;
@@ -658,12 +645,15 @@ export class RawWidget extends PureComponent {
       value = normalizeDecimalNumberString(value);
       valueTo = normalizeDecimalNumberString(valueTo);
 
-      // e.g. '2,50' retyped for a stored 2.5: nothing to patch
+      // e.g. '2,50' retyped for a stored 2.5: nothing to patch - unless the last patch was not taken over by the
+      // server (the stored value differs from it), so that the user can send the same number again
+      const storedValue = data != null ? data : widgetData?.[0]?.value;
       if (
         !isForce &&
         isDocumentField &&
         valueTo == null &&
-        isSameNumber(value, cachedValue)
+        isSameNumber(value, cachedValue) &&
+        isSameNumber(cachedValue, storedValue)
       ) {
         return Promise.resolve(null);
       }
