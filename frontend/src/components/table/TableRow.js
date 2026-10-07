@@ -105,16 +105,15 @@ class TableRow extends PureComponent {
   };
 
   /**
-   * @method updateRawPropertyValue
-   * @summary Writes the given raw (text or number) value into the row's field. Writes nothing
-   * for an object-valued field (see isObjectValuedWidget), whose {key, caption} value a raw
-   * value would replace.
+   * @method writeScalarFieldValue
+   * @summary Writes the given scalar (text or number) value into the row's field via
+   * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget).
    *
    * @param {string} property - the cell's field name
-   * @param {*} value - the raw value
+   * @param {*} value - a text or number value
    * @returns {boolean} true if the value was written
    */
-  updateRawPropertyValue = (property, value) => {
+  writeScalarFieldValue = (property, value) => {
     if (this.isObjectValuedWidget(property)) {
       return false;
     }
@@ -264,7 +263,7 @@ class TableRow extends PureComponent {
       {
         valueBeforeEditing: fieldValue,
       },
-      () => this.updateRawPropertyValue(property, inputContent)
+      () => this.writeScalarFieldValue(property, inputContent)
     );
   };
 
@@ -280,7 +279,7 @@ class TableRow extends PureComponent {
     // without activating the field. Then there's no widget (input), so the value
     // is undefined and we don't have to worry about it.
     if (typeof event.target.value !== 'undefined') {
-      this.updateRawPropertyValue(property, event.target.value);
+      this.writeScalarFieldValue(property, event.target.value);
     }
     if (edited === property) {
       event.stopPropagation();
@@ -293,7 +292,7 @@ class TableRow extends PureComponent {
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      if (this.updateRawPropertyValue(property, valueBeforeEditing)) {
+      if (this.writeScalarFieldValue(property, valueBeforeEditing)) {
         // reset the field value to the previous one, so that we won't
         // overwrite it
         event.target.value = valueBeforeEditing;
