@@ -133,7 +133,8 @@ public class FlatrateTermRefund_Handler
 	 * <p>
 	 * The tax follows the product that the refund is booked on (the bonus product, or else the config's product):
 	 * its tax category comes from the regular pricing of that product for the bill partner, and the tax from the bill location, the date and the SOTrx.
-	 * If there is no such product, or its price can't be found, then the tax remains unchanged.
+	 * If there is no such product, then the tax remains unchanged.
+	 * If the product has no price, or its price has no tax category, then the candidate gets an error instead of keeping the tax of the refunded goods.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
@@ -162,7 +163,8 @@ public class FlatrateTermRefund_Handler
 						Quantitys.of(ONE, refundProductId),
 						soTrx)
 				.setReferencedObject(invoiceCandidateRecord)
-				.setPriceDate(TimeUtil.asLocalDate(taxDate, orgDAO.getTimeZone(orgId)));
+				.setPriceDate(TimeUtil.asLocalDate(taxDate, orgDAO.getTimeZone(orgId)))
+				.setFailIfNotCalculated();
 		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(invoiceCandidateRecord).getBPartnerLocationAndCaptureId();
 		pricingContext.setCountryId(bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId()));
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(invoiceCandidateRecord.getM_PricingSystem_ID());
@@ -172,11 +174,8 @@ public class FlatrateTermRefund_Handler
 		}
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-		if (!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null)
-		{
-			return PriceAndTax.NONE;
-		}
 
+		// without a tax category this is the Tax-Not-Found tax, so the candidate gets an error
 		final TaxId taxId = taxBL.getTaxNotNull(
 				invoiceCandidateRecord,
 				pricingResult.getTaxCategoryId(),

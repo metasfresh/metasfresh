@@ -21,9 +21,11 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
@@ -47,9 +49,11 @@ import java.time.ZoneId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -167,26 +171,35 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 		verify(pricingBL, never()).calculatePrice(any());
 	}
 
+	/**
+	 * If the bonus product has no price for the bill partner, then the pricing fails (and the invoice candidate gets an error), instead of the refund keeping the tax of the goods.
+	 */
 	@Test
-	public void priceNotCalculated_taxRemainsUnchanged()
+	public void priceNotFound_fails()
 	{
 		final ProductId bonusProductId = createProduct();
 		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
 		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
-		when(pricingResult.isCalculated()).thenReturn(false);
+		final ProductNotOnPriceListException productNotOnPriceListException = new ProductNotOnPriceListException(pricingContext);
+		when(pricingBL.calculatePrice(pricingContext)).thenThrow(productNotOnPriceListException);
 
-		assertThat(handler.calculatePriceAndTax(ic)).isSameAs(PriceAndTax.NONE);
+		assertThatThrownBy(() -> handler.calculatePriceAndTax(ic)).isSameAs(productNotOnPriceListException);
+		verify(pricingContext).setFailIfNotCalculated();
 	}
 
+	/**
+	 * If the price has no tax category, then the tax is not found (and the invoice candidate gets an error), instead of the refund keeping the tax of the goods.
+	 */
 	@Test
-	public void noTaxCategory_taxRemainsUnchanged()
+	public void noTaxCategory_taxNotFound()
 	{
 		final ProductId bonusProductId = createProduct();
 		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
 		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
 		when(pricingResult.getTaxCategoryId()).thenReturn(null);
+		when(taxBL.getTaxNotNull(any(), isNull(), anyIntValue(), any(), any(), any(), any(), any())).thenReturn(TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND));
 
-		assertThat(handler.calculatePriceAndTax(ic)).isSameAs(PriceAndTax.NONE);
+		assertThat(handler.calculatePriceAndTax(ic).getTaxId()).isEqualTo(TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND));
 	}
 
 	@Test
