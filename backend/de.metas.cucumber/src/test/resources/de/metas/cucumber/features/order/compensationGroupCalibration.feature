@@ -410,10 +410,10 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # Calibrated quantities round up per UOM precision; a positive factor never gives Qty 0
+  # Calibrated quantities round up per UOM precision; a positive factor never turns a non-zero base into Qty 0
   @from:cucumber
   @Id:S26881_TC10
-  Scenario: Calibrated quantities round up to the UOM precision and a positive factor never rounds to 0
+  Scenario: Calibrated quantities round up to the UOM precision and a positive factor never turns a non-zero base into 0
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name       |
       | schema_1   | CalibRound |
@@ -485,7 +485,7 @@ Feature: Compensation group calibration
   @from:cucumber
   @Id:S26881_FractionalMenuQty
   Scenario: A fractional menu quantity is multiplied before rounding
-    # the base (template Qty x menu Qty) is rounded half-up to the UOM precision before the factor applies: 1 PCE x 2.5 = 2.5 -> 3, x 50 % = 1.5 -> 2 (rounded up)
+    # the base (template Qty x menu Qty) is rounded half-up to the UOM precision before the factor applies: 1 PCE x 2.5 = 2.5 -> 3 (half-up); 3 x 50 % = 1.5 -> 2 (up)
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name      |
       | schema_1   | CalibFrac |
