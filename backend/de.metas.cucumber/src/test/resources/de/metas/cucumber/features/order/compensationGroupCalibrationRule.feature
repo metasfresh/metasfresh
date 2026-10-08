@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00127_BundleSinglePrice
+@allure.label.feature:F00127_Compensation_Groups
 @ghActions:run_on_executor5
 Feature: Compensation group calibration rules
 

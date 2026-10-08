@@ -44,6 +44,9 @@ test.describe('Compensation group calibration - mock case', () => {
 
     test('TC2 mock case', async ({ page }) => {
         allure.epic('E0100: Sales');
+        allure.feature('F00127: Compensation Groups');
+        allure.tag('F00127: Compensation Groups');
+        allure.tag('F00127');
         allure.tag('Compensation group calibration');
         allure.story('TC2 mock case: calibrated component, per-order override, uncalibrated menu and manual lines');
         allure.severity('critical');

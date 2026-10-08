@@ -76,6 +76,9 @@ test.describe('Compensation group calibration', () => {
 
     test('TC1 concept example', async ({ page }) => {
         allure.epic('E0100: Sales');
+        allure.feature('F00127: Compensation Groups');
+        allure.tag('F00127: Compensation Groups');
+        allure.tag('F00127');
         allure.tag('Compensation group calibration');
         allure.story('TC1 concept example: rules scale the menu components of an order');
         allure.severity('critical');
