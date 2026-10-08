@@ -43,6 +43,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -149,6 +150,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
 	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
 	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_Attribute_StepDefData attributeTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
@@ -158,6 +160,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
+	@NonNull private final C_CompensationGroup_CalibrationRule_StepDefData calibrationRuleTable;
 
 	/**
 	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
@@ -174,6 +177,7 @@ public class C_OrderLine_StepDef
 	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -203,6 +207,11 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(ruleIdentifier -> ruleIdentifier.lookupNotNullIn(calibrationRuleTable))
+				.ifPresent(rule -> orderLine.setC_CompensationGroup_CalibrationRule_ID(rule.getC_CompensationGroup_CalibrationRule_ID()));
 
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 				.map(partnerTable::getId)
@@ -445,6 +454,8 @@ public class C_OrderLine_StepDef
 	 * and {@code OPT.C_Flatrate_Term_ID.Identifier} (asserts the {@code C_Flatrate_Term_ID} of the line's OWN
 	 * compensation group — resolved via the line itself, so it also works for an auto-created, e.g.
 	 * contract-triggered, group that was never registered under its own identifier).
+	 * {@code OPT.GroupCompensation_Product_Category_ID} (identifier of an {@code M_Product_Category}, or {@code null} for none)
+	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart.
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -466,11 +477,16 @@ public class C_OrderLine_StepDef
 
 					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
-					//dev-note: we assume the tests are not using the same product on different lines
-					final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
+					//dev-note: we assume the tests are not using the same product on different lines, unless they tell them apart by OPT.GroupCompensation_Product_Category_ID
+					final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
-							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
+							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered);
+					row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
+							.ifPresent(categoryIdentifier -> orderLineQueryBuilder.addEqualsFilter(
+									I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID,
+									categoryIdentifier.isNullPlaceholder() ? null : productCategoryTable.getId(categoryIdentifier)));
+					final I_C_OrderLine orderLineRecord = orderLineQueryBuilder
 							.create()
 							.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -483,6 +499,15 @@ public class C_OrderLine_StepDef
 				});
 	}
 
+	/**
+	 * Asserts columns of order lines registered under an identifier earlier. Optional columns are handled by {@code validateOrderLine};
+	 * {@code OPT.Description} asserts the exact description, a blank cell meaning the line has no description.
+	 * <pre>
+	 * And validate C_OrderLine:
+	 *   | C_OrderLine_ID | OPT.Description |
+	 *   | ol_discount    | 3% Bonus Ware   |
+	 * </pre>
+	 */
 	@And("validate C_OrderLine:")
 	public void validate_C_OrderLine(@NonNull final DataTable dataTable)
 	{
@@ -571,9 +596,8 @@ public class C_OrderLine_StepDef
 	/**
 	 * Updates previously registered order lines, applying every value column that is present.
 	 *
-	 * <p>The save runs as a background write, i.e. the way an automatic writer such as the invoicing
-	 * run saves a line. Use {@code update C_OrderLine expecting error:} with {@code AsUIAction} to save
-	 * as a user edit instead.</p>
+	 * <p>By default the save runs as a background write, i.e. the way an automatic writer such as the
+	 * invoicing run saves a line. With {@code AsUIAction=Y} the line is saved as a user edit in the WebUI.</p>
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -582,6 +606,7 @@ public class C_OrderLine_StepDef
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
 	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID} — optional,
 	 *         each is applied only when the column is present</li>
+	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
 	 * @cucumber.example
 	 * <pre>
@@ -593,7 +618,7 @@ public class C_OrderLine_StepDef
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
-		dataTable.asMaps().forEach(row -> updateOrderLine(row, false));
+		dataTable.asMaps().forEach(row -> updateOrderLine(row, DataTableRow.singleRow(row).getAsOptionalBoolean("AsUIAction").orElseFalse()));
 	}
 
 	/**
@@ -699,6 +724,8 @@ public class C_OrderLine_StepDef
 	{
 		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(orderLineTable.get(olIdentifier), de.metas.handlingunits.model.I_C_OrderLine.class);
+		// the registered record may predate changes made by the system since (e.g. a compensation group dropped on reactivation)
+		InterfaceWrapperHelper.refresh(orderLine);
 
 		final String contractIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -896,6 +923,24 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/** {@code expected} is a number, or the literal {@code null} / {@code -} for "no value". */
+	private static void assertNullableBigDecimal(
+			@NonNull final SoftAssertions softly,
+			@Nullable final BigDecimal actual,
+			@NonNull final String expected,
+			@NonNull final String columnName,
+			@NonNull final String identifierStr)
+	{
+		if ("null".equals(expected) || "-".equals(expected))
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s (expected: null)", columnName, identifierStr).isNull();
+		}
+		else
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s", columnName, identifierStr).isEqualByComparingTo(expected);
+		}
+	}
+
 	/**
 	 * Validates a single {@link I_C_OrderLine} record against expected values from the DataTable row.
 	 * Called per row by {@link #validate_created_order_lines(DataTable)}.
@@ -909,6 +954,8 @@ public class C_OrderLine_StepDef
 	 *   <li>{@code qtydelivered} — optional BigDecimal; maps to {@code QtyDelivered}</li>
 	 *   <li>{@code qtyinvoiced} — optional BigDecimal; maps to {@code QtyInvoiced}</li>
 	 *   <li>{@code price} — optional BigDecimal; maps to {@code PriceEntered}</li>
+	 *   <li>{@code LineNetAmt} — optional BigDecimal</li>
+	 *   <li>{@code GroupCompensationBaseAmt} — optional BigDecimal; the base a compensation line's percentage is applied to</li>
 	 *   <li>{@code discount} — optional BigDecimal</li>
 	 *   <li>{@code currencyCode} — optional ISO-4217 code</li>
 	 *   <li>{@code processed} — optional boolean</li>
@@ -918,7 +965,10 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensationCalibrationFactor,
+	 *       GroupCompensationQtyEnteredUncalibrated and C_CompensationGroup_CalibrationRule_ID — each also accepts
+	 *       the literal {@code null} to assert an empty value — and GroupCompensation_Product_Category_ID
+	 *       (identifier-ref to an M_Product_Category; {@code null} asserts none))</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -952,6 +1002,25 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationBaseAmt)
+				.ifPresent(groupCompensationBaseAmt -> softly.assertThat(orderLine.getGroupCompensationBaseAmt()).as("GroupCompensationBaseAmt").isEqualByComparingTo(groupCompensationBaseAmt));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_LineNetAmt)
+				.ifPresent(lineNetAmt -> softly.assertThat(orderLine.getLineNetAmt()).as("LineNetAmt").isEqualByComparingTo(lineNetAmt));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
+				.ifPresent(categoryIdentifier -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID())
+						.as("GroupCompensation_Product_Category_ID")
+						.isEqualTo(categoryIdentifier.isNullPlaceholder() ? 0 : productCategoryTable.getId(categoryIdentifier).getRepoId()));
+
+		// the column being present is the trigger: a blank cell asserts that the line has no description
+		if (row.asMap().containsKey("OPT." + I_C_OrderLine.COLUMNNAME_Description))
+		{
+			softly.assertThat(StringUtils.trimBlankToNull(orderLine.getDescription()))
+					.as("Description for C_OrderLine Identifier=%s", identifierStr)
+					.isEqualTo(StringUtils.trimBlankToNull(row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description).orElse(null)));
+		}
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
@@ -1019,6 +1088,28 @@ public class C_OrderLine_StepDef
 				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
 						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
 						.isEqualTo(vendorBPartnerId.getRepoId()));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor), expected, "GroupCompensationCalibrationFactor", identifierStr));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.ifPresent(ruleIdentifier -> {
+					if (ruleIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s (expected: no rule)", identifierStr)
+								.isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s", identifierStr)
+								.isEqualTo(ruleIdentifier.lookupNotNullIn(calibrationRuleTable).getC_CompensationGroup_CalibrationRule_ID());
+					}
+				});
 
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));

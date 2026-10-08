@@ -6,10 +6,16 @@ import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
 import de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
+import de.metas.frontend_testing.masterdata.bpartner.CreateBPGroupCommand;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupRequest;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupResponse;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.CreateCalibrationRuleCommand;
 import de.metas.frontend_testing.masterdata.compensation_group.CreateCompensationGroupSchemaCommand;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleResponse;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
@@ -139,6 +145,8 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateRoleResponse> roles = createRoles();
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
+		// BP groups come BEFORE bpartners: a bpartner joins one via JsonCreateBPartnerRequest.bpGroup.
+		final ImmutableMap<String, JsonBPGroupResponse> bpGroups = createBPGroups();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
 		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
@@ -151,6 +159,8 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
+		// Calibration rules reference bpartners, BP groups, products, categories and schemas: they all exist by now.
+		final ImmutableMap<String, JsonCalibrationRuleResponse> calibrationRules = createCalibrationRules();
 		// POS terminals: applied after bpartners (walk-in customer identifier) and products (priced into the
 		// terminal's own M_PriceList_Version).
 		final ImmutableMap<String, JsonPOSTerminalResponse> posTerminals = createPOSTerminals();
@@ -198,9 +208,11 @@ public class CreateMasterdataCommand
 				.login(login)
 				.roles(roles.isEmpty() ? null : roles)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
+				.bpGroups(bpGroups.isEmpty() ? null : bpGroups)
 				.bpartners(bpartners)
 				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
+				.calibrationRules(calibrationRules.isEmpty() ? null : calibrationRules)
 				.productCategories(productCategories.isEmpty() ? null : productCategories)
 				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
@@ -269,6 +281,21 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonBPGroupResponse> createBPGroups()
+	{
+		return process(request.getBpGroups(), this::createBPGroup);
+	}
+
+	private JsonBPGroupResponse createBPGroup(final String identifier, final JsonBPGroupRequest request)
+	{
+		return CreateBPGroupCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonCreateBPartnerResponse> createBPartners()
 	{
 		return process(request.getBpartners(), this::createBPartner);
@@ -310,6 +337,21 @@ public class CreateMasterdataCommand
 	private JsonCompensationGroupSchemaResponse createCompensationGroupSchema(final String identifier, final JsonCompensationGroupSchemaRequest request)
 	{
 		return CreateCompensationGroupSchemaCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCalibrationRuleResponse> createCalibrationRules()
+	{
+		return process(request.getCalibrationRules(), this::createCalibrationRule);
+	}
+
+	private JsonCalibrationRuleResponse createCalibrationRule(final String identifier, final JsonCalibrationRuleRequest request)
+	{
+		return CreateCalibrationRuleCommand.builder()
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

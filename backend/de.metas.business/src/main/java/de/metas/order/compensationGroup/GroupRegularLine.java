@@ -43,4 +43,7 @@ public class GroupRegularLine
 
 	/** The line's product category and all its ancestor categories; empty if unknown */
 	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
+
+	/** The packing-material categories (incl. ancestors) of the line's packing instruction; empty = none / unknown */
+	@NonNull @Singular ImmutableSet<ProductCategoryId> packingMaterialProductCategoryIds;
 }

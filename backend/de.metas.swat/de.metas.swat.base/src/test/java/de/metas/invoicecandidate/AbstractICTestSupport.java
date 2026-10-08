@@ -78,7 +78,6 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.CountryId;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
@@ -741,7 +740,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		if (invoiceCandidateValidator == null)
 		{
 			final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-			final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
+			final InvoiceCandidateGroupRepository groupsRepo = InvoiceCandidateGroupRepository.newInstanceForUnitTesting();
 
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
