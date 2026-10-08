@@ -25,6 +25,7 @@ package de.metas.handlingunits.inout.returns;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
+import de.metas.handlingunits.inout.returns.customer.CustomerReturnHUsCreateCommand;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOutProducer;
@@ -60,6 +61,11 @@ public class ReturnsServiceFacade
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
 		return huInOutBL.isCustomerReturn(inout);
+	}
+
+	public boolean isReversal(@NonNull final org.compiere.model.I_M_InOut inout)
+	{
+		return huInOutBL.isReversal(inout);
 	}
 
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inout)
@@ -121,5 +127,33 @@ public class ReturnsServiceFacade
 
 		huInOutBL.addAssignedHandlingUnits(customerReturn, hus);
 		huInOutBL.setAssignedHandlingUnits(customerReturnLine, hus);
+	}
+
+	public void createCustomerReturnHandlingUnitsIfNeeded(@NonNull final org.compiere.model.I_M_InOut customerReturn)
+	{
+		if (!huInOutBL.retrieveHandlingUnits(customerReturn).isEmpty())
+		{
+			return;
+		}
+
+		final List<I_M_InOutLine> returnLines = huInOutBL.retrieveLines(customerReturn, I_M_InOutLine.class);
+		for (final I_M_InOutLine returnLine : returnLines)
+		{
+			if (isSkipReturnLine(returnLine))
+			{
+				continue;
+			}
+
+			CustomerReturnHUsCreateCommand.builder()
+					.returnLine(returnLine)
+					.isOnlyCreateCUs(true)
+					.build()
+					.execute();
+		}
+	}
+
+	private boolean isSkipReturnLine(final I_M_InOutLine returnLine)
+	{
+		return returnLine.isDescription() || returnLine.isPackagingMaterial();
 	}
 }

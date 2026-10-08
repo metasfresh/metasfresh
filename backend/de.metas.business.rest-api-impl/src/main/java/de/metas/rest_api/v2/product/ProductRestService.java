@@ -878,7 +878,7 @@ public class ProductRestService
 
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
-				.productNo(existingProduct.getProductNo())
+				.value(existingProduct.getValue())
 				.commodityNumberId(existingProduct.getCommodityNumberId())
 				.manufacturerId(existingProduct.getManufacturerId())
 				.packageSize(existingProduct.getPackageSize())

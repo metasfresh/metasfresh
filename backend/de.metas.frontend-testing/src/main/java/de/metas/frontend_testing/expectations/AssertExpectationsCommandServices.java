@@ -1,10 +1,12 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -21,12 +23,17 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inventory.InventoryId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -40,6 +47,8 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +56,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -55,8 +65,12 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository invalidationRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	@NonNull private final InventoryService inventoryService;
@@ -91,10 +105,30 @@ public class AssertExpectationsCommandServices
 
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return huQRCodeService.getHuIdByQRCode(qrCode);
+		return getHuIdByQRCode(huQRCodeService, qrCode);
 	}
 
-	public HUType getHUUnitType(@NonNull I_M_HU hu)
+	/**
+	 * Resolves through soft-deleted QR-code assignments too: destroying an HU deactivates its
+	 * {@code M_HU_QRCode_Assignment} row, so the scan-time (active-only) lookup stops finding the HU — but a
+	 * destroyed HU must stay assertable, e.g. {@code Backend.expect({hus: {qrCode: {huStatus: 'D'}}})}.
+	 * A QR code with no assignment at all still fails with the very same "no HU found" error as before.
+	 */
+	@VisibleForTesting
+	static HuId getHuIdByQRCode(@NonNull final HUQRCodesService huQRCodeService, @NonNull final HUQRCode qrCode)
+	{
+		final HuId activeHuId = huQRCodeService.getHuIdByQRCodeIfExists(qrCode).orElse(null);
+		if (activeHuId != null)
+		{
+			return activeHuId;
+		}
+
+		return huQRCodeService.getHuIdByQRCodeIncludingInactiveIfExists(qrCode)
+				// nothing at all resolves => let the service raise its standard not-found error
+				.orElseGet(() -> huQRCodeService.getHuIdByQRCode(qrCode));
+	}
+
+	public HUType getHUUnitType(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.getHUUnitType(hu);
 	}
@@ -130,6 +164,39 @@ public class AssertExpectationsCommandServices
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
+
+	public List<de.metas.handlingunits.model.I_M_InOutLine> getInOutLinesForHU(@NonNull final I_M_HU hu)
+	{
+		return huInOutDAO.retrieveInOutLinesForHU(hu);
+	}
+
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return invalidationRepository.isAllValid(shipmentScheduleIds);
+	}
+
+	public List<I_M_InOut> getInOutsByOrderId(@NonNull final OrderId orderId)
+	{
+		return inOutDAO.retrieveInOutsByOrderId(orderId);
+	}
+
+	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
+	{
+		return inOutDAO.retrieveLines(inOut);
+	}
+
+	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveOrderLines(orderId)
+				.stream()
+				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
+				.collect(Collectors.toSet());
+	}
+
+	public List<I_M_InOutLine> getProcessedShipmentLinesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
+	}
 
 	/**
 	 * Inventory lines booked on exactly this HU. {@code retrieveAllLinesForHU} widens to included HUs,

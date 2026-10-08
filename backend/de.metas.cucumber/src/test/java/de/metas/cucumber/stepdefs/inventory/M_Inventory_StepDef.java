@@ -131,6 +131,13 @@ public class M_Inventory_StepDef
 		documentBL.processEx(inventory, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
+	@Given("^the inventory identified by (.*) is reversed$")
+	public void inventory_is_reversed(@NonNull final String inventoryIdentifier)
+	{
+		final I_M_Inventory inventory = inventoryTable.get(inventoryIdentifier);
+		documentBL.processEx(inventory, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+	}
+
 	@And("the following virtual inventory is created")
 	public void createVirtualInventory(@NonNull final DataTable dataTable)
 	{

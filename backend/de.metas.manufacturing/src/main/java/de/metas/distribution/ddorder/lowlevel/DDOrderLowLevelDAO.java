@@ -5,8 +5,10 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -18,10 +20,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.eevolution.api.PPOrderId;
@@ -30,6 +35,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Repository;
@@ -38,6 +44,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -65,6 +72,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative, PP_MRP, PP_MRP_Alloc
+ * Repository Cluster: DDOrderLowLevelDAO
+ */
 @Repository
 public class DDOrderLowLevelDAO
 {
@@ -79,6 +90,76 @@ public class DDOrderLowLevelDAO
 	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
 	{
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
+	}
+
+	/**
+	 * Returns a sub-query selecting all live (Completed), active {@link I_DD_Order} records.
+	 *
+	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
+	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
+	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
+	 */
+	public IQuery<I_DD_Order> queryCompletedDDOrders()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+
+	/**
+	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
+	 * or empty if none exists.
+	 */
+	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.firstOptional(I_DD_Order.class)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
+	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
+	 *
+	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
+	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
+	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
+	 */
+	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				// A disconnected DD_Order (IsPickingDisconnected=Y) is the in-progress close-out disposition: the
+				// shipment schedule was already closed out, the DD_Order survives as a standalone replenishment the
+				// worker finishes. The picker-busy guard and the reconcile must NOT see it (else they would re-block
+				// the close-out / re-void the standalone job), so it is filtered out here.
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.list(I_DD_Order.class);
+	}
+
+	/**
+	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
+	 */
+	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
@@ -301,16 +382,43 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Locator To
-		if (query.getLocatorToIds() != null)
+		// Workplace visibility: ships FROM the workplace warehouse, OR delivers TO it
+		// (the destination side optionally narrowed to the workplace's pick-from locator).
+		final WarehouseId workplaceWarehouseId = query.getWorkplaceWarehouseId();
+		if (workplaceWarehouseId != null)
 		{
-			queryBuilder.addInSubQueryFilter()
-					.matchingColumnNames(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID)
-					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
+			final ICompositeQueryFilter<I_DD_Order> workplaceFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+
+			// source side: order ships FROM the workplace warehouse (not gated by the pick-from locator)
+			workplaceFilter.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, workplaceWarehouseId);
+
+			// destination side: order delivers TO the workplace warehouse...
+			final ICompositeQueryFilter<I_DD_Order> toSide = workplaceFilter.addCompositeQueryFilter().setJoinAnd();
+			toSide.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, workplaceWarehouseId);
+
+			// ...and, when the workplace has a pick-from locator, only orders with a line delivering to that locator
+			final LocatorId workplacePickFromLocatorId = query.getWorkplacePickFromLocatorId();
+			if (workplacePickFromLocatorId != null)
+			{
+				final IQuery<I_DD_OrderLine> linesDeliveredToLocator = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, workplacePickFromLocatorId)
+						.create();
+				toSide.addFilter(InSubQueryFilter.of(I_DD_Order.COLUMN_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, linesDeliveredToLocator));
+			}
+		}
+
+		//
+		// Locator To — exclude (packing places)
+		if (query.getExcludeLocatorToIds() != null && !query.getExcludeLocatorToIds().isEmpty())
+		{
+			queryBuilder.addNotInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					queryBL.createQueryBuilder(I_DD_OrderLine.class)
 							.addOnlyActiveRecordsFilter()
-							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
-							.create())
-					.end();
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getExcludeLocatorToIds())
+							.create());
 		}
 
 		//
@@ -343,6 +451,13 @@ public class DDOrderLowLevelDAO
 			{
 				filter.addEqualsFilter(I_DD_Order.COLUMNNAME_DatePromised, datePromised, DateTruncQueryFilterModifier.DAY);
 			}
+		}
+
+		//
+		// only DD_Order_IDs
+		if (query.getOnlyDDOrderIds() != null && !query.getOnlyDDOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, query.getOnlyDDOrderIds());
 		}
 
 		//
@@ -406,6 +521,10 @@ public class DDOrderLowLevelDAO
 		if (field == DDOrderQuery.OrderByField.PriorityRule)
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
+		}
+		else if (field == DDOrderQuery.OrderByField.LocatorPriority)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_LocatorPriorityNo;
 		}
 		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{

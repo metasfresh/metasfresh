@@ -27,18 +27,15 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.OrgId;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
@@ -56,7 +53,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExportHUToGRSServiceTest
 {
@@ -77,7 +74,7 @@ public class ExportHUToGRSServiceTest
 
 		exportHUToGRSService = new ExportHUToGRSService(new DataExportAuditRepository(),
 														new DataExportAuditLogRepository(),
-														ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+														ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 														new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 														externalSystemConfigServiceMock);
 		createPrerequisites();

@@ -144,10 +144,15 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId).orElse(null);
+			if (actualResourceProductId == null)
+			{
+				// resource has no cost product -> no activity cost to post (graceful no-op)
+				return CostDetailCreateResultsList.EMPTY;
+			}
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -164,10 +169,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				if (actualResourceId.isNoResource())
 				{
-					return null;
+					return CostDetailCreateResultsList.EMPTY;
 				}
 
-				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+						.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
@@ -187,17 +193,17 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		throw new UnsupportedOperationException();
 	}
 
-	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	private CurrentCost getCurrentCostForUpdate(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	private CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostPrice price = currentCosts.getCostPrice();
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
@@ -234,7 +240,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = convertDurationToQuantity(duration, request.getProductId(), price.getUomId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amtType(CostAmountType.MAIN)
 				.amt(amt)
@@ -257,7 +263,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
-		final CurrentCost currentCosts = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCostForUpdate(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amtType(CostAmountType.MAIN)
 				.amt(amt)
@@ -494,7 +500,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private CostPrice getProductActualCostPrice(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement)
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement)
 				.getCostPrice();
 	}
 

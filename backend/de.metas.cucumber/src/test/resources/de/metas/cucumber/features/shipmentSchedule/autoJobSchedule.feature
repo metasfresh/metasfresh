@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
 @ghActions:run_on_executor4
 Feature: Auto picking job schedule
+## F00105: Shipment Schedule
 
   Background:
     Given infrastructure and metasfresh are running
@@ -66,6 +69,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched1                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched1                           | Y                     | 10                     | N             |
 
   Scenario: auto job schedule - OrderPickingType
     Given deactivate all C_Workplace records
@@ -88,6 +94,10 @@ Feature: Auto picking job schedule
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched2                | workplace1     | 10        |
       | sched3                | workplace2     | 1         |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched2                | Y                     | 10                     | N             |
+      | sched3                | Y                     | 1                      | N             |
 
   Scenario: auto job schedule - Warehouse
     Given deactivate all C_Workplace records
@@ -105,6 +115,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched4                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched4                | Y                     | 10                     | N             |
 
   Scenario: auto job schedule - Product
     Given deactivate all C_Workplace records
@@ -122,6 +135,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched5                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched5                | Y                     | 10                     | N             |
 
   Scenario: auto job schedule - Product Category
     Given deactivate all C_Workplace records
@@ -139,6 +155,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched6                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched6                | Y                     | 10                     | N             |
 
   Scenario: auto job schedule - External System
     Given deactivate all C_Workplace records
@@ -156,3 +175,35 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched7                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched7                | Y                     | 10                     | N             |
+
+  Scenario: auto job schedule - BP Group
+    Given metasfresh contains C_BP_Groups:
+      | Identifier     |
+      | groupPreferred |
+      | groupOther     |
+    And metasfresh contains C_BPartners:
+      | Identifier      | M_PricingSystem_ID | IsCustomer | C_BP_Group_ID  |
+      | groupedCustomer | ps                 | Y          | groupPreferred |
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier         | SeqNo | M_Warehouse_ID | MaxPickingJobs | C_BP_Group_ID  |
+      | workplacePreferred | 10    | wh             | 10             | groupPreferred |
+      | workplaceFallback  | 20    | wh             | 10             | groupOther     |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID   | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |
+      | so8        | groupedCustomer | 2025-04-01  | true    | wh             | I           | so8_l1         | product      | 10         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched8     | so8_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    # the schedule is assigned to the workplace restricted to the customer's BP group, not the higher-SeqNo fallback;
+    # document-type matching for the workplace restriction is covered by PickingJobScheduleAutoAssignCommandTest
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID     | QtyToPick |
+      | sched8                | workplacePreferred | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking | IsToRecompute |
+      | sched8                | Y                     | 10                     | N             |

@@ -27,6 +27,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -73,6 +74,9 @@ public class M_Product
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_SyncEANAndGTIN = "M_Product.SyncEANAndGTIN";
 
 	@Init
 	public void registerCallouts()
@@ -182,8 +186,15 @@ public class M_Product
 				});
 	}
 
-	private void normalizeProductCodeFields(@NonNull I_M_Product record)
+	private void normalizeProductCodeFields(@NonNull final I_M_Product record)
 	{
+		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		if (!syncEANAndGTIN)
+		{
+			return;
+		}
+
 		if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());

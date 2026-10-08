@@ -75,7 +75,7 @@ CREATE INDEX idx_queue_workpackage_polling
                             Priority,                      -- Range filter + ORDER BY
                             C_Queue_WorkPackage_ID         -- ORDER BY
         )
-    WHERE Processed = 'Y';
+    WHERE Processed = 'N';
 
 COMMENT ON INDEX idx_queue_workpackage_polling IS
     'Optimized index for workpackage polling with FOR UPDATE SKIP LOCKED. Column order: C_Queue_PackageProcessor_ID first (most selective), then ready/error/locked filters, then Priority/ID for sorting.';

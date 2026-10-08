@@ -36,6 +36,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -117,9 +118,8 @@ public class Packageable
 
 	FreightCostRule freightCostRule;
 
-	@NonNull
-	ProductId productId;
-	String productName;
+	@NonNull ProductId productId;
+	@NonNull ProductValueAndName productValueAndName;
 
 	@NonNull
 	AttributeSetInstanceId asiId;

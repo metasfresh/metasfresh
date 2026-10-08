@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.interceptor;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemRepository;
@@ -45,7 +45,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ExternalSystem_Config
 {
-	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+	public final ExternalSystemConfigRepository externalSystemConfigRepository;
 	public final ExternalSystemRepository externalSystemRepository;
 
 	private final static AdMessageKey MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE = AdMessageKey.of("External_System_Config_Cannot_Change_Type");
@@ -58,7 +58,7 @@ public class ExternalSystem_Config
 
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
-		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(parentConfigId, oldParentType);
+		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepository.getChildByParentIdAndType(parentConfigId, oldParentType);
 
 		childConfig.ifPresent(x -> {
 			throw new AdempiereException(MSG_EXTERNAL_SYS_CONFIG_CANNOT_CHANGE_TYPE).markAsUserValidationError();

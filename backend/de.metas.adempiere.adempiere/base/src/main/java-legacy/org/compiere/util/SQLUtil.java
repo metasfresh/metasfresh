@@ -32,6 +32,13 @@ import java.util.List;
 @UtilityClass
 public class SQLUtil
 {
+	/**
+	 * Walks the {@link SQLWarning} chain and extracts all messages.
+	 * In PostgreSQL, {@code RAISE NOTICE} messages are delivered as {@link SQLWarning}s,
+	 * so this method is the bridge that captures them for logging to {@code AD_PInstance_Log}.
+	 *
+	 * @see ExecuteUpdateSQL which uses this to capture RAISE NOTICE output from SQL-type AD_Processes
+	 */
 	public List<String> extractWarningMessages(@Nullable SQLWarning warning)
 	{
 		final List<String> warningMessages = new ArrayList<>();

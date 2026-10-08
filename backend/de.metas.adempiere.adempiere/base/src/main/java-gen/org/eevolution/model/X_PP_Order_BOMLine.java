@@ -503,6 +503,18 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	}
 
 	@Override
+	public void setPickingInstruction (final @Nullable java.lang.String PickingInstruction)
+	{
+		set_Value (COLUMNNAME_PickingInstruction, PickingInstruction);
+	}
+
+	@Override
+	public java.lang.String getPickingInstruction() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingInstruction);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Order_BOM getPP_Order_BOM()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_BOM_ID, org.eevolution.model.I_PP_Order_BOM.class);

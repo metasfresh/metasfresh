@@ -488,8 +488,8 @@ SELECT 1000000                                                                  
                 WHERE l.countrycode = UPPER(LEFT(c."Country_Region Code", 2))
                 LIMIT 1) || '_' || UPPER(LEFT(c."Country_Region Code", 2))-- Fallback can be wrong e.g. 'fr_CH' 'de_CH'
            END                                                                  AS ad_language,
-       location_contact_print_info.address4                                     AS address4,
-       location_contact_print_info.address3                                     AS address3,
+       NULL                                                                     AS address4,
+       NULL                                                                     AS address3,
        LEFT(c."Name 3", 60)                                                     AS name3,
        'N'                                                                      AS issepasigned,
        NULL                                                                     AS pharmaproductpermlaw52,
@@ -588,7 +588,9 @@ SELECT 1000000                                                                  
        location_contact_print_info.LocationShipperName                          AS LocationShipperName,
        'Y'                                                                      AS isUpdateLocationName,
        NULL::numeric                                                            AS M_Shipper_RoutingCode_ID,
-       location_contact_print_info.ShipperRouteCodeName                         AS ShipperRouteCodeName
+       location_contact_print_info.ShipperRouteCodeName                         AS ShipperRouteCodeName,
+       location_contact_print_info.bpartnername                                 AS bpartnername,
+       location_contact_print_info.bpartnername2                                AS bpartnername2
 FROM migration_data."Navision$Customer" c
          LEFT JOIN migration_data."Navision$Payment Method" pm
                    ON c."Payment Method Code" = pm."Code"
@@ -619,8 +621,8 @@ FROM migration_data."Navision$Customer" c
     -- invoice copies
     SELECT LEFT(c."Address", 60)                                                  AS address1,
            LEFT(c."Address 2", 60)                                                AS address2,
-           NULL                                                                   AS address3,
-           NULL                                                                   AS address4,
+           NULL                                                                   AS bpartnername,
+           NULL                                                                   AS bpartnername2,
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
@@ -683,8 +685,8 @@ FROM migration_data."Navision$Customer" c
 -- shipment copies
     SELECT LEFT(c."Address", 60)                                                  AS address1,
            LEFT(c."Address 2", 60)                                                AS address2,
-           NULL                                                                   AS address3,
-           NULL                                                                   AS address4,
+           NULL                                                                   AS bpartnername,
+           NULL                                                                   AS bpartnername2,
            LEFT(c."Post Code", 10)                                                AS postal,
            LEFT(c."City", 60)                                                     AS city,
            COALESCE(NULLIF(TRIM(LEFT(c."Country_Region Code", 2)), ''),
@@ -733,8 +735,8 @@ FROM migration_data."Navision$Customer" c
     UNION ALL
     SELECT LEFT(inner_ship_to."Address", 60)                          AS address1,
            LEFT(inner_ship_to."Address 2", 60)                        AS address2,
-           LEFT(inner_ship_to."Name", 60)                             AS address3,
-           LEFT(inner_ship_to."Name 2", 60)                           AS address4,
+           LEFT(inner_ship_to."Name", 255)                            AS bpartnername,
+           LEFT(inner_ship_to."Name 2", 255)                          AS bpartnername2,
            LEFT(inner_ship_to."Post Code", 10)                        AS postal,
            LEFT(inner_ship_to."City", 60)                             AS city,
            COALESCE(NULLIF(TRIM(LEFT(inner_ship_to."Country_Region Code", 2)), ''),
@@ -802,7 +804,7 @@ INSERT INTO i_bpartner (i_bpartner_id, ad_client_id, ad_org_id, isactive, create
                         countryname, memo_delivery, paymenttermvalue, c_paymentterm_id, url3, globalid, ad_issue_id,
                         c_dataimport_run_id, i_linecontent, i_lineno, IsUserInvoiceEmailEnabled, PaymentRuleInfo,
                         PaymentRulePOInfo, Location_M_Shipper_ID, LocationShipperName, isUpdateLocationName,
-                        M_Shipper_RoutingCode_ID, ShipperRouteCodeName)
+                        M_Shipper_RoutingCode_ID, ShipperRouteCodeName, bpartnername, bpartnername2)
 SELECT nextval('i_bpartner_seq'),
        t.ad_client_id,
        t.ad_org_id,
@@ -958,6 +960,8 @@ SELECT nextval('i_bpartner_seq'),
        t.LocationShipperName,
        t.isUpdateLocationName,
        t.M_Shipper_RoutingCode_ID,
-       t.ShipperRouteCodeName
+       t.ShipperRouteCodeName,
+       t.bpartnername,
+       t.bpartnername2
 FROM migration_data.i_bpartner_customer t
 ;

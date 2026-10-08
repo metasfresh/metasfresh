@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0125_Dunning
+@allure.label.feature:F00125_Call_Management
+@F00125
 @ghActions:run_on_executor4
 Feature: Invoice Dunning Test
+## F00125: Dunning
 
   Background:
     Given infrastructure and metasfresh are running
@@ -30,6 +34,9 @@ Feature: Invoice Dunning Test
       | customerLocation | customer      | CH           | Y               | Y               |
 
   @from:cucumber
+@allure.label.epic:E0125_Dunning
+@allure.label.feature:F00125_Call_Management
+@F00125
   Scenario: Invoice Dunning Test
     And metasfresh contains C_Dunning:
       | Identifier        |
@@ -40,13 +47,23 @@ Feature: Invoice Dunning Test
     And update C_BPartner:
       | Identifier | C_Dunning_ID      |
       | customer   | dunning_S0471_200 |
+    And metasfresh contains C_PaymentTerm
+      | Identifier | NetDays |
+      | pt_net0    | 0       |
     And metasfresh contains C_Invoice:
-      | Identifier    | C_BPartner_ID | PaymentRule | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoice1 | customer      | B           | Ausgangsrechnung        | 2021-04-08   | true    | EUR                 |
+      | Identifier    | C_BPartner_ID | PaymentRule | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code | C_PaymentTerm_ID |
+      | salesInvoice1 | customer      | B           | Ausgangsrechnung        | 2021-04-08   | true    | EUR                 | pt_net0          |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID  | M_Product_ID | QtyInvoiced |
       | salesInvoice1 | product      | 1 PCE       |
     And the invoice identified by salesInvoice1 is completed
+    # me03#29366: pin the DueDate directly on C_Invoice after completion.
+    # NetDays=0 ⇒ paymentTermDueDate(pt_net0, 2021-04-08) = 2021-04-08.
+    # Without this assertion, a DueDate regression only surfaces three steps later
+    # as an opaque Check.assume failure in DunnableDoc.<init>.
+    And validate created invoices
+      | Identifier    | DocStatus | DueDate    |
+      | salesInvoice1 | CO        | 2021-04-08 |
 
     And invoke "C_Dunning_Candidate_Create" process:
       | C_DunningLevel_ID      | DunningDate |

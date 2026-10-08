@@ -51,7 +51,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 PriceQtyPattern            text,
                 catchweight                numeric,
                 weight_uom                 character varying(10),
-                customs_number             text
+                customs_number             text,
+                iswithoutcharge            character(1),
+                reason                     character varying(4000)
             )
 AS
 $$
@@ -124,7 +126,9 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        report.getQtyPattern(puom.StdPrecision)                AS PriceQtyPattern,
        w.catchweight,
        w.weight_uom,
-       pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number
+       pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number,
+       il.iswithoutcharge,
+       il.reason
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID

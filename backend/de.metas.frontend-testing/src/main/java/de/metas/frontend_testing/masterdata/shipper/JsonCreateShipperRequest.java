@@ -11,9 +11,13 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonCreateShipperRequest
 {
-	/** Optional label; the created {@code M_Shipper.Name} is always made unique per run. */
 	@Nullable String name;
 	@Nullable String gateway;
+
+	// When true, M_Shipper.IsApiCarrierAdvise='Y'. Combined with no gateway, the carrier advise is
+	// resolved locally from the shipper name (no external nShift API call needed).
+	// Primitive boolean: an omitted JSON value defaults to false.
+	boolean isApiCarrierAdvise;
 
 	// DHL-specific config (optional — only needed when gateway=dhl)
 	@Nullable DhlConfig dhlConfig;

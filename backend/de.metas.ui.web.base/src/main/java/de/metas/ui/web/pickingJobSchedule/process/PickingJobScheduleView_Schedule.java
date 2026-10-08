@@ -1,7 +1,9 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IProcessDefaultParameter;
@@ -45,13 +47,33 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 			final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId = getShipmentScheduleAndJobScheduleIds().singleOrNull();
 			if (shipmentScheduleAndJobScheduleId != null)
 			{
-				final Quantity qtyRemainingToScheduleForPicking = pickingJobScheduleService.getQtyRemainingToScheduleForPicking(shipmentScheduleAndJobScheduleId.getShipmentScheduleId());
-				return qtyRemainingToScheduleForPicking.toBigDecimal();
+				final PickingJobScheduleId pickingJobScheduleId = shipmentScheduleAndJobScheduleId.getJobScheduleId();
+				if(pickingJobScheduleId == null)
+				{
+					final Quantity qtyRemainingToScheduleForPicking = pickingJobScheduleService.getQtyRemainingToScheduleForPicking(shipmentScheduleAndJobScheduleId.getShipmentScheduleId());
+					return qtyRemainingToScheduleForPicking.toBigDecimal();
+				}
+				else
+				{
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getQtyToPick().toBigDecimal();
+				}
 			}
 		}
 		else if (parameter.getColumnName().equals(PARAM_IsSingleRowSelected))
 		{
 			return getSelectedRowIds().isSingleDocumentId();
+		}
+		else if (parameter.getColumnName().equals(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID))
+		{
+			final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId = getShipmentScheduleAndJobScheduleIds().singleOrNull();
+			if (shipmentScheduleAndJobScheduleId != null)
+			{
+				final PickingJobScheduleId pickingJobScheduleId = shipmentScheduleAndJobScheduleId.getJobScheduleId();
+				if (pickingJobScheduleId != null)
+				{
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getWorkplaceId();
+				}
+			}
 		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

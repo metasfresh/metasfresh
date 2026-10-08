@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
 @ghActions:run_on_executor3
 Feature:bom create using metasfresh api
+## F00500: Product BOM
   Using default ad_orgId 1000000
 
   Background:
@@ -8,6 +11,8 @@ Feature:bom create using metasfresh api
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: create a ProductBOM record with existing ProductBOMVersions for productID
 
     Given metasfresh contains M_Products:

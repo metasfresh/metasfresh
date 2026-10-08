@@ -784,6 +784,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setKostendifferenz (final @Nullable BigDecimal Kostendifferenz)
+	{
+		throw new IllegalArgumentException ("Kostendifferenz is virtual column");	}
+
+	@Override
+	public BigDecimal getKostendifferenz() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Kostendifferenz);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -1468,5 +1480,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIsFixedProductionDate (final boolean IsFixedProductionDate)
+	{
+		set_Value (COLUMNNAME_IsFixedProductionDate, IsFixedProductionDate);
+	}
+
+	@Override
+	public boolean isFixedProductionDate()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedProductionDate);
 	}
 }

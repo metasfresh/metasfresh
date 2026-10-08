@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO implements I_PickingProfile_PickingJobConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1539722672L;
+	private static final long serialVersionUID = 578159988L;
 
     /** Standard Constructor */
     public X_PickingProfile_PickingJobConfig (final Properties ctx, final int PickingProfile_PickingJobConfig_ID, @Nullable final String trxName)
@@ -71,18 +71,6 @@ public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public org.compiere.model.I_MobileUI_UserProfile_Picking getMobileUI_UserProfile_Picking()
-	{
-		return get_ValueAsPO(COLUMNNAME_MobileUI_UserProfile_Picking_ID, org.compiere.model.I_MobileUI_UserProfile_Picking.class);
-	}
-
-	@Override
-	public void setMobileUI_UserProfile_Picking(final org.compiere.model.I_MobileUI_UserProfile_Picking MobileUI_UserProfile_Picking)
-	{
-		set_ValueFromPO(COLUMNNAME_MobileUI_UserProfile_Picking_ID, org.compiere.model.I_MobileUI_UserProfile_Picking.class, MobileUI_UserProfile_Picking);
-	}
-
-	@Override
 	public void setMobileUI_UserProfile_Picking_ID (final int MobileUI_UserProfile_Picking_ID)
 	{
 		if (MobileUI_UserProfile_Picking_ID < 1) 
@@ -114,10 +102,12 @@ public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO imp
 	public static final String PICKINGJOBFIELD_HandoverLocation = "HandoverLocation";
 	/** Rüstplatz Nr. = Setup_Place_No */
 	public static final String PICKINGJOBFIELD_RuestplatzNr = "Setup_Place_No";
-	/** Product = Product */
-	public static final String PICKINGJOBFIELD_Product = "Product";
+	/** ProductName = Product */
+	public static final String PICKINGJOBFIELD_ProductName = "Product";
 	/** QtyToDeliver = QtyToDeliver */
 	public static final String PICKINGJOBFIELD_QtyToDeliver = "QtyToDeliver";
+	/** ProductNo = ProductNo */
+	public static final String PICKINGJOBFIELD_ProductNo = "ProductNo";
 	@Override
 	public void setPickingJobField (final java.lang.String PickingJobField)
 	{

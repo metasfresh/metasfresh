@@ -29,6 +29,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
@@ -69,9 +70,10 @@ public class PickingJobCandidate
 		return products.getSingleProductIdOrNull();
 	}
 
-	public ITranslatableString getProductName()
+	@Nullable
+	public ProductValueAndName getProductValueAndName()
 	{
-		return products.getSingleProductNameOrNull();
+		return products.getSingleProductValueAndNameOrNull();
 	}
 
 	@Nullable

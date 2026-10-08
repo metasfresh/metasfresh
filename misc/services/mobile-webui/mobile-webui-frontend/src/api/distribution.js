@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
-import { toUrl, unboxAxiosResponse } from '../utils';
+import { unboxAxiosResponse } from '../utils';
 import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const getDistributionScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
-    .get(toUrl(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode }))
+    .post(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -59,6 +59,12 @@ export const completeDistributionJob = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const switchDistributionPickFromLocatorToNext = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/distribution/job/${wfProcessId}/switchPickFromLocatorToNext`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const getNextEligiblePickFromLine = ({ wfProcessId, lineId, huQRCode, productScannedCode }) => {
   return axios
     .post(`${apiBasePath}/distribution/nextEligiblePickFromLine`, {
@@ -67,5 +73,11 @@ export const getNextEligiblePickFromLine = ({ wfProcessId, lineId, huQRCode, pro
       huQRCode,
       productScannedCode,
     })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postPrintMaterialInTransitReport = () => {
+  return axios
+    .post(`${apiBasePath}/distribution/print/materialInTransitReport`)
     .then((response) => unboxAxiosResponse(response));
 };

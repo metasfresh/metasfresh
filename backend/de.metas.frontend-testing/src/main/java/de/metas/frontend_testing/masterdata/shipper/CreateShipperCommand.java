@@ -20,17 +20,19 @@ public class CreateShipperCommand
 
 	public JsonCreateShipperResponse execute()
 	{
-		// Unique per run, never the caller-supplied label verbatim (module CLAUDE.md).
-		final String name = (request.getName() != null ? Identifier.ofString(request.getName()) : identifier).toUniqueString();
+		final String uniqueSuffix = "_" + java.time.Instant.now().toString().replace(":", "").replace("-", "");
+		final String name = (request.getName() != null ? request.getName() : "Shipper_" + identifier.getAsString()) + uniqueSuffix;
 
 		// Create M_Shipper
 		final I_M_Shipper shipper = InterfaceWrapperHelper.newInstance(I_M_Shipper.class);
 		shipper.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		shipper.setName(name);
 		shipper.setIsActive(true);
+		shipper.setIsApiCarrierAdvise(request.isApiCarrierAdvise());
 		shipper.setPickupTimeFrom(Timestamp.valueOf("2025-01-01 08:00:00"));
 		shipper.setPickupTimeTo(Timestamp.valueOf("2025-01-01 18:00:00"));
-		// No ShipperGateway is set here: nothing in the frontend-testing flows talks to a carrier API.
+		// No ShipperGateway is set here: with IsApiCarrierAdvise='Y' and no gateway, CarrierAdviseCommand
+		// takes the local else-branch and synthesizes the advise (carrier product = shipper name).
 		InterfaceWrapperHelper.save(shipper);
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipper.getM_Shipper_ID());
@@ -44,7 +46,7 @@ public class CreateShipperCommand
 		}
 
 		return JsonCreateShipperResponse.builder()
-				.shipperId(shipperId)
+				.shipperId(shipperId.getRepoId())
 				.name(name)
 				.build();
 	}

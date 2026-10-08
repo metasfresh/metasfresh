@@ -22,17 +22,20 @@
 
 package de.metas.material.cockpit.availableforsales;
 
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Properties;
+import javax.annotation.Nullable;
 
-@Value(staticConstructor = "of")
+@Value
+@Builder
 public class EnqueueAvailableForSalesRequest
 {
-	@NonNull
-	AvailableForSalesQuery availableForSalesQuery;
+	@NonNull AvailableForSalesQuery availableForSalesQuery;
 
-	@NonNull
-	Properties ctx;
+	@Nullable UserId contextUserId;
+	@Nullable RoleId contextRoleId;
 }

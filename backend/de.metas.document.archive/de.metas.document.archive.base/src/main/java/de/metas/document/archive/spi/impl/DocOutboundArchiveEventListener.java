@@ -13,6 +13,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -289,7 +290,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		if (recipients.getTo() != null)
 		{
-			docOutboundLogRecord.setCurrentEMailRecipient_ID(recipients.getTo().getId().getRepoId());
+			// an email-only recipient (e.g. the bill-to location fallback) has no AD_User => toRepoId returns -1
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(DocOutBoundRecipientId.toRepoId(recipients.getTo().getId()));
 			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
 		}
 

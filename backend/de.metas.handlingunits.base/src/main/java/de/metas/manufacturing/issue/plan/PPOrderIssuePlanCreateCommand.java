@@ -87,7 +87,7 @@ public class PPOrderIssuePlanCreateCommand
 	{
 		allocableHUsMap.addSourceHUs(ppOrderSourceHUService.getSourceHUIds(ppOrderId));
 
-		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.getOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.flatMap(this::createSteps)
 				.collect(ImmutableList.toImmutableList());

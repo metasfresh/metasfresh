@@ -76,6 +76,7 @@ public class BPartner
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
 	public static final String SALESTREPID = "salesRepId";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
@@ -142,6 +143,7 @@ public class BPartner
 	private boolean company;
 	private @Nullable String salesPartnerCode;
 	private @Nullable SalesRep salesRep;
+	private boolean discountPrinted;
 	private @Nullable PaymentRule paymentRule;
 	private @Nullable String internalName;
 
@@ -176,7 +178,8 @@ public class BPartner
 	private boolean identifiedByExternalReference;
 
 	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's priceListId
+	private PricingSystemId customerPricingSystemId;
 	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
@@ -218,6 +221,7 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
+			@Nullable final Boolean discountPrinted,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
@@ -269,6 +273,7 @@ public class BPartner
 		this.company = coalesceNotNull(company, false);
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
+		this.discountPrinted = coalesceNotNull(discountPrinted, false);
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.vatId = vatId;

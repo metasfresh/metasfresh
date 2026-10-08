@@ -23,7 +23,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -43,7 +43,7 @@ import java.util.Set;
 
 public abstract class M_HU_SyncTo_ExternalSystem extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 
 	@Nullable
 	@Override
@@ -51,7 +51,7 @@ public abstract class M_HU_SyncTo_ExternalSystem extends ViewBasedProcessTemplat
 	{
 		if (getExternalSystemParam().equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getActiveByType(getExternalSystemType())
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepository.getActiveByType(getExternalSystemType())
 					.stream()
 					.collect(ImmutableList.toImmutableList());
 
@@ -71,7 +71,7 @@ public abstract class M_HU_SyncTo_ExternalSystem extends ViewBasedProcessTemplat
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

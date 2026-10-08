@@ -1,19 +1,9 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.Topic;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.SpringContextHolder;
 
 import java.util.List;
 
@@ -22,24 +12,10 @@ import java.util.List;
  */
 public class OrderModuleInterceptor extends AbstractModuleInterceptor
 {
-	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
-	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
-	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalService.class);
-	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
-	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
-	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
-	private final OrderPayScheduleService orderPayScheduleService = SpringContextHolder.instance.getBean(OrderPayScheduleService.class);
-
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
 		return ImmutableList.of(OrderUserNotifications.USER_NOTIFICATIONS_TOPIC);
 	}
 
-	@Override
-	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
-	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService)); // FRESH-348
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
-	}
 }

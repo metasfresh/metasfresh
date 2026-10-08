@@ -42,12 +42,12 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -203,9 +203,9 @@ public interface IReceiptScheduleBL extends ISingletonService
 	I_M_ReceiptSchedule_Alloc reverseAllocation(I_M_ReceiptSchedule_Alloc rsa);
 
 	/**
-	 * Close receipt schedule line and mark it as processed.
+	 * Close receipt schedule line by setting {@code IsClosed=Y} and {@code Processed=Y}.
 	 * <p>
-	 * Call the {@link IReceiptScheduleListener}s' beforeClose method, then set the schedule to <code>Processed=Y</code>, then save the given <code>receiptSchedule</code>, then call the listeners' afterClose() methods and finally save the record again.
+	 * Call the {@link IReceiptScheduleListener}s' beforeClose method, then set the schedule to <code>IsClosed=Y, Processed=Y</code>, then save the given <code>receiptSchedule</code>, then call the listeners' afterClose() methods and finally save the record again.
 	 * <p>
 	 * The saving prior to <code>afterClose()</code> is done because the listeners might also retrieve the same <code>receiptSchedule</code> data record from the DB and might also change and save it.
 	 * See {@link C_OrderLine_ReceiptSchedule} for an example.
@@ -215,12 +215,13 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void close(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
-	 * Re-open a closed receipt schedule line. Similar to {@link #close(I_M_ReceiptSchedule)}. Also, we save the given <code>receiptSchedule</code> twice for similar reasons.
+	 * Re-open a closed receipt schedule line by setting {@code IsClosed=N} and {@code Processed=N}.
+	 * Similar to {@link #close(I_M_ReceiptSchedule)}. Also, we save the given <code>receiptSchedule</code> twice for similar reasons.
 	 */
 	void reopen(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
-	 * Checks if given receipt schedule is closed (i.e. {@link I_M_ReceiptSchedule#isProcessed()}).
+	 * Checks if given receipt schedule is closed (i.e. {@link I_M_ReceiptSchedule#isIsClosed()}).
 	 *
 	 * @return true if receipt schedule is closed
 	 */
@@ -236,5 +237,17 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
-	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDate datePromisedOverride, @Nullable String poReference);
+	int updateReceiptScheduleOverrides(@NonNull UpdateReceiptScheduleOverridesRequest request);
+
+	/**
+	 * Reopen all closed receipt schedules belonging to the given order's lines,
+	 * syncing QtyOrdered and ASI from the order line in a single save.
+	 */
+	void reopenReceiptSchedulesForOrder(@NonNull I_C_Order order);
+
+	/**
+	 * Close all open receipt schedules belonging to the given order's lines.
+	 * Used on PO reactivation/void to preserve user modifications.
+	 */
+	void closeReceiptSchedulesForOrder(@NonNull I_C_Order order);
 }

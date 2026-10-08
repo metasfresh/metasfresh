@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -56,6 +57,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
+	I_C_OrderLine getOrderLineById(@NonNull OrderAndLineId orderLineId);
+
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
@@ -63,6 +66,8 @@ public interface IOrderLineBL extends ISingletonService
 	Quantity getQtyOrdered(I_C_OrderLine orderLine);
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyDelivered(OrderAndLineId orderAndLineId);
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
@@ -236,4 +241,8 @@ public interface IOrderLineBL extends ISingletonService
 	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
 
 	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
+
+	void setGrossWeightInKg(@NonNull I_C_OrderLine orderLine);
+
+	Money getLineGrossAmt(@NonNull I_C_OrderLine orderLine);
 }

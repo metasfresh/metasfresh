@@ -22,25 +22,27 @@ package de.metas.payment.sepa.api.impl;
  * #L%
  */
 
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.Query;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.Query;
-
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
-import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
-import de.metas.payment.sepa.model.I_SEPA_Export;
-import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class SEPADocumentDAO implements ISEPADocumentDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_C_BP_BankAccount retrieveSEPABankAccount(I_C_BPartner bPartner)
@@ -63,7 +65,7 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 	@Override
 	public List<I_SEPA_Export_Line> retrieveLines(@NonNull final I_SEPA_Export doc)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_SEPA_Export_Line.class)
+		return queryBL.createQueryBuilder(I_SEPA_Export_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_SEPA_Export_Line.COLUMNNAME_IsError, false)
 				.addEqualsFilter(I_SEPA_Export_Line.COLUMNNAME_SEPA_Export_ID, doc.getSEPA_Export_ID())
@@ -81,5 +83,21 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 		// Placeholder for future functionality.
 		return Collections.emptyList();
 	}
-
+	
+	@NonNull
+	public List<I_SEPA_Export_Line_Ref> retrieveLineReferences(@NonNull final I_SEPA_Export_Line line)
+	{
+		return toLineRefSqlQuery(line)
+				.list();
+	}
+	
+	@NonNull
+	private IQuery<I_SEPA_Export_Line_Ref> toLineRefSqlQuery(@NonNull final I_SEPA_Export_Line line)
+	{
+		return queryBL.createQueryBuilder(I_SEPA_Export_Line_Ref.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_SEPA_Export_Line_Ref.COLUMNNAME_SEPA_Export_Line_ID, line.getSEPA_Export_Line_ID())
+				.addEqualsFilter(I_SEPA_Export_Line_Ref.COLUMNNAME_SEPA_Export_ID, line.getSEPA_Export_ID())
+				.create();
+	}
 }

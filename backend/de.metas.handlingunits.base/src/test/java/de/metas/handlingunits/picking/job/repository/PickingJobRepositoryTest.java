@@ -9,9 +9,15 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -24,9 +30,12 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.Assertions;
@@ -36,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @ExtendWith(SnapshotExtension.class)
@@ -58,7 +68,7 @@ class PickingJobRepositoryTest
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
-		pickingJobRepository = new PickingJobRepository();
+		pickingJobRepository = PickingJobRepository.newInstanceForUnitTesting();
 		loadingSupportServices = new MockedPickingJobLoaderSupportingServices();
 
 		uomEach = BusinessTestHelper.createUomEach();
@@ -88,8 +98,7 @@ class PickingJobRepositoryTest
 				.build();
 	}
 
-	@Test
-	void createNewAndGet_then_getById()
+	private PickingJob createSampleJob()
 	{
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(11), dummyQRCode("7a71c408-e7fb-4b5d-a0b8-814896b31659"));
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(1001), dummyQRCode("f18c53be-1341-4203-b0f4-fb25fb33a5fa"));
@@ -97,7 +106,7 @@ class PickingJobRepositoryTest
 		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
 		final ShipmentScheduleAndJobScheduleId scheduleId = ShipmentScheduleAndJobScheduleId.ofRepoIds(7, -1);
 		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(3, 4);
-		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
+		return pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
 						.aggregationType(PickingJobAggregationType.SALES_ORDER)
 						.orgId(orgId)
@@ -141,11 +150,115 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
+	}
+
+	@Test
+	void createNewAndGet_then_getById()
+	{
+		final PickingJob jobCreated = createSampleJob();
 		expect.toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)
 				.usingRecursiveComparison()
 				.isEqualTo(jobCreated);
+	}
+
+	@Test
+	void carrierProductAndAdviseReadOnly_roundTrip_onHeaderAndLine()
+	{
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711);
+		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(8150);
+		final ImmutableSet<CarrierServiceId> carrierServices = ImmutableSet.of(
+				CarrierServiceId.ofRepoId(8151),
+				CarrierServiceId.ofRepoId(8152));
+
+		final PickingJob jobToSave = createSampleJob()
+				.withCarrierProductId(carrierProductId)
+				.withCarrierAdviseReadOnly(true)
+				.withChangedLines(line -> line.toBuilder()
+						.carrierProductId(carrierProductId)
+						.carrierAdviseReadOnly(true)
+						.isManual(true)
+						.carrierGoodsTypeId(carrierGoodsTypeId)
+						.carrierServices(carrierServices)
+						.build());
+		pickingJobRepository.save(jobToSave);
+
+		final PickingJob jobLoaded = pickingJobRepository.getById(jobToSave.getId(), loadingSupportServices);
+
+		Assertions.assertThat(jobLoaded.getCarrierProductId()).isEqualTo(carrierProductId);
+		Assertions.assertThat(jobLoaded.isCarrierAdviseReadOnly()).isTrue();
+
+		Assertions.assertThat(jobLoaded.getLines()).allSatisfy(line -> {
+			Assertions.assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+			Assertions.assertThat(line.isCarrierAdviseReadOnly()).isTrue();
+			Assertions.assertThat(line.isManual()).as("isManual").isTrue();
+			Assertions.assertThat(line.getCarrierGoodsTypeId()).as("carrierGoodsTypeId").isEqualTo(carrierGoodsTypeId);
+			Assertions.assertThat(line.getCarrierServices()).as("carrierServices").isEqualTo(carrierServices);
+		});
+	}
+
+	private int createPickingJobWithLine(
+			@NonNull final PickingJobDocStatus docStatus,
+			@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final I_M_Picking_Job job = InterfaceWrapperHelper.newInstance(I_M_Picking_Job.class);
+		job.setAD_Org_ID(orgId.getRepoId());
+		job.setDocStatus(docStatus.getCode());
+		job.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(job);
+
+		final I_M_Picking_Job_Line line = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
+		line.setAD_Org_ID(orgId.getRepoId());
+		line.setM_Picking_Job_ID(job.getM_Picking_Job_ID());
+		line.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		line.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(line);
+
+		return job.getM_Picking_Job_ID();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_voidedJob_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(101);
+		createPickingJobWithLine(PickingJobDocStatus.Voided, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a voided picking job must NOT count as busy")
+				.isFalse();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_completedJob_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(102);
+		createPickingJobWithLine(PickingJobDocStatus.Completed, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a completed picking job must NOT count as busy")
+				.isFalse();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_draftedJob_isBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(103);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, scheduleId);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("a drafted (in-progress) picking job must count as busy")
+				.isTrue();
+	}
+
+	@Test
+	void existsActivePickingJobLineForSchedule_noLine_isNotBusy()
+	{
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(104);
+
+		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+				.as("no picking job line for the schedule must NOT count as busy")
+				.isFalse();
 	}
 }

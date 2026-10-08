@@ -33,10 +33,12 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -54,6 +56,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -69,6 +72,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +96,8 @@ public class M_Product_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final de.metas.cucumber.stepdefs.customstariff.M_CustomsTariff_StepDefData customsTariffTable;
+	@NonNull private final C_CompensationGroup_Schema_StepDefData compensationGroupSchemaTable;
 	@NonNull private final TestContext restTestContext;
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -100,6 +106,26 @@ public class M_Product_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
+	/**
+	 * Creates (or updates, if a matching {@code Value} already exists) {@link I_M_Product} records.
+	 * <p>
+	 * Frequently used DataTable columns (full handling is in {@link #createM_Product(DataTableRow)}):
+	 * <ul>
+	 *     <li>{@code Identifier} (required) — identifier for later reference.</li>
+	 *     <li>{@code Name} / {@code Value} (optional) — auto-generated unique when omitted.</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier}, {@code OPT.C_UOM_ID.X12DE355},
+	 *         {@code OPT.M_AttributeSetInstance_ID.Identifier} — the common optional links.</li>
+	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
+	 *         {@link I_C_CompensationGroup_Schema} (created via
+	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
+	 *         compensation-group schema.</li>
+	 * </ul>
+	 * <pre>{@code
+	 * Given metasfresh contains M_Products:
+	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
+	 *   | schemaProduct | schemaProduct | compGroupSchema                            |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
@@ -295,6 +321,16 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_Description).ifPresent(productRecord::setDescription);
 
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_DepositType)
+				.ifPresent(value -> productRecord.setDepositType(nullToken2Null(value)));
+
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN)
+				.ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_UPC)
+				.ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
+				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
+
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
 					assertThat(netWeight.getX12DE355()).as("NetWeight must be in Kilograms").isEqualTo(X12DE355.KILOGRAM);
@@ -311,6 +347,10 @@ public class M_Product_StepDef
 		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_WidthInCm).ifPresent(productRecord::setWidthInCm);
 		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_HeightInCm).ifPresent(productRecord::setHeightInCm);
 
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_M_CustomsTariff_ID)
+				.map(customsTariffTable::getId)
+				.ifPresent(id -> productRecord.setM_CustomsTariff_ID(id.getRepoId()));
+
 		final boolean isSold = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSold).orElseTrue();
 		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsPurchased).orElseTrue();
 
@@ -323,6 +363,10 @@ public class M_Product_StepDef
 			final AttributeSetId attributeSetId = attributeSetTable.getId(asIdentifier);
 			productRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		}
+
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
+				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
@@ -413,11 +457,46 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
+	}
+
+	/**
+	 * Verifies M_Product fields. Only checks the columns provided in the data table.
+	 * Supported columns: M_Product_ID.Identifier (required), GTIN, UPC, EAN13_ProductCode.
+	 * The record is refreshed from DB before assertion.
+	 */
+	@Then("M_Product is verified:")
+	public void m_product_is_verified(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::verifyMProductFields);
+	}
+
+	private void verifyMProductFields(@NonNull final DataTableRow row)
+	{
+		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
+		InterfaceWrapperHelper.refresh(productRecord);
+
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN)
+				.ifPresent(expected -> assertThat(productRecord.getGTIN()).as("GTIN").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC)
+				.ifPresent(expected -> assertThat(productRecord.getUPC()).as("UPC").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
+				.ifPresent(expected -> assertThat(productRecord.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
+	}
+
+	@Nullable
+	private static String nullToken2Null(@NonNull final String value)
+	{
+		return "null".equals(value) ? null : value;
 	}
 }

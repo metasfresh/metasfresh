@@ -271,7 +271,8 @@ final class CreatePPOrderCostsCommand
 			return null;
 		}
 
-		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
+		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId)
+				.orElseThrow(() -> new AdempiereException("No product found for " + resourceId));
 
 		final UomId durationUomId = uomDAO.getUomIdByTemporalUnit(activity.getDurationUnit().getTemporalUnit());
 		return PPOrderCostCandidate.builder()

@@ -24,44 +24,22 @@ package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUWarehouseDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.InOutId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -73,16 +51,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -99,15 +72,10 @@ public class CustomerReturnsWithoutHUsProducer
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
-	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final CustomerReturnInOutRecordFactory customerReturnRepository;
@@ -235,86 +203,10 @@ public class CustomerReturnsWithoutHUsProducer
 
 	private List<I_M_HU> createHUsForReturnLine(@NonNull final I_M_InOutLine returnLine)
 	{
-		final List<I_M_HU> createdHUs;
-		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
-		if (hupiItemProductId == null || hupiItemProductId.isVirtualHU())
-		{
-			createdHUs = ImmutableList.of(createCUs(returnLine));
-		}
-		else
-		{
-			createdHUs = createLUTUs(returnLine);
-		}
-
-		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
-
-		return createdHUs;
-	}
-
-	private List<I_M_HU> createLUTUs(@NonNull final I_M_InOutLine returnLine)
-	{
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(returnLine);
-		return CustomerReturnLineHUGenerator.newInstance(contextProvider)
-				.setIHUTrxListeners(ImmutableList.of(CreateReturnedHUsTrxListener.instance))
-				.addM_InOutLine(returnLine)
-				.generate();
-	}
-
-	private I_M_HU createCUs(@NonNull final I_M_InOutLine returnLine)
-	{
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(returnLine);
-		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(contextProvider);
-		huContext.getTrxListeners().addListener(CreateReturnedHUsTrxListener.instance);
-
-		final ProductId productId = ProductId.ofRepoId(returnLine.getM_Product_ID());
-		final Quantity qtyEntered = Quantity.of(returnLine.getQtyEntered(), uomDao.getById(returnLine.getC_UOM_ID()));
-
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(
-				huContext,
-				productId,
-				qtyEntered,
-				SystemTime.asZonedDateTime(),
-				returnLine, // referencedModel,
-				true); //forceQtyAllocation
-
-		final IAllocationSource source = createAllocationSource(returnLine);
-
-		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoId(returnLine.getM_Locator_ID());
-		final I_M_HU returnCU = initializeCU(locatorId);
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(returnCU);
-
-		// Execute transfer
-		HULoader.of(source, destination)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(true)
-				.load(request);
-
-		return returnCU;
-	}
-
-	private I_M_HU initializeCU(@NonNull final LocatorId locatorId)
-	{
-		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getRecordById(HUPIItemProductId.VIRTUAL_HU);
-		final I_M_HU_PI huPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.VIRTUAL);
-
-		return huTrxBL.createHUContextProcessorExecutor()
-				.call(huContext -> handlingUnitsDAO.createHUBuilder(huContext)
-						.setM_HU_Item_Parent(null) // no parent
-						.setM_HU_PI_Item_Product(piItemProduct)
-						.setLocatorId(locatorId)
-						.setHUStatus(X_M_HU.HUSTATUS_Planning) //will change to active when completing the return
-						.create(huPI));
-	}
-
-	private IAllocationSource createAllocationSource(@NonNull final I_M_InOutLine returnLine)
-	{
-		final ProductId productId = ProductId.ofRepoId(returnLine.getM_Product_ID());
-		final I_C_UOM uom = uomDao.getById(returnLine.getC_UOM_ID());
-		final BigDecimal qty = returnLine.getQtyEntered();
-
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, uom, qty);
-
-		return new GenericAllocationSourceDestination(productStorage, returnLine);
+		return CustomerReturnHUsCreateCommand.builder()
+				.returnLine(returnLine)
+				.build()
+				.execute();
 	}
 
 	@Nullable

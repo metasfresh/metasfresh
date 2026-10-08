@@ -1,0 +1,1 @@
+Method <de.metas.material.event.MaterialEventObserver.notifyLocalAndRemoteObserver(de.metas.material.event.commons.EventDescriptor)> calls method <org.compiere.util.Env.getClientId()> in (MaterialEventObserver.java:196)

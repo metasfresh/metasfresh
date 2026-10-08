@@ -6,6 +6,12 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.movement.schedule.commands.drop_to.DDOrderDropToCommand;
+import de.metas.distribution.ddorder.movement.schedule.commands.drop_to.DDOrderDropToRequest;
+import de.metas.distribution.ddorder.movement.schedule.commands.material_in_trasit_report.MaterialInTransitReportCommand;
+import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromCommand;
+import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromRequest;
+import de.metas.distribution.ddorder.movement.schedule.commands.unpick.DDOrderUnpickCommand;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateCommand;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
@@ -24,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -59,8 +66,6 @@ public class DDOrderMoveScheduleService
 	{
 		return ddOrderMoveScheduleRepository.createScheduleToMoveBulk(requests);
 	}
-
-	public ImmutableList<DDOrderMoveSchedule> getByDDOrderId(@NonNull final DDOrderId ddOrderId) {return ddOrderMoveScheduleRepository.getByDDOrderId(ddOrderId);}
 
 	public ImmutableList<DDOrderMoveSchedule> getByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds) {return ddOrderMoveScheduleRepository.getByDDOrderLineIds(ddOrderLineIds);}
 
@@ -177,7 +182,7 @@ public class DDOrderMoveScheduleService
 				.execute();
 	}
 
-	public List<DDOrderMoveSchedule> dropTo(@NonNull final DDOrderDropToRequest request)
+	public ImmutableList<DDOrderMoveSchedule> dropTo(@NonNull final DDOrderDropToRequest request)
 	{
 		return DDOrderDropToCommand.builder()
 				.ppOrderSourceHUService(ppOrderSourceHUService)
@@ -198,4 +203,26 @@ public class DDOrderMoveScheduleService
 				.build()
 				.execute();
 	}
+
+	public Set<DDOrderId> retrieveDDOrderIdsInTransit(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleRepository.retrieveDDOrderIdsInTransit(inTransitLocatorId);
+	}
+
+	public boolean hasInTransitSchedules(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleRepository.queryInTransitSchedules(inTransitLocatorId).anyMatch();
+	}
+
+	public void printMaterialInTransitReport(
+			@NonNull final LocatorId inTransitLocatorId,
+			@NonNull final String adLanguage)
+	{
+		MaterialInTransitReportCommand.builder()
+				.adLanguage(adLanguage)
+				.inTransitLocatorId(inTransitLocatorId)
+				.build()
+				.execute();
+	}
+
 }

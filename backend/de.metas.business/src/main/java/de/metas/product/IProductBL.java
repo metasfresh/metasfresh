@@ -54,6 +54,15 @@ import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
+	/** SysConfig name that gates all IsPurchased/IsSold enforcement. Default 'N' (off). */
+	String SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS = "M_Product_EnforcePurchaseSalesFlags";
+
+	/**
+	 * Returns {@code true} when the {@value #SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS} SysConfig is set to 'Y'
+	 * for the given client/org, meaning IsPurchased/IsSold enforcement is active.
+	 */
+	boolean isPurchaseSalesEnforcementEnabled(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
 	I_M_Product getById(ProductId productId);
 
 	I_M_Product getByIdInTrx(ProductId productId);
@@ -83,6 +92,16 @@ public interface IProductBL extends ISingletonService
 	boolean isStocked(I_M_Product product);
 
 	boolean isStocked(@Nullable ProductId productId);
+
+	boolean isPurchased(@NonNull ProductId productId);
+
+	boolean isSold(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsPurchased. */
+	void assertPurchasable(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsSold. */
+	void assertSellable(@NonNull ProductId productId);
 
 	boolean isItemType(@Nullable ProductId productId);
 

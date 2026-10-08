@@ -1,0 +1,2 @@
+Method <de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository.getPredefinedStorageAttributeKeys()> calls method <org.compiere.util.Env.getAD_Client_ID(java.util.Properties)> in (AvailableToPromiseRepository.java:155)
+Method <de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository.getPredefinedStorageAttributeKeys()> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (AvailableToPromiseRepository.java:156)

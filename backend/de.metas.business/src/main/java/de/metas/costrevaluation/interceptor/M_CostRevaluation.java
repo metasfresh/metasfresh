@@ -32,7 +32,11 @@ class M_CostRevaluation
 				&& InterfaceWrapperHelper.isValueChanged(record,
 				I_M_CostRevaluation.COLUMNNAME_C_AcctSchema_ID,
 				I_M_CostRevaluation.COLUMNNAME_M_CostElement_ID,
-				I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
+				I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate,
+				// these two also define which lines get generated (the source path + the source element),
+				// so changing either once lines exist would silently desync the lines from the header
+				I_M_CostRevaluation.COLUMNNAME_RevaluationSource,
+				I_M_CostRevaluation.COLUMNNAME_CopyFrom_M_CostElement_ID)
 				&& costRevaluationService.hasActiveLines(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
 		)
 		{

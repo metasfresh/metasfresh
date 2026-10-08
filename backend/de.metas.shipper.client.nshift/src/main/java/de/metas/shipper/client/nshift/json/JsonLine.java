@@ -67,7 +67,7 @@ public class JsonLine
 	@JsonProperty("Loadmeter")
 	Integer loadmeter;
 
-	@JsonProperty("GoodsType")
+	@JsonProperty("GoodsTypeID")
 	Integer goodsTypeID;
 
 	@JsonProperty("GoodsTypeName")

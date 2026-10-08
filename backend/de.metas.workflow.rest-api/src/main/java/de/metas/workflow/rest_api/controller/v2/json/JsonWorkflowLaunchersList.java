@@ -35,7 +35,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Comparator;
+import java.util.Set;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -45,6 +45,7 @@ public class JsonWorkflowLaunchersList
 	int count;
 	@Nullable ImmutableList<JsonWorkflowLauncher> launchers;
 	@Nullable JsonPrintableScannedCode filterByQRCode;
+	Set<String> actions;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
@@ -68,12 +69,13 @@ public class JsonWorkflowLaunchersList
 		if (!countOnly)
 		{
 			final String adLanguage = jsonOpts.getAdLanguage();
-			builder.launchers(result.stream()
-					.sorted(Comparator.comparing(
-							WorkflowLauncher::getCaption,
-							WorkflowLauncherCaption.orderBy(adLanguage, result.getOrderByFields())))
-					.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
-					.collect(ImmutableList.toImmutableList()));
+			builder.launchers(
+					result.stream()
+							.sorted(WorkflowLauncher.ORDERBY_AlreadyStartedFirst
+									.thenComparing(WorkflowLauncher::getCaption, WorkflowLauncherCaption.orderBy(adLanguage, result.getOrderByFields())))
+							.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
+							.collect(ImmutableList.toImmutableList()));
+			builder.actions(result.getActions());
 		}
 
 		return builder.build();

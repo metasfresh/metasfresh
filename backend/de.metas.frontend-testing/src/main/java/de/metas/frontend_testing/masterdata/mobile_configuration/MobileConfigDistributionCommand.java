@@ -35,6 +35,7 @@ class MobileConfigDistributionCommand
 	private void updateConfigAndSave()
 	{
 		final MobileUIDistributionConfig.MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
+		newConfigBuilder.isRequireTrolley(request.getRequireTrolley() != null && request.getRequireTrolley());
 		newConfigBuilder.isRequireScanningProductCode(request.getRequireScanningProductCode() != null && request.getRequireScanningProductCode());
 		newConfigBuilder.isNavigateToJobsListAfterPickFromComplete(request.getNavigateToJobsListAfterPickFromComplete() != null && request.getNavigateToJobsListAfterPickFromComplete());
 		newConfigBuilder.isCompleteJobAutomatically(request.getCompleteJobAutomatically() != null && request.getCompleteJobAutomatically());
@@ -65,6 +66,7 @@ class MobileConfigDistributionCommand
 
 		return JsonMobileConfigResponse.Distribution.builder()
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())
+				.requireTrolley(config.isRequireTrolley())
 				.requireScanningProductCode(config.isRequireScanningProductCode())
 				.navigateToJobsListAfterPickFromComplete(config.isNavigateToJobsListAfterPickFromComplete())
 				.completeJobAutomatically(config.isCompleteJobAutomatically())

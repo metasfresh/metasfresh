@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0270_CRM
+@allure.label.feature:F00271_Karottenabrechnung_mit_Lager
+@F00271
 @ghActions:run_on_executor5
 Feature: R_Request upsert and retrieval via API
+## F00271: Request
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,6 +40,9 @@ Feature: R_Request upsert and retrieval via API
       | someUser   | 12345      | someUser |
 
   @from:cucumber
+@allure.label.epic:E0270_CRM
+@allure.label.feature:F00271_Karottenabrechnung_mit_Lager
+@F00271
   Scenario: R_Request upsert
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | REST.Context |
@@ -45,7 +52,7 @@ Feature: R_Request upsert and retrieval via API
       | ol_1       | o1         | p1           | 3          |
     And the order identified by o1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/request' and fulfills with '201' status code
 """

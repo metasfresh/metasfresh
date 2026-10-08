@@ -1,5 +1,7 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
+import lombok.NonNull;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocBaseType;
@@ -18,7 +20,7 @@ import org.compiere.model.X_C_DocType;
 public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 {
 	@Override
-	public void updateC_DocTypeInvoice(I_C_Invoice_Candidate candidate)
+	public void updateC_DocTypeInvoice(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -29,7 +31,7 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 			return;
 		}
 
-		final DocTypeId freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeId(
+		final DocTypeId freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
 				DocTypeQuery.builder()
 				.docBaseType(DocBaseType.PurchaseInvoice)
 				.docSubType(DocSubType.VendorInvoice)

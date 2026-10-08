@@ -36,6 +36,8 @@ import org.compiere.SpringContextHolder;
 
 import java.util.Map;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
+
 public class InvokeScriptedExportConversionAction extends InvokeExternalSystemProcess
 {
 	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
@@ -43,6 +45,10 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 	public static final String PARAM_Record_ID = "Record_ID";
 	@Param(parameterName = PARAM_Record_ID)
 	private String outboundDataProcessRecordId;
+
+	@Param(parameterName = PARAM_ERROR_CONTEXT)
+	private String errorContext;
+
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
@@ -66,7 +72,11 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 		final ExternalSystemScriptedExportConversionConfig externalSystemScriptedExportConversionConfig = ExternalSystemScriptedExportConversionConfig
 				.cast(externalSystemParentConfig.getChildConfig());
 
-		return externalSystemScriptedExportConversionService.getParameters(externalSystemScriptedExportConversionConfig, getProcessInfo().getCtx(), outboundDataProcessRecordId);
+		return externalSystemScriptedExportConversionService.getParameters(
+				externalSystemScriptedExportConversionConfig,
+				getProcessInfo().getCtx(),
+				outboundDataProcessRecordId,
+				errorContext);
 	}
 
 	@Override

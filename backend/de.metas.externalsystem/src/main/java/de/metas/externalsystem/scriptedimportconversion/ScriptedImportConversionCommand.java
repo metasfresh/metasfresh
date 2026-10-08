@@ -22,16 +22,47 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import de.metas.externalsystem.endpoint.TransportType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 @AllArgsConstructor
 public enum ScriptedImportConversionCommand
 {
-	// value for ad_reference=541998
+	// concrete wire commands sent to the camel scripted-adapter (matched by ExternalSystem_Service
+	// EnableCommand/DisableCommand). NOTE: these are NOT user-facing choices — see
+	// ScriptedImportConversionIntent + ofIntentAndTransport. AD_Reference 541998 offers Start/Stop.
 	EnableRestAPI("enableRestAPI"),
-	DisableRestAPI("disableRestAPI");
+	DisableRestAPI("disableRestAPI"),
+	EnableSftpPolling("enableSftpPolling"),
+	DisableSftpPolling("disableSftpPolling");
 
 	@Getter
 	private final String value;
+
+	/**
+	 * Derive the concrete command from the user's Start/Stop intent and the child's endpoint
+	 * transport. A parent config may have both REST and SFTP children, so this is resolved per child.
+	 */
+	@NonNull
+	public static ScriptedImportConversionCommand ofIntentAndTransport(
+			@NonNull final ScriptedImportConversionIntent intent,
+			@NonNull final TransportType transportType)
+	{
+		final boolean sftp = transportType == TransportType.SFTP;
+		if (intent == ScriptedImportConversionIntent.Start)
+		{
+			return sftp ? EnableSftpPolling : EnableRestAPI;
+		}
+		if (intent == ScriptedImportConversionIntent.Stop)
+		{
+			return sftp ? DisableSftpPolling : DisableRestAPI;
+		}
+		throw new AdempiereException("Unhandled ScriptedImportConversionIntent")
+				.appendParametersToMessage()
+				.setParameter("intent", intent)
+				.setParameter("transportType", transportType);
+	}
 }

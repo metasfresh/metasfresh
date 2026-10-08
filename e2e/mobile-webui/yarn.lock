@@ -3,11 +3,11 @@
 
 
 "@playwright/test@^1.50.1":
-  version "1.59.1"
-  resolved "https://registry.npmjs.org/@playwright/test/-/test-1.59.1.tgz"
-  integrity sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==
+  version "1.57.0"
+  resolved "https://registry.npmjs.org/@playwright/test/-/test-1.57.0.tgz"
+  integrity sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==
   dependencies:
-    playwright "1.59.1"
+    playwright "1.57.0"
 
 "@types/node@^22.13.1":
   version "22.13.1"
@@ -15,6 +15,11 @@
   integrity sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew==
   dependencies:
     undici-types "~6.20.0"
+
+allure-commandline@^2.32.1:
+  version "2.36.0"
+  resolved "https://registry.npmjs.org/allure-commandline/-/allure-commandline-2.36.0.tgz"
+  integrity sha512-ls/4fk2Psv2Tu2PbWFrQPmUnm3gmmO9MBan4MuPWwqdkJPEmln2KRwtvtWYr9Av+e5AnFK1fGXWVyxqJIPiPwA==
 
 allure-js-commons@3.4.3, allure-js-commons@^3.4.3:
   version "3.4.3"
@@ -59,17 +64,17 @@ md5@^2.3.0:
     crypt "0.0.2"
     is-buffer "~1.1.6"
 
-playwright-core@1.59.1:
-  version "1.59.1"
-  resolved "https://registry.npmjs.org/playwright-core/-/playwright-core-1.59.1.tgz"
-  integrity sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==
+playwright-core@1.57.0:
+  version "1.57.0"
+  resolved "https://registry.npmjs.org/playwright-core/-/playwright-core-1.57.0.tgz"
+  integrity sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==
 
-playwright@1.59.1:
-  version "1.59.1"
-  resolved "https://registry.npmjs.org/playwright/-/playwright-1.59.1.tgz"
-  integrity sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==
+playwright@1.57.0:
+  version "1.57.0"
+  resolved "https://registry.npmjs.org/playwright/-/playwright-1.57.0.tgz"
+  integrity sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw==
   dependencies:
-    playwright-core "1.59.1"
+    playwright-core "1.57.0"
   optionalDependencies:
     fsevents "2.3.2"
 

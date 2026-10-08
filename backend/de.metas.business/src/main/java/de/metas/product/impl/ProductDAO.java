@@ -484,19 +484,15 @@ public class ProductDAO implements IProductDAO
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
 	@Override
-	public ProductId getProductIdByResourceId(@NonNull final ResourceId resourceId)
+	public Optional<ProductId> getProductIdByResourceId(@NonNull final ResourceId resourceId)
 	{
-		final ProductId productId = queryBL
-				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstIdOnly(ProductId::ofRepoIdOrNull);
-		if (productId == null)
-		{
-			throw new AdempiereException("No product found for " + resourceId);
-		}
-		return productId;
+		return Optional.ofNullable(
+				queryBL
+						.createQueryBuilderOutOfTrx(I_M_Product.class)
+						.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstIdOnly(ProductId::ofRepoIdOrNull));
 	}
 
 	@Override

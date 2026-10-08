@@ -2,10 +2,13 @@ package de.metas.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -126,6 +129,11 @@ public class OrderAndLineId
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static Set<OrderId> getOrderIds(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static Set<OrderLineId> getOrderLineIds(final Collection<OrderAndLineId> orderAndLineIds)
 	{
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
@@ -155,4 +163,23 @@ public class OrderAndLineId
 		return Objects.equals(o1, o2);
 	}
 
+	@JsonValue
+	public String toJson()
+	{
+		return orderId.getRepoId() + "_" + orderLineId.getRepoId();
+	}
+
+	@JsonCreator
+	public static OrderAndLineId ofJson(@NonNull String json)
+	{
+		try
+		{
+			final int idx = json.indexOf("_");
+			return ofRepoIds(Integer.parseInt(json.substring(0, idx)), Integer.parseInt(json.substring(idx + 1)));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid JSON: " + json, ex);
+		}
+	}
 }

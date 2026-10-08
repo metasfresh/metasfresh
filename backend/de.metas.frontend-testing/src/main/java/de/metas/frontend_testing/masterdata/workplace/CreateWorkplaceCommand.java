@@ -56,6 +56,8 @@ public class CreateWorkplaceCommand
 						.pickingSlotId(request.getPickingSlot() != null
 								? context.getId(request.getPickingSlot(), PickingSlotId.class)
 								: null)
+						.isPackingPlace(request.getIsPackingPlace() == null || request.getIsPackingPlace())
+						.warnShelfLifeUndercut(Boolean.TRUE.equals(request.getWarnShelfLifeUndercut()))
 						.build()
 		);
 		context.putIdentifier(identifier, workplace.getId());

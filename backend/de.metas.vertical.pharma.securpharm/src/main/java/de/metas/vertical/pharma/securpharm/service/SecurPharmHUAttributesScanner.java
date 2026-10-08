@@ -1,16 +1,5 @@
 package de.metas.vertical.pharma.securpharm.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,6 +20,15 @@ import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.util.lang.IContextAware;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 /*
  * #%L
@@ -42,12 +40,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,7 +86,7 @@ public class SecurPharmHUAttributesScanner
 		if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SecurPharmScannedStatus)
 				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNumber)
 				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-		// !attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
+			// !attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
 		)
 		{
 			// return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
@@ -111,14 +109,14 @@ public class SecurPharmHUAttributesScanner
 
 		final SecurPharmAttributesStatus status;
 		final HuId extractedCUId;
-		
+
 		//
 		// Case: error while scanning
 		if (scannedProduct.isError())
 		{
 			status = SecurPharmAttributesStatus.ERROR;
 			extractedCUId = null;
-			
+
 			updateHUAttributes(hu, HUAttributesUpdateRequest.ERROR);
 		}
 		//
@@ -127,7 +125,7 @@ public class SecurPharmHUAttributesScanner
 		{
 			status = SecurPharmAttributesStatus.OK;
 			extractedCUId = null;
-			
+
 			updateHUAttributes(hu, HUAttributesUpdateRequest.builder()
 					.status(status)
 					.bestBeforeDate(scannedProduct.getProductDetails().getExpirationDate())
@@ -140,7 +138,7 @@ public class SecurPharmHUAttributesScanner
 		else
 		{
 			final I_M_HU cu = extractOneCU(hu);
-			
+
 			status = SecurPharmAttributesStatus.FRAUD;
 			extractedCUId = HuId.ofRepoId(cu.getM_HU_ID());
 
@@ -152,7 +150,7 @@ public class SecurPharmHUAttributesScanner
 					.serialNo(scannedProduct.getProductDetails().getSerialNumber())
 					.build());
 		}
-		
+
 		return SecurPharmHUAttributesScannerResult.builder()
 				.status(status)
 				.resultCode(scannedProduct.getResultCode())
@@ -170,7 +168,8 @@ public class SecurPharmHUAttributesScanner
 						.productId(huProductStorage.getProductId())
 						.qtyCU(huProductStorage.getQty().toOne())
 						.sourceHU(hu)
-						.build());
+						.build())
+				.getNewCUs();
 
 		final I_M_HU cu;
 		if (result.isEmpty())

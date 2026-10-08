@@ -170,6 +170,48 @@ public interface I_M_Shipment_Constraint
 	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
 
 	/**
+	 * Set Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManual (boolean IsManual);
+
+	/**
+	 * Get Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManual();
+
+	ModelColumn<I_M_Shipment_Constraint, Object> COLUMN_IsManual = new ModelColumn<>(I_M_Shipment_Constraint.class, "IsManual", null);
+	String COLUMNNAME_IsManual = "IsManual";
+
+	/**
+	 * Set Delivery Stop Reason.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryStopReason (@Nullable String DeliveryStopReason);
+
+	/**
+	 * Get Delivery Stop Reason.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getDeliveryStopReason();
+
+	ModelColumn<I_M_Shipment_Constraint, Object> COLUMN_DeliveryStopReason = new ModelColumn<>(I_M_Shipment_Constraint.class, "DeliveryStopReason", null);
+	String COLUMNNAME_DeliveryStopReason = "DeliveryStopReason";
+
+	/**
 	 * Set Gezahlt.
 	 * Der Beleg ist bezahlt
 	 *

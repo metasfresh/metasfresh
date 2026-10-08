@@ -102,6 +102,13 @@ public class M_Shipper_StepDef
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setInternalName);
 
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_ShipperGateway)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setShipperGateway);
+
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
+				.ifPresent(record::setIsApiCarrierAdvise);
+
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier()

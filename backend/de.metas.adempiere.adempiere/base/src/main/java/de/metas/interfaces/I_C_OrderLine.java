@@ -24,4 +24,8 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine
 	String COLUMNNAME_QtyLU = "QtyLU";
 	BigDecimal getQtyLU();
 	void setQtyLU(BigDecimal QtyLU);
+
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+	BigDecimal getQtyEnteredTU();
+	void setQtyEnteredTU(BigDecimal QtyEnteredTU);
 }

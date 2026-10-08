@@ -35,10 +35,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "packToSpec": {
             "genericPackingInstructionsId": 101
           },
-          "salesOrderLineId": {
-            "orderId": 300,
-            "orderLineId": 301
-          },
+          "salesOrderLineId": "300_301",
           "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
@@ -65,10 +62,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "packToSpec": {
             "genericPackingInstructionsId": 101
           },
-          "salesOrderLineId": {
-            "orderId": 300,
-            "orderLineId": 301
-          },
+          "salesOrderLineId": "300_301",
           "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
@@ -95,10 +89,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "packToSpec": {
             "genericPackingInstructionsId": 101
           },
-          "salesOrderLineId": {
-            "orderId": 300,
-            "orderLineId": 301
-          },
+          "salesOrderLineId": "300_301",
           "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
@@ -119,10 +110,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
           "packToSpec": {
             "genericPackingInstructionsId": 101
           },
-          "salesOrderLineId": {
-            "orderId": 300,
-            "orderLineId": 301
-          },
+          "salesOrderLineId": "300_301",
           "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"

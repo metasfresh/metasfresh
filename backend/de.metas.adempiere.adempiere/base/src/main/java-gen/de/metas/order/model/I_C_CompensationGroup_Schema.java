@@ -175,6 +175,29 @@ public interface I_C_CompensationGroup_Schema
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
+	 * Set Inherit Packing Instruction.
+	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInheritPackingInstruction (boolean IsInheritPackingInstruction);
+
+	/**
+	 * Get Inherit Packing Instruction.
+	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInheritPackingInstruction();
+
+	ModelColumn<I_C_CompensationGroup_Schema, Object> COLUMN_IsInheritPackingInstruction = new ModelColumn<>(I_C_CompensationGroup_Schema.class, "IsInheritPackingInstruction", null);
+	String COLUMNNAME_IsInheritPackingInstruction = "IsInheritPackingInstruction";
+
+	/**
 	 * Get Updated By.
 	 * User who updated this records
 	 *

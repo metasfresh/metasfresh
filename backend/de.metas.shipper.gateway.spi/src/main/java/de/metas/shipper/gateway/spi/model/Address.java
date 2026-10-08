@@ -54,6 +54,8 @@ public class Address
 	@SuppressWarnings("JavadocReference")
 	int bpartnerId;
 
+	@Nullable String attention;
+
 	@Builder
 	@Jacksonized
 	private Address(
@@ -67,7 +69,8 @@ public class Address
 			@NonNull final String zipCode,
 			@NonNull final String city,
 			//
-			final int bpartnerId)
+			final int bpartnerId,
+			@Nullable final String attention)
 	{
 		Check.assumeNotEmpty(companyName1, "companyName1 is not empty");
 		Check.assumeNotEmpty(street1, "street1 is not empty");
@@ -86,5 +89,6 @@ public class Address
 		this.city = city;
 
 		this.bpartnerId = bpartnerId;
+		this.attention = attention;
 	}
 }

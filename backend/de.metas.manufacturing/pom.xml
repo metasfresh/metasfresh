@@ -10,10 +10,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
 	<groupId>de.metas.manufacturing</groupId>
 	<artifactId>de.metas.manufacturing</artifactId>
 	<packaging>jar</packaging>

@@ -112,7 +112,9 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
-		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateAcctParam(IC_DATE_ACCT)
+				.build();
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
 			engine.addInvoiceCandidate(ic);

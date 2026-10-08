@@ -1,7 +1,11 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ignore
 @ghActions:run_on_executor5
 Feature: Handling unit export from purchase order
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running

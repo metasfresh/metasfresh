@@ -15,7 +15,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <migration-sql-basedir/>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
@@ -49,6 +48,13 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 

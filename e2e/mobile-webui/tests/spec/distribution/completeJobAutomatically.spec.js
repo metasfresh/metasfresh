@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
+import { allure } from 'allure-playwright';
 
 const createMasterdata = async ({ qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -39,6 +40,13 @@ const createMasterdata = async ({ qtyToMove }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Auto-complete distribution job');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);

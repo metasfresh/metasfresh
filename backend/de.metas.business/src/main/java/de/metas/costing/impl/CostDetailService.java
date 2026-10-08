@@ -1,8 +1,10 @@
 package de.metas.costing.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.costing.CostDetailCreateRequest;
@@ -10,6 +12,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostSegmentAndElement.CostSegmentAndElementBuilder;
@@ -24,12 +27,14 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -118,6 +123,15 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return costDetailsRepo.retrieveProductIdsWithCostRevaluationSeed(acctSchemaId, costElementId, productIds);
+	}
+
+	@Override
 	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
 		return costDetailsRepo.list(CostDetailQuery.builder()
@@ -128,6 +142,23 @@ public class CostDetailService implements ICostDetailService
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
+	}
+
+	@Override
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetails.stream()
+				.map(this::toAggregatedCostAmount)
+				.reduce(AggregatedCostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No cost details"));
+	}
+
+	private AggregatedCostAmount toAggregatedCostAmount(final CostDetail costDetail)
+	{
+		return AggregatedCostAmount.builder()
+				.costSegment(extractCostSegment(costDetail))
+				.amount(costElementRepo.getById(costDetail.getCostElementId()), costDetail.getAmtAndQtyDetailed().getAmt())
+				.build();
 	}
 
 	@Override
@@ -246,6 +277,12 @@ public class CostDetailService implements ICostDetailService
 	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.stream(query);
+	}
+
+	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.hasCostDetails(query);
 	}
 
 	@Override

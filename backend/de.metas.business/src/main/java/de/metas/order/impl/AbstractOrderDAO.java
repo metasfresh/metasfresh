@@ -161,19 +161,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Collection<OrderAndLineId> orderAndLineIds)
+	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Set<OrderLineId> orderLineIds)
 	{
-		if (orderAndLineIds.isEmpty())
+		if (orderLineIds.isEmpty())
 		{
 			return ImmutableListMultimap.of();
 		}
-		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(Collectors.toSet()), I_C_Order.class)
+		final List<I_C_OrderLine> orderLines = loadByRepoIdAwares(orderLineIds, I_C_OrderLine.class);
+		final Set<OrderId> orderIds = orderLines.stream()
+				.map(orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID())).collect(Collectors.toSet());
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(o -> OrderId.ofRepoId(o.getC_Order_ID()), Function.identity()));
 
-		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
+		return orderLines
 				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(orderLineRecord -> orderIdToOrderMap.get(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())), Function.identity()));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(ol -> orderIdToOrderMap.get(OrderId.ofRepoId(ol.getC_Order_ID())), Function.identity()));
 	}
 
 	@Override
@@ -545,7 +548,30 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(I_C_Order.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	public List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.iterateAndStreamIds(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 import { ErrorToast } from "../../dialogs/ErrorToast";
 
 const NAME = 'GetQuantityDialog';
@@ -14,7 +15,7 @@ export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
@@ -32,6 +33,86 @@ export const GetQuantityDialog = {
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').fill(`${qty}`);
+    }),
+
+    expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+    }),
+
+    expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
+        await expect(page.getByTestId('lotNo')).not.toBeVisible();
+    }),
+
+    expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
+    }),
+
+    expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
+        await expect(page.getByTestId('serialNo-scan-button')).toBeVisible();
+    }),
+
+    expectSerialNoNotVisible: async () => await test.step(`${NAME} - Expect SerialNo controls not visible`, async () => {
+        await expect(page.getByTestId('serialNo-scan-button')).not.toBeVisible();
+        await expect(page.getByTestId('serialNo-scan-again-button')).not.toBeVisible();
+        await expect(page.getByTestId('serialNo-count')).not.toBeVisible();
+    }),
+
+    // "X of N scanned" progress text in the qty dialog's serial row.
+    expectSerialNoCount: async ({ scanned, total }) => await test.step(`${NAME} - Expect SerialNo count '${scanned} of ${total}'`, async () => {
+        await expect(page.getByTestId('serialNo-count')).toContainText(`${scanned} of ${total}`, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectSerialNoChipCount: async (expectedCount) => await test.step(`${NAME} - Expect ${expectedCount} SerialNo chip(s)`, async () => {
+        await expect(page.getByTestId('serialNo-chip')).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Opens the live multi-scan sub-view, scans each serial (asserting the chip count rises between
+    // scans so the keyboard hook flushes each barcode), then taps Done to return to the qty dialog.
+    scanSerialNos: async (serialNos) => await test.step(`${NAME} - Scan ${serialNos.length} SerialNo(s)`, async () => {
+        const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
+            && await page.getByTestId('serialNo-scan-again-button').isVisible();
+        await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
+        // Wait for the scan sub-view to mount (keyboard hook active) before dispatching keystrokes.
+        await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const before = await page.getByTestId('serialNo-chip').count();
+        for (let i = 0; i < serialNos.length; i++) {
+            await BarcodeScannerComponent.type({ scannedCode: serialNos[i] });
+            // assertion between scans → lets the interval flush process each barcode (avoids concat)
+            await expect(page.getByTestId('serialNo-chip')).toHaveCount(before + i + 1, { timeout: SLOW_ACTION_TIMEOUT });
+        }
+        await page.getByTestId('serialNo-scan-done-button').tap();
+    }),
+
+    // Scans a serial that is already present; asserts the chip count does NOT change (silent dedup).
+    scanDuplicateSerialNo: async (serialNo) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
+        const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
+            && await page.getByTestId('serialNo-scan-again-button').isVisible();
+        await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
+        await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const before = await page.getByTestId('serialNo-chip').count();
+        await BarcodeScannerComponent.type({ scannedCode: serialNo });
+        // give the hook time to flush, then assert the count is unchanged (dedup)
+        await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
+        await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+        await page.getByTestId('serialNo-scan-done-button').tap();
+    }),
+
+    typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
+        const field = page.getByTestId('lotNo');
+        await clickAndType(field, lotNo);
+    }),
+
+    typeBestBeforeDate: async (bestBeforeDate) => await test.step(`${NAME} - Type BestBeforeDate '${bestBeforeDate}'`, async () => {
+        // The Best-Before field is a DateInput. With the default config
+        // (mobileui.frontend.dateInput.isUseNativeComponent=N) it renders as a text input
+        // expecting the DD.MM.YYYY display format; fill() sets the whole value in one event.
+        const field = page.getByTestId('bestBeforeDate');
+        await field.tap();
+        await field.fill(bestBeforeDate);
     }),
 
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
@@ -67,6 +148,18 @@ export const GetQuantityDialog = {
     expectQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Expect qty not found reason '${reason}'`, async () => {
         const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
         await expect(radioButton).toBeChecked();
+    }),
+
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
     expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
@@ -112,6 +205,28 @@ export const GetQuantityDialog = {
             },
             ({ textContent }) => expect(textContent).toContain(expectedError)
         );
+    }),
+
+    clickDoneAndCloseTarget: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK und LU schließen`, async () => {
+        const doneAndCloseButton = page.getByTestId('confirmDoneAndCloseTarget-button');
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await doneAndCloseButton.tap();
+                await GetQuantityDialog.expectComponentsDisabled();
+                await GetQuantityDialog.waitToClose();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+    }),
+
+    // Taps OK/Done but does NOT wait for the dialog to close. Used when pressing Done is
+    // expected to surface a follow-up dialog on top (e.g. the shelf-life RLZ confirmation),
+    // which keeps this qty dialog open until that follow-up is resolved.
+    clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
+        await page.getByTestId('done-button').tap();
     }),
 
     /**
@@ -166,7 +281,7 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor(); // atm that's the only indicator that we switched to manual input
+        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
@@ -178,7 +293,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -191,6 +306,12 @@ export const GetQuantityDialog = {
         }
         if (qtyEntered != null) {
             await GetQuantityDialog.typeQtyEntered(qtyEntered);
+        }
+        if (lotNo != null) {
+            await GetQuantityDialog.typeLotNo(lotNo);
+        }
+        if (bestBeforeDate != null) {
+            await GetQuantityDialog.typeBestBeforeDate(bestBeforeDate);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);
@@ -210,7 +331,15 @@ export const GetQuantityDialog = {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
 
-        await GetQuantityDialog.clickDone({ expectedError });
+        // Capture mode only (UAT_CAPTURE): hold the filled dialog on the recorder for a few frames
+        // so the entered values are captured before OK closes it. No-op / full speed otherwise.
+        await holdForCaptureIfEnabled();
+
+        if (closeTarget) {
+            await GetQuantityDialog.clickDoneAndCloseTarget({ expectedError });
+        } else {
+            await GetQuantityDialog.clickDone({ expectedError });
+        }
     }),
 };
 

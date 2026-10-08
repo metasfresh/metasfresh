@@ -1,30 +1,7 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_ScriptedImportConversion
  *  @author metasfresh (generated) 
@@ -74,7 +51,8 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set User Import.
+	 * Set Import User.
+	 * The metasfresh user whose WebUI API access token authorises the order candidates created by this import. This user needs a valid WebUI auth token.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -83,7 +61,8 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	void setAD_User_Import_ID (int AD_User_Import_ID);
 
 	/**
-	 * Get User Import.
+	 * Get Import User.
+	 * The metasfresh user whose WebUI API access token authorises the order candidates created by this import. This user needs a valid WebUI auth token.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -125,7 +104,7 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -134,31 +113,10 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Endpoint Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEndpointName (String EndpointName);
-
-	/**
-	 * Get Endpoint Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getEndpointName();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_EndpointName = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "EndpointName", null);
-	String COLUMNNAME_EndpointName = "EndpointName";
 
 	/**
 	 * Set External System Config.
@@ -178,11 +136,11 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 */
 	int getExternalSystem_Config_ID();
 
-	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ExternalSystem_Config_ID", I_ExternalSystem_Config.class);
+	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set ExternalSystem_Config_ScriptedImportConversion.
+	 * Set Scripted Import Conversion.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -191,7 +149,7 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	void setExternalSystem_Config_ScriptedImportConversion_ID (int ExternalSystem_Config_ScriptedImportConversion_ID);
 
 	/**
-	 * Get ExternalSystem_Config_ScriptedImportConversion.
+	 * Get Scripted Import Conversion.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -203,13 +161,34 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	String COLUMNNAME_ExternalSystem_Config_ScriptedImportConversion_ID = "ExternalSystem_Config_ScriptedImportConversion_ID";
 
 	/**
+	 * Set ExternalSystem Endpoint.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
+
+	/**
+	 * Get ExternalSystem Endpoint.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Endpoint_ID();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, de.metas.externalsystem.model.I_ExternalSystem_Endpoint> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ExternalSystem_Endpoint_ID", de.metas.externalsystem.model.I_ExternalSystem_Endpoint.class);
+	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
+
+	/**
 	 * Set Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (String ExternalSystemValue);
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
 
 	/**
 	 * Get Value.
@@ -218,7 +197,7 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getExternalSystemValue();
+	java.lang.String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
@@ -254,7 +233,7 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setScriptIdentifier (String ScriptIdentifier);
+	void setScriptIdentifier (java.lang.String ScriptIdentifier);
 
 	/**
 	 * Get Script Identifier.
@@ -264,7 +243,7 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getScriptIdentifier();
+	java.lang.String getScriptIdentifier();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_ScriptIdentifier = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ScriptIdentifier", null);
 	String COLUMNNAME_ScriptIdentifier = "ScriptIdentifier";

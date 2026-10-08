@@ -91,7 +91,7 @@ junit and cucumber test results will be accumulated under: https://metasfresh.te
 in addition to that, a database image with the post cucumber run state is available for every cucumber run as:<br>
 `metasfresh/metas-db:<tag>-postcucumber`<br>
 <br>
-which can be run like this: ```docker run -it --rm -p 15432:5432 metasfresh/metas-db:<tag>-postcucumber```
+which can be run like this: ```docker run -it --rm -p 14432:5432 metasfresh/metas-db:<tag>-postcucumber```
 
 ### local
 
@@ -108,8 +108,8 @@ execute ```stop.cmd``` to clean up running and/or stopped containers<br>
 <br>
 cucumber results get stored under __docker-builds/cucumber/cucumber_<br>
 in addition to that, a database image with the post cucumber run state is available as: `metasfresh/metas-db:local-postcucumber`<br>
-which can be run like this: ```docker run -it --rm -p 15432:5432 metasfresh/metas-db:local-postcucumber```
-to be accessed under *localhost:15432*<br>
+which can be run like this: ```docker run -it --rm -p 14432:5432 metasfresh/metas-db:local-postcucumber```
+to be accessed under *localhost:14432*<br>
 alternatively the local docker compose run can be adjusted by switching the *dbqualifier* in _docker-builds/compose/.env_ to *postcucumber*<br>
 to run with a database in post cucumber state<br>
 <br>
@@ -125,3 +125,5 @@ this can be adjusted by modifying the *cucumber.command* section in _docker-buil
 to run cypress tests, go to *\docker-builds\e2e* and execute ```run.cmd```<br>
 should take about 120 minutes localy<br>
 cypress tests are currently not run on github actions<br>
+
+<!-- TEST: Private version chain validation - safe to remove after testing -->

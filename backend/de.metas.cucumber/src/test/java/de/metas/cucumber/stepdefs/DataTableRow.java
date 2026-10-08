@@ -324,8 +324,42 @@ public class DataTableRow
 						.setParameter("row", map));
 	}
 
+	@Nullable
+	public StepDefDataIdentifier getAsIdentifierOrNull(@NonNull final String columnName)
+	{
+		return getAsOptionalIdentifier(columnName)
+				.orElse(null);
+	}
+
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(StepDefDataIdentifier.ofString(string));
+	}
+
+	@NonNull
+	public ImmutableList<StepDefDataIdentifier> getAsIdentifierList(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return ImmutableList.of();
+		}
+		return StepDefUtil.extractIdentifiers(string);
+	}
+
+	/**
+	 * Not to be used directly, but extracts the common logic identifier lookup
+	 */
+	private String getAsOptionalIdentifierString(final @NonNull String columnName)
 	{
 		String string = null;
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
@@ -349,13 +383,7 @@ public class DataTableRow
 		{
 			string = map.get(columnName);
 		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		return string;
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)

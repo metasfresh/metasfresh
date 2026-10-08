@@ -28,12 +28,15 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
+@Jacksonized
 public class JsonWFProcessHeaderProperty
 {
+	String id;
 	String caption;
 	String value;
 
@@ -43,6 +46,7 @@ public class JsonWFProcessHeaderProperty
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 		return builder()
+				.id(entry.getId())
 				.caption(entry.getCaption().translate(adLanguage))
 				.value(entry.getValue().translate(adLanguage))
 				.build();

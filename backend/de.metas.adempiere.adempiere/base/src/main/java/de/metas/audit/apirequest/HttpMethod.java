@@ -22,6 +22,8 @@
 
 package de.metas.audit.apirequest;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -41,6 +43,14 @@ import static org.compiere.model.X_API_Audit_Config.METHOD_POST;
 import static org.compiere.model.X_API_Audit_Config.METHOD_PUT;
 import static org.compiere.model.X_API_Audit_Config.METHOD_TRACE;
 
+/**
+ * HTTP method enum for API audit and external system configurations.
+ * <p>
+ * IMPORTANT: This enum must stay in sync with org.apache.camel.http.common.HttpMethods
+ * to ensure compatibility with Camel-based external system integrations.
+ * The enum values (GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, TRACE, CONNECT)
+ * map 1:1 to Camel's HttpMethods enum via HttpMethods.valueOf(httpMethod.getCode()).
+ */
 @AllArgsConstructor
 @Getter
 public enum HttpMethod implements ReferenceListAwareEnum
@@ -56,10 +66,12 @@ public enum HttpMethod implements ReferenceListAwareEnum
 	CONNECT(METHOD_CONNECT),
 	;
 
+	@JsonValue
 	private final String code;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<HttpMethod> index = ReferenceListAwareEnums.index(values());
 
+	@JsonCreator
 	@NonNull
 	public static HttpMethod ofCode(@NonNull final String code) {return index.ofCode(code);}
 

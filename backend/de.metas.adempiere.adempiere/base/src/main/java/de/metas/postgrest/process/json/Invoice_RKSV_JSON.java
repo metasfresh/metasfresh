@@ -24,6 +24,10 @@ package de.metas.postgrest.process.json;
 
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 
+/**
+ * @deprecated shall be removed in favor of dedicated AD_Process.Fields
+ */
+@Deprecated
 public class Invoice_RKSV_JSON extends PostgRESTProcessExecutor
 {
 	@Override

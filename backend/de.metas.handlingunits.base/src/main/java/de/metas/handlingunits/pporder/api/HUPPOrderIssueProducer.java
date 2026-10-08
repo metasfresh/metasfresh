@@ -214,8 +214,28 @@ public class HUPPOrderIssueProducer
 	{
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
-				.filter(line -> BOMComponentType.ofNullableCodeOrComponent(line.getComponentType()).isIssue())
+				.filter(this::isEligibleForIssuing)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isEligibleForIssuing(I_PP_Order_BOMLine bomLine)
+	{
+		if (!BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
+		{
+			return false;
+		}
+
+		if (failIfIssueOnlyForReceived)
+		{
+			final BOMComponentIssueMethod issueMethod = extractIssueMethod(bomLine);
+			//noinspection RedundantIfStatement
+			if (issueMethod.isIssueOnlyForReceived())
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

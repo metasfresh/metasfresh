@@ -36,7 +36,10 @@ import java.util.List;
  */
 
 /**
- * Aggregates {@link PurchaseOrderItem}s and creates completed purchase orders ({@link I_C_Order}).
+ * Aggregates {@link PurchaseOrderItem}s and creates purchase orders ({@link I_C_Order}).
+ * Whether the order is completed (DocStatus=CO) or left as a draft (DocStatus=DR)
+ * is controlled by the {@code isCompleteDoc} flag set at construction time via
+ * {@link #newInstance(DocTypeId, boolean)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -53,8 +56,14 @@ public class PurchaseOrderFromItemsAggregator
 		return new PurchaseOrderFromItemsAggregator(docType);
 	}
 
+	public static PurchaseOrderFromItemsAggregator newInstance(@Nullable final DocTypeId docType, final boolean isCompleteDoc)
+	{
+		return new PurchaseOrderFromItemsAggregator(docType, isCompleteDoc);
+	}
+
 	private final OrderUserNotifications userNotifications = OrderUserNotifications.newInstance();
 	private final DocTypeId docType;
+	private final boolean isCompleteDoc;
 
 	private final List<I_C_Order> createdPurchaseOrders = new ArrayList<>();
 
@@ -67,8 +76,15 @@ public class PurchaseOrderFromItemsAggregator
 	@VisibleForTesting
 	PurchaseOrderFromItemsAggregator(@Nullable final DocTypeId docType)
 	{
+		this(docType, true);
+	}
+
+	@VisibleForTesting
+	PurchaseOrderFromItemsAggregator(@Nullable final DocTypeId docType, final boolean isCompleteDoc)
+	{
 		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseOrderItem);
 		this.docType = docType;
+		this.isCompleteDoc = isCompleteDoc;
 	}
 
 	@Override
@@ -88,7 +104,7 @@ public class PurchaseOrderFromItemsAggregator
 	@Override
 	protected void closeGroup(@NonNull final PurchaseOrderFromItemFactory orderFactory)
 	{
-		final I_C_Order newPurchaseOrder = orderFactory.createAndComplete();
+		final I_C_Order newPurchaseOrder = orderFactory.create(isCompleteDoc);
 		createdPurchaseOrders.add(newPurchaseOrder);
 	}
 

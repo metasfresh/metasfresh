@@ -57,6 +57,11 @@ public class AllocationBL implements IAllocationBL
 	@Nullable
 	public I_C_AllocationHdr autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
+		if (!invoice.isFinancial())
+		{
+			return null;
+		}
+
 		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice))
 		{
 			return null;
@@ -172,9 +177,14 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	public void autoAllocateSpecificPayment(@NonNull final org.compiere.model.I_C_Invoice invoice,
-											@NonNull final I_C_Payment payment,
-											final boolean ignoreIsAutoAllocateAvailableAmt)
+	                                        @NonNull final I_C_Payment payment,
+	                                        final boolean ignoreIsAutoAllocateAvailableAmt)
 	{
+		if (!invoice.isFinancial())
+		{
+			return;
+		}
+
 		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice)
 				|| payment.getC_BPartner_ID() != invoice.getC_BPartner_ID())
 		{
@@ -276,8 +286,8 @@ public class AllocationBL implements IAllocationBL
 	{
 		final org.compiere.model.I_C_Invoice invoice = request.getInvoice();
 
-		Timestamp dateTrx;
-		Timestamp dateAcct;
+		final Timestamp dateTrx;
+		final Timestamp dateAcct;
 		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
@@ -328,4 +338,11 @@ public class AllocationBL implements IAllocationBL
 		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
 		return PaymentId.optionalOfRepoId(line.getC_Payment_ID());
 	}
+
+	@Override
+	public boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
+		return allocationDAO.hasActiveAllocationBetween(invoiceId, paymentId);
+	}
+
 }

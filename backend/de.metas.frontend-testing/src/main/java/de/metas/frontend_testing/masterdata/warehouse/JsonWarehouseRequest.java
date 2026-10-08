@@ -19,6 +19,16 @@ public class JsonWarehouseRequest
 	@Nullable Map<String, Locator> locators;
 
 	/**
+	 * Optional identifier of an {@code M_Warehouse_PickingGroup} this warehouse belongs to.
+	 * All warehouses in the same masterdata request that name the same {@code pickingGroup} value are
+	 * assigned to a single, shared {@code M_Warehouse_PickingGroup} (created once, looked up afterwards).
+	 * <p>
+	 * Warehouses sharing a picking group are treated as one picking scope: a picker working at a workplace in
+	 * one warehouse of the group may pick demand and stock located in any warehouse of the same group.
+	 */
+	@Nullable String pickingGroup;
+
+	/**
 	 * Packing material emptied/issued in THIS warehouse is moved to {@link Empties#getToWarehouse()}: adds a line
 	 * (this warehouse -> {@code toWarehouse}, {@link Empties#getShipper()}) to the client's single empties
 	 * distribution network ({@code DD_NetworkDistribution.IsHUDestroyed}), creating that network if the client has
@@ -50,5 +60,7 @@ public class JsonWarehouseRequest
 		@Nullable String y;
 		@Nullable String z;
 		@Nullable String x1;
+		@Nullable Integer priorityNo;
+		@Nullable Boolean isGroundLocator;
 	}
 }

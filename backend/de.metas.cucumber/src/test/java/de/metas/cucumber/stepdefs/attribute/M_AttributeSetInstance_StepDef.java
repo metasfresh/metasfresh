@@ -39,6 +39,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -137,5 +138,30 @@ public class M_AttributeSetInstance_StepDef
 	private AttributeSetInstanceId getAttributeSetInstanceId(final DataTableRow row)
 	{
 		return attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID));
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts column values of an M_AttributeSetInstance (currently its Description).
+	 * @cucumber.columns
+	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI to validate.<br>
+	 *   <b>Description</b> &mdash; (optional) expected M_AttributeSetInstance.Description.<br>
+	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate M_AttributeSetInstance:
+	 *   | M_AttributeSetInstance_ID | Description |
+	 *   | asi_1                     | M_5         |
+	 * </pre>
+	 */
+	@And("validate M_AttributeSetInstance:")
+	public void validate_M_AttributeSetInstance(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final I_M_AttributeSetInstance asi = attributeSetInstanceTable.get(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID));
+			InterfaceWrapperHelper.refresh(asi);
+
+			row.getAsOptionalString(I_M_AttributeSetInstance.COLUMNNAME_Description)
+					.ifPresent(expectedDescription -> assertThat(asi.getDescription()).as("M_AttributeSetInstance Description").isEqualTo(expectedDescription));
+		});
 	}
 }

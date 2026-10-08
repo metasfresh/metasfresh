@@ -1,0 +1,54 @@
+# Unit tests for the Allure feature/spec permalink tooling.
+#
+# The generator (generate_permalinks.py) and the resolver (permalink.js) carry
+# real logic — tree-walking Allure behaviors/suites JSON and building redirect
+# URLs. These tests are their regression gate. They run ONLY when the permalink
+# tooling changes, so they cost a runner only when relevant (they are not part
+# of the heavy cicd pipeline / Merge Gate).
+#
+# Tooling + tests live in: .github/test-report-permalinks/
+
+name: test-report-permalinks-tests
+
+on:
+  push:
+    paths:
+      - ".github/test-report-permalinks/**"
+      - ".github/workflows/test-report-permalinks-tests.yml"
+  pull_request:
+    paths:
+      - ".github/test-report-permalinks/**"
+      - ".github/workflows/test-report-permalinks-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read # actions/checkout
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Only run in the canonical repo — if this file is propagated to a customer
+    # repo, its push/PR triggers stay inert rather than burning a runner.
+    if: ${{ github.repository == 'metasfresh/metasfresh' }}
+    defaults:
+      run:
+        working-directory: .github/test-report-permalinks
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run generator tests (pytest)
+        run: python -m pytest tests/test_generate_permalinks.py -q
+
+      - name: Run resolver tests (node)
+        run: node tests/permalink.test.js

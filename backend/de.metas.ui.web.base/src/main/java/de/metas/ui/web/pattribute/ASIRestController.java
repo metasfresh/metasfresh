@@ -11,6 +11,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -133,7 +134,7 @@ public class ASIRestController
 		{
 			return documentsCollection.forDocumentReadonly(
 					source.toSingleDocumentPath(),
-					contextDocument -> createWebuiASIEditingInfoForSingleDocument(contextDocument, attributeSetInstanceId));
+					contextDocument -> createWebuiASIEditingInfoForSingleDocument(contextDocument, source.getFieldName(), attributeSetInstanceId));
 		}
 		else if (source.isView())
 		{
@@ -151,14 +152,19 @@ public class ASIRestController
 
 	private static WebuiASIEditingInfo createWebuiASIEditingInfoForSingleDocument(
 			final Document contextDocument,
+			final String callerColumnName,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(contextDocument.asEvaluatee().get_ValueAsInt("M_Product_ID", -1));
-		final SOTrx soTrx = SOTrx.ofBoolean(contextDocument.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true));
-
-		final String callerTableName = contextDocument.getEntityDescriptor().getTableNameOrNull();
-		final int callerColumnId = -1; // FIXME implement
-		final ASIEditingInfo info = ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, soTrx);
+		final SOTrx soTrx = SOTrx.ofBoolean(contextDocument.asEvaluatee().get_ValueAsBoolean(WindowConstants.FIELDNAME_IsSOTrx, null));
+		
+		final ASIEditingInfo info = ASIEditingInfo.builder()
+				.productId(ProductId.ofRepoIdOrNull(contextDocument.asEvaluatee().get_ValueAsInt("M_Product_ID", -1)))
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.callerTableName(contextDocument.getEntityDescriptor().getTableNameOrNull())
+				.callerColumnName(callerColumnName)
+				.callerColumnId(null) // FIXME implement
+				.soTrx(soTrx != null ? soTrx : SOTrx.SALES)
+				.build();
 
 		return WebuiASIEditingInfo.builder(info)
 				.contextDocumentPath(contextDocument.getDocumentPath())

@@ -43,6 +43,9 @@ import java.util.Set;
 
 /**
  * Repository that deals with {@link I_Carrier_Service} records assigned via {@link I_Carrier_ShipmentOrder_Service}.
+ * <p>
+ * Repository Tables: Carrier_Service, Carrier_ShipmentOrder_Service
+ * Repository Cluster: CarrierShipmentOrderServiceRepository
  */
 @Repository
 public class CarrierShipmentOrderServiceRepository

@@ -1,9 +1,11 @@
 package de.metas.costing.methods;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
@@ -166,6 +168,11 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
+	}
+
 	public CostDetail getSingleCostDetail(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsService.firstOnly(query)
@@ -179,21 +186,22 @@ public class CostingMethodHandlerUtils
 				.collect(Collectors.toList());
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(request);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetail costDetail)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetail costDetail)
 	{
 		final CostSegmentAndElement costSegmentAndElement = costDetailsService.extractCostSegmentAndElement(costDetail);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
+	/** Returns the {@link CurrentCost} row for the given segment, acquiring a {@code SELECT ... FOR NO KEY UPDATE} row lock held until transaction end. */
+	public final CurrentCost getCurrentCostForUpdate(final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	public final void saveCurrentCost(final CurrentCost currentCost)
@@ -256,4 +264,10 @@ public class CostingMethodHandlerUtils
 						request.getClientId(),
 						request.getOrgId()));
 	}
+
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetailsService.toAggregatedCostAmount(costDetails);
+	}
+
 }

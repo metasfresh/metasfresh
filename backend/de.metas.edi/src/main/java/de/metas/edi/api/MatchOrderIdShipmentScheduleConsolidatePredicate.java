@@ -22,6 +22,7 @@
 
 package de.metas.edi.api;
 
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllowConsolidatePredicate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -45,7 +46,7 @@ public class MatchOrderIdShipmentScheduleConsolidatePredicate implements IShipme
 	private static final Logger logger = LogManager.getLogger(MatchOrderIdShipmentScheduleConsolidatePredicate.class);
 
 	@NonNull
-	private final IDesadvBL desadvBL;
+	private final DesadvBL desadvBL;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 

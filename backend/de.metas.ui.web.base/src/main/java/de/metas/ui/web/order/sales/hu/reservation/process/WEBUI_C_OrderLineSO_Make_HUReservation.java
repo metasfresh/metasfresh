@@ -1,14 +1,9 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import java.math.BigDecimal;
-
-import de.metas.handlingunits.reservation.HUReservationDocRef;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
@@ -27,6 +22,10 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -50,16 +49,14 @@ import lombok.NonNull;
  * #L%
  */
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class WEBUI_C_OrderLineSO_Make_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Autowired
-	private HUReservationService huReservationService;
-
-	@Autowired
-	private SalesOrderLineRepository salesOrderLineRepository;
-
+	@Autowired private HUReservationService huReservationService;
+	@Autowired private SalesOrderLineRepository salesOrderLineRepository;
+	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
@@ -69,13 +66,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-				.orElse(null);
-		if (salesOrderLine == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
-		}
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ProductId productId = salesOrderLine.getProductId();
 		final Quantity reservableQty = retrieveReservableQuantity(productId);
 		if (reservableQty.signum() <= 0)
@@ -91,7 +82,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	{
 		if (PARAMNAME_QTY_TO_RESERVE.equals(parameter.getColumnName()))
 		{
-			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
+			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 			final ProductId productId = salesOrderLine.getProductId();
 
 			final Quantity orderedQty = salesOrderLine.getOrderedQty();
@@ -132,8 +123,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	@Override
 	protected String doIt()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
 		if (selectedHuIds.isEmpty())
@@ -151,6 +141,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 				.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
 				.build();
 		huReservationService.makeReservation(reservationRequest);
+		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
 
 		return MSG_OK;
 	}

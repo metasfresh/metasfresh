@@ -887,6 +887,18 @@ public class CandidateRepositoryWriteService
 
 	private void deleteTransactionDetailsRecords(@NonNull final CandidateId candidateId)
 	{
+		// Before deleting the rows owned by this candidate, clear any
+		// MD_Candidate_RebookedFrom_ID references that OTHER detail rows hold
+		// on it. The constraint MDCandidateRebookedFrom_MDCandidateTransactionDetail
+		// is DEFERRABLE INITIALLY DEFERRED, so the FK violation surfaces at
+		// commit time when the rebooked-from candidate gets removed.
+		queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_RebookedFrom_ID, candidateId.getRepoId())
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_MD_Candidate_Transaction_Detail.COLUMNNAME_MD_Candidate_RebookedFrom_ID, null)
+				.execute();
+
 		queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
 				.create()

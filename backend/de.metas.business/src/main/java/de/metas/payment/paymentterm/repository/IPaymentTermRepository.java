@@ -22,16 +22,23 @@
 
 package de.metas.payment.paymentterm.repository;
 
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.impl.PaymentTermLoaderAndSaver;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
+/**
+ * Repository Tables: C_PaymentTerm, C_PaymentTerm_Break, C_PaySchedule
+ * Repository Cluster: PaymentTermRepository
+ */
 public interface IPaymentTermRepository extends ISingletonService
 {
 	@NonNull
@@ -45,6 +52,14 @@ public interface IPaymentTermRepository extends ISingletonService
 	Optional<PaymentTermId> getDefaultPaymentTermId();
 
 	/**
+	 * Returns the "Immediate" payment term for the given client + org: an active, non-installment
+	 * payment term with {@code NetDays=0}. Org-specific terms are preferred over the
+	 * {@link OrgId#ANY} fallback; ties are broken by {@code IsDefault DESC}.
+	 */
+	@NonNull
+	Optional<PaymentTermId> getImmediatePaymentTermId(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
+	/**
 	 * Convenience method that thorws an exception if no term is found.
 	 */
 	@NonNull
@@ -56,4 +71,13 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermId getOrCreateDerivedPaymentTerm(
 			@Nullable PaymentTermId basePaymentTermId,
 			@Nullable Percent discount);
+
+	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
+
+	/**
+	 * Returns the IDs of all active payment terms whose {@code IsAllowOverrideDueDate} flag matches
+	 * the given value. An empty set means no terms match, not "all terms".
+	 */
+	@NonNull
+	Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(boolean isAllowOverrideDueDate);
 }

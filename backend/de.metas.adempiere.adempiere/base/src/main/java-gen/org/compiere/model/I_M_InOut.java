@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_InOut
  *  @author metasfresh (generated) 
@@ -274,8 +273,7 @@ public interface I_M_InOut
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -284,8 +282,7 @@ public interface I_M_InOut
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -318,7 +315,8 @@ public interface I_M_InOut
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Gebühr.
+	 * Set Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -327,7 +325,8 @@ public interface I_M_InOut
 	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
 
 	/**
-	 * Get Gebühr.
+	 * Get Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -440,7 +439,8 @@ public interface I_M_InOut
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Create Confirm.
+	 * Set Create Confirmation.
+	 * Create Confirmations for the Document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -449,7 +449,8 @@ public interface I_M_InOut
 	void setCreateConfirm (@Nullable java.lang.String CreateConfirm);
 
 	/**
-	 * Get Create Confirm.
+	 * Get Create Confirmation.
+	 * Create Confirmations for the Document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -486,8 +487,8 @@ public interface I_M_InOut
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Set Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -496,8 +497,8 @@ public interface I_M_InOut
 	void setCreateFrom (@Nullable java.lang.String CreateFrom);
 
 	/**
-	 * Get Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Get Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -578,7 +579,7 @@ public interface I_M_InOut
 	String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
-	 * Set Eingangsdatum.
+	 * Set Date received.
 	 * Date a product was received
 	 *
 	 * <br>Type: DateTime
@@ -588,7 +589,7 @@ public interface I_M_InOut
 	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
 
 	/**
-	 * Get Eingangsdatum.
+	 * Get Date received.
 	 * Date a product was received
 	 *
 	 * <br>Type: DateTime
@@ -601,7 +602,7 @@ public interface I_M_InOut
 	String COLUMNNAME_DateReceived = "DateReceived";
 
 	/**
-	 * Set Lieferart.
+	 * Set Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -611,7 +612,7 @@ public interface I_M_InOut
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
+	 * Get Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -689,7 +690,7 @@ public interface I_M_InOut
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set DescriptionBottom.
+	 * Set End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -698,7 +699,7 @@ public interface I_M_InOut
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get DescriptionBottom.
+	 * Get End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -711,7 +712,7 @@ public interface I_M_InOut
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -721,7 +722,7 @@ public interface I_M_InOut
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -777,7 +778,7 @@ public interface I_M_InOut
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Document Type Note.
+	 * Set Note.
 	 * Optional note of a document type
 	 *
 	 * <br>Type: TextLong
@@ -789,7 +790,7 @@ public interface I_M_InOut
 	void setDocumentTypeNote (@Nullable java.lang.String DocumentTypeNote);
 
 	/**
-	 * Get Document Type Note.
+	 * Get Note.
 	 * Optional note of a document type
 	 *
 	 * <br>Type: TextLong
@@ -912,6 +913,29 @@ public interface I_M_InOut
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set EPCIS Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setEPCIS_ExportStatus (@Nullable java.lang.String EPCIS_ExportStatus);
+
+	/**
+	 * Get EPCIS Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getEPCIS_ExportStatus();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_EPCIS_ExportStatus = new ModelColumn<>(I_M_InOut.class, "EPCIS_ExportStatus", null);
+	String COLUMNNAME_EPCIS_ExportStatus = "EPCIS_ExportStatus";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -954,7 +978,28 @@ public interface I_M_InOut
 	String COLUMNNAME_ExternalResourceURL = "ExternalResourceURL";
 
 	/**
-	 * Set Frachtbetrag.
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_InOut.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
+	 * Set Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -964,7 +1009,7 @@ public interface I_M_InOut
 	void setFreightAmt (@Nullable BigDecimal FreightAmt);
 
 	/**
-	 * Get Frachtbetrag.
+	 * Get Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -977,7 +1022,7 @@ public interface I_M_InOut
 	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
-	 * Set Frachtkostenberechnung.
+	 * Set Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -987,7 +1032,7 @@ public interface I_M_InOut
 	void setFreightCostRule (java.lang.String FreightCostRule);
 
 	/**
-	 * Get Frachtkostenberechnung.
+	 * Get Freight Cost Rule.
 	 * Method for charging Freight
 	 *
 	 * <br>Type: List
@@ -1000,8 +1045,8 @@ public interface I_M_InOut
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
-	 * Set Generate To.
-	 * Generate To
+	 * Set Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1010,8 +1055,8 @@ public interface I_M_InOut
 	void setGenerateTo (@Nullable java.lang.String GenerateTo);
 
 	/**
-	 * Get Generate To.
-	 * Generate To
+	 * Get Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1023,7 +1068,7 @@ public interface I_M_InOut
 	String COLUMNNAME_GenerateTo = "GenerateTo";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1033,7 +1078,7 @@ public interface I_M_InOut
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1199,7 +1244,7 @@ public interface I_M_InOut
 	String COLUMNNAME_IsInDispute = "IsInDispute";
 
 	/**
-	 * Set Lieferung/ Wareneingang freigeben.
+	 * Set Approve in/out shipment.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1208,7 +1253,7 @@ public interface I_M_InOut
 	void setIsInOutApprovedForInvoicing (boolean IsInOutApprovedForInvoicing);
 
 	/**
-	 * Get Lieferung/ Wareneingang freigeben.
+	 * Get Approve in/out shipment.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1221,7 +1266,7 @@ public interface I_M_InOut
 
 	/**
 	 * Set In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1231,7 +1276,7 @@ public interface I_M_InOut
 
 	/**
 	 * Get In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1243,7 +1288,7 @@ public interface I_M_InOut
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1253,7 +1298,7 @@ public interface I_M_InOut
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1333,8 +1378,8 @@ public interface I_M_InOut
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -1343,8 +1388,8 @@ public interface I_M_InOut
 	void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -1356,7 +1401,7 @@ public interface I_M_InOut
 	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Bewegungs-Art.
+	 * Set Movement Type.
 	 * Method of moving the inventory
 	 *
 	 * <br>Type: List
@@ -1366,7 +1411,7 @@ public interface I_M_InOut
 	void setMovementType (java.lang.String MovementType);
 
 	/**
-	 * Get Bewegungs-Art.
+	 * Get Movement Type.
 	 * Method of moving the inventory
 	 *
 	 * <br>Type: List
@@ -1379,7 +1424,7 @@ public interface I_M_InOut
 	String COLUMNNAME_MovementType = "MovementType";
 
 	/**
-	 * Set Warenrücksendung - Freigabe (RMA).
+	 * Set RMA.
 	 * Return Material Authorization
 	 *
 	 * <br>Type: Search
@@ -1389,7 +1434,7 @@ public interface I_M_InOut
 	void setM_RMA_ID (int M_RMA_ID);
 
 	/**
-	 * Get Warenrücksendung - Freigabe (RMA).
+	 * Get RMA.
 	 * Return Material Authorization
 	 *
 	 * <br>Type: Search
@@ -1476,8 +1521,8 @@ public interface I_M_InOut
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Kommissionier-Datum.
-	 * Datum/Zeit der Kommissionierung für die Lieferung
+	 * Set Pick Date.
+	 * Date/Time when picked for Shipment
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1486,8 +1531,8 @@ public interface I_M_InOut
 	void setPickDate (@Nullable java.sql.Timestamp PickDate);
 
 	/**
-	 * Get Kommissionier-Datum.
-	 * Datum/Zeit der Kommissionierung für die Lieferung
+	 * Get Pick Date.
+	 * Date/Time when picked for Shipment
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1502,7 +1547,7 @@ public interface I_M_InOut
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1512,7 +1557,7 @@ public interface I_M_InOut
 	 * Get Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1565,7 +1610,7 @@ public interface I_M_InOut
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
-	 * Set Priorität.
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1575,7 +1620,7 @@ public interface I_M_InOut
 	void setPriorityRule (java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1651,6 +1696,31 @@ public interface I_M_InOut
 	String COLUMNNAME_Ref_InOut_ID = "Ref_InOut_ID";
 
 	/**
+	 * Set Original Shipment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReturn_Origin_InOut_ID (int Return_Origin_InOut_ID);
+
+	/**
+	 * Get Original Shipment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReturn_Origin_InOut_ID();
+
+	@Nullable org.compiere.model.I_M_InOut getReturn_Origin_InOut();
+
+	void setReturn_Origin_InOut(@Nullable org.compiere.model.I_M_InOut Return_Origin_InOut);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_InOut> COLUMN_Return_Origin_InOut_ID = new ModelColumn<>(I_M_InOut.class, "Return_Origin_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_Return_Origin_InOut_ID = "Return_Origin_InOut_ID";
+
+	/**
 	 * Set Reversal ID.
 	 * ID of document reversal
 	 *
@@ -1700,7 +1770,7 @@ public interface I_M_InOut
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set E-Mail senden.
+	 * Set Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -1710,7 +1780,7 @@ public interface I_M_InOut
 	void setSendEMail (boolean SendEMail);
 
 	/**
-	 * Get E-Mail senden.
+	 * Get Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -1721,6 +1791,33 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_SendEMail = new ModelColumn<>(I_M_InOut.class, "SendEMail", null);
 	String COLUMNNAME_SendEMail = "SendEMail";
+
+	/**
+	 * Set Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTrackingURL (@Nullable java.lang.String TrackingURL);
+
+	/**
+	 * Get Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getTrackingURL();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_TrackingURL = new ModelColumn<>(I_M_InOut.class, "TrackingURL", null);
+	String COLUMNNAME_TrackingURL = "TrackingURL";
 
 	/**
 	 * Get Updated.
@@ -1823,7 +1920,7 @@ public interface I_M_InOut
 	String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Weight.
+	 * Set Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number
@@ -1833,7 +1930,7 @@ public interface I_M_InOut
 	void setWeight (@Nullable BigDecimal Weight);
 
 	/**
-	 * Get Weight.
+	 * Get Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number
@@ -1844,25 +1941,4 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_Weight = new ModelColumn<>(I_M_InOut.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_InOut.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

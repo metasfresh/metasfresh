@@ -204,7 +204,7 @@ public interface IProductDAO extends ISingletonService
 
 	String getProductCategoryNameById(ProductCategoryId id);
 
-	ProductId getProductIdByResourceId(ResourceId resourceId);
+	Optional<ProductId> getProductIdByResourceId(ResourceId resourceId);
 
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, Consumer<I_M_Product> productUpdater);
 

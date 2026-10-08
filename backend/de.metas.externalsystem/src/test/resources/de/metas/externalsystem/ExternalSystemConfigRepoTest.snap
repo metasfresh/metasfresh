@@ -1,4 +1,4 @@
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Alberta_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -19,7 +19,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
     "apiKey": "apiKey",
     "baseUrl": "baseUrl",
@@ -31,7 +31,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -52,7 +52,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_GRSSignum_getById=[
   {
     "active": true,
     "childConfig": {
@@ -79,7 +79,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
   {
     "authToken": "authToken",
     "autoSendCustomers": false,
@@ -98,7 +98,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
   {
     "active": true,
     "childConfig": {
@@ -125,7 +125,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_LeichMehl_getActiveByType=[
   [
     {
       "active": true,
@@ -151,7 +151,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
   {
     "id": 1000000,
     "parentId": 1000000,
@@ -166,7 +166,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -190,7 +190,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_RabbitMQ_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -217,7 +217,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
   {
     "authToken": "authToken",
     "autoSendSubjectWhenCreatedByUserGroup": false,
@@ -235,7 +235,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -263,7 +263,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Shopware6_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -296,7 +296,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByQuery=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Shopware6_getByQuery=[
   {
     "active": false,
     "auditFileFolder": "auditFileFolder",
@@ -329,7 +329,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
     "baseUrl": "baseUrl",
     "clientId": "id",
@@ -368,7 +368,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Shopware6_getTypeAndValue=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -401,7 +401,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_store=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Shopware6_store=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -428,7 +428,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Woocommerce_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -447,7 +447,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getTypeAndValue=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_Woocommerce_getTypeAndValue=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -465,7 +465,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
       "active": true,
@@ -494,7 +494,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_LeichMehl_Config_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",
@@ -519,7 +519,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
 ]
 
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepositoryTest.externalSystem_Other_Config_getById=[
   {
     "active": true,
     "auditFileFolder": "auditFileFolder",

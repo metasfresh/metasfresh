@@ -21,7 +21,7 @@
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
-		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="PRINTER_OPTS_IsPrintTotals" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>

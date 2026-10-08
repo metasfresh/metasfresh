@@ -1,7 +1,7 @@
 package de.metas.handlingunits.picking.job.model;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class PickingJobCandidateProduct
 {
 	@NonNull ProductId productId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@Nullable Quantity qtyToDeliver;
 	@Nullable Quantity qtyAvailableToPick;
 

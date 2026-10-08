@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00635_Purchase_Order_Candidate
+@F00635
 @ghActions:run_on_executor5
 Feature: create or update Purchase Candidate
+## F00635: Purchase Order Candidate
   As a user
   I want create a Purchase Candidate record
 
@@ -24,6 +28,9 @@ Feature: create or update Purchase Candidate
       | Other              | H1               | L1             |
 
   @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00635_Purchase_Order_Candidate
+@F00635
   Scenario:  The purchase candidate request is set in context, enqueued and validated
     And the purchase candidate request is set in context
     When the metasfresh REST-API endpoint path 'api/v2/order/purchase/createCandidates' receives a 'POST' request with the payload from context and responds with '200' status code

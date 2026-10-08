@@ -31,8 +31,9 @@ public enum JsonEndpointAuthType
 {
 	Token,
 	OAuth,
-	SAS
-	;
+	SAS,
+	Basic,
+	OAuth2
 }
 
 

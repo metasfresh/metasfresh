@@ -30,13 +30,18 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
 	private final List<ValueSequenceInfoProvider> additionalProviders;
 
+	public static DocumentNoBuilderFactory newInstanceForUnitTesting()
+	{
+		return new DocumentNoBuilderFactory(Optional.empty());
+	}
+
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
 		this.additionalProviders = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));
 	}
 
 	private final ValueSequenceInfoProvider tableNameBasedProvider = modelRecord -> {
-		
+
 		final IClientOrgAware clientOrg = create(modelRecord, IClientOrgAware.class);
 
 		final String tableName = InterfaceWrapperHelper.getModelTableName(modelRecord);
@@ -82,14 +87,13 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 		return createDocumentNoBuilder()
 				.setDocumentSequenceByDocTypeId(C_DocType_ID, useDefiniteSequence);
 	}
-	
+
 	@Override
 	public IDocumentNoBuilder forSequenceId(final DocSequenceId sequenceId)
 	{
 		return createDocumentNoBuilder()
 				.setDocumentSequenceInfoBySequenceId(sequenceId);
 	}
-
 
 	@Override
 	public DocumentNoBuilder createDocumentNoBuilder()

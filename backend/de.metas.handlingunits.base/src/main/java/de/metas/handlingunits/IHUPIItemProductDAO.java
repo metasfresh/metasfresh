@@ -53,7 +53,7 @@ import java.util.Set;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
+	@NonNull HUPIItemProduct getById(@NonNull HUPIItemProductId id);
 
 	@NonNull I_M_HU_PI_Item_Product getRecordById(@NonNull HUPIItemProductId id);
 
@@ -89,7 +89,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param huUnitType            (TU or LU)
 	 * @param allowInfiniteCapacity if false, then the retrieved product is guaranteed to have <code>IsInfiniteCapacity</code> being <code>false</code>.
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, BPartnerId bpartner, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity);
+	@Nullable I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, BPartnerId bpartner, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity);
 
 	/**
 	 * Similar to {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, ZonedDateTime, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
@@ -99,9 +99,9 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 *                              If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, ZonedDateTime, String, boolean)}.
 	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-386">task</a>
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity, @Nullable ProductId packagingProductId);
+	@Nullable I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity, @Nullable ProductId packagingProductId);
 
-	List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(Properties ctx, IHUPIItemProductQuery queryVO, String trxName);
+	@NonNull List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(Properties ctx, IHUPIItemProductQuery queryVO, String trxName);
 
 	/**
 	 * @return true if any of <code>itemProducts</code> list is matching <code>queryVO</code>
@@ -136,7 +136,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * <p>
 	 * NOTE: the default bpartner's TU, if any, will be returned first.
 	 */
-	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, ProductId cuProductId, BPartnerId bpartnerId, boolean allowInfiniteCapacity);
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, @NonNull ProductId cuProductId, @Nullable BPartnerId bpartnerId, boolean allowInfiniteCapacity);
 
 	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
 

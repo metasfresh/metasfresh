@@ -1,10 +1,16 @@
--- Migration script: Fix record_id parameter naming collision
--- Generated for: task_force_hotfix branch
--- Issue: Parameter name 'record_id' shadows built-in record identifier in PostgreSQL
--- Fix: Rename parameter from 'record_id' to 'p_record_id'
+-- Docs_Purchase_InOut_Vendor_Returns_Description
+
+
+
+-- Title: Fix record_id parameter naming collision in report functions
+-- Description: Rename 'record_id' parameter to 'p_record_id' to prevent collision
+--              with table columns named 'record_id'. Uses this branch's own function versions.
+-- Issue: https://github.com/metasfresh/metasfresh/pull/22016
 -- 2026-01-18
 
--- Function: Docs_Purchase_InOut_Customs_Root
+-- ===========================================================================
+-- Docs_Purchase_InOut_Customs_Root
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric);
 
@@ -47,7 +53,9 @@ LIMIT 1
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_InOut_Material_Disposal_Details_Footer
+-- ===========================================================================
+-- Docs_Purchase_InOut_Material_Disposal_Details_Footer
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN p_record_id numeric);
 
@@ -84,13 +92,13 @@ $$
 
 
 
--- Function: Docs_Purchase_InOut_Material_Disposal_Page_Header
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Page_Header(IN record_id numeric, IN ad_language character varying);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Page_Header(IN p_record_id numeric, IN ad_language character varying);
+-- ===========================================================================
+-- Docs_Purchase_InOut_Material_Disposal_Page_Header
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric, character varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric, character varying);
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(IN p_record_id numeric, IN ad_language character varying)
     RETURNS TABLE(
@@ -130,7 +138,9 @@ $$
     LANGUAGE sql STABLE;
 
 
--- Function: Docs_Purchase_InOut_Material_Disposal_Root
+-- ===========================================================================
+-- Docs_Purchase_InOut_Material_Disposal_Root
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN p_record_id numeric);
 
@@ -178,13 +188,14 @@ $$
     LANGUAGE sql STABLE;
 
 
--- Function: Docs_Purchase_InOut_Page_Header
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN record_id numeric, IN ad_language character varying);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN p_record_id numeric, IN ad_language character varying);
+-- ===========================================================================
+-- Docs_Purchase_InOut_Page_Header
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN p_record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(numeric, character varying);
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN p_record_id numeric, IN ad_language character varying)
     RETURNS TABLE(
@@ -232,9 +243,11 @@ $$
     LANGUAGE sql STABLE;
 
 
--- Function: Docs_Purchase_InOut_POS_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN record_id numeric, IN ad_table_id numeric);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric, IN ad_table_id numeric);
+-- ===========================================================================
+-- Docs_Purchase_InOut_POS_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric, IN ad_table_id numeric);
 
@@ -306,9 +319,11 @@ UNION
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_InOut_Root
+-- ===========================================================================
+-- Docs_Purchase_InOut_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric);
 
@@ -397,9 +412,11 @@ LIMIT 1
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_InOut_Vendor_Returns_Description
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN record_id numeric, IN AD_Language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Description
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
@@ -459,9 +476,11 @@ WHERE io.M_InOut_ID = $1
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_InOut_Vendor_Returns_Details_HU
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN record_id numeric, IN AD_Language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric, IN AD_Language Character Varying (6));
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Details_HU
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
@@ -522,7 +541,9 @@ GROUP BY
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_InOut_Vendor_Returns_Root
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Root
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric);
 
@@ -551,7 +572,7 @@ SELECT
             )
             THEN 'Y'
             ELSE 'N'
-    END as displayhu,
+    END as displayhum,
     io.docstatus
 FROM
     M_InOut io
@@ -560,9 +581,11 @@ WHERE
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_Invoice_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric, IN ad_language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
+-- ===========================================================================
+-- Docs_Purchase_Invoice_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -603,9 +626,11 @@ WHERE
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Purchase_Order_Details_HU
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric, IN ad_language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric, IN ad_language Character Varying (6));
+-- ===========================================================================
+-- Docs_Purchase_Order_Details_HU
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -647,9 +672,11 @@ $$
     LANGUAGE sql STABLE
 ;
 
--- Function: Docs_Purchase_Order_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
+-- ===========================================================================
+-- Docs_Purchase_Order_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -691,9 +718,11 @@ $$
     LANGUAGE sql STABLE
 ;
 
--- Function: Docs_Sales_InOut_Customer_Returns_Description
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN record_id numeric, IN AD_Language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
+-- ===========================================================================
+-- Docs_Sales_InOut_Customer_Returns_Description
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
@@ -726,9 +755,11 @@ WHERE io.M_InOut_ID = $1
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Sales_Order_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
+-- ===========================================================================
+-- Docs_Sales_Order_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric);
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -784,8 +815,9 @@ $$
     LANGUAGE sql STABLE
 ;
 
-
--- Function: Docs_Sales_OrderCheckup_Description
+-- ===========================================================================
+-- Docs_Sales_OrderCheckup_Description
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN p_record_id numeric);
 
@@ -825,7 +857,9 @@ LIMIT 1
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Sales_OrderCheckup_Details
+-- ===========================================================================
+-- Docs_Sales_OrderCheckup_Details
+-- ===========================================================================
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_record_id numeric);
 
@@ -930,43 +964,43 @@ ORDER BY ol.line
 $$
     LANGUAGE sql STABLE;
 
--- Function: Docs_Sales_OrderCheckup_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(numeric);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(numeric, numeric);
+-- ===========================================================================
+-- Docs_Sales_OrderCheckup_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN p_record_id numeric);
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( IN p_record_id numeric, IN bPartnerId numeric, IN datePromised date );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( numeric, numeric,date );
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN p_record_id  numeric,
-                                                                                           IN bPartnerId   numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN p_record_id    numeric,
+                                                                                           IN bPartnerId     numeric,
                                                                                            IN p_datePromised date)
     RETURNS TABLE
             (
-                ad_org_id  numeric,
-                docstatus  character(2),
-                printname  character varying(60),
-                c_order_id integer,
+                ad_org_id                      numeric,
+                docstatus                      character(2),
+                printname                      character varying(60),
+                c_order_id                     integer,
                 C_Order_MFGWarehouse_Report_ID integer
             )
 AS
 $$
-SELECT
-    r.AD_Org_ID,
-    r.DocStatus,
-    r.PrintName,
-    r.C_Order_ID :: int,
-    r.C_Order_MFGWarehouse_Report_ID :: int
+SELECT r.AD_Org_ID,
+       r.DocStatus,
+       r.PrintName,
+       r.C_Order_ID :: int,
+       r.C_Order_MFGWarehouse_Report_ID :: int
 FROM report.RV_C_Order_MFGWarehouse_Report_Header r
-WHERE
-    CASE
-        WHEN p_record_id IS NOT NULL
-            THEN r.C_Order_MFGWarehouse_Report_ID = p_record_id
-        WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
-            THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date
-            ELSE false -- shall never nappen
-    END
+WHERE CASE
+          WHEN p_record_id IS NOT NULL
+              THEN r.C_Order_MFGWarehouse_Report_ID = p_record_id
+          WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
+              THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date
+              ELSE FALSE -- shall never nappen
+      END
 LIMIT 1
 
 $$
     LANGUAGE sql
-    STABLE;
-
+    STABLE
+;

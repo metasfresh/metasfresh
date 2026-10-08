@@ -17,7 +17,6 @@
 
 	<properties>
 		<start-class>de.metas.vertical.pharma.msv3.server.Application</start-class>
-		<migration-sql-basedir>85-de.metas.vertical.pharma.msv3.server</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

@@ -352,7 +352,7 @@ class DDOrderMoveScheduleLoaderAndSaver
 		return schedule;
 	}
 
-	public List<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
+	public ImmutableList<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
 	{
 		warmUpByIds(ids);
 

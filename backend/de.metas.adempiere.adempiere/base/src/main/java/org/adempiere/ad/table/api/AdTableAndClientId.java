@@ -26,12 +26,17 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value(staticConstructor = "of")
 public class AdTableAndClientId
 {
-	@NonNull
-	AdTableId tableId;
+	@NonNull AdTableId tableId;
+	@NonNull ClientId clientId;
 
-	@NonNull
-	ClientId clientId;
+	public static boolean equals(@Nullable final AdTableAndClientId id1, @Nullable final AdTableAndClientId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

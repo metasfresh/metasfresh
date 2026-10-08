@@ -14,10 +14,6 @@
 
 	<description>SEPA Payments - Core</description>
 
-	<properties>
-		<migration-sql-basedir/>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>

@@ -9,7 +9,10 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -35,7 +38,6 @@ import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapte
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -43,7 +45,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -75,7 +76,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -127,9 +127,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	// Services
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -296,8 +297,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
@@ -367,23 +366,25 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_Order order = inOut.getC_Order();
 			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
 		}
-		// Set Invoice Rule from BPartner
+		// Set Invoice Rule and Payment Rule from the bill-partner (order-less delivery)
 		else
 		{
-			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
+			final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()));
+			final SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 
-			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
-					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
-
-			if (invoiceRule!= null)
-			{
-				icRecord.setInvoiceRule(invoiceRule.getCode());
-			}
-			else
-			{
-				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
-			}
+			// Inherit InvoiceRule and PaymentRule from the bill-partner's *effective* configuration
+			// (partner -> BP group -> parent group -> default), the same chain an order resolves them with
+			// (CalloutOrder / BPartnerOrderParamsRepository). For order-less deliveries (e.g. consolidated
+			// "Leergut"/returnable deliveries that bundle several orders) this keeps the candidate aligned
+			// with the order-based goods candidates. Both InvoiceRule and PaymentRule are part of the invoice
+			// header aggregation key, so a mismatch would split the returnables onto a separate invoice.
+			// Reading the raw bill-partner columns missed values inherited from the BP group.
+			// Note: BPartnerOrderParamsRepository additionally normalizes a sales Cash/Check rule to
+			// OnCredit; that edge case is not replicated here (Leergut partners use OnCredit/DirectDeposit/
+			// DirectDebit), so the effective value is used as-is.
+			icRecord.setInvoiceRule(billBPartnerEffective.getInvoiceRule(soTrx).getCode());
+			icRecord.setPaymentRule(billBPartnerEffective.getPaymentRule(soTrx).getCode());
+			icRecord.setIsAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx));
 		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
