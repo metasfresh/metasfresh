@@ -32,6 +32,31 @@ describe('TableCell — width keeper while editing', () => {
     expect(keeper.html()).toContain(CAPTION);
   });
 
+  it('keeps the value the cell showed when its editor opened, while the edited value changes', () => {
+    // e.g. a Lookup cleared with its "x", then given another value: the column must not follow
+    const wrapper = shallow(<TableCell {...cellProps({ isEdited: true })} />);
+
+    wrapper.setProps({ tdValue: '' });
+    expect(wrapper.find('.cell-width-keeper').html()).toContain(CAPTION);
+
+    wrapper.setProps({ tdValue: 'another product' });
+    expect(wrapper.find('.cell-width-keeper').html()).toContain(CAPTION);
+    expect(wrapper.find('.cell-width-keeper').html()).not.toContain(
+      'another product'
+    );
+  });
+
+  it('takes the current value again when the editor is opened anew', () => {
+    const wrapper = shallow(<TableCell {...cellProps({ isEdited: true })} />);
+
+    wrapper.setProps({ isEdited: false, tdValue: 'another product' });
+    wrapper.setProps({ isEdited: true });
+
+    expect(wrapper.find('.cell-width-keeper').html()).toContain(
+      'another product'
+    );
+  });
+
   it('renders no width keeper when the cell is not being edited', () => {
     const wrapper = shallow(<TableCell {...cellProps({ isEdited: false })} />);
 

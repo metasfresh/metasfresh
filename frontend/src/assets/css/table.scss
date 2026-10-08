@@ -391,6 +391,17 @@
       }
     }
 
+    /*
+     * The Lookup's input row: its `.3rem` vertical padding (inputs.scss `.lookup-widget-wrapper >
+     * .input-dropdown`) makes it taller than the 26px editor, so it would stick out of the
+     * editor's border and, once painted (the error background of a cleared mandatory Lookup),
+     * cover that border.
+     */
+    .lookup-widget-wrapper > .input-dropdown:not(.attributes-dropdown *) {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
     /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
     input:not(.attributes-dropdown *) {
       min-width: 0;

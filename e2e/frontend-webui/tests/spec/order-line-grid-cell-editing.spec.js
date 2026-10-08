@@ -3,7 +3,8 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForTypeaheadAnswer } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForTypeaheadAnswer, waitForWebFonts } from '../utils/common';
+import { VIEWPORT, compareGeometry, measureRow } from '../utils/GridGeometry';
 import { createMasterdata } from '../utils/OrderLineHarness';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
@@ -293,6 +294,106 @@ literal "undefined".
       expect(editorValue, 'the re-opened Lookup editor must not show the typed raw text').not.toContain(NON_MATCHING_TEXT);
 
       await page.keyboard.press('Escape');
+    });
+  });
+});
+
+/**
+ * The product Lookup cell's clear button ("x") and choosing a product again, in a grid whose
+ * columns have their automatic width (no width stored by the user): neither changes any column
+ * width, and the cleared (mandatory, red-bordered) editor's content stays inside its border.
+ */
+test.describe('Sales order-line grid — clearing and refilling a Lookup cell (de_DE)', () => {
+  test('Clearing the product Lookup cell with its "x" and choosing the product again changes no column width; the editor content stays inside the red border', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Order-line grid — clearing a Lookup cell');
+    allure.severity('critical');
+    allure.description(`
+Fresh browser, so no column width is stored and every column has its automatic width.
+1. Open the product cell's editor, click its clear button ("x"): every column keeps its width, and
+   the empty mandatory editor's content fits inside its red border.
+2. Choose the same product again: every column still keeps its width.
+    `);
+
+    test.setTimeout(180000);
+    await page.setViewportSize(VIEWPORT);
+
+    const masterdata = await createMasterdata();
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+    await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
+
+    const productCode = masterdata.products.Product1.productCode;
+    const row = page.locator('table tbody tr').first();
+    const productCell = row.locator(`[data-cy="cell-${COMBOBOX_COLUMN}"]`);
+    const editor = productCell.locator('.input-dropdown-container').first();
+    let before;
+
+    await test.step('No column width is stored: the grid uses automatic widths', async () => {
+      const storedWidthKeys = await page.evaluate(() =>
+        Object.keys(window.localStorage).filter((key) => key.startsWith('columnWidths_'))
+      );
+      expect(storedWidthKeys, 'a fresh browser has no stored column width').toEqual([]);
+    });
+
+    await test.step('Open the product cell editor', async () => {
+      await waitForWebFonts(page);
+      before = await measureRow(row);
+      await test.info().attach('grid row before editing', { body: await row.screenshot(), contentType: 'image/png' });
+      await productCell.dblclick();
+      await editor.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await flushPendingUiTasks(page);
+      expect.soft(compareGeometry('editor open', COMBOBOX_COLUMN, before, await measureRow(row))).toEqual([]);
+    });
+
+    await test.step('Clear the product with the "x": no column width changes; the content fits inside the red border', async () => {
+      await productCell.locator('.meta-icon-close-alt').click();
+      await expect(editor, 'the cleared mandatory editor shows the red border').toHaveClass(/input-mandatory/);
+      await flushPendingUiTasks(page);
+
+      expect.soft(compareGeometry('after clear', COMBOBOX_COLUMN, before, await measureRow(row))).toEqual([]);
+
+      // every painted (non-transparent) box of the editor stays inside its red border
+      const overflowing = await editor.evaluate((container) => {
+        const outer = container.getBoundingClientRect();
+        const cs = getComputedStyle(container);
+        const innerTop = outer.top + parseFloat(cs.borderTopWidth);
+        const innerBottom = outer.bottom - parseFloat(cs.borderBottomWidth);
+        return Array.from(container.querySelectorAll('*'))
+          .filter((el) => !el.closest('.input-dropdown-list'))
+          .filter((el) => getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)')
+          .map((el) => ({ el: `${el.tagName}.${el.className}`, box: el.getBoundingClientRect() }))
+          .filter(({ box }) => box.height > 0 && (box.top < innerTop - 0.5 || box.bottom > innerBottom + 0.5))
+          .map(({ el, box }) => `${el}: ${box.top}..${box.bottom} outside the border's inner edge ${innerTop}..${innerBottom}`);
+      });
+      await test.info().attach('grid row after clear', { body: await row.screenshot(), contentType: 'image/png' });
+      expect.soft(overflowing, 'no painted box of the cleared editor covers its red border').toEqual([]);
+    });
+
+    await test.step('Choose the same product again: no column width changes', async () => {
+      const input = editor.locator('input').first();
+      const answered = waitForTypeaheadAnswer(page, productCode);
+      await input.pressSequentially(productCode, { delay: 20 });
+      await answered;
+      const option = page.locator('.input-dropdown-list-option').filter({ hasText: productCode }).first();
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await option.click();
+      await expect(productCell).toContainText(productCode, { timeout: SLOW_ACTION_TIMEOUT });
+      await flushPendingUiTasks(page);
+
+      await test.info().attach('grid row after re-select', { body: await row.screenshot(), contentType: 'image/png' });
+      expect.soft(compareGeometry('after re-select', COMBOBOX_COLUMN, before, await measureRow(row))).toEqual([]);
     });
   });
 });

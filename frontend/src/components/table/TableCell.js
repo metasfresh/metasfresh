@@ -26,6 +26,25 @@ class TableCell extends PureComponent {
 
     this.state = {
       tooltipToggled: false, // keeping in the local state the flag for the tooltip
+      widthKeeperValue: null,
+    };
+  }
+
+  /**
+   * The width keeper shows the value the cell had when its editor opened, not the value being
+   * edited: clearing a Lookup with its "x" or choosing another value must not resize a column
+   * whose width comes from that value. Taken anew each time the editor opens.
+   */
+  static getDerivedStateFromProps(props, state) {
+    if (!props.isEdited) {
+      return state.widthKeeperValue ? { widthKeeperValue: null } : null;
+    }
+    if (state.widthKeeperValue) {
+      return null;
+    }
+    const { tdValue, tableCellData, description, tooltipData } = props;
+    return {
+      widthKeeperValue: { tdValue, tableCellData, description, tooltipData },
     };
   }
 
@@ -160,19 +179,13 @@ class TableCell extends PureComponent {
    * @method renderStaticContent
    * @summary The cell's read-only presentation. Rendered visibly when the cell is not being
    * edited, and as an invisible width keeper next to the editor while it is.
+   * @param {object} [value] - the value to show ({tdValue, tableCellData, description,
+   * tooltipData}); the current props when omitted
    */
-  renderStaticContent = () => {
-    const {
-      item,
-      cellExtended,
-      extendLongText,
-      description,
-      tooltipData,
-      tooltipWidget,
-      tdValue,
-      tableCellData,
-      rowId,
-    } = this.props;
+  renderStaticContent = (value = this.props) => {
+    const { item, cellExtended, extendLongText, tooltipWidget, rowId } =
+      this.props;
+    const { tdValue, tableCellData, description, tooltipData } = value;
     const { tooltipToggled } = this.state;
     const { widgetType } = item;
     const style = cellExtended ? { height: extendLongText * 20 } : {};
@@ -302,7 +315,7 @@ class TableCell extends PureComponent {
               minimum while editing.
             */}
             <div className="cell-width-keeper" aria-hidden="true">
-              {this.renderStaticContent()}
+              {this.renderStaticContent(this.state.widthKeeperValue)}
             </div>
             <WidgetWrapper
               renderMaster={true}
