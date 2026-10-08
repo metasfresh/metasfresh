@@ -229,6 +229,22 @@ public class TypedSqlQueryTests
 		}
 
 		@Test
+		public void forKeyShareSkipLocked_emitsClause()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_KEY_SHARE_SKIP_LOCKED);
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR KEY SHARE SKIP LOCKED");
+		}
+
+		@Test
 		public void none_emitsNoLockingClause()
 		{
 			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);

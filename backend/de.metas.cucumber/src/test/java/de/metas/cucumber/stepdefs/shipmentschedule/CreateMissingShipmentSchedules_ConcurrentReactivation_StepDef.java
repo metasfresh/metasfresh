@@ -58,7 +58,7 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 {
 	/**
 	 * How long the reactivation's transaction is held open at most while the missing shipment schedules are created.
-	 * Only reached if creating them waits for the reactivation to commit.
+	 * A safety net: it is only reached if creating them waits for the reactivation to commit, which they must not.
 	 */
 	private static final int REACTIVATION_HOLD_SECONDS = 10;
 	private static final int TIMEOUT_SECONDS = 60;
@@ -174,6 +174,9 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 			assertThat(createMissingShipmentSchedulesFailure)
 					.as("Failure while creating the missing shipment schedules during the reactivation of order %s", orderIdentifier)
 					.isNull();
+			assertThat(retrieveShipmentScheduleCount(compensationLineIds))
+					.as("Shipment schedules of the compensation lines that the reactivation of order %s deleted", orderIdentifier)
+					.isZero();
 		}
 
 		// a fresh instance for later doc actions, like a new request would have
@@ -198,6 +201,14 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.create()
 				.listIds());
+	}
+
+	private int retrieveShipmentScheduleCount(@NonNull final ImmutableList<Integer> orderLineIds)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.count();
 	}
 
 	private int retrieveShipmentScheduleCount(@NonNull final OrderId orderId)

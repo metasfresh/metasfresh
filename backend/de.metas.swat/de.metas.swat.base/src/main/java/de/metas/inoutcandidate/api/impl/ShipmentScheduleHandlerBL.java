@@ -222,7 +222,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				}
 				else
 				{
-					Loggables.withLogger(logger, Level.DEBUG).addLog("Skip creating shipment schedules for {} because a concurrent transaction is deleting it", model);
+					Loggables.withLogger(logger, Level.INFO).addLog("Skip creating shipment schedules for {} because a concurrent transaction is deleting it", model);
 				}
 			}
 			// also a skipped model consumes the budget: it was part of this run's limited retrieve, so not consuming it would make
@@ -242,6 +242,13 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	 * created for such a model would reference a deleted record; for an order line, the foreign key check at commit fails,
 	 * and the whole batch of this run is rolled back. The lock is the weakest one that blocks a {@code DELETE}, so concurrent
 	 * updates of the record (e.g. its order's reactivation setting {@code Processed=N}) are neither blocked nor block us.
+	 *
+	 * <p>
+	 * The lock protects only within a transaction, i.e. in the bounded batch transaction of
+	 * {@code CreateMissingShipmentSchedulesWorkpackageProcessor}; without one, it is released right after the query.
+	 * <p>
+	 * A skipped record is not retried by this run. If the concurrent transaction does not delete it after all (e.g. it is
+	 * rolled back), the record's shipment schedules are created by the next run.
 	 *
 	 * @return {@code false} if the record is being deleted by a concurrent transaction (or was deleted meanwhile); no shipment
 	 * schedule shall be created for it then.
