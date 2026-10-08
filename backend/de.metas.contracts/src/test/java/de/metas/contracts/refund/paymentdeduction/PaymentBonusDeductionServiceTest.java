@@ -107,7 +107,7 @@ class PaymentBonusDeductionServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		service = newService(new RefundPackagingFilter(Optional.empty()));
+		service = newService(Optional.empty());
 
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
@@ -480,7 +480,7 @@ class PaymentBonusDeductionServiceTest
 		final HUPIItemProductId crateInstructionId = HUPIItemProductId.ofRepoId(10);
 		final HUPIItemProductId boxInstructionId = HUPIItemProductId.ofRepoId(20);
 		final RefundPackagingMaterialProvider packingMaterialProvider = (huPIItemProductId, bpartnerId) -> Optional.of(huPIItemProductId.equals(crateInstructionId) ? crateMaterialId : boxMaterialId);
-		service = newService(new RefundPackagingFilter(Optional.of(ImmutableList.of(packingMaterialProvider))));
+		service = newService(Optional.of(ImmutableList.of(packingMaterialProvider)));
 
 		final I_C_Flatrate_RefundConfig config = createDeductedAtPaymentTerm(customerId, goodsCategory, "10", goodsBonusProduct);
 		config.setIsPackingOptionFiltered(true);
@@ -592,7 +592,7 @@ class PaymentBonusDeductionServiceTest
 	{
 		final LineLoadCountingInvoiceDAO invoiceDAO = new LineLoadCountingInvoiceDAO();
 		Services.registerService(IInvoiceDAO.class, invoiceDAO);
-		service = newService(new RefundPackagingFilter(Optional.empty()));
+		service = newService(Optional.empty());
 		return invoiceDAO;
 	}
 
@@ -609,11 +609,12 @@ class PaymentBonusDeductionServiceTest
 		}
 	}
 
-	private PaymentBonusDeductionService newService(@NonNull final RefundPackagingFilter refundPackagingFilter)
+	private PaymentBonusDeductionService newService(@NonNull final Optional<List<RefundPackagingMaterialProvider>> packagingMaterialProviders)
 	{
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		return new PaymentBonusDeductionService(
-				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
-				refundPackagingFilter,
+				new RefundContractRepository(refundConfigRepository),
+				new RefundPackagingFilter(refundConfigRepository, packagingMaterialProviders),
 				(salesInvoice, bonusProductId) -> BONUS_TAX,
 				new PaymentBonusCreditMemoService());
 	}
