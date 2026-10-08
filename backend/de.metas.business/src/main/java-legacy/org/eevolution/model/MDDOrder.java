@@ -442,7 +442,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}
+	}    // processIt
 
 	@Override
 	public void resetEngineStateForRetry()
@@ -450,7 +450,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		m_justPrepared = false;
 		m_processMsg = null;
 		m_lines = null;
-	}    // processIt
+	}
 
 	/**
 	 * Process Message

@@ -722,7 +722,7 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
 
     # an AFTER_COMPLETE interceptor saves the order before the deadlock, so that save also writes what prepareIt()/approveIt() set
     # (C_DocType_ID, IsApproved); it is rolled back, and the retried completion has to write these values again
-    And the next completion of the order identified by orderRty saves the order with the description 'saved by every completion attempt' and then runs into a DB deadlock once
+    And the next completion of the order identified by orderRty saves the order with the description 'saved by the first completion attempts' and then runs into a DB deadlock once
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
     And validate the created orders

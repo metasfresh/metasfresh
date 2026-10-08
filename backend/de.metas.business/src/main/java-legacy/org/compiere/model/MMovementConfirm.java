@@ -269,7 +269,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}
+	}	//	processIt
 
 	@Override
 	public void resetEngineStateForRetry()
@@ -280,7 +280,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 		m_inventoryFrom = null;
 		m_inventoryTo = null;
 		m_inventoryInfo = null;
-	}	//	processIt
+	}
 
 	/**	Process Message 			*/
 	private String		m_processMsg = null;

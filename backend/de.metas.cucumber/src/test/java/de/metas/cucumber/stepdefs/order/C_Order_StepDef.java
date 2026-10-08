@@ -526,9 +526,9 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but each completion attempt (until the end of the scenario) first sets the given
-	 * description and saves the order in {@code AFTER_COMPLETE}, like an interceptor that saves the order. That save also writes the values the
-	 * attempt's {@code prepareIt()} / {@code approveIt()} set (e.g. {@code C_DocType_ID}, {@code IsApproved}), and is rolled back with the attempt.
+	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but the armed completion's attempts (the deadlocked one and its retry) first set
+	 * the given description and save the order in {@code AFTER_COMPLETE}, like an interceptor that saves the order. In the deadlocked attempt, that
+	 * save also writes the values its {@code prepareIt()} / {@code approveIt()} set (e.g. {@code C_DocType_ID}, {@code IsApproved}), and is rolled back with it.
 	 */
 	@And("^the next completion of the order identified by (\\S+) saves the order with the description '(.*)' and then runs into a DB deadlock once$")
 	public void order_next_completion_saves_description_and_runs_into_deadlock(@NonNull final String orderIdentifier, @NonNull final String description)

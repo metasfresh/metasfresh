@@ -161,14 +161,14 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}
+	}	// process
 
 	@Override
 	public void resetEngineStateForRetry()
 	{
 		m_justPrepared = false;
 		m_processMsg = null;
-	}	// process
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

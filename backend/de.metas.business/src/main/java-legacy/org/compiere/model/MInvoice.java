@@ -775,7 +775,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public boolean processIt(final String processAction)
 	{
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}
+	}    // process
 
 	@Override
 	public void resetEngineStateForRetry()
@@ -783,7 +783,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_justPrepared = false;
 		m_lines = null;
 		m_taxes = null;
-	}    // process
+	}
 
 	@Override
 	public boolean unlockIt()

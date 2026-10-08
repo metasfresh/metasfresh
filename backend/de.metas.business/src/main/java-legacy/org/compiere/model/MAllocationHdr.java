@@ -350,14 +350,14 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}
+	}	// processIt
 
 	@Override
 	public void resetEngineStateForRetry()
 	{
 		m_justPrepared = false;
 		m_processMsg = null;
-	}	// processIt
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;
