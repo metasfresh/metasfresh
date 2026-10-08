@@ -23,15 +23,19 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -40,10 +44,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,22 +64,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 {
 	/**
-	 * How long the reactivation's transaction is held open at most while the missing shipment schedules are created.
-	 * A safety net: it is only reached if creating them waits for the reactivation to commit, which they must not.
+	 * How long the reactivation's transaction is held open at most while the missing shipment schedules are created. The workpackage's
+	 * commit waits for the reactivation (its foreign key checks lock order lines the reactivation updated), so the reactivation then
+	 * commits first, as in the original failure, and the workpackage commits right after it.
 	 */
-	private static final int REACTIVATION_HOLD_SECONDS = 10;
+	private static final int REACTIVATION_HOLD_SECONDS = 5;
 	private static final int TIMEOUT_SECONDS = 60;
+	private static final String CREATE_MISSING_PROCESSOR_SHORT_NAME = CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName();
 
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	/**
 	 * Completes the given sales order, then reactivates it in a transaction that stays open while a
-	 * {@code CreateMissingShipmentSchedules} workpackage runs, and asserts that both succeed.
+	 * {@code CreateMissingShipmentSchedules} workpackage runs. Asserts that the reactivation succeeds, and that the workpackage
+	 * creates no shipment schedule for the lines the reactivation deleted, but asks to be retried later instead of failing.
 	 * <p>
 	 * This is the window in which the asynchronous creation of a just-completed order's shipment schedules meets the
 	 * reactivation of that order: the reactivation has deleted lines (e.g. the discount lines of a contract-created
@@ -98,6 +110,14 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
+		// A CreateMissingShipmentSchedules workpackage that is still pending from before would create this order's shipment
+		// schedules right after its completion, before the reactivation; let it finish first.
+		StepDefUtil.tryAndWait(TIMEOUT_SECONDS, 500, () -> workPackageQueueUtil.countPendingWorkPackages(CREATE_MISSING_PROCESSOR_SHORT_NAME) == 0);
+
+		// Without a lock timeout, the workpackage waits for the reactivation at its commit, instead of giving up and asking to be retried
+		// (that would hide whether it still created a shipment schedule for a deleted line).
+		final int lockTimeoutMillisBefore = sysConfigBL.getIntValue(CreateMissingShipmentSchedulesWorkpackageProcessor.SYSCONFIG_LockTimeoutMillis, CreateMissingShipmentSchedulesWorkpackageProcessor.DEFAULT_LockTimeoutMillis);
+		sysConfigBL.setValue(CreateMissingShipmentSchedulesWorkpackageProcessor.SYSCONFIG_LockTimeoutMillis, 0, ClientId.SYSTEM, OrgId.ANY);
 		try (final IAutoCloseable ignored = shipmentScheduleBL.postponeMissingSchedsCreationUntilClose())
 		{
 			order.setDocAction(IDocument.ACTION_Complete);
@@ -124,8 +144,7 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 								documentBL.processEx(orderInTrx, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 								reactivated.countDown();
 
-								// Keep the reactivation (incl. its deleted lines) uncommitted while the workpackage runs.
-								// If the workpackage waits for this transaction, the timeout lets it commit, so that the workpackage can go on.
+								// Keep the reactivation (incl. its deleted lines) uncommitted while the workpackage runs; see REACTIVATION_HOLD_SECONDS.
 								//noinspection ResultOfMethodCallIgnored
 								release.await(REACTIVATION_HOLD_SECONDS, TimeUnit.SECONDS);
 							});
@@ -140,26 +159,23 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 						}
 					},
 					"reactivate-" + orderIdentifier);
+			reactivationThread.setDaemon(true);
 			reactivationThread.start();
 
-			assertThat(reactivated.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
-					.as("Reactivation of order %s reached its end (uncommitted)", orderIdentifier)
-					.isTrue();
-			assertThat(reactivationFailure.get())
-					.as("Failure while reactivating order %s", orderIdentifier)
-					.isNull();
-			assertThat(retrieveCompensationLineIds(orderId))
-					.as("Before the reactivation commits, the compensation lines of order %s are still visible outside of its transaction", orderIdentifier)
-					.containsExactlyElementsOf(compensationLineIds);
-
-			Throwable createMissingShipmentSchedulesFailure = null;
+			Throwable createMissingShipmentSchedulesOutcome = null;
 			try
 			{
-				runCreateMissingShipmentSchedulesWorkpackage();
-			}
-			catch (final Throwable t)
-			{
-				createMissingShipmentSchedulesFailure = t;
+				assertThat(reactivated.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+						.as("Reactivation of order %s reached its end (uncommitted)", orderIdentifier)
+						.isTrue();
+				assertThat(reactivationFailure.get())
+						.as("Failure while reactivating order %s", orderIdentifier)
+						.isNull();
+				assertThat(retrieveCompensationLineIds(orderId))
+						.as("Before the reactivation commits, the compensation lines of order %s are still visible outside of its transaction", orderIdentifier)
+						.containsExactlyElementsOf(compensationLineIds);
+
+				createMissingShipmentSchedulesOutcome = runCreateMissingShipmentSchedulesWorkpackage();
 			}
 			finally
 			{
@@ -171,12 +187,23 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 			assertThat(reactivationFailure.get())
 					.as("Failure while reactivating order %s", orderIdentifier)
 					.isNull();
-			assertThat(createMissingShipmentSchedulesFailure)
-					.as("Failure while creating the missing shipment schedules during the reactivation of order %s", orderIdentifier)
-					.isNull();
+
+			// The run skipped the compensation lines that the reactivation was deleting, committed its batch, and asks to be retried
+			// later, when the reactivation has ended (a skip request without cause, i.e. not one for a failure).
+			assertThat(createMissingShipmentSchedulesOutcome)
+					.as("Outcome of creating the missing shipment schedules during the reactivation of order %s", orderIdentifier)
+					.isInstanceOf(WorkpackageSkipRequestException.class)
+					.hasNoCause();
 			assertThat(retrieveShipmentScheduleCount(compensationLineIds))
 					.as("Shipment schedules of the compensation lines that the reactivation of order %s deleted", orderIdentifier)
 					.isZero();
+			assertThat(retrieveShipmentScheduleCount(orderId))
+					.as("Shipment schedules of order %s's other lines, created by the run's committed batch", orderIdentifier)
+					.isPositive();
+		}
+		finally
+		{
+			sysConfigBL.setValue(CreateMissingShipmentSchedulesWorkpackageProcessor.SYSCONFIG_LockTimeoutMillis, lockTimeoutMillisBefore, ClientId.SYSTEM, OrgId.ANY);
 		}
 
 		// a fresh instance for later doc actions, like a new request would have
@@ -185,12 +212,23 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 
 	/**
 	 * Runs a {@code CreateMissingShipmentSchedules} workpackage, like the async processor does.
+	 *
+	 * @return the exception the run ended with, or {@code null} if it succeeded
 	 */
-	private void runCreateMissingShipmentSchedulesWorkpackage()
+	@Nullable
+	private Throwable runCreateMissingShipmentSchedulesWorkpackage()
 	{
 		final I_C_Queue_WorkPackage workPackage = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Queue_WorkPackage.class);
-		final IWorkpackageProcessor.Result result = new CreateMissingShipmentSchedulesWorkpackageProcessor().processWorkPackage(workPackage, ITrx.TRXNAME_None);
-		assertThat(result).isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
+		try
+		{
+			final IWorkpackageProcessor.Result result = new CreateMissingShipmentSchedulesWorkpackageProcessor().processWorkPackage(workPackage, ITrx.TRXNAME_None);
+			assertThat(result).isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
+			return null;
+		}
+		catch (final RuntimeException e)
+		{
+			return e;
+		}
 	}
 
 	private ImmutableList<Integer> retrieveCompensationLineIds(@NonNull final OrderId orderId)

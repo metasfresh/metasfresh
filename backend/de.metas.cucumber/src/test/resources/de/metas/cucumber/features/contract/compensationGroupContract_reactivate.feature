@@ -165,7 +165,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
   Scenario: Reactivating a sales order while its missing shipment schedules are being created does not make their creation fail
   _Given a sales order whose completion added a contract discount line, and whose lines have no shipment schedules yet
   _When the order is reactivated (deleting the discount line) and, before that reactivation commits, the missing shipment schedules are created
-  _Then both succeed, without a shipment schedule for the deleted discount line
+  _Then the reactivation succeeds, and the creation of the missing shipment schedules skips the deleted discount line and asks to be retried later, instead of failing
   _And completing the order again creates the shipment schedules of its current lines
 
     Given metasfresh contains C_Orders:
