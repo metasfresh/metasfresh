@@ -19,10 +19,12 @@ import org.springframework.stereotype.Repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
@@ -65,6 +67,8 @@ import lombok.NonNull;
 @Repository
 public class RefundConfigRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	@Getter
 	private final InvoiceScheduleRepository invoiceScheduleRepository;
@@ -145,6 +149,34 @@ public class RefundConfigRepository
 		return recordsWithProductId.stream()
 				.map(this::ofRecordOrNull)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return the packing materials ({@code M_HU_PackingMaterial_ID}s) of the packing options of the given conditions' active configs that are restricted to packing options;
+	 * empty if no config is restricted or if the restricted configs list no option, i.e. if all packaging is accepted
+	 */
+	public ImmutableSet<Integer> retrievePackingMaterialIdsOfPackingOptionFilteredConfigs(@NonNull final ConditionsId conditionsId)
+	{
+		final ImmutableSet<Integer> restrictedConfigIds = queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsPackingOptionFiltered, true)
+				.create()
+				.listIds()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+		if (restrictedConfigIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_RefundConfig_ID, restrictedConfigIds)
+				.create()
+				.listDistinct(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_M_HU_PackingMaterial_ID, Integer.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**

@@ -6,11 +6,10 @@ import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
+import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -24,16 +23,20 @@ import java.util.Optional;
 public class RefundPackagingFilter
 {
 	/** The packing materials that a conditions' lines are restricted to; empty if they are not restricted, which includes a restriction without any option (an empty set means all packaging). Reset when a config or a packing option changes. */
-	private static final CCache<ConditionsId, Optional<ImmutableSet<Integer>>> PACKING_MATERIAL_IDS_CACHE = CCache.<ConditionsId, Optional<ImmutableSet<Integer>>>builder()
+	private static final CCache<ConditionsId, ImmutableSet<Integer>> PACKING_MATERIAL_IDS_CACHE = CCache.<ConditionsId, ImmutableSet<Integer>>builder()
 			.cacheName(I_C_Flatrate_RefundConfig_PackingOption.Table_Name + "#by#" + I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_Conditions_ID)
 			.tableName(I_C_Flatrate_RefundConfig_PackingOption.Table_Name)
 			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
 			.build();
 
+	private final RefundConfigRepository refundConfigRepository;
 	private final ImmutableList<RefundPackagingMaterialProvider> providers;
 
-	public RefundPackagingFilter(@NonNull final Optional<List<RefundPackagingMaterialProvider>> providers)
+	public RefundPackagingFilter(
+			@NonNull final RefundConfigRepository refundConfigRepository,
+			@NonNull final Optional<List<RefundPackagingMaterialProvider>> providers)
 	{
+		this.refundConfigRepository = refundConfigRepository;
 		this.providers = ImmutableList.copyOf(providers.orElseGet(ImmutableList::of));
 	}
 
@@ -43,13 +46,11 @@ public class RefundPackagingFilter
 	 */
 	public boolean isIncluded(@NonNull final ConditionsId conditionsId, @Nullable final HUPIItemProductId huPIItemProductId, @Nullable final BPartnerId bpartnerId)
 	{
-		final Optional<ImmutableSet<Integer>> restrictedToPackingMaterialIds = PACKING_MATERIAL_IDS_CACHE.getOrLoad(conditionsId, RefundPackagingFilter::retrieveRestrictedToPackingMaterialIds);
-		if (!restrictedToPackingMaterialIds.isPresent())
+		final ImmutableSet<Integer> restrictedToPackingMaterialIds = PACKING_MATERIAL_IDS_CACHE.getOrLoad(conditionsId, refundConfigRepository::retrievePackingMaterialIdsOfPackingOptionFilteredConfigs);
+		if (restrictedToPackingMaterialIds.isEmpty())
 		{
 			return true; // not restricted
 		}
-
-		final ImmutableSet<Integer> packingMaterialIds = restrictedToPackingMaterialIds.get();
 		if (huPIItemProductId == null)
 		{
 			return false;
@@ -60,37 +61,7 @@ public class RefundPackagingFilter
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.findFirst()
-				.map(packingMaterialIds::contains)
+				.map(restrictedToPackingMaterialIds::contains)
 				.orElse(false);
-	}
-
-	/** @return the packing options of the conditions' configs that are restricted to packaging options; empty if there are none, i.e. if all packaging is accepted */
-	private static Optional<ImmutableSet<Integer>> retrieveRestrictedToPackingMaterialIds(@NonNull final ConditionsId conditionsId)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final ImmutableSet<Integer> restrictedConfigIds = queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
-				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsPackingOptionFiltered, true)
-				.create()
-				.listIds()
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
-		if (restrictedConfigIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableSet<Integer> packingMaterialIds = queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_RefundConfig_ID, restrictedConfigIds)
-				.create()
-				.listDistinct(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_M_HU_PackingMaterial_ID, Integer.class)
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
-
-		// an empty set means all packaging
-		return packingMaterialIds.isEmpty() ? Optional.empty() : Optional.of(packingMaterialIds);
 	}
 }

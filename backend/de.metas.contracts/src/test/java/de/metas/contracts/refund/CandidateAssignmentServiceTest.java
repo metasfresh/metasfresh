@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.aggregation.api.IAggregationFactory;
@@ -151,7 +152,7 @@ public class CandidateAssignmentServiceTest
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
 				refundConfigChangeService,
-				new RefundPackagingFilter(Optional.empty()));
+				new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()));
 
 		refundTestTools = RefundTestTools.newInstance();
 

@@ -1,5 +1,7 @@
 package de.metas.contracts.refund.packaging;
 
+import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.contracts.refund.RefundConfigRepository;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
@@ -62,7 +64,7 @@ public class RefundPackagingFilterTest
 	public void filteredConditions_withoutAnyProvider_isExcluded()
 	{
 		createPackingOption(CONDITIONS_ID, CARTON);
-		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
+		assertThat(new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isFalse();
 	}
 
 	@Test
@@ -73,13 +75,13 @@ public class RefundPackagingFilterTest
 
 		assertThat(filter(null).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 		assertThat(filter(PFANDSTEIGE).isIncluded(CONDITIONS_ID, null, null)).isTrue();
-		assertThat(new RefundPackagingFilter(Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
+		assertThat(new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()).isIncluded(CONDITIONS_ID, PI_ITEM_PRODUCT_ID, null)).isTrue();
 	}
 
 	private static RefundPackagingFilter filter(@Nullable final Integer packingMaterialId)
 	{
 		final RefundPackagingMaterialProvider provider = (piItemProductId, bpartnerId) -> Optional.ofNullable(packingMaterialId);
-		return new RefundPackagingFilter(Optional.of(ImmutableList.of(provider)));
+		return new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.of(ImmutableList.of(provider)));
 	}
 
 	/** a config of the conditions that is restricted to packaging options (or not), with the given options */

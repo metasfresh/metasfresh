@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -129,7 +130,7 @@ public class CandidateAssignmentService_mocked_Test
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
 				refundConfigChangeService,
-				new RefundPackagingFilter(Optional.empty()));
+				new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()));
 	}
 
 	@Test

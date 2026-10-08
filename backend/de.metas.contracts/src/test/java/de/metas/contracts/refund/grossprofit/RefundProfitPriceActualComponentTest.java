@@ -73,7 +73,7 @@ public class RefundProfitPriceActualComponentTest
 
 		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
 		moneyService = new MoneyService(new CurrencyRepository());
-		refundPackagingFilter = new RefundPackagingFilter(Optional.of(ImmutableList.of((piItemProductId, bpartnerId) -> Optional.ofNullable(PACKING_MATERIAL_BY_PI.get(piItemProductId)))));
+		refundPackagingFilter = new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.of(ImmutableList.of((piItemProductId, bpartnerId) -> Optional.ofNullable(PACKING_MATERIAL_BY_PI.get(piItemProductId)))));
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
 		invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
