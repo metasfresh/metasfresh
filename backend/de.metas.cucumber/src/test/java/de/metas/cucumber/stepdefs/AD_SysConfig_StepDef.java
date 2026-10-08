@@ -41,7 +41,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
