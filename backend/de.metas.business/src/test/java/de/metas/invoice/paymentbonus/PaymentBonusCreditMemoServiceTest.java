@@ -27,6 +27,7 @@ import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PaymentBonusCreditMemoServiceTest
@@ -86,6 +87,22 @@ class PaymentBonusCreditMemoServiceTest
 		assertThatThrownBy(() -> generateCreditMemo(deduction(EUR)))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("no document type for payment bonus credit memos");
+	}
+
+	@Test
+	void isPaymentBonusCreditMemo()
+	{
+		assertThat(PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docType(X_C_DocType.DOCBASETYPE_ARCreditMemo, X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo))).isTrue();
+		assertThat(PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docType(X_C_DocType.DOCBASETYPE_ARCreditMemo, null))).isFalse();
+		assertThat(PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docType(X_C_DocType.DOCBASETYPE_ARInvoice, X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo))).isFalse();
+	}
+
+	private static I_C_DocType docType(final String docBaseType, final String docSubType)
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(docBaseType);
+		docType.setDocSubType(docSubType);
+		return docType;
 	}
 
 	private void generateCreditMemo(final PaymentBonusDeduction deduction)

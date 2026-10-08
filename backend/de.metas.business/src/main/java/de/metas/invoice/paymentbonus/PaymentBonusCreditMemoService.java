@@ -22,6 +22,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,17 @@ public class PaymentBonusCreditMemoService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	/**
+	 * A payment-bonus credit memo is an internal booking of the payment allocation: it is neither auto-printed nor sent via EDI to the customer.
+	 *
+	 * @return {@code true} if the given document type is the one of the payment-bonus credit memos
+	 */
+	public static boolean isPaymentBonusCreditMemo(@NonNull final I_C_DocType docType)
+	{
+		return DOC_BASE_AND_SUB_TYPE.getDocBaseType().getCode().equals(docType.getDocBaseType())
+				&& DOC_BASE_AND_SUB_TYPE.getDocSubType().getCode().equals(docType.getDocSubType());
+	}
 
 	/**
 	 * @return the given invoices that already have a completed payment bonus credit memo

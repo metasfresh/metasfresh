@@ -55,6 +55,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -196,9 +197,7 @@ public class EDIDocumentBL
 		{
 			return false;
 		}
-		final I_C_DocType docType = docTypeDAO.getById(docTypeRepoId);
-		return X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docType.getDocBaseType())
-				&& X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo.equals(docType.getDocSubType());
+		return PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docTypeDAO.getById(docTypeRepoId));
 	}
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,
