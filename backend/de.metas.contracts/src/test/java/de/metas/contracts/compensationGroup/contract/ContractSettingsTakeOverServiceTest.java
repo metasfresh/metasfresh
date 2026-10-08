@@ -70,6 +70,7 @@ class ContractSettingsTakeOverServiceTest
 	private static final ProductId OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID = ProductId.ofRepoId(204); // customer discount product, on no SO line
 
 	private ContractCompensationGroupSettingsRepository settingsRepository;
+	private OrderGroupRepository orderGroupRepositorySpy;
 	private ContractSettingsTakeOverService service;
 	private UomId uomId;
 	private ProductId goodsProductId;
@@ -78,8 +79,10 @@ class ContractSettingsTakeOverServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		settingsRepository = new ContractCompensationGroupSettingsRepository();
-		service = ContractSettingsTakeOverService.newInstanceForUnitTesting();
+		settingsRepository = ContractCompensationGroupSettingsRepository.newInstanceForUnitTesting();
+		// a spy delegates to the real methods, so it behaves like the real repository in every test
+		orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
+		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -216,10 +219,8 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord());
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
-		final OrderGroupRepository orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
-		final ContractSettingsTakeOverService serviceWithSpy = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy);
 
-		assertThat(serviceWithSpy.computeMatches(purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)).isEmpty();
+		assertThat(service.computeMatches(purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)).isEmpty();
 		Mockito.verify(orderGroupRepositorySpy, Mockito.never()).retrieveContractCreatedGroupsByOrderId(any());
 	}
 

@@ -70,6 +70,8 @@ public class ContractSettingsTakeOverRepository
 	}
 
 	/**
+	 * Deliberately uncached: the interceptor must see the current transaction's records.
+	 *
 	 * @return whether the product is a customer discount product of an active take-over product record of any active take-over
 	 * record of the given take-over record's settings, other than {@code excludeTakeOverProductId}
 	 */
