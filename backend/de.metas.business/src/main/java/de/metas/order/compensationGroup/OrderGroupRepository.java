@@ -300,7 +300,7 @@ public class OrderGroupRepository implements GroupRepository
 		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(allOrderLines);
 		final Map<OrderLineId, GroupCompensationBase> basesByCompensationOrderLineId = retrieveCompensationLineBases(allOrderLines.stream()
 				.filter(I_C_OrderLine::isGroupCompensationLine)
-				.collect(ImmutableList.toImmutableList()));
+				.collect(ImmutableList.toImmutableList()), true);
 
 		// the packing is needed only when a discount line is restricted to a packing-material category.
 		// Also look at the schemas: a new group is loaded before its discount lines are added from the schema (GroupCreator#recreateGroup)
@@ -382,7 +382,6 @@ public class OrderGroupRepository implements GroupRepository
 		return isAdditive(GroupTemplateId.ofRepoIdOrNull(groupRecord.getC_CompensationGroup_Schema_ID()));
 	}
 
-	/** Read from the cached schema, so building groups does not query the schema again for each group. */
 	private boolean isAdditive(@Nullable final GroupTemplateId groupTemplateId)
 	{
 		return groupTemplateId != null && groupTemplateRepository.getById(groupTemplateId).isAdditive();
@@ -563,7 +562,7 @@ public class OrderGroupRepository implements GroupRepository
 	/**
 	 * note to dev: keep in sync with {@link #updateOrderLineFromCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
 	 *
-	 * @param base the line's base, see {@link #retrieveCompensationLineBases(List)}
+	 * @param base the line's base, see {@link #retrieveCompensationLineBases(List, boolean)}
 	 */
 	private static GroupCompensationLine toGroupCompensationLine(
 			@NonNull final I_C_OrderLine groupOrderLine,
@@ -589,7 +588,10 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** @return the origin of each given compensation order line (active or not); an order line that does not exist is absent */
+	/**
+	 * @return the origin of each given compensation order line (active or not); an order line that does not exist is absent.
+	 * An order line whose schema line was deleted has base {@link GroupCompensationBase#NONE}, unlike on the order path, which fails.
+	 */
 	public ImmutableMap<OrderLineId, CompensationLineOrigin> retrieveCompensationLineOrigins(@NonNull final Set<OrderLineId> compensationOrderLineIds)
 	{
 		if (compensationOrderLineIds.isEmpty())
@@ -601,7 +603,7 @@ public class OrderGroupRepository implements GroupRepository
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, compensationOrderLineIds)
 				.create()
 				.list();
-		final ImmutableMap<OrderLineId, GroupCompensationBase> bases = retrieveCompensationLineBases(compensationLines);
+		final ImmutableMap<OrderLineId, GroupCompensationBase> bases = retrieveCompensationLineBases(compensationLines, false);
 
 		return compensationLines.stream()
 				.collect(ImmutableMap.toImmutableMap(
@@ -622,8 +624,12 @@ public class OrderGroupRepository implements GroupRepository
 	 * @return the base of each given compensation line, with one bulk load of the schema lines: its schema line's base; for a line
 	 * without schema line, the product category stored on the line itself, without packing restriction (see {@link GroupCompensationLine#hasOwnBase()}),
 	 * or {@link GroupCompensationBase#NONE} if none is stored.
+	 *
+	 * @param failOnMissingSchemaLine if {@code true}, a line whose schema line does not exist fails; otherwise it has base {@link GroupCompensationBase#NONE}
 	 */
-	private ImmutableMap<OrderLineId, GroupCompensationBase> retrieveCompensationLineBases(@NonNull final List<I_C_OrderLine> compensationLines)
+	private ImmutableMap<OrderLineId, GroupCompensationBase> retrieveCompensationLineBases(
+			@NonNull final List<I_C_OrderLine> compensationLines,
+			final boolean failOnMissingSchemaLine)
 	{
 		final ImmutableMap<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId = groupTemplateRepository.getBasesBySchemaLineId(
 				compensationLines.stream()
@@ -634,14 +640,15 @@ public class OrderGroupRepository implements GroupRepository
 		final ImmutableMap.Builder<OrderLineId, GroupCompensationBase> result = ImmutableMap.builder();
 		for (final I_C_OrderLine line : compensationLines)
 		{
-			result.put(OrderLineId.ofRepoId(line.getC_OrderLine_ID()), getBase(line, basesBySchemaLineId));
+			result.put(OrderLineId.ofRepoId(line.getC_OrderLine_ID()), getBase(line, basesBySchemaLineId, failOnMissingSchemaLine));
 		}
 		return result.build();
 	}
 
 	private static GroupCompensationBase getBase(
 			@NonNull final I_C_OrderLine compensationLine,
-			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId)
+			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId,
+			final boolean failOnMissingSchemaLine)
 	{
 		final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(compensationLine);
 		if (schemaLineId == null)
@@ -650,11 +657,15 @@ public class OrderGroupRepository implements GroupRepository
 		}
 
 		final GroupCompensationBase base = basesBySchemaLineId.get(schemaLineId);
-		if (base == null)
+		if (base != null)
+		{
+			return base;
+		}
+		if (failOnMissingSchemaLine)
 		{
 			throw new AdempiereException("No C_CompensationGroup_SchemaLine found for " + schemaLineId);
 		}
-		return base;
+		return GroupCompensationBase.NONE;
 	}
 
 	@Override
@@ -1027,7 +1038,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(
 				compensationLineRecord,
-				retrieveCompensationLineBases(ImmutableList.of(compensationLineRecord)).get(OrderLineId.ofRepoId(compensationLineRecord.getC_OrderLine_ID())));
+				retrieveCompensationLineBases(ImmutableList.of(compensationLineRecord), true).get(OrderLineId.ofRepoId(compensationLineRecord.getC_OrderLine_ID())));
 		final GroupRegularLine aggregatedRegularLine = toAggregatedRegularLine(compensationLine);
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));

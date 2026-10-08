@@ -21,6 +21,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -185,7 +186,7 @@ class InvoiceCandidateGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Regression for the batched applies-to-category lookup (retrieveBasesByInvoiceCandidateId):
+	// Regression for the batched applies-to-category lookup (retrieveCompensationLineOriginsByInvoiceCandidateId):
 	// two compensation lines in the SAME group, whose schema lines point to DIFFERENT applies-to
 	// categories, must each resolve their OWN category and recompute against their OWN base -- a
 	// wrong-key composition bug (e.g. attributing every candidate to the first order line's category)
@@ -320,8 +321,8 @@ class InvoiceCandidateGroupRepositoryTest
 
 		final GroupId groupId = OrderGroupRepository.createGroupId(orderId, orderCompensationGroupId);
 
-		// exercise: this goes through retrieveBasesByInvoiceCandidateId's batched
-		// two-query composition for BOTH discount lines at once
+		// exercise: this goes through retrieveCompensationLineOriginsByInvoiceCandidateId's batched
+		// base lookup for BOTH discount lines at once
 		final Group group = repo.retrieveGroup(groupId);
 		group.updateAllCompensationLines();
 
@@ -523,6 +524,73 @@ class InvoiceCandidateGroupRepositoryTest
 		assertThat(recomputedLine.getAppliesToProductCategoryId()).isNull();
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
+	}
+
+	// A schema line can be deleted while order lines still reference it (the column has no foreign key): the invoice candidate
+	// side, like before, falls back to "no base" instead of failing the group rebuild.
+	@Test
+	void discountInvoiceCandidate_whoseSchemaLineWasDeleted_fallsBackToNoBase()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_M_Product discountProduct = newInstance(I_M_Product.class);
+		discountProduct.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProduct);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+
+		final I_M_Product_Category goodsCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(goodsCategory);
+
+		final I_M_Product goodsProduct = newInstance(I_M_Product.class);
+		goodsProduct.setC_UOM_ID(uomId.getRepoId());
+		goodsProduct.setM_Product_Category_ID(goodsCategory.getM_Product_Category_ID());
+		saveRecord(goodsProduct);
+
+		final I_C_Invoice_Candidate goodsIc = newInstance(I_C_Invoice_Candidate.class);
+		goodsIc.setC_Order_ID(order.getC_Order_ID());
+		goodsIc.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		goodsIc.setM_Product_ID(goodsProduct.getM_Product_ID());
+		goodsIc.setNetAmtToInvoice(new BigDecimal("500"));
+		saveRecord(goodsIc);
+
+		final int deletedSchemaLineId = 999_999;
+		final I_C_OrderLine compensationOrderLine = newInstance(I_C_OrderLine.class);
+		compensationOrderLine.setC_Order_ID(order.getC_Order_ID());
+		compensationOrderLine.setM_Product_ID(discountProduct.getM_Product_ID());
+		compensationOrderLine.setC_UOM_ID(uomId.getRepoId());
+		compensationOrderLine.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		compensationOrderLine.setIsGroupCompensationLine(true);
+		compensationOrderLine.setC_CompensationGroup_SchemaLine_ID(deletedSchemaLineId);
+		saveRecord(compensationOrderLine);
+
+		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
+		discountIc.setC_Order_ID(order.getC_Order_ID());
+		discountIc.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		discountIc.setC_OrderLine_ID(compensationOrderLine.getC_OrderLine_ID());
+		discountIc.setM_Product_ID(discountProduct.getM_Product_ID());
+		discountIc.setIsGroupCompensationLine(true);
+		discountIc.setC_UOM_ID(uomId.getRepoId());
+		discountIc.setPrice_UOM_ID(uomId.getRepoId());
+		discountIc.setQtyToInvoice(BigDecimal.ONE);
+		discountIc.setPriceEntered(new BigDecimal("-50"));
+		discountIc.setLineNetAmt(new BigDecimal("-50"));
+		discountIc.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIc.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIc.setGroupCompensationPercentage(BigDecimal.TEN);
+		discountIc.setGroupCompensationBaseAmt(new BigDecimal("500"));
+		saveRecord(discountIc);
+
+		final Group group = repo.retrieveGroup(OrderGroupRepository.createGroupId(
+				OrderId.ofRepoId(order.getC_Order_ID()),
+				groupHeader.getC_Order_CompensationGroup_ID()));
+
+		assertThat(group.getCompensationLines()).hasSize(1);
+		assertThat(group.getCompensationLines().get(0).getBase()).isEqualTo(GroupCompensationBase.NONE);
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
