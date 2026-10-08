@@ -1,6 +1,10 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.cache.CCacheConfig;
+import de.metas.cache.CCacheStatsPredicate;
+import de.metas.cache.CacheMgt;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
@@ -9,10 +13,6 @@ import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.cache.CCache;
-import de.metas.cache.CCacheConfig;
-import de.metas.cache.CCacheStatsPredicate;
-import de.metas.cache.CacheMgt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

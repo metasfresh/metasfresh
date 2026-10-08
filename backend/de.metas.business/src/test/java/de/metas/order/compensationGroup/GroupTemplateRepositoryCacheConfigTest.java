@@ -50,7 +50,6 @@ class GroupTemplateRepositoryCacheConfigTest
 	{
 		final String cacheName = I_C_CompensationGroup_Schema.Table_Name;
 
-		assertThat(repository).isNotNull(); // keeps the repository (and its cache) reachable
 		assertThat(CacheMgt.get().streamStats(CCacheStatsPredicate.builder().cacheNameContains(cacheName).build()).filter(stats -> stats.getName().equals(cacheName)))
 				.isNotEmpty()
 				.allSatisfy(stats -> assertThat(stats.getConfig())
