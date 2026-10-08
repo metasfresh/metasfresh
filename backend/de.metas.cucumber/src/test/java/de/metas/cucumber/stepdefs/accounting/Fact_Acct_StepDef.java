@@ -16,6 +16,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
@@ -73,6 +74,17 @@ public class Fact_Acct_StepDef
 			@SuppressWarnings("unused") final String isOrAre) throws InterruptedException
 	{
 		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+	}
+
+	/**
+	 * Forces the accounting to post the documents again (as a user does with "Re-Post"): their Fact_Acct rows are deleted and recreated with new IDs.
+	 */
+	@And("^the documents (.*) are reposted$")
+	public void repostDocuments(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
+	{
+		final TableRecordReferenceSet recordRefs = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.repost(recordRefs);
 		AccountingCucumberHelper.waitUtilPosted(recordRefs);
 	}
 

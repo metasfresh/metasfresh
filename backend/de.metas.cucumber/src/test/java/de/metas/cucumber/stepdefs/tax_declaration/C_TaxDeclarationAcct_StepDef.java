@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -93,6 +94,39 @@ public class C_TaxDeclarationAcct_StepDef
 		DataTableRows.of(dataTable).forEach(row -> assertAcctRow(row, declId, softly));
 
 		softly.assertAll();
+	}
+
+	/**
+	 * Makes the snapshot rows of the declaration that reference the given document point to a document that no longer exists.
+	 *
+	 * <p>Stands in for a source document that was removed after the declaration was built (e.g. data cleanup or archive).
+	 * Documents that were posted cannot be deleted through the application, so there is no user path to this state;
+	 * the snapshot row itself (VAT code, amount type, amount) is left untouched.
+	 *
+	 * <pre>{@code
+	 * When the source document "invoice" of tax declaration "td1" no longer exists
+	 * }</pre>
+	 */
+	@When("the source document {string} of tax declaration {string} no longer exists")
+	public void source_document_no_longer_exists(
+			@NonNull final String documentIdentifier,
+			@NonNull final String declarationIdentifier)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(declarationIdentifier));
+		final TableRecordReference ref = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(documentIdentifier));
+		final int adTableId = adTableDAO.retrieveAdTableId(ref.getTableName()).getRepoId();
+
+		final int updatedCount = queryBL.createQueryBuilder(I_C_TaxDeclarationAcct.class)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, ref.getRecord_ID())
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, 2_000_000_000)
+				.execute();
+		org.assertj.core.api.Assertions.assertThat(updatedCount)
+				.as("snapshot rows of declaration %s referencing %s", declarationIdentifier, documentIdentifier)
+				.isGreaterThan(0);
 	}
 
 	private void assertAcctRow(
