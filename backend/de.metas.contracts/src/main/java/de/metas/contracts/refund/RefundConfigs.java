@@ -234,7 +234,6 @@ public class RefundConfigs
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
 		}
 
-		// the refund of a contract is issued to one partner
 		// the bonus of a condition is either invoiced by the refund engine or deducted by the customer at payment
 		if (hasDifferentValues(refundConfigs, RefundConfig::isDeductedAtPayment))
 		{
@@ -243,6 +242,7 @@ public class RefundConfigs
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT).markAsUserValidationError();
 		}
 
+		// the refund of a contract is issued to one partner
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.
 		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(Objects::nonNull).distinct().count();
 		if (distinctBonusProducts > 1)

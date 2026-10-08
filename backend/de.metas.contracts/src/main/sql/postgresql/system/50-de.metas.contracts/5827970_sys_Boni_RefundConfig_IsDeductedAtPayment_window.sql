@@ -1,5 +1,5 @@
 -- Boni: show C_Flatrate_RefundConfig.IsDeductedAtPayment in window 540113 (Vertragsbedingungen), tab 541106 (Rückvergütung),
--- right after the bonus recipient (form and grid).
+-- form: between "Rückvergütung per" and "Terminplan Rechnung"; grid: after the bonus product.
 --
 -- IDs allocated from idserver.metas.de on 2026-10-06:
 --   AD_Field 785611, AD_UI_Element 654938
@@ -28,7 +28,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785611
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(785611)
 ;
 
--- existing element group 541612; form after the bonus recipient (85), grid after the bonus recipient (16)
+-- existing element group 541612; form between "Rückvergütung per" (80) and "Terminplan Rechnung" (90), grid after the bonus product (14)
 INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                            AD_Tab_ID, AD_UI_ElementGroup_ID, AD_Field_ID, AD_UI_ElementType, Name, Description, Help,
                            IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsAdvancedField, SeqNo, SeqNoGrid, SeqNo_SideList, WidgetSize)
