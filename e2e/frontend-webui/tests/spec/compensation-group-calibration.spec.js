@@ -97,6 +97,7 @@ test.describe('Compensation group calibration', () => {
                     KINDERGARTEN: { name: 'Kindergarten' },
                     KRANKENHAUS: { name: 'Krankenhaus' },
                     KITA_B: { name: 'Kita B' },
+                    KITA_C: { name: 'Kita C' },
                 },
                 products: {
                     MENUE1: {
@@ -128,6 +129,7 @@ test.describe('Compensation group calibration', () => {
         const kindergarten = masterdata.bpartners.KINDERGARTEN.bpartnerCode;
         const krankenhaus = masterdata.bpartners.KRANKENHAUS.bpartnerCode;
         const kitaB = masterdata.bpartners.KITA_B.bpartnerCode;
+        const kitaC = masterdata.bpartners.KITA_C.bpartnerCode;
         const menu = masterdata.products.MENUE1.productCode;
         const reis = masterdata.products.REIS.productCode;
         const haehnchen = masterdata.products.HAEHNCHEN.productCode;
@@ -195,6 +197,24 @@ test.describe('Compensation group calibration', () => {
             await filterRulesByCustomer(page, kitaB);
             await expect(page.getByTestId(`table-row-${rule30Id}`).locator(`[data-cy="cell-${FIELD_FACTOR}"]`))
                 .toHaveText(/^66[.,]7$/, { timeout: SLOW_ACTION_TIMEOUT });
+        });
+
+        await test.step('Part 1: a new rule opens with factor 100 and keeps it when saved without touching the factor (Kita C)', async () => {
+            await newRuleThroughWindow(page, rulesWindowUrl);
+            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^100$/, { timeout: SLOW_ACTION_TIMEOUT });
+
+            await NumericWidget.setValue('SeqNo', 40);
+            await LookupWidget.setValue('C_BPartner_ID', kitaC);
+            await LookupWidget.setValue('M_Product_ID', reis);
+            const kitaCRuleId = recordIdFromUrl(page);
+            await waitForRecordSaved(rulesWindowId, kitaCRuleId, { maxRetries: 20, retryDelayMs: 1000 });
+
+            // read back from the server: the saved rule carries factor 100
+            await page.goto(rulesWindowUrl);
+            await expectGridLoaded(page);
+            await filterRulesByCustomer(page, kitaC);
+            await expect(page.getByTestId(`table-row-${kitaCRuleId}`).locator(`[data-cy="cell-${FIELD_FACTOR}"]`))
+                .toHaveText(/^100$/, { timeout: SLOW_ACTION_TIMEOUT });
         });
 
         await test.step('Part 1: under the customer filter the rules show in SeqNo order', async () => {
