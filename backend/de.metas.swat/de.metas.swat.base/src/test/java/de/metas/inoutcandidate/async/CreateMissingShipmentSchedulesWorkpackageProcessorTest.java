@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.async;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -25,6 +24,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -34,10 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CreateMissingShipmentSchedulesWorkpackageProcessorTest
@@ -143,7 +141,6 @@ class CreateMissingShipmentSchedulesWorkpackageProcessorTest
 	class processWorkPackage
 	{
 		private IShipmentScheduleHandlerBL shipmentScheduleHandlerBL;
-		private IWorkPackageBuilder followUpBuilder;
 
 		@BeforeEach
 		void beforeEach()
@@ -152,82 +149,84 @@ class CreateMissingShipmentSchedulesWorkpackageProcessorTest
 			Services.registerService(IShipmentScheduleHandlerBL.class, shipmentScheduleHandlerBL);
 			Services.registerService(IShipmentScheduleInvalidateBL.class, mock(IShipmentScheduleInvalidateBL.class));
 
-			followUpBuilder = mock(IWorkPackageBuilder.class, RETURNS_SELF);
-			final IWorkPackageQueue queue = mock(IWorkPackageQueue.class);
-			when(queue.newWorkPackage()).thenReturn(followUpBuilder);
-			final IWorkPackageQueueFactory queueFactory = mock(IWorkPackageQueueFactory.class);
-			when(queueFactory.getQueueForEnqueuing(any(Properties.class), eq(CreateMissingShipmentSchedulesWorkpackageProcessor.class))).thenReturn(queue);
-			Services.registerService(IWorkPackageQueueFactory.class, queueFactory);
-
 			// no SET LOCAL lock_timeout, there is no database
-			Services.get(ISysConfigBL.class).setValue(CreateMissingShipmentSchedulesWorkpackageProcessor.SYSCONFIG_LockTimeoutMillis, 0, ClientId.SYSTEM, OrgId.ANY);
+			Services.get(ISysConfigBL.class).setValue("de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis", 0, ClientId.SYSTEM, OrgId.ANY);
 		}
 
-		private void givenResult(final boolean limitReached, final int skippedCount)
+		private void givenBatchFailsWith(final RuntimeException e)
 		{
-			when(shipmentScheduleHandlerBL.createMissingCandidates(any(Properties.class), any(QueryLimit.class)))
-					.thenReturn(new CreateMissingCandidatesResult(ImmutableSet.of(), limitReached, skippedCount));
+			when(shipmentScheduleHandlerBL.createMissingCandidates(any(Properties.class), any(QueryLimit.class))).thenThrow(e);
 		}
 
-		private IWorkpackageProcessor.Result process()
+		private IWorkpackageProcessor.Result process(final int skippedCount)
 		{
 			final I_C_Queue_WorkPackage workPackage = newInstance(I_C_Queue_WorkPackage.class);
+			workPackage.setSkipped_Count(skippedCount);
 			return new CreateMissingShipmentSchedulesWorkpackageProcessor().processWorkPackage(workPackage, ITrx.TRXNAME_None);
 		}
 
-		@Test
-		void nothingSkipped_limitNotReached_success_noFollowUp()
+		private SQLException foreignKeyViolation(final String constraintName)
 		{
-			givenResult(false, 0);
-
-			assertThat(process()).isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
-			verify(followUpBuilder, never()).buildAndEnqueue();
+			return new PSQLException(new ServerErrorMessage("SERROR\0C23503\0Minsert or update on table violates foreign key constraint\0n" + constraintName + "\0"));
 		}
 
 		@Test
-		void skipped_limitNotReached_retriedLater_noFollowUp()
+		void success()
 		{
-			givenResult(false, 2);
+			when(shipmentScheduleHandlerBL.createMissingCandidates(any(Properties.class), any(QueryLimit.class)))
+					.thenReturn(new CreateMissingCandidatesResult(ImmutableSet.of(), false));
 
-			assertThatThrownBy(this::process)
-					.isInstanceOfSatisfying(WorkpackageSkipRequestException.class,
-							skipRequest -> assertThat(skipRequest.getSkipTimeoutMillis()).isEqualTo(5000));
-			verify(followUpBuilder, never()).buildAndEnqueue();
+			assertThat(process(0)).isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
 		}
 
 		@Test
 		void lockTimeout_retriedLater()
 		{
 			final SQLException lockTimeout = new SQLException("ERROR: canceling statement due to lock timeout", "55P03");
-			when(shipmentScheduleHandlerBL.createMissingCandidates(any(Properties.class), any(QueryLimit.class)))
-					.thenThrow(new AdempiereException("batch failed", lockTimeout));
+			givenBatchFailsWith(new AdempiereException("batch failed", lockTimeout));
 
-			assertThatThrownBy(this::process)
-					.isInstanceOfSatisfying(WorkpackageSkipRequestException.class,
-							skipRequest -> assertThat(skipRequest.getSkipTimeoutMillis()).isEqualTo(5000))
+			assertThatThrownBy(() -> process(0))
+					.isInstanceOfSatisfying(WorkpackageSkipRequestException.class, skipRequest -> assertThat(skipRequest.getSkipTimeoutMillis()).isEqualTo(5000))
 					.hasRootCause(lockTimeout);
-			verify(followUpBuilder, never()).buildAndEnqueue();
 		}
 
 		@Test
-		void otherFailure_notRetried()
+		void orderLineForeignKeyViolation_retriedLater()
 		{
-			final SQLException foreignKeyViolation = new SQLException("ERROR: insert or update on table violates foreign key constraint", "23503");
-			when(shipmentScheduleHandlerBL.createMissingCandidates(any(Properties.class), any(QueryLimit.class)))
-					.thenThrow(new AdempiereException("batch failed", foreignKeyViolation));
+			final SQLException foreignKeyViolation = foreignKeyViolation("corderline_corderline");
+			givenBatchFailsWith(new AdempiereException("batch failed", foreignKeyViolation));
 
-			assertThatThrownBy(this::process)
-					.isNotInstanceOf(WorkpackageSkipRequestException.class)
+			assertThatThrownBy(() -> process(0))
+					.isInstanceOfSatisfying(WorkpackageSkipRequestException.class, skipRequest -> assertThat(skipRequest.getSkipTimeoutMillis()).isEqualTo(5000))
 					.hasRootCause(foreignKeyViolation);
 		}
 
 		@Test
-		void skipped_limitReached_immediateFollowUp_success()
+		void otherForeignKeyViolation_notRetried()
 		{
-			givenResult(true, 2);
+			final AdempiereException failure = new AdempiereException("batch failed", foreignKeyViolation("mproduct_mshipmentschedule"));
+			givenBatchFailsWith(failure);
 
-			assertThat(process()).isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
-			verify(followUpBuilder).buildAndEnqueue();
+			assertThatThrownBy(() -> process(0)).isSameAs(failure);
+		}
+
+		@Test
+		void otherError_notRetried()
+		{
+			final AdempiereException failure = new AdempiereException("some bug");
+			givenBatchFailsWith(failure);
+
+			assertThatThrownBy(() -> process(0)).isSameAs(failure);
+		}
+
+		@Test
+		void retriesExhausted_notRetriedAnyMore()
+		{
+			final AdempiereException failure = new AdempiereException("batch failed", new SQLException("ERROR: canceling statement due to lock timeout", "55P03"));
+			givenBatchFailsWith(failure);
+
+			assertThatThrownBy(() -> process(9)).isInstanceOf(WorkpackageSkipRequestException.class);
+			assertThatThrownBy(() -> process(10)).isSameAs(failure);
 		}
 	}
 }

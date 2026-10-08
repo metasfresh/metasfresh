@@ -22,7 +22,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -43,15 +42,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
-import static org.adempiere.model.InterfaceWrapperHelper.getKeyColumnName;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
@@ -169,7 +165,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		// successive runs. If strict per-run fairness across handlers is ever required, distribute the budget
 		// (e.g. round-robin) instead of draining in order.
 		final Budget budget = new Budget(maxToProcess);
-		final AtomicInteger skippedCount = new AtomicInteger();
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
@@ -182,18 +177,17 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 			try (final MDCCloseable ignored = MDC.putCloseable("ShipmentScheduleHandler.className", handler.getClass().getName()))
 			{
-				result.addAll(invokeHandler(ctx, handler, budget, skippedCount));
+				result.addAll(invokeHandler(ctx, handler, budget));
 			}
 		}
 
-		return new CreateMissingCandidatesResult(ImmutableSet.copyOf(result), budget.isLimitReached(), skippedCount.get());
+		return new CreateMissingCandidatesResult(ImmutableSet.copyOf(result), budget.isLimitReached());
 	}
 
 	private LinkedHashSet<ShipmentScheduleId> invokeHandler(
 			@NonNull final Properties ctx,
 			@NonNull final ShipmentScheduleHandler handler,
-			@NonNull final Budget budget,
-			@NonNull final AtomicInteger skippedCount)
+			@NonNull final Budget budget)
 	{
 		final String handlerClassName = handler.getClass().getName();
 
@@ -220,66 +214,12 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 			final Object model = missingCandidateModels.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(model))
 			{
-				// Locked one by one, right before processing, instead of all at once after the retrieve: each lock is then taken as late
-				// as possible, see lockIfStillMissingCandidates.
-				if (!lockIfStillMissingCandidates(ctx, handler, model))
-				{
-					Loggables.withLogger(logger, Level.INFO).addLog("Skip creating shipment schedules for {} because its record is locked by a concurrent transaction (e.g. being deleted) or no longer needs them", model);
-					skippedCount.incrementAndGet();
-					// a skipped model does not consume the budget: the budget limits the work done by one run, and a skipped model was no work
-					continue;
-				}
-
-				refresh(model); // the retrieved model might be stale; we hold the lock now, so the record can't be deleted any more
 				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
 			}
 			budget.consumeOne();
 		}
 		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleHandler {} created {} shipment schedules", handler, result.size());
 		return result;
-	}
-
-	/**
-	 * Locks the given model's record with {@code FOR KEY SHARE SKIP LOCKED}, if it still needs shipment schedules according to
-	 * {@link ShipmentScheduleHandler#createModelsWithMissingCandidatesQueryBuilder(Properties, String)}.
-	 * <p>
-	 * Why: the models are retrieved from a committed snapshot, but a concurrent, not yet committed transaction might be deleting
-	 * one of them (e.g. a sales order's reactivation deleting the discount lines of a compensation group). A shipment schedule
-	 * created for such a model would reference a deleted record; for an order line, the foreign key check at commit fails, and the
-	 * whole batch of this run is rolled back.
-	 * <p>
-	 * What is protected, when this method returns {@code true} within a transaction:
-	 * <ul>
-	 * <li>at the time of locking, the record existed, was not being deleted by a concurrent transaction, and still matched the
-	 * handler's condition, based on the data committed at that time (e.g. for an order line: its order is still completed and
-	 * it has no shipment schedule yet)</li>
-	 * <li>until the current transaction ends, no other transaction can delete the record or change its key</li>
-	 * </ul>
-	 * Not protected: changes of non-key columns of the record, and changes of other records (e.g. its order being reactivated)
-	 * after the lock was taken; the lock does not conflict with them, on purpose. (The foreign key checks at the batch's commit can
-	 * still wait for a transaction that updated a referenced record; see {@code CreateMissingShipmentSchedulesWorkpackageProcessor}'s
-	 * lock timeout.)
-	 * Also, two concurrent runs may both lock the same record (it is a shared lock); duplicate shipment schedules are prevented by the
-	 * unique index on {@code M_ShipmentSchedule(Record_ID, AD_Table_ID)} instead.
-	 * <p>
-	 * Without a transaction, the lock is released right after the query, so only the check remains.
-	 *
-	 * @return {@code false} if the record is locked by a concurrent transaction that is deleting it (or changing its key), or if it
-	 * no longer needs shipment schedules (e.g. it was deleted meanwhile); no shipment schedule shall be created for it then.
-	 */
-	@VisibleForTesting
-	protected boolean lockIfStillMissingCandidates(
-			@NonNull final Properties ctx,
-			@NonNull final ShipmentScheduleHandler handler,
-			@NonNull final Object model)
-	{
-		final String keyColumnName = getKeyColumnName(handler.getSourceTable());
-		return !handler.createModelsWithMissingCandidatesQueryBuilder(ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(keyColumnName, getId(model))
-				.create()
-				.setForUpdate(ForUpdate.FOR_KEY_SHARE_SKIP_LOCKED)
-				.listIds()
-				.isEmpty();
 	}
 
 	/**

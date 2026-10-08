@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate.async;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
@@ -46,6 +47,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -59,6 +61,15 @@ import java.util.Properties;
 
 /**
  * Workpackage used to create missing shipment schedules.
+ * <p>
+ * Concurrency: a run creates its batch of shipment schedules in one transaction, without explicit row locks. Concurrent (e.g. user)
+ * transactions are therefore not blocked by it, beyond the standard foreign key locks that its new rows take on the records they
+ * reference (which only conflict with deleting such a record or changing its key) until the batch commits. The other way round, the
+ * batch waits at most for the {@code lock_timeout} (sysconfig {@value #SYSCONFIG_LockTimeoutMillis}, default 500 ms) for a concurrent
+ * transaction. If the batch collides with a concurrent transaction that deletes one of its order lines (see
+ * {@link #isCollisionWithConcurrentTransaction(Throwable)}), the whole batch is rolled back and the run is retried after
+ * {@value #SYSCONFIG_RetryMillis} (default 5 s), at most {@value #SYSCONFIG_MaxRetries} (default 10) times; after that, the
+ * collision is an error like any other.
  *
  * @author tsa
  */
@@ -70,18 +81,30 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private static final int DEFAULT_MaxToProcess = 500;
 
 	/**
-	 * How long a run waits before it is retried, when it skipped records that a concurrent transaction had locked (see
-	 * {@link CreateMissingCandidatesResult#getSkippedCount()}).
-	 */
-	private static final String SYSCONFIG_SkippedRecordsRetryMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.SkippedRecordsRetryMillis";
-	private static final int DEFAULT_SkippedRecordsRetryMillis = 5000;
-
-	/**
 	 * PostgreSQL {@code lock_timeout} of a run's batch transaction; {@code <= 0} means no timeout. See {@link #setLockTimeout()}.
 	 */
-	public static final String SYSCONFIG_LockTimeoutMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis";
-	public static final int DEFAULT_LockTimeoutMillis = 500;
+	private static final String SYSCONFIG_LockTimeoutMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis";
+	private static final int DEFAULT_LockTimeoutMillis = 500;
+
+	/**
+	 * How long to wait before a run whose batch collided with a concurrent transaction is retried. See {@link #isCollisionWithConcurrentTransaction(Throwable)}.
+	 */
+	private static final String SYSCONFIG_RetryMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.RetryMillis";
+	private static final int DEFAULT_RetryMillis = 5000;
+
+	/**
+	 * How often a workpackage is retried because of such collisions at most; after that, the collision is an error like any other.
+	 */
+	private static final String SYSCONFIG_MaxRetries = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxRetries";
+	private static final int DEFAULT_MaxRetries = 10;
+
 	private static final String PG_SQLSTATE_lock_not_available = "55P03";
+	private static final String PG_SQLSTATE_foreign_key_violation = "23503";
+	/**
+	 * The (deferred) foreign key from {@code M_ShipmentSchedule.C_OrderLine_ID} to {@code C_OrderLine}.
+	 * The other handler's schedules (subscription progress) reference their source record via {@code AD_Table_ID/Record_ID}, without a foreign key.
+	 */
+	private static final String FK_M_ShipmentSchedule_C_OrderLine = "corderline_corderline";
 
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
@@ -184,10 +207,13 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		}
 		catch (final RuntimeException e)
 		{
-			if (isLockTimeout(e))
+			// The batch transaction was rolled back, i.e. no schedule of this batch was created.
+			if (isCollisionWithConcurrentTransaction(e) && workpackage.getSkipped_Count() < getMaxRetries())
 			{
-				// we waited for a concurrent transaction too long, and that one might be waiting for our locks; the batch was rolled back
-				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable("Lock timeout; retrying later", getSkippedRecordsRetryMillis(), e);
+				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(
+						"The batch collided with a concurrent transaction; retrying later",
+						getRetryMillis(),
+						e);
 			}
 			throw e;
 		}
@@ -198,37 +224,61 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		{
 			enqueueFollowUpWorkpackage(ctx, workpackage);
 		}
-		else if (result.isAnySkipped())
-		{
-			// Skipped records were locked by concurrent transactions (e.g. being deleted), or no longer needed shipment schedules. Only after
-			// those transactions ended we know whether the locked ones still need shipment schedules (e.g. a deletion that is rolled back),
-			// so retry this run later - not right away, because then the locks would most probably still be held. This run's batch is
-			// already committed.
-			// (If the limit was reached, the immediate follow-up workpackage covers them as well.)
-			throw WorkpackageSkipRequestException.createWithTimeout(
-					"Skipped " + result.getSkippedCount() + " records locked by concurrent transactions; retrying later",
-					getSkippedRecordsRetryMillis());
-		}
 
 		return Result.SUCCESS;
 	}
 
-	private int getSkippedRecordsRetryMillis()
+	private int getMaxToProcess()
 	{
-		return sysConfigBL.getIntValue(SYSCONFIG_SkippedRecordsRetryMillis, DEFAULT_SkippedRecordsRetryMillis);
+		return sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess);
+	}
+
+	private int getRetryMillis()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_RetryMillis, DEFAULT_RetryMillis);
+	}
+
+	private int getMaxRetries()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_MaxRetries, DEFAULT_MaxRetries);
 	}
 
 	/**
-	 * Sets a {@code lock_timeout} for the current (batch) transaction, so that this run never waits long for a lock of a concurrent
-	 * transaction.
-	 * <p>
-	 * Why: until this run's batch transaction ends, it holds a lock on each record it creates shipment schedules for, so a concurrent
-	 * transaction that deletes such a record waits for this run. This run in turn can wait for that transaction: e.g. a sales order's
-	 * reactivation first updates all its lines ({@code Processed=N}) and later deletes its compensation lines; the foreign key checks at
-	 * this run's commit lock the referenced order lines, and locking a line that an uncommitted transaction updated waits for that
-	 * transaction. That is a deadlock, and PostgreSQL might abort the reactivation to resolve it. With a lock timeout shorter than
-	 * PostgreSQL's {@code deadlock_timeout} (default 1s), this run - which can just be retried - fails first instead, see
-	 * {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
+	 * Whether the batch failed because a concurrent transaction changed the records it was creating shipment schedules for, so that
+	 * retrying the run later succeeds:
+	 * <ul>
+	 * <li>The candidate order lines are selected from committed data, but a concurrent, not yet committed transaction may delete one
+	 * of them, e.g. a sales order's reactivation deleting the discount lines of a compensation group. If that transaction commits
+	 * first, the batch's commit fails on the deferred foreign key {@value #FK_M_ShipmentSchedule_C_OrderLine} (SQLSTATE 23503).</li>
+	 * <li>If that transaction is still running when the batch commits, the foreign key check waits for it (locking an order line that a
+	 * concurrent transaction updated or deleted waits for that transaction), until the lock timeout (SQLSTATE 55P03); see
+	 * {@link #setLockTimeout()}.</li>
+	 * </ul>
+	 * A retried run selects the candidates again, so it no longer sees the deleted lines. Any other error, also a violation of another
+	 * foreign key, is not retried, so that a genuine bug is not retried over and over.
+	 */
+	@VisibleForTesting
+	static boolean isCollisionWithConcurrentTransaction(@NonNull final Throwable e)
+	{
+		return DBException.findSQLExceptionInCauseChain(e, CreateMissingShipmentSchedulesWorkpackageProcessor::isCollisionWithConcurrentTransaction).isPresent();
+	}
+
+	private static boolean isCollisionWithConcurrentTransaction(@NonNull final SQLException e)
+	{
+		final String sqlState = e.getSQLState();
+		if (PG_SQLSTATE_lock_not_available.equals(sqlState))
+		{
+			return true;
+		}
+		return PG_SQLSTATE_foreign_key_violation.equals(sqlState)
+				&& FK_M_ShipmentSchedule_C_OrderLine.equalsIgnoreCase(DBException.extractConstraintNameOrNull(e));
+	}
+
+	/**
+	 * Sets a {@code lock_timeout} for the current (batch) transaction, so that the batch never waits long for a lock held by a concurrent
+	 * (e.g. a user's) transaction: it gives up, is rolled back, and the run is retried later (see {@link #isCollisionWithConcurrentTransaction(Throwable)}).
+	 * The batch itself takes no explicit row locks, so concurrent transactions don't wait for it, apart from the usual commit-time
+	 * foreign key checks of its new rows.
 	 */
 	private void setLockTimeout()
 	{
@@ -238,23 +288,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 			return;
 		}
 		DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeoutMillis, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private static boolean isLockTimeout(@NonNull final Throwable e)
-	{
-		for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause())
-		{
-			if (t instanceof SQLException && PG_SQLSTATE_lock_not_available.equals(((SQLException)t).getSQLState()))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private int getMaxToProcess()
-	{
-		return sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess);
 	}
 
 	/**
