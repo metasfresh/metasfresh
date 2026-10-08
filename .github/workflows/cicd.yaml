@@ -1352,20 +1352,50 @@ jobs:
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
-      - name: push-result-image
-        if: env.ACT != 'true'
+      - name: extract-results
+        run: |
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+      # The test layers run with --fail-never, so a RED test run still yields a valid image whose inline cache would,
+      # once pushed to the floating tag, be replayed by every later build with unchanged inputs (a re-run could never turn it green).
+      # Therefore only a GREEN result image is pushed to the floating (cache-from) tag; a red one is never offered as cache.
+      - name: determine-test-status
+        id: test-status
+        run: |
+          # green = every module's surefire exit code AND its "BUILD SUCCESS" pseudo exit code are 0 (a missing file counts as red)
+          is_green() {
+            for module in "$@"; do
+              [ "$(cat "junit/$module/junit.exit-code" 2>/dev/null)" = 0 ] && [ "$(cat "junit/$module/junit.mvn.exit-code" 2>/dev/null)" = 0 ] || return 1
+            done
+          }
+          report() { # <output-name> <image-tag> <modules...>
+            local output=$1 tag=$2; shift 2
+            if is_green "$@"; then
+              echo "$output=true" >> $GITHUB_OUTPUT
+            else
+              echo "$output=false" >> $GITHUB_OUTPUT
+              echo "Tests of [$*] are red => NOT pushing ghcr.io/metasfresh/metas-junit:$tag, so its red result is never reused as build cache"
+              echo "* tests of [$*] are red => \`metas-junit:$tag\` NOT pushed as build cache" >> $GITHUB_STEP_SUMMARY
+            fi
+          }
+          report j8-green '${{ needs.init.outputs.tag-floating }}' commons backend
+          report j14-green '${{ needs.init.outputs.tag-floating }}-j14' camel
+      - name: push-result-image-j8
+        if: env.ACT != 'true' && steps.test-status.outputs.j8-green == 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: |
-            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-      - name: extract-results
-        run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          command: docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+      - name: push-result-image-j14
+        if: env.ACT != 'true' && steps.test-status.outputs.j14-green == 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: upload backend junit results
         uses: actions/upload-artifact@v6
         if: always()
