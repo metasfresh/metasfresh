@@ -5167,7 +5167,7 @@ public abstract class PO
 		{
 			this.oldValues = copyOf(po.m_oldValues);
 			this.newValues = copyOf(po.m_newValues);
-			this.valueLoaded = po.m_valueLoaded == null ? null : Arrays.copyOf(po.m_valueLoaded, po.m_valueLoaded.length);
+			this.valueLoaded = copyOf(po.m_valueLoaded);
 			this.stale = po.m_stale;
 			this.custom = po.m_custom == null ? null : new HashMap<>(po.m_custom);
 			this.markedChangedColumns = po.markedChangedColumns == null ? null : new HashSet<>(po.markedChangedColumns);
@@ -5179,7 +5179,7 @@ public abstract class PO
 		{
 			po.m_oldValues = copyOf(oldValues);
 			po.m_newValues = copyOf(newValues);
-			po.m_valueLoaded = valueLoaded == null ? null : Arrays.copyOf(valueLoaded, valueLoaded.length);
+			po.m_valueLoaded = copyOf(valueLoaded);
 			po.m_stale = stale;
 			po.m_custom = custom == null ? null : new HashMap<>(custom);
 			po.markedChangedColumns = markedChangedColumns == null ? null : new HashSet<>(markedChangedColumns);
@@ -5190,6 +5190,9 @@ public abstract class PO
 
 		@Nullable
 		private static Object[] copyOf(@Nullable final Object[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+
+		@Nullable
+		private static boolean[] copyOf(@Nullable final boolean[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
 	}
 
 	/**
