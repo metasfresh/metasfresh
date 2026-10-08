@@ -18,6 +18,9 @@ import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
+// A single letter or digit (any script), as reported by KeyboardEvent.key
+const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
+
 /**
  * @file Class based component.
  * @module TableRow
@@ -90,6 +93,48 @@ class TableRow extends PureComponent {
   };
 
   /**
+   * @method isObjectValuedWidget
+   * @summary True when the field's value is a {key, caption} object, i.e. its widget is a
+   * Lookup or a List.
+   *
+   * @param {string} fieldName - the cell's field name
+   */
+  isObjectValuedWidget = (fieldName) => {
+    const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
+    return widgetType === 'Lookup' || widgetType === 'List';
+  };
+
+  /**
+   * @method writeScalarFieldValue
+   * @summary Writes the given scalar (text or number) value into the row's field via
+   * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget)
+   * or when the value is undefined, i.e. the key event did not come from an input element (no
+   * active editor, or an editor such as Labels whose key target is a contentEditable span).
+   *
+   * @param {string} property - the cell's field name
+   * @param {*} value - a text or number value; undefined when there is none
+   * @returns {boolean} true if the value was written
+   */
+  writeScalarFieldValue = (property, value) => {
+    if (value === undefined || this.isObjectValuedWidget(property)) {
+      return false;
+    }
+
+    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
+      this.props;
+    updatePropertyValue({
+      property,
+      value,
+      tabId,
+      rowId,
+      isModal: modalVisible,
+      entity,
+      tableId,
+    });
+    return true;
+  };
+
+  /**
    * @method initPropertyEditor
    * @summary Initialize the editor for a widget field
    * @param {object} fieldName - the name of the field,
@@ -104,10 +149,6 @@ class TableRow extends PureComponent {
         if (property === fieldName) {
           const widgetData = prepareWidgetData(item, fieldsByName);
           if (widgetData) {
-            this.setState({
-              valueBeforeEditing: this.getFieldValue(fieldName) ?? '',
-            });
-
             this.handleEditProperty({
               event: null,
               property,
@@ -133,10 +174,8 @@ class TableRow extends PureComponent {
     this.handleEditProperty({ event });
   };
 
-  handleDoubleClick = (e) => {
+  handleDoubleClick = () => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
-    this.setState({ valueBeforeEditing: e.target.textContent });
 
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
@@ -167,9 +206,21 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          const inp = String.fromCharCode(event.keyCode);
-          if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
-            this.handleKeyDown_RegularChar({ event, property, readonly });
+          // event.key, not keyCode: a numpad key reports its character ("0") only in event.key.
+          // Letters and digits only: activation replaces the cell content, so Space and
+          // punctuation must not activate.
+          if (
+            ACTIVATION_KEY_REGEX.test(event.key) &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+          ) {
+            this.handleKeyDown_RegularChar({
+              event,
+              property,
+              readonly,
+              isAttributeWidget,
+            });
           }
         }
         break;
@@ -182,47 +233,30 @@ class TableRow extends PureComponent {
       return;
     }
 
-    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
-      this.props;
     const { edited } = this.state;
-    const inputContent = event.target.value;
 
-    // here `edited` controls if on {enter} we should edit a widget, or only submit it.
-    // if true - property will be edited. Otherwise just saved.
-    // If widget is not active - use the textContent as the initial value
-    let fieldValue = event.target.value;
-
+    // Enter on a cell that is not being edited opens its editor, which shows the stored value;
+    // nothing is written. Enter in an open editor saves the editor's value.
     if (!edited) {
-      fieldValue = event.target.textContent;
       this.handleEditProperty({
         event,
         property,
         focus: true,
         readonly,
       });
+      return;
     }
 
+    const inputContent = event.target.value;
     this.setState(
       {
-        valueBeforeEditing: fieldValue,
+        valueBeforeEditing: inputContent,
       },
-      () => {
-        updatePropertyValue({
-          property,
-          value: inputContent,
-          tabId,
-          rowId,
-          isModal: modalVisible,
-          entity,
-          tableId,
-        });
-      }
+      () => this.writeScalarFieldValue(property, inputContent)
     );
   };
 
   handleKeyDown_Tab = ({ event, property, isAttributeWidget }) => {
-    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
-      this.props;
     const { edited } = this.state;
 
     // if ProductAttributes widget is visible, skip over Tab navigation here
@@ -230,20 +264,7 @@ class TableRow extends PureComponent {
       return;
     }
 
-    // this test is for a case when user is navigating around the table
-    // without activating the field. Then there's no widget (input), so the value
-    // is undefined and we don't have to worry about it
-    if (typeof event.target.value !== 'undefined') {
-      updatePropertyValue({
-        property,
-        value: event.target.value,
-        tabId,
-        rowId,
-        isModal: modalVisible,
-        entity,
-        tableId,
-      });
-    }
+    this.writeScalarFieldValue(property, event.target.value);
     if (edited === property) {
       event.stopPropagation();
       this.handleEditProperty({ event });
@@ -251,32 +272,16 @@ class TableRow extends PureComponent {
   };
 
   handleKeyDown_Escape = ({ event, property }) => {
-    const {
-      changeListenOnTrue,
-      rowId,
-      tabId,
-      entity,
-      modalVisible,
-      tableId,
-      updatePropertyValue,
-    } = this.props;
+    const { changeListenOnTrue } = this.props;
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      updatePropertyValue({
-        property,
-        value: valueBeforeEditing,
-        tabId,
-        rowId,
-        isModal: modalVisible,
-        entity,
-        tableId,
-      });
+      if (this.writeScalarFieldValue(property, valueBeforeEditing)) {
+        // reset the field value to the previous one, so that we won't
+        // overwrite it
+        event.target.value = valueBeforeEditing;
+      }
       event.stopPropagation();
-
-      // reset the field value to the previous one, so that we won't
-      // overwrite it
-      event.target.value = valueBeforeEditing;
 
       // we need to store the active cell to focus it after deactivating widget
       const activeCellElement = activeCell;
@@ -288,16 +293,19 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown_RegularChar = ({ event, property, readonly }) => {
-    const { valueBeforeEditing } = this.state;
-    if (valueBeforeEditing === null) {
-      // for disabled fields/fields without value, we don't get the field data from the backend
-      const fieldValue = this.getFieldValue(property);
-      if (fieldValue !== undefined) {
-        this.setState({ valueBeforeEditing: fieldValue });
-      }
+  handleKeyDown_RegularChar = ({
+    event,
+    property,
+    readonly,
+    isAttributeWidget,
+  }) => {
+    // an attribute widget (ProductAttributes, Address) is edited in its own overlay; a
+    // select-and-type edit would clear its value
+    if (isAttributeWidget) {
+      return;
     }
 
+    // the value to restore on Escape is captured on entering edit mode (_editProperty)
     this.handleEditProperty({
       event,
       property,
@@ -343,6 +351,15 @@ class TableRow extends PureComponent {
     const isEditable = typeof readonly !== undefined ? !readonly : true;
     if (isEditable) {
       if (this.state.edited === property && event) event.persist();
+
+      // Entering edit mode on a cell: remember its STORED value so Escape can
+      // restore it. Display text is no substitute: it is locale-formatted
+      // ("10,00" in de_DE), which an <input type="number"> rejects as "".
+      if (property && this.state.edited !== property) {
+        this.setState({
+          valueBeforeEditing: this.getFieldValue(property) ?? '',
+        });
+      }
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
@@ -553,7 +570,6 @@ class TableRow extends PureComponent {
             const tdValue = getTdValue({
               widgetData,
               item,
-              isEdited,
               isGerman,
             });
             const description = getDescription({ widgetData, tdValue });
