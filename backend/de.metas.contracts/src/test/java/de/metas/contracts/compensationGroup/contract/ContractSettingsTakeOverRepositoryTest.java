@@ -10,6 +10,10 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import de.metas.cache.CCache;
+import de.metas.cache.CCacheConfig;
+import de.metas.cache.CCacheStatsPredicate;
+import de.metas.cache.CacheMgt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -176,5 +180,17 @@ class ContractSettingsTakeOverRepositoryTest
 		record.setIsActive(isActive);
 		saveRecord(record);
 		return ContractSettingsTakeOverProductId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_Product_ID());
+	}
+
+	@Test
+	void cache_isBoundedLRU()
+	{
+		// repository created in beforeEach
+
+		assertThat(CacheMgt.get().streamStats(CCacheStatsPredicate.builder().cacheNameContains(I_C_CompensationGroup_ContractSettings_TakeOver.Table_Name).build()).filter(stats -> stats.getName().equals(I_C_CompensationGroup_ContractSettings_TakeOver.Table_Name)))
+				.isNotEmpty()
+				.allSatisfy(stats -> assertThat(stats.getConfig())
+						.returns(CCache.CacheMapType.LRU, CCacheConfig::getCacheMapType)
+						.returns(100, CCacheConfig::getMaximumSize));
 	}
 }

@@ -58,6 +58,8 @@ public class ContractSettingsTakeOverRepository
 			.tableName(I_C_CompensationGroup_ContractSettings_TakeOver.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_TakeOver_Product.Table_Name)
 			.initialCapacity(10)
+			.maximumSize(100)
+			.cacheMapType(CCache.CacheMapType.LRU)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 

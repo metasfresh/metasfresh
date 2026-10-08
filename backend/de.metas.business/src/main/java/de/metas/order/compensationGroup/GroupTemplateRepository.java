@@ -72,6 +72,8 @@ public class GroupTemplateRepository
 			.additionalTableNameToResetFor(I_C_CompensationGroup_Schema_TemplateLine.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
 			.initialCapacity(10)
+			.maximumSize(100)
+			.cacheMapType(CCache.CacheMapType.LRU)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 

@@ -9,6 +9,10 @@ import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import de.metas.cache.CCache;
+import de.metas.cache.CCacheConfig;
+import de.metas.cache.CCacheStatsPredicate;
+import de.metas.cache.CacheMgt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -132,5 +136,17 @@ class ContractCompensationGroupSettingsRepositoryTest
 		record.setIsActive(isActive);
 		saveRecord(record);
 		return record;
+	}
+
+	@Test
+	void cache_isBoundedLRU()
+	{
+		// repository created in beforeEach
+
+		assertThat(CacheMgt.get().streamStats(CCacheStatsPredicate.builder().cacheNameContains(I_C_CompensationGroup_ContractSettings.Table_Name).build()).filter(stats -> stats.getName().equals(I_C_CompensationGroup_ContractSettings.Table_Name)))
+				.isNotEmpty()
+				.allSatisfy(stats -> assertThat(stats.getConfig())
+						.returns(CCache.CacheMapType.LRU, CCacheConfig::getCacheMapType)
+						.returns(100, CCacheConfig::getMaximumSize));
 	}
 }

@@ -61,6 +61,8 @@ public class ContractCompensationGroupSettingsRepository
 			.tableName(I_C_CompensationGroup_ContractSettings.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_DocType.Table_Name)
 			.initialCapacity(10)
+			.maximumSize(100)
+			.cacheMapType(CCache.CacheMapType.LRU)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
