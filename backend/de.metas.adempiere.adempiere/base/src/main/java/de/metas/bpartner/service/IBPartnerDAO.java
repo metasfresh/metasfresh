@@ -244,22 +244,24 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, @Nullable String trxName);
 
 	/**
-	 * Retrieves the active bill-to {@link I_C_BP_Relation} (the relation that redirects billing to another partner)
-	 * for the given partner and, optionally, partner location.
+	 * Retrieves the active bill-to {@link I_C_BP_Relation} (the relation that redirects billing to another partner) of the given partner location,
+	 * i.e. the relation whose {@code C_BPartner_Location_ID} is that location.
 	 * <p>
 	 * A partner may have one active bill-to relation <b>per partner location</b>, plus at most one partner-wide relation
-	 * ({@code C_BPartner_Location_ID IS NULL}); this is enforced by the unique index {@code C_BP_Relation_UC_IsBillTo}
+	 * ({@code C_BPartner_Location_ID IS NULL}, see {@link #retrievePartnerWideBillToRelationOrNull(BPartnerId)});
+	 * this is enforced by the unique index {@code C_BP_Relation_UC_IsBillTo}
 	 * on {@code (C_BPartner_ID, COALESCE(C_BPartner_Location_ID,0), IsBillTo) WHERE IsActive='Y' AND IsBillTo='Y'}.
-	 * Precedence:
-	 * <ol>
-	 *     <li>if {@code bPartnerLocationId} is given: the relation whose {@code C_BPartner_Location_ID} equals it;</li>
-	 *     <li>else, or if there is none: the partner-wide relation ({@code C_BPartner_Location_ID IS NULL}).</li>
-	 * </ol>
-	 *
-	 * @return the matching relation or {@code null} if there is none
+	 * There is no fallback to the partner-wide relation here; that precedence is decided by the caller.
 	 */
 	@Nullable
-	I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+	I_C_BP_Relation retrieveBillToRelationForLocationOrNull(@NonNull BPartnerLocationId bPartnerLocationId);
+
+	/**
+	 * Retrieves the partner's active partner-wide bill-to {@link I_C_BP_Relation} ({@code C_BPartner_Location_ID IS NULL}),
+	 * ignoring relations that are bound to one of the partner's locations.
+	 */
+	@Nullable
+	I_C_BP_Relation retrievePartnerWideBillToRelationOrNull(@NonNull BPartnerId bPartnerId);
 
 	/**
 	 * Retrieve default/first ship to location.
@@ -301,7 +303,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
 	 *                              that relation's bPartner location. Since there is no partner-location context here, the partner-wide relation
-	 *                              ({@code C_BPartner_Location_ID IS NULL}, see {@link #retrieveBillToBPartnerRelationOrNull(BPartnerId, BPartnerLocationId)}) is used first;
+	 *                              (see {@link #retrievePartnerWideBillToRelationOrNull(BPartnerId)}) is used first;
 	 *                              if there is none, any active bill-to relation of the partner is used (partner-only lookup with {@code firstOnly},
 	 *                              i.e. it fails if the partner has several location-bound bill-to relations).
 	 * @return bill to location or null
