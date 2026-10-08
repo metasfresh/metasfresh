@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -59,6 +60,8 @@ import java.util.Optional;
 
 public class PaymentsViewAllocateCommand
 {
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
+
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
@@ -231,10 +234,10 @@ public class PaymentsViewAllocateCommand
 		return invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 				row.getBPartnerId(),
 				paymentContexts,
-				() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
-						.appendParametersToMessage()
+				() -> new AdempiereException(MSG_NO_CONFIG_FOR_INVOICE_PARTNER, row.getDocumentNo(), row.getBPartnerDisplayName())
+						.markAsUserValidationError()
 						.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
-						.setParameter("C_Invoice.DocumentNo", row.getDocumentNo()));
+						.setParameter("C_BPartner_ID", BPartnerId.toRepoId(row.getBPartnerId())));
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)
