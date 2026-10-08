@@ -4,6 +4,7 @@ import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -13,10 +14,13 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -111,6 +115,11 @@ public class RefundContract
 		return null;
 	}
 
+	public ConditionsId getConditionsId()
+	{
+		return CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getConditionsId);
+	}
+
 	public RefundMode extractRefundMode()
 	{
 		return RefundConfigs.extractRefundMode(refundConfigs);
@@ -125,17 +134,27 @@ public class RefundContract
 	}
 
 	/**
-	 * With this instance's {@code StartDate} as basis, the method returns the first date that is
-	 * after or at the given {@code currentDate} and that is aligned with this instance's invoice schedule.
+	 * @return the end of the refund period that contains the given date (or of the first period, if the date is before this contract's start).
+	 * For a monthly schedule the periods are calendar periods of the schedule's distance in months (month, quarter, half-year, year;
+	 * the year is January to December); the schedule's invoice day does not matter. The first period starts with the contract.
+	 * Other schedules count their periods from the contract's start date.
 	 */
 	public NextInvoiceDate computeNextInvoiceDate(@NonNull final LocalDate currentDate)
 	{
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
+		{
+			final YearMonth lastMonth = computeCalendarPeriodFirstMonth(invoiceSchedule, latestOf(currentDate, startDate))
+					.plusMonths(invoiceSchedule.getInvoiceDistance() - 1);
+			return new NextInvoiceDate(invoiceSchedule, lastMonth.atEndOfMonth());
+		}
+
 		LocalDate date = invoiceSchedule.calculateNextDateToInvoice(startDate);
 		while (date.isBefore(currentDate))
 		{
-			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date);
+			// ask from the day after the period end, because from the end itself, the schedule might return the same date again
+			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date.plusDays(1));
 
 			Check.assume(nextDate.isAfter(date), // make sure not to get stuck in an endless loop
 					"For the given date={}, invoiceSchedule.calculateNextDateToInvoice needs to return a nextDate that is later; nextDate={}",
@@ -144,6 +163,45 @@ public class RefundContract
 			date = nextDate;
 		}
 		return new NextInvoiceDate(invoiceSchedule, date);
+	}
+
+	/**
+	 * @return the first day of the period that contains the given date; the contract's start date if that is the first period
+	 */
+	public LocalDate computeCurrentPeriodStart(@NonNull final LocalDate date)
+	{
+		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
+		{
+			return latestOf(computeCalendarPeriodFirstMonth(invoiceSchedule, date).atDay(1), startDate);
+		}
+
+		LocalDate periodStart = startDate;
+		LocalDate periodEnd = computeNextInvoiceDate(periodStart).getDateToInvoice();
+		while (periodEnd.isBefore(date))
+		{
+			periodStart = periodEnd.plusDays(1);
+			periodEnd = computeNextInvoiceDate(periodStart).getDateToInvoice();
+		}
+		return periodStart;
+	}
+
+	/**
+	 * @return the first month of the calendar period of {@code invoiceDistance} months that contains the given date
+	 * @throws org.adempiere.exceptions.AdempiereException if the distance does not divide 12 (see {@link RefundConfigs#assertInvoiceDistanceDividesTheYear(InvoiceSchedule)})
+	 */
+	private static YearMonth computeCalendarPeriodFirstMonth(@NonNull final InvoiceSchedule invoiceSchedule, @NonNull final LocalDate date)
+	{
+		RefundConfigs.assertInvoiceDistanceDividesTheYear(invoiceSchedule);
+
+		final int months = invoiceSchedule.getInvoiceDistance();
+		final int periodIndex = (date.getMonthValue() - 1) / months;
+		return YearMonth.of(date.getYear(), periodIndex * months + 1);
+	}
+
+	private static LocalDate latestOf(@NonNull final LocalDate date1, @NonNull final LocalDate date2)
+	{
+		return date1.isAfter(date2) ? date1 : date2;
 	}
 
 	@Value
