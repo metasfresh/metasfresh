@@ -164,8 +164,10 @@ public class ContractCompensationGroupService
 				.isDropShip(order.isDropShip())
 				.linkedOrderId(linkedOrderId);
 
-		// the fee is keyed by the linked SALES order's customer and date, not this order's partner/date
-		if (linkedOrderId != null)
+		// the fee is keyed by the linked SALES order's customer and date, not this order's partner/date.
+		// only a drop-ship purchase order takes over (see OrderDropShipInfo.getDropShipLinkedSalesOrderId),
+		// so only then is the linked order the sales order whose customer/date the fee needs.
+		if (linkedOrderId != null && order.isDropShip() && !order.isSOTrx())
 		{
 			final I_C_Order linkedSalesOrder = orderDAO.getById(linkedOrderId);
 			builder.invoicePartnerId(BPartnerId.ofRepoId(linkedSalesOrder.getBill_BPartner_ID()))
