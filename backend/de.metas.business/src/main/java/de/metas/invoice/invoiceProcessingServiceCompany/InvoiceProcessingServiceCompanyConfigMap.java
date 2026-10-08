@@ -54,8 +54,9 @@ import java.util.Optional;
 
 	/**
 	 * @return if there is an {@link InvoiceProcessingServiceCompanyConfig} with the given {@code customerId} (the one for which a service-company handles payments) at the given {@code validFrom}, then it is returned.<br>
-	 * If there is an older config for the given {@code customerId}, but a more recent config which does not have the given {@code customerId},
-	 * then {@link Optional#empty()} is returned.
+	 * Per service company, only its most recent config valid at {@code validFrom} counts: if there is an older config of that service company for the given {@code customerId},
+	 * but a more recent config of the <b>same</b> service company which does not have the given {@code customerId}, that service company yields no match.
+	 * If no service company matches, {@link Optional#empty()} is returned.
 	 */
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)

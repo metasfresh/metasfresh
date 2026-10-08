@@ -91,6 +91,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
+/**
+ * Step definitions for allocating payments to invoices.
+ * <p>
+ * The step {@code allocate payments to invoices} derives the invoice-processing service fee automatically for every sales invoice
+ * that has a service-company config; no fee column is needed in the data table.
+ * The optional column {@code InvoiceProcessing.C_BPartner_ID} only asserts the expected service company.
+ */
 @RequiredArgsConstructor
 public class AllocatePayments_StepDef
 {
@@ -135,6 +142,12 @@ public class AllocatePayments_StepDef
 		});
 	}
 
+	/**
+	 * Allocates the payments (column {@code C_Payment_ID}) to the invoices (column {@code C_Invoice_ID}) of the data table in one {@link PaymentAllocationBuilder} run.
+	 * Payments are read first, because the service company and the fee date are derived from them, like in the WebUI payment allocation.
+	 * For every sales invoice with a service-company config the service fee is computed and, if the data table names it via
+	 * {@code InvoiceProcessing.C_Invoice_ID}, the generated service invoice is registered under that identifier.
+	 */
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
 	{
@@ -351,7 +364,7 @@ public class AllocatePayments_StepDef
 
 
 		//
-		// Service company fee (same flow as the WebUI payment allocation: PaymentAndInvoiceRowsRepo + PaymentsViewAllocateCommand)
+		// Service company fee
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = paymentDocumentsForServiceFee != null
 				? computeInvoiceProcessingFee(invoiceToAllocate, paymentDocumentsForServiceFee).orElse(null)
 				: null;
@@ -387,7 +400,6 @@ public class AllocatePayments_StepDef
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
 			@NonNull final List<PaymentDocument> paymentDocuments)
 	{
-		// the fee is computed for sales invoices only (see PaymentAndInvoiceRowsRepo#computeServiceFee)
 		if (!invoiceToAllocate.getDocBaseType().isSales())
 		{
 			return Optional.empty();
@@ -408,7 +420,6 @@ public class AllocatePayments_StepDef
 			return Optional.empty();
 		}
 
-		// same derivation as PaymentsViewAllocateCommand
 		final BPartnerId customerId = invoiceToAllocate.getBpartnerId();
 		final InvoiceProcessingContext context = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 				customerId,

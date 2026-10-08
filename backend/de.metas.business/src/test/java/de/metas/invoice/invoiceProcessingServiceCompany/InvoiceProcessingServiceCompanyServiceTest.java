@@ -84,6 +84,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -94,6 +95,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -302,7 +305,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 	{
 		private final BPartnerId customerId = BPartnerId.ofRepoId(2);
 
-		@org.junit.jupiter.api.AfterEach
+		@AfterEach
 		public void resetTime()
 		{
 			SystemTime.resetTimeSource();
@@ -316,7 +319,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 					customerId,
-					java.util.Collections.singletonList(InvoiceProcessingContext.of(paymentPartnerId, paymentDate)),
+					Collections.singletonList(InvoiceProcessingContext.of(paymentPartnerId, paymentDate)),
 					() -> new AdempiereException("no config"));
 
 			assertThat(result).isEqualTo(InvoiceProcessingContext.of(paymentPartnerId, paymentDate));
@@ -328,7 +331,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			final InvoiceProcessingContext context = InvoiceProcessingContext.of(BPartnerId.ofRepoId(777), LocalDate.parse("2020-05-10").atStartOfDay(ZoneId.of("UTC")));
 
 			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
-					customerId, java.util.Arrays.asList(context, context), () -> new AdempiereException("no config"));
+					customerId, Arrays.asList(context, context), () -> new AdempiereException("no config"));
 
 			assertThat(result).isEqualTo(context);
 		}
@@ -340,7 +343,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThatThrownBy(() -> invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 					customerId,
-					java.util.Arrays.asList(
+					Arrays.asList(
 							InvoiceProcessingContext.of(BPartnerId.ofRepoId(777), paymentDate),
 							InvoiceProcessingContext.of(BPartnerId.ofRepoId(778), paymentDate)),
 					() -> new AdempiereException("no config")))
@@ -359,7 +362,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.build();
 
 			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
-					customerId, java.util.Collections.emptyList(), () -> new AdempiereException("no config"));
+					customerId, Collections.emptyList(), () -> new AdempiereException("no config"));
 
 			assertThat(result.getServiceCompanyId()).isEqualTo(serviceCompanyBPartnerId);
 			assertThat(result.getPaymentDate().toInstant()).isEqualTo(now.toInstant());
@@ -369,7 +372,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		public void withoutPaymentAndWithoutConfig_throwsTheGivenError()
 		{
 			assertThatThrownBy(() -> invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
-					customerId, java.util.Collections.emptyList(), () -> new AdempiereException("no config for customer")))
+					customerId, Collections.emptyList(), () -> new AdempiereException("no config for customer")))
 					.hasMessageContaining("no config for customer");
 		}
 	}
