@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -8,8 +9,10 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -23,6 +26,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -49,12 +53,14 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 public class CreateHUCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -93,6 +99,7 @@ public class CreateHUCommand
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
 		addAdditionalProducts(huId);
+		updateBPartners(huId);
 		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
@@ -462,6 +469,59 @@ public class CreateHUCommand
 
 			handlingUnitsBL.destroyIfEmptyStorage(huContext, sourceCU);
 		});
+	}
+
+	/**
+	 * The top-level HU (the LU, or the TU when the packing instructions have no LU) gets {@code request.bpartner};
+	 * every HU below it (aggregate TUs, TUs and their VHUs) gets {@code request.tuBPartner} (NULL when absent).
+	 */
+	private void updateBPartners(final HuId huId)
+	{
+		final BPartnerId luBPartnerId = request.getBpartner() != null ? context.getId(request.getBpartner(), BPartnerId.class) : null;
+		final BPartnerId tuBPartnerId = request.getTuBPartner() != null ? context.getId(request.getTuBPartner(), BPartnerId.class) : null;
+		if (luBPartnerId == null && tuBPartnerId == null)
+		{
+			return;
+		}
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		setBPartner(hu, luBPartnerId);
+		updateIncludedHUsBPartner(hu, tuBPartnerId);
+	}
+
+	/**
+	 * Walks the HU tree level by level, so it costs two queries per level instead of two per HU.
+	 */
+	private void updateIncludedHUsBPartner(final I_M_HU parentHU, @Nullable final BPartnerId bpartnerId)
+	{
+		ImmutableSet<HuId> parentHUIds = ImmutableSet.of(HuId.ofRepoId(parentHU.getM_HU_ID()));
+		while (!parentHUIds.isEmpty())
+		{
+			final ImmutableSet<HuItemId> parentItemIds = handlingUnitsDAO.retrieveAllItemsNoCache(parentHUIds)
+					.stream()
+					.filter(I_M_HU_Item::isActive)
+					.map(item -> HuItemId.ofRepoId(item.getM_HU_Item_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+
+			final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveAllIncludedHUsNoCache(parentItemIds);
+			includedHUs.forEach(includedHU -> setBPartner(includedHU, bpartnerId));
+
+			parentHUIds = includedHUs.stream()
+					.map(includedHU -> HuId.ofRepoId(includedHU.getM_HU_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+	private void setBPartner(final I_M_HU hu, @Nullable final BPartnerId bpartnerId)
+	{
+		if (Objects.equals(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), bpartnerId))
+		{
+			return;
+		}
+
+		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		hu.setC_BPartner_Location_ID(-1); // the location inherited from the source CU belongs to the previous partner
+		handlingUnitsDAO.saveHU(hu);
 	}
 
 	private IAttributeStorage updateAttributes(final HuId huId)
