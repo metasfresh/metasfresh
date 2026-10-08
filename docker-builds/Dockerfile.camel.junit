@@ -22,7 +22,8 @@ ARG TEST_CACHE_EPOCH=1
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
 
 # capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
-RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+# (with --fail-never mvn exits 0 even on test failures; only maven's own final summary line counts, so test output containing "BUILD SUCCESS" cannot fake a green result)
+RUN grep -x -e "\[INFO\] BUILD SUCCESS" -e "\[INFO\] BUILD FAILURE" junit.log | tail -n 1 | grep -qx "\[INFO\] BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
 
 WORKDIR /java
 VOLUME /reports
