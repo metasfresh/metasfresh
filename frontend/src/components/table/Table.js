@@ -11,7 +11,7 @@ import {
 import {
   loadColumnWidths,
   saveColumnWidths,
-  clampComboboxColumnWidths,
+  clampStoredColumnWidths,
 } from '../../utils/columnWidthStorage';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
@@ -40,7 +40,7 @@ class Table extends PureComponent {
 
     // Load persisted column widths
     const { windowId, viewId, columns } = this.props;
-    const columnWidths = clampComboboxColumnWidths(
+    const columnWidths = clampStoredColumnWidths(
       loadColumnWidths(windowId, viewId),
       columns
     );
@@ -63,17 +63,18 @@ class Table extends PureComponent {
     // Reload column widths if window/view changed, OR once column metadata first
     // becomes available. On a normal tab-open the table mounts before the column
     // metadata is reduced, so componentDidMount clamps against columns === [] and
-    // a stored sub-floor combobox width is returned un-clamped; re-run the clamp
-    // when columns transitions []->populated so the 90px combobox floor still
-    // applies. The columns []->populated check is a one-shot transition (next
-    // update has prevProps.columns populated), so it cannot re-clamp in a loop.
+    // a stored sub-floor combobox or price/amount width is returned un-clamped;
+    // re-run the clamp when columns transitions []->populated so the widget
+    // minimum width (combobox 90px, price/amount 68px) still applies. The
+    // columns []->populated check is a one-shot transition (next update has
+    // prevProps.columns populated), so it cannot re-clamp in a loop.
     const windowOrViewChanged =
       windowId !== prevProps.windowId || viewId !== prevProps.viewId;
     const columnsBecameAvailable =
       prevProps.columns.length === 0 && columns.length > 0;
 
     if (windowOrViewChanged || columnsBecameAvailable) {
-      const columnWidths = clampComboboxColumnWidths(
+      const columnWidths = clampStoredColumnWidths(
         loadColumnWidths(windowId, viewId),
         columns
       );

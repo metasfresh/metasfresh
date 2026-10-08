@@ -68,3 +68,17 @@ export function compareGeometry(phase, activatedCell, before, now) {
   });
   return violations;
 }
+
+/**
+ * The cell's displayed (static) value: its text and whether it is cut off. A value that does not fit
+ * is cut off with `…` (`.cell-text-wrapper` has `text-overflow: ellipsis`): then `scrollWidth`
+ * exceeds `clientWidth`.
+ */
+export async function measureStaticText(cell) {
+  return await cell.evaluate((td) => {
+    const wrapper = td.querySelector(':scope > div:not(.cell-width-keeper) .cell-text-wrapper');
+    return wrapper
+      ? { text: wrapper.textContent, clientWidth: wrapper.clientWidth, scrollWidth: wrapper.scrollWidth }
+      : null;
+  });
+}

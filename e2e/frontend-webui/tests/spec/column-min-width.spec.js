@@ -3,19 +3,23 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForWebFonts } from '../utils/common';
 import { createMasterdata } from '../utils/OrderLineHarness';
+import { measureStaticText, VIEWPORT } from '../utils/GridGeometry';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
- * Combobox (Lookup/List) column minimum width on the sales order-line grid:
- * - dragged as narrow as possible, a combobox column stops at 90px, any other column at 50px;
+ * Column minimum widths on the sales order-line grid:
+ * - dragged as narrow as possible, a combobox column stops at 90px, a price/amount column at 68px,
+ *   any other column at 50px;
  * - the open combobox editor stays inside its cell and does not widen the column;
- * - a stored combobox width below 90px loads as 90px; a stored width of another column loads as stored.
+ * - a stored combobox width below 90px loads as 90px; a stored width of another column loads as stored;
+ * - a price column shows `12,50` whole (no `…`) at its default width, at the 68px floor and after
+ *   loading a stored width below the floor.
  *
- * `M_Product_ID` is the grid's combobox column, `QtyEntered` the other column. The order-line grid
- * is used because double-clicking a cell there opens its editor (in a top-level list view it opens
- * the record).
+ * `M_Product_ID` is the grid's combobox column, `PriceEntered` (CostPrice) and `LineNetAmt` (Amount)
+ * the price/amount columns, `QtyEntered` the other column. The order-line grid is used because
+ * double-clicking a cell there opens its editor (in a top-level list view it opens the record).
  *
  * Features tested:
  * - F50000: Resizable Table Columns
@@ -26,6 +30,11 @@ const COMBOBOX_MIN_WIDTH_PX = 90;
 // Sub-pixel rounding / border allowance when comparing a rendered width to the floor.
 const WIDTH_TOLERANCE_PX = 5;
 const FLAT_MIN_WIDTH_PX = 50;
+const PRICE_FIELD = 'PriceEntered'; // widgetType CostPrice
+const AMOUNT_FIELD = 'LineNetAmt'; // widgetType Amount
+const PRICE_MIN_WIDTH_PX = 68;
+// The product price seeded by `createMasterdata` is 12.5 -> shown as "12,50" (de_DE).
+const EXPECTED_PRICE_TEXT = '12,50';
 
 async function dragResizeAsNarrowAsPossible(page, fieldName) {
   const handle = page.getByTestId(`resize-handle-${fieldName}`);
@@ -237,5 +246,98 @@ Store a combobox width below 90px and an equally low width of another column in 
     // Restore, so this test never leaks a below-floor stored width into another run sharing the
     // same browser profile/storage state.
     await page.evaluate((key) => localStorage.removeItem(key), storageKey);
+  });
+});
+
+async function expectPriceShownWhole(page, when) {
+  const shown = await measureStaticText(page.locator(`[data-cy="cell-${PRICE_FIELD}"]`).first());
+  console.log(`[INFO] ${PRICE_FIELD} ${when}: ${JSON.stringify(shown)}`);
+
+  expect(shown && shown.text.trim(), `${PRICE_FIELD} must show the seeded price ${when}`).toBe(EXPECTED_PRICE_TEXT);
+  expect(
+    shown.scrollWidth,
+    `${PRICE_FIELD} must show ${EXPECTED_PRICE_TEXT} whole, not cut off with "…", ${when} (scrollWidth=${shown.scrollWidth}, clientWidth=${shown.clientWidth})`
+  ).toBeLessThanOrEqual(shown.clientWidth);
+}
+
+async function expectColumnWidthAtPriceFloor(page, fieldName, when) {
+  const box = await page.getByTestId(`column-${fieldName}`).boundingBox();
+  console.log(`[INFO] ${fieldName} column width ${when}: ${box.width}px`);
+
+  expect(box.width, `${fieldName} must not be narrower than ${PRICE_MIN_WIDTH_PX}px ${when}`).toBeGreaterThanOrEqual(
+    PRICE_MIN_WIDTH_PX - WIDTH_TOLERANCE_PX
+  );
+  expect(box.width, `${fieldName} must stop AT the ${PRICE_MIN_WIDTH_PX}px floor ${when}, not above it`).toBeLessThanOrEqual(
+    PRICE_MIN_WIDTH_PX + WIDTH_TOLERANCE_PX
+  );
+}
+
+test.describe('Price/amount grid-column minimum width (68px)', () => {
+  test('A price column shows 12,50 whole at its default width, dragged as narrow as possible, and after loading a stored width below 68px', async ({
+    page,
+  }) => {
+    allure.epic('E0500: Sales Orders');
+    allure.tag('F5010: Order Lines Grid');
+    allure.tag('F5010');
+    allure.story('Price/amount column minimum width (68px)');
+    allure.severity('normal');
+    allure.description(`
+1. Default width: the price column (\`${PRICE_FIELD}\`, CostPrice) is at least ${PRICE_MIN_WIDTH_PX}px and shows \`${EXPECTED_PRICE_TEXT}\` whole.
+2. Drag the price column and the amount column (\`${AMOUNT_FIELD}\`, Amount) as narrow as possible: both stop at ${PRICE_MIN_WIDTH_PX}px; the price is still whole.
+3. Store a price-column width of ${FLAT_MIN_WIDTH_PX}px and reload: it loads as ${PRICE_MIN_WIDTH_PX}px; the price is still whole.
+    `);
+
+    test.setTimeout(120000);
+    await page.setViewportSize(VIEWPORT);
+
+    await seedOrderLineGrid(page);
+    await waitForWebFonts(page); // whether the value fits depends on the font's glyph widths
+
+    await test.step(`At its default width the price column is at least ${PRICE_MIN_WIDTH_PX}px and shows the price whole`, async () => {
+      const box = await page.getByTestId(`column-${PRICE_FIELD}`).boundingBox();
+      console.log(`[INFO] ${PRICE_FIELD} default column width: ${box.width}px`);
+
+      expect(box.width, `${PRICE_FIELD} must default to at least ${PRICE_MIN_WIDTH_PX}px`).toBeGreaterThanOrEqual(
+        PRICE_MIN_WIDTH_PX - 1
+      );
+      await expectPriceShownWhole(page, 'at the default width');
+    });
+
+    await test.step(`Dragged as narrow as possible, the price and amount columns stop at ${PRICE_MIN_WIDTH_PX}px`, async () => {
+      await dragResizeAsNarrowAsPossible(page, PRICE_FIELD);
+      await expectColumnWidthAtPriceFloor(page, PRICE_FIELD, 'after the narrowest drag');
+      await expectPriceShownWhole(page, 'after the narrowest drag');
+
+      await dragResizeAsNarrowAsPossible(page, AMOUNT_FIELD);
+      await expectColumnWidthAtPriceFloor(page, AMOUNT_FIELD, 'after the narrowest drag');
+    });
+
+    await test.step(`A stored price-column width of ${FLAT_MIN_WIDTH_PX}px loads as ${PRICE_MIN_WIDTH_PX}px`, async () => {
+      // the narrowest drag above persisted the widths; the key is `columnWidths_<windowId>[_<viewId>]`
+      const storageKey = await page.evaluate(() => Object.keys(localStorage).find((k) => k.startsWith('columnWidths_')) || null);
+      expect(storageKey, 'the order-line grid must persist column widths under a columnWidths_* localStorage key').toBeTruthy();
+
+      await page.evaluate(
+        ({ key, field, width }) => {
+          const stored = JSON.parse(localStorage.getItem(key) || '{}');
+          stored[field] = width;
+          localStorage.setItem(key, JSON.stringify(stored));
+        },
+        { key: storageKey, field: PRICE_FIELD, width: FLAT_MIN_WIDTH_PX }
+      );
+
+      await page.reload();
+      await page
+        .locator(`[data-cy="cell-${PRICE_FIELD}"]`)
+        .first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await waitForWebFonts(page);
+
+      await expectColumnWidthAtPriceFloor(page, PRICE_FIELD, `after loading a stored ${FLAT_MIN_WIDTH_PX}px`);
+      await expectPriceShownWhole(page, `after loading a stored ${FLAT_MIN_WIDTH_PX}px`);
+
+      // never leak a below-floor stored width into another run sharing the same storage state
+      await page.evaluate((key) => localStorage.removeItem(key), storageKey);
+    });
   });
 });

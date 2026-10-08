@@ -20,4 +20,12 @@ describe('grid column drag-resize clamp', () => {
   it('leaves a non-combobox (Text) column dragged to 300px unchanged', () => {
     expect(clampColumnWidth({ widgetType: 'Text', px: 300 })).toBe(300);
   });
+
+  it.each(['CostPrice', 'Amount'])('clamps a price/amount (%s) column dragged to 30px at the 68px floor', (widgetType) => {
+    expect(clampColumnWidth({ widgetType, px: 30 })).toBe(68);
+  });
+
+  it('leaves a price (CostPrice) column dragged to 70px (above the 68px floor) unchanged', () => {
+    expect(clampColumnWidth({ widgetType: 'CostPrice', px: 70 })).toBe(70);
+  });
 });

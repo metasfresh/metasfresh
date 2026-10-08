@@ -5,8 +5,7 @@ import PropTypes from 'prop-types';
 import {
   shouldRenderColumn,
   getSizeClass,
-  COMBOBOX_MIN_WIDTH_PX,
-  COMBOBOX_WIDGET_TYPES,
+  getColumnMinWidthPx,
 } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
@@ -19,15 +18,11 @@ const MIN_COLUMN_WIDTH = 50;
  * @param {number} params.px - the candidate drag width
  * @summary Manual drag-resize floor: a combobox (Lookup/List) column cannot be dragged
  * narrower than the combobox minimum-usable width, so its open dropdown editor always stays
- * within the cell. Every other column keeps the flat `MIN_COLUMN_WIDTH` floor.
+ * within the cell; a price/amount column not narrower than its minimum width, so a typical price
+ * shows whole (`getColumnMinWidthPx`). Every other column keeps the flat `MIN_COLUMN_WIDTH` floor.
  */
 export function clampColumnWidth({ widgetType, px }) {
-  const minWidth =
-    COMBOBOX_WIDGET_TYPES.indexOf(widgetType) > -1
-      ? COMBOBOX_MIN_WIDTH_PX
-      : MIN_COLUMN_WIDTH;
-
-  return Math.max(minWidth, px);
+  return Math.max(getColumnMinWidthPx(widgetType) || MIN_COLUMN_WIDTH, px);
 }
 
 export default class TableHeader extends PureComponent {

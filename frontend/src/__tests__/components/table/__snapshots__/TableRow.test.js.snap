@@ -236,6 +236,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -346,6 +351,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -367,6 +377,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -388,6 +403,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -409,6 +429,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -430,6 +455,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div
@@ -670,6 +700,11 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
     onDoubleClick={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
+    style={
+      Object {
+        "minWidth": "68px",
+      }
+    }
     tabIndex={3}
   >
     <div

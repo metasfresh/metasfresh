@@ -1,4 +1,4 @@
-import { COMBOBOX_MIN_WIDTH_PX, COMBOBOX_WIDGET_TYPES } from './tableHelpers';
+import { getColumnMinWidthPx } from './tableHelpers';
 
 const STORAGE_KEY_PREFIX = 'columnWidths_';
 
@@ -54,15 +54,15 @@ export function saveColumnWidths(windowId, viewProfileId, widths) {
 }
 
 /**
- * @method clampComboboxColumnWidths
+ * @method clampStoredColumnWidths
  * @param {object} columnWidths - Map of fieldName -> stored width in pixels
  * @param {Array} columns - column definitions (`fields[0].field` + `widgetType`), as rendered
- * @summary Load-time combobox floor: a persisted width can be below the 90px combobox floor, so a
- * stored **combobox** (widgetType Lookup/List) column width under the floor is raised to it here,
- * on the read path.
- * Non-combobox stored widths are returned unchanged (untouched — no floor applies to them).
+ * @summary Load-time widget-specific floor: a persisted width can be below a column's
+ * widget-specific minimum (combobox 90px, price/amount 68px — `getColumnMinWidthPx`), so such a
+ * stored width is raised to that minimum here, on the read path.
+ * Stored widths of columns without a widget-specific minimum are returned unchanged.
  */
-export function clampComboboxColumnWidths(columnWidths, columns) {
+export function clampStoredColumnWidths(columnWidths, columns) {
   if (!columnWidths || Object.keys(columnWidths).length === 0) {
     return columnWidths;
   }
@@ -78,12 +78,9 @@ export function clampComboboxColumnWidths(columnWidths, columns) {
   const clamped = {};
   Object.keys(columnWidths).forEach((fieldName) => {
     const width = columnWidths[fieldName];
-    const widgetType = widgetTypeByField[fieldName];
+    const minWidthPx = getColumnMinWidthPx(widgetTypeByField[fieldName]);
 
-    clamped[fieldName] =
-      COMBOBOX_WIDGET_TYPES.indexOf(widgetType) > -1
-        ? Math.max(COMBOBOX_MIN_WIDTH_PX, width)
-        : width;
+    clamped[fieldName] = minWidthPx ? Math.max(minWidthPx, width) : width;
   });
 
   return clamped;

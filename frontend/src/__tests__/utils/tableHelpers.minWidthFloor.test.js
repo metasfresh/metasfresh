@@ -37,3 +37,21 @@ describe('combobox column minimum width', () => {
     expect(getSizeClass({ widgetType: 'Lookup', size: 'M' })).toBe('td-md');
   });
 });
+
+describe('price/amount column minimum width', () => {
+  // The price/amount floor is 68px: the td-sm band (60px) is below it, td-md (144px) clears it.
+  it.each(['CostPrice', 'Amount'])('floors a %s column without a WidgetSize (td-sm, 60px) to exactly 68px', (widgetType) => {
+    const col = { widgetType };
+
+    expect(getSizeStyle(col)).toEqual({ minWidth: '68px' });
+    expect(getSizeClass(col)).toBe('td-sm');
+  });
+
+  it('floors a CostPrice column at WidgetSize=S (td-sm, 60px) to exactly 68px', () => {
+    expect(getSizeStyle({ widgetType: 'CostPrice', size: 'S' })).toEqual({ minWidth: '68px' });
+  });
+
+  it('does not floor a CostPrice column at WidgetSize=M (td-md, 144px clears 68px)', () => {
+    expect(getSizeStyle({ widgetType: 'CostPrice', size: 'M' })).toBeUndefined();
+  });
+});
