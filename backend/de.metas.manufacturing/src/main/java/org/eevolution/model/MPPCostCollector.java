@@ -144,6 +144,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	}
 
 	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+	}
+
+	@Override
 	public boolean unlockIt()
 	{
 		setProcessing(false);
@@ -202,6 +208,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		// Re-Check
 		if (!m_justPrepared)

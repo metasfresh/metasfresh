@@ -28,8 +28,11 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.exceptions.IExceptionWrapper;
+import lombok.NonNull;
 import org.compiere.util.DB;
 import org.jetbrains.annotations.Contract;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * This RuntimeException is used to pass SQLException up the chain of calling methods to determine what to do where needed.
@@ -121,6 +125,7 @@ public class DBException extends AdempiereException
 
 	private static final String PG_SQLSTATE_deadlock_detected = "40P01";
 	private static final String PG_SQLSTATE_query_canceled = "57014";
+	private static final String PG_SQLSTATE_lock_not_available = "55P03";
 	// private static final String PG_SQLSTATE_ = "";
 
 	@Nullable
@@ -314,6 +319,59 @@ public class DBException extends AdempiereException
 	{
 		final String exceptionSQLState = extractSQLStateOrNull(e);
 		return Objects.equals(exceptionSQLState, sqlState);
+	}
+
+	/**
+	 * Walks the given throwable's whole cause chain and returns the first {@link SQLException} that matches the given predicate.
+	 * Unlike {@link #extractSQLExceptionOrNull(Throwable)}, every cause is looked at, not only the innermost one; no database
+	 * connection is needed (works in unit tests too).
+	 *
+	 * @return the matching {@link SQLException}, or {@code null} if there is none
+	 */
+	@Nullable
+	public static SQLException findSQLExceptionInCauseChainOrNull(@Nullable final Throwable t, @NonNull final Predicate<SQLException> matcher)
+	{
+		for (Throwable cause = t; cause != null; cause = cause.getCause() == cause ? null : cause.getCause())
+		{
+			if (cause instanceof SQLException && matcher.test((SQLException)cause))
+			{
+				return (SQLException)cause;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return {@code true} if the given PostgreSQL error is "lock not available", e.g. because the transaction's {@code lock_timeout}
+	 * expired while waiting for a lock
+	 */
+	public static boolean isLockNotAvailable(@NonNull final SQLException e)
+	{
+		return PG_SQLSTATE_lock_not_available.equals(e.getSQLState());
+	}
+
+	/**
+	 * @return {@code true} if the given PostgreSQL error is a violation of the foreign key constraint with the given name (case-insensitive)
+	 */
+	public static boolean isForeignKeyViolation(@NonNull final SQLException e, @NonNull final String constraintName)
+	{
+		return PG_SQLSTATE_foreign_key_violation.equals(e.getSQLState())
+				&& constraintName.equalsIgnoreCase(extractConstraintNameOrNull(e));
+	}
+
+	/**
+	 * @return the name of the constraint that the given PostgreSQL error is about (e.g. the violated foreign key), or {@code null}
+	 * if the error is not about a constraint or not from PostgreSQL
+	 */
+	@Nullable
+	public static String extractConstraintNameOrNull(@NonNull final SQLException e)
+	{
+		if (!(e instanceof PSQLException))
+		{
+			return null;
+		}
+		final ServerErrorMessage serverErrorMessage = ((PSQLException)e).getServerErrorMessage();
+		return serverErrorMessage != null ? serverErrorMessage.getConstraint() : null;
 	}
 
 	/**

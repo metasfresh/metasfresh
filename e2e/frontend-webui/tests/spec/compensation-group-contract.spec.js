@@ -56,6 +56,16 @@ const CALENDAR_WINDOW_ID = 117; // Kalenderjahr und Periode (C_Calendar)
 const CREATE_CONTRACT_PROCESS = 'C_Flatrate_Term_Create_For_BPartners';
 const BPARTNER_TO_CONTRACT_TERM_REFERENCE = 'reference-C_Flatrate_Term';
 
+// Contract change action "Vertrag/ Abo ändern" (C_Flatrate_Term_Change) and its action list keys
+const CHANGE_CONTRACT_PROCESS = 'C_Flatrate_Term_Change';
+const CHANGE_ACTION_CANCEL = 'CA'; // "Kündigen"
+const CHANGE_ACTION_SINGLE_PERIOD = 'VO'; // "Einzelne Periode stornieren"
+// Tab "Wechselkonditionen" of the transition (C_Contract_Change): the action "Kündigen" needs a status change to "Qu"
+const TRANSITION_CHANGE_TAB_ID = 540422;
+const CONTRACT_CHANGE_ACTION_STATUS_CHANGE = 'ST';
+const CONTRACT_STATUS_CANCELLED = 'Qu';
+const DURATION_UNIT_DAY = 'day';
+
 // Tabs (AD_Tab ids)
 const SCHEMA_LINE_TAB_ID = 541042; // C_CompensationGroup_SchemaLine
 const SETTINGS_DOCTYPE_TAB_ID = 549508; // C_CompensationGroup_ContractSettings_DocType
@@ -88,6 +98,7 @@ const DE = {
   schemaLineTab: 'Kompensationszeilen',
   isAdditive: 'Additiv',
   schemaLineCategory: 'Gilt für Produktkategorie',
+  schemaLinePackingCategory: 'Packmittel-Kategorie',
   schemaLineProduct: 'Produkt',
   schemaLineSeqNo: 'Reihenfolge',
   schemaLineDiscount: 'Gesamtauftragsrabatt %',
@@ -138,7 +149,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: { language: LANGUAGE } },
-        productCategories: { GOODS_CATEGORY: {} },
+        productCategories: { GOODS_CATEGORY: {}, CARTON_CATEGORY: {} },
         bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
         warehouses: { wh: {} },
         products: {
@@ -151,6 +162,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const goods = masterdata.products.GOODS;
     const discount = masterdata.products.DISCOUNT;
     const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+    const cartonCategoryId = masterdata.productCategories.CARTON_CATEGORY.id;
 
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
@@ -184,12 +196,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       await expectLabel(modal, 'SeqNo', DE.schemaLineSeqNo);
       await expectLabel(modal, 'M_Product_Category_ID', DE.schemaLineCategory);
+      await expectLabel(modal, 'M_Product_Category_PackingMaterial_ID', DE.schemaLinePackingCategory);
       await expectLabel(modal, 'M_Product_ID', DE.schemaLineProduct);
       await expectLabel(modal, 'CompleteOrderDiscount', DE.schemaLineDiscount);
-      // the "applies to" category sits directly between the sequence and the discount product
-      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_ID']);
+      // the "applies to" category and the packing-material category sit directly between the sequence and the discount product
+      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_Category_PackingMaterial_ID', 'M_Product_ID']);
 
       await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
+      await selectListByKey(page, modal, 'M_Product_Category_PackingMaterial_ID', cartonCategoryId);
       await selectLookup(page, modal, 'M_Product_ID', discount.productCode);
       await fillNumber(page, modal, 'CompleteOrderDiscount', DISCOUNT_PERCENT);
       await snap(page, '540415-schema-line');
@@ -197,12 +211,24 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       // the category column is also in the schema-line grid, next to the product
       await expect(page.locator('th[data-testid="column-M_Product_Category_ID"]')).toBeVisible();
+      await expect(page.locator('th[data-testid="column-M_Product_Category_PackingMaterial_ID"]')).toBeVisible();
 
       const lines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
       expect(lines, 'exactly one schema line').toHaveLength(1);
       expect(lookupKey(lines[0].fieldsByName.M_Product_Category_ID.value)).toBe(String(goodsCategoryId));
+      expect(lookupKey(lines[0].fieldsByName.M_Product_Category_PackingMaterial_ID.value)).toBe(String(cartonCategoryId));
       expect(lookupKey(lines[0].fieldsByName.M_Product_ID.value)).toBe(String(discount.id));
       expect(Number(lines[0].fieldsByName.CompleteOrderDiscount.value)).toBe(DISCOUNT_PERCENT);
+
+      // The sales order in step 5 has no packing instruction, so a line limited to a packing-material category
+      // would (correctly) give it no discount. The rest of this flow covers the unfiltered line: clear the field again.
+      // (the schema-line grid edits in place: double-click the cell, then its clear icon)
+      const packingCell = page.locator('table tbody tr').first().locator('[data-cy="cell-M_Product_Category_PackingMaterial_ID"]');
+      await packingCell.dblclick();
+      await withFieldCommit(page, 'M_Product_Category_PackingMaterial_ID',
+        () => page.locator('table tbody tr').first().locator('.input-icon:has(.meta-icon-close-alt)').click());
+      const clearedLines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
+      expect(lookupKey(clearedLines[0].fieldsByName.M_Product_Category_PackingMaterial_ID?.value), 'packing-material category cleared again').toBeNull();
     });
 
     // ------------------------------------------------------------------
@@ -476,6 +502,268 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await snap(page, '540359-term-entered-in-window');
     });
   });
+
+  /**
+   * Early end of a contract: the first contract is ended with the contract action "Kündigen" (end date X) and a
+   * follow-up contract with another schema starts on X + 1. The overlap check must accept the follow-up, and each
+   * order gets the discount of the contract that is valid on its order date.
+   */
+  test('ends a contract early and a follow-up contract takes over from the next day', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Early end of a compensation-group contract with a follow-up contract');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+    const contractAStart = addDays(x, -7);
+    const contractAEnd = addDays(x, 30);
+    const contractBStart = addDays(x, 1);
+    const contractBEnd = endOfYear(x);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_A: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_B: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let transitionId;
+    let conditionsA;
+    let conditionsB;
+    await test.step('1. Setup: transition, and two schemas (3 % and 5 %) with their settings and conditions', async () => {
+      transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear(), { allowCancellation: true });
+      conditionsA = await createConditions(page, {
+        schemaName: `CG early A ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_A, percent: 3 }],
+        transitionId, name: `CG conditions early A ${runId}`,
+      });
+      conditionsB = await createConditions(page, {
+        schemaName: `CG early B ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_B, percent: 5 }],
+        transitionId, name: `CG conditions early B ${runId}`,
+      });
+    });
+
+    let termA;
+    await test.step('2. Contract A (3 %) from X - 7 to X + 30', async () => {
+      termA = await createContractTerm(page, customer, conditionsA, contractAStart, contractAEnd);
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'EndDate')).value)).toContain(isoDate(contractAEnd));
+    });
+
+    await test.step('3. Contract action "Kündigen" ends contract A on X', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const modal = await openAction(page, CHANGE_CONTRACT_PROCESS);
+      // The action list already shows "Kündigen"; a value that is already selected sends no save,
+      // so another value is selected first.
+      await selectListByKey(page, modal, 'Action', CHANGE_ACTION_SINGLE_PERIOD);
+      await selectListByKey(page, modal, 'Action', CHANGE_ACTION_CANCEL);
+      await fillDate(page, modal, 'EventDate', x);
+      await snap(page, '540359-kuendigen-parameters');
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await modal.getByTestId('process-modal-start-button').click();
+      expect((await processStarted).ok(), '"Vertrag/ Abo ändern" must run without error').toBe(true);
+      await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expect.poll(async () => String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'EndDate')).value), {
+        message: 'contract A ends on X', timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).toContain(isoDate(x));
+    });
+
+    await test.step('4. Contract B (5 %) from X + 1 is accepted', async () => {
+      await createContractTerm(page, customer, conditionsB, contractBStart, contractBEnd, { openTerm: false });
+    });
+
+    await test.step('5. Order dated X gets the 3 % discount line, order dated X + 1 the 5 % discount line', async () => {
+      const orderX = await completeSalesOrder(page, customer, goods, x);
+      const linesX = await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB);
+      expect(linesX, 'order X: goods line + one discount line').toHaveLength(2);
+      const discountX = discountLineOf(linesX, masterdata.products.DISCOUNT_A);
+      expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
+      expect(Number(discountX.fieldsByName.LineNetAmt.value)).toBeCloseTo(-30, 2);
+      await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30,00');
+      await snap(page, '143-order-x-3-percent');
+
+      const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
+      const linesX1 = await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB);
+      expect(linesX1, 'order X + 1: goods line + one discount line').toHaveLength(2);
+      const discountX1 = discountLineOf(linesX1, masterdata.products.DISCOUNT_B);
+      expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
+      expect(Number(discountX1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-50, 2);
+      await expectOrderGridAmount(page, orderX1, masterdata.products.DISCOUNT_B, '-50,00');
+      await snap(page, '143-order-x1-5-percent');
+    });
+  });
+
+  /**
+   * "Erzeuge Vertrag" for a partner that already has an overlapping compensation-group contract on the same
+   * order document type: the contract must not be created, and the operator must be told on screen why -
+   * which contract it clashes with, for which invoice partner and in which period.
+   */
+  test('creating a contract that overlaps an existing one tells the operator why it was refused', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Overlapping compensation-group contract is refused with a visible reason');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+    const existingStart = x;
+    const existingEnd = addDays(x, 30);
+    const overlappingStart = addDays(x, 5);
+    const overlappingEnd = addDays(x, 60);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        products: {
+          DISCOUNT: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsId;
+    let existingTerm;
+    let existingDocumentNo;
+    await test.step('1. Setup: conditions "3 %" and an active contract from X to X + 30', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear());
+      conditionsId = await createConditions(page, {
+        schemaName: `CG overlap ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT, percent: DISCOUNT_PERCENT }],
+        transitionId, name: `CG conditions overlap ${runId}`,
+      });
+      existingTerm = await createContractTerm(page, customer, conditionsId, existingStart, existingEnd);
+      existingDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'DocumentNo')).value);
+      expect(existingDocumentNo, 'the existing contract has a document no').toBeTruthy();
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'EndDate')).value), 'the existing contract ends on X + 30').toContain(isoDate(existingEnd));
+      await expectDocStatus(CONTRACT_WINDOW_ID, existingTerm, 'CO');
+    });
+
+    await test.step('2. "Erzeuge Vertrag" with the same conditions from X + 5 is refused with a visible reason', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
+      await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
+      await fillDate(page, modal, 'StartDate', overlappingStart);
+      await fillDate(page, modal, 'EndDate', overlappingEnd);
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await modal.getByTestId('process-modal-start-button').click();
+      await processStarted;
+      await snap(page, '540460-overlap-refused');
+
+      // The refusal reason is shown in the error notification (the long text sits behind "(read more)"):
+      // it names the clashing contract, the invoice partner and the period.
+      const reason = page.locator('.notification-item.error .notification-content').first();
+      await expect(reason, 'an error notification shows the refusal').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      const readMore = reason.getByText('(read more)');
+      if (await readMore.isVisible()) {
+        await readMore.click();
+      }
+      await expect(reason, 'the clashing contract\'s document no is shown').toContainText(existingDocumentNo);
+      await expect(reason, 'the invoice partner is shown').toContainText(customer.bpartnerCode);
+      await expect(reason, 'the clashing contract\'s start is shown').toContainText(germanDate(existingStart));
+      await expect(reason, 'the clashing contract\'s end is shown').toContainText(germanDate(existingEnd));
+    });
+
+    await test.step('3. No second contract exists for the partner', async () => {
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+    });
+  });
+
+  /**
+   * Additive schema with two lines on one base: both percentages apply to the same goods amount
+   * (3,15 % and 0,25 % of 1 000,00 = -31,50 and -2,50), not one after the other (compounding would give -2,42).
+   */
+  test('an additive schema with two lines applies both percentages to the same base', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Additive compensation schema with two discount lines on one order');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const today = contractReferenceDay();
+    const contractStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const contractEnd = endOfYear(today);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_1: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_2: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsId;
+    await test.step('1. Setup: additive schema with two lines on one product category, settings, conditions', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, contractStart.getFullYear());
+      conditionsId = await createConditions(page, {
+        schemaName: `CG additive ${runId}`, goodsCategoryId, additive: true,
+        lines: [
+          { discountProduct: masterdata.products.DISCOUNT_1, percent: 3.15 },
+          { discountProduct: masterdata.products.DISCOUNT_2, percent: 0.25 },
+        ],
+        transitionId, name: `CG conditions additive ${runId}`,
+      });
+    });
+
+    await test.step('2. Contract for the partner', async () => {
+      await createContractTerm(page, customer, conditionsId, contractStart, contractEnd);
+    });
+
+    await test.step('3. One order: -31,50 and -2,50 on the same 1 000,00 goods amount', async () => {
+      const orderId = await completeSalesOrder(page, customer, goods, today);
+      const lines = await getTabRows(SALES_ORDER_WINDOW_ID, orderId, ORDER_LINE_TAB);
+      expect(lines, 'goods line + two discount lines').toHaveLength(3);
+      const discount1 = discountLineOf(lines, masterdata.products.DISCOUNT_1);
+      const discount2 = discountLineOf(lines, masterdata.products.DISCOUNT_2);
+      expect(discount1, '3,15 % discount line').toBeTruthy();
+      expect(discount2, '0,25 % discount line').toBeTruthy();
+      expect(Number(discount1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-31.5, 2);
+      expect(Number(discount2.fieldsByName.LineNetAmt.value), 'additive: 0,25 % of 1 000,00, not of the reduced amount').toBeCloseTo(-2.5, 2);
+      await expectOrderGridAmount(page, orderId, masterdata.products.DISCOUNT_1, '-31,50');
+      await expectOrderGridAmount(page, orderId, masterdata.products.DISCOUNT_2, '-2,50');
+      await snap(page, '143-additive-two-discount-lines');
+    });
+  });
 });
 
 // ======================================================================
@@ -488,6 +776,29 @@ function lookupKey(value) {
     return null;
   }
   return typeof value === 'object' ? String(value.key) : String(value);
+}
+
+/** dd.MM.yyyy, the date format of the de_DE login */
+function germanDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+}
+
+/**
+ * Number of contract terms whose invoice partner is `partnerId`, read from the backend's contract view
+ * (the rendered grid is not counted: it is filled after the container is visible).
+ */
+async function countContractsOfPartner(page, partnerId) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}`, {
+    data: { documentType: String(CONTRACT_WINDOW_ID), viewType: 'grid', filters: [] },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(viewResponse.ok(), 'the contract view opens').toBe(true);
+  const view = await viewResponse.json();
+  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=${Math.max(view.size, 1)}`);
+  expect(rowsResponse.ok(), 'the contract view rows are read').toBe(true);
+  const rows = (await rowsResponse.json()).result ?? [];
+  return rows.filter((row) => lookupKey(row.fieldsByName?.Bill_BPartner_ID?.value) === String(partnerId)).length;
 }
 
 /** yyyy-MM-dd of a local date */
@@ -601,14 +912,24 @@ async function fillNumber(page, scope, fieldName, value) {
   await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
+/**
+ * Type a date and leave the field.
+ *
+ * The commit is awaited from before the text is typed, not only from the Tab: the date widget
+ * PATCHes as soon as the typed text parses as a valid date (DatePicker.handleDateChange, on the
+ * input's change), so the PATCH already goes out during `fill`, and the blur on Tab sends no
+ * second PATCH. Armed only after `fill`, the wait misses a response that arrives first.
+ */
 async function fillDate(page, scope, fieldName, date) {
   const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
   const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await input.press('ControlOrMeta+a');
-  await input.fill(text);
-  await withFieldCommit(page, fieldName, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, async () => {
+    await input.fill(text);
+    await input.press('Tab');
+  });
 }
 
 async function setCheckbox(page, fieldName) {
@@ -769,4 +1090,180 @@ async function expectDocStatus(windowId, recordId, docStatus) {
     message: `DocStatus of ${windowId}/${recordId}`,
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   }).toBe(docStatus);
+}
+
+// ----------------------------------------------------------------------
+// Setup helpers for the contract tests below the first one (all through the WebUI)
+// ----------------------------------------------------------------------
+
+/** Today, but never the last day of the year, so that "the next day" is in the same fiscal year. */
+function contractReferenceDay() {
+  const today = new Date();
+  const lastDay = new Date(today.getFullYear(), 11, 31);
+  return today >= lastDay ? new Date(today.getFullYear(), 11, 30) : new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+/** The date `days` after `date`, clamped to the end of its year (the transition calendar covers that year only). */
+function addDays(date, days) {
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+  const yearEnd = endOfYear(date);
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  return result > yearEnd ? yearEnd : result < yearStart ? yearStart : result;
+}
+
+function endOfYear(date) {
+  return new Date(date.getFullYear(), 11, 31);
+}
+
+/** Transition with duration 0 (the contract keeps its entered end date), completed. @returns its id */
+async function createTransition(page, name, fiscalYear, { allowCancellation = false } = {}) {
+  await openNewRecord(page, TRANSITION_WINDOW_ID);
+  await fillText(page, page, 'Name', name);
+  const transitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
+  const contractCalendarId = await pickContractCalendarWithYear(transitionId, fiscalYear);
+  await selectListByKey(page, page, 'C_Calendar_Contract_ID', contractCalendarId);
+  await fillNumber(page, page, 'TermDuration', 0);
+  await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
+  await fillNumber(page, page, 'TermOfNotice', 0);
+  await selectListByKey(page, page, 'TermOfNoticeUnit', DURATION_UNIT_MONTH);
+  await waitForRecordSaved(TRANSITION_WINDOW_ID, transitionId, { maxRetries: 20, retryDelayMs: 500 });
+  if (allowCancellation) {
+    // tab "Wechselkonditionen": a status change to "Gekündigt" without a notice period, as the action "Kündigen" requires
+    const modal = await openNewIncludedRow(page, TRANSITION_CHANGE_TAB_ID);
+    await selectListByKey(page, modal, 'Action', CONTRACT_CHANGE_ACTION_STATUS_CHANGE);
+    await selectListByKey(page, modal, 'ContractStatus', CONTRACT_STATUS_CANCELLED);
+    // the deadline already shows 0 (no notice period); the unit is chosen
+    await selectListByKey(page, modal, 'DeadLineUnit', DURATION_UNIT_DAY);
+    await closeModal(modal);
+    const rows = await getTabRows(TRANSITION_WINDOW_ID, transitionId, `AD_Tab-${TRANSITION_CHANGE_TAB_ID}`);
+    expect(rows, 'one change condition row').toHaveLength(1);
+  }
+  await completeDocument(page);
+  await expectDocStatus(TRANSITION_WINDOW_ID, transitionId, 'CO');
+  return transitionId;
+}
+
+/**
+ * Schema (with its lines), settings (listing the standard sales order doc type) and completed conditions of
+ * type compensation group. Percentages are typed with a decimal point, because a decimal comma is dropped
+ * by the number fields (known WebUI behaviour).
+ * @returns the id of the conditions
+ */
+async function createConditions(page, { schemaName, goodsCategoryId, additive, lines, transitionId, name }) {
+  // schema
+  await openNewRecord(page, SCHEMA_WINDOW_ID);
+  await fillText(page, page, 'Name', schemaName);
+  const schemaId = await waitForNewRecordId(page, SCHEMA_WINDOW_ID);
+  if (additive) {
+    await setCheckbox(page, 'IsAdditive');
+    await waitForRecordSaved(SCHEMA_WINDOW_ID, schemaId, { maxRetries: 20, retryDelayMs: 500 });
+  }
+  let seqNo = 10;
+  for (const line of lines) {
+    const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
+    await fillNumber(page, modal, 'SeqNo', seqNo);
+    await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
+    await selectLookup(page, modal, 'M_Product_ID', line.discountProduct.productCode);
+    await fillNumber(page, modal, 'CompleteOrderDiscount', line.percent);
+    await closeModal(modal);
+    seqNo += 10;
+  }
+  const schemaLines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
+  expect(schemaLines, `schema ${schemaName} has its lines`).toHaveLength(lines.length);
+  expect(schemaLines.map((l) => Number(l.fieldsByName.CompleteOrderDiscount.value)).sort())
+    .toEqual(lines.map((l) => l.percent).sort());
+
+  // settings
+  await openNewRecord(page, SETTINGS_WINDOW_ID);
+  await fillText(page, page, 'Name', `${name} settings`);
+  const settingsId = await waitForNewRecordId(page, SETTINGS_WINDOW_ID);
+  await selectLookup(page, page, 'C_CompensationGroup_Schema_ID', schemaName);
+  await waitForRecordSaved(SETTINGS_WINDOW_ID, settingsId, { maxRetries: 20, retryDelayMs: 500 });
+  const docTypeModal = await openNewIncludedRow(page, SETTINGS_DOCTYPE_TAB_ID);
+  await selectLookup(page, docTypeModal, 'C_DocType_ID', DOCTYPE_STANDARD_ORDER_NAME, { exact: true });
+  await closeModal(docTypeModal);
+
+  // conditions
+  await openNewRecord(page, CONDITIONS_WINDOW_ID);
+  await fillText(page, page, 'Name', name);
+  const conditionsId = await waitForNewRecordId(page, CONDITIONS_WINDOW_ID);
+  await selectListByKey(page, page, 'Type_Conditions', TYPE_CONDITIONS_COMPENSATION_GROUP);
+  await expect(page.locator('.form-field-C_CompensationGroup_ContractSettings_ID')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
+  await selectListByKey(page, page, 'C_Flatrate_Transition_ID', transitionId);
+  await waitForRecordSaved(CONDITIONS_WINDOW_ID, conditionsId, { maxRetries: 20, retryDelayMs: 500 });
+  await completeDocument(page);
+  await expectDocStatus(CONDITIONS_WINDOW_ID, conditionsId, 'CO');
+  return conditionsId;
+}
+
+/**
+ * Business-partner action "Erzeuge Vertrag" for the conditions, with the given dates.
+ * With `openTerm` (default) the partner's single contract term is opened and its id returned.
+ */
+async function createContractTerm(page, customer, conditionsId, start, end, { openTerm = true } = {}) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
+  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+  const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
+  await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
+  await fillDate(page, modal, 'StartDate', start);
+  await fillDate(page, modal, 'EndDate', end);
+  await expect(modal.locator('.form-field-IsComplete input[type="checkbox"]').first(), 'the term is completed by the action').toBeChecked();
+  const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+  await modal.getByTestId('process-modal-start-button').click();
+  expect((await processStarted).ok(), '"Erzeuge Vertrag" must run without error').toBe(true);
+  await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+  if (!openTerm) {
+    return null;
+  }
+  await openRelatedDocument({
+    dataCy: BPARTNER_TO_CONTRACT_TERM_REFERENCE,
+    stepName: 'Business partner - open the created contract term',
+    maxRetries: 10,
+    retryDelay: 2000,
+    refreshOnRetry: true,
+  });
+  const termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
+  await expectDocStatus(CONTRACT_WINDOW_ID, termId, 'CO');
+  return termId;
+}
+
+/** Creates a sales order for the customer with one goods line, dated `date`, completes it. @returns the order id */
+async function completeSalesOrder(page, customer, goods, date) {
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+  const orderId = await SalesOrderPage.selectCustomer(customer.bpartnerCode);
+  await fillDateIfChanged(page, page, 'DateOrdered', date);
+  await SalesOrderPage.addOrderLine({ product: goods.productCode, quantity: 1, recordId: orderId });
+  await SalesOrderPage.complete();
+  await expectDocStatus(SALES_ORDER_WINDOW_ID, orderId, 'CO');
+  return orderId;
+}
+
+/** Like fillDate, but sends nothing when the field already shows the date (a PATCH would never come). */
+async function fillDateIfChanged(page, scope, fieldName, date) {
+  const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+  const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  if ((await input.inputValue()).trim().startsWith(text)) {
+    return;
+  }
+  await fillDate(page, scope, fieldName, date);
+}
+
+function discountLineOf(lines, discountProduct) {
+  return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(discountProduct.id));
+}
+
+/** The discount line, as the operator sees it in the order-line grid. */
+async function expectOrderGridAmount(page, orderId, discountProduct, amountText) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${orderId}`);
+  const orderLineTab = page.getByTestId(`tab-${ORDER_LINE_TAB}`);
+  await orderLineTab.click();
+  await expect(orderLineTab.locator('a.nav-link')).toHaveClass(/active/);
+  const row = page.locator('table tbody tr')
+    .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: discountProduct.productCode }) });
+  await expect(row).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+  await expect(row.locator('[data-cy="cell-LineNetAmt"]')).toContainText(amountText);
+  await row.scrollIntoViewIfNeeded();
 }
