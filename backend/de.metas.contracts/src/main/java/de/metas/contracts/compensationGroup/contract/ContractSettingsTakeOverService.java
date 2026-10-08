@@ -138,14 +138,19 @@ public class ContractSettingsTakeOverService
 			return ImmutableList.of();
 		}
 
+		final ImmutableList<ContractSettingsTakeOver> takeOvers = takeOverRepository.getBySettingsId(settings.getSettingsId());
+		if (takeOvers.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = orderGroupRepository.retrieveContractCreatedGroupsByOrderId(salesOrderId)
 				.stream()
 				.flatMap(group -> group.getCompensationLines().stream())
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
 				.collect(ImmutableList.toImmutableList());
 
-		return takeOverRepository.getBySettingsId(settings.getSettingsId())
-				.stream()
+		return takeOvers.stream()
 				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());

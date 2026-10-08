@@ -10,6 +10,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -25,6 +26,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -33,6 +35,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 /*
  * #%L
@@ -206,6 +209,18 @@ class ContractSettingsTakeOverServiceTest
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, null);
 
 		assertThat(service.computeMatches(purchaseOrder, settings)).isEmpty();
+	}
+
+	@Test
+	void settingsWithoutTakeOver_returnsEmptyWithoutReadingTheLinkedSalesOrder()
+	{
+		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord());
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
+		final OrderGroupRepository orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
+		final ContractSettingsTakeOverService serviceWithSpy = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy);
+
+		assertThat(serviceWithSpy.computeMatches(purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)).isEmpty();
+		Mockito.verify(orderGroupRepositorySpy, Mockito.never()).retrieveContractCreatedGroupsByOrderId(any());
 	}
 
 	@Test
@@ -385,14 +400,10 @@ class ContractSettingsTakeOverServiceTest
 
 	private ContractCompensationGroupSettings createSettings(final ProductId... customerDiscountProductIds)
 	{
-		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
-		saveRecord(schema);
-		final I_C_CompensationGroup_ContractSettings settings = newInstance(I_C_CompensationGroup_ContractSettings.class);
-		settings.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
-		saveRecord(settings);
+		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord();
 
 		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
-		takeOver.setC_CompensationGroup_ContractSettings_ID(settings.getC_CompensationGroup_ContractSettings_ID());
+		takeOver.setC_CompensationGroup_ContractSettings_ID(settingsId.getRepoId());
 		takeOver.setM_Product_Category_ID(CATEGORY_ID.getRepoId());
 		takeOver.setM_Product_ID(OWN_PRODUCT_ID.getRepoId());
 		saveRecord(takeOver);
@@ -405,7 +416,17 @@ class ContractSettingsTakeOverServiceTest
 			saveRecord(takeOverProduct);
 		}
 
-		return settingsRepository.getBySettingsId(ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID()));
+		return settingsRepository.getBySettingsId(settingsId);
+	}
+
+	private static ContractCompensationGroupSettingsId createSettingsRecord()
+	{
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+		final I_C_CompensationGroup_ContractSettings settings = newInstance(I_C_CompensationGroup_ContractSettings.class);
+		settings.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(settings);
+		return ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID());
 	}
 
 	private static OrderDropShipInfo purchaseOrder(final boolean isDropShip, @Nullable final OrderId linkedOrderId)
