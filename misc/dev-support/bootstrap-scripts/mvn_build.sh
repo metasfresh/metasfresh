@@ -210,8 +210,23 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-# Setup workspace-specific Maven local repository
-LOCAL_REPO="$WORKSPACE_ROOT/.m2-local"
+# Setup workspace-specific Maven local repository.
+# Resolve the MAIN worktree root so builds run from a git worktree share the one
+# populated .m2-local in the main checkout, instead of the worktree's own empty
+# .m2-local (which would force slow full re-downloads on every worktree build).
+# `|| GIT_COMMON_DIR=""` keeps `set -e` from aborting when WORKSPACE_ROOT is not a
+# git repo (git exits 128), so the not-a-git-repo fallback below is actually reached
+GIT_COMMON_DIR="$(git -C "$WORKSPACE_ROOT" rev-parse --git-common-dir 2>/dev/null)" || GIT_COMMON_DIR=""
+if [ -n "$GIT_COMMON_DIR" ]; then
+    # git-common-dir may be relative to WORKSPACE_ROOT; make it absolute
+    case "$GIT_COMMON_DIR" in /*) ;; *) GIT_COMMON_DIR="$WORKSPACE_ROOT/$GIT_COMMON_DIR" ;; esac
+    # common dir is <main-root>/.git; on the rare cd failure fall back to WORKSPACE_ROOT
+    # so the build never aborts under `set -e` (matches the not-a-git-repo branch below)
+    MAIN_ROOT="$(cd "$GIT_COMMON_DIR/.." 2>/dev/null && pwd)" || MAIN_ROOT="$WORKSPACE_ROOT"
+else
+    MAIN_ROOT="$WORKSPACE_ROOT"                        # not a git repo -> keep old behaviour
+fi
+LOCAL_REPO="$MAIN_ROOT/.m2-local"
 mkdir -p "$LOCAL_REPO"
 
 # Maven local repo parameter
