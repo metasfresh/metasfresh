@@ -1,11 +1,16 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
+import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -16,25 +21,34 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
 /*
@@ -69,6 +83,10 @@ class ContractSettingsTakeOverServiceTest
 	private static final ProductId BONUS_VERPACKUNG_ID = ProductId.ofRepoId(203); // not a customer discount product
 	private static final ProductId OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID = ProductId.ofRepoId(204); // customer discount product, on no SO line
 
+	private static final ZoneId ZONE = ZoneId.of("UTC");
+	private static final BPartnerId CUSTOMER_ID = BPartnerId.ofRepoId(2); // the linked SO's invoice partner the fee is keyed by
+	private static final ZonedDateTime SO_DATE = LocalDate.parse("2026-05-10").atStartOfDay(ZONE);
+
 	private ContractCompensationGroupSettingsRepository settingsRepository;
 	private OrderGroupRepository orderGroupRepositorySpy;
 	private ContractSettingsTakeOverService service;
@@ -82,7 +100,14 @@ class ContractSettingsTakeOverServiceTest
 		settingsRepository = ContractCompensationGroupSettingsRepository.newInstanceForUnitTesting();
 		// a spy delegates to the real methods, so it behaves like the real repository in every test
 		orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
-		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy);
+
+		final CurrencyRepository currencyRepo = new CurrencyRepository();
+		SpringContextHolder.registerJUnitBean(currencyRepo);
+		final ContractServiceFeeTakeOverService feeService = new ContractServiceFeeTakeOverService(new InvoiceProcessingServiceCompanyService(
+				new InvoiceProcessingServiceCompanyConfigRepository(),
+				new MoneyService(currencyRepo)));
+
+		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeService);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -342,6 +367,83 @@ class ContractSettingsTakeOverServiceTest
 		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 3% Bonus Ware");
 	}
 
+	@Test
+	void applyToSchema_singleMatchWithServiceFee_foldsFeeIntoPercentageAndDescription()
+	{
+		final ProductId bonusWareId = product("Bonus Ware", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+						schema(),
+						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+						settings)
+				.getCompensationLines();
+
+		assertThat(lines).hasSize(1);
+		assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("5.60");
+		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 2.6% Payment Service Fee");
+	}
+
+	@Test
+	void applyToSchema_singleMatchWithoutServiceFee_leavesPercentageAndDescriptionUnchanged()
+	{
+		final ProductId bonusWareId = product("Bonus Ware", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+		// no fee assignment for CUSTOMER_ID
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+						schema(),
+						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+						settings)
+				.getCompensationLines();
+
+		assertThat(lines).hasSize(1);
+		assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("3");
+		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware");
+	}
+
+	@Test
+	void applyToSchema_multipleMatchesWithServiceFee_throws()
+	{
+		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(
+				new LineSpec(bonusWareAId, "3"),
+				new LineSpec(bonusWareBId, "1"));
+		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
+
+		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
+
+		assertThatThrownBy(() -> service.applyToSchema(schema(), purchaseOrder, settings))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	void applyToSchema_multipleMatchesWithoutServiceFee_appendsBothLinesWithoutFee()
+	{
+		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(
+				new LineSpec(bonusWareAId, "3"),
+				new LineSpec(bonusWareBId, "1"));
+		// no fee assignment for CUSTOMER_ID
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+						schema(),
+						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+						settings)
+				.getCompensationLines();
+
+		assertThat(lines).hasSize(2);
+		assertThat(lines).extracting(GroupTemplateCompensationLine::getDescription)
+				.containsExactlyInAnyOrder("3% Bonus Ware A", "1% Bonus Ware B");
+	}
+
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */
 	private List<GroupTemplateCompensationLine> applyBonusWareTakeOverOf3PercentTo(final GroupTemplateCompensationLine... schemaLines)
 	{
@@ -402,11 +504,29 @@ class ContractSettingsTakeOverServiceTest
 	private ContractCompensationGroupSettings createSettings(final ProductId... customerDiscountProductIds)
 	{
 		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord();
+		addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, customerDiscountProductIds);
+		return settingsRepository.getBySettingsId(settingsId);
+	}
 
+	/** Settings with two take-overs, so that a drop-ship PO carrying both products yields two matches. */
+	private ContractCompensationGroupSettings createSettingsWithTwoTakeOvers(final ProductId takeOver1Product, final ProductId takeOver2Product)
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord();
+		addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, takeOver1Product);
+		addTakeOver(settingsId, OTHER_CATEGORY_ID, OWN_PRODUCT_ID, takeOver2Product);
+		return settingsRepository.getBySettingsId(settingsId);
+	}
+
+	private static void addTakeOver(
+			final ContractCompensationGroupSettingsId settingsId,
+			final ProductCategoryId categoryId,
+			final ProductId ownProductId,
+			final ProductId... customerDiscountProductIds)
+	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 		takeOver.setC_CompensationGroup_ContractSettings_ID(settingsId.getRepoId());
-		takeOver.setM_Product_Category_ID(CATEGORY_ID.getRepoId());
-		takeOver.setM_Product_ID(OWN_PRODUCT_ID.getRepoId());
+		takeOver.setM_Product_Category_ID(categoryId.getRepoId());
+		takeOver.setM_Product_ID(ownProductId.getRepoId());
 		saveRecord(takeOver);
 
 		for (final ProductId productId : customerDiscountProductIds)
@@ -416,8 +536,29 @@ class ContractSettingsTakeOverServiceTest
 			takeOverProduct.setM_Product_ID(productId.getRepoId());
 			saveRecord(takeOverProduct);
 		}
+	}
 
-		return settingsRepository.getBySettingsId(settingsId);
+	/** An active, doc-type-null fee assignment for {@code customerId}, valid before {@link #SO_DATE}. @return the configured service-fee product. */
+	private ProductId createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName)
+	{
+		final ProductId feeProductId = product(feeProductName, null, null);
+
+		final I_InvoiceProcessingServiceCompany config = newInstance(I_InvoiceProcessingServiceCompany.class);
+		config.setIsActive(true);
+		config.setServiceCompany_BPartner_ID(111);
+		config.setServiceInvoice_DocType_ID(222);
+		config.setServiceFee_Product_ID(feeProductId.getRepoId());
+		config.setValidFrom(TimeUtil.asTimestamp(LocalDate.parse("2026-01-01").atStartOfDay(ZONE)));
+		saveRecord(config);
+
+		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignment = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+		assignment.setIsActive(true);
+		assignment.setInvoiceProcessingServiceCompany_ID(config.getInvoiceProcessingServiceCompany_ID());
+		assignment.setC_BPartner_ID(customerId.getRepoId());
+		assignment.setFeePercentageOfGrandTotal(new BigDecimal(feePercent));
+		saveRecord(assignment);
+
+		return feeProductId;
 	}
 
 	private static ContractCompensationGroupSettingsId createSettingsRecord()
@@ -436,6 +577,18 @@ class ContractSettingsTakeOverServiceTest
 				.soTrx(SOTrx.PURCHASE)
 				.isDropShip(isDropShip)
 				.linkedOrderId(linkedOrderId)
+				.build();
+	}
+
+	/** A drop-ship purchase order carrying the linked sales order's fee key (invoice partner + date). */
+	private static OrderDropShipInfo purchaseOrderWithFeeKey(final OrderId linkedOrderId, final BPartnerId invoicePartnerId, final ZonedDateTime soDate)
+	{
+		return OrderDropShipInfo.builder()
+				.soTrx(SOTrx.PURCHASE)
+				.isDropShip(true)
+				.linkedOrderId(linkedOrderId)
+				.invoicePartnerId(invoicePartnerId)
+				.soDate(soDate)
 				.build();
 	}
 
