@@ -51,6 +51,8 @@ import java.time.LocalDate;
 @Component
 public class C_Flatrate_Term
 {
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
 	private final RefundContractRepository refundContractRepository;
 
@@ -64,6 +66,9 @@ public class C_Flatrate_Term
 
 	/**
 	 * Note: this method corresponds with the sysconfig setting {@code de.metas.contracts.C_Flatrate_Term.allow_reactivate_Refund = 'Y'}
+	 * <p>
+	 * The reactivated term must also leave the refund contract caches, see {@link #flagInvoiceCandidates(IQuery)}.
+	 * (Voiding and closing are prohibited for all terms, see {@code de.metas.contracts.interceptor.C_Flatrate_Term#prohibitVoidingAndClosing}.)
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void deleteRefundInvoiceCandidates(@NonNull final I_C_Flatrate_Term flatrateTerm)
@@ -72,7 +77,12 @@ public class C_Flatrate_Term
 		{
 			return; // this MI only deals with "refund" terms
 		}
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(flatrateTerm);
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(flatrateTerm);
+
+		trxManager
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> refundContractRepository.resetCaches());
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -85,7 +95,7 @@ public class C_Flatrate_Term
 
 		final IQuery<I_C_Invoice_Candidate> query = createInvoiceCandidatesToInvalidQuery(flatrateTerm, SystemTime.asLocalDate());
 
-		Services.get(ITrxManager.class)
+		trxManager
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerHandlingMethod(trx -> flagInvoiceCandidates(query));
@@ -96,7 +106,7 @@ public class C_Flatrate_Term
 	{
 		// the term is committed now; the contracts that were cached before are stale
 		refundContractRepository.resetCaches();
-		Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query);
+		invoiceCandDAO.invalidateCandsFor(query);
 	}
 
 	/**
