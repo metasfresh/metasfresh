@@ -61,9 +61,7 @@ class DocumentProcessingAttemptsTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-		documentBL = new TestDocumentBL();
-		documentBL.setDeadlockRetryPolicy(DeadlockRetryPolicy.builder().maxAttempts(3).backoffMillis(0).build());
-		documentBL.setRetryStateSnapshotter(TestDocument::snapshot);
+		documentBL = new TestDocumentBL(TestDocument::snapshot);
 	}
 
 	/**
@@ -72,6 +70,11 @@ class DocumentProcessingAttemptsTest
 	 */
 	static class TestDocumentBL extends AbstractDocumentBL
 	{
+		TestDocumentBL(final RetryStateSnapshotter snapshotter)
+		{
+			super(DeadlockRetryPolicy.builder().maxAttempts(3).backoffMillis(0).build(), snapshotter);
+		}
+
 		@Override
 		protected boolean processIt0(final IDocument doc, final String action) {return doc.processIt(action);}
 
@@ -115,6 +118,7 @@ class DocumentProcessingAttemptsTest
 		final List<List<TestLine>> attemptLines = new ArrayList<>();
 		int resetCount = 0;
 		boolean snapshotFails = false;
+		boolean restoreFails = false;
 
 		String docStatus = IDocument.STATUS_Drafted;
 		boolean prepared = false;
@@ -132,7 +136,13 @@ class DocumentProcessingAttemptsTest
 				throw new IllegalStateException("snapshot failed");
 			}
 			final String docStatus = document.docStatus;
-			return () -> document.docStatus = docStatus;
+			return () -> {
+				if (document.restoreFails)
+				{
+					throw new IllegalStateException("restore failed");
+				}
+				document.docStatus = docStatus;
+			};
 		}
 
 		List<TestLine> getLines()
@@ -296,6 +306,8 @@ class DocumentProcessingAttemptsTest
 		assertThat(process(document)).isFalse();
 
 		assertThat(document.getProcessMsg()).isEqualTo("attempt 2");
+		// the returning attempt was committed, so its in-memory state is kept
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_InProgress);
 	}
 
 	@Test
@@ -307,6 +319,9 @@ class DocumentProcessingAttemptsTest
 
 		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/DR/null", "false/DR/null");
 		assertThat(document.resetCount).isEqualTo(2);
+		// the last attempt was rolled back, so the caller is back to its state before the action, except for the process message
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Drafted);
+		assertThat(document.getProcessMsg()).isEqualTo("attempt 3");
 	}
 
 	@Test
@@ -318,6 +333,28 @@ class DocumentProcessingAttemptsTest
 
 		assertThat(document.attemptStartStates).hasSize(1);
 		assertThat(document.resetCount).isZero();
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Drafted);
+	}
+
+	@Test
+	void failingRestore_retryContinuesWithoutRestore()
+	{
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
+		document.restoreFails = true;
+
+		assertThat(process(document)).isTrue();
+
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/IP/null");
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Completed);
+	}
+
+	@Test
+	void failingRestore_doesNotHideTheDeadlock()
+	{
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.DEADLOCK, Outcome.DEADLOCK);
+		document.restoreFails = true;
+
+		assertThatThrownBy(() -> process(document)).hasMessageContaining("deadlock");
 	}
 
 	@Test
@@ -336,7 +373,7 @@ class DocumentProcessingAttemptsTest
 	@Test
 	void unsupportedModel_retryWithoutRestore()
 	{
-		documentBL.setRetryStateSnapshotter(model -> null);
+		documentBL = new TestDocumentBL(model -> null);
 		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
 
 		assertThat(process(document)).isTrue();
@@ -372,6 +409,7 @@ class DocumentProcessingAttemptsTest
 	class DocumentWrapperJustPrepared
 	{
 		private int prepareCount = 0;
+		private String completeStatus = IDocument.STATUS_Completed;
 
 		private IDocument newDocument()
 		{
@@ -397,7 +435,7 @@ class DocumentProcessingAttemptsTest
 					return IDocument.STATUS_InProgress;
 				}
 
-				@Override public String completeIt(final DocumentTableFields docFields) {return IDocument.STATUS_Completed;}
+				@Override public String completeIt(final DocumentTableFields docFields) {return completeStatus;}
 			});
 		}
 
@@ -427,6 +465,19 @@ class DocumentProcessingAttemptsTest
 			prepareAndComplete(document);
 
 			document.completeIt();
+
+			assertThat(prepareCount).isEqualTo(2);
+		}
+
+		@Test
+		void completionReturnedInProgress_nextCompletionOfTheSameInstancePreparesAgain()
+		{
+			completeStatus = IDocument.STATUS_InProgress; // e.g. waiting for a payment or a confirmation
+			final IDocument document = newDocument();
+			assertThat(prepareAndComplete(document)).isEqualTo(IDocument.STATUS_InProgress);
+
+			completeStatus = IDocument.STATUS_Completed;
+			assertThat(document.completeIt()).isEqualTo(IDocument.STATUS_Completed);
 
 			assertThat(prepareCount).isEqualTo(2);
 		}

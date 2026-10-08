@@ -58,10 +58,24 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	private DeadlockRetryPolicy deadlockRetryPolicy = DeadlockRetryPolicy.DEFAULT;
-	private RetryStateSnapshotter retryStateSnapshotter = RetryStateSnapshotter.PO_SNAPSHOTTER;
+	@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy;
+	@NonNull private final RetryStateSnapshotter retryStateSnapshotter;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	protected AbstractDocumentBL()
+	{
+		this(DeadlockRetryPolicy.DEFAULT, RetryStateSnapshotter.PO_SNAPSHOTTER);
+	}
+
+	@VisibleForTesting
+	AbstractDocumentBL(
+			@NonNull final DeadlockRetryPolicy deadlockRetryPolicy,
+			@NonNull final RetryStateSnapshotter retryStateSnapshotter)
+	{
+		this.deadlockRetryPolicy = deadlockRetryPolicy;
+		this.retryStateSnapshotter = retryStateSnapshotter;
+	}
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
@@ -130,9 +144,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
 			// and runs on the same document, reset to its state before the first attempt
 			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, retryStateSnapshotter);
-			processed = deadlockRetryPolicy.call(
-					() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
-					document.getDocumentInfo());
+			try
+			{
+				processed = deadlockRetryPolicy.call(
+						() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
+						document.getDocumentInfo());
+			}
+			catch (final RuntimeException ex)
+			{
+				attempts.onFailure();
+				throw ex;
+			}
 		}
 		else
 		{
@@ -178,18 +200,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 				setTrxName(document.getDocumentModel(), initialTrxName, true /* ignoreIfNotHandled */);
 			}
 		};
-	}
-
-	@VisibleForTesting
-	void setDeadlockRetryPolicy(@NonNull final DeadlockRetryPolicy deadlockRetryPolicy)
-	{
-		this.deadlockRetryPolicy = deadlockRetryPolicy;
-	}
-
-	@VisibleForTesting
-	void setRetryStateSnapshotter(@NonNull final RetryStateSnapshotter retryStateSnapshotter)
-	{
-		this.retryStateSnapshotter = retryStateSnapshotter;
 	}
 
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)

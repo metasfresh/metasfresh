@@ -5158,6 +5158,7 @@ public abstract class PO
 		private final Object[] newValues;
 		private final boolean[] valueLoaded;
 		private final boolean stale;
+		@Nullable private final HashMap<String, String> custom;
 		@Nullable private final Set<Integer> markedChangedColumns;
 		@Nullable private final HashMap<String, Object> dynAttrs;
 		@Nullable private final ArrayList<PO_LOB> lobInfo;
@@ -5168,6 +5169,7 @@ public abstract class PO
 			this.newValues = copyOf(po.m_newValues);
 			this.valueLoaded = po.m_valueLoaded == null ? null : Arrays.copyOf(po.m_valueLoaded, po.m_valueLoaded.length);
 			this.stale = po.m_stale;
+			this.custom = po.m_custom == null ? null : new HashMap<>(po.m_custom);
 			this.markedChangedColumns = po.markedChangedColumns == null ? null : new HashSet<>(po.markedChangedColumns);
 			this.dynAttrs = po.m_dynAttrs == null ? null : new HashMap<>(po.m_dynAttrs);
 			this.lobInfo = po.m_lobInfo == null ? null : new ArrayList<>(po.m_lobInfo);
@@ -5179,6 +5181,7 @@ public abstract class PO
 			po.m_newValues = copyOf(newValues);
 			po.m_valueLoaded = valueLoaded == null ? null : Arrays.copyOf(valueLoaded, valueLoaded.length);
 			po.m_stale = stale;
+			po.m_custom = custom == null ? null : new HashMap<>(custom);
 			po.markedChangedColumns = markedChangedColumns == null ? null : new HashSet<>(markedChangedColumns);
 			po.m_dynAttrs = dynAttrs == null ? null : new HashMap<>(dynAttrs);
 			po.m_lobInfo = lobInfo == null ? null : new ArrayList<>(lobInfo);
@@ -5190,8 +5193,9 @@ public abstract class PO
 	}
 
 	/**
-	 * Captures this instance's column values (incl. the not yet saved changes), its columns marked as changed, its dynamic attributes and its pending LOBs,
-	 * so that {@link #restoreStateForRetry(RetryStateSnapshot)} can undo what a rolled back document action did to this instance.
+	 * Captures this instance's column values (incl. the not yet saved changes and custom columns), its columns marked as changed, its dynamic attributes
+	 * and its pending LOBs, so that {@link #restoreStateForRetry(RetryStateSnapshot)} can undo what a rolled back document action did to this instance.
+	 * The value arrays and collections are copied, the values in them (incl. dynamic attribute values and LOBs) are shared.
 	 * Not captured, because a document action does not change them: identity and key, ctx, trxName, the "manual user action" / window settings.
 	 */
 	public final RetryStateSnapshot snapshotStateForRetry()

@@ -38,8 +38,11 @@ import javax.annotation.Nullable;
  * the instance's column state is restored from a snapshot taken before the first attempt, and {@link IDocument#resetEngineStateForRetry()}
  * drops the state the action built up.
  * <p>
- * If the model is not supported by the {@link RetryStateSnapshotter} (new record, POJO, {@code GridTab}) or taking the snapshot fails,
- * the column state is not restored; the reset hook is still called.
+ * If the action finally fails (its transaction was rolled back), the column state is restored as well, so that the instance matches the database;
+ * the process message is kept. If an attempt returns {@code false}, its transaction is committed, so nothing is restored.
+ * <p>
+ * If the model is not supported by the {@link RetryStateSnapshotter} (new record, POJO, {@code GridTab}), or taking or restoring the snapshot fails,
+ * the column state is not restored; the reset hook is still called before a retry.
  */
 final class DocumentProcessingAttempts
 {
@@ -85,12 +88,35 @@ final class DocumentProcessingAttempts
 		attemptCount++;
 		if (attemptCount > 1)
 		{
-			if (restoreSnapshot != null)
-			{
-				restoreSnapshot.run();
-			}
+			restoreColumnState();
 			document.resetEngineStateForRetry();
 		}
 		return document;
+	}
+
+	/**
+	 * To be called when the action failed, i.e. its last attempt was rolled back: restores the column state to the one before the first attempt.
+	 */
+	void onFailure()
+	{
+		restoreColumnState();
+	}
+
+	private void restoreColumnState()
+	{
+		if (restoreSnapshot == null)
+		{
+			return;
+		}
+
+		try
+		{
+			restoreSnapshot.run();
+		}
+		catch (final Exception ex)
+		{
+			// don't fail (and so hide the original problem); the next attempt or the caller just works with the instance as it is
+			logger.warn("Cannot restore {} to its state before processing it", document, ex);
+		}
 	}
 }

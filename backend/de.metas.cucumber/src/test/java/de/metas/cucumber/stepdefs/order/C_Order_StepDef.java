@@ -516,11 +516,22 @@ public class C_Order_StepDef
 	 * Arms a one-time DB deadlock for the next completion of the given order: that completion fails after its
 	 * {@code AFTER_COMPLETE} interceptors ran, and the document engine rolls it back and retries it.
 	 */
-	@And("^the next completion of the order identified by (.*) runs into a DB deadlock once$")
+	@And("^the next completion of the order identified by (\\S+) runs into a DB deadlock once$")
 	public void order_next_completion_runs_into_deadlock(@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
-		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()));
+		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()), null);
+	}
+
+	/**
+	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but each completion attempt first saves the given description
+	 * (until the end of the scenario), so the deadlocked attempt's save is rolled back and the retry saves the same value again.
+	 */
+	@And("^the next completion of the order identified by (\\S+) saves the description '(.*)' and then runs into a DB deadlock once$")
+	public void order_next_completion_saves_description_and_runs_into_deadlock(@NonNull final String orderIdentifier, @NonNull final String description)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()), description);
 	}
 
 	@And("^the completion of the order identified by (.*) did run into the DB deadlock$")
@@ -1208,6 +1219,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_Description)
+				.ifPresent(description -> softly.assertThat(order.getDescription()).as("Description for Identifier=%s", identifierStr).isEqualTo(description));
 
 		row.getAsOptionalBigDecimal(I_C_Order.COLUMNNAME_GrandTotal)
 				.ifPresent(grandTotal -> softly.assertThat(order.getGrandTotal()).as("GrandTotal for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal));

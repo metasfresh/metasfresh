@@ -37,13 +37,18 @@ import org.compiere.model.ModelValidator;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Makes the next completion of an armed order fail once with a DB deadlock (SQLSTATE {@code 40P01}) in {@code AFTER_COMPLETE},
  * so that the document engine rolls the completion back and retries it, as it does when PostgreSQL picks the completing
  * transaction as a deadlock victim. Registered while at least one order is armed, see {@link #disarmAll()}.
+ * <p>
+ * Optionally, every completion attempt of the order first sets and saves a given description, like an interceptor that derives a column
+ * value: the deadlocked attempt's save is rolled back, and the retry derives and saves the same value again.
  */
 final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 {
@@ -51,17 +56,22 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 
 	private final Set<OrderId> armedOrderIds = new HashSet<>();
 	private final Set<OrderId> hitOrderIds = new HashSet<>();
+	private final Map<OrderId, String> descriptionsToSave = new HashMap<>();
 	/** the same wrapper for every registration, so that an engine never accumulates several of them */
 	private final ModelValidator validator = ModelInterceptor2ModelValidatorWrapper.wrapIfNeeded(this);
 	@Nullable private ModelValidationEngine registeredWithEngine = null;
 
 	private C_Order_SimulatedDeadlockOnCompletion() {}
 
-	static synchronized void arm(@NonNull final OrderId orderId)
+	static synchronized void arm(@NonNull final OrderId orderId, @Nullable final String descriptionToSave)
 	{
 		INSTANCE.registerIfNeeded();
 		INSTANCE.armedOrderIds.add(orderId);
 		INSTANCE.hitOrderIds.remove(orderId);
+		if (descriptionToSave != null)
+		{
+			INSTANCE.descriptionsToSave.put(orderId, descriptionToSave);
+		}
 	}
 
 	/**
@@ -79,6 +89,7 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 	{
 		INSTANCE.armedOrderIds.clear();
 		INSTANCE.hitOrderIds.clear();
+		INSTANCE.descriptionsToSave.clear();
 		INSTANCE.unregister();
 	}
 
@@ -121,6 +132,14 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 		final OrderId orderId = OrderId.ofRepoId(InterfaceWrapperHelper.getId(model));
 		synchronized (C_Order_SimulatedDeadlockOnCompletion.class)
 		{
+			final String descriptionToSave = descriptionsToSave.get(orderId);
+			if (descriptionToSave != null)
+			{
+				final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
+				order.setDescription(descriptionToSave);
+				InterfaceWrapperHelper.save(order);
+			}
+
 			if (!armedOrderIds.remove(orderId))
 			{
 				return;
