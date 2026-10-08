@@ -33,6 +33,7 @@ Feature: Refund contracts go to the invoice partner
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_goods   | refundPLV                         | goodsProduct            | 100      | PCE               | Normal                        |
+      | pp_bonusW  | refundPLV                         | bonusWare               | 1        | PCE               | Normal                        |
 
     # the head office is invoiced for what the store orders
     And metasfresh contains C_BPartners without locations:

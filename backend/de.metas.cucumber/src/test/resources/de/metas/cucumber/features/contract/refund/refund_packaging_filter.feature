@@ -38,6 +38,7 @@ Feature: Refund contracts restricted to packaging options
       | pp_goods   | refundPLV                         | goodsProduct            | 100      | PCE               | Normal                        |
       | pp_carton  | refundPLV                         | cartonProduct           | 1        | PCE               | Normal                        |
       | pp_crate   | refundPLV                         | crateProduct            | 1        | PCE               | Normal                        |
+      | pp_bonusW  | refundPLV                         | bonusWare               | 1        | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | customerBP | Y              | refundPS                      | I               |
