@@ -162,6 +162,73 @@ export function getSizeClass(col) {
   }
 }
 
+// combobox (Lookup/List — Search resolves to Lookup upstream) minimum-usable width: below this, the
+// open dropdown editor is unusable. The editor itself shrinks to the column width in the grid, so
+// the floor only has to keep the trigger + a few characters visible (90px).
+export const COMBOBOX_MIN_WIDTH_PX = 90;
+export const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
+
+// price/amount minimum width: the td-sm minimum (60px) + 8px, so a typical price such as `12,50`
+// (35px at 14px Roboto) shows whole inside the 2 x 11.2px cell padding (45.6px left for the value).
+export const PRICE_MIN_WIDTH_PX = 68;
+export const PRICE_WIDGET_TYPES = ['CostPrice', 'Amount'];
+
+// attribute widgets: their value is a {key, caption} object that is edited in the attribute
+// popup (opened by the cell's <Attributes> button), never as the cell's text
+export const ATTRIBUTE_WIDGET_TYPES = ['ProductAttributes', 'Address'];
+
+/**
+ * @method getColumnMinWidthPx
+ * @param {string} widgetType
+ * @summary the widget-specific minimum width of a grid column: 90px for a combobox, 68px for a
+ * price/amount column; `undefined` for any other widget type (no widget-specific minimum).
+ */
+export function getColumnMinWidthPx(widgetType) {
+  if (COMBOBOX_WIDGET_TYPES.indexOf(widgetType) > -1) {
+    return COMBOBOX_MIN_WIDTH_PX;
+  }
+  if (PRICE_WIDGET_TYPES.indexOf(widgetType) > -1) {
+    return PRICE_MIN_WIDTH_PX;
+  }
+  return undefined;
+}
+
+// `td-*` band min-widths as defined in `table.scss` — used only to detect whether the band already
+// clears a widget-specific minimum width; the bands themselves are never changed here.
+const SIZE_CLASS_MIN_WIDTH_PX = {
+  'td-sm': 60,
+  'td-md': 144,
+  'td-lg': 225,
+  'td-xl': 350,
+  'td-xxl': 500,
+};
+
+/**
+ * @method getSizeStyle
+ * @param {object} col
+ * @summary widget-specific minimum width (combobox 90px, price/amount 68px — `getColumnMinWidthPx`),
+ * enforced as an inline style at size-resolution time — never by promoting the column to a wider
+ * `td-*` band (which would also touch the band's `max-width` and every column sharing it). Returns
+ * `undefined` for a column without a widget-specific minimum, or whose resolved band already clears it.
+ */
+export function getSizeStyle(col) {
+  const minWidthPx = getColumnMinWidthPx(col.widgetType);
+  if (!minWidthPx) {
+    return undefined;
+  }
+
+  const bandMinWidth = SIZE_CLASS_MIN_WIDTH_PX[getSizeClass(col)] || 0;
+  if (bandMinWidth >= minWidthPx) {
+    return undefined;
+  }
+
+  // This min-width is a robust floor even on a narrower td-sm/td-md band: per
+  // CSS 2.1 §10.4, when the computed min-width exceeds the computed max-width,
+  // the used max-width is raised to the min-width — so the band's smaller
+  // max-width can never shrink the column back below the floor.
+  return { minWidth: `${minWidthPx}px` };
+}
+
 /**
  * @method getIconClassName
  * @param {object} huType
@@ -467,22 +534,19 @@ export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
 
 /**
  * @method getTdValue
- * @summary Get the content of the table divider based on the widgetData provided
+ * @summary Get the displayed content of the table divider based on the widgetData provided.
  *
  * @param {array} widgetData
  * @param {object} item
- * @param {bool} isEdited
  * @param {bool} isGerman
  */
-export function getTdValue({ widgetData, item, isEdited, isGerman }) {
-  return !isEdited
-    ? fieldValueToString({
-        fieldValue: widgetData[0].value,
-        fieldType: item.widgetType,
-        precision: widgetData[0].precision,
-        isGerman,
-      })
-    : null;
+export function getTdValue({ widgetData, item, isGerman }) {
+  return fieldValueToString({
+    fieldValue: widgetData[0].value,
+    fieldType: item.widgetType,
+    precision: widgetData[0].precision,
+    isGerman,
+  });
 }
 
 /**
