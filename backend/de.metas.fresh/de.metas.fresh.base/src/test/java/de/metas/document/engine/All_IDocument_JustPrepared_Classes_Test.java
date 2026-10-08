@@ -33,6 +33,7 @@ import org.compiere.model.MOrder;
 import org.eevolution.model.MPPOrder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.objenesis.ObjenesisStd;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -55,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,15 +65,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Pins the contract of {@link IDocument#resetEngineStateForRetry()} for every {@link IDocument} that keeps a "just prepared" flag:
  * it overrides the hook, the hook drops the per-action state, and {@link IDocument#completeIt()} clears the flag on every outcome.
  * <p>
- * The documents are instantiated without a constructor (and so without DB access); the per-action fields are found by name.
+ * The documents are instantiated without a constructor (Objenesis, so without DB access); the per-action fields are found by name.
  */
 @SuppressWarnings("NewClassNamingConvention")
 public class All_IDocument_JustPrepared_Classes_Test
 {
+	private static final ObjenesisStd OBJENESIS = new ObjenesisStd();
+	private static final Duration COMPLETE_IT_TIMEOUT = Duration.ofSeconds(30);
+
 	private static final Set<String> JUST_PREPARED_FIELD_NAMES = ImmutableSet.of("m_justPrepared", "justPrepared");
 
 	/**
 	 * The fields that hold state built up by a document action; the hook resets them to {@code false} / {@code null}, or (for a map) to an empty one.
+	 * <p>
+	 * Limitation: the fields are recognized by name only. A document that keeps per-action state in a field with another name is not checked
+	 * until that name is added here; and a field with one of these names is expected to be reset even if it holds something else.
 	 */
 	private static final Set<String> PER_ACTION_FIELD_NAMES = ImmutableSet.of(
 			"m_justPrepared", "justPrepared",
@@ -151,15 +159,16 @@ public class All_IDocument_JustPrepared_Classes_Test
 	void completeIt_clearsTheFlagOnEveryOutcome() throws Exception
 	{
 		final List<String> problems = new ArrayList<>();
-		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		try
+		for (final Class<?> clazz : documentClassesWithFlag)
 		{
-			for (final Class<?> clazz : documentClassesWithFlag)
-			{
-				final Object document = allocateInstance(clazz);
-				final Field flag = findJustPreparedField(clazz).orElseThrow(IllegalStateException::new);
-				flag.set(document, true);
+			final Object document = allocateInstance(clazz);
+			final Field flag = findJustPreparedField(clazz).orElseThrow(IllegalStateException::new);
+			flag.set(document, true);
 
+			// a fresh thread per class, so that a hanging completeIt() affects only its own class
+			final ExecutorService executor = Executors.newSingleThreadExecutor();
+			try
+			{
 				final Future<?> completion = executor.submit(() -> {
 					try
 					{
@@ -170,17 +179,22 @@ public class All_IDocument_JustPrepared_Classes_Test
 						// expected: the instance has no column values
 					}
 				});
-				completion.get(Duration.ofSeconds(30).toMillis(), TimeUnit.MILLISECONDS);
-
-				if (Boolean.TRUE.equals(flag.get(document)))
-				{
-					problems.add(clazz.getName());
-				}
+				completion.get(COMPLETE_IT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
 			}
-		}
-		finally
-		{
-			executor.shutdownNow();
+			catch (final TimeoutException ex)
+			{
+				problems.add(clazz.getName() + " (completeIt() did not return within " + COMPLETE_IT_TIMEOUT + ")");
+				continue;
+			}
+			finally
+			{
+				executor.shutdownNow();
+			}
+
+			if (Boolean.TRUE.equals(flag.get(document)))
+			{
+				problems.add(clazz.getName());
+			}
 		}
 		assertThat(problems).as("classes whose completeIt() does not clear the \"just prepared\" flag").isEmpty();
 	}
@@ -243,12 +257,8 @@ public class All_IDocument_JustPrepared_Classes_Test
 		return allocateInstance(type);
 	}
 
-	private static Object allocateInstance(final Class<?> clazz) throws Exception
+	private static Object allocateInstance(final Class<?> clazz)
 	{
-		final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-		final Field theUnsafe = unsafeClass.getDeclaredField("theUnsafe");
-		theUnsafe.setAccessible(true);
-		final Object unsafe = theUnsafe.get(null);
-		return unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, clazz);
+		return OBJENESIS.newInstance(clazz);
 	}
 }

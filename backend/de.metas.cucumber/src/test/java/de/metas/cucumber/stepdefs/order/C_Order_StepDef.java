@@ -990,6 +990,10 @@ public class C_Order_StepDef
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 *   <li>{@code InvoiceStatus} (optional) — expected invoice status: {@code O} = open, {@code PI} = partially invoiced, {@code CI} = completely invoiced;
 	 *       waits up to 60s for it, because it follows the asynchronous recompute of the order's invoice candidates</li>
+	 *   <li>{@code GrandTotal} (optional) — expected grand total, compared by value</li>
+	 *   <li>{@code C_DocType_ID} (optional) — identifier of the expected {@code C_DocType} of the order itself; unlike {@code DocBaseType},
+	 *       it does not fall back to {@code C_DocTypeTarget_ID}, so it detects an order that was completed without its {@code C_DocType_ID}</li>
+	 *   <li>{@code IsApproved} (optional) — expected approval flag</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")

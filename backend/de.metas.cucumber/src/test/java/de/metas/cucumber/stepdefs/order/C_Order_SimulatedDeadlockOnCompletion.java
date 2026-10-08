@@ -47,8 +47,8 @@ import java.util.Set;
  * so that the document engine rolls the completion back and retries it, as it does when PostgreSQL picks the completing
  * transaction as a deadlock victim. Registered while at least one order is armed, see {@link #disarmAll()}.
  * <p>
- * Optionally, every completion attempt of the order first sets and saves a given description, like an interceptor that derives a column
- * value: the deadlocked attempt's save is rolled back, and the retry derives and saves the same value again.
+ * Optionally, the armed completion's attempts (the deadlocked one and its retry) first set the given description and save the order, like an
+ * interceptor that saves the order in {@code AFTER_COMPLETE}: the deadlocked attempt's save is rolled back with the attempt.
  */
 final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 {
@@ -71,6 +71,10 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 		if (descriptionToSave != null)
 		{
 			INSTANCE.descriptionsToSave.put(orderId, descriptionToSave);
+		}
+		else
+		{
+			INSTANCE.descriptionsToSave.remove(orderId);
 		}
 	}
 
@@ -142,6 +146,8 @@ final class C_Order_SimulatedDeadlockOnCompletion implements IModelInterceptor
 
 			if (!armedOrderIds.remove(orderId))
 			{
+				// the retry of the deadlocked attempt (or a later completion): the description belongs to the armed completion only
+				descriptionsToSave.remove(orderId);
 				return;
 			}
 			hitOrderIds.add(orderId);

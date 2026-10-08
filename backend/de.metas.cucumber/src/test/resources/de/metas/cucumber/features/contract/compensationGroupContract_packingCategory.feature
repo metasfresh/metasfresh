@@ -748,12 +748,14 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
       | ol_rty20                  | pipRtyCrateNowCarton        |
-    And the next completion of the order identified by orderRty runs into a DB deadlock once
+    # the same order save before the deadlock; C_DocType_ID and IsApproved are kept by the reactivation, so here they stay right even
+    # if the retry does not write them (only the first completion above detects that)
+    And the next completion of the order identified by orderRty saves the order with the description 'saved by the re-completion attempts' and then runs into a DB deadlock once
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal |
-      | orderRty              | true      | CO        | 1908.88    |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 1908.88    | docTypeSalesOrder       | true       |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
@@ -764,8 +766,8 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     When the order identified by orderRty is reactivated
     And the order identified by orderRty is completed
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal |
-      | orderRty              | true      | CO        | 1908.88    |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 1908.88    | docTypeSalesOrder       | true       |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |

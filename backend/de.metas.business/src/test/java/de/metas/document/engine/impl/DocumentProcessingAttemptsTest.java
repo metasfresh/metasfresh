@@ -27,6 +27,7 @@ import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
+import de.metas.document.exceptions.DocumentProcessingException;
 import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -334,6 +335,23 @@ class DocumentProcessingAttemptsTest
 		assertThat(document.attemptStartStates).hasSize(1);
 		assertThat(document.resetCount).isZero();
 		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Drafted);
+	}
+
+	/**
+	 * With {@code throwExIfNotSuccess}, an attempt that returns false throws a {@link DocumentProcessingException}, so its transaction is rolled back
+	 * and the caller is restored like on any other failure.
+	 */
+	@Test
+	void processEx_retryReturnsFalse_throwsAndRestoresTheCaller()
+	{
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.FAILURE);
+
+		assertThatThrownBy(() -> documentBL.processEx(document, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
+				.isInstanceOf(DocumentProcessingException.class);
+
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/DR/null");
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Drafted);
+		assertThat(document.getProcessMsg()).isEqualTo("attempt 2");
 	}
 
 	@Test
