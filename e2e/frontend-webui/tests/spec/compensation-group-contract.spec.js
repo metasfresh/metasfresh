@@ -840,14 +840,24 @@ async function fillNumber(page, scope, fieldName, value) {
   await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
+/**
+ * Type a date and leave the field.
+ *
+ * The commit is awaited from before the text is typed, not only from the Tab: the date widget
+ * PATCHes as soon as the typed text parses as a valid date (DatePicker.handleDateChange, on the
+ * input's change), so the PATCH already goes out during `fill`, and the blur on Tab sends no
+ * second PATCH. Armed only after `fill`, the wait misses a response that arrives first.
+ */
 async function fillDate(page, scope, fieldName, date) {
   const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
   const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await input.press('ControlOrMeta+a');
-  await input.fill(text);
-  await withFieldCommit(page, fieldName, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, async () => {
+    await input.fill(text);
+    await input.press('Tab');
+  });
 }
 
 async function setCheckbox(page, fieldName) {
