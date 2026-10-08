@@ -327,7 +327,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				.isTrue();
 
 		// The remote file must be CONSUMED (deleted) — never moved to a remote .done folder
-		assertThat(inboundFile).doesNotExist();
+		assertRemoteFileConsumed(inboundFile);
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
 		// The locally-archived file content should match what we placed
@@ -379,7 +379,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				.isTrue();
 
 		// The remote file must be CONSUMED (deleted) — never moved to a remote .done folder
-		assertThat(inboundFile).doesNotExist();
+		assertRemoteFileConsumed(inboundFile);
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
 		// Then: the item produced by the real transform was actually dispatched to the OLCand route
@@ -433,7 +433,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(MALFORMED_TEST_FILE_CONTENT);
 
 		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
-		assertThat(inboundFile).doesNotExist();
+		assertRemoteFileConsumed(inboundFile);
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 		assertThat(sftpRootDir.resolve("inbound/.error")).doesNotExist();
 
@@ -495,7 +495,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(localProcessedDir.resolve(TEST_FILE_NAME)).doesNotExist();
 
 		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
-		assertThat(inboundFile).doesNotExist();
+		assertRemoteFileConsumed(inboundFile);
 		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 		assertThat(sftpRootDir.resolve("inbound/.error")).doesNotExist();
 
@@ -553,7 +553,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
 
 		// the remote file is still consumed
-		assertThat(inboundFile).doesNotExist();
+		assertRemoteFileConsumed(inboundFile);
 
 		// by decision, no extra AD_Issue via the error route: the failure is only logged as a warning
 		errorRouteMockEndpoint.assertIsSatisfied(1_000);
@@ -799,6 +799,19 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				.traceId("integrationTest-trace")
 				.parameters(params)
 				.build();
+	}
+
+	/**
+	 * Asserts that the remote SFTP file was consumed (deleted). The consumer runs with {@code delete=true}, which Camel
+	 * applies only on exchange completion - i.e. after the route has already archived the payload locally. So the
+	 * delete can lag the local archive file the tests wait for, and must be awaited rather than checked right away.
+	 */
+	private static void assertRemoteFileConsumed(final Path inboundFile)
+	{
+		final boolean consumed = waitForCondition(() -> !Files.exists(inboundFile), 10_000, 250);
+		assertThat(consumed)
+				.as("Remote file %s should be consumed (deleted) within 10 seconds", inboundFile)
+				.isTrue();
 	}
 
 	/**
