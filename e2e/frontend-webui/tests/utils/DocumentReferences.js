@@ -51,6 +51,22 @@ export async function waitForReferences({ timeout = 8000 } = {}) {
 }
 
 /**
+ * Wait until the Alt+6 panel has received ALL references: the panel shows its spinner (`.docref-spinner-wrapper`)
+ * from the moment it opens until the SSE stream reports COMPLETED (DocumentReferences.js), so once the spinner is gone
+ * every reference the document has is rendered. Fails when the stream does not complete within `timeout`.
+ *
+ * Unlike waitForReferences() (first reference, any one, given up after 8 s) this waits for the complete list, however
+ * long the server takes for it, up to `timeout`.
+ *
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Maximum time for the stream to complete (default: VERY_SLOW_ACTION_TIMEOUT)
+ */
+export async function waitForReferencesComplete({ timeout = VERY_SLOW_ACTION_TIMEOUT } = {}) {
+  const page = getPage();
+  await page.locator('.order-list-panel-open .docref-spinner-wrapper').waitFor({ state: 'detached', timeout });
+}
+
+/**
  * Open the Alt+6 references panel and wait for it to load.
  *
  * @param {Object} options - Configuration options

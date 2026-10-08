@@ -16,6 +16,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.order.compensationGroup.calibration.CalibrationRule;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
@@ -47,6 +50,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -283,7 +287,9 @@ public class OrderGroupRepository implements GroupRepository
 		return groupBuilder.build();
 	}
 
-	/** @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	/**
+	 * @return the group schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group)
+	 */
 	public static boolean isAdditive(@NonNull final I_C_Order_CompensationGroup groupRecord)
 	{
 		final int compensationGroupSchemaId = groupRecord.getC_CompensationGroup_Schema_ID();
@@ -408,7 +414,9 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line */
+	/**
+	 * @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line
+	 */
 	@Nullable
 	private static ProductCategoryId retrieveAppliesToProductCategoryId(final int compensationGroupSchemaLineId)
 	{
@@ -931,14 +939,35 @@ public class OrderGroupRepository implements GroupRepository
 	public I_C_OrderLine createRegularLineFromTemplate(
 			@NonNull final GroupTemplateRegularLine from,
 			@NonNull final I_C_Order targetOrder,
-			final @NonNull RetrieveOrCreateGroupRequest request)
+			@NonNull final RetrieveOrCreateGroupRequest request)
 	{
+		final GroupCalibrations calibrations = request.getCalibrations();
+		final CalibrationRule calibrationRule = calibrations != null
+				? calibrations.getByTemplateLineId(from.getId()).orElse(null)
+				: null;
+
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(targetOrder);
 		final ProductId productId = from.getProductId();
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
-		orderLine.setC_UOM_ID(from.getQty().getUomId().getRepoId());
-		orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
+
+		// half-up, like MOrderLine.setQtyEntered; the UOM's own rounding mode (UP) would round 0.121 to 0.13
+		final Quantity qtyBase = from.getQty().multiply(request.getQtyMultiplier());
+		Quantity qtyEntered = qtyBase.setScale(qtyBase.getUOMPrecision(), RoundingMode.HALF_UP);
+		if (calibrationRule != null) // no matching rule: no calibration, the line is created like an uncalibrated one
+		{
+			final Quantity qtyEnteredUncalibrated = qtyEntered;
+			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
+
+			// the calibration columns are not updateable: they are only set while the line is new
+			orderLine.setGroupCompensationCalibrationFactor(calibrationRule.getFactor().toBigDecimal());
+			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
+			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
+		}
+
+		orderLine.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
+		orderLine.setQtyEntered(qtyEntered.toBigDecimal());
+
 		orderLine.setC_CompensationGroup_Schema_TemplateLine_ID(from.getId().getRepoId());
 		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
 		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());

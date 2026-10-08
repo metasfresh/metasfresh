@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -46,6 +47,11 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.order.compensationGroup.calibration.CalibrationRule;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
+import de.metas.organization.OrgId;
+import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -511,6 +517,195 @@ public class OrderGroupRepositoryTest
 
 		assertThat(compensationLinePO.getDiscount()).isEqualByComparingTo(BigDecimal.ZERO);
 		assertThat(compensationLinePO.isManualDiscount()).isTrue();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Calibration: the factor is a 100-based percent; the base qty (template qty x menu qty)
+	// is rounded half-up to the UOM precision before the factor is applied; a line without a matching rule stores no calibration;
+	// the calibrated result is rounded UP to the UOM precision.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void calibration_matchingRule_roundsBaseThenAppliesPercent()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.375", 2);
+		final CalibrationRule rule = calibrationRule(7, "120");
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, rule));
+
+		// 0.375 -> 0.38 (precision 2), 0.38 x 120 % = 0.456 -> 0.46
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.46");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.38");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("120");
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
+	}
+
+	@Test
+	void calibration_menuQtyAndPercent()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.25", 2);
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("1500"), templateLine, calibrationRule(7, "80")));
+
+		// mock case: 1500 x 0.25 LTR x 80 % = 300
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+	}
+
+	@Test
+	void calibration_noMatchingRule_storesNothingAndRoundedBase()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, null));
+
+		// no rule matched: the line is not calibrated, exactly like an uncalibrated line; half-up: RoundingMode.UP would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
+	}
+
+	@Test
+	void calibration_notCalibrated_qtyRoundedHalfUpAndNoCalibrationValues()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.125", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.13");
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
+	}
+
+	@Test
+	void calibration_notCalibrated_notUp()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
+
+		// same as MOrderLine.setQtyEntered (half-up); RoundingMode.UP would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+	}
+
+	@Test
+	void calibration_factorZero_keepsLineWithQtyZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "3", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("2"), templateLine, calibrationRule(7, "0")));
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("6");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0");
+		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
+	}
+
+	@Test
+	void calibration_baseRoundsToZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.004", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "100")));
+
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void calibration_nonZeroFactor_resultRoundsUpNotToZero_precision0()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "1", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "40")));
+
+		// 1 x 40 % = 0.4 -> 1; half-up would give 0
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("1");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("1");
+	}
+
+	@Test
+	void calibration_resultRoundsUp_precision0()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "2", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("2"), templateLine, calibrationRule(7, "30")));
+
+		// 4 x 30 % = 1.2 -> 2; half-up would give 1
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("2");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("4");
+	}
+
+	@Test
+	void calibration_resultRoundsUp_baseRoundsHalfUp_precision2()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.152", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "66.7")));
+
+		// base 0.152 -> 0.15 (half-up), 0.15 x 66.7 % = 0.10005 -> 0.11 (up)
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.11");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.15");
+	}
+
+	@Test
+	void calibration_factor100_keepsHalfUpRoundedBase()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "100")));
+
+		// up on the base would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.12");
+	}
+
+	@Test
+	void calibration_negativeMenuQty_roundsUpAwayFromZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "4", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("-1"), templateLine, calibrationRule(7, "30")));
+
+		// -4 x 30 % = -1.2 -> -2 (away from zero, mirrors the positive menu qty); half-up would give -1
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("-2");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("-4");
+	}
+
+	private GroupTemplateRegularLine templateLine(final int templateLineId, final String qty, final int uomPrecision)
+	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setStdPrecision(uomPrecision);
+		saveRecord(uom);
+		return GroupTemplateRegularLine.builder()
+				.id(GroupTemplateRegularLineId.ofRepoId(templateLineId))
+				.productId(productId)
+				.qty(Quantity.of(new BigDecimal(qty), uom))
+				.build();
+	}
+
+	private static CalibrationRule calibrationRule(final int ruleId, final String factorPercent)
+	{
+		return CalibrationRule.builder()
+				.id(CalibrationRuleId.ofRepoId(ruleId))
+				.orgId(OrgId.ANY)
+				.bpartnerId(BPartnerId.ofRepoId(1))
+				.factor(Percent.of(new BigDecimal(factorPercent)))
+				.build();
+	}
+
+	private static RetrieveOrCreateGroupRequest calibratedRequest(
+			final BigDecimal qtyMultiplier,
+			final GroupTemplateRegularLine templateLine,
+			@Nullable final CalibrationRule rule)
+	{
+		return RetrieveOrCreateGroupRequest.builder()
+				.newGroupTemplate(GroupTemplate.builder().name("test-template").regularLinesToAdd(Collections.singletonList(templateLine)).build())
+				.qtyMultiplier(qtyMultiplier)
+				.calibrations(GroupCalibrations.of(rule != null ? ImmutableMap.of(templateLine.getId(), rule) : ImmutableMap.of()))
+				.build();
 	}
 
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────

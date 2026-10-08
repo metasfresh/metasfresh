@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Vendor.
+	 * Set C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get Vendor.
+	 * Get C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -330,6 +330,33 @@ public interface I_C_OrderLine
 	int getC_Charge_ID();
 
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/**
+	 * Set Calibration rule.
+	 * Rule that scales the component quantities of a compensation group for a customer or a business partner group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_CalibrationRule_ID (int C_CompensationGroup_CalibrationRule_ID);
+
+	/**
+	 * Get Calibration rule.
+	 * Rule that scales the component quantities of a compensation group for a customer or a business partner group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_CalibrationRule_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_CalibrationRule getC_CompensationGroup_CalibrationRule();
+
+	void setC_CompensationGroup_CalibrationRule(@Nullable de.metas.order.model.I_C_CompensationGroup_CalibrationRule C_CompensationGroup_CalibrationRule);
+
+	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_CalibrationRule> COLUMN_C_CompensationGroup_CalibrationRule_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_CalibrationRule_ID", de.metas.order.model.I_C_CompensationGroup_CalibrationRule.class);
+	String COLUMNNAME_C_CompensationGroup_CalibrationRule_ID = "C_CompensationGroup_CalibrationRule_ID";
 
 	/**
 	 * Set Compensations.
@@ -850,6 +877,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -859,6 +887,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1121,6 +1150,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_GroupCompensationBaseAmt = "GroupCompensationBaseAmt";
 
 	/**
+	 * Set Calibration factor.
+	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationCalibrationFactor (@Nullable BigDecimal GroupCompensationCalibrationFactor);
+
+	/**
+	 * Get Calibration factor.
+	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationCalibrationFactor();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationCalibrationFactor = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationCalibrationFactor", null);
+	String COLUMNNAME_GroupCompensationCalibrationFactor = "GroupCompensationCalibrationFactor";
+
+	/**
 	 * Set Compensation percentage.
 	 *
 	 * <br>Type: Number
@@ -1140,6 +1192,29 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationPercentage = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationPercentage", null);
 	String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
+
+	/**
+	 * Set Uncalibrated quantity.
+	 * Quantity of the compensation group component before the calibration factor was applied.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationQtyEnteredUncalibrated (@Nullable BigDecimal GroupCompensationQtyEnteredUncalibrated);
+
+	/**
+	 * Get Uncalibrated quantity.
+	 * Quantity of the compensation group component before the calibration factor was applied.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationQtyEnteredUncalibrated();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationQtyEnteredUncalibrated = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationQtyEnteredUncalibrated", null);
+	String COLUMNNAME_GroupCompensationQtyEnteredUncalibrated = "GroupCompensationQtyEnteredUncalibrated";
 
 	/**
 	 * Set Compensation Type.

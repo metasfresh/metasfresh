@@ -2,7 +2,9 @@ package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupResponse;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleResponse;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
@@ -50,8 +52,10 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCreateRoleResponse> roles;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonMailboxResponse> mailboxes;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonBPGroupResponse> bpGroups;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCalibrationRuleResponse> calibrationRules;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonProductCategoryResponse> productCategories;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCreateAttributeResponse> attributes;

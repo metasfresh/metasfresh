@@ -158,6 +158,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
+	@NonNull private final C_CompensationGroup_CalibrationRule_StepDefData calibrationRuleTable;
 
 	/**
 	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
@@ -174,6 +175,7 @@ public class C_OrderLine_StepDef
 	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -203,6 +205,11 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(ruleIdentifier -> ruleIdentifier.lookupNotNullIn(calibrationRuleTable))
+				.ifPresent(rule -> orderLine.setC_CompensationGroup_CalibrationRule_ID(rule.getC_CompensationGroup_CalibrationRule_ID()));
 
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 				.map(partnerTable::getId)
@@ -896,6 +903,24 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/** {@code expected} is a number, or the literal {@code null} / {@code -} for "no value". */
+	private static void assertNullableBigDecimal(
+			@NonNull final SoftAssertions softly,
+			@Nullable final BigDecimal actual,
+			@NonNull final String expected,
+			@NonNull final String columnName,
+			@NonNull final String identifierStr)
+	{
+		if ("null".equals(expected) || "-".equals(expected))
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s (expected: null)", columnName, identifierStr).isNull();
+		}
+		else
+		{
+			softly.assertThat(actual).as("%s for Identifier=%s", columnName, identifierStr).isEqualByComparingTo(expected);
+		}
+	}
+
 	/**
 	 * Validates a single {@link I_C_OrderLine} record against expected values from the DataTable row.
 	 * Called per row by {@link #validate_created_order_lines(DataTable)}.
@@ -918,7 +943,9 @@ public class C_OrderLine_StepDef
 	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
 	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
 	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
-	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 *       C_Tax_ID, ExternalId, C_Project_ID, GroupCompensationCalibrationFactor,
+	 *       GroupCompensationQtyEnteredUncalibrated and C_CompensationGroup_CalibrationRule_ID — each also accepts
+	 *       the literal {@code null} to assert an empty value)</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -1019,6 +1046,28 @@ public class C_OrderLine_StepDef
 				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
 						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
 						.isEqualTo(vendorBPartnerId.getRepoId()));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor), expected, "GroupCompensationCalibrationFactor", identifierStr));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
+				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID)
+				.ifPresent(ruleIdentifier -> {
+					if (ruleIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s (expected: no rule)", identifierStr)
+								.isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID())
+								.as("C_CompensationGroup_CalibrationRule_ID for Identifier=%s", identifierStr)
+								.isEqualTo(ruleIdentifier.lookupNotNullIn(calibrationRuleTable).getC_CompensationGroup_CalibrationRule_ID());
+					}
+				});
 
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));
