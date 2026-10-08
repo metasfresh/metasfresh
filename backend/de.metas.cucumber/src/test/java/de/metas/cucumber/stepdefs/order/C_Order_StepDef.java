@@ -1209,6 +1209,9 @@ public class C_Order_StepDef
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
 
+		row.getAsOptionalBigDecimal(I_C_Order.COLUMNNAME_GrandTotal)
+				.ifPresent(grandTotal -> softly.assertThat(order.getGrandTotal()).as("GrandTotal for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal));
+
 		row.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceStatus)
 				.ifPresent(invoiceStatus -> softly.assertThat(awaitInvoiceStatus(order, invoiceStatus)).as("InvoiceStatus for Identifier=%s", identifierStr).isEqualTo(invoiceStatus));
 

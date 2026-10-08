@@ -170,6 +170,13 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_processMsg = null;
+	}
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -306,6 +313,18 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	 */
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		log.debug("Completed: {}", this);
 		//	Re-Check

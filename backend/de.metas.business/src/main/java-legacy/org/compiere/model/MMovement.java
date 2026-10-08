@@ -191,6 +191,15 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
+	}
+
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_processMsg = null;
+		m_lines = null;
+		m_confirms = null;
 	}    //	processIt
 
 	/**
@@ -320,6 +329,18 @@ public class MMovement extends X_M_Movement implements IDocument
 	 */
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		//	Re-Check
 		if (!m_justPrepared)

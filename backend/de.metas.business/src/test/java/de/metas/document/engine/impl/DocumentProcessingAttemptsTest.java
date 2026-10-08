@@ -20,8 +20,12 @@
  * #L%
  */
 
+
 package de.metas.document.engine.impl;
 
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentTableFields;
+import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.trx.api.ITrx;
@@ -59,7 +63,7 @@ class DocumentProcessingAttemptsTest
 		AdempiereTestHelper.get().init();
 		documentBL = new TestDocumentBL();
 		documentBL.setDeadlockRetryPolicy(DeadlockRetryPolicy.builder().maxAttempts(3).backoffMillis(0).build());
-		documentBL.setRetryModelSnapshotter(TestDocument::snapshot);
+		documentBL.setRetryStateSnapshotter(TestDocument::snapshot);
 	}
 
 	/**
@@ -93,63 +97,74 @@ class DocumentProcessingAttemptsTest
 	enum Outcome
 	{SUCCESS, FAILURE, DEADLOCK, OTHER_EXCEPTION}
 
+	static class TestLine
+	{
+		final TestDocument parent;
+
+		TestLine(final TestDocument parent) {this.parent = parent;}
+	}
+
 	/**
-	 * Shared by all instances of one document: the outcomes of the coming attempts, and the instances the attempts ran on.
+	 * A document whose "column" is {@link #docStatus} (restored from the snapshot), and whose per-action state is {@link #prepared},
+	 * {@link #processMsg} and the cached {@link #lines} (dropped by {@link #resetEngineStateForRetry()}).
 	 */
-	static class Script
+	static class TestDocument implements IDocument
 	{
-		final Deque<Outcome> outcomes;
-		final List<TestDocument> attemptInstances = new ArrayList<>();
-		/** the instance state each attempt started with: "prepared/docStatus" */
+		private final Deque<Outcome> outcomes;
 		final List<String> attemptStartStates = new ArrayList<>();
+		final List<List<TestLine>> attemptLines = new ArrayList<>();
+		int resetCount = 0;
+		boolean snapshotFails = false;
 
-		Script(final Outcome... outcomes) {this.outcomes = new ArrayDeque<>(Arrays.asList(outcomes));}
-	}
-
-	static class TestDocumentBase
-	{
-		/** stands for a subclass flag like MOrder's m_justPrepared */
+		String docStatus = IDocument.STATUS_Drafted;
 		boolean prepared = false;
-	}
-
-	static class TestDocument extends TestDocumentBase implements IDocument
-	{
-		private final Script script;
-		String docStatus = IDocument.STATUS_InProgress;
 		@Nullable String processMsg = null;
+		@Nullable private List<TestLine> lines = null;
 
-		TestDocument(final Script script) {this.script = script;}
+		TestDocument(final Outcome... outcomes) {this.outcomes = new ArrayDeque<>(Arrays.asList(outcomes));}
 
-		/** a new instance in the caller's state, except for the "prepared" flag, which a fresh instance does not have */
 		@Nullable
-		static java.util.function.Supplier<Object> snapshot(final Object model)
+		static Runnable snapshot(final Object model)
 		{
-			if (!(model instanceof TestDocument))
+			final TestDocument document = (TestDocument)model;
+			if (document.snapshotFails)
 			{
-				return null;
+				throw new IllegalStateException("snapshot failed");
 			}
-			final TestDocument caller = (TestDocument)model;
-			final String docStatus = caller.docStatus;
-			return () -> {
-				final TestDocument copy = new TestDocument(caller.script);
-				copy.docStatus = docStatus;
-				return copy;
-			};
+			final String docStatus = document.docStatus;
+			return () -> document.docStatus = docStatus;
+		}
+
+		List<TestLine> getLines()
+		{
+			if (lines == null)
+			{
+				lines = Arrays.asList(new TestLine(this), new TestLine(this));
+			}
+			return lines;
+		}
+
+		@Override
+		public void resetEngineStateForRetry()
+		{
+			resetCount++;
+			prepared = false;
+			processMsg = null;
+			lines = null;
 		}
 
 		@Override
 		public boolean processIt(final String docAction)
 		{
-			script.attemptInstances.add(this);
-			script.attemptStartStates.add(prepared + "/" + docStatus);
+			attemptStartStates.add(prepared + "/" + docStatus + "/" + processMsg);
+			attemptLines.add(getLines());
 
-			// what a real attempt changes in memory before it fails: the "just prepared" flag and the DocStatus
+			// what a real attempt changes in memory before it fails
 			prepared = true;
 			docStatus = IDocument.STATUS_InProgress;
-			processMsg = "attempt " + script.attemptInstances.size();
+			processMsg = "attempt " + attemptStartStates.size();
 
-			final Outcome outcome = script.outcomes.removeFirst();
-			switch (outcome)
+			switch (outcomes.removeFirst())
 			{
 				case SUCCESS:
 					docStatus = IDocument.STATUS_Completed;
@@ -228,110 +243,106 @@ class DocumentProcessingAttemptsTest
 		@Override public void set_TrxName(final String trxName) {}
 	}
 
-	@Test
-	void firstAttemptSucceeds_runsOnCallerInstance()
+	private boolean process(final TestDocument document)
 	{
-		final Script script = new Script(Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
-
-		assertThat(documentBL.processIt((Object)caller, IDocument.ACTION_Complete)).isTrue();
-
-		assertThat(script.attemptInstances).containsExactly(caller);
-		assertThat(caller.docStatus).isEqualTo(IDocument.STATUS_Completed);
+		return documentBL.processIt((Object)document, IDocument.ACTION_Complete);
 	}
 
 	@Test
-	void deadlock_retriesOnFreshInstance_andCallerTakesOverItsState()
+	void firstAttemptSucceeds_noReset()
 	{
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
+		final TestDocument document = new TestDocument(Outcome.SUCCESS);
 
-		assertThat(documentBL.processIt((Object)caller, IDocument.ACTION_Complete)).isTrue();
+		assertThat(process(document)).isTrue();
 
-		assertThat(script.attemptInstances).hasSize(2);
-		final TestDocument retryInstance = script.attemptInstances.get(1);
-		assertThat(retryInstance).isNotSameAs(caller);
-		assertThat(caller.docStatus).isEqualTo(IDocument.STATUS_Completed);
-		assertThat(caller.getProcessMsg()).isEqualTo("attempt 2");
-		assertThat(caller.prepared).isTrue(); // superclass field taken over as well
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null");
+		assertThat(document.resetCount).isZero();
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Completed);
 	}
 
 	@Test
-	void retryStartsFromCallerStateBeforeTheFirstAttempt()
+	void deadlock_retriesOnSameInstance_restoredAndReset()
 	{
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
-		caller.docStatus = IDocument.STATUS_Drafted;
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
 
-		documentBL.processIt((Object)caller, IDocument.ACTION_Complete);
+		assertThat(process(document)).isTrue();
 
-		// the retry does not see the "prepared" flag and the DocStatus that the rolled back first attempt left in memory
-		assertThat(script.attemptStartStates).containsExactly("false/DR", "false/DR");
+		// the retry starts like the first attempt: DocStatus restored from the snapshot, flag and message reset by the hook
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/DR/null");
+		assertThat(document.resetCount).isEqualTo(1);
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Completed);
+		assertThat(document.getProcessMsg()).isEqualTo("attempt 2");
 	}
 
 	@Test
-	void retryReturnsFalse_callerGetsRetryProcessMsg()
+	void deadlock_cachedLinesAreRebuiltForTheRetry_andReferenceTheDocument()
 	{
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.FAILURE);
-		final TestDocument caller = new TestDocument(script);
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
 
-		assertThat(documentBL.processIt((Object)caller, IDocument.ACTION_Complete)).isFalse();
+		process(document);
 
-		assertThat(caller.getProcessMsg()).isEqualTo("attempt 2");
-		assertThat(caller.docStatus).isEqualTo(IDocument.STATUS_InProgress);
+		final List<TestLine> firstAttemptLines = document.attemptLines.get(0);
+		final List<TestLine> retryLines = document.attemptLines.get(1);
+		assertThat(retryLines).isNotSameAs(firstAttemptLines);
+		assertThat(retryLines).allSatisfy(line -> assertThat(line.parent).isSameAs(document));
+		assertThat(document.getLines()).isSameAs(retryLines);
 	}
 
 	@Test
-	void allAttemptsDeadlock_throws_andCallerIsNotChangedByTheRetries()
+	void retryReturnsFalse_givesRetryProcessMsg()
 	{
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.DEADLOCK, Outcome.DEADLOCK);
-		final TestDocument caller = new TestDocument(script);
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.FAILURE);
 
-		assertThatThrownBy(() -> documentBL.processIt((Object)caller, IDocument.ACTION_Complete))
-				.hasMessageContaining("deadlock");
+		assertThat(process(document)).isFalse();
 
-		assertThat(script.attemptInstances).hasSize(3);
-		assertThat(script.attemptInstances.get(1)).isNotSameAs(caller);
-		assertThat(script.attemptInstances.get(2)).isNotSameAs(caller);
-		assertThat(caller.getProcessMsg()).isEqualTo("attempt 1");
+		assertThat(document.getProcessMsg()).isEqualTo("attempt 2");
+	}
+
+	@Test
+	void allAttemptsDeadlock_rethrows()
+	{
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.DEADLOCK, Outcome.DEADLOCK);
+
+		assertThatThrownBy(() -> process(document)).hasMessageContaining("deadlock");
+
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/DR/null", "false/DR/null");
+		assertThat(document.resetCount).isEqualTo(2);
 	}
 
 	@Test
 	void otherException_isNotRetried()
 	{
-		final Script script = new Script(Outcome.OTHER_EXCEPTION, Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
+		final TestDocument document = new TestDocument(Outcome.OTHER_EXCEPTION, Outcome.SUCCESS);
 
-		assertThatThrownBy(() -> documentBL.processIt((Object)caller, IDocument.ACTION_Complete))
-				.hasMessageContaining("some other error");
+		assertThatThrownBy(() -> process(document)).hasMessageContaining("some other error");
 
-		assertThat(script.attemptInstances).containsExactly(caller);
+		assertThat(document.attemptStartStates).hasSize(1);
+		assertThat(document.resetCount).isZero();
 	}
 
 	@Test
-	void unsupportedModel_isRetriedOnCallerInstance()
+	void failingSnapshot_degradesToRetryWithoutRestore()
 	{
-		documentBL.setRetryModelSnapshotter(model -> null);
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
+		document.snapshotFails = true;
 
-		assertThat(documentBL.processIt((Object)caller, IDocument.ACTION_Complete)).isTrue();
+		assertThat(process(document)).isTrue();
 
-		assertThat(script.attemptInstances).containsExactly(caller, caller);
+		// DocStatus not restored, but the action's state was still reset
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/IP/null");
+		assertThat(document.docStatus).isEqualTo(IDocument.STATUS_Completed);
 	}
 
 	@Test
-	void transferFailure_doesNotFailTheCommittedAction()
+	void unsupportedModel_retryWithoutRestore()
 	{
-		final Script script = new Script(Outcome.DEADLOCK, Outcome.SUCCESS);
-		final TestDocument caller = new TestDocument(script);
-		// a retry instance of another class cannot be copied onto the caller
-		documentBL.setRetryModelSnapshotter(model -> () -> new TestDocument(script) {});
+		documentBL.setRetryStateSnapshotter(model -> null);
+		final TestDocument document = new TestDocument(Outcome.DEADLOCK, Outcome.SUCCESS);
 
-		assertThat(documentBL.processIt((Object)caller, IDocument.ACTION_Complete)).isTrue();
+		assertThat(process(document)).isTrue();
 
-		assertThat(script.attemptInstances).hasSize(2);
-		assertThat(caller.getProcessMsg()).isEqualTo("attempt 1"); // stale, as documented
+		assertThat(document.attemptStartStates).containsExactly("false/DR/null", "false/IP/null");
+		assertThat(document.resetCount).isEqualTo(1);
 	}
 
 	@Nested
@@ -343,59 +354,94 @@ class DocumentProcessingAttemptsTest
 			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 			InterfaceWrapperHelper.saveRecord(order);
 
-			assertThat(RetryModelSnapshotter.PO_SNAPSHOTTER.snapshot(order)).isNull();
+			assertThat(RetryStateSnapshotter.PO_SNAPSHOTTER.snapshot(order)).isNull();
 		}
 
 		@Test
 		void nonModel_notSupported()
 		{
-			assertThat(RetryModelSnapshotter.PO_SNAPSHOTTER.snapshot(new TestDocument(new Script()))).isNull();
+			assertThat(RetryStateSnapshotter.PO_SNAPSHOTTER.snapshot(new TestDocument())).isNull();
 		}
 	}
 
+	/**
+	 * The "just prepared" contract of DocumentEngine.processIt0 for completing: prepare once, then complete without preparing again,
+	 * and the flag is consumed by the completion, so that completing the same instance again prepares again.
+	 */
 	@Nested
-	class InstanceStateCopierTest
+	class DocumentWrapperJustPrepared
 	{
-		class Base
+		private int prepareCount = 0;
+
+		private IDocument newDocument()
 		{
-			int baseValue;
-			@Nullable String nullableValue = "set";
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setDocStatus(IDocument.STATUS_Drafted);
+			order.setDocAction(IDocument.ACTION_Complete);
+			InterfaceWrapperHelper.saveRecord(order);
+
+			return DocumentWrapper.wrapModelUsingHandler(order, new DocumentHandler()
+			{
+				@Override public String getSummary(final DocumentTableFields docFields) {return "summary";}
+
+				@Override public String getDocumentInfo(final DocumentTableFields docFields) {return "info";}
+
+				@Override public int getDoc_User_ID(final DocumentTableFields docFields) {return -1;}
+
+				@Override public LocalDate getDocumentDate(final DocumentTableFields docFields) {return LocalDate.now();}
+
+				@Override
+				public String prepareIt(final DocumentTableFields docFields)
+				{
+					prepareCount++;
+					return IDocument.STATUS_InProgress;
+				}
+
+				@Override public String completeIt(final DocumentTableFields docFields) {return IDocument.STATUS_Completed;}
+			});
 		}
 
-		class Sub extends Base
+		/**
+		 * What DocumentEngine does when completing a drafted document: prepareIt(), then completeIt().
+		 */
+		private String prepareAndComplete(final IDocument document)
 		{
-			final String identity;
-			int subValue;
-			transient String instanceBoundCache;
-
-			Sub(final String identity) {this.identity = identity;}
+			assertThat(document.prepareIt()).isEqualTo(IDocument.STATUS_InProgress);
+			return document.completeIt();
 		}
 
 		@Test
-		void copiesNonFinalFieldsOfAllClasses_includingNulls_butNotFinalOrTransientOnes()
+		void prepareThenComplete_preparesOnce()
 		{
-			final Sub from = new Sub("from");
-			from.baseValue = 1;
-			from.subValue = 2;
-			from.nullableValue = null;
-			from.instanceBoundCache = "from's cache";
-			final Sub to = new Sub("to");
-			to.instanceBoundCache = "to's cache";
+			final IDocument document = newDocument();
 
-			InstanceStateCopier.copyState(from, to);
+			assertThat(prepareAndComplete(document)).isEqualTo(IDocument.STATUS_Completed);
 
-			assertThat(to.baseValue).isEqualTo(1);
-			assertThat(to.subValue).isEqualTo(2);
-			assertThat(to.nullableValue).isNull();
-			assertThat(to.identity).isEqualTo("to");
-			assertThat(to.instanceBoundCache).isEqualTo("to's cache");
+			assertThat(prepareCount).isEqualTo(1);
 		}
 
 		@Test
-		void differentClasses_fail()
+		void completingTheSameInstanceAgain_preparesAgain()
 		{
-			assertThatThrownBy(() -> InstanceStateCopier.copyState(new Sub("a"), new Base()))
-					.isInstanceOf(AdempiereException.class);
+			final IDocument document = newDocument();
+			prepareAndComplete(document);
+
+			document.completeIt();
+
+			assertThat(prepareCount).isEqualTo(2);
+		}
+
+		@Test
+		void resetHook_dropsJustPreparedAndProcessMsg()
+		{
+			final IDocument document = newDocument();
+			document.prepareIt();
+
+			document.resetEngineStateForRetry();
+			document.completeIt();
+
+			assertThat(prepareCount).isEqualTo(2);
+			assertThat(document.getProcessMsg()).isNull();
 		}
 	}
 }

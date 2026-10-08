@@ -4761,14 +4761,6 @@ public abstract class PO
 	}
 
 	/**
-	 * Replaces this instance's dynamic attributes with a copy of the given instance's ones (the attribute values themselves are shared).
-	 */
-	public final void copyDynAttributesFrom(@NonNull final PO other)
-	{
-		m_dynAttrs = other.m_dynAttrs == null ? null : new HashMap<>(other.m_dynAttrs);
-	}
-
-	/**
 	 * Fire Model Change Event.
 	 * <p>
 	 * After event is fired, if the event was about replication, the replication flag will also be set to <code>false</code>.
@@ -5155,6 +5147,65 @@ public abstract class PO
 		// poCopy.m_windowNo = this.m_windowNo;
 
 		return poCopy;
+	}
+
+	/**
+	 * In-memory column state of a {@link PO}, see {@link #snapshotStateForRetry()}.
+	 */
+	public static final class RetryStateSnapshot
+	{
+		private final Object[] oldValues;
+		private final Object[] newValues;
+		private final boolean[] valueLoaded;
+		private final boolean stale;
+		@Nullable private final Set<Integer> markedChangedColumns;
+		@Nullable private final HashMap<String, Object> dynAttrs;
+		@Nullable private final ArrayList<PO_LOB> lobInfo;
+
+		private RetryStateSnapshot(@NonNull final PO po)
+		{
+			this.oldValues = copyOf(po.m_oldValues);
+			this.newValues = copyOf(po.m_newValues);
+			this.valueLoaded = po.m_valueLoaded == null ? null : Arrays.copyOf(po.m_valueLoaded, po.m_valueLoaded.length);
+			this.stale = po.m_stale;
+			this.markedChangedColumns = po.markedChangedColumns == null ? null : new HashSet<>(po.markedChangedColumns);
+			this.dynAttrs = po.m_dynAttrs == null ? null : new HashMap<>(po.m_dynAttrs);
+			this.lobInfo = po.m_lobInfo == null ? null : new ArrayList<>(po.m_lobInfo);
+		}
+
+		private void restoreTo(@NonNull final PO po)
+		{
+			po.m_oldValues = copyOf(oldValues);
+			po.m_newValues = copyOf(newValues);
+			po.m_valueLoaded = valueLoaded == null ? null : Arrays.copyOf(valueLoaded, valueLoaded.length);
+			po.m_stale = stale;
+			po.markedChangedColumns = markedChangedColumns == null ? null : new HashSet<>(markedChangedColumns);
+			po.m_dynAttrs = dynAttrs == null ? null : new HashMap<>(dynAttrs);
+			po.m_lobInfo = lobInfo == null ? null : new ArrayList<>(lobInfo);
+			po.m_poCacheLocals = null; // may hold records loaded in the rolled back transaction
+		}
+
+		@Nullable
+		private static Object[] copyOf(@Nullable final Object[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+	}
+
+	/**
+	 * Captures this instance's column values (incl. the not yet saved changes), its columns marked as changed, its dynamic attributes and its pending LOBs,
+	 * so that {@link #restoreStateForRetry(RetryStateSnapshot)} can undo what a rolled back document action did to this instance.
+	 * Not captured, because a document action does not change them: identity and key, ctx, trxName, the "manual user action" / window settings.
+	 */
+	public final RetryStateSnapshot snapshotStateForRetry()
+	{
+		return new RetryStateSnapshot(this);
+	}
+
+	/**
+	 * Puts back the state captured by {@link #snapshotStateForRetry()}, and drops the cached referenced records.
+	 * The snapshot can be restored several times.
+	 */
+	public final void restoreStateForRetry(@NonNull final RetryStateSnapshot snapshot)
+	{
+		snapshot.restoreTo(this);
 	}
 
 	/**

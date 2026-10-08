@@ -724,8 +724,8 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus |
-      | orderRty              | true      | CO        |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal |
+      | orderRty              | true      | CO        | 2031.02    |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
@@ -750,8 +750,8 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus |
-      | orderRty              | true      | CO        |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal |
+      | orderRty              | true      | CO        | 1908.88    |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
@@ -762,8 +762,8 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
     When the order identified by orderRty is reactivated
     And the order identified by orderRty is completed
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus |
-      | orderRty              | true      | CO        |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal |
+      | orderRty              | true      | CO        | 1908.88    |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |

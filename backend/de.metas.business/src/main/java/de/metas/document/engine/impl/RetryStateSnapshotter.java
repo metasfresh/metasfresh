@@ -22,44 +22,37 @@
 
 package de.metas.document.engine.impl;
 
+
 import lombok.NonNull;
 import org.adempiere.model.POWrapper;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 /**
- * Captures a document model's state before a document action runs on it, so that a retry of that action can start from that state.
+ * Captures a document model's in-memory state before a document action runs on it, so that the state can be put back before the action is retried.
  */
 @FunctionalInterface
-interface RetryModelSnapshotter
+interface RetryStateSnapshotter
 {
 	/**
-	 * @return a supplier of new model instances that each carry the given model's current state, or {@code null} if the model does not support that
+	 * @return an action that puts the given model back into its current state, or {@code null} if the model is not supported
 	 */
 	@Nullable
-	Supplier<Object> snapshot(@NonNull Object model);
+	Runnable snapshot(@NonNull Object model);
 
 	/**
-	 * Supports saved {@link PO}s: the snapshot is a {@link PO#copy()} (column values incl. unsaved changes, plus the dynamic attributes)
-	 * whose subclass fields (e.g. flags or cached lines) are in the state of a freshly loaded instance.
+	 * Supports saved {@link PO}s, see {@link PO#snapshotStateForRetry()}. A new record, or a model that is not a PO (e.g. a POJO or a
+	 * {@code GridTab}-backed model), is not supported.
 	 */
-	RetryModelSnapshotter PO_SNAPSHOTTER = model -> {
+	RetryStateSnapshotter PO_SNAPSHOTTER = model -> {
 		final PO po = POWrapper.getStrictPO(model);
-		if (po == null || po.is_new() || po.get_ID() <= 0)
+		if (po == null || po.is_new())
 		{
 			return null;
 		}
 
-		final PO snapshot = copyIncludingDynAttributes(po);
-		return () -> copyIncludingDynAttributes(snapshot);
+		final PO.RetryStateSnapshot snapshot = po.snapshotStateForRetry();
+		return () -> po.restoreStateForRetry(snapshot);
 	};
-
-	static PO copyIncludingDynAttributes(@NonNull final PO po)
-	{
-		final PO copy = po.copy();
-		copy.copyDynAttributesFrom(po);
-		return copy;
-	}
 }

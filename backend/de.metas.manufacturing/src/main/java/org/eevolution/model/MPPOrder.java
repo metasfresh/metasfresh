@@ -130,6 +130,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+	}
+
 	/**
 	 * Just Prepared Flag
 	 */
@@ -235,6 +241,18 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		// Just prepare
 		if (IDocument.ACTION_Prepare.equals(getDocAction()))

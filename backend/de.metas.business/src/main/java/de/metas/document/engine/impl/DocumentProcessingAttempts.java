@@ -22,107 +22,75 @@
 
 package de.metas.document.engine.impl;
 
+
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
-import org.adempiere.model.POWrapper;
-import org.compiere.model.PO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
- * Provides the document instance for each attempt of a document action that is retried on a DB deadlock.
+ * Prepares the caller's document for each attempt of a document action that is retried on a DB deadlock.
  * <p>
- * A rolled back attempt leaves its in-memory state (column values it considers saved, {@code DocStatus}, flags like "just prepared")
- * in the instance it ran on, so a retry on that instance would e.g. skip {@code prepareIt()}. Therefore each retry runs on a new
- * instance taken from a snapshot of the caller's model before the first attempt, and after a retry the caller's model and document
- * take over the complete state of the retry's instances (see {@link InstanceStateCopier}).
+ * All attempts run on the caller's instance. Rolling back an attempt reverts the database, but not the in-memory state the attempt left in
+ * that instance (column values it considers saved, {@code DocStatus}, the "just prepared" flag, cached lines). So before each retry,
+ * the instance's column state is restored from a snapshot taken before the first attempt, and {@link IDocument#resetEngineStateForRetry()}
+ * drops the state the action built up.
  * <p>
- * Limit: a model that the {@link RetryModelSnapshotter} does not support (e.g. a new record, or one that is not a {@link PO}, like a
- * {@code GridTab}-backed model) is retried on the caller's instance.
+ * If the model is not supported by the {@link RetryStateSnapshotter} (new record, POJO, {@code GridTab}) or taking the snapshot fails,
+ * the column state is not restored; the reset hook is still called.
  */
 final class DocumentProcessingAttempts
 {
 	private static final Logger logger = LogManager.getLogger(DocumentProcessingAttempts.class);
 
-	@NonNull private final IDocument callerDocument;
-	@NonNull private final Function<Object, IDocument> documentFactory;
-	@Nullable private final Supplier<Object> retryModelSupplier;
-
+	@NonNull private final IDocument document;
+	@Nullable private final Runnable restoreSnapshot;
 	private int attemptCount = 0;
-	@Nullable private IDocument retryDocument = null;
 
-	private DocumentProcessingAttempts(
-			@NonNull final IDocument callerDocument,
-			@NonNull final Function<Object, IDocument> documentFactory,
-			@NonNull final RetryModelSnapshotter snapshotter)
+	private DocumentProcessingAttempts(@NonNull final IDocument document, @NonNull final RetryStateSnapshotter snapshotter)
 	{
-		this.callerDocument = callerDocument;
-		this.documentFactory = documentFactory;
-		this.retryModelSupplier = snapshotter.snapshot(callerDocument.getDocumentModel());
+		this.document = document;
+		this.restoreSnapshot = snapshotOrNull(document, snapshotter);
 	}
 
 	/**
 	 * To be created before the first attempt.
 	 */
-	static DocumentProcessingAttempts of(
-			@NonNull final IDocument callerDocument,
-			@NonNull final Function<Object, IDocument> documentFactory,
-			@NonNull final RetryModelSnapshotter snapshotter)
+	static DocumentProcessingAttempts of(@NonNull final IDocument document, @NonNull final RetryStateSnapshotter snapshotter)
 	{
-		return new DocumentProcessingAttempts(callerDocument, documentFactory, snapshotter);
+		return new DocumentProcessingAttempts(document, snapshotter);
+	}
+
+	@Nullable
+	private static Runnable snapshotOrNull(@NonNull final IDocument document, @NonNull final RetryStateSnapshotter snapshotter)
+	{
+		try
+		{
+			return snapshotter.snapshot(document.getDocumentModel());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Cannot snapshot {} before processing it; if the processing is retried, its in-memory column state won't be restored", document, ex);
+			return null;
+		}
 	}
 
 	/**
-	 * @return the caller's document for the first attempt, a new instance from the snapshot for every further attempt
+	 * @return the document for the next attempt: the caller's document, reset to its state before the first attempt if this is a retry
 	 */
 	IDocument nextAttemptDocument()
 	{
 		attemptCount++;
-		if (attemptCount == 1 || retryModelSupplier == null)
+		if (attemptCount > 1)
 		{
-			return callerDocument;
-		}
-
-		retryDocument = documentFactory.apply(retryModelSupplier.get());
-		return retryDocument;
-	}
-
-	/**
-	 * To be called after the action returned (i.e. its transaction was committed): if it was retried, the caller's model and document
-	 * take over the state of the last attempt's instances. A failure to do so is logged, but does not fail the committed action.
-	 */
-	void transferOutcomeToCallerDocument()
-	{
-		final IDocument retryDocument = this.retryDocument;
-		if (retryDocument == null)
-		{
-			return;
-		}
-
-		try
-		{
-			final Object callerModel = unwrapPO(callerDocument.getDocumentModel());
-			InstanceStateCopier.copyState(unwrapPO(retryDocument.getDocumentModel()), callerModel);
-			if (callerDocument != callerModel)
+			if (restoreSnapshot != null)
 			{
-				// e.g. a DocumentWrapper, which keeps its own processing state
-				InstanceStateCopier.copyState(retryDocument, callerDocument);
+				restoreSnapshot.run();
 			}
+			document.resetEngineStateForRetry();
 		}
-		catch (final Exception ex)
-		{
-			logger.warn("The document action on {} was retried and committed, but its result could not be transferred to the caller's instance;"
-					+ " that instance is stale and needs to be reloaded", callerDocument, ex);
-		}
-	}
-
-	private static Object unwrapPO(@NonNull final Object model)
-	{
-		final PO po = POWrapper.getStrictPO(model);
-		return po != null ? po : model;
+		return document;
 	}
 }

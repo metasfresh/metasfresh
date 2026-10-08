@@ -80,6 +80,16 @@ public interface IDocument
 		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}
 
+	/**
+	 * Called before a document action is retried on this instance after the previous attempt was rolled back (e.g. on a DB deadlock).
+	 * Implementations drop the in-memory state that an action builds up, like the "just prepared" flag, the process message
+	 * and cached lines or taxes, but keep what a caller sets before an action.
+	 */
+	default void resetEngineStateForRetry()
+	{
+		// nothing by default
+	}
+
 	/** @return true if success */
 	boolean unlockIt();
 

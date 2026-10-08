@@ -59,7 +59,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
 	private DeadlockRetryPolicy deadlockRetryPolicy = DeadlockRetryPolicy.DEFAULT;
-	private RetryModelSnapshotter retryModelSnapshotter = RetryModelSnapshotter.PO_SNAPSHOTTER;
+	private RetryStateSnapshotter retryStateSnapshotter = RetryStateSnapshotter.PO_SNAPSHOTTER;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -128,12 +128,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		if (isEngineOwnsTheTransaction(trxName))
 		{
 			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
-			// and runs on a document instance that does not carry the state of the rolled back attempt
-			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, this::getDocument, retryModelSnapshotter);
+			// and runs on the same document, reset to its state before the first attempt
+			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, retryStateSnapshotter);
 			processed = deadlockRetryPolicy.call(
 					() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
 					document.getDocumentInfo());
-			attempts.transferOutcomeToCallerDocument();
 		}
 		else
 		{
@@ -188,9 +187,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@VisibleForTesting
-	void setRetryModelSnapshotter(@NonNull final RetryModelSnapshotter retryModelSnapshotter)
+	void setRetryStateSnapshotter(@NonNull final RetryStateSnapshotter retryStateSnapshotter)
 	{
-		this.retryModelSnapshotter = retryModelSnapshotter;
+		this.retryStateSnapshotter = retryStateSnapshotter;
 	}
 
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)

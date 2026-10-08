@@ -775,6 +775,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public boolean processIt(final String processAction)
 	{
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
+	}
+
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_lines = null;
+		m_taxes = null;
 	}    // process
 
 	@Override
@@ -1006,6 +1014,18 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
