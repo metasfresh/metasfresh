@@ -133,6 +133,7 @@ public class InvoiceProcessingServiceCompanyService
 	 * @param noConfigError   the error to throw if there are no payments and the customer has no service company config
 	 * @return with payments: their single common context; without payments: the customer's configured service company and now
 	 */
+	@NonNull
 	public InvoiceProcessingContext extractInvoiceProcessingContext(
 			@NonNull final BPartnerId customerId,
 			@NonNull final Collection<InvoiceProcessingContext> paymentContexts,

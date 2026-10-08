@@ -54,7 +54,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -270,9 +269,7 @@ public class PaymentsViewAllocateCommand
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
 		final ImmutableList<InvoiceProcessingContext> paymentContexts = paymentDocuments.stream()
-				.map(paymentDocument -> InvoiceProcessingContext.of(
-						paymentDocument.getBpartnerId(),
-						TimeUtil.asZonedDateTime(paymentDocument.getDateTrx())))
+				.map(PaymentDocument::toInvoiceProcessingContext)
 				.collect(ImmutableList.toImmutableList());
 
 		return invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
