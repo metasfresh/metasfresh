@@ -1141,6 +1141,15 @@ public class MOrder extends X_C_Order implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_processMsg = null;
+		_lines = null;
+		m_taxes = null;
+	}
+
 	/**
 	 * Process Message
 	 */
@@ -1603,8 +1612,14 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
-		final DocStatus docStatus = completeIt0();
-		return docStatus.getCode();
+		try
+		{
+			return completeIt0().getCode();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
 	}
 
 	private DocStatus completeIt0()
@@ -2300,6 +2315,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());

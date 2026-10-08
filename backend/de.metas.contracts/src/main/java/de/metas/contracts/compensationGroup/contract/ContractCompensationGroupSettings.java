@@ -37,6 +37,7 @@ import lombok.Value;
 @Builder
 public class ContractCompensationGroupSettings
 {
+	@NonNull ContractCompensationGroupSettingsId settingsId;
 	@NonNull GroupTemplateId schemaId;
 	@NonNull ImmutableSet<DocTypeId> docTypeIds;
 }
