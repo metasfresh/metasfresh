@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -390,10 +391,12 @@ public class C_Queue_WorkPackage_StepDef
 	 *       workpackage {@code Processed=Y} and unclaimed — the essential effect of {@code WorkpackageProcessorTask}
 	 *       for a single run;</li>
 	 *   <li>if the planner claimed it first, its run IS the next run: the step waits for that run to finish instead of
-	 *       running the same workpackage a second time;</li>
+	 *       running the same workpackage a second time (if the planner releases its claim unprocessed, the step claims
+	 *       and runs it itself);</li>
 	 *   <li>afterwards it claims the processor's remaining pending workpackages (e.g. a re-enqueued follow-up), so the
-	 *       planner cannot run them between steps; the next invocation of this step processes them. Claims still held
-	 *       when the scenario ends are released by {@link #releaseClaimedWorkPackages()}.</li>
+	 *       planner does not run them between steps; the next invocation of this step processes them. A follow-up the
+	 *       planner already took before this claim is covered by the previous bullet. Claims still held when the
+	 *       scenario ends are released by {@link #releaseClaimedWorkPackages()}.</li>
 	 * </ul>
 	 *
 	 * @cucumber.stepdef
@@ -417,7 +420,7 @@ public class C_Queue_WorkPackage_StepDef
 		}
 		else
 		{
-			waitUntilProcessedByQueueProcessor(workPackageId, processorShortName);
+			awaitQueueProcessorRunOrProcess(workPackageId, processorShortName);
 		}
 
 		claimPendingWorkPackages(processorShortName);
@@ -497,12 +500,33 @@ public class C_Queue_WorkPackage_StepDef
 		claimedWorkPackageIds.remove(workPackageId);
 	}
 
-	private void waitUntilProcessedByQueueProcessor(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName) throws InterruptedException
+	/**
+	 * Waits until the background queue processor's run of the given workpackage has finished. If the planner releases
+	 * its claim without processing (e.g. no free queue processor, or a retry), this step claims and processes the
+	 * workpackage itself.
+	 */
+	private void awaitQueueProcessorRunOrProcess(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName) throws InterruptedException
 	{
+		final AtomicBoolean claimedByStep = new AtomicBoolean(false);
 		StepDefUtil.tryAndWait(QUEUE_PROCESSOR_RUN_TIMEOUT_SEC, 100, () -> {
 			final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
-			return workPackage.isProcessed() || workPackage.isError();
+			if (workPackage.isProcessed() || workPackage.isError())
+			{
+				return true;
+			}
+			if (workPackage.getLockedAt() == null && tryClaim(workPackageId))
+			{
+				claimedByStep.set(true);
+				return true;
+			}
+			return false;
 		});
+
+		if (claimedByStep.get())
+		{
+			processClaimedWorkPackage(workPackageId, processorShortName);
+			return;
+		}
 
 		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
 		assertThat(workPackage.isProcessed())
