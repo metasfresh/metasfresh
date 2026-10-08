@@ -446,7 +446,7 @@ public class PaymentsViewAllocateCommandTest
 					.satisfies(ex -> {
 						final AdempiereException adempiereException = (AdempiereException)ex;
 						assertThat(adempiereException.isUserValidationError()).isTrue();
-						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
+						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message());
 						// shown as a message to the user, not as a "Server error" toast
 						assertThat(adempiereException.getUserMessagePresentation()).isEqualTo(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 					});
@@ -478,7 +478,7 @@ public class PaymentsViewAllocateCommandTest
 			// the short reason, like the row's note: the actions list shows it on one line; the full sentence is for the dialog
 			assertThat(resolution.getRejectReason().getDefaultValue())
 					.contains(PaymentBonusRowValues.MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message())
-					.doesNotContain(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message());
+					.doesNotContain(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message());
 		}
 
 		/** The discount is not paid either: open 100.00 - discount 3.00 leaves 97.00, a bonus of 99.00 would make the payment negative. */
@@ -494,9 +494,10 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
 					.isInstanceOf(AdempiereException.class)
-					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_OPEN_AMT.toAD_Message()));
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message()));
 		}
 
+		/** A bonus typed on an invoice whose customer has no bonus to deduct is a user error, shown to the user (translated). */
 		@Test
 		public void customerInvoice_withPaymentBonusButNothingToDeduct_fails()
 		{
@@ -506,7 +507,40 @@ public class PaymentsViewAllocateCommandTest
 					.build();
 
 			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
-					.hasMessageContaining("no bonus");
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException adempiereException = (AdempiereException)ex;
+						assertThat(adempiereException.isUserValidationError()).isTrue();
+						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT.toAD_Message());
+						// shown as a message to the user, not as a "Server error" toast
+						assertThat(adempiereException.getUserMessagePresentation()).isEqualTo(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
+					});
+		}
+
+		/** The allocate action is not offered while a bonus is typed on an invoice with no bonus to deduct; the user sees why, instead of the action silently vanishing. */
+		@Test
+		public void allocatePreconditions_withPaymentBonusButNothingToDeduct_rejectedWithTheReason()
+		{
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).build();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.paymentBonusAmt("5.00")
+					.build();
+			final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+					.paymentRow(paymentRow)
+					.invoiceRow(invoiceRow)
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.build();
+
+			final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+			assertThat(resolution.isRejected()).isTrue();
+			assertThat(resolution.isInternal()).isFalse();
+			assertThat(resolution.getRejectReason().getDefaultValue())
+					.contains(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT.toAD_Message());
 		}
 
 		@Test
