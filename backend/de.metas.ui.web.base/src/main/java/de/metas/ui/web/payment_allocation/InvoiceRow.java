@@ -302,6 +302,14 @@ public class InvoiceRow implements IViewRow
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
 	}
 
+	/**
+	 * @return the business partner as shown in the view (lookup display name), e.g. for user-facing messages
+	 */
+	public ITranslatableString getBPartnerDisplayName()
+	{
+		return bpartner.getDisplayNameTrl();
+	}
+
 	public InvoiceRow withPreparedForAllocationSet() { return withPreparedForAllocation(true); }
 
 	public InvoiceRow withPreparedForAllocationUnset() { return withPreparedForAllocation(false); }

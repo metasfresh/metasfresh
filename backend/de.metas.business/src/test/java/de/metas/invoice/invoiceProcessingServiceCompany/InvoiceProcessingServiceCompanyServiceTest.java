@@ -40,6 +40,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -347,7 +348,10 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							InvoiceProcessingContext.of(BPartnerId.ofRepoId(777), paymentDate),
 							InvoiceProcessingContext.of(BPartnerId.ofRepoId(778), paymentDate)),
 					() -> new AdempiereException("no config")))
-					.hasMessageContaining("exactly 1 Payment");
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate").toAD_Message());
+					});
 		}
 
 		@Test

@@ -58,6 +58,8 @@ Feature: Refund contracts on a product category base
       | pp_sub     | refundPLV                         | subGoods                | 100      | PCE               | Normal                        |
       | pp_pack    | refundPLV                         | packProduct             | 50       | PCE               | Normal                        |
       | pp_pfand   | refundPLV                         | pfandProduct            | 10       | PCE               | Normal                        |
+      | pp_bonusW  | refundPLV                         | bonusWare               | 1        | PCE               | Normal                        |
+      | pp_bonusP  | refundPLV                         | bonusPack               | 1        | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |

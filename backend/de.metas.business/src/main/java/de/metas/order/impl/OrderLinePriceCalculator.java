@@ -526,7 +526,7 @@ final class OrderLinePriceCalculator
 
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
 
-		final CalculateProfitPriceActualRequest request = OrderLineProfitPriceActualRequests.of(orderLine);
+		final CalculateProfitPriceActualRequest request = OrderLineProfitPriceActualRequests.of(orderLine, orderLineRecord.getC_Order());
 
 		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
 

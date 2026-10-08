@@ -68,6 +68,7 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderIn
 public class InvoiceProcessingServiceCompanyService
 {
 	private static final AdMessageKey MSG_INVOICE_HAS_SERVICE_INVOICE = AdMessageKey.of("AlreadyGeneratedServiceInvoice");
+	private static final AdMessageKey MSG_PAYMENTS_OF_DIFFERENT_SERVICE_COMPANY_OR_DATE = AdMessageKey.of("InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate");
 
 	private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
 	private final MoneyService moneyService;
@@ -150,7 +151,7 @@ public class InvoiceProcessingServiceCompanyService
 		final ImmutableSet<InvoiceProcessingContext> distinctContexts = ImmutableSet.copyOf(paymentContexts);
 		if (distinctContexts.size() != 1)
 		{
-			throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
+			throw new AdempiereException(MSG_PAYMENTS_OF_DIFFERENT_SERVICE_COMPANY_OR_DATE).markAsUserValidationError();
 		}
 		return distinctContexts.iterator().next();
 	}
