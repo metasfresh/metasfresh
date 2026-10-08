@@ -25,7 +25,7 @@ import {
     windowIdFromUrl,
     windowIdOfPath,
 } from '../utils/compensationGroupCalibration';
-import { openReferencesPanel, waitForReferences, waitForSpinnersToDisappear } from '../utils/DocumentReferences';
+import { openReferencesPanel, waitForReferences, waitForReferencesComplete } from '../utils/DocumentReferences';
 
 /**
  * Compensation-group calibration rules, TC1 "concept example".
@@ -359,7 +359,8 @@ test.describe('Compensation group calibration', () => {
             await page.goto(`${rulesWindowUrl}/${rule10Id}`);
             await page.locator(`.form-field-${FIELD_FACTOR}`).waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             expect(await openReferencesPanel(), 'related-documents panel opens').toBe(true);
-            await waitForSpinnersToDisappear();
+            // the references stream in (SSE); wait for the complete list, not for the first entry within a fixed 8 s
+            await waitForReferencesComplete();
             expect(await waitForReferences(), 'references loaded').toBe(true);
             const reference = page.locator(`[data-cy="${RULE_TO_SALES_ORDERS_REFERENCE}"]`);
             await expect(reference).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });

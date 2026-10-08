@@ -119,7 +119,15 @@ export async function createOrder(page, bpartnerCode, { docTypeId } = {}) {
     const windowId = windowIdFromUrl(page);
     const orderId = recordIdFromUrl(page);
 
-    await LookupWidget.setValue('C_BPartner_ID', bpartnerCode);
+    // No Tab after the pick: the customer lookup walks on by itself (see below), a Tab would race that walk.
+    await LookupWidget.setValue('C_BPartner_ID', bpartnerCode, { triggerSave: false });
+    // Picking the customer is only the first step of the customer lookup: it then confirms the customer's only
+    // location on its own (a second PATCH, C_BPartner_Location_ID) and, once that answer is in, moves the caret on to
+    // the contact field. On a loaded host that answer comes late, and the caret move then steals the focus from
+    // whatever the test clicked meanwhile: the quick-input product field drops the code typed into it on blur, its
+    // typeahead searches " " and the product option never shows. So wait until the caret has arrived in the contact field.
+    await expect(page.locator('#lookup_AD_User_ID :focus'), 'customer lookup done: caret moved on to the contact field')
+        .toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
     await waitForRecordSaved(windowId, orderId, { maxRetries: 20, retryDelayMs: 1000 });
     if (docTypeId) {
         await ListWidget.setByValue('C_DocTypeTarget_ID', String(docTypeId));
