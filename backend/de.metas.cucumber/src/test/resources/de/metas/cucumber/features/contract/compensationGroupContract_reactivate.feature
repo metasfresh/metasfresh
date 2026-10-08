@@ -155,6 +155,51 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | ic_reactivateDiscount2            | -60             |
 
   # ##############################################################################################
+  # Reactivating while the missing shipment schedules are being created
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32353_TC78
+  Scenario: Reactivating a sales order while missing shipment schedules are being created makes their creation retry, not fail
+  _Given two completed sales orders whose lines have no shipment schedules yet; the first one's completion added a contract discount line
+  _When the first order is reactivated (deleting the discount line) and, before that reactivation commits, the missing shipment schedules are created
+  _Then that batch is rolled back and asks to be retried later, instead of failing, and the reactivation succeeds
+  _And the retry creates the second order's shipment schedules, and none for the deleted discount line
+  _And completing the first order again creates the shipment schedules of its current lines
+
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderRace  | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+      | orderOther | true    | storeBP                  | storeBP                               | 2026-07-01  |                                 |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_raceGoods  | orderRace             | goodsProduct            | 1          |
+      | ol_otherGoods | orderOther            | goodsProduct            | 1          |
+
+    # precondition: the workpackage's batch must contain this scenario's order lines, whatever batch size the instance is configured with (production default: 500)
+    And temporarily set sys config int value 500 for sys config 'de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxToProcess'
+
+    When the order identified by orderRace is completed together with the order identified by orderOther, and then reactivated while their missing shipment schedules are being created
+
+    Then no C_Order_CompensationGroup exists for order "orderRace"
+    And the order identified by orderRace has 1 order lines
+    And the order identified by orderOther has 1 order lines
+
+    When the order identified by orderRace is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_raceDiscount           | orderRace             | discountProduct         | 1          | true                        | -30   | mainTerm                          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_raceGoods    | ol_raceGoods              | N             |
+      | ss_raceDiscount | ol_raceDiscount           | N             |
+      | ss_otherGoods   | ol_otherGoods             | N             |
+
+  # ##############################################################################################
   # Reactivation is refused while a contract discount line is already invoiced
   # ##############################################################################################
 

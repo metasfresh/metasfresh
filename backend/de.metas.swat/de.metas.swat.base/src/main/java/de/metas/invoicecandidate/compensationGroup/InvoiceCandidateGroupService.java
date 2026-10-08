@@ -6,7 +6,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.util.Services;
@@ -62,7 +61,7 @@ public class InvoiceCandidateGroupService
 	{
 		return SpringContextHolder.getBeanOrSupply(
 				InvoiceCandidateGroupService.class,
-				() -> new InvoiceCandidateGroupService(new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory())));
+				() -> new InvoiceCandidateGroupService(InvoiceCandidateGroupRepository.newInstanceForUnitTesting()));
 	}
 
 	/**
