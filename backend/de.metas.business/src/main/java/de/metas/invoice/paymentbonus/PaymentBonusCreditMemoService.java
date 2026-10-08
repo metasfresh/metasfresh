@@ -1,5 +1,6 @@
 package de.metas.invoice.paymentbonus;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.DocBaseAndSubType;
@@ -11,6 +12,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
@@ -42,6 +44,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 @Service
 public class PaymentBonusCreditMemoService
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_NO_PAYMENT_BONUS_CREDIT_MEMO_DOC_TYPE = AdMessageKey.of("de.metas.invoice.paymentbonus.NoPaymentBonusCreditMemoDocType");
+
 	private static final DocBaseAndSubType DOC_BASE_AND_SUB_TYPE = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -108,8 +113,8 @@ public class PaymentBonusCreditMemoService
 				.build());
 		if (docTypeId == null)
 		{
-			throw new AdempiereException("There is no document type for payment bonus credit memos (base type ARC, sub type PB) of this client and organization")
-					.appendParametersToMessage()
+			throw new AdempiereException(MSG_NO_PAYMENT_BONUS_CREDIT_MEMO_DOC_TYPE)
+					.markAsUserValidationError()
 					.setParameter("AD_Client_ID", clientAndOrgId.getClientId().getRepoId())
 					.setParameter("AD_Org_ID", clientAndOrgId.getOrgId().getRepoId());
 		}

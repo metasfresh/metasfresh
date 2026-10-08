@@ -80,13 +80,13 @@ class PaymentBonusCreditMemoServiceTest
 				.hasMessageContaining("currency of the payment bonus does not match");
 	}
 
-	/** Without the document type (base type ARC, sub type PB), the credit memo cannot be created. */
+	/** Without the document type (base type ARC, sub type PB), the credit memo cannot be created; the user is told so in their language. */
 	@Test
 	void noPaymentBonusCreditMemoDocType_fails()
 	{
 		assertThatThrownBy(() -> generateCreditMemo(deduction(EUR)))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("no document type for payment bonus credit memos");
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentBonusCreditMemoService.MSG_NO_PAYMENT_BONUS_CREDIT_MEMO_DOC_TYPE.toAD_Message()));
 	}
 
 	@Test
