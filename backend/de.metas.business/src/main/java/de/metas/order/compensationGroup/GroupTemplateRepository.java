@@ -1,6 +1,8 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
@@ -19,6 +21,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -50,6 +55,11 @@ import java.util.Optional;
  * #L%
  */
 
+/**
+ * Repository Tables: C_CompensationGroup_Schema, C_CompensationGroup_Schema_TemplateLine, C_CompensationGroup_SchemaLine
+ * <p>
+ * Repository Cluster: GroupTemplateRepository, OrderGroupRepository
+ */
 @Repository
 public class GroupTemplateRepository
 {
@@ -62,6 +72,8 @@ public class GroupTemplateRepository
 			.additionalTableNameToResetFor(I_C_CompensationGroup_Schema_TemplateLine.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
 			.initialCapacity(10)
+			.maximumSize(100)
+			.cacheMapType(CCache.CacheMapType.LRU)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
@@ -74,9 +86,38 @@ public class GroupTemplateRepository
 				GroupMatcherFactory::getAppliesToLineType);
 	}
 
+	@VisibleForTesting
+	public static GroupTemplateRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				GroupTemplateRepository.class,
+				() -> new GroupTemplateRepository(Optional.empty()));
+	}
+
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
 	{
 		return groupTemplatesById.getOrLoad(groupTemplateId, this::retrieveById);
+	}
+
+	/** @return the base of each given schema line (see {@link GroupTemplateCompensationLine#getBase()}); a schema line that does not exist is absent */
+	public ImmutableMap<GroupTemplateLineId, GroupCompensationBase> getBasesBySchemaLineId(@NonNull final Set<GroupTemplateLineId> schemaLineIds)
+	{
+		if (schemaLineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class)
+				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						schemaLine -> GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()),
+						schemaLine -> GroupCompensationBase.of(
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()))));
 	}
 
 	private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId)

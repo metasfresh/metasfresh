@@ -18,10 +18,10 @@ Feature: Compensation groups that were not created by a contract
 
     # goodsSub's category is a sub-category of goods1's category; goods3 is in an unrelated category
     And metasfresh contains M_Product_Category:
-      | Identifier  | Name              | Value                     | OPT.M_Product_Category_Parent_ID.Identifier |
-      | catGoods    | Ware              | CompGroupRegrGoods        |                                             |
-      | catGoodsSub | Ware Untergruppe  | CompGroupRegrGoodsSub     | catGoods                                    |
-      | catOther    | Andere Ware       | CompGroupRegrOther        |                                             |
+      | Identifier  | Name             | Value                 | OPT.M_Product_Category_Parent_ID.Identifier |
+      | catGoods    | Ware             | CompGroupRegrGoods    |                                             |
+      | catGoodsSub | Ware Untergruppe | CompGroupRegrGoodsSub | catGoods                                    |
+      | catOther    | Andere Ware      | CompGroupRegrOther    |                                             |
 
     # not stocked: shipments need no inventory
     And metasfresh contains M_Products:
@@ -67,8 +67,8 @@ Feature: Compensation groups that were not created by a contract
 
     # the same bundle, but its 3 % apply only to the goods of category "Ware" (incl. its sub-category)
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier     | Name             |
-      | categorySchema | Bundle Ware 3 %  |
+      | Identifier     | Name            |
+      | categorySchema | Bundle Ware 3 % |
     And metasfresh contains C_CompensationGroup_Schema_TemplateLine:
       | Identifier    | C_CompensationGroup_Schema_ID | M_Product_ID | Qty | C_UOM_ID | SeqNo |
       | tl_cat_goods1 | categorySchema                | goods1       | 1   | PCE      | 10    |
@@ -270,16 +270,16 @@ Feature: Compensation groups that were not created by a contract
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.AsUIAction |
       | schema_ol_3               | 5              | Y              |
     Then validate the created order lines
-      | C_OrderLine_ID     | C_Order_ID    | M_Product_ID    | QtyOrdered | IsGroupCompensationLine | GroupCompensationBaseAmt | price | LineNetAmt |
-      | ol_discountOther   | orderCategory | discountProduct | 1          | true                    | 1500                     | -45   | -45        |
+      | C_OrderLine_ID   | C_Order_ID    | M_Product_ID    | QtyOrdered | IsGroupCompensationLine | GroupCompensationBaseAmt | price | LineNetAmt |
+      | ol_discountOther | orderCategory | discountProduct | 1          | true                    | 1500                     | -45   | -45        |
 
     # more of the sub-category's goods: 3 % of 1000 + 2 x 500
     When update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.AsUIAction |
       | schema_ol_2               | 2              | Y              |
     Then validate the created order lines
-      | C_OrderLine_ID     | C_Order_ID    | M_Product_ID    | QtyOrdered | IsGroupCompensationLine | GroupCompensationBaseAmt | price | LineNetAmt |
-      | ol_discountSub     | orderCategory | discountProduct | 1          | true                    | 2000                     | -60   | -60        |
+      | C_OrderLine_ID | C_Order_ID    | M_Product_ID    | QtyOrdered | IsGroupCompensationLine | GroupCompensationBaseAmt | price | LineNetAmt |
+      | ol_discountSub | orderCategory | discountProduct | 1          | true                    | 2000                     | -60   | -60        |
 
     When the order identified by orderCategory is completed
     Then validate the created order lines

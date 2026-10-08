@@ -5,7 +5,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
@@ -76,7 +75,7 @@ public class Group
 	@Getter
 	private final ConditionsId contractConditionsId;
 
-	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other */
+	/** If {@code true}, every compensation line is computed on the regular-line total of its own base (see {@link GroupCompensationLine#getBase()}); if {@code false} (default), compensation lines of the same base compound with each other, except lines with own base (see {@link GroupCompensationLine#isOwnBase()}), which are always computed additively */
 	@Getter
 	private final boolean additive;
 
@@ -190,8 +189,9 @@ public class Group
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
 			final GroupCompensationBase base = compensationLine.getBase();
+			final boolean isCompoundingLine = isCompounding(compensationLine);
 			final BigDecimal baseAmt;
-			if (additive)
+			if (!isCompoundingLine)
 			{
 				baseAmt = getRegularLinesNetAmt(base);
 			}
@@ -202,7 +202,7 @@ public class Group
 
 			updateCompensationLine(compensationLine, baseAmt);
 
-			if (!additive)
+			if (isCompoundingLine)
 			{
 				runningNetAmtsByBase.put(base, baseAmt.add(compensationLine.getLineNetAmt()));
 			}
@@ -246,23 +246,36 @@ public class Group
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.appliesToProductCategoryId(request.getAppliesToProductCategoryId())
 				.packingMaterialProductCategoryId(request.getPackingMaterialProductCategoryId())
+				.isOwnBase(request.isOwnBase())
+				.description(request.getDescription())
 				.build();
 
-		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getBase()));
+		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine));
 
 		compensationLines.add(compensationLine);
 	}
 
-	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-matching-category running total, for one new line */
-	private BigDecimal computeInitialBaseAmt(@NonNull final GroupCompensationBase base)
+	/**
+	 * @return {@code true} if the given line is computed on its base's running total and adds to it (non-additive mode);
+	 * a line with own base never is: it is always computed on its base's full amount, whatever the additive flag
+	 */
+	private boolean isCompounding(@NonNull final GroupCompensationLine compensationLine)
 	{
+		return !additive && !compensationLine.isOwnBase();
+	}
+
+	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-base running total, for one new line */
+	private BigDecimal computeInitialBaseAmt(@NonNull final GroupCompensationLine newLine)
+	{
+		final GroupCompensationBase base = newLine.getBase();
 		BigDecimal baseAmt = getRegularLinesNetAmt(base);
 
-		if (!additive)
+		if (isCompounding(newLine))
 		{
 			for (final GroupCompensationLine existingLine : compensationLines)
 			{
-				if (Objects.equals(existingLine.getBase(), base))
+				if (isCompounding(existingLine)
+						&& Objects.equals(existingLine.getBase(), base))
 				{
 					baseAmt = baseAmt.add(existingLine.getLineNetAmt());
 				}

@@ -57,4 +57,11 @@ public class GroupCompensationLineCreateRequest
 	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
 	@Nullable
 	ProductCategoryId packingMaterialProductCategoryId;
+
+	/** see {@link GroupCompensationLine#isOwnBase()} */
+	boolean isOwnBase;
+
+	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
+	@Nullable
+	String description;
 }

@@ -11,6 +11,7 @@ import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -93,6 +94,7 @@ public class ContractCompensationGroupService
 	@NonNull private final ContractCompensationGroupRepository contractGroupRepository;
 	@NonNull private final OrderFreightCostsService orderFreightCostService;
 	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
+	@NonNull private final ContractSettingsTakeOverService takeOverService;
 
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
@@ -122,7 +124,10 @@ public class ContractCompensationGroupService
 
 		final GroupTemplate schema = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
 
-		final CandidateSelection candidateSelection = findCandidateLines(orderId, schema);
+		// before candidate selection, so that a take-over category joins it
+		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
+
+		final CandidateSelection candidateSelection = findCandidateLines(orderId, schemaWithTakeOvers);
 		if (candidateSelection.getLineIds().isEmpty())
 		{
 			return;
@@ -130,9 +135,9 @@ public class ContractCompensationGroupService
 
 		// A discount line whose base (product category, packing-material category) matches none of the candidate lines is
 		// skipped (no 0.00 line); a discount line with no base at all always applies to the whole group.
-		final GroupTemplate schemaWithoutUnmatchedCompensationLines = schema.toBuilder()
+		final GroupTemplate schemaWithoutUnmatchedCompensationLines = schemaWithTakeOvers.toBuilder()
 				.clearCompensationLines()
-				.compensationLines(schema.getCompensationLines().stream()
+				.compensationLines(schemaWithTakeOvers.getCompensationLines().stream()
 						.filter(compensationLine -> compensationLine.getBase().isNone()
 								|| candidateSelection.getMatchedBases().contains(compensationLine.getBase()))
 						.collect(ImmutableList.toImmutableList()))
@@ -143,6 +148,15 @@ public class ContractCompensationGroupService
 				.groupTemplate(schemaWithoutUnmatchedCompensationLines)
 				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
 				.createGroup(candidateSelection.getLineIds());
+	}
+
+	private static OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
+	{
+		return OrderDropShipInfo.builder()
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.isDropShip(order.isDropShip())
+				.linkedOrderId(OrderId.ofRepoIdOrNull(order.getLink_Order_ID()))
+				.build();
 	}
 
 	/**

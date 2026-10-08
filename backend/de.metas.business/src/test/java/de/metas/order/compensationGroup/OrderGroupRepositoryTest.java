@@ -3,6 +3,7 @@ package de.metas.order.compensationGroup;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -11,16 +12,15 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
@@ -37,11 +37,6 @@ import org.mockito.Mockito;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.i18n.AdMessageId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
@@ -125,9 +120,7 @@ public class OrderGroupRepositoryTest
 		Services.registerService(IOrderLineBL.class, new StubOrderLineBL(order));
 
 		// Build repo (no advisors needed for this test).
-		repo = new OrderGroupRepository(
-				Mockito.mock(GroupCompensationLineCreateRequestFactory.class),
-				Optional.empty());
+		repo = OrderGroupRepository.newInstanceForUnitTesting();
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
@@ -225,6 +218,7 @@ public class OrderGroupRepositoryTest
 
 		// schema (IsAdditive=Y) with a schema line whose base = parentCategory
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		schema.setIsAdditive(true);
 		saveRecord(schema);
 
@@ -385,6 +379,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId categoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
@@ -436,6 +431,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId cartonCategoryId = newProductCategoryId();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
@@ -485,6 +481,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId cartonCategoryId = newProductCategoryId();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		// bundle-style schema line: no product category, packing-material category only
@@ -598,6 +595,7 @@ public class OrderGroupRepositoryTest
 		saveRecord(order);
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
@@ -637,13 +635,37 @@ public class OrderGroupRepositoryTest
 		assertThat(baseByLineId.get(manualLine).isNone()).isTrue();
 	}
 
-	private static I_C_CompensationGroup_SchemaLine schemaLine(
+	/** The order path resolves the base of each schema-backed line and fails if the schema line does not exist (the column has no foreign key). */
+	@Test
+	void retrieveGroup_discountLineWhoseSchemaLineDoesNotExist_fails()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		final OrderLineId discountLineId = createDiscountLine(orderCompensationGroupId, null);
+		final I_C_OrderLine discountLine = InterfaceWrapperHelper.load(discountLineId, I_C_OrderLine.class);
+		discountLine.setC_CompensationGroup_SchemaLine_ID(999_999);
+		saveRecord(discountLine);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+
+		assertThatThrownBy(() -> repo.retrieveGroup(groupId))
+				.hasMessageContaining("No C_CompensationGroup_SchemaLine found");
+	}
+
+	private I_C_CompensationGroup_SchemaLine schemaLine(
 			@NonNull final I_C_CompensationGroup_Schema schema,
 			@Nullable final ProductCategoryId productCategoryId,
 			@Nullable final ProductCategoryId packingMaterialCategoryId)
 	{
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_ID(productId.getRepoId()); // mandatory; reading the group loads its schema (IsAdditive) with all its lines
 		if (productCategoryId != null)
 		{
 			schemaLine.setM_Product_Category_ID(productCategoryId.getRepoId());
@@ -723,6 +745,7 @@ public class OrderGroupRepositoryTest
 		saveRecord(order);
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
@@ -877,6 +900,32 @@ public class OrderGroupRepositoryTest
 		assertThat(compensationLinePO.isManualDiscount()).isTrue();
 	}
 
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 10 — IsAdditive is read from the cached schema; saving the schema must reset that cache,
+	// so a changed IsAdditive is seen by the next read instead of the stale cached value.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void isAdditive_changedOnSchema_isSeenByNextRead()
+	{
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema");
+		schema.setIsAdditive(true);
+		saveRecord(schema);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), groupHeader.getC_Order_CompensationGroup_ID());
+
+		assertThat(repo.isAdditive(groupId)).isTrue();
+
+		schema.setIsAdditive(false);
+		saveRecord(schema);
+
+		assertThat(repo.isAdditive(groupId)).isFalse();
+	}
+
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────
 
 	private GroupTemplateRegularLine buildTemplateLine(final boolean isWithoutCharge)
@@ -910,7 +959,7 @@ public class OrderGroupRepositoryTest
 	 * Using a concrete class (not a Mockito proxy) avoids class-loader/proxy issues with
 	 * the Services/TestingClassInstanceProvider infrastructure.
 	 */
-	private static class StubOrderLineBL implements IOrderLineBL
+	static class StubOrderLineBL implements IOrderLineBL
 	{
 		private final I_C_Order order;
 

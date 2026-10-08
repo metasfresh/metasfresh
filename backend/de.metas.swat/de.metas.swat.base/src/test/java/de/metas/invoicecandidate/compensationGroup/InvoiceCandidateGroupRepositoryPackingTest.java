@@ -8,7 +8,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -29,7 +28,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -68,7 +66,7 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		provider = new CountingProvider(ImmutableMap.of(HUPIItemProductId.ofRepoId(PI_ITEM_PRODUCT_ID), ImmutableSet.of(cartonCategoryId)));
 		SpringContextHolder.registerJUnitBean(PackingMaterialProductCategoryProvider.class, provider);
 
-		repo = new InvoiceCandidateGroupRepository(Mockito.mock(GroupCompensationLineCreateRequestFactory.class));
+		repo = InvoiceCandidateGroupRepository.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -112,6 +110,7 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		final I_M_Product discountProduct = newProduct();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());

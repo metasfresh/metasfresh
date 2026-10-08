@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.order;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -94,6 +95,7 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	private final @NonNull C_CompensationGroup_Schema_StepDefData schemaTable;
 	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -171,6 +173,7 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 	 *   <li>{@code OPT.GroupCompensationAmtType} — optional; {@code P} (percent) or {@code Q} (price and quantity, i.e. a fixed amount)</li>
 	 *   <li>{@code OPT.GroupCompensationPercentage} — optional; the percentage of a percent line</li>
 	 *   <li>{@code OPT.PriceEntered} — optional; the amount of a fixed-amount line (quantity 1)</li>
+	 *   <li>{@code OPT.C_BPartner_Vendor_ID} — optional; the vendor of the new compensation line (a drop-ship order needs one on every line)</li>
 	 * </ul>
 	 *
 	 * @cucumber.example
@@ -217,6 +220,10 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 						compensationLine.setPriceEntered(price);
 						compensationLine.setPriceActual(price);
 					});
+
+			row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+					.map(bpartnerTable::getId)
+					.ifPresent(vendorId -> compensationLine.setC_BPartner_Vendor_ID(vendorId.getRepoId()));
 
 			// what the order line grid's callout does when the user edits the compensation line
 			groupChangesHandler.updateCompensationLineNoSave(compensationLine);
