@@ -12,6 +12,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.api.impl.PlainTrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,11 +49,12 @@ public class RefundInvoiceCandidateListenerTest
 		candidateAssignmentService = Mockito.mock(CandidateAssignmentService.class);
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
 
-		listener = new RefundInvoiceCandidateListener(
-				() -> refundContractRepository,
-				() -> refundInvoiceCandidateService,
-				() -> assignableInvoiceCandidateRepository,
-				() -> candidateAssignmentService);
+		SpringContextHolder.registerJUnitBean(RefundContractRepository.class, refundContractRepository);
+		SpringContextHolder.registerJUnitBean(RefundInvoiceCandidateService.class, refundInvoiceCandidateService);
+		SpringContextHolder.registerJUnitBean(AssignableInvoiceCandidateRepository.class, assignableInvoiceCandidateRepository);
+		SpringContextHolder.registerJUnitBean(CandidateAssignmentService.class, candidateAssignmentService);
+
+		listener = new RefundInvoiceCandidateListener();
 	}
 
 	/**
