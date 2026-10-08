@@ -453,6 +453,42 @@ public class GroupTests
 				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-30.00"));
 	}
 
+	/**
+	 * A line with own base has the base (category, no packing filter). In a compounding group it is computed on that base's
+	 * full amount and stays out of that base's running total, while the other lines compound per (category, packing category) pair.
+	 */
+	@Test
+	void notAdditive_ownBaseLine_withPackingFilteredLines_onFullCategoryBase_andNotInPairRunningTotal()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId carton = ProductCategoryId.ofRepoId(40);
+		final ProductCategoryId crate = ProductCategoryId.ofRepoId(41);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.PURCHASE)
+				.additive(false)
+				.regularLine(regularLine(720, ImmutableSet.of(goods), ImmutableSet.of(carton)))
+				.regularLine(regularLine(440, ImmutableSet.of(goods), ImmutableSet.of(crate)))
+				.build();
+
+		group.addNewCompensationLine(newPercentageDiscountRequest(3.0, goods, null));
+		group.addNewCompensationLine(newOwnBaseLineRequest(3.0, goods));
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, goods, carton));
+		group.addNewCompensationLine(newPercentageDiscountRequest(1.0, goods, null));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getBase)
+				.containsExactly(
+						GroupCompensationBase.of(goods, null),
+						GroupCompensationBase.of(goods, null),
+						GroupCompensationBase.of(goods, carton),
+						GroupCompensationBase.of(goods, null));
+		// own line: 3 % of 1160 (not of 1160 - 34.80); last line: 1 % of 1160 - 34.80 (the own line is not in the running total)
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-34.80"), new BigDecimal("-34.80"), new BigDecimal("-4.32"), new BigDecimal("-11.25"));
+	}
+
 	@Test
 	void getRegularLinesNetAmt_packingFilterWithoutProductCategory_countsOnlyMatchingLines()
 	{

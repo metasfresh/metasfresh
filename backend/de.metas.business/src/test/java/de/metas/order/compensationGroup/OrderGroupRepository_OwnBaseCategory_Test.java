@@ -127,7 +127,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 
 		assertThat(group.getCompensationLines()).hasSize(1);
 		final GroupCompensationLine line = group.getCompensationLines().get(0);
-		assertThat(line.getAppliesToProductCategoryId()).isEqualTo(OWN_BASE_CATEGORY_ID);
+		assertThat(line.getBase()).isEqualTo(GroupCompensationBase.of(OWN_BASE_CATEGORY_ID, null));
 		assertThat(line.hasOwnBase()).isTrue();
 	}
 
