@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -118,6 +119,7 @@ public class CreatePackingInstructionsCommand
 		}
 		else
 		{
+			Check.assumeNull(request.getBpartner(), "bpartner is only supported together with lu: {}", request);
 			lu = null;
 			luPIItem = null;
 			luPIItemTestId = null;
@@ -438,6 +440,11 @@ public class CreatePackingInstructionsCommand
 		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
 		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
 		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		final Identifier bpartnerIdentifier = request.getBpartner();
+		if (bpartnerIdentifier != null)
+		{
+			luPIItemRecord.setC_BPartner_ID(BPartnerId.toRepoId(context.getId(bpartnerIdentifier, BPartnerId.class)));
+		}
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}
