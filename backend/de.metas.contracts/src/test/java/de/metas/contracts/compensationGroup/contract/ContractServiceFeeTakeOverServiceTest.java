@@ -2,6 +2,7 @@ package de.metas.contracts.compensationGroup.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
@@ -87,6 +88,27 @@ public class ContractServiceFeeTakeOverServiceTest
 		assertThat(service.resolveServiceFeePercent(OTHER_CUSTOMER_ID, SO_DATE)).isEqualTo(Percent.of(new BigDecimal("1.00")));
 	}
 
+	@Test
+	void onlyDocTypeScopedAssignment_returnsZero()
+	{
+		// the take-over resolves the doc-type-null default; an assignment scoped to a doc type must not match
+		final I_InvoiceProcessingServiceCompany config = createConfigRecord(LocalDate.parse("2026-01-01"));
+		createAssignment(config, CUSTOMER_ID, "2.60", true, DocTypeId.ofRepoId(444));
+
+		assertThat(service.resolveServiceFeePercent(CUSTOMER_ID, SO_DATE)).isEqualTo(Percent.ZERO);
+	}
+
+	@Test
+	void docTypeScopedAndNullDocTypeAssignments_returnsTheNullDocTypePercent()
+	{
+		// a doc-type-scoped row must not shadow the doc-type-null default the take-over reconciles against
+		final I_InvoiceProcessingServiceCompany config = createConfigRecord(LocalDate.parse("2026-01-01"));
+		createAssignment(config, CUSTOMER_ID, "9.99", true, DocTypeId.ofRepoId(444));
+		createAssignment(config, CUSTOMER_ID, "2.60", true, null);
+
+		assertThat(service.resolveServiceFeePercent(CUSTOMER_ID, SO_DATE)).isEqualTo(Percent.of(new BigDecimal("2.60")));
+	}
+
 	private static void createConfig(final BPartnerId customerId, final String percent, final boolean assignmentActive, final LocalDate validFrom)
 	{
 		final I_InvoiceProcessingServiceCompany config = createConfigRecord(validFrom);
@@ -107,11 +129,20 @@ public class ContractServiceFeeTakeOverServiceTest
 
 	private static void createAssignment(final I_InvoiceProcessingServiceCompany config, final BPartnerId customerId, final String percent, final boolean active)
 	{
+		createAssignment(config, customerId, percent, active, null);
+	}
+
+	private static void createAssignment(final I_InvoiceProcessingServiceCompany config, final BPartnerId customerId, final String percent, final boolean active, final DocTypeId docTypeId)
+	{
 		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignment = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
 		assignment.setIsActive(active);
 		assignment.setInvoiceProcessingServiceCompany_ID(config.getInvoiceProcessingServiceCompany_ID());
 		assignment.setC_BPartner_ID(customerId.getRepoId());
 		assignment.setFeePercentageOfGrandTotal(new BigDecimal(percent));
+		if (docTypeId != null)
+		{
+			assignment.setC_DocType_ID(docTypeId.getRepoId());
+		}
 		saveRecord(assignment);
 	}
 }
