@@ -1049,26 +1049,23 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Nullable
 	@Override
-	public I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(
-			@NonNull final BPartnerId bPartnerId,
-			@Nullable final BPartnerLocationId bPartnerLocationId)
+	public I_C_BP_Relation retrieveBillToRelationForLocationOrNull(@NonNull final BPartnerLocationId bPartnerLocationId)
 	{
-		if (bPartnerLocationId != null)
-		{
-			final I_C_BP_Relation locationRelation = retrieveBillToBPartnerRelationForLocationOrNull(bPartnerId, bPartnerLocationId.getRepoId());
-			if (locationRelation != null)
-			{
-				return locationRelation;
-			}
-		}
-		return retrieveBillToBPartnerRelationForLocationOrNull(bPartnerId, null);
+		return retrieveBillToRelationOrNull(bPartnerLocationId.getBpartnerId(), bPartnerLocationId.getRepoId());
+	}
+
+	@Nullable
+	@Override
+	public I_C_BP_Relation retrievePartnerWideBillToRelationOrNull(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveBillToRelationOrNull(bPartnerId, null);
 	}
 
 	/**
 	 * @param bPartnerLocationRepoId {@code null} means the partner-wide relation ({@code C_BPartner_Location_ID IS NULL})
 	 */
 	@Nullable
-	private I_C_BP_Relation retrieveBillToBPartnerRelationForLocationOrNull(
+	private I_C_BP_Relation retrieveBillToRelationOrNull(
 			@NonNull final BPartnerId bPartnerId,
 			@Nullable final Integer bPartnerLocationRepoId)
 	{
@@ -1133,7 +1130,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		// no location context => partner-wide relation first, then the partner-only lookup as it was before the per-location resolution
-		final I_C_BP_Relation partnerWideRelation = retrieveBillToBPartnerRelationOrNull(bPartnerId, null);
+		final I_C_BP_Relation partnerWideRelation = retrievePartnerWideBillToRelationOrNull(bPartnerId);
 		final I_C_BP_Relation billtoRelation = partnerWideRelation != null
 				? partnerWideRelation
 				: queryBL.createQueryBuilder(I_C_BP_Relation.class)
