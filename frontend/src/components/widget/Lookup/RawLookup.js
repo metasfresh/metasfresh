@@ -201,13 +201,43 @@ export class RawLookup extends Component {
   handleSelect = (selectedItem, isMouseEvent = false) => {
     this.setState({ selected: null });
 
-    if (selectedItem?.key === KEY_New) {
+    if (this.isNothingSelectedForTypedText(selectedItem)) {
+      this.restorePreviousValue(isMouseEvent);
+    } else if (selectedItem?.key === KEY_New) {
       this.handleSelect_AddNew();
     } else if (selectedItem?.key === KEY_AdvancedSearch) {
       this.handleSelect_AdvancedSearch();
     } else {
       this.handleSelect_RegularItem(selectedItem, isMouseEvent);
     }
+  };
+
+  /**
+   * @method isNothingSelectedForTypedText
+   * @summary True when Enter was pressed on typed text that matched nothing: the dropdown
+   * hands over no item at all (`null`, or `undefined` in a modal) while the input still holds
+   * text. A deliberate clear is different and stays a clear: the input is blank, or the
+   * "none" entry (an item with key `null`) was picked.
+   */
+  isNothingSelectedForTypedText = (selectedItem) => {
+    return (
+      selectedItem == null &&
+      !!this.inputSearch &&
+      !isBlank(this.inputSearch.value)
+    );
+  };
+
+  /**
+   * @method restorePreviousValue
+   * @summary Puts the last valid value back into the input and closes the dropdown, without
+   * committing anything - the same outcome as leaving the field (`handleInputTextBlur`).
+   */
+  restorePreviousValue = (isMouseEvent) => {
+    const { defaultValue } = this.props;
+
+    this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
+
+    this.handleDropdownBlur(isMouseEvent);
   };
 
   handleSelect_AddNew = () => {
