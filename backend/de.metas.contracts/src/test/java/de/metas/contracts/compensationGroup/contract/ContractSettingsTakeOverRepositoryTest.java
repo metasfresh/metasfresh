@@ -7,12 +7,16 @@ import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,13 +50,17 @@ class ContractSettingsTakeOverRepositoryTest
 	private static final ProductId PRODUCT_P_ID = ProductId.ofRepoId(201); // own-line discount product
 	private static final ProductId PRODUCT_Q_ID = ProductId.ofRepoId(202); // customer discount product of the take-over
 	private static final ProductId PRODUCT_R_ID = ProductId.ofRepoId(203); // not a customer discount product of the take-over
+	private static final ProductCategoryId OTHER_CATEGORY_ID = ProductCategoryId.ofRepoId(102);
 
+	private IQueryBL queryBLSpy;
 	private ContractSettingsTakeOverRepository takeOverRepository;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBLSpy = Mockito.spy(Services.get(IQueryBL.class));
+		Services.registerService(IQueryBL.class, queryBLSpy); // before the repository picks up IQueryBL
 		takeOverRepository = ContractSettingsTakeOverRepository.newInstanceForUnitTesting();
 	}
 
@@ -73,6 +81,38 @@ class ContractSettingsTakeOverRepositoryTest
 				.ownLineProductId(PRODUCT_P_ID)
 				.customerDiscountProductIds(ImmutableSet.of(PRODUCT_Q_ID))
 				.build());
+	}
+
+	@Test
+	void getBySettingsId_secondReadOfTheSameSettings_runsNoQuery()
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettings();
+		createCustomerDiscountProduct(createTakeOver(settingsId, true), PRODUCT_Q_ID, true);
+		final List<ContractSettingsTakeOver> firstRead = takeOverRepository.getBySettingsId(settingsId);
+		Mockito.clearInvocations(queryBLSpy);
+
+		final List<ContractSettingsTakeOver> secondRead = takeOverRepository.getBySettingsId(settingsId);
+
+		assertThat(secondRead).isEqualTo(firstRead);
+		Mockito.verify(queryBLSpy, Mockito.never()).createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		Mockito.verify(queryBLSpy, Mockito.never()).createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
+	}
+
+	@Test
+	void getBySettingsId_savingATakeOverOrACustomerDiscountProduct_isSeenByTheNextRead()
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettings();
+		final ContractSettingsTakeOverId takeOverId = createTakeOver(settingsId, true);
+		createCustomerDiscountProduct(takeOverId, PRODUCT_Q_ID, true);
+		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getProductCategoryId).containsExactly(CATEGORY_ID);
+
+		final I_C_CompensationGroup_ContractSettings_TakeOver takeOverRecord = load(takeOverId, I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		takeOverRecord.setM_Product_Category_ID(OTHER_CATEGORY_ID.getRepoId());
+		saveRecord(takeOverRecord);
+		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getProductCategoryId).containsExactly(OTHER_CATEGORY_ID);
+
+		createCustomerDiscountProduct(takeOverId, PRODUCT_R_ID, true);
+		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getCustomerDiscountProductIds).containsExactly(ImmutableSet.of(PRODUCT_Q_ID, PRODUCT_R_ID));
 	}
 
 	@Test
