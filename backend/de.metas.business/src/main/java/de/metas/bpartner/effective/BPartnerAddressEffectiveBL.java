@@ -24,6 +24,7 @@ package de.metas.bpartner.effective;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -115,7 +116,7 @@ public class BPartnerAddressEffectiveBL
 	/**
 	 * Resolves the effective bill-to partner for the given partner location (e.g. an order's delivery location):
 	 * the location's own bill-to C_BP_Relation (IsBillTo=Y) if there is one, else the partner-level resolution
-	 * {@link BPartnerEffectiveBL#getEffectiveBillBPartner(de.metas.bpartner.BPartnerId)}
+	 * {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId)}
 	 * (partner-wide relation → deviating-bill-partner group → parent group → null).
 	 */
 	@Nullable

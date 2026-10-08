@@ -275,13 +275,14 @@ public class BPartnerEffectiveBL
 	@Nullable
 	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId)
 	{
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
+
 		final BillBPartnerResolution partnerWideRelationResolution = BillBPartnerResolution.ofBillToRelationOrNull(bpartnerDAO.retrievePartnerWideBillToRelationOrNull(bPartnerId));
 		if (partnerWideRelationResolution != null)
 		{
 			return partnerWideRelationResolution;
 		}
 
-		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
 		if (bpGroup.isDeviatingBillBPartner())
 		{

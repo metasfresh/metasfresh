@@ -774,12 +774,12 @@ public class C_Order
 		if (!InterfaceWrapperHelper.isUIAction(order)
 				&& providedBillBPartnerId != null
 				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId)
-				&& !isBillPartnerResolvedForPreviousLocation(order, bPartnerId))
+				&& !isBillPartnerResolvedForPreviousLocation(order))
 		{
 			return;
 		}
 
-		final BillBPartnerResolution resolution = resolveEffectiveBillBPartner(bPartnerId, order.getC_BPartner_Location_ID());
+		final BillBPartnerResolution resolution = resolveEffectiveBillBPartner(order);
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
@@ -803,12 +803,15 @@ public class C_Order
 	/**
 	 * The order's own location (if set) decides via {@link BPartnerAddressEffectiveBL#getEffectiveBillBPartner(BPartnerLocationId)};
 	 * without a location only the partner-level {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId)} applies.
-	 * The location ID is built from the given partner, so partner and location always belong together.
+	 * Partner and location are read from the same order record, so they always belong together.
+	 *
+	 * @param order the current order, or its old values (see {@link InterfaceWrapperHelper#createOld(Object, Class)})
 	 */
 	@Nullable
-	private BillBPartnerResolution resolveEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId, final int bPartnerLocationRepoId)
+	private BillBPartnerResolution resolveEffectiveBillBPartner(@NonNull final I_C_Order order)
 	{
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bPartnerLocationRepoId);
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
 		return bPartnerLocationId != null
 				? bpartnerAddressEffectiveBL.getEffectiveBillBPartner(bPartnerLocationId)
 				: bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
@@ -816,10 +819,10 @@ public class C_Order
 
 	/**
 	 * @return true if only the order's bpartner location changed and the current bill partner/location is exactly what
-	 * {@link #resolveEffectiveBillBPartner(BPartnerId, int)} resolves for the previous location,
+	 * {@link #resolveEffectiveBillBPartner(I_C_Order)} resolves for the previous location,
 	 * i.e. it was derived from that location and not explicitly provided.
 	 */
-	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order, @NonNull final BPartnerId bPartnerId)
+	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order)
 	{
 		if (!isOnlyBPartnerLocationChanged(order))
 		{
@@ -827,7 +830,7 @@ public class C_Order
 		}
 
 		final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-		final BillBPartnerResolution previousResolution = resolveEffectiveBillBPartner(bPartnerId, orderOld.getC_BPartner_Location_ID());
+		final BillBPartnerResolution previousResolution = resolveEffectiveBillBPartner(orderOld);
 		return previousResolution != null
 				&& BPartnerId.equals(previousResolution.getBillBPartnerId(), BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()))
 				&& BPartnerLocationId.equals(previousResolution.getBillLocationId(), BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()));

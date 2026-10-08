@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.effective;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Bill-to resolution for a partner location: the location's bill-to relation, else the partner-level resolution
- * ({@link BPartnerEffectiveBL#getEffectiveBillBPartner(de.metas.bpartner.BPartnerId)}).
+ * ({@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId)}).
  */
 public class BPartnerAddressEffectiveBLTest
 {
