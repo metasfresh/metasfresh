@@ -399,6 +399,8 @@ public class PaymentsViewAllocateCommandTest
 					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
 						assertThat(ex.isUserValidationError()).isTrue();
 						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner").toAD_Message());
+						// the message names the invoice and the partner as shown in the view (not a raw id)
+						assertThat(ex.getMessage()).contains(invoiceRow.getDocumentNo()).contains("BPartner");
 					});
 		}
 
