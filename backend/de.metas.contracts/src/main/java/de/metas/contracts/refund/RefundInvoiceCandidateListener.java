@@ -1,6 +1,5 @@
 package de.metas.contracts.refund;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
@@ -17,7 +16,6 @@ import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.function.Supplier;
 
 /**
  * Lets the invoice candidate update run assign an invoice candidate to the refund terms that match it but that it is not assigned to yet,
@@ -37,32 +35,10 @@ public final class RefundInvoiceCandidateListener implements IInvoiceCandidateLi
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	// the beans are looked up when they are needed, because this listener is registered before the application context is complete
-	private final Supplier<RefundContractRepository> refundContractRepository;
-	private final Supplier<RefundInvoiceCandidateService> refundInvoiceCandidateService;
-	private final Supplier<AssignableInvoiceCandidateRepository> assignableInvoiceCandidateRepository;
-	private final Supplier<CandidateAssignmentService> candidateAssignmentService;
-
-	public RefundInvoiceCandidateListener()
-	{
-		this(
-				() -> SpringContextHolder.instance.getBean(RefundContractRepository.class),
-				() -> SpringContextHolder.instance.getBean(RefundInvoiceCandidateService.class),
-				() -> SpringContextHolder.instance.getBean(AssignableInvoiceCandidateRepository.class),
-				() -> SpringContextHolder.instance.getBean(CandidateAssignmentService.class));
-	}
-
-	@VisibleForTesting
-	RefundInvoiceCandidateListener(
-			@NonNull final Supplier<RefundContractRepository> refundContractRepository,
-			@NonNull final Supplier<RefundInvoiceCandidateService> refundInvoiceCandidateService,
-			@NonNull final Supplier<AssignableInvoiceCandidateRepository> assignableInvoiceCandidateRepository,
-			@NonNull final Supplier<CandidateAssignmentService> candidateAssignmentService)
-	{
-		this.refundContractRepository = refundContractRepository;
-		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
-		this.assignableInvoiceCandidateRepository = assignableInvoiceCandidateRepository;
-		this.candidateAssignmentService = candidateAssignmentService;
-	}
+	private final SpringContextHolder.Lazy<RefundContractRepository> refundContractRepository = SpringContextHolder.lazyBean(RefundContractRepository.class);
+	private final SpringContextHolder.Lazy<RefundInvoiceCandidateService> refundInvoiceCandidateService = SpringContextHolder.lazyBean(RefundInvoiceCandidateService.class);
+	private final SpringContextHolder.Lazy<AssignableInvoiceCandidateRepository> assignableInvoiceCandidateRepository = SpringContextHolder.lazyBean(AssignableInvoiceCandidateRepository.class);
+	private final SpringContextHolder.Lazy<CandidateAssignmentService> candidateAssignmentService = SpringContextHolder.lazyBean(CandidateAssignmentService.class);
 
 	@Override
 	public void onAfterUpdated(@NonNull final I_C_Invoice_Candidate candidate)
