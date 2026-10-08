@@ -223,7 +223,7 @@ describe('TableRow — Escape restores the stored value, not the displayed text'
     }
   );
 
-  it('attribute (ProductAttributes) cell: Escape writes back the stored {key,caption}, never text', () => {
+  it('attribute (ProductAttributes) cell: Escape writes nothing, never text', () => {
     const property = 'M_AttributeSetInstance_ID';
     const updatePropertyValue = jest.fn();
     const wrapper = shallow(
@@ -236,10 +236,13 @@ describe('TableRow — Escape restores the stored value, not the displayed text'
     doubleClickCell(instance, property, '---');
     pressEscape(instance, property, '');
 
+    // An attribute cell is edited only in its popup, which saves on close; Escape has nothing to
+    // restore, and writing back the value captured on entry would overwrite a popup-saved value
+    // (TableRow.escapeAfterPopupSave.test.js). So: no write at all, and the row keeps its value.
     const writes = updatePropertyValue.mock.calls
       .map((args) => args[0])
       .filter((p) => p.property === property);
-    expect(writes).toHaveLength(1);
-    expect(writes[0].value).toEqual(storedValue);
+    expect(writes).toEqual([]);
+    expect(instance.getFieldValue(property)).toEqual(storedValue);
   });
 });

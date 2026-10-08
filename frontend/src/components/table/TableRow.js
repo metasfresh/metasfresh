@@ -21,6 +21,14 @@ import PropTypes from 'prop-types';
 // A single letter or digit (any script), as reported by KeyboardEvent.key
 const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
 
+// widgets whose value is a {key, caption} object; Escape never writes their pre-edit value back
+const OBJECT_VALUED_WIDGET_TYPES = [
+  'Lookup',
+  'List',
+  'Address',
+  'ProductAttributes',
+];
+
 /**
  * @file Class based component.
  * @module TableRow
@@ -95,13 +103,15 @@ class TableRow extends PureComponent {
   /**
    * @method isObjectValuedWidget
    * @summary True when the field's value is a {key, caption} object, i.e. its widget is a
-   * Lookup or a List.
+   * Lookup, a List or an attribute widget (Address, ProductAttributes). An attribute widget's
+   * value is saved by its popup while the cell stays in edit mode, so the value captured on
+   * entering edit mode is stale by the time the cell is left.
    *
    * @param {string} fieldName - the cell's field name
    */
   isObjectValuedWidget = (fieldName) => {
     const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
-    return widgetType === 'Lookup' || widgetType === 'List';
+    return OBJECT_VALUED_WIDGET_TYPES.includes(widgetType);
   };
 
   /**
