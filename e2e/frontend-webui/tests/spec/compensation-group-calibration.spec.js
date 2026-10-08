@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { waitForRecordSaved } from '../utils/WebAPIValidation';
+import { getSaveStatus, getValidationStatus, waitForRecordSaved } from '../utils/WebAPIValidation';
 import { LookupWidget } from '../utils/widgets/LookupWidget';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { NumericWidget } from '../utils/widgets/NumericWidget';
@@ -36,7 +36,8 @@ import { openReferencesPanel, waitForReferences, waitForReferencesComplete } fro
  * order lines through the testing backend.
  *
  *   Part 1  rule window "Kalibrierungsregeln": rules in SeqNo order under a filter, a rule created through the
- *           window (rejected until customer or group is set), a decimal percent factor (66,7) entered and re-read
+ *           window (customer and group both mandatory until one is set, not saved before), a decimal percent
+ *           factor (66,7) entered and re-read
  *   Part 2  orders through the quick input: Kindergarten (calibrated), Krankenhaus (no rule, group hidden),
  *           a quotation for Kindergarten, Kita B (decimal percent factor on the line)
  *   Part 3  a used rule cannot be deleted (deactivate-instead message); a deactivated rule still shows by name on
@@ -66,6 +67,24 @@ const RULES_WINDOW_ID = 542195;
 const MSG_PARTNER_OR_GROUP_REQUIRED = 'Kunde oder Geschäftspartnergruppe muss gesetzt sein.';
 const MSG_USED_DEACTIVATE_INSTEAD =
     'Die Kalibrierungsregel wird in Auftragspositionen verwendet und kann nicht gelöscht werden. Bitte deaktivieren Sie sie stattdessen.';
+
+// An empty mandatory lookup / list renders the language-invariant `.input-mandatory` marker (a list renders it twice).
+// Customer and group carry a conditional mandatory logic: each one is mandatory while the other one is empty.
+const PARTNER_MANDATORY_MARKER = '.form-field-C_BPartner_ID .input-mandatory';
+const GROUP_MANDATORY_MARKER = '.form-field-C_BP_Group_ID .input-mandatory';
+
+async function expectPartnerAndGroupMandatory(page) {
+    await expect(page.locator(PARTNER_MANDATORY_MARKER).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(page.locator(GROUP_MANDATORY_MARKER).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+}
+
+// read through the WebAPI: the rule is still new (not saved) because a mandatory field is empty
+async function expectRuleNotSaved(windowId, ruleId) {
+    const saveStatus = await getSaveStatus(windowId, ruleId);
+    expect(saveStatus.saved, `rule ${ruleId} must not be saved yet`).toBe(false);
+    const validation = await getValidationStatus(windowId, ruleId);
+    expect(validation.missingFields.map((f) => f.field)).toEqual(expect.arrayContaining(['C_BPartner_ID', 'C_BP_Group_ID']));
+}
 
 // data-cy of the Alt+6 related-documents entry: rule -> sales orders (AD_RelationType.InternalName)
 const RULE_TO_SALES_ORDERS_REFERENCE = 'reference-C_CompensationGroup_CalibrationRule_to_C_Order_SO';
@@ -162,21 +181,30 @@ test.describe('Compensation group calibration', () => {
             await expect(rule10Row.locator('[data-cy="cell-GroupCompensationCalibrationFactor"]')).toHaveText(/^50$/);
         });
 
-        await test.step('Part 1: a rule without customer and group is rejected; rule 20 entered through the window', async () => {
+        await test.step('Part 1: a new rule marks customer and group as mandatory and is not saved until one is set; rule 20 entered through the window', async () => {
             await newRuleThroughWindow(page, rulesWindowUrl);
-            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+            rule20Id = recordIdFromUrl(page);
 
-            // product and factor alone do not help: still rejected
+            // both fields are highlighted as mandatory, the rule is not saved, and no error is shown
+            await expectPartnerAndGroupMandatory(page);
+            await expectRuleNotSaved(rulesWindowId, rule20Id);
+            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toHaveCount(0);
+            await snap(page, 'rule-new-customer-and-group-mandatory');
+
+            // product and factor alone do not help: still both mandatory, still not saved, still no error
             await LookupWidget.setValue('M_Product_ID', haehnchen);
             await NumericWidget.setValue(FIELD_FACTOR, '60');
-            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toBeVisible();
-
-            // with the customer it is accepted
             await NumericWidget.setValue('SeqNo', 20);
+            await expectPartnerAndGroupMandatory(page);
+            await expectRuleNotSaved(rulesWindowId, rule20Id);
+            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toHaveCount(0);
+
+            // with the customer it is saved; the group is no longer required
             await LookupWidget.setValue('C_BPartner_ID', kindergarten);
-            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
-            rule20Id = recordIdFromUrl(page);
+            await expect(page.locator(PARTNER_MANDATORY_MARKER)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.locator(GROUP_MANDATORY_MARKER)).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
             await waitForRecordSaved(rulesWindowId, rule20Id, { maxRetries: 20, retryDelayMs: 1000 });
+            await expect(page.getByText(MSG_PARTNER_OR_GROUP_REQUIRED)).toHaveCount(0);
             await snap(page, 'rule-20-detail');
         });
 
