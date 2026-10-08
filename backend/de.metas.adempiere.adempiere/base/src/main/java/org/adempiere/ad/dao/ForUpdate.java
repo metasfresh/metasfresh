@@ -74,6 +74,9 @@ public enum ForUpdate
 	 * A locked row cannot be deleted by another transaction until the lock holder's transaction ends.
 	 *
 	 * <p>Use this to safely create child rows that reference rows a concurrent transaction might delete.
+	 *
+	 * <p>Like every locking clause, the lock is held until the enclosing transaction ends; a query run without a transaction
+	 * (auto-commit) releases it right away, so it then has no effect beyond skipping rows that are locked at that moment.
 	 */
 	FOR_KEY_SHARE_SKIP_LOCKED("FOR KEY SHARE SKIP LOCKED");
 

@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -118,6 +119,19 @@ public abstract class ShipmentScheduleHandler
 	 * to retrieve everything in one go.
 	 */
 	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName, QueryLimit limit);
+
+	/**
+	 * @return a query builder for the records of {@link #getSourceTable()} that are still missing shipment schedules, i.e. with the
+	 * same condition as {@link #retrieveModelsWithMissingCandidates(Properties, String, QueryLimit)}, but without ordering or limit.
+	 * The framework adds a filter on a retrieved model's ID to this builder, in order to lock that model's record only if it still
+	 * needs shipment schedules right before creating them.
+	 * <p>
+	 * The default implementation matches every record of the source table, so only the record's existence is checked.
+	 */
+	public IQueryBuilder<?> createModelsWithMissingCandidatesQueryBuilder(@NonNull final Properties ctx, @Nullable final String trxName)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(getSourceTable(), ctx, trxName);
+	}
 
 	/**
 	 * Creates missing candidates for the given model.

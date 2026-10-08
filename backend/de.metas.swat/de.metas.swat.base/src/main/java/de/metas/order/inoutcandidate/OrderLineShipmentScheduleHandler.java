@@ -43,6 +43,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -413,6 +414,21 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			final String trxName,
 			@NonNull final QueryLimit limit)
 	{
+		// Note: the query limit is pushed down here (not only enforced by the caller's processing budget) so that
+		// OPTION_GuaranteedIteratorRequired below only ever materializes a selection of up to `limit` rows instead of
+		// the whole (potentially huge, tens-of-thousands rows) missing-schedule backlog on every batch run.
+		return createModelsWithMissingCandidatesQueryBuilder(ctx, trxName)
+				.orderBy().addColumn(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).endOrderBy()
+				.setLimit(limit)
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_OrderLine.class);
+	}
+
+	@Override
+	public IQueryBuilder<I_C_OrderLine> createModelsWithMissingCandidatesQueryBuilder(@NonNull final Properties ctx, @Nullable final String trxName)
+	{
 		// task 08896: don't use the where clause with all those INs.
 		// Its performance can turn catastrophic for large numbers or orderlines and orders.
 		// Instead use an efficient view (i.e. C_OrderLine_ID_With_Missing_ShipmentSchedule) and (bad enough) use an in because we still need to select from *one* table.
@@ -420,20 +436,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
 		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
-		// Note: the query limit is pushed down here (not only enforced by the caller's processing budget) so that
-		// OPTION_GuaranteedIteratorRequired below only ever materializes a selection of up to `limit` rows instead of
-		// the whole (potentially huge, tens-of-thousands rows) missing-schedule backlog on every batch run.
 		return queryBL
-				.createQueryBuilder(I_C_OrderLine.class)
+				.createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.filter(orderLinesFilter)
-				.addOnlyContextClient(ctx)
-				.orderBy().addColumn(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).endOrderBy()
-				.setLimit(limit)
-				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
-				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
-				.iterate(I_C_OrderLine.class);
+				.addOnlyContextClient(ctx);
 	}
 
 	/**
