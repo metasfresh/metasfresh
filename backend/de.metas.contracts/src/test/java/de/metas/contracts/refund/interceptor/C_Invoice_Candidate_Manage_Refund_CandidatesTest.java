@@ -1,5 +1,7 @@
 package de.metas.contracts.refund.interceptor;
 
+import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -63,7 +65,7 @@ public class C_Invoice_Candidate_Manage_Refund_CandidatesTest
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
 				new RefundConfigChangeService(assignmentToRefundCandidateRepository, moneyService, refundInvoiceCandidateService),
-				new RefundPackagingFilter(Optional.empty()));
+				new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()));
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Invoice_Candidate_Manage_Refund_Candidates(
 				refundInvoiceCandidateRepository,

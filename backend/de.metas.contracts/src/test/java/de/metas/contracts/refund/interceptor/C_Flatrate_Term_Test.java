@@ -118,6 +118,21 @@ public class C_Flatrate_Term_Test
 		Mockito.verify(refundContractRepository).resetCaches();
 	}
 
+	/**
+	 * Same for a reactivated term (void and close are prohibited for all terms): a contract id that was cached before the commit
+	 * would keep matching, and the update run would assign invoice candidates to a term that is no longer completed.
+	 */
+	@Test
+	public void reactivate_resetsTheCachesOfTheRefundContractsAfterCommit()
+	{
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		// invoke the method under test; there is no transaction, so the after-commit listener runs right away
+		interceptor.deleteRefundInvoiceCandidates(term);
+
+		Mockito.verify(refundContractRepository).resetCaches();
+	}
+
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)
 	{
 		final I_C_InvoiceSchedule schedule = newInstance(I_C_InvoiceSchedule.class);

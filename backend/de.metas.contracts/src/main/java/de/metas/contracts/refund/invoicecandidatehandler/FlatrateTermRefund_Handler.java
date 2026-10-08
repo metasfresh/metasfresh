@@ -74,6 +74,13 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 public class FlatrateTermRefund_Handler
 		implements ConditionTypeSpecificInvoiceCandidateHandler
 {
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	// this handler is instantiated by the invoice candidate handler framework, not by Spring
+	@NonNull private final SpringContextHolder.Lazy<RefundContractRepository> refundContractRepository = SpringContextHolder.lazyBean(RefundContractRepository.class);
+
 	@Override
 	public String getConditionsType()
 	{
@@ -131,15 +138,13 @@ public class FlatrateTermRefund_Handler
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		final RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
-		final RefundContract refundContract = refundContractRepository.getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
+		final RefundContract refundContract = refundContractRepository.get().getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
 		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundContract.getRefundConfigs());
 		if (refundProductId == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
 		{
 			return PriceAndTax.NONE;
 		}
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final OrgId orgId = OrgId.ofRepoId(invoiceCandidateRecord.getAD_Org_ID());
 		final SOTrx soTrx = SOTrx.ofBoolean(invoiceCandidateRecord.isSOTrx());
 		// a refund candidate gets its date ordered from the invoice schedule when it is created (RefundInvoiceCandidateFactory)
@@ -157,9 +162,9 @@ public class FlatrateTermRefund_Handler
 						Quantitys.of(ONE, refundProductId),
 						soTrx)
 				.setReferencedObject(invoiceCandidateRecord)
-				.setPriceDate(TimeUtil.asLocalDate(taxDate, Services.get(IOrgDAO.class).getTimeZone(orgId)));
+				.setPriceDate(TimeUtil.asLocalDate(taxDate, orgDAO.getTimeZone(orgId)));
 		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(invoiceCandidateRecord).getBPartnerLocationAndCaptureId();
-		pricingContext.setCountryId(Services.get(IBPartnerDAO.class).getCountryId(billLocationId.getBpartnerLocationId()));
+		pricingContext.setCountryId(bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId()));
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(invoiceCandidateRecord.getM_PricingSystem_ID());
 		if (pricingSystemId != null)
 		{
@@ -172,7 +177,7 @@ public class FlatrateTermRefund_Handler
 			return PriceAndTax.NONE;
 		}
 
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+		final TaxId taxId = taxBL.getTaxNotNull(
 				invoiceCandidateRecord,
 				pricingResult.getTaxCategoryId(),
 				refundProductId.getRepoId(),

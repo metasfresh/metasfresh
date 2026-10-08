@@ -157,15 +157,23 @@ export async function selectLookupPartByKey(page, fieldName, key) {
   return await selectOptionByKey(page, page.locator(`#lookup_${fieldName} input.input-field`).first(), fieldName, key);
 }
 
+async function selectOptionByKey(page, input, fieldName, key) {
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
+  return await pickListOption(page, input, fieldName, option, key);
+}
+
 /**
+ * Click the input and pick the given option, then wait until the field's PATCH (of the given key, or of any
+ * value if the key is undefined) has been committed and the dropdown is closed.
+ *
  * A field that offers a single option selects it by itself as soon as its values have loaded
  * (ListWidget.requestListData, forceSelection): then the PATCH already goes out on the input click and the
  * dropdown may close again before the option can be clicked. So the commit is awaited from the input
  * click on, and the option is clicked only if it shows up before that commit.
+ * @returns the committed PATCH response
  */
-async function selectOptionByKey(page, input, fieldName, key) {
-  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
+async function pickListOption(page, input, fieldName, option, key) {
   let committed = false;
   const response = await withFieldCommit(page, fieldName, async () => {
     const autoCommit = page.waitForResponse((r) => isFieldPatch(r, fieldName, key), { timeout: SLOW_ACTION_TIMEOUT })
@@ -196,35 +204,14 @@ function isFieldPatch(response, fieldName, key) {
 }
 
 /**
- * Open a list field and pick its first offered option.
- *
- * A field that offers a single option selects it by itself as soon as its values have loaded
- * (ListWidget.requestListData, forceSelection): the PATCH then goes out on the input click and the
- * dropdown may close before the option can be clicked. So the commit is awaited from the input click
- * on (like {@link selectOptionByKey}), and the option is clicked only if it shows up before that commit.
+ * Open a list field and pick its first offered option (see {@link pickListOption} for a field that selects its single option by itself).
  * @returns the key of the picked option, read from the committed PATCH
  */
 export async function selectFirstListOption(page, scope, fieldName) {
   const input = scope.locator(`.form-field-${fieldName} input`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   const option = page.locator('.input-dropdown-list [data-testid^="option-"]').first();
-  let committed = false;
-  const response = await withFieldCommit(page, fieldName, async () => {
-    const autoCommit = page.waitForResponse((r) => isFieldPatch(r, fieldName, undefined), { timeout: SLOW_ACTION_TIMEOUT })
-      .then(() => { committed = true; }, () => {});
-    await input.click();
-    const optionShown = option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }).then(() => true, () => false);
-    await Promise.race([autoCommit, optionShown]);
-    if (!committed) {
-      await option.click();
-    }
-  });
-  if (committed && (await page.locator('.input-dropdown-list').count()) > 0) {
-    // the auto-selected value is committed, but the dropdown may stay open; leave the field
-    // (Escape would close an enclosing modal)
-    await input.press('Tab');
-  }
-  await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
+  const response = await pickListOption(page, input, fieldName, option, undefined);
   const change = response.request().postDataJSON().find((c) => c.path === fieldName);
   return lookupKey(change.value);
 }

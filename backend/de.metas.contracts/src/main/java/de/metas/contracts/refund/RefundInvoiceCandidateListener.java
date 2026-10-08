@@ -11,6 +11,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
@@ -22,20 +23,33 @@ import java.util.function.Supplier;
  * Lets the invoice candidate update run assign an invoice candidate to the refund terms that match it but that it is not assigned to yet,
  * e.g. because the term was completed after the invoice candidate was invoiced.
  * Like every other refund assignment, this is done by the update run only, never by the thread that completes the term.
+ * <p>
+ * Transaction contract: the update run ({@code InvoiceCandInvalidUpdater}) calls this listener right after it saved the candidate,
+ * within the transaction of the current chunk of candidates; that chunk is committed even if single candidates fail, and without savepoints per candidate.
+ * Therefore the assignment of one candidate to all its matching terms is done in a savepoint of that transaction:
+ * if it fails (e.g. for the second of two terms), it is rolled back as a whole, so no half-assigned state is committed with the chunk,
+ * and a database transaction that was aborted by an SQL error is usable again for the rest of the chunk.
+ * The error is recorded as an {@code AD_Issue}; the candidate itself stays updated, and its refund assignment is retried the next time it is updated.
  */
 public final class RefundInvoiceCandidateListener implements IInvoiceCandidateListener
 {
-	public static final RefundInvoiceCandidateListener instance = new RefundInvoiceCandidateListener(
-			() -> SpringContextHolder.instance.getBean(RefundContractRepository.class),
-			() -> SpringContextHolder.instance.getBean(RefundInvoiceCandidateService.class),
-			() -> SpringContextHolder.instance.getBean(AssignableInvoiceCandidateRepository.class),
-			() -> SpringContextHolder.instance.getBean(CandidateAssignmentService.class));
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	// the beans are looked up when they are needed, because this listener is registered before the application context is complete
 	private final Supplier<RefundContractRepository> refundContractRepository;
 	private final Supplier<RefundInvoiceCandidateService> refundInvoiceCandidateService;
 	private final Supplier<AssignableInvoiceCandidateRepository> assignableInvoiceCandidateRepository;
 	private final Supplier<CandidateAssignmentService> candidateAssignmentService;
+
+	public RefundInvoiceCandidateListener()
+	{
+		this(
+				() -> SpringContextHolder.instance.getBean(RefundContractRepository.class),
+				() -> SpringContextHolder.instance.getBean(RefundInvoiceCandidateService.class),
+				() -> SpringContextHolder.instance.getBean(AssignableInvoiceCandidateRepository.class),
+				() -> SpringContextHolder.instance.getBean(CandidateAssignmentService.class));
+	}
 
 	@VisibleForTesting
 	RefundInvoiceCandidateListener(
@@ -74,13 +88,16 @@ public final class RefundInvoiceCandidateListener implements IInvoiceCandidateLi
 				return;
 			}
 
-			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.get().ofRecord(candidate);
-			candidateAssignmentService.get().assignToNewlyMatchingContracts(assignableCandidate);
+			// all or nothing: on failure, the savepoint is rolled back and the exception rethrown
+			trxManager.runInThreadInheritedTrx(() -> {
+				final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.get().ofRecord(candidate);
+				candidateAssignmentService.get().assignToNewlyMatchingContracts(assignableCandidate);
+			});
 		}
 		catch (final RuntimeException e)
 		{
 			// the invoice candidate itself is updated, even if something is wrong with its refund
-			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			final AdIssueId issueId = errorManager.createIssue(e);
 			Loggables.addLog("Caught an exception while assigning C_Invoice_Candidate_ID={} to refund terms; AD_Issue_ID={}; e={}", candidate.getC_Invoice_Candidate_ID(), issueId, e.toString());
 		}
 	}
