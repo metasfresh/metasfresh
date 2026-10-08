@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { F2_KEY } from '../../constants/Constants';
 import {
+  ATTRIBUTE_WIDGET_TYPES,
+  COMBOBOX_WIDGET_TYPES,
   getCellWidgetData,
   getDescription,
   getIconClassName,
@@ -23,10 +25,8 @@ const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
 
 // widgets whose value is a {key, caption} object; Escape never writes their pre-edit value back
 const OBJECT_VALUED_WIDGET_TYPES = [
-  'Lookup',
-  'List',
-  'Address',
-  'ProductAttributes',
+  ...COMBOBOX_WIDGET_TYPES,
+  ...ATTRIBUTE_WIDGET_TYPES,
 ];
 
 /**
