@@ -68,6 +68,8 @@ import lombok.NonNull;
 @Service
 public class AssignableInvoiceCandidateFactory
 {
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final CurrencyRepository currenciesRepo;
 
@@ -150,11 +152,11 @@ public class AssignableInvoiceCandidateFactory
 	}
 
 	@Nullable
-	private static HUPIItemProductId extractHUPIItemProductId(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	private HUPIItemProductId extractHUPIItemProductId(@NonNull final I_C_Invoice_Candidate assignableRecord)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID());
 		return orderLineId != null
-				? OrderLinePackingInstructions.extractHUPIItemProductId(Services.get(IOrderDAO.class).getOrderLineById(orderLineId))
+				? OrderLinePackingInstructions.extractHUPIItemProductId(orderDAO.getOrderLineById(orderLineId))
 				: null;
 	}
 

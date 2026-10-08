@@ -64,7 +64,7 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	private static final CountryId COUNTRY_ID = CountryId.ofRepoId(78);
 	private static final LocalDate DATE_ORDERED = LocalDate.of(2026, 7, 31);
 
-	private final FlatrateTermRefund_Handler handler = new FlatrateTermRefund_Handler();
+	private FlatrateTermRefund_Handler handler;
 	private I_C_InvoiceSchedule invoiceSchedule;
 	private IPricingBL pricingBL;
 	private ITaxBL taxBL;
@@ -98,6 +98,8 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 		final IBPartnerDAO bpartnerDAO = Mockito.mock(IBPartnerDAO.class);
 		when(bpartnerDAO.getCountryId(any(BPartnerLocationId.class))).thenReturn(COUNTRY_ID);
 		Services.registerService(IBPartnerDAO.class, bpartnerDAO);
+
+		handler = new FlatrateTermRefund_Handler(); // after the services are registered, because it holds them as fields
 
 		invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
 		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
