@@ -93,6 +93,7 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
       | svcBP       | Y              | contractPS                    |
       | crateOnlyBP | Y              | contractPS                    |
       | reactBP     | Y              | contractPS                    |
+      | retryBP     | Y              | contractPS                    |
 
   # ##############################################################################################
   # Reference case: goods 3 % on every goods line, carton bonus 0,6 % only on carton-packed lines.
@@ -652,3 +653,123 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_reaGoodsBonus2         | orderRea              | discountGoods           | 1          | true                        | 3                               | -49.92 | reaTerm                           |
       | ol_reaCartonBonus2        | orderRea              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | reaTerm                           |
+
+
+  # ##############################################################################################
+  # A completion that runs into a DB deadlock is rolled back and retried by the document engine;
+  # the retried completion creates the same compensation group as an undisturbed one.
+  # Same order and amounts as above, but both the first completion (drafted order) and the
+  # completion after the reactivation (in-progress order) run into one deadlock each;
+  # all steps work on the same order instance, as one caller would.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32353_TC71
+  Scenario: A completion retried after a DB deadlock still creates the carton-base compensation group
+    Given metasfresh contains M_HU_PI:
+      | Identifier    |
+      | piRtyCarton10 |
+      | piRtyCrate    |
+      | piRtyCarton12 |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier     | M_HU_PI_ID.Identifier | HU_UnitType | IsCurrent |
+      | piRtyCarton10V | piRtyCarton10         | TU          | Y         |
+      | piRtyCrateV    | piRtyCrate            | TU          | Y         |
+      | piRtyCarton12V | piRtyCarton12         | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier        | M_HU_PI_Version_ID.Identifier | Qty | ItemType | M_HU_PackingMaterial_ID.Identifier |
+      | piRtyCarton10Item | piRtyCarton10V                | 0   | PM       | pmCarton10                         |
+      | piRtyCrateItem    | piRtyCrateV                   | 0   | PM       | pmCrate                            |
+      | piRtyCarton12Item | piRtyCarton12V                | 0   | PM       | pmCarton12                         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier           | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | pipRtyCarton10       | piRtyCarton10Item          | goodsA                  | 10  |
+      | pipRtyCrate          | piRtyCrateItem             | goodsB                  | 10  |
+      | pipRtyCarton12       | piRtyCarton12Item          | goodsC                  | 12  |
+      | pipRtyCrateNowCarton | piRtyCarton10Item          | goodsB                  | 10  |
+
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier | Name                                         | OPT.IsAdditive |
+      | rtySchema  | Bonus Ware 3% + Karton 0,6% (deadlock retry) | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier    | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier | OPT.M_Product_Category_PackingMaterial_ID.Identifier |
+      | rtyLineGoods  | rtySchema                                | discountGoods           | 3                         | goods_cat                            |                                                      |
+      | rtyLineCarton | rtySchema                                | discountCarton          | 0.6                       | goods_cat                            | carton_cat                                           |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier  | Name                                                  | C_CompensationGroup_Schema_ID.Identifier |
+      | rtySettings | Bonus Ware 3% + Karton 0,6% (deadlock retry) settings | rtySchema                                |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | rtySettings                                        | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier    | Name                                                    | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | rtyConditions | Bonus Ware 3% + Karton 0,6% (deadlock retry) conditions | CompensationGroup | zeroDurTrans                            | rtySettings                                            |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | rtyTerm    | rtyConditions                       | retryBP                     | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by rtyTerm is completed
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | orderRty   | true    | retryBP                  | 2026-07-01  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_rty10   | orderRty              | goodsA                  | 600        | pipRtyCarton10                         |
+      | ol_rty20   | orderRty              | goodsB                  | 400        | pipRtyCrate                            |
+      | ol_rty30   | orderRty              | goodsC                  | 360        | pipRtyCarton12                         |
+
+    # an AFTER_COMPLETE interceptor saves the order before the deadlock, so that save also writes what prepareIt()/approveIt() set
+    # (C_DocType_ID, IsApproved); it is rolled back, and the retried completion has to write these values again
+    And the next completion of the order identified by orderRty saves the order with the description 'saved by the first completion attempts' and then runs into a DB deadlock once
+    And the order identified by orderRty is completed
+    And the completion of the order identified by orderRty did run into the DB deadlock
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 2031.02    | docTypeSalesOrder       | true       |
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_rtyGoodsBonus          | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
+      | ol_rtyCartonBonus         | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -7.34  | rtyTerm                           |
+
+    # a user reactivates an order whose invoice candidates already exist
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | ol_rty10                  | ic_rty10                          |
+      | ol_rty20                  | ic_rty20                          |
+      | ol_rty30                  | ic_rty30                          |
+      | ol_rtyGoodsBonus          | ic_rtyGoodsBonus                  |
+      | ol_rtyCartonBonus         | ic_rtyCartonBonus                 |
+
+    # a user re-packs line 20 into a carton and completes the order again
+    When the order identified by orderRty is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | ol_rty20                  | pipRtyCrateNowCarton        |
+    # the same order save before the deadlock; C_DocType_ID and IsApproved are kept by the reactivation, so here they stay right even
+    # if the retry does not write them (only the first completion above detects that)
+    And the next completion of the order identified by orderRty saves the order with the description 'saved by the re-completion attempts' and then runs into a DB deadlock once
+    And the order identified by orderRty is completed
+    And the completion of the order identified by orderRty did run into the DB deadlock
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 1908.88    | docTypeSalesOrder       | true       |
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_rtyGoodsBonus2         | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
+      | ol_rtyCartonBonus2        | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | rtyTerm                           |
+
+    # the same order instance, after its retried completions, is reactivated and completed again without a deadlock
+    When the order identified by orderRty is reactivated
+    And the order identified by orderRty is completed
+    And validate the created orders
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 1908.88    | docTypeSalesOrder       | true       |
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_rtyGoodsBonus3         | orderRty              | discountGoods           | 1          | true                        | 3                               | -49.92 | rtyTerm                           |
+      | ol_rtyCartonBonus3        | orderRty              | discountCarton          | 1          | true                        | 0.6                             | -9.98  | rtyTerm                           |
