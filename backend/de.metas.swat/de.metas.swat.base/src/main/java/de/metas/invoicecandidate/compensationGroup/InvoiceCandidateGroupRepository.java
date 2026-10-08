@@ -317,7 +317,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.lineNetAmt(lineNetAmt)
 				.appliesToProductCategoryId(base.getProductCategoryId())
 				.packingMaterialProductCategoryId(base.getPackingMaterialProductCategoryId())
-				.ownBase(origin.isOwnBase())
+				.isOwnBase(origin.isOwnBase())
 				.build();
 	}
 

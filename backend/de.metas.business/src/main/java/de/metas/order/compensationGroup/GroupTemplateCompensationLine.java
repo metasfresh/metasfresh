@@ -54,8 +54,8 @@ public class GroupTemplateCompensationLine
 	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
 	@Nullable ProductCategoryId packingMaterialProductCategoryId;
 
-	/** see {@link GroupCompensationLine#hasOwnBase()} */
-	boolean ownBase;
+	/** see {@link GroupCompensationLine#isOwnBase()} */
+	boolean isOwnBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine} (e.g. how a taken-over discount percentage is composed); {@code null} = none */
 	@Nullable String description;
@@ -69,7 +69,7 @@ public class GroupTemplateCompensationLine
 			@Nullable final GroupMatcher groupMatcher,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
 			@Nullable final ProductCategoryId packingMaterialProductCategoryId,
-			final boolean ownBase,
+			final boolean isOwnBase,
 			@Nullable final String description)
 	{
 		this.id = id;
@@ -79,7 +79,7 @@ public class GroupTemplateCompensationLine
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
 		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
-		this.ownBase = ownBase;
+		this.isOwnBase = isOwnBase;
 		this.description = description;
 	}
 

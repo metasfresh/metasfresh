@@ -3,6 +3,7 @@ package de.metas.order.compensationGroup;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -632,6 +633,29 @@ public class OrderGroupRepositoryTest
 		assertThat(baseByLineId.get(lineB)).isEqualTo(GroupCompensationBase.of(categoryB, null));
 		assertThat(baseByLineId.get(lineC)).isEqualTo(GroupCompensationBase.of(null, packingCategoryC));
 		assertThat(baseByLineId.get(manualLine).isNone()).isTrue();
+	}
+
+	/** The order path resolves the base of each schema-backed line and fails if the schema line does not exist (the column has no foreign key). */
+	@Test
+	void retrieveGroup_discountLineWhoseSchemaLineDoesNotExist_fails()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		final OrderLineId discountLineId = createDiscountLine(orderCompensationGroupId, null);
+		final I_C_OrderLine discountLine = InterfaceWrapperHelper.load(discountLineId, I_C_OrderLine.class);
+		discountLine.setC_CompensationGroup_SchemaLine_ID(999_999);
+		saveRecord(discountLine);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+
+		assertThatThrownBy(() -> repo.retrieveGroup(groupId))
+				.hasMessageContaining("No C_CompensationGroup_SchemaLine found");
 	}
 
 	private I_C_CompensationGroup_SchemaLine schemaLine(

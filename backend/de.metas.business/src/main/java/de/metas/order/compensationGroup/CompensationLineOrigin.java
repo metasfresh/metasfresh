@@ -25,6 +25,6 @@ public class CompensationLineOrigin
 
 	/** {@link GroupCompensationBase#NONE} = computed on the whole group's regular lines */
 	@NonNull GroupCompensationBase base;
-	/** see {@link GroupCompensationLine#hasOwnBase()} */
-	boolean ownBase;
+	/** see {@link GroupCompensationLine#isOwnBase()} */
+	boolean isOwnBase;
 }

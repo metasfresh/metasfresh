@@ -58,8 +58,8 @@ public class GroupCompensationLineCreateRequest
 	@Nullable
 	ProductCategoryId packingMaterialProductCategoryId;
 
-	/** see {@link GroupCompensationLine#hasOwnBase()} */
-	boolean ownBase;
+	/** see {@link GroupCompensationLine#isOwnBase()} */
+	boolean isOwnBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
 	@Nullable

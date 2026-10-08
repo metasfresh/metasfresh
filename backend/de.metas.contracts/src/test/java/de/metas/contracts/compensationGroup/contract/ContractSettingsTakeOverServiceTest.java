@@ -192,7 +192,7 @@ class ContractSettingsTakeOverServiceTest
 		final I_C_Order linkedSalesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
 		final OrderDropShipInfo dropShipSalesOrder = OrderDropShipInfo.builder()
 				.soTrx(SOTrx.SALES)
-				.dropShip(true)
+				.isDropShip(true)
 				.linkedOrderId(OrderId.ofRepoId(linkedSalesOrder.getC_Order_ID()))
 				.build();
 
@@ -344,7 +344,7 @@ class ContractSettingsTakeOverServiceTest
 				.compensationType(GroupCompensationType.Discount)
 				.percentage(Percent.of(3))
 				.appliesToProductCategoryId(CATEGORY_ID)
-				.ownBase(true)
+				.isOwnBase(true)
 				.description("3% Bonus Ware")
 				.build();
 	}
@@ -408,11 +408,11 @@ class ContractSettingsTakeOverServiceTest
 		return settingsRepository.getBySettingsId(ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID()));
 	}
 
-	private static OrderDropShipInfo purchaseOrder(final boolean dropShip, @Nullable final OrderId linkedOrderId)
+	private static OrderDropShipInfo purchaseOrder(final boolean isDropShip, @Nullable final OrderId linkedOrderId)
 	{
 		return OrderDropShipInfo.builder()
 				.soTrx(SOTrx.PURCHASE)
-				.dropShip(dropShip)
+				.isDropShip(isDropShip)
 				.linkedOrderId(linkedOrderId)
 				.build();
 	}

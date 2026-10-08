@@ -75,7 +75,7 @@ public class Group
 	@Getter
 	private final ConditionsId contractConditionsId;
 
-	/** If {@code true}, every compensation line is computed on the regular-line total of its own base (see {@link GroupCompensationLine#getBase()}); if {@code false} (default), compensation lines of the same base compound with each other, except lines with own base (see {@link GroupCompensationLine#hasOwnBase()}), which are always computed additively */
+	/** If {@code true}, every compensation line is computed on the regular-line total of its own base (see {@link GroupCompensationLine#getBase()}); if {@code false} (default), compensation lines of the same base compound with each other, except lines with own base (see {@link GroupCompensationLine#isOwnBase()}), which are always computed additively */
 	@Getter
 	private final boolean additive;
 
@@ -189,9 +189,9 @@ public class Group
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
 			final GroupCompensationBase base = compensationLine.getBase();
-			final boolean compounding = isCompounding(compensationLine);
+			final boolean isCompoundingLine = isCompounding(compensationLine);
 			final BigDecimal baseAmt;
-			if (!compounding)
+			if (!isCompoundingLine)
 			{
 				baseAmt = getRegularLinesNetAmt(base);
 			}
@@ -202,7 +202,7 @@ public class Group
 
 			updateCompensationLine(compensationLine, baseAmt);
 
-			if (compounding)
+			if (isCompoundingLine)
 			{
 				runningNetAmtsByBase.put(base, baseAmt.add(compensationLine.getLineNetAmt()));
 			}
@@ -246,7 +246,7 @@ public class Group
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.appliesToProductCategoryId(request.getAppliesToProductCategoryId())
 				.packingMaterialProductCategoryId(request.getPackingMaterialProductCategoryId())
-				.ownBase(request.isOwnBase())
+				.isOwnBase(request.isOwnBase())
 				.description(request.getDescription())
 				.build();
 
@@ -261,7 +261,7 @@ public class Group
 	 */
 	private boolean isCompounding(@NonNull final GroupCompensationLine compensationLine)
 	{
-		return !additive && !compensationLine.hasOwnBase();
+		return !additive && !compensationLine.isOwnBase();
 	}
 
 	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-base running total, for one new line */

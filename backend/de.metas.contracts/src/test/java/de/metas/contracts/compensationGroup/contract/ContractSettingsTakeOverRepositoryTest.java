@@ -109,31 +109,31 @@ class ContractSettingsTakeOverRepositoryTest
 		return ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID());
 	}
 
-	private static ContractSettingsTakeOverId createTakeOver(final ContractCompensationGroupSettingsId settingsId, final boolean active)
+	private static ContractSettingsTakeOverId createTakeOver(final ContractCompensationGroupSettingsId settingsId, final boolean isActive)
 	{
-		return createTakeOver(settingsId, CATEGORY_ID, active);
+		return createTakeOver(settingsId, CATEGORY_ID, isActive);
 	}
 
 	private static ContractSettingsTakeOverId createTakeOver(
 			final ContractCompensationGroupSettingsId settingsId,
 			final ProductCategoryId productCategoryId,
-			final boolean active)
+			final boolean isActive)
 	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 		record.setC_CompensationGroup_ContractSettings_ID(settingsId.getRepoId());
 		record.setM_Product_Category_ID(productCategoryId.getRepoId());
 		record.setM_Product_ID(PRODUCT_P_ID.getRepoId());
-		record.setIsActive(active);
+		record.setIsActive(isActive);
 		saveRecord(record);
 		return ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID());
 	}
 
-	private static ContractSettingsTakeOverProductId createCustomerDiscountProduct(final ContractSettingsTakeOverId takeOverId, final ProductId productId, final boolean active)
+	private static ContractSettingsTakeOverProductId createCustomerDiscountProduct(final ContractSettingsTakeOverId takeOverId, final ProductId productId, final boolean isActive)
 	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver_Product record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
 		record.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOverId.getRepoId());
 		record.setM_Product_ID(productId.getRepoId());
-		record.setIsActive(active);
+		record.setIsActive(isActive);
 		saveRecord(record);
 		return ContractSettingsTakeOverProductId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_Product_ID());
 	}

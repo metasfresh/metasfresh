@@ -218,7 +218,7 @@ public class GroupTests
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
 				.appliesToProductCategoryId(appliesToProductCategoryId)
-				.ownBase(true)
+				.isOwnBase(true)
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)

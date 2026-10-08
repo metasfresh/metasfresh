@@ -147,7 +147,7 @@ class InvoiceCandidateGroupRepositoryOwnBaseCategoryTest
 
 		final Group group = repo.retrieveGroup(groupId);
 
-		assertThat(group.getCompensationLines().get(0).hasOwnBase()).isTrue();
+		assertThat(group.getCompensationLines().get(0).isOwnBase()).isTrue();
 	}
 
 	/**
@@ -199,7 +199,7 @@ class InvoiceCandidateGroupRepositoryOwnBaseCategoryTest
 
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId())
 				.isEqualTo(ProductCategoryId.ofRepoId(888));
-		assertThat(group.getCompensationLines().get(0).hasOwnBase()).isFalse();
+		assertThat(group.getCompensationLines().get(0).isOwnBase()).isFalse();
 	}
 
 	@Test

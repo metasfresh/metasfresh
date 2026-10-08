@@ -37,12 +37,12 @@ import java.util.Optional;
 public class OrderDropShipInfo
 {
 	@NonNull SOTrx soTrx;
-	boolean dropShip;
+	boolean isDropShip;
 	@Nullable OrderId linkedOrderId;
 
 	/** @return the linked sales order, if this is a drop-ship purchase order */
 	public Optional<OrderId> getDropShipLinkedSalesOrderId()
 	{
-		return soTrx.isPurchase() && dropShip ? Optional.ofNullable(linkedOrderId) : Optional.empty();
+		return soTrx.isPurchase() && isDropShip ? Optional.ofNullable(linkedOrderId) : Optional.empty();
 	}
 }

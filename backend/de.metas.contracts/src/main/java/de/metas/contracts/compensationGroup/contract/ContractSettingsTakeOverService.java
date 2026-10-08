@@ -103,7 +103,7 @@ public class ContractSettingsTakeOverService
 				.compensationType(GroupCompensationType.Discount)
 				.percentage(match.getSummedPercent())
 				.appliesToProductCategoryId(takeOver.getProductCategoryId())
-				.ownBase(true)
+				.isOwnBase(true)
 				.description(createOwnLineDescription(match))
 				.build());
 	}

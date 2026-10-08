@@ -80,7 +80,7 @@ public class GroupCompensationLineCreateRequestFactory
 				.groupTemplateLineId(templateLine.getId())
 				.appliesToProductCategoryId(templateLine.getAppliesToProductCategoryId())
 				.packingMaterialProductCategoryId(templateLine.getPackingMaterialProductCategoryId())
-				.ownBase(templateLine.isOwnBase())
+				.isOwnBase(templateLine.isOwnBase())
 				.description(templateLine.getDescription())
 				.build();
 	}

@@ -154,7 +154,7 @@ public class ContractCompensationGroupService
 	{
 		return OrderDropShipInfo.builder()
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.dropShip(order.isDropShip())
+				.isDropShip(order.isDropShip())
 				.linkedOrderId(OrderId.ofRepoIdOrNull(order.getLink_Order_ID()))
 				.build();
 	}

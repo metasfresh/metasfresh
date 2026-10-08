@@ -78,7 +78,7 @@ public class OrderGroupRepository_OwnBase_Test
 	void ownBaseLine_storesItsCategoryOnTheOrderLine()
 	{
 		final I_C_OrderLine orderLine = createAndSaveCompensationLine(
-				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).ownBase(true).build());
+				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).isOwnBase(true).build());
 
 		assertThat(orderLine.getGroupCompensation_Product_Category_ID()).isEqualTo(categoryId.getRepoId());
 	}
@@ -93,11 +93,11 @@ public class OrderGroupRepository_OwnBase_Test
 		regularLine.setLineNetAmt(new BigDecimal("100"));
 		saveRecord(regularLine);
 		createAndSaveCompensationLine(
-				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).ownBase(true).build());
+				GroupTemplateCompensationLine.builder().productId(productId).percentage(Percent.of(10)).appliesToProductCategoryId(categoryId).isOwnBase(true).build());
 
 		final GroupCompensationLine reloadedLine = repo.retrieveGroup(groupId).getCompensationLines().get(0);
 
-		assertThat(reloadedLine.hasOwnBase()).isTrue();
+		assertThat(reloadedLine.isOwnBase()).isTrue();
 		assertThat(reloadedLine.getAppliesToProductCategoryId()).isEqualTo(categoryId);
 	}
 

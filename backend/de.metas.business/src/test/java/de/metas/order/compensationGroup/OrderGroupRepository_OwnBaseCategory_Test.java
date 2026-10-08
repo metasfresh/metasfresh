@@ -128,7 +128,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 		assertThat(group.getCompensationLines()).hasSize(1);
 		final GroupCompensationLine line = group.getCompensationLines().get(0);
 		assertThat(line.getBase()).isEqualTo(GroupCompensationBase.of(OWN_BASE_CATEGORY_ID, null));
-		assertThat(line.hasOwnBase()).isTrue();
+		assertThat(line.isOwnBase()).isTrue();
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 
 		final GroupCompensationLine line = group.getCompensationLines().get(0);
 		assertThat(line.getAppliesToProductCategoryId()).isEqualTo(SCHEMA_LINE_CATEGORY_ID);
-		assertThat(line.hasOwnBase()).isFalse();
+		assertThat(line.isOwnBase()).isFalse();
 	}
 
 	@Test
@@ -174,7 +174,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId()).isNull();
-		assertThat(group.getCompensationLines().get(0).hasOwnBase()).isFalse();
+		assertThat(group.getCompensationLines().get(0).isOwnBase()).isFalse();
 	}
 
 	@Test
@@ -243,11 +243,11 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 		return contractOrderId;
 	}
 
-	private static GroupTemplateId createSchema(final boolean additive)
+	private static GroupTemplateId createSchema(final boolean isAdditive)
 	{
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
 		schema.setName("Schema");
-		schema.setIsAdditive(additive);
+		schema.setIsAdditive(isAdditive);
 		saveRecord(schema);
 		return GroupTemplateId.ofRepoId(schema.getC_CompensationGroup_Schema_ID());
 	}

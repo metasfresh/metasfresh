@@ -583,7 +583,7 @@ public class OrderGroupRepository implements GroupRepository
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.appliesToProductCategoryId(base.getProductCategoryId())
 				.packingMaterialProductCategoryId(base.getPackingMaterialProductCategoryId())
-				.ownBase(extractOwnBaseProductCategoryIdOrNull(groupOrderLine) != null)
+				.isOwnBase(extractOwnBaseProductCategoryIdOrNull(groupOrderLine) != null)
 				.description(groupOrderLine.getDescription())
 				.build();
 	}
@@ -622,14 +622,14 @@ public class OrderGroupRepository implements GroupRepository
 
 	/**
 	 * @return the base of each given compensation line, with one bulk load of the schema lines: its schema line's base; for a line
-	 * without schema line, the product category stored on the line itself, without packing restriction (see {@link GroupCompensationLine#hasOwnBase()}),
+	 * without schema line, the product category stored on the line itself, without packing restriction (see {@link GroupCompensationLine#isOwnBase()}),
 	 * or {@link GroupCompensationBase#NONE} if none is stored.
 	 *
-	 * @param failOnMissingSchemaLine if {@code true}, a line whose schema line does not exist fails; otherwise it has base {@link GroupCompensationBase#NONE}
+	 * @param isFailOnMissingSchemaLine if {@code true}, a line whose schema line does not exist fails; otherwise it has base {@link GroupCompensationBase#NONE}
 	 */
 	private ImmutableMap<OrderLineId, GroupCompensationBase> retrieveCompensationLineBases(
 			@NonNull final List<I_C_OrderLine> compensationLines,
-			final boolean failOnMissingSchemaLine)
+			final boolean isFailOnMissingSchemaLine)
 	{
 		final ImmutableMap<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId = groupTemplateRepository.getBasesBySchemaLineId(
 				compensationLines.stream()
@@ -640,7 +640,7 @@ public class OrderGroupRepository implements GroupRepository
 		final ImmutableMap.Builder<OrderLineId, GroupCompensationBase> result = ImmutableMap.builder();
 		for (final I_C_OrderLine line : compensationLines)
 		{
-			result.put(OrderLineId.ofRepoId(line.getC_OrderLine_ID()), getBase(line, basesBySchemaLineId, failOnMissingSchemaLine));
+			result.put(OrderLineId.ofRepoId(line.getC_OrderLine_ID()), getBase(line, basesBySchemaLineId, isFailOnMissingSchemaLine));
 		}
 		return result.build();
 	}
@@ -648,7 +648,7 @@ public class OrderGroupRepository implements GroupRepository
 	private static GroupCompensationBase getBase(
 			@NonNull final I_C_OrderLine compensationLine,
 			@NonNull final Map<GroupTemplateLineId, GroupCompensationBase> basesBySchemaLineId,
-			final boolean failOnMissingSchemaLine)
+			final boolean isFailOnMissingSchemaLine)
 	{
 		final GroupTemplateLineId schemaLineId = OrderGroupCompensationUtils.extractGroupTemplateLineId(compensationLine);
 		if (schemaLineId == null)
@@ -661,7 +661,7 @@ public class OrderGroupRepository implements GroupRepository
 		{
 			return base;
 		}
-		if (failOnMissingSchemaLine)
+		if (isFailOnMissingSchemaLine)
 		{
 			throw new AdempiereException("No C_CompensationGroup_SchemaLine found for " + schemaLineId);
 		}
@@ -750,7 +750,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setDiscount(BigDecimal.ZERO);
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
-		compensationLinePO.setGroupCompensation_Product_Category_ID(compensationLine.hasOwnBase() ? ProductCategoryId.toRepoId(compensationLine.getAppliesToProductCategoryId()) : -1);
+		compensationLinePO.setGroupCompensation_Product_Category_ID(compensationLine.isOwnBase() ? ProductCategoryId.toRepoId(compensationLine.getAppliesToProductCategoryId()) : -1);
 		if (compensationLine.getDescription() != null)
 		{
 			compensationLinePO.setDescription(compensationLine.getDescription());

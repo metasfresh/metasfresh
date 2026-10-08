@@ -93,7 +93,7 @@ public final class GroupCompensationLine
 	@Nullable
 	private final ProductCategoryId packingMaterialProductCategoryId;
 
-	private final boolean ownBase;
+	private final boolean isOwnBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
 	@Getter
@@ -116,7 +116,7 @@ public final class GroupCompensationLine
 			final GroupTemplateLineId groupTemplateLineId,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
 			@Nullable final ProductCategoryId packingMaterialProductCategoryId,
-			final boolean ownBase,
+			final boolean isOwnBase,
 			@Nullable final String description)
 	{
 		this.repoId = repoId;
@@ -125,9 +125,9 @@ public final class GroupCompensationLine
 		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
 		// the order line stores the product category only: an own-base line without category would come back as a compounding line,
 		// and a packing-material category would be lost on reload
-		Check.assume(!ownBase || appliesToProductCategoryId != null, "A compensation line with own base has an applies-to product category");
-		Check.assume(!ownBase || packingMaterialProductCategoryId == null, "A compensation line with own base has no packing-material category");
-		this.ownBase = ownBase;
+		Check.assume(!isOwnBase || appliesToProductCategoryId != null, "A compensation line with own base has an applies-to product category");
+		Check.assume(!isOwnBase || packingMaterialProductCategoryId == null, "A compensation line with own base has no packing-material category");
+		this.isOwnBase = isOwnBase;
 		this.description = description;
 
 		this.seqNo = seqNo;
@@ -211,9 +211,9 @@ public final class GroupCompensationLine
 	 * @return {@code true} if this line's applies-to category is stored on its own order line instead of coming from a schema line.
 	 * Its base is always the full regular-lines amount of that category, even if the group is not additive.
 	 */
-	public boolean hasOwnBase()
+	public boolean isOwnBase()
 	{
-		return ownBase;
+		return isOwnBase;
 	}
 
 }
