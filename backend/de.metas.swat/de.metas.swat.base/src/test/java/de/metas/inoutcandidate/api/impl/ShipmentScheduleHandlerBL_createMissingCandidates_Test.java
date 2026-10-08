@@ -36,11 +36,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -177,6 +179,51 @@ class ShipmentScheduleHandlerBL_createMissingCandidates_Test
 		assertThat(result.isLimitReached()).isTrue();
 	}
 
+	@Test
+	void lockedModels_areSkipped_withoutConsumingTheBudget_andAreReportedAsSkipped()
+	{
+		final TestHandler handler = new TestHandler(I_C_OrderLine.Table_Name);
+		handler.addMissingModels(5, I_C_OrderLine.class);
+		final List<Integer> modelIds = handler.missingModelIds();
+		final LockingShipmentScheduleHandlerBL lockingBL = new LockingShipmentScheduleHandlerBL();
+		lockingBL.lockedIds.add(modelIds.get(0));
+		lockingBL.lockedIds.add(modelIds.get(1));
+		lockingBL.registerHandler(handler);
+
+		// budget=3: the limited retrieve returns the first 3 models, of which the first two are locked by a concurrent transaction
+		final CreateMissingCandidatesResult result = lockingBL.createMissingCandidates(ctx, QueryLimit.ofInt(3));
+
+		assertThat(handler.createCandidatesForCallCount).as("only the not locked model was processed").isEqualTo(1);
+		assertThat(handler.missingModelIds()).containsExactly(modelIds.get(0), modelIds.get(1), modelIds.get(3), modelIds.get(4));
+		assertThat(result.getCreatedShipmentScheduleIds()).hasSize(1);
+		assertThat(result.getSkippedCount()).isEqualTo(2);
+		assertThat(result.isAnySkipped()).isTrue();
+		assertThat(result.isLimitReached()).as("the skipped models did not consume the budget").isFalse();
+
+		// a later run, after the concurrent transaction ended (e.g. rolled back), processes them
+		lockingBL.lockedIds.clear();
+		final CreateMissingCandidatesResult laterResult = lockingBL.createMissingCandidates(ctx, QueryLimit.ofInt(3));
+
+		assertThat(handler.createCandidatesForCallCount).isEqualTo(4);
+		assertThat(handler.missingModelIds()).containsExactly(modelIds.get(4));
+		assertThat(laterResult.isAnySkipped()).isFalse();
+		assertThat(laterResult.isLimitReached()).isTrue();
+	}
+
+	/**
+	 * Simulates records locked by a concurrent transaction, which a real database run detects with {@code FOR KEY SHARE SKIP LOCKED}.
+	 */
+	private static class LockingShipmentScheduleHandlerBL extends ShipmentScheduleHandlerBL
+	{
+		private final Set<Integer> lockedIds = new HashSet<>();
+
+		@Override
+		protected boolean lockIfStillMissingCandidates(final Properties ctx, final ShipmentScheduleHandler handler, final Object model)
+		{
+			return !lockedIds.contains(getId(model)) && super.lockIfStillMissingCandidates(ctx, handler, model);
+		}
+	}
+
 	/**
 	 * Test double for {@link ShipmentScheduleHandler}: models "missing a candidate" are tracked as an ordered map of
 	 * (id -> model). {@link #retrieveModelsWithMissingCandidates} returns only up to the given {@code limit} of the
@@ -211,6 +258,11 @@ class ShipmentScheduleHandlerBL_createMissingCandidates_Test
 		int remainingMissingCount()
 		{
 			return missingModelsById.size();
+		}
+
+		List<Integer> missingModelIds()
+		{
+			return ImmutableList.copyOf(missingModelsById.keySet());
 		}
 
 		@Override

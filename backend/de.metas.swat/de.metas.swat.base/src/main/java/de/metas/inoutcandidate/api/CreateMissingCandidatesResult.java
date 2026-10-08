@@ -44,4 +44,17 @@ public class CreateMissingCandidatesResult
 	 * unlimited ({@link org.adempiere.ad.dao.QueryLimit#NO_LIMIT}) budget.
 	 */
 	boolean limitReached;
+
+	/**
+	 * Number of models that needed shipment schedules when retrieved, but were skipped right before processing, because a concurrent
+	 * transaction held a conflicting lock on their record (e.g. it was deleting it), or because they no longer needed them. They did not
+	 * consume the budget. Whether a locked one still needs shipment schedules can only be decided after that transaction ended, i.e.
+	 * by a later run (which finds nothing to do for the others).
+	 */
+	int skippedCount;
+
+	public boolean isAnySkipped()
+	{
+		return skippedCount > 0;
+	}
 }

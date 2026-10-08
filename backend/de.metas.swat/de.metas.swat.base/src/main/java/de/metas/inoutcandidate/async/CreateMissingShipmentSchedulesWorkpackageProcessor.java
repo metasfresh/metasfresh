@@ -28,6 +28,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -43,13 +44,16 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -64,6 +68,20 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	private static final String SYSCONFIG_MaxToProcess = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxToProcess";
 	private static final int DEFAULT_MaxToProcess = 500;
+
+	/**
+	 * How long a run waits before it is retried, when it skipped records that a concurrent transaction had locked (see
+	 * {@link CreateMissingCandidatesResult#getSkippedCount()}).
+	 */
+	private static final String SYSCONFIG_SkippedRecordsRetryMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.SkippedRecordsRetryMillis";
+	private static final int DEFAULT_SkippedRecordsRetryMillis = 5000;
+
+	/**
+	 * PostgreSQL {@code lock_timeout} of a run's batch transaction; {@code <= 0} means no timeout. See {@link #setLockTimeout()}.
+	 */
+	public static final String SYSCONFIG_LockTimeoutMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis";
+	public static final int DEFAULT_LockTimeoutMillis = 500;
+	private static final String PG_SQLSTATE_lock_not_available = "55P03";
 
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
@@ -159,7 +177,20 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		// This is NOT removable: the batching design requires exactly one bounded, atomic trx per batch; removing it
 		// would either restore the unbounded-single-trx OOM, or split creation and by-id flagging across transactions
 		// and break the same-trx invalidation invariant documented in de/metas/inoutcandidate/CLAUDE.md.
-		final CreateMissingCandidatesResult result = trxManager.callInThreadInheritedTrx(() -> processOneBatch(ctx, maxToProcess));
+		final CreateMissingCandidatesResult result;
+		try
+		{
+			result = trxManager.callInThreadInheritedTrx(() -> processOneBatch(ctx, maxToProcess));
+		}
+		catch (final RuntimeException e)
+		{
+			if (isLockTimeout(e))
+			{
+				// we waited for a concurrent transaction too long, and that one might be waiting for our locks; the batch was rolled back
+				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable("Lock timeout; retrying later", getSkippedRecordsRetryMillis(), e);
+			}
+			throw e;
+		}
 
 		Loggables.addLog("Created " + result.getCreatedShipmentScheduleIds().size() + " candidates");
 
@@ -167,8 +198,58 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		{
 			enqueueFollowUpWorkpackage(ctx, workpackage);
 		}
+		else if (result.isAnySkipped())
+		{
+			// Skipped records were locked by concurrent transactions (e.g. being deleted), or no longer needed shipment schedules. Only after
+			// those transactions ended we know whether the locked ones still need shipment schedules (e.g. a deletion that is rolled back),
+			// so retry this run later - not right away, because then the locks would most probably still be held. This run's batch is
+			// already committed.
+			// (If the limit was reached, the immediate follow-up workpackage covers them as well.)
+			throw WorkpackageSkipRequestException.createWithTimeout(
+					"Skipped " + result.getSkippedCount() + " records locked by concurrent transactions; retrying later",
+					getSkippedRecordsRetryMillis());
+		}
 
 		return Result.SUCCESS;
+	}
+
+	private int getSkippedRecordsRetryMillis()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_SkippedRecordsRetryMillis, DEFAULT_SkippedRecordsRetryMillis);
+	}
+
+	/**
+	 * Sets a {@code lock_timeout} for the current (batch) transaction, so that this run never waits long for a lock of a concurrent
+	 * transaction.
+	 * <p>
+	 * Why: until this run's batch transaction ends, it holds a lock on each record it creates shipment schedules for, so a concurrent
+	 * transaction that deletes such a record waits for this run. This run in turn can wait for that transaction: e.g. a sales order's
+	 * reactivation first updates all its lines ({@code Processed=N}) and later deletes its compensation lines; the foreign key checks at
+	 * this run's commit lock the referenced order lines, and locking a line that an uncommitted transaction updated waits for that
+	 * transaction. That is a deadlock, and PostgreSQL might abort the reactivation to resolve it. With a lock timeout shorter than
+	 * PostgreSQL's {@code deadlock_timeout} (default 1s), this run - which can just be retried - fails first instead, see
+	 * {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
+	 */
+	private void setLockTimeout()
+	{
+		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, DEFAULT_LockTimeoutMillis);
+		if (lockTimeoutMillis <= 0)
+		{
+			return;
+		}
+		DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeoutMillis, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private static boolean isLockTimeout(@NonNull final Throwable e)
+	{
+		for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause())
+		{
+			if (t instanceof SQLException && PG_SQLSTATE_lock_not_available.equals(((SQLException)t).getSQLState()))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private int getMaxToProcess()
@@ -183,6 +264,8 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	private CreateMissingCandidatesResult processOneBatch(@NonNull final Properties ctx, @NonNull final QueryLimit maxToProcess)
 	{
+		setLockTimeout();
+
 		final CreateMissingCandidatesResult batchResult = inOutCandHandlerBL.createMissingCandidates(ctx, maxToProcess);
 
 		// After shipment schedules were created, invalidate them (by id, in THIS same batch trx) because we want to
