@@ -1,6 +1,8 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
@@ -10,6 +12,8 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -53,7 +57,27 @@ public class ContractCompensationGroupSettingsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings> settingsById = CCache.<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings>builder()
+			.tableName(I_C_CompensationGroup_ContractSettings.Table_Name)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_DocType.Table_Name)
+			.initialCapacity(10)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
+	@VisibleForTesting
+	public static ContractCompensationGroupSettingsRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ContractCompensationGroupSettingsRepository.class, ContractCompensationGroupSettingsRepository::new);
+	}
+
 	public ContractCompensationGroupSettings getBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
+	{
+		return settingsById.getOrLoad(settingsId, this::retrieveBySettingsId);
+	}
+
+	private ContractCompensationGroupSettings retrieveBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		final I_C_CompensationGroup_ContractSettings settingsRecord = load(settingsId, I_C_CompensationGroup_ContractSettings.class);
 
