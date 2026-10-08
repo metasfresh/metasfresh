@@ -235,6 +235,28 @@ public interface I_C_CompensationGroup_SchemaLine
 	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
+	 * Set Packmittel-Kategorie.
+	 * Leer = alle Zeilen. Wenn gesetzt, zählen nur Auftragszeilen, deren Packvorschrift ein Packmittel mit einem Produkt in dieser Kategorie (inkl. Unterkategorien) hat.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Category_PackingMaterial_ID (int M_Product_Category_PackingMaterial_ID);
+
+	/**
+	 * Get Packmittel-Kategorie.
+	 * Leer = alle Zeilen. Wenn gesetzt, zählen nur Auftragszeilen, deren Packvorschrift ein Packmittel mit einem Produkt in dieser Kategorie (inkl. Unterkategorien) hat.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Category_PackingMaterial_ID();
+
+	String COLUMNNAME_M_Product_Category_PackingMaterial_ID = "M_Product_Category_PackingMaterial_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *

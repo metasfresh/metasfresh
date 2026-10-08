@@ -1,9 +1,7 @@
 package de.metas.order.compensationGroup;
 
-import de.metas.product.ProductCategoryId;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -19,14 +17,14 @@ import javax.annotation.Nullable;
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
 
-/** Where a compensation order line takes its base from: its applies-to product category and whether that category is stored on the order line itself. */
+/** Where a compensation order line takes its base from: its base and whether that base is stored on the order line itself. */
 @Value
 public class CompensationLineOrigin
 {
-	public static final CompensationLineOrigin NONE = new CompensationLineOrigin(null, false);
+	public static final CompensationLineOrigin NONE = new CompensationLineOrigin(GroupCompensationBase.NONE, false);
 
-	/** {@code null} = computed on the whole group's regular lines */
-	@Nullable ProductCategoryId appliesToProductCategoryId;
+	/** {@link GroupCompensationBase#NONE} = computed on the whole group's regular lines */
+	@NonNull GroupCompensationBase base;
 	/** see {@link GroupCompensationLine#hasOwnBase()} */
 	boolean ownBase;
 }

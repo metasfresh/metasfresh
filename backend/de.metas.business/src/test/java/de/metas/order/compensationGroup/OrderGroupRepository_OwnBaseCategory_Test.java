@@ -163,7 +163,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 						OTHER_SCHEMA_LINE_CATEGORY_ID,
 						OWN_BASE_CATEGORY_ID,
 						OTHER_OWN_BASE_CATEGORY_ID);
-		Mockito.verify(groupTemplateRepository, Mockito.times(1)).getAppliesToProductCategoryIds(ImmutableSet.of(schemaLineId1, schemaLineId2));
+		Mockito.verify(groupTemplateRepository, Mockito.times(1)).getBasesBySchemaLineId(ImmutableSet.of(schemaLineId1, schemaLineId2));
 	}
 
 	@Test
@@ -202,7 +202,7 @@ public class OrderGroupRepository_OwnBaseCategory_Test
 		assertThat(countCreatedQueryBuilders()).isEqualTo(queriesForOneGroup);
 		// IsAdditive comes from the cached schema of each group with a schema, never from a per-group schema load
 		Mockito.verify(groupTemplateRepository, Mockito.times(2)).getById(Mockito.any());
-		Mockito.verify(groupTemplateRepository, Mockito.times(1)).getAppliesToProductCategoryIds(Mockito.any());
+		Mockito.verify(groupTemplateRepository, Mockito.times(1)).getBasesBySchemaLineId(Mockito.any());
 	}
 
 	private long countCreatedQueryBuilders()

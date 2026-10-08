@@ -54,6 +54,10 @@ public class GroupCompensationLineCreateRequest
 	@Nullable
 	ProductCategoryId appliesToProductCategoryId;
 
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Nullable
+	ProductCategoryId packingMaterialProductCategoryId;
+
 	/** see {@link GroupCompensationLine#hasOwnBase()} */
 	boolean ownBase;
 

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.order;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -85,6 +86,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -100,6 +102,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.DB;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -586,9 +589,8 @@ public class C_OrderLine_StepDef
 	/**
 	 * Updates previously registered order lines, applying every value column that is present.
 	 *
-	 * <p>The save runs as a background write, i.e. the way an automatic writer such as the invoicing
-	 * run saves a line. Use {@code update C_OrderLine expecting error:} with {@code AsUIAction} to save
-	 * as a user edit instead.</p>
+	 * <p>By default the save runs as a background write, i.e. the way an automatic writer such as the
+	 * invoicing run saves a line. With {@code AsUIAction=Y} the line is saved as a user edit in the WebUI.</p>
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -597,6 +599,7 @@ public class C_OrderLine_StepDef
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
 	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID} — optional,
 	 *         each is applied only when the column is present</li>
+	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
 	 * @cucumber.example
 	 * <pre>
@@ -608,7 +611,7 @@ public class C_OrderLine_StepDef
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
-		dataTable.asMaps().forEach(row -> updateOrderLine(row, false));
+		dataTable.asMaps().forEach(row -> updateOrderLine(row, DataTableRow.singleRow(row).getAsOptionalBoolean("AsUIAction").orElseFalse()));
 	}
 
 	/**
@@ -672,10 +675,50 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Sets {@code C_OrderLine.C_Project_ID} with a plain SQL {@code UPDATE}, so no model interceptor runs.
+	 *
+	 * <p>Use it to build the state that a missed interceptor push leaves behind: the order line has its new
+	 * project, but the push to the line's invoice candidates never happened. In production this happens when
+	 * the push runs before the invoice candidate is committed. Afterwards the cached order line is reset, the way
+	 * a regular save would do it.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier of the line to update</li>
+	 *     <li>{@code C_Project_ID} — required, identifier of the project; {@code null} clears it</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | ol_1           | project_1    |
+	 * </pre>
+	 */
+	@And("update C_OrderLine.C_Project_ID in the DB, bypassing model interceptors:")
+	public void update_C_OrderLine_projectId_bypassingInterceptors(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+			final ProjectId projectId = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Project_ID).lookupIdIn(projectTable);
+
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE C_OrderLine SET C_Project_ID=? WHERE C_OrderLine_ID=?",
+					new Object[] { projectId != null ? projectId.getRepoId() : null, orderLine.getC_OrderLine_ID() },
+					ITrx.TRXNAME_None);
+
+			CacheMgt.get().reset(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
+			InterfaceWrapperHelper.refresh(orderLine);
+		});
+	}
+
 	private void updateOrderLine(@NonNull final Map<String, String> row, final boolean asUIAction)
 	{
 		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(orderLineTable.get(olIdentifier), de.metas.handlingunits.model.I_C_OrderLine.class);
+		// the registered record may predate changes made by the system since (e.g. a compensation group dropped on reactivation)
+		InterfaceWrapperHelper.refresh(orderLine);
 
 		final String contractIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -886,6 +929,8 @@ public class C_OrderLine_StepDef
 	 *   <li>{@code qtydelivered} — optional BigDecimal; maps to {@code QtyDelivered}</li>
 	 *   <li>{@code qtyinvoiced} — optional BigDecimal; maps to {@code QtyInvoiced}</li>
 	 *   <li>{@code price} — optional BigDecimal; maps to {@code PriceEntered}</li>
+	 *   <li>{@code LineNetAmt} — optional BigDecimal</li>
+	 *   <li>{@code GroupCompensationBaseAmt} — optional BigDecimal; the base a compensation line's percentage is applied to</li>
 	 *   <li>{@code discount} — optional BigDecimal</li>
 	 *   <li>{@code currencyCode} — optional ISO-4217 code</li>
 	 *   <li>{@code processed} — optional boolean</li>
@@ -929,6 +974,12 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationBaseAmt)
+				.ifPresent(groupCompensationBaseAmt -> softly.assertThat(orderLine.getGroupCompensationBaseAmt()).as("GroupCompensationBaseAmt").isEqualByComparingTo(groupCompensationBaseAmt));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_LineNetAmt)
+				.ifPresent(lineNetAmt -> softly.assertThat(orderLine.getLineNetAmt()).as("LineNetAmt").isEqualByComparingTo(lineNetAmt));
 
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID)
 				.ifPresent(categoryIdentifier -> softly.assertThat(orderLine.getGroupCompensation_Product_Category_ID())

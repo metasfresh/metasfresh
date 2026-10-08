@@ -50,6 +50,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
@@ -61,6 +62,7 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -239,6 +241,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	private final TestContext testContext;
@@ -900,6 +903,7 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyReserved</b> — (optional) expected reserved quantity<br>
 	 *   <b>QtyToDeliver</b> — (optional) expected qty to deliver<br>
 	 *   <b>QtyToDeliver_Override</b> — (optional) expected override qty<br>
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) expected packing instruction override<br>
 	 *   <b>QtyPickList</b> — (optional) expected picked quantity<br>
 	 *   <b>QtyDelivered</b> — (optional) expected delivered quantity<br>
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
@@ -1152,6 +1156,30 @@ public class M_ShipmentSchedule_StepDef
 		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
+	/**
+	 * Asserts that the given order line has no shipment schedule, also after the missing shipment schedules were created
+	 * (e.g. a service line, which is never shipped).
+	 * <p>
+	 * Wait for the shipment schedules of the order's other lines first (e.g. {@code M_ShipmentSchedules are found} with {@code IsToRecompute=N}):
+	 * creating the missing schedules here while their asynchronous creation is still running would create them twice.
+	 *
+	 * @param orderLineIdentifier (required, identifier-ref) the C_OrderLine to check
+	 * @cucumber.stepdef <pre>{@code
+	 * And there is no M_ShipmentSchedule for C_OrderLine ol_discount
+	 * }</pre>
+	 */
+	@And("^there is no M_ShipmentSchedule for C_OrderLine (.*)$")
+	public void validate_no_M_ShipmentSchedule_created_for_orderLine(@NonNull final String orderLineIdentifier)
+	{
+		final OrderLineId orderLineId = orderLineTable.getId(StepDefDataIdentifier.ofString(orderLineIdentifier));
+
+		validateNoShipmentScheduleCreatedForOrderLine(orderLineId);
+
+		shipmentScheduleHandlerBL.createMissingCandidates(Env.getCtx());
+
+		validateNoShipmentScheduleCreatedForOrderLine(orderLineId);
+	}
+
 	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)$")
 	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action)
 	{
@@ -1188,6 +1216,16 @@ public class M_ShipmentSchedule_StepDef
 				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
 
 		assertThat(schedule).isNull();
+	}
+
+	private void validateNoShipmentScheduleCreatedForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
+
+		assertThat(schedule).as("M_ShipmentSchedule for C_OrderLine_ID=%s", orderLineId.getRepoId()).isNull();
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTableRows rows)
@@ -1323,6 +1361,9 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
 				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override).ifPresent(shipmentScheduleRecord::setDeliveryDate_Override);
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> InterfaceWrapperHelper.create(shipmentScheduleRecord, de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+						.setM_HU_PI_Item_Product_Override_ID(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 
 		saveRecord(shipmentScheduleRecord);
 	}
@@ -1407,6 +1448,10 @@ public class M_ShipmentSchedule_StepDef
 
 		InterfaceWrapperHelper.refresh(shipmentSchedule);
 		final SoftAssertions softly = new SoftAssertions();
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> softly.assertThat(InterfaceWrapperHelper.create(shipmentSchedule, de.metas.handlingunits.model.I_M_ShipmentSchedule.class).getM_HU_PI_Item_Product_Override_ID())
+						.as("M_HU_PI_Item_Product_Override_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 		if (qtyToDeliverOverride != null)
 		{
 			softly.assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).as("QtyToDeliver_Override for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());

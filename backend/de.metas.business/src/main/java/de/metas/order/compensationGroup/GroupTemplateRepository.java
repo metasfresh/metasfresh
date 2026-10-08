@@ -99,8 +99,8 @@ public class GroupTemplateRepository
 		return groupTemplatesById.getOrLoad(groupTemplateId, this::retrieveById);
 	}
 
-	/** @return the applies-to product category of each given schema line; a schema line without category is absent */
-	public ImmutableMap<GroupTemplateLineId, ProductCategoryId> getAppliesToProductCategoryIds(@NonNull final Set<GroupTemplateLineId> schemaLineIds)
+	/** @return the base of each given schema line (see {@link GroupTemplateCompensationLine#getBase()}); a schema line that does not exist is absent */
+	public ImmutableMap<GroupTemplateLineId, GroupCompensationBase> getBasesBySchemaLineId(@NonNull final Set<GroupTemplateLineId> schemaLineIds)
 	{
 		if (schemaLineIds.isEmpty())
 		{
@@ -111,10 +111,11 @@ public class GroupTemplateRepository
 				.addInArrayFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID, schemaLineIds)
 				.create()
 				.stream()
-				.filter(schemaLine -> ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()) != null)
 				.collect(ImmutableMap.toImmutableMap(
 						schemaLine -> GroupTemplateLineId.ofRepoId(schemaLine.getC_CompensationGroup_SchemaLine_ID()),
-						schemaLine -> ProductCategoryId.ofRepoId(schemaLine.getM_Product_Category_ID())));
+						schemaLine -> GroupCompensationBase.of(
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID()),
+								ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_PackingMaterial_ID()))));
 	}
 
 	private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId)
@@ -195,6 +196,7 @@ public class GroupTemplateRepository
 				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
 				.percentage(extractPercentage(compensationLineRecord))
 				.appliesToProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_ID()))
+				.packingMaterialProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_PackingMaterial_ID()))
 				.build();
 	}
 

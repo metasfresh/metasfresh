@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.order;
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -229,6 +230,49 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 			InterfaceWrapperHelper.save(compensationLine);
 
 			orderLineTable.putOrReplace(row.getAsIdentifier("CompensationLine"), compensationLine);
+		});
+	}
+
+	/**
+	 * Changes the percentage of a compensation (discount) order line the way a user does it in the sales order's line grid:
+	 * the field's callout recomputes the line from its group, then the line is saved as a user edit,
+	 * which makes the order line interceptor update the whole group.
+	 * <p>
+	 * The callout is invoked through the same handler method the order line callout calls
+	 * ({@link OrderGroupCompensationChangesHandler#updateCompensationLineNoSave}), since callouts do not run on a programmatic save.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the compensation order line<br>
+	 *   <b>GroupCompensationPercentage</b> — (required) the new percentage<br>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the user changes the percentage of compensation order lines in the order line grid:
+	 *   | C_OrderLine_ID | GroupCompensationPercentage |
+	 *   | ol_discount    | 10                          |
+	 * </pre>
+	 */
+	@When("the user changes the percentage of compensation order lines in the order line grid:")
+	public void changeCompensationPercentageAsUser(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_OrderLine compensationLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+			InterfaceWrapperHelper.refresh(compensationLine);
+
+			compensationLine.setGroupCompensationPercentage(row.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage));
+			groupChangesHandler.updateCompensationLineNoSave(compensationLine);
+
+			InterfaceWrapperHelperUtils.set_ManualUserAction(compensationLine);
+			try
+			{
+				InterfaceWrapperHelper.save(compensationLine);
+			}
+			finally
+			{
+				// the flag lives on the cached PO and would leak into later, non-UI saves
+				InterfaceWrapperHelperUtils.unset_ManualUserAction(compensationLine);
+			}
 		});
 	}
 }

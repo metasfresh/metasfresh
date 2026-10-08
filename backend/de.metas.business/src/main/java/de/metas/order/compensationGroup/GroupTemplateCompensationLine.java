@@ -51,6 +51,9 @@ public class GroupTemplateCompensationLine
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable ProductCategoryId appliesToProductCategoryId;
 
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Nullable ProductCategoryId packingMaterialProductCategoryId;
+
 	/** see {@link GroupCompensationLine#hasOwnBase()} */
 	boolean ownBase;
 
@@ -65,6 +68,7 @@ public class GroupTemplateCompensationLine
 			@Nullable final Percent percentage,
 			@Nullable final GroupMatcher groupMatcher,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			@Nullable final ProductCategoryId packingMaterialProductCategoryId,
 			final boolean ownBase,
 			@Nullable final String description)
 	{
@@ -74,8 +78,14 @@ public class GroupTemplateCompensationLine
 		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
+		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
 		this.ownBase = ownBase;
 		this.description = description;
+	}
+
+	public GroupCompensationBase getBase()
+	{
+		return GroupCompensationBase.of(appliesToProductCategoryId, packingMaterialProductCategoryId);
 	}
 
 	public boolean isMatching(@NonNull final Group group)

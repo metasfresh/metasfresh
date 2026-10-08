@@ -88,6 +88,11 @@ public final class GroupCompensationLine
 	@Nullable
 	private final ProductCategoryId appliesToProductCategoryId;
 
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Getter
+	@Nullable
+	private final ProductCategoryId packingMaterialProductCategoryId;
+
 	private final boolean ownBase;
 
 	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
@@ -110,14 +115,18 @@ public final class GroupCompensationLine
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
 			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			@Nullable final ProductCategoryId packingMaterialProductCategoryId,
 			final boolean ownBase,
 			@Nullable final String description)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
 		this.appliesToProductCategoryId = appliesToProductCategoryId;
-		// the order line stores the category only; an own-base line without category would come back as a compounding line
+		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
+		// the order line stores the product category only: an own-base line without category would come back as a compounding line,
+		// and a packing-material category would be lost on reload
 		Check.assume(!ownBase || appliesToProductCategoryId != null, "A compensation line with own base has an applies-to product category");
+		Check.assume(!ownBase || packingMaterialProductCategoryId == null, "A compensation line with own base has no packing-material category");
 		this.ownBase = ownBase;
 		this.description = description;
 
@@ -153,6 +162,11 @@ public final class GroupCompensationLine
 		{
 			throw new AdempiereException("Unknown " + GroupCompensationAmtType.class + ": " + amtType);
 		}
+	}
+
+	public GroupCompensationBase getBase()
+	{
+		return GroupCompensationBase.of(appliesToProductCategoryId, packingMaterialProductCategoryId);
 	}
 
 	public boolean isPercentage()
