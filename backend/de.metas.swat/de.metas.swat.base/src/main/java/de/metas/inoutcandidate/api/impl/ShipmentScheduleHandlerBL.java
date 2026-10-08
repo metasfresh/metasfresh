@@ -22,11 +22,13 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -214,12 +216,45 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 			final Object model = missingCandidateModels.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(model))
 			{
-				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
+				if (lockUnlessBeingDeleted(model))
+				{
+					result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
+				}
+				else
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("Skip creating shipment schedules for {} because a concurrent transaction is deleting it", model);
+				}
 			}
+			// also a skipped model consumes the budget: it was part of this run's limited retrieve, so not consuming it would make
+			// a run whose budget is otherwise used up look as if it had no work left (no follow-up workpackage)
 			budget.consumeOne();
 		}
 		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleHandler {} created {} shipment schedules", handler, result.size());
 		return result;
+	}
+
+	/**
+	 * Locks the given model's record until the current transaction ends, so that a concurrent transaction cannot delete it
+	 * while shipment schedules are created for it.
+	 * <p>
+	 * Why: the models are retrieved from a committed snapshot, but a concurrent, not yet committed transaction might be deleting
+	 * one of them (e.g. a sales order's reactivation deleting the discount lines of a compensation group). A shipment schedule
+	 * created for such a model would reference a deleted record; for an order line, the foreign key check at commit fails,
+	 * and the whole batch of this run is rolled back. The lock is the weakest one that blocks a {@code DELETE}, so concurrent
+	 * updates of the record (e.g. its order's reactivation setting {@code Processed=N}) are neither blocked nor block us.
+	 *
+	 * @return {@code false} if the record is being deleted by a concurrent transaction (or was deleted meanwhile); no shipment
+	 * schedule shall be created for it then.
+	 */
+	private boolean lockUnlessBeingDeleted(@NonNull final Object model)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		return !queryBL.createQueryBuilder(tableName, getCtx(model), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(InterfaceWrapperHelper.getKeyColumnName(tableName), getId(model))
+				.create()
+				.setForUpdate(ForUpdate.FOR_KEY_SHARE_SKIP_LOCKED)
+				.listIds()
+				.isEmpty();
 	}
 
 	/**

@@ -63,7 +63,19 @@ public enum ForUpdate
 	 * Like {@link #FOR_UPDATE} but rows already locked by another transaction are silently skipped
 	 * instead of causing the query to block. Useful for work-queue implementations.
 	 */
-	FOR_UPDATE_SKIP_LOCKED("FOR UPDATE SKIP LOCKED");
+	FOR_UPDATE_SKIP_LOCKED("FOR UPDATE SKIP LOCKED"),
+
+	/**
+	 * Appends {@code FOR KEY SHARE SKIP LOCKED}.
+	 *
+	 * <p>The weakest lock: it only conflicts with deleting a row or changing its key, i.e. with {@link #FOR_UPDATE}
+	 * (which a {@code DELETE} acquires implicitly), but not with {@link #FOR_NO_KEY_UPDATE} or a plain {@code UPDATE} of
+	 * non-key columns. Rows that a concurrent transaction is deleting (deleted, but not yet committed) are skipped.
+	 * A locked row cannot be deleted by another transaction until the lock holder's transaction ends.
+	 *
+	 * <p>Use this to safely create child rows that reference rows a concurrent transaction might delete.
+	 */
+	FOR_KEY_SHARE_SKIP_LOCKED("FOR KEY SHARE SKIP LOCKED");
 
 	@Getter
 	@Nullable
