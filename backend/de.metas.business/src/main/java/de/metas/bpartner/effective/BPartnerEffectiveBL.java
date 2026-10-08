@@ -58,7 +58,6 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_PaymentTerm;
@@ -268,28 +267,21 @@ public class BPartnerEffectiveBL
 	}
 
 	/**
-	 * Resolves the effective bill-to partner for a given order partner and (optional) order partner location.
-	 * Precedence: C_BP_Relation (IsBillTo=Y) of the given partner location → partner-wide C_BP_Relation (IsBillTo=Y, no location)
-	 * → partner's deviating-bill-partner group Bill_BPartner → parent group Bill_BPartner → null.
-	 * See {@link IBPartnerDAO#retrieveBillToBPartnerRelationOrNull(BPartnerId, BPartnerLocationId)} for the per-location contract.
+	 * Resolves the effective bill-to partner of the given partner, without any partner-location context.
+	 * Precedence: partner-wide C_BP_Relation (IsBillTo=Y, no location) → partner's deviating-bill-partner group Bill_BPartner
+	 * → parent group Bill_BPartner → null.
+	 * For a partner location, use {@link BPartnerAddressEffectiveBL#getEffectiveBillBPartner(BPartnerLocationId)}, which checks the location's own relation first.
 	 */
 	@Nullable
-	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId)
 	{
-		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
-
-		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillToBPartnerRelationOrNull(bPartnerId, bPartnerLocationId);
-		if (billRelation != null)
+		final BillBPartnerResolution partnerWideRelationResolution = BillBPartnerResolution.ofBillToRelationOrNull(bpartnerDAO.retrievePartnerWideBillToRelationOrNull(bPartnerId));
+		if (partnerWideRelationResolution != null)
 		{
-			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());
-			if (billBPartnerId != null)
-			{
-				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID());
-				// C_BP_Relation has no Bill_User_ID column → no bill user from this path
-				return BillBPartnerResolution.of(billBPartnerId, billLocationId, null);
-			}
+			return partnerWideRelationResolution;
 		}
 
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
 		if (bpGroup.isDeviatingBillBPartner())
 		{

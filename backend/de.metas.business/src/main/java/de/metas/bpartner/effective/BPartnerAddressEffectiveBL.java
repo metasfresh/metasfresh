@@ -113,6 +113,23 @@ public class BPartnerAddressEffectiveBL
 	}
 
 	/**
+	 * Resolves the effective bill-to partner for the given partner location (e.g. an order's delivery location):
+	 * the location's own bill-to C_BP_Relation (IsBillTo=Y) if there is one, else the partner-level resolution
+	 * {@link BPartnerEffectiveBL#getEffectiveBillBPartner(de.metas.bpartner.BPartnerId)}
+	 * (partner-wide relation → deviating-bill-partner group → parent group → null).
+	 */
+	@Nullable
+	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final BillBPartnerResolution locationRelationResolution = BillBPartnerResolution.ofBillToRelationOrNull(bpartnerDAO.retrieveBillToRelationForLocationOrNull(bpartnerLocationId));
+		if (locationRelationResolution != null)
+		{
+			return locationRelationResolution;
+		}
+		return bpartnerEffectiveBL.getEffectiveBillBPartner(bpartnerLocationId.getBpartnerId());
+	}
+
+	/**
 	 * Loads the location by ID (fails fast if not found), then returns the first non-null value
 	 * from the location record (via {@code locationValueExtractor}), falling back to the partner supplier.
 	 */

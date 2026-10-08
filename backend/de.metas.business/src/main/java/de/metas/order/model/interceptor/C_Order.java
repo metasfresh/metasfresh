@@ -779,8 +779,7 @@ public class C_Order
 			return;
 		}
 
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
+		final BillBPartnerResolution resolution = resolveEffectiveBillBPartner(bPartnerId, order.getC_BPartner_Location_ID());
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
@@ -802,8 +801,22 @@ public class C_Order
 	}
 
 	/**
+	 * The order's own location (if set) decides via {@link BPartnerAddressEffectiveBL#getEffectiveBillBPartner(BPartnerLocationId)};
+	 * without a location only the partner-level {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId)} applies.
+	 * The location ID is built from the given partner, so partner and location always belong together.
+	 */
+	@Nullable
+	private BillBPartnerResolution resolveEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId, final int bPartnerLocationRepoId)
+	{
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bPartnerLocationRepoId);
+		return bPartnerLocationId != null
+				? bpartnerAddressEffectiveBL.getEffectiveBillBPartner(bPartnerLocationId)
+				: bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+	}
+
+	/**
 	 * @return true if only the order's bpartner location changed and the current bill partner/location is exactly what
-	 * {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId, BPartnerLocationId)} resolves for the previous location,
+	 * {@link #resolveEffectiveBillBPartner(BPartnerId, int)} resolves for the previous location,
 	 * i.e. it was derived from that location and not explicitly provided.
 	 */
 	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order, @NonNull final BPartnerId bPartnerId)
@@ -814,8 +827,7 @@ public class C_Order
 		}
 
 		final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-		final BPartnerLocationId previousLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, orderOld.getC_BPartner_Location_ID());
-		final BillBPartnerResolution previousResolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, previousLocationId);
+		final BillBPartnerResolution previousResolution = resolveEffectiveBillBPartner(bPartnerId, orderOld.getC_BPartner_Location_ID());
 		return previousResolution != null
 				&& BPartnerId.equals(previousResolution.getBillBPartnerId(), BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()))
 				&& BPartnerLocationId.equals(previousResolution.getBillLocationId(), BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()));
