@@ -43,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Order;
@@ -63,8 +64,9 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 {
 	/**
 	 * How long the reactivation's transaction is held open at most while the missing shipment schedules are created.
-	 * The workpackage's commit waits for the reactivation (its foreign key checks lock order lines the reactivation updated and
-	 * deleted), so this is longer than the workpackage's lock timeout.
+	 * The workpackage's commit waits for the reactivation (its foreign key check locks the order lines it created shipment schedules for,
+	 * {@code FOR KEY SHARE}, which conflicts with the reactivation's not yet committed deletion of the discount lines), so this is longer
+	 * than the workpackage's lock timeout.
 	 */
 	private static final int REACTIVATION_HOLD_SECONDS = 5;
 	private static final int TIMEOUT_SECONDS = 60;
@@ -196,6 +198,11 @@ public class CreateMissingShipmentSchedules_ConcurrentReactivation_StepDef
 			assertThat(firstRunOutcome)
 					.as("Outcome of creating the missing shipment schedules during the reactivation of order %s", orderIdentifier)
 					.isInstanceOf(WorkpackageSkipRequestException.class);
+			// Its commit waited for the reactivation longer than its lock timeout. (The other collision, the foreign key violation when the
+			// reactivation commits first, is covered by CreateMissingShipmentSchedulesWorkpackageProcessorTest.)
+			assertThat((Throwable)DBException.findSQLExceptionInCauseChainOrNull(firstRunOutcome, DBException::isLockNotAvailable))
+					.as("Lock timeout (SQLSTATE 55P03) as the cause of the retry request")
+					.isNotNull();
 			assertThat(retrieveShipmentScheduleCount(otherOrderId))
 					.as("Shipment schedules of order %s after the rolled back batch", otherOrderIdentifier)
 					.isZero();

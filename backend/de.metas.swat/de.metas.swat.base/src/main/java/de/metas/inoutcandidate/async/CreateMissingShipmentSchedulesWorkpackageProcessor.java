@@ -55,7 +55,6 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -65,11 +64,13 @@ import java.util.Properties;
  * Concurrency: a run creates its batch of shipment schedules in one transaction, without explicit row locks. Concurrent (e.g. user)
  * transactions are therefore not blocked by it, beyond the standard foreign key locks that its new rows take on the records they
  * reference (which only conflict with deleting such a record or changing its key) until the batch commits. The other way round, the
- * batch waits at most for the {@code lock_timeout} (sysconfig {@value #SYSCONFIG_LockTimeoutMillis}, default 500 ms) for a concurrent
- * transaction. If the batch collides with a concurrent transaction that deletes one of its order lines (see
+ * batch waits at most for its {@code lock_timeout} for a concurrent transaction (sysconfig
+ * {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis}, default 500 ms).
+ * If the batch collides with a concurrent transaction that deletes one of its order lines (see
  * {@link #isCollisionWithConcurrentTransaction(Throwable)}), the whole batch is rolled back and the run is retried after
- * {@value #SYSCONFIG_RetryMillis} (default 5 s), at most {@value #SYSCONFIG_MaxRetries} (default 10) times; after that, the
- * collision is an error like any other.
+ * sysconfig {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.RetryMillis} (default 5 s), at most
+ * sysconfig {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxRetries} (default 10) times;
+ * after that, the collision is an error like any other.
  *
  * @author tsa
  */
@@ -98,8 +99,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private static final String SYSCONFIG_MaxRetries = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxRetries";
 	private static final int DEFAULT_MaxRetries = 10;
 
-	private static final String PG_SQLSTATE_lock_not_available = "55P03";
-	private static final String PG_SQLSTATE_foreign_key_violation = "23503";
 	/**
 	 * The (deferred) foreign key from {@code M_ShipmentSchedule.C_OrderLine_ID} to {@code C_OrderLine}.
 	 * The other handler's schedules (subscription progress) reference their source record via {@code AD_Table_ID/Record_ID}, without a foreign key.
@@ -249,10 +248,10 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 * <ul>
 	 * <li>The candidate order lines are selected from committed data, but a concurrent, not yet committed transaction may delete one
 	 * of them, e.g. a sales order's reactivation deleting the discount lines of a compensation group. If that transaction commits
-	 * first, the batch's commit fails on the deferred foreign key {@value #FK_M_ShipmentSchedule_C_OrderLine} (SQLSTATE 23503).</li>
-	 * <li>If that transaction is still running when the batch commits, the foreign key check waits for it (locking an order line that a
-	 * concurrent transaction updated or deleted waits for that transaction), until the lock timeout (SQLSTATE 55P03); see
-	 * {@link #setLockTimeout()}.</li>
+	 * first, the batch's commit fails on the deferred foreign key {@code corderline_corderline} (SQLSTATE 23503).</li>
+	 * <li>If that transaction is still running when the batch commits, the foreign key check waits for it: it locks the referenced order
+	 * line {@code FOR KEY SHARE}, which conflicts with a not yet committed deletion of that line (or a change of its key), but not with
+	 * an update of its other columns. It waits until the lock timeout (SQLSTATE 55P03); see {@link #setLockTimeout()}.</li>
 	 * </ul>
 	 * A retried run selects the candidates again, so it no longer sees the deleted lines. Any other error, also a violation of another
 	 * foreign key, is not retried, so that a genuine bug is not retried over and over.
@@ -260,18 +259,10 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	@VisibleForTesting
 	static boolean isCollisionWithConcurrentTransaction(@NonNull final Throwable e)
 	{
-		return DBException.findSQLExceptionInCauseChain(e, CreateMissingShipmentSchedulesWorkpackageProcessor::isCollisionWithConcurrentTransaction).isPresent();
-	}
-
-	private static boolean isCollisionWithConcurrentTransaction(@NonNull final SQLException e)
-	{
-		final String sqlState = e.getSQLState();
-		if (PG_SQLSTATE_lock_not_available.equals(sqlState))
-		{
-			return true;
-		}
-		return PG_SQLSTATE_foreign_key_violation.equals(sqlState)
-				&& FK_M_ShipmentSchedule_C_OrderLine.equalsIgnoreCase(DBException.extractConstraintNameOrNull(e));
+		return DBException.findSQLExceptionInCauseChainOrNull(
+				e,
+				sqlException -> DBException.isLockNotAvailable(sqlException) || DBException.isForeignKeyViolation(sqlException, FK_M_ShipmentSchedule_C_OrderLine))
+				!= null;
 	}
 
 	/**

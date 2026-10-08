@@ -16,6 +16,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -198,6 +199,18 @@ class CreateMissingShipmentSchedulesWorkpackageProcessorTest
 
 			assertThatThrownBy(() -> process(0))
 					.isInstanceOfSatisfying(WorkpackageSkipRequestException.class, skipRequest -> assertThat(skipRequest.getSkipTimeoutMillis()).isEqualTo(5000))
+					.hasRootCause(foreignKeyViolation);
+		}
+
+		@Test
+		void orderLineForeignKeyViolation_asWrappedInProduction_retriedLater()
+		{
+			// DBException.wrapIfNeeded wraps a foreign key violation into a DBForeignKeyConstraintException; the trx manager's commit failure wraps it once more
+			final SQLException foreignKeyViolation = foreignKeyViolation("corderline_corderline");
+			givenBatchFailsWith(new AdempiereException("commit failed", new DBForeignKeyConstraintException(foreignKeyViolation)));
+
+			assertThatThrownBy(() -> process(0))
+					.isInstanceOf(WorkpackageSkipRequestException.class)
 					.hasRootCause(foreignKeyViolation);
 		}
 

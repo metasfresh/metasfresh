@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -126,6 +125,7 @@ public class DBException extends AdempiereException
 
 	private static final String PG_SQLSTATE_deadlock_detected = "40P01";
 	private static final String PG_SQLSTATE_query_canceled = "57014";
+	private static final String PG_SQLSTATE_lock_not_available = "55P03";
 	// private static final String PG_SQLSTATE_ = "";
 
 	@Nullable
@@ -325,17 +325,38 @@ public class DBException extends AdempiereException
 	 * Walks the given throwable's whole cause chain and returns the first {@link SQLException} that matches the given predicate.
 	 * Unlike {@link #extractSQLExceptionOrNull(Throwable)}, every cause is looked at, not only the innermost one; no database
 	 * connection is needed (works in unit tests too).
+	 *
+	 * @return the matching {@link SQLException}, or {@code null} if there is none
 	 */
-	public static Optional<SQLException> findSQLExceptionInCauseChain(@Nullable final Throwable t, @NonNull final Predicate<SQLException> matcher)
+	@Nullable
+	public static SQLException findSQLExceptionInCauseChainOrNull(@Nullable final Throwable t, @NonNull final Predicate<SQLException> matcher)
 	{
 		for (Throwable cause = t; cause != null; cause = cause.getCause() == cause ? null : cause.getCause())
 		{
 			if (cause instanceof SQLException && matcher.test((SQLException)cause))
 			{
-				return Optional.of((SQLException)cause);
+				return (SQLException)cause;
 			}
 		}
-		return Optional.empty();
+		return null;
+	}
+
+	/**
+	 * @return {@code true} if the given PostgreSQL error is "lock not available", e.g. because the transaction's {@code lock_timeout}
+	 * expired while waiting for a lock
+	 */
+	public static boolean isLockNotAvailable(@NonNull final SQLException e)
+	{
+		return PG_SQLSTATE_lock_not_available.equals(e.getSQLState());
+	}
+
+	/**
+	 * @return {@code true} if the given PostgreSQL error is a violation of the foreign key constraint with the given name (case-insensitive)
+	 */
+	public static boolean isForeignKeyViolation(@NonNull final SQLException e, @NonNull final String constraintName)
+	{
+		return PG_SQLSTATE_foreign_key_violation.equals(e.getSQLState())
+				&& constraintName.equalsIgnoreCase(extractConstraintNameOrNull(e));
 	}
 
 	/**
