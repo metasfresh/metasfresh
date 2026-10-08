@@ -179,7 +179,7 @@ Feature: Contract-triggered compensation group on sales-order reactivation
       | ol_raceGoods  | orderRace             | goodsProduct            | 1          |
       | ol_otherGoods | orderOther            | goodsProduct            | 1          |
 
-    # the workpackage's batch must contain this scenario's order lines; another feature may have left a smaller batch size (production default: 500)
+    # precondition: the workpackage's batch must contain this scenario's order lines, whatever batch size the instance is configured with (production default: 500)
     And temporarily set sys config int value 500 for sys config 'de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxToProcess'
 
     When the order identified by orderRace is completed together with the order identified by orderOther, and then reactivated while their missing shipment schedules are being created
