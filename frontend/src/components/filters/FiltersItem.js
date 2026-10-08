@@ -14,10 +14,7 @@ import {
   isDecimalNumberField,
   isFocusableWidgetType,
 } from '../../utils/widgetHelpers';
-import {
-  isValidDecimalNumberString,
-  normalizeDecimalNumberString,
-} from '../../utils/locale';
+import { normalizeDecimalNumberString } from '../../utils/locale';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
@@ -618,10 +615,12 @@ class FiltersItem extends PureComponent {
                             const isDecimal = isDecimalNumberField(widgetType);
                             this.setValue(
                               property,
-                              isDecimal ? toDecimalFilterValue(value) : value,
+                              isDecimal
+                                ? normalizeDecimalNumberString(value)
+                                : value,
                               id,
                               isDecimal
-                                ? toDecimalFilterValue(valueTo)
+                                ? normalizeDecimalNumberString(valueTo)
                                 : valueTo,
                               filter.filterId,
                               item.defaultValue
@@ -752,15 +751,6 @@ export default connect(null, {
 //
 //
 //
-
-/**
- * A typed decimal number as the filter keeps it: the dot-decimal the backend expects, or null while the text is no valid
- * number (e.g. '3.57' in German, refused by RawWidget when the field is left)
- */
-const toDecimalFilterValue = (value) =>
-  typeof value !== 'string' || isValidDecimalNumberString(value)
-    ? normalizeDecimalNumberString(value)
-    : null;
 
 const toParameterValueArray = (parameter, value, valueTo) => {
   let parametersArray = Array.isArray(parameter) ? parameter : [parameter];

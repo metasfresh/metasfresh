@@ -6,7 +6,6 @@ import RawWidget from '../../../components/widget/RawWidget';
 import MasterWidget from '../../../components/widget/MasterWidget';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
-import { initNumeralLocales } from '../../../utils/locale';
 
 const createDummyProps = function(props) {
   return {
@@ -145,67 +144,5 @@ describe('MasterWidget component', () => {
 
     expect(props.updatePropertyValue).toBeCalled();
     expect(props.updateRow).toBeCalled();
-  });
-
-  describe('a refused decimal number (German session)', () => {
-    const amountProps = (extra) =>
-      createDummyProps({
-        caption: 'Skonto',
-        fields: [{ field: 'DiscountAmt', emptyText: 'none' }],
-        widgetType: 'Amount',
-        widgetData: [
-          {
-            displayed: true,
-            field: 'DiscountAmt',
-            readonly: false,
-            validStatus: { valid: true, initialValue: true },
-            value: '2.5',
-            widgetType: 'Amount',
-          },
-        ],
-        ...extra,
-      });
-
-    beforeEach(() => {
-      initNumeralLocales('de', {
-        numberDecimalSeparator: ',',
-        numberGroupingSeparator: '.',
-      });
-    });
-
-    afterEach(() => {
-      initNumeralLocales('en', {
-        numberDecimalSeparator: '.',
-        numberGroupingSeparator: ',',
-      });
-    });
-
-    it('is forgotten: the widget is no longer edited and shows later changes from outside', () => {
-      const patchSpy = jest.fn();
-      const props = amountProps({ patch: patchSpy });
-      const wrapper = mount(<MasterWidget {...props} />);
-
-      wrapper.find('input').simulate('focus');
-      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
-      wrapper.find('input').simulate('keyDown', {
-        key: 'Enter',
-        target: { value: '3,5a' },
-        preventDefault: jest.fn(),
-      });
-
-      expect(patchSpy).not.toHaveBeenCalled();
-      expect(wrapper.state('edited')).toBe(false);
-      expect(wrapper.state('value')).toEqual('2.5');
-      expect(props.updatePropertyValue).toHaveBeenLastCalledWith(
-        expect.objectContaining({ property: 'DiscountAmt', value: '2.5' })
-      );
-
-      wrapper.setProps({
-        widgetData: [{ ...props.widgetData[0], value: '2.6' }],
-      });
-      wrapper.update();
-
-      expect(wrapper.find('input').props().value).toEqual('2,6');
-    });
   });
 });

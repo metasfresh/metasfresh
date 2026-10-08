@@ -113,7 +113,8 @@ const BLANKS = /[\s\u00A0\u202F]/g; // any whitespace, incl. no-break and narrow
  * @param {string} text the raw text from the input
  * @returns {string|null} the dot-decimal number the backend expects, '' when the text holds no digit but only the
  *          characters a number may begin with (a lone '-', ',' or '.', or blanks: "nothing typed yet"), or null when
- *          the text holds any other character (a letter, a non-ASCII digit, "Infinity", ...) - i.e. is no number
+ *          the text holds any other character (a letter, a non-ASCII digit, "Infinity", ...) or more digits than a
+ *          number can hold (it would overflow to Infinity) - i.e. is no number
  */
 const parseDecimalNumberString = (text) => {
   const trimmed = text.trim();
@@ -169,7 +170,8 @@ export function normalizeDecimalNumberString(text) {
 /**
  * @summary Tells whether a text the user typed is a number that can be read - both the comma and the dot count as the
  *          decimal separator, see {@link parseDecimalNumberString}. Only genuinely unparseable input (e.g. a letter) is
- *          invalid; an empty value, or a text without any digit, is valid.
+ *          invalid; an empty value, or a text without any digit (e.g. '-' or '1,' on its way to a number), is valid.
+ *          A decimal number input takes only a valid text, see RawWidget.handleChange.
  * @param {string} text
  */
 export function isValidDecimalNumberString(text) {
@@ -197,18 +199,26 @@ export function formatDecimalNumberForEditing(
 }
 
 /**
- * @summary Tells whether a text may be typed into a decimal number input: digits, a leading minus, dots, commas and
- *          blanks (dropped when the value is read). Whether the text is a complete number is decided by
- *          {@link normalizeDecimalNumberString}, because while typing e.g. '1,' is on its way to '1,5'.
- * @param {string} text
+ * @summary The notification that tells the user why a pasted or dropped text was not taken over as a number. A number
+ *          may be typed with either "," or "." as the decimal separator; only a text that cannot be read as a number
+ *          (e.g. one holding a letter) is refused.
+ * @param {string} refusedText
+ * @returns {{title: string, message: string}}
  */
-export function isAllowedDecimalNumberInput(text) {
-  const compact = (text ?? '').replace(BLANKS, '');
-  return [...compact].every(
-    (char, idx) =>
-      (char >= '0' && char <= '9') ||
-      char === '.' ||
-      char === ',' ||
-      (char === '-' && idx === 0)
-  );
-}
+export const getRefusedNumberNotification = (refusedText) => {
+  const { decimal } = getSessionNumberDelimiters();
+  const params = {
+    text: refusedText,
+    decimal,
+    example: `1234${decimal}56`,
+  };
+  return {
+    title: counterpart.translate('window.error.invalidNumber.title', {
+      fallback: 'Invalid number',
+    }),
+    message: counterpart.translate('window.error.invalidNumber.description', {
+      ...params,
+      fallback: `"${refusedText}" is not a valid number: enter digits with "," or "." as the decimal separator (e.g. ${params.example}).`,
+    }),
+  };
+};

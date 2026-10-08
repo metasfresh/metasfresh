@@ -8,10 +8,7 @@ import nock from 'nock';
 import {
   ShortcutProvider
 } from '../../../components/keyshortcuts/ShortcutProvider';
-import {
-  ADD_NOTIFICATION,
-  SET_PROCESS_STATE_PENDING,
-} from '../../../constants/ActionTypes';
+import { SET_PROCESS_STATE_PENDING } from '../../../constants/ActionTypes';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import {
   initialState as windowHandlerState
@@ -28,13 +25,6 @@ import processResponses
   from '../../../../test_setup/fixtures/process/responses.json'
 
 import thunk from 'redux-thunk';
-import { startProcess } from '../../../api/process';
-import { markRefusedNumberInput } from '../../../utils/refusedNumberInputs';
-
-jest.mock('../../../api/process', () => ({
-  ...jest.requireActual('../../../api/process'),
-  startProcess: jest.fn(() => Promise.resolve({ data: {} })),
-}));
 
 const mockStore = configureStore([thunk]);
 
@@ -125,36 +115,5 @@ describe('Modal test', () => {
     { attachTo: document.getElementById('container') });
 
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-  });
-
-  it('does not start the process while a parameter holds a refused number', async () => {
-    const store = mockStore(getInitialState());
-    const modal = new DisconnectedModal({
-      ...fixtures,
-      dispatch: store.dispatch,
-      layout: { pinstanceId: '123' },
-      indicator: 'saved',
-    });
-    modal.setState = (state, callback) => callback && callback(); // not rendered: only the start decision matters
-    const modalContent = document.createElement('div');
-    const parameterInput = document.createElement('input');
-    modalContent.appendChild(parameterInput);
-    document.body.appendChild(modalContent);
-    modal.modalContentElement = modalContent;
-    markRefusedNumberInput(parameterInput, '3,57 EUR'); // e.g. a text that is no number pasted into an amount parameter
-
-    await modal.handleStart();
-
-    expect(startProcess).not.toHaveBeenCalled();
-    // the refusal toast may be gone by now: the user is told again why the process does not start
-    expect(store.getActions()).toContainEqual(
-      expect.objectContaining({
-        type: ADD_NOTIFICATION,
-        title: 'Invalid number',
-        msg: expect.stringContaining('"3,57 EUR"'),
-        notifType: 'error',
-      })
-    );
-    modalContent.remove();
   });
 });

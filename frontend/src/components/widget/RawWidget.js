@@ -10,15 +10,10 @@ import {
 } from '../../utils/widgetHelpers';
 import {
   formatDecimalNumberForEditing,
-  isAllowedDecimalNumberInput,
+  getRefusedNumberNotification,
   isValidDecimalNumberString,
   normalizeDecimalNumberString,
 } from '../../utils/locale';
-import {
-  getRefusedNumberNotification,
-  markRefusedNumberInput,
-  unmarkRefusedNumberInput,
-} from '../../utils/refusedNumberInputs';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
@@ -31,7 +26,7 @@ const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
 
 /**
  * The `InputEvent.inputType`s that bring a whole chunk of text into the field at once (not a single keystroke). When
- * such a chunk is no number, the decimal widget rejects it visibly (an error notification) instead of swallowing it.
+ * such a chunk is no number, the decimal widget refuses it visibly (an error notification) instead of swallowing it.
  */
 const INSERT_WHOLE_TEXT_INPUT_TYPES = [
   'insertFromPaste',
@@ -41,21 +36,14 @@ const INSERT_WHOLE_TEXT_INPUT_TYPES = [
 
 /**
  * Tells whether a widget value is just what the user typed, coming back from the parent's state - and not a value from
- * outside. A document keeps the typed text as is; a filter keeps the dot-decimal, or nothing while the text is no
- * complete number.
+ * outside. A document keeps the typed text as is; a filter keeps the dot-decimal.
  */
 const isEchoOfTypedText = (value, typedText, isFilter) => {
   const valueStr = value == null ? '' : String(value);
-  if (valueStr === typedText) {
-    return true;
-  } else if (isFilter) {
-    const typedValue = isValidDecimalNumberString(typedText)
-      ? normalizeDecimalNumberString(typedText)
-      : '';
-    return valueStr === (typedValue ?? '');
-  } else {
-    return false;
-  }
+  return (
+    valueStr === typedText ||
+    (isFilter && valueStr === normalizeDecimalNumberString(typedText))
+  );
 };
 
 /** Tells whether two dot-decimal numbers (or their strings) are the same number, e.g. '2.50' and '2.5' */
@@ -88,7 +76,6 @@ export class RawWidget extends PureComponent {
     const cachedValue = RawWidget.getCachedValue(props);
 
     this.rawWidget = createRef(null);
-    this.refusedInputElements = new Set(); // the inputs of this widget (e.g. both ends of a range) marked as refused
 
     this.state = {
       isFocused: false,
@@ -96,7 +83,6 @@ export class RawWidget extends PureComponent {
       // a decimal number widget shows the text the user is typing, otherwise the stored value the session way
       typedText: null,
       typedTextTo: null,
-      keptValueText: null, // the stored value shown again after a refused number, see refuseInvalidNumber
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
@@ -120,7 +106,6 @@ export class RawWidget extends PureComponent {
 
   componentWillUnmount() {
     this.mounted = false;
-    this.refusedInputElements.forEach(unmarkRefusedNumberInput);
   }
 
   componentDidUpdate(prevProps) {
@@ -335,7 +320,7 @@ export class RawWidget extends PureComponent {
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
-    const { typedText, typedTextTo, keptValueText } = this.state;
+    const { typedText, typedTextTo } = this.state;
     if (!isDecimalNumberField(widgetType)) {
       return;
     }
@@ -349,12 +334,10 @@ export class RawWidget extends PureComponent {
 
     const isValueChanged = isOutsideChange('value', typedText);
     const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
-    const isKeptValueOutdated = keptValueText !== null && isChanged('value');
-    if (isValueChanged || isValueToChanged || isKeptValueOutdated) {
+    if (isValueChanged || isValueToChanged) {
       this.setState({
         ...(isValueChanged ? { typedText: null } : {}),
         ...(isValueToChanged ? { typedTextTo: null } : {}),
-        ...(isKeptValueOutdated ? { keptValueText: null } : {}),
       });
     }
   };
@@ -365,12 +348,10 @@ export class RawWidget extends PureComponent {
    *          session's decimal separator (de 3.57 -> '3,57')
    */
   getDecimalEditText = (isValueTo = false) => {
-    const { typedText, typedTextTo, keptValueText } = this.state;
+    const { typedText, typedTextTo } = this.state;
     const typed = isValueTo ? typedTextTo : typedText;
     if (typed !== null) {
       return typed;
-    } else if (!isValueTo && keptValueText !== null) {
-      return keptValueText;
     }
 
     const { data, widgetData } = this.props;
@@ -418,48 +399,8 @@ export class RawWidget extends PureComponent {
   };
 
   /**
-   * @method refuseInvalidNumber
-   * @summary A text that is no number (e.g. one holding a letter, which only a paste can bring in - see handleChange)
-   *          is not patched: the user is told why, and the field shows the stored value again
-   */
-  refuseInvalidNumber = ({ property, id, invalidText, isValueToInvalid }) => {
-    const { handleChange, handleRestore, filterWidget, range } = this.props;
-    const { cachedValue } = this.state;
-    const keptValueText = formatDecimalNumberForEditing(cachedValue) ?? '';
-
-    this.notifyRefusedNumber(invalidText);
-    // a form or modal must not go on with the stored value the field shows again, see refusedNumberInputs
-    markRefusedNumberInput(this.inputElement, invalidText);
-    this.refusedInputElements.add(this.inputElement);
-
-    if (filterWidget) {
-      // a filter keeps no value for an invalid number, so it gets the ends shown before the typing back (read the session way)
-      const value = isValueToInvalid
-        ? this.getDecimalEditText(false)
-        : this.textBeforeTyping ?? keptValueText;
-      const valueTo = !range
-        ? undefined
-        : isValueToInvalid
-        ? this.textToBeforeTyping ?? ''
-        : this.getDecimalEditText(true);
-      this.setState({ typedText: null, typedTextTo: null });
-      handleChange?.(property, value, id, valueTo);
-    } else {
-      this.setState({ typedText: null, typedTextTo: null, keptValueText });
-      if (handleRestore) {
-        // MasterWidget forgets the typed text too, without becoming `edited` as on a change
-        handleRestore(property, cachedValue);
-      } else {
-        handleChange?.(property, cachedValue, id, undefined); // e.g. quick input, which keeps the typed text otherwise
-      }
-    }
-    this.textBeforeTyping = null;
-    this.textToBeforeTyping = null;
-  };
-
-  /**
    * @method notifyRefusedNumber
-   * @summary Tells the user why a typed or pasted number was not taken over - once for the same text
+   * @summary Tells the user why a pasted or dropped text was not taken over as a number - once for the same text
    */
   notifyRefusedNumber = (invalidText) => {
     const { addNotification } = this.props;
@@ -514,30 +455,12 @@ export class RawWidget extends PureComponent {
       id,
     } = this.props;
     const { key } = e;
-    this.inputElement = e.target;
 
     const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
     this.updateTypedCharacters(value);
-
-    // an invalid decimal number is refused (see handlePatch) and the field stays where it is: the key must neither close
-    // a table field, nor reach a table row (which would take the typed text), nor submit a form (e.g. quick input)
-    const isInvalidDecimalNumber =
-      isDecimalNumberField(widgetType) &&
-      !(
-        isValidDecimalNumberString(value) && isValidDecimalNumberString(valueTo)
-      );
-    const isSubmitKey =
-      ((key === 'Enter' || key === 'Tab') && !e.shiftKey) ||
-      key === 'ArrowUp' ||
-      key === 'ArrowDown';
-    if (isInvalidDecimalNumber && isSubmitKey) {
-      e.preventDefault();
-      e.stopPropagation();
-      return this.handlePatch(widgetField, value, id, valueTo);
-    }
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
     const NumberWidgets = [
@@ -576,27 +499,18 @@ export class RawWidget extends PureComponent {
 
     const valueToSet = e.target.value;
     if (isDecimalNumberField(widgetType)) {
-      if (!isAllowedDecimalNumberInput(valueToSet)) {
-        // a decimal number widget is a text input, so we reject the non-numeric keystrokes ourselves; a whole chunk of
-        // non-numeric text brought in at once (paste, drag-drop, autocorrect replacement) is rejected visibly
+      // a decimal number widget is a text input, so it takes only a text it can read as a number - any other input
+      // (a letter, a digit string too long to be a number, ...) leaves the field as it was, so it never holds a text
+      // that is no number. A keystroke is ignored silently; a whole chunk of text brought in at once (paste, drag-drop,
+      // autocorrect replacement) is refused visibly. Autocomplete is off and an IME's composition text is typed text.
+      if (!isValidDecimalNumberString(valueToSet)) {
         if (INSERT_WHOLE_TEXT_INPUT_TYPES.includes(e.nativeEvent?.inputType)) {
           this.notifyRefusedNumber(valueToSet);
         }
         return;
       }
-      // the last valid text, so that a refusal goes back to what the field held right before the invalid typing
-      const shownText = this.getDecimalEditText(isValueTo);
-      if (isValidDecimalNumberString(shownText)) {
-        this[isValueTo ? 'textToBeforeTyping' : 'textBeforeTyping'] = shownText;
-      }
       this.lastRefusedNumberText = null;
-      unmarkRefusedNumberInput(e.target); // typed again: no longer refused (the other end of a range may still be)
-      this.refusedInputElements.delete(e.target);
-      this.inputElement = e.target;
-      this.setState({
-        [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet,
-        keptValueText: null,
-      });
+      this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
     // the other end of a range the way it is shown, so that the parent reads both ends the same way
     const { value, valueTo } = this.getEventValues(e, isValueTo);
@@ -638,18 +552,6 @@ export class RawWidget extends PureComponent {
         isDocumentField &&
         this.isUntouchedDecimalEditText(value, valueTo)
       ) {
-        return Promise.resolve(null);
-      }
-
-      const isValueValid = isValidDecimalNumberString(value);
-      const isValueToValid = isValidDecimalNumberString(valueTo);
-      if (!isValueValid || !isValueToValid) {
-        this.refuseInvalidNumber({
-          property,
-          id,
-          invalidText: isValueValid ? valueTo : value,
-          isValueToInvalid: isValueValid,
-        });
         return Promise.resolve(null);
       }
 
@@ -1097,7 +999,6 @@ RawWidget.propTypes = {
   onBlurWidget: PropTypes.func,
   handleProcess: PropTypes.func,
   handleChange: PropTypes.func,
-  handleRestore: PropTypes.func,
   addNotification: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   handleZoomInto: PropTypes.func,

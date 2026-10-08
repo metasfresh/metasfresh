@@ -9,7 +9,6 @@ from '../../../components/widget/WidgetRenderer';
 import fixtures from '../../../../test_setup/fixtures/raw_widget.json';
 import rawWidgetFixtures from '../../../../test_setup/fixtures/widget/raw_widget.json';
 import { initNumeralLocales } from '../../../utils/locale';
-import { getRefusedNumberText } from '../../../utils/refusedNumberInputs';
 
 const createDummyProps = function(props) {
   return {
@@ -799,12 +798,10 @@ describe('RawWidget component', () => {
       (typed, patched) => {
         const addNotificationSpy = jest.fn();
         const handlePatchSpy = jest.fn();
-        const handleRestoreSpy = jest.fn();
         const props = createDummyProps({
           ...amountLayout,
           widgetData: [{ ...amountData, value: '2.5' }],
           handlePatch: handlePatchSpy,
-          handleRestore: handleRestoreSpy,
           addNotification: addNotificationSpy,
         });
         const wrapper = mount(<RawWidget {...props} />);
@@ -814,7 +811,6 @@ describe('RawWidget component', () => {
         pressEnter(wrapper.find('input'), typed);
 
         expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', patched, undefined, undefined);
-        expect(handleRestoreSpy).not.toHaveBeenCalled();
         expect(addNotificationSpy).not.toHaveBeenCalled();
       }
     );
@@ -839,14 +835,10 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ['Enter', '3,5a', 0],
-      ['Enter', '3,57', 1],
-      ['Tab', '3,5a', 0],
-      ['Tab', '3,57', 1],
-    ])(
-      'lets the table row see %s on %s only when it is a valid number (the row would take the typed text)',
-      (key, typed, expectedRowKeyDowns) => {
+    it.each(['Enter', 'Tab'])(
+      'lets the table row see %s on a typed amount',
+      (key) => {
+        const typed = '3,57';
         const rowKeyDownSpy = jest.fn();
         const props = createDummyProps({
           ...amountLayout,
@@ -866,7 +858,7 @@ describe('RawWidget component', () => {
           target: { value: typed },
         });
 
-        expect(rowKeyDownSpy).toHaveBeenCalledTimes(expectedRowKeyDowns);
+        expect(rowKeyDownSpy).toHaveBeenCalledTimes(1);
       }
     );
 
@@ -919,212 +911,6 @@ describe('RawWidget component', () => {
       expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '3,5');
     });
 
-    it('restores a range filter end that was refused, the session way', () => {
-      const addNotificationSpy = jest.fn();
-      const handleChangeSpy = jest.fn();
-      const handlePatchSpy = jest.fn();
-      const wrapper = mount(
-        <RawWidget
-          {...amountRangeFilterProps({
-            handleChange: handleChangeSpy,
-            handlePatch: handlePatchSpy,
-            addNotification: addNotificationSpy,
-          })}
-        />
-      );
-
-      wrapper.find('input').at(0).simulate('change', { target: { value: '3,5a' } });
-      pressEnter(wrapper.find('input').at(0), '3,5a');
-
-      expect(handlePatchSpy).not.toHaveBeenCalled();
-      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '');
-      expect(addNotificationSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('restores the previous "to" end of a range filter when the typed one is refused', () => {
-      const handleChangeSpy = jest.fn();
-      const wrapper = mount(
-        <RawWidget
-          {...amountRangeFilterProps({
-            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
-            handleChange: handleChangeSpy,
-            addNotification: jest.fn(),
-          })}
-        />
-      );
-
-      // a valid edit of the "to" end records its last valid text ('4,5'), then an unparseable commit is refused
-      wrapper.find('input').at(1).simulate('change', { target: { value: '4,55' } });
-      pressEnter(wrapper.find('input').at(1), '3,5a');
-
-      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '4,5');
-    });
-
-    it('restores the last valid text of a range filter end, not the text before a valid edit', () => {
-      const handleChangeSpy = jest.fn();
-      const wrapper = mount(
-        <RawWidget
-          {...amountRangeFilterProps({
-            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
-            handleChange: handleChangeSpy,
-            addNotification: jest.fn(),
-          })}
-        />
-      );
-
-      // '3,5' then '3,57' are both valid edits; '3,5' is the last valid text before the current typing
-      wrapper.find('input').at(0).simulate('change', { target: { value: '3,5' } });
-      wrapper.find('input').at(0).simulate('change', { target: { value: '3,57' } });
-      pressEnter(wrapper.find('input').at(0), '3,5a');
-      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '3,5', undefined, '4,5');
-    });
-
-    it('restores the last valid text of a range filter "to" end, not the text before a valid edit', () => {
-      const handleChangeSpy = jest.fn();
-      const wrapper = mount(
-        <RawWidget
-          {...amountRangeFilterProps({
-            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
-            handleChange: handleChangeSpy,
-            addNotification: jest.fn(),
-          })}
-        />
-      );
-
-      // '5,5' then '5,57' are both valid edits; '5,5' is the last valid "to" text before the current typing
-      wrapper.find('input').at(1).simulate('change', { target: { value: '5,5' } });
-      wrapper.find('input').at(1).simulate('change', { target: { value: '5,57' } });
-      pressEnter(wrapper.find('input').at(1), '5,5a');
-      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2,5', undefined, '5,5');
-    });
-
-    it('keeps the form from submitting on Enter on a refused amount, and marks the field as refused', () => {
-      const preventDefault = jest.fn();
-      const props = createDummyProps({
-        ...amountLayout,
-        widgetData: [{ ...amountData, value: '2.5' }],
-        propagateEnterKeyEvent: true, // e.g. quick input, whose form submits on Enter
-        addNotification: jest.fn(),
-      });
-      const container = document.createElement('div');
-      document.body.appendChild(container);
-      const wrapper = mount(
-        <form>
-          <RawWidget {...props} />
-        </form>,
-        { attachTo: container }
-      );
-      const form = wrapper.find('form').getDOMNode();
-      const input = wrapper.find('input').getDOMNode();
-      input.value = '3,5a'; // a text that is no number, as the browser reports it (e.g. a paste that reached the field)
-
-      wrapper.find('input').simulate('keyDown', { key: 'Enter', target: input, preventDefault });
-
-      expect(preventDefault).toHaveBeenCalled();
-      expect(getRefusedNumberText(form)).not.toBeNull();
-
-      input.value = '3,5'; // typed into the refused input itself, as the browser reports it
-      wrapper.find('input').simulate('change', { target: input });
-      expect(getRefusedNumberText(form)).toBeNull();
-      wrapper.detach();
-      container.remove();
-    });
-
-    it('keeps a refused range end marked while the other end is typed, and unmarks both ends when it goes', () => {
-      const container = document.createElement('div');
-      document.body.appendChild(container);
-      const wrapper = mount(
-        <RawWidget
-          {...amountRangeFilterProps({
-            widgetData: [{ ...amountData, value: '2.5', valueTo: '4.5' }],
-            addNotification: jest.fn(),
-          })}
-        />,
-        { attachTo: container }
-      );
-      const typeInto = (index, text) => {
-        const input = wrapper.find('input').at(index).getDOMNode();
-        input.value = text;
-        wrapper.find('input').at(index).simulate('change', { target: input });
-        return input;
-      };
-      // a text that is no number (e.g. a paste) reaches the input and is refused on Enter, marking the end
-      const fromInput = wrapper.find('input').at(0).getDOMNode();
-      fromInput.value = '3,5a';
-      wrapper.find('input').at(0).simulate('keyDown', { key: 'Enter', target: fromInput, preventDefault: jest.fn() });
-      expect(getRefusedNumberText(container)).not.toBeNull();
-
-      typeInto(1, '5,5');
-      expect(getRefusedNumberText(container)).not.toBeNull();
-
-      const detachedFromInput = wrapper.find('input').at(0).getDOMNode();
-      wrapper.unmount();
-      container.appendChild(detachedFromInput); // still in the page, e.g. kept by another widget: no longer marked
-      expect(getRefusedNumberText(container)).toBeNull();
-      container.remove();
-    });
-
-    it('restores a refused amount through handleChange when there is no MasterWidget (e.g. quick input)', () => {
-      const handleChangeSpy = jest.fn();
-      const props = createDummyProps({
-        ...amountLayout,
-        widgetData: [{ ...amountData, value: '2.5' }],
-        handleChange: handleChangeSpy,
-        handleRestore: undefined,
-        addNotification: jest.fn(),
-      });
-      const wrapper = mount(<RawWidget {...props} />);
-      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
-
-      pressEnter(wrapper.find('input'), '3,5a');
-
-      expect(handleChangeSpy).toHaveBeenLastCalledWith('DiscountAmt', '2.5', undefined, undefined);
-    });
-
-    it('keeps the focus in the field on Tab on a refused amount', () => {
-      const preventDefault = jest.fn();
-      const handlePatchSpy = jest.fn();
-      const handleBlurSpy = jest.fn();
-      const props = createDummyProps({
-        ...amountLayout,
-        widgetData: [{ ...amountData, value: '2.5' }],
-        handlePatch: handlePatchSpy,
-        handleBlur: handleBlurSpy,
-        addNotification: jest.fn(),
-      });
-      const wrapper = mount(<RawWidget {...props} />);
-      wrapper.find('input').simulate('focus');
-      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
-
-      wrapper.find('input').simulate('keyDown', { key: 'Tab', target: { value: '3,5a' }, preventDefault });
-
-      expect(preventDefault).toHaveBeenCalled();
-      expect(handleBlurSpy).not.toHaveBeenCalled();
-      expect(handlePatchSpy).not.toHaveBeenCalled();
-      expect(wrapper.find('input').props().value).toEqual('2,5');
-    });
-
-    it('refuses an amount on ArrowDown without closing the table field', () => {
-      const closeTableFieldSpy = jest.fn();
-      const handlePatchSpy = jest.fn();
-      const addNotificationSpy = jest.fn();
-      const props = createDummyProps({
-        ...amountLayout,
-        widgetData: [{ ...amountData, value: '2.5' }],
-        handlePatch: handlePatchSpy,
-        closeTableField: closeTableFieldSpy,
-        addNotification: addNotificationSpy,
-      });
-      const wrapper = mount(<RawWidget {...props} />);
-      wrapper.find('input').simulate('change', { target: { value: '3,5a' } });
-
-      wrapper.find('input').simulate('keyDown', { key: 'ArrowDown', target: { value: '3,5a' }, preventDefault: jest.fn() });
-
-      expect(closeTableFieldSpy).not.toHaveBeenCalled();
-      expect(handlePatchSpy).not.toHaveBeenCalled();
-      expect(addNotificationSpy).toHaveBeenCalledTimes(1);
-    });
-
     it.each(['insertFromPaste', 'insertFromDrop', 'insertReplacementText'])(
       'shows the refusal for a whole text (inputType %s) with characters a number cannot hold',
       (inputType) => {
@@ -1148,6 +934,27 @@ describe('RawWidget component', () => {
         expect(addNotificationSpy.mock.calls[0][1]).toContain('3,57 EUR');
       }
     );
+
+    it('refuses a pasted digit string too long to be a number (it would overflow), leaving the field unchanged', () => {
+      const handleChangeSpy = jest.fn();
+      const addNotificationSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '2.5' }],
+        handleChange: handleChangeSpy,
+        addNotification: addNotificationSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+
+      wrapper.find('input').simulate('change', {
+        target: { value: '1' + '0'.repeat(400) },
+        nativeEvent: { inputType: 'insertFromPaste' },
+      });
+
+      expect(handleChangeSpy).not.toHaveBeenCalled();
+      expect(addNotificationSpy).toHaveBeenCalledTimes(1);
+      expect(wrapper.find('input').props().value).toEqual('2,5');
+    });
 
     it('silently ignores a non-numeric single keystroke (not a pasted/dropped chunk), without an error', () => {
       const handleChangeSpy = jest.fn();

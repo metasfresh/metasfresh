@@ -1,7 +1,6 @@
 import {
   initNumeralLocales,
   normalizeDecimalNumberString,
-  isAllowedDecimalNumberInput,
   formatDecimalNumberForEditing,
   isValidDecimalNumberString,
 } from '../../utils/locale';
@@ -111,27 +110,6 @@ describe('normalizeDecimalNumberString', () => {
   });
 });
 
-describe('isAllowedDecimalNumberInput', () => {
-  it('accepts digits, both separators and a leading minus', () => {
-    expect(isAllowedDecimalNumberInput('-1.234,56')).toBe(true);
-    expect(isAllowedDecimalNumberInput('1,234.56')).toBe(true);
-    expect(isAllowedDecimalNumberInput('')).toBe(true);
-  });
-
-  it('rejects letters, an apostrophe, and a minus that is not leading', () => {
-    expect(isAllowedDecimalNumberInput('3,5a')).toBe(false);
-    expect(isAllowedDecimalNumberInput('1e5')).toBe(false);
-    expect(isAllowedDecimalNumberInput('3-5')).toBe(false);
-    expect(isAllowedDecimalNumberInput("1'234.56")).toBe(false);
-  });
-
-  it('accepts blanks and no-break spaces, which are dropped when the value is read', () => {
-    expect(isAllowedDecimalNumberInput('1 234,56')).toBe(true);
-    expect(isAllowedDecimalNumberInput('1 234,56')).toBe(true);
-    expect(isAllowedDecimalNumberInput(' -3,5')).toBe(true);
-  });
-});
-
 describe('formatDecimalNumberForEditing', () => {
   it('shows a stored number with the decimal comma of a German session, without grouping', () => {
     expect(formatDecimalNumberForEditing('3.57', DE)).toEqual('3,57');
@@ -175,13 +153,22 @@ describe('isValidDecimalNumberString', () => {
       '',
       '-',
       ' 1 234,5 ',
+      '-1.234,56',
+      ' -3,5',
+      '1 234,56',
+      '1\u00A0234,56',
     ].forEach((text) => expect(isValidDecimalNumberString(text)).toBe(true));
     expect(isValidDecimalNumberString(undefined)).toBe(true);
   });
 
   it('refuses a text that is no number, including a letters-only or non-ASCII-digit text', () => {
-    ['3,5a', '1e5', '1,2,3x', '12x9', 'Infinity', 'abc', '٣,٥'].forEach((text) =>
+    ['3,5a', '1e5', '1,2,3x', '12x9', 'Infinity', 'abc', '٣,٥', '3-5', "1'234.56"].forEach((text) =>
       expect(isValidDecimalNumberString(text)).toBe(false)
     );
+  });
+
+  it('refuses a digit string too long to be a number (it would overflow to Infinity)', () => {
+    expect(isValidDecimalNumberString('1' + '0'.repeat(400))).toBe(false);
+    expect(isValidDecimalNumberString('1' + '0'.repeat(300))).toBe(true);
   });
 });
