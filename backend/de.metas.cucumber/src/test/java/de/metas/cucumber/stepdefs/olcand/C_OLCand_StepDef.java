@@ -438,6 +438,26 @@ public class C_OLCand_StepDef
 		});
 	}
 
+	/**
+	 * Asserts how many active {@code C_OLCand} records carry the given external header id.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And exactly 0 C_OLCand exist for externalHeaderId 'order_1'
+	 * </pre>
+	 */
+	@And("exactly {int} C_OLCand exist for externalHeaderId {string}")
+	public void assert_C_OLCand_count_for_externalHeaderId(final int expectedCount, @NonNull final String externalHeaderId)
+	{
+		final int actualCount = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
+				.create()
+				.count();
+		assertThat(actualCount).as("C_OLCand count for externalHeaderId=%s", externalHeaderId).isEqualTo(expectedCount);
+	}
+
 	@And("^after not more than (.*)s, C_OLCand is found")
 	public void load_OLCand(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
