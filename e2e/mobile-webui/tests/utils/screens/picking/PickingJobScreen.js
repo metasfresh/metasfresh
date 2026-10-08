@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -127,7 +127,11 @@ export const PickingJobScreen = {
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
-        await page.getByTestId('targetLU-button').tap();
+        const luTargetButton = page.getByTestId('targetLU-button');
+        // Capture mode only (UAT_CAPTURE): the button renders below the fold, so the tap would appear in no
+        // recorded frame; scroll it into view and hold it there before tapping it.
+        await revealForCaptureIfEnabled(luTargetButton);
+        await luTargetButton.tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         if (!lu) throw new Error("No LU specified.");
@@ -275,6 +279,10 @@ export const PickingJobScreen = {
                 await expect(classes).toContain(expectedClassName);
             });
         }
+
+        // Capture mode only (UAT_CAPTURE): a line button may render below the fold, so its picked quantity
+        // can appear in no recorded frame; scroll it into view and hold it there.
+        await revealForCaptureIfEnabled(lineButton);
     }),
 
     // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
