@@ -80,6 +80,38 @@ public class C_OrderLineTest
 		assertThat(requestCaptor.getValue().getHuPIItemProductId()).isNull();
 	}
 
+	/**
+	 * Refund terms match the sales invoiced to their partner. So when a store orders and its head office is invoiced, the gross profit price has to use the head office's terms.
+	 */
+	@Test
+	public void updateProfitPriceActual_usesTheInvoicePartnerOfTheOrder()
+	{
+		final I_C_OrderLine unsavedOrderLine = createUnsavedOrderLine();
+		final I_C_BPartner headOffice = newInstance(I_C_BPartner.class);
+		saveRecord(headOffice);
+		final I_C_Order order = unsavedOrderLine.getC_Order();
+		order.setBill_BPartner_ID(headOffice.getC_BPartner_ID());
+		saveRecord(order);
+
+		interceptor.updateProfitPriceActual(unsavedOrderLine);
+
+		final ArgumentCaptor<CalculateProfitPriceActualRequest> requestCaptor = ArgumentCaptor.forClass(CalculateProfitPriceActualRequest.class);
+		Mockito.verify(profitPriceActualFactory).calculateProfitPriceActual(requestCaptor.capture());
+		assertThat(requestCaptor.getValue().getBPartnerId()).isEqualTo(BPartnerId.ofRepoId(headOffice.getC_BPartner_ID()));
+	}
+
+	@Test
+	public void updateProfitPriceActual_orderWithoutInvoicePartner_usesTheOrderPartner()
+	{
+		final I_C_OrderLine unsavedOrderLine = createUnsavedOrderLine();
+
+		interceptor.updateProfitPriceActual(unsavedOrderLine);
+
+		final ArgumentCaptor<CalculateProfitPriceActualRequest> requestCaptor = ArgumentCaptor.forClass(CalculateProfitPriceActualRequest.class);
+		Mockito.verify(profitPriceActualFactory).calculateProfitPriceActual(requestCaptor.capture());
+		assertThat(requestCaptor.getValue().getBPartnerId()).isEqualTo(BPartnerId.ofRepoId(unsavedOrderLine.getC_Order().getC_BPartner_ID()));
+	}
+
 	private I_C_OrderLine createUnsavedOrderLine()
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
