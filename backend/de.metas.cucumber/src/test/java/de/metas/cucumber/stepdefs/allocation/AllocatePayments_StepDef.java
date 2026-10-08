@@ -143,10 +143,20 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
-	 * Allocates the payments (column {@code C_Payment_ID}) to the invoices (column {@code C_Invoice_ID}) of the data table in one {@link PaymentAllocationBuilder} run.
+	 * Allocates the payments to the invoices of the data table in one {@link PaymentAllocationBuilder} run.
+	 * <p>
+	 * Required columns: {@code C_Payment_ID} (payment identifier), {@code C_Invoice_ID} (invoice identifier).
+	 * Optional: {@code InvoiceProcessing.C_Invoice_ID} registers the generated service invoice under that identifier;
+	 * {@code InvoiceProcessing.C_BPartner_ID} asserts the expected service company.
+	 * <p>
 	 * Payments are read first, because the service company and the fee date are derived from them, like in the WebUI payment allocation.
-	 * For every sales invoice with a service-company config the service fee is computed and, if the data table names it via
-	 * {@code InvoiceProcessing.C_Invoice_ID}, the generated service invoice is registered under that identifier.
+	 * For every sales invoice with a service-company config the service fee is computed automatically.
+	 * <pre>
+	 * And allocate payments to invoices
+	 *   | C_Payment_ID | C_Invoice_ID | InvoiceProcessing.C_Invoice_ID |
+	 *   | pay1         | inv1         | svcInv1                        |
+	 * </pre>
+	 * @see PaymentAllocationBuilder
 	 */
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
