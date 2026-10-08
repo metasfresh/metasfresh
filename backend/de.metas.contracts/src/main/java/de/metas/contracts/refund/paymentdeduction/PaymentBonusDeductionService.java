@@ -196,8 +196,9 @@ public class PaymentBonusDeductionService
 	 *         They are not part of any base: the bonus at payment is computed on the goods value before that discount.
 	 *         A line is recognised through the invoice candidates it was created from ({@code C_Invoice_Line_Alloc}), because invoicing may
 	 *         aggregate the discount lines of several orders into one invoice line without order line; it is left out if all of them are such discount lines.
-	 *         Invoice-line aggregation keys every non-packaging candidate by its own id, so a contract discount candidate always lands on its own
-	 *         invoice line (a line mixing a contract discount with a goods candidate is not produced); the all-discount test is therefore exact.
+	 *         With the configured line aggregation (whose key carries the invoice-candidate id) each contract discount candidate lands on its own
+	 *         invoice line, so the all-discount test is exact; a line mixing a contract discount with another candidate (only possible under a line
+	 *         aggregation that drops the candidate id) would stay in the base.
 	 *         A discount line of a group the user put together (no contract) stays in the base, as does a line that no invoice candidate created.
 	 */
 	private ImmutableSet<Integer> retrieveContractCompensationInvoiceLineIds(@NonNull final Collection<I_C_InvoiceLine> lines)
