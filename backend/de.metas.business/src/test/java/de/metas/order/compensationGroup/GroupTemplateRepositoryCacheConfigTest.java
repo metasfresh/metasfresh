@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** The schema cache must hold more than a handful of schemas and must not depend on the instance-wide default cache type. */
 class GroupTemplateRepositoryCacheConfigTest
 {
+	@SuppressWarnings("FieldCanBeLocal") // keeps the repository, and so its weakly registered cache, reachable during the test
 	private GroupTemplateRepository repository;
 
 	@BeforeEach
