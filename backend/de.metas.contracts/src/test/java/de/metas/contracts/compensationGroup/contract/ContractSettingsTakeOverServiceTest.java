@@ -6,11 +6,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
-import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -23,7 +19,6 @@ import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -101,11 +96,7 @@ class ContractSettingsTakeOverServiceTest
 		// a spy delegates to the real methods, so it behaves like the real repository in every test
 		orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
 
-		final CurrencyRepository currencyRepo = new CurrencyRepository();
-		SpringContextHolder.registerJUnitBean(currencyRepo);
-		final ContractServiceFeeTakeOverService feeService = new ContractServiceFeeTakeOverService(new InvoiceProcessingServiceCompanyService(
-				new InvoiceProcessingServiceCompanyConfigRepository(),
-				new MoneyService(currencyRepo)));
+		final ContractServiceFeeTakeOverService feeService = ContractServiceFeeTakeOverService.newInstanceForUnitTesting();
 
 		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeService);
 

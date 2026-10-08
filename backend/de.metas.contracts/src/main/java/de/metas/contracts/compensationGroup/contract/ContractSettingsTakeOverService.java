@@ -2,10 +2,6 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -76,9 +72,7 @@ public class ContractSettingsTakeOverService
 				() -> new ContractSettingsTakeOverService(
 						ContractSettingsTakeOverRepository.newInstanceForUnitTesting(),
 						OrderGroupRepository.newInstanceForUnitTesting(),
-						new ContractServiceFeeTakeOverService(new InvoiceProcessingServiceCompanyService(
-								new InvoiceProcessingServiceCompanyConfigRepository(),
-								new MoneyService(new CurrencyRepository())))));
+						ContractServiceFeeTakeOverService.newInstanceForUnitTesting()));
 	}
 
 	/** @return the schema with one own compensation line appended per matching take-over, the vendor's lines unchanged; the given schema when nothing is taken over */

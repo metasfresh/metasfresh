@@ -1,10 +1,16 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.money.MoneyService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -17,6 +23,18 @@ import java.time.ZonedDateTime;
 public class ContractServiceFeeTakeOverService
 {
 	@NonNull private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+
+	@VisibleForTesting
+	public static ContractServiceFeeTakeOverService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ContractServiceFeeTakeOverService.class,
+				() -> new ContractServiceFeeTakeOverService(new InvoiceProcessingServiceCompanyService(
+						new InvoiceProcessingServiceCompanyConfigRepository(),
+						new MoneyService(new CurrencyRepository()))));
+	}
 
 	/**
 	 * @return the fee percent of the active assignment valid at {@code soDate}; {@link Percent#ZERO} if there is none. Never {@code null}.
