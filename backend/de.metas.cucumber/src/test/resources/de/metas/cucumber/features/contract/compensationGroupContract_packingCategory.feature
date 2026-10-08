@@ -720,13 +720,14 @@ Feature: Contract compensation group — a discount line restricted to carton-pa
       | ol_rty20   | orderRty              | goodsB                  | 400        | pipRtyCrate                            |
       | ol_rty30   | orderRty              | goodsC                  | 360        | pipRtyCarton12                         |
 
-    # the deadlocked attempt saved the order (description), which was rolled back; the retry derives and saves the same value again
-    And the next completion of the order identified by orderRty saves the description 'saved by every completion attempt' and then runs into a DB deadlock once
+    # an AFTER_COMPLETE interceptor saves the order before the deadlock, so that save also writes what prepareIt()/approveIt() set
+    # (C_DocType_ID, IsApproved); it is rolled back, and the retried completion has to write these values again
+    And the next completion of the order identified by orderRty saves the order with the description 'saved by every completion attempt' and then runs into a DB deadlock once
     And the order identified by orderRty is completed
     And the completion of the order identified by orderRty did run into the DB deadlock
     And validate the created orders
-      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | Description                       |
-      | orderRty              | true      | CO        | 2031.02    | saved by every completion attempt |
+      | C_Order_ID.Identifier | processed | DocStatus | GrandTotal | C_DocType_ID.Identifier | IsApproved |
+      | orderRty              | true      | CO        | 2031.02    | docTypeSalesOrder       | true       |
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |

@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -214,6 +215,7 @@ public class C_Order_StepDef
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
+	@NonNull private final C_DocType_StepDefData docTypeTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -524,10 +526,11 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but each completion attempt first saves the given description
-	 * (until the end of the scenario), so the deadlocked attempt's save is rolled back and the retry saves the same value again.
+	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but each completion attempt (until the end of the scenario) first sets the given
+	 * description and saves the order in {@code AFTER_COMPLETE}, like an interceptor that saves the order. That save also writes the values the
+	 * attempt's {@code prepareIt()} / {@code approveIt()} set (e.g. {@code C_DocType_ID}, {@code IsApproved}), and is rolled back with the attempt.
 	 */
-	@And("^the next completion of the order identified by (\\S+) saves the description '(.*)' and then runs into a DB deadlock once$")
+	@And("^the next completion of the order identified by (\\S+) saves the order with the description '(.*)' and then runs into a DB deadlock once$")
 	public void order_next_completion_saves_description_and_runs_into_deadlock(@NonNull final String orderIdentifier, @NonNull final String description)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -1220,8 +1223,13 @@ public class C_Order_StepDef
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
 
-		row.getAsOptionalString(I_C_Order.COLUMNNAME_Description)
-				.ifPresent(description -> softly.assertThat(order.getDescription()).as("Description for Identifier=%s", identifierStr).isEqualTo(description));
+		// the order's own C_DocType_ID (not falling back to the target doc type, unlike DocBaseType above)
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(order.getC_DocType_ID()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(docTypeId.getRepoId()));
+
+		row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsApproved)
+				.ifPresent(isApproved -> softly.assertThat(order.isApproved()).as("IsApproved for Identifier=%s", identifierStr).isEqualTo(isApproved));
 
 		row.getAsOptionalBigDecimal(I_C_Order.COLUMNNAME_GrandTotal)
 				.ifPresent(grandTotal -> softly.assertThat(order.getGrandTotal()).as("GrandTotal for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal));
