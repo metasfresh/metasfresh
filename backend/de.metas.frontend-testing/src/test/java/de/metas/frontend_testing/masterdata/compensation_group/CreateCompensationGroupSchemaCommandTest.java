@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -109,6 +110,9 @@ public class CreateCompensationGroupSchemaCommandTest
 		assertThat(lines.get(0).getQty()).isEqualByComparingTo(new BigDecimal("1"));
 		assertThat(lines.get(0).isWithoutCharge()).isTrue();
 		assertThat(lines.get(0).isAllowSeparateInvoicing()).isFalse();
+		// no UOM in the request: the template line takes the product's stock UOM
+		final I_M_Product member1Record = InterfaceWrapperHelper.load(member1.getId(), I_M_Product.class);
+		assertThat(lines.get(0).getC_UOM_ID()).isGreaterThan(0).isEqualTo(member1Record.getC_UOM_ID());
 
 		assertThat(lines.get(1).getM_Product_ID()).isEqualTo(member2.getId().getRepoId());
 		assertThat(lines.get(1).getQty()).isEqualByComparingTo(new BigDecimal("2"));
@@ -148,6 +152,44 @@ public class CreateCompensationGroupSchemaCommandTest
 				.create()
 				.list();
 		assertThat(lines).isEmpty();
+	}
+
+	@Test
+	public void execute_createsPercentDiscountCompensationLine()
+	{
+		createProduct("GOODS_1");
+		final JsonCreateProductResponse discountProduct = createProduct("DISCOUNT");
+
+		final JsonCompensationGroupSchemaRequest request = JsonCompensationGroupSchemaRequest.builder()
+				.name("Bundle 3 %")
+				.templateLines(ImmutableList.of(
+						JsonCompensationGroupSchemaTemplateLine.builder()
+								.product(Identifier.ofString("goods1"))
+								.qty(BigDecimal.ONE)
+								.build()))
+				.compensationLines(ImmutableList.of(
+						JsonCompensationGroupSchemaCompensationLine.builder()
+								.product(Identifier.ofString("discount"))
+								.percentage(new BigDecimal("3"))
+								.build()))
+				.build();
+
+		final JsonCompensationGroupSchemaResponse response = CreateCompensationGroupSchemaCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString("discountSchema"))
+				.build()
+				.execute();
+
+		final List<I_C_CompensationGroup_SchemaLine> compensationLines = get(IQueryBL.class)
+				.createQueryBuilder(I_C_CompensationGroup_SchemaLine.class, Env.getCtx(), null)
+				.addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMNNAME_C_CompensationGroup_Schema_ID, response.getId().getRepoId())
+				.create()
+				.list();
+		assertThat(compensationLines).hasSize(1);
+		assertThat(compensationLines.get(0).getM_Product_ID()).isEqualTo(discountProduct.getId().getRepoId());
+		assertThat(compensationLines.get(0).getCompleteOrderDiscount()).isEqualByComparingTo("3");
+		assertThat(compensationLines.get(0).getType()).isNull();
 	}
 
 	private JsonCreateProductResponse createProduct(final String value)

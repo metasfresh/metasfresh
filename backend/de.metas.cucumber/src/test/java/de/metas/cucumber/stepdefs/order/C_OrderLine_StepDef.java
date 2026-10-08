@@ -571,9 +571,8 @@ public class C_OrderLine_StepDef
 	/**
 	 * Updates previously registered order lines, applying every value column that is present.
 	 *
-	 * <p>The save runs as a background write, i.e. the way an automatic writer such as the invoicing
-	 * run saves a line. Use {@code update C_OrderLine expecting error:} with {@code AsUIAction} to save
-	 * as a user edit instead.</p>
+	 * <p>By default the save runs as a background write, i.e. the way an automatic writer such as the
+	 * invoicing run saves a line. With {@code AsUIAction=Y} the line is saved as a user edit in the WebUI.</p>
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -582,6 +581,7 @@ public class C_OrderLine_StepDef
 	 *     <li>{@code C_Flatrate_Term_ID}, {@code QtyEntered}, {@code M_HU_PI_Item_Product_ID},
 	 *         {@code M_AttributeSetInstance_ID}, {@code QtyOrdered}, {@code C_Project_ID} — optional,
 	 *         each is applied only when the column is present</li>
+	 *     <li>{@code AsUIAction} — optional, defaults to {@code N}</li>
 	 *   </ul>
 	 * @cucumber.example
 	 * <pre>
@@ -593,7 +593,7 @@ public class C_OrderLine_StepDef
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
-		dataTable.asMaps().forEach(row -> updateOrderLine(row, false));
+		dataTable.asMaps().forEach(row -> updateOrderLine(row, DataTableRow.singleRow(row).getAsOptionalBoolean("AsUIAction").orElseFalse()));
 	}
 
 	/**
@@ -911,6 +911,8 @@ public class C_OrderLine_StepDef
 	 *   <li>{@code qtydelivered} — optional BigDecimal; maps to {@code QtyDelivered}</li>
 	 *   <li>{@code qtyinvoiced} — optional BigDecimal; maps to {@code QtyInvoiced}</li>
 	 *   <li>{@code price} — optional BigDecimal; maps to {@code PriceEntered}</li>
+	 *   <li>{@code LineNetAmt} — optional BigDecimal</li>
+	 *   <li>{@code GroupCompensationBaseAmt} — optional BigDecimal; the base a compensation line's percentage is applied to</li>
 	 *   <li>{@code discount} — optional BigDecimal</li>
 	 *   <li>{@code currencyCode} — optional ISO-4217 code</li>
 	 *   <li>{@code processed} — optional boolean</li>
@@ -954,6 +956,12 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationBaseAmt)
+				.ifPresent(groupCompensationBaseAmt -> softly.assertThat(orderLine.getGroupCompensationBaseAmt()).as("GroupCompensationBaseAmt").isEqualByComparingTo(groupCompensationBaseAmt));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_LineNetAmt)
+				.ifPresent(lineNetAmt -> softly.assertThat(orderLine.getLineNetAmt()).as("LineNetAmt").isEqualByComparingTo(lineNetAmt));
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
