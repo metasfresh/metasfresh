@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import counterpart from 'counterpart';
 
 import {
+  ATTRIBUTE_WIDGET_TYPES,
   checkIfDateField,
   getSizeClass,
   getSizeStyle,
@@ -93,10 +94,7 @@ class TableCell extends PureComponent {
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
     const widgetType = tableCellData?.widgetType;
 
-    // 'Address', like 'ProductAttributes', holds a {key, caption} object that is edited in the
-    // attribute overlay, never as the cell's text
-    const isAttributeWidget =
-      widgetType === 'ProductAttributes' || widgetType === 'Address';
+    const isAttributeWidget = ATTRIBUTE_WIDGET_TYPES.includes(widgetType);
 
     onKeyDown &&
       onKeyDown({

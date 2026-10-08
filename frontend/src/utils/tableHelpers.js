@@ -173,6 +173,10 @@ export const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
 export const PRICE_MIN_WIDTH_PX = 68;
 export const PRICE_WIDGET_TYPES = ['CostPrice', 'Amount'];
 
+// attribute widgets: their value is a {key, caption} object that is edited in the attribute
+// popup (opened by the cell's <Attributes> button), never as the cell's text
+export const ATTRIBUTE_WIDGET_TYPES = ['ProductAttributes', 'Address'];
+
 /**
  * @method getColumnMinWidthPx
  * @param {string} widgetType
