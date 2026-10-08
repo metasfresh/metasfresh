@@ -38,6 +38,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -59,7 +60,6 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -76,9 +76,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -86,6 +84,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
@@ -164,7 +163,6 @@ public class AllocatePayments_StepDef
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
-		// payments first: the service company (and the fee date) is derived from the payment, like in the WebUI payment allocation
 		DataTableRows.of(table).forEach(row -> row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
 				.map(this::buildPaymentDocument)
 				.ifPresent(paymentDocuments::add));
@@ -322,13 +320,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, null))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, null))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, null))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -342,18 +340,35 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	/**
+	 * Builds the payable without any invoice-processing service fee.
+	 */
+	@NonNull
+	private PayableDocument buildPayableDocumentWithoutServiceFee(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+																  @NonNull final DataTableRow row)
+	{
+		return preparePayableDocument(invoiceIdentifier, row, invoiceToAllocate -> Optional.empty()).build();
+	}
+
+	/**
+	 * Builds the payable and, for a sales invoice with a service-company config, deducts the service fee
+	 * whose service company and date are derived from the given payments.
+	 */
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
 												 @NonNull final DataTableRow row,
-												 @Nullable final List<PaymentDocument> paymentDocumentsForServiceFee)
+												 @NonNull final List<PaymentDocument> paymentDocuments)
 	{
-		return preparePayableDocument(invoiceIdentifier, row, paymentDocumentsForServiceFee).build();
+		return preparePayableDocument(invoiceIdentifier, row, invoiceToAllocate -> computeInvoiceProcessingFee(invoiceToAllocate, paymentDocuments)).build();
 	}
 
+	/**
+	 * @param serviceFeeCalculator returns the service fee to deduct from the invoice, or empty for none
+	 */
 	@NonNull
 	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
 														  @NonNull final DataTableRow row,
-														  @Nullable final List<PaymentDocument> paymentDocumentsForServiceFee)
+														  @NonNull final Function<InvoiceToAllocate, Optional<InvoiceProcessingFeeCalculation>> serviceFeeCalculator)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -375,9 +390,7 @@ public class AllocatePayments_StepDef
 
 		//
 		// Service company fee
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = paymentDocumentsForServiceFee != null
-				? computeInvoiceProcessingFee(invoiceToAllocate, paymentDocumentsForServiceFee).orElse(null)
-				: null;
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = serviceFeeCalculator.apply(invoiceToAllocate).orElse(null);
 		Money invoiceProcessingFee = null;
 		if (invoiceProcessingFeeCalculation != null)
 		{
@@ -434,7 +447,7 @@ public class AllocatePayments_StepDef
 		final InvoiceProcessingContext context = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 				customerId,
 				paymentDocuments.stream()
-						.map(payment -> InvoiceProcessingContext.of(payment.getBpartnerId(), TimeUtil.asZonedDateTime(payment.getDateTrx())))
+						.map(PaymentDocument::toInvoiceProcessingContext)
 						.collect(ImmutableList.toImmutableList()),
 				() -> new AdempiereException("No service company config found for customer " + customerId));
 		final BPartnerId serviceCompanyBPartnerId = context.getServiceCompanyId();

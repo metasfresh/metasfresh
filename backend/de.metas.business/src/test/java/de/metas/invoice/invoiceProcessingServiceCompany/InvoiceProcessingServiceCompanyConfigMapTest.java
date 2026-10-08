@@ -73,4 +73,15 @@ class InvoiceProcessingServiceCompanyConfigMapTest
 		final Optional<InvoiceProcessingServiceCompanyConfig> result = map.getByCustomerIdAndDate(CUSTOMER_OF_COMPANY_1, DATE);
 		assertThat(result).isEmpty();
 	}
+
+	@Test
+	void getByCustomerIdAndDate_customerOfTwoServiceCompanies_firstCompanyInConfigListOrderWins()
+	{
+		final BPartnerId sharedCustomer = BPartnerId.ofRepoId(104);
+		final InvoiceProcessingServiceCompanyConfig config1 = config(SERVICE_COMPANY_1, LATER, sharedCustomer);
+		final InvoiceProcessingServiceCompanyConfig config2 = config(SERVICE_COMPANY_2, EARLIER, sharedCustomer);
+
+		assertThat(new InvoiceProcessingServiceCompanyConfigMap(ImmutableList.of(config1, config2)).getByCustomerIdAndDate(sharedCustomer, DATE)).contains(config1);
+		assertThat(new InvoiceProcessingServiceCompanyConfigMap(ImmutableList.of(config2, config1)).getByCustomerIdAndDate(sharedCustomer, DATE)).contains(config2);
+	}
 }

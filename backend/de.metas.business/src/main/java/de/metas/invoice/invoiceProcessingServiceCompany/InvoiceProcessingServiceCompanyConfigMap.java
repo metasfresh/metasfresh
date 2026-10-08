@@ -57,11 +57,13 @@ import java.util.Optional;
 	 * Per service company, only its most recent config valid at {@code validFrom} counts: if there is an older config of that service company for the given {@code customerId},
 	 * but a more recent config of the <b>same</b> service company which does not have the given {@code customerId}, that service company yields no match.
 	 * If no service company matches, {@link Optional#empty()} is returned.
+	 * <p>
+	 * Assumes a customer is assigned to at most one service company at a given date. If several service companies match,
+	 * the one whose config comes first in the list given to the constructor wins (not the most recent {@code ValidFrom}).
 	 */
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		// per service company, only its most recent config valid at the given date counts; it supersedes its older configs
 		for (final BPartnerId serviceCompanyBPartnerId : companyBPartnersToConfigsSorted.keySet())
 		{
 			final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = companyBPartnersToConfigsSorted.get(serviceCompanyBPartnerId);
