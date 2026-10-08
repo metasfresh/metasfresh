@@ -17,7 +17,8 @@ import { InvoicePage } from '../utils/pages/InvoicePage';
  * - both the comma and the dot are read as the decimal separator ("3,57" and "3.57" are both 3.57, in either session);
  * - there is no thousands grouping on input ("1.000" is the decimal 1, not 1000);
  * - the typed value is normalized to a dot-decimal before it is patched (the backend parses a dot-decimal);
- * - only a text that is no number (which only a paste can bring in) is refused, with an error notification that says why;
+ * - a non-numeric keystroke is ignored; a pasted or dropped text that is no number is refused right when it comes in,
+ *   with an error notification that says why, and the field keeps what it held - so a field never holds a non-number;
  * - a field that is opened and left untouched is not patched.
  *
  * Grid: the payment-allocation view opened from a sales invoice, column "discountAmt" (Amount widget, edited in-row).
@@ -117,8 +118,8 @@ const typeAndExpectStored = async (page, { invoiceDocumentNo, typed, patched, la
 
 /**
  * Simulates pasting text into the decimal input by firing the same "input" event (inputType "insertFromPaste") the
- * browser fires on a real paste. A letter typed key-by-key is swallowed by the decimal input, so a paste is the only
- * way a text that is no number reaches the field — and the way it is refused.
+ * browser fires on a real paste. A letter typed key-by-key is ignored by the decimal input, so a paste is how a text
+ * that is no number would come in — and where it is refused, before it reaches the field.
  */
 const pasteIntoInput = async (input, text) => {
   await input.evaluate((el, value) => {
@@ -140,7 +141,7 @@ const pasteIntoInput = async (input, text) => {
 
 /**
  * Pastes a text that is no number into the in-row editor and asserts it is refused: a visible error, the editor stays
- * open and focused showing the kept amount (the stored amount it reverts to), and no PATCH
+ * open and focused and keeps the amount it held (the paste never reaches it), and no PATCH
  */
 const pasteAndExpectRefused = async (page, { invoiceDocumentNo, pasted, keptEditText, keptDisplayed }) => {
   const cell = discountCellOf(page, invoiceDocumentNo);
@@ -157,7 +158,7 @@ const pasteAndExpectRefused = async (page, { invoiceDocumentNo, pasted, keptEdit
     await expect(page.locator('.notification-item.error', { hasText: pasted }).first()).toBeVisible({
       timeout: SLOW_ACTION_TIMEOUT,
     });
-    await expect(input, 'the editor shows the kept amount again').toHaveValue(keptEditText);
+    await expect(input, 'the editor keeps the amount it held').toHaveValue(keptEditText);
     await expect(input, 'the editor keeps the focus').toBeFocused();
     await expectDisplayedDiscount(cell, keptDisplayed);
 
