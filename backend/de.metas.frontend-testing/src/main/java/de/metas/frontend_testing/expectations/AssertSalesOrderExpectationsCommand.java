@@ -53,10 +53,8 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  *     '1000123': { compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }] },
  *     // assert order lines by product (masterdata keys), incl. the calibration data
  *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 150, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] },
- *     // assert an order line without calibration (no factor, no rule, no uncalibrated qty)
- *     'SO4': { lines: [{ product: 'P1', qtyEntered: 10, calibrated: false }] },
- *     // assert an order line calibrated without a rule (no rule matched: factor 100 %)
- *     'SO5': { lines: [{ product: 'P1', qtyEntered: 10, calibrationFactor: 100, qtyEnteredUncalibrated: 10, hasCalibrationRule: false }] }
+ *     // assert an order line without calibration, e.g. no rule matched (no factor, no rule, no uncalibrated qty)
+ *     'SO4': { lines: [{ product: 'P1', qtyEntered: 10, calibrated: false }] }
  *   }
  * });
  * </pre>

@@ -2,7 +2,6 @@ package de.metas.order.compensationGroup.calibration;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -48,7 +47,6 @@ public class CompensationGroupCalibrationService
 		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
-		final ImmutableSet.Builder<GroupTemplateRegularLineId> calibratedLineIds = ImmutableSet.builder();
 		final ImmutableMap.Builder<GroupTemplateRegularLineId, CalibrationRule> rulesByLineId = ImmutableMap.builder();
 		for (final GroupTemplateRegularLine line : template.getRegularLinesToAdd())
 		{
@@ -66,10 +64,9 @@ public class CompensationGroupCalibrationService
 					.groupTemplateId(template.getId())
 					.build();
 
-			calibratedLineIds.add(line.getId());
 			rules.findFirstMatching(key)
 					.ifPresent(rule -> rulesByLineId.put(line.getId(), rule));
 		}
-		return GroupCalibrations.of(calibratedLineIds.build(), rulesByLineId.build());
+		return GroupCalibrations.of(rulesByLineId.build());
 	}
 }

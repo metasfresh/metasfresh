@@ -942,8 +942,7 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final RetrieveOrCreateGroupRequest request)
 	{
 		final GroupCalibrations calibrations = request.getCalibrations();
-		final boolean isCalibrated = calibrations != null && calibrations.isCalibrated(from.getId());
-		final CalibrationRule calibrationRule = isCalibrated
+		final CalibrationRule calibrationRule = calibrations != null
 				? calibrations.getByTemplateLineId(from.getId()).orElse(null)
 				: null;
 
@@ -955,23 +954,14 @@ public class OrderGroupRepository implements GroupRepository
 		// half-up, like MOrderLine.setQtyEntered; the UOM's own rounding mode (UP) would round 0.121 to 0.13
 		final Quantity qtyBase = from.getQty().multiply(request.getQtyMultiplier());
 		Quantity qtyEntered = qtyBase.setScale(qtyBase.getUOMPrecision(), RoundingMode.HALF_UP);
-		if (isCalibrated)
+		if (calibrationRule != null) // no matching rule: no calibration, the line is created like an uncalibrated one
 		{
 			final Quantity qtyEnteredUncalibrated = qtyEntered;
-			final Percent factor;
-			if (calibrationRule != null)
-			{
-				qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
-				factor = calibrationRule.getFactor();
-			}
-			else
-			{
-				factor = Percent.ONE_HUNDRED; // calibrated, but no rule matched: the qty stays as it is
-			}
+			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
 
 			// the calibration columns are not updateable: they are only set while the line is new
-			orderLine.setGroupCompensationCalibrationFactor(factor.toBigDecimal());
-			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule != null ? calibrationRule.getId() : null));
+			orderLine.setGroupCompensationCalibrationFactor(calibrationRule.getFactor().toBigDecimal());
+			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
 		}
 

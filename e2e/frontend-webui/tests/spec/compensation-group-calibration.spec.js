@@ -275,12 +275,12 @@ test.describe('Compensation group calibration', () => {
             await expectCalibrationGroupHidden(page, haehnchen);
 
             await Backend.expect({
-                title: 'Krankenhaus order lines: today\'s quantities, factor 100 %, no rule applied',
+                title: 'Krankenhaus order lines: today\'s quantities, no rule matched: no factor, no rule, no uncalibrated quantity',
                 salesOrders: {
                     [order.orderId]: {
                         lines: [
-                            { product: 'REIS', qtyEntered: 200, calibrationFactor: 100, qtyEnteredUncalibrated: 200, hasCalibrationRule: false },
-                            { product: 'HAEHNCHEN', qtyEntered: 100, calibrationFactor: 100, qtyEnteredUncalibrated: 100, hasCalibrationRule: false },
+                            { product: 'REIS', qtyEntered: 200, calibrated: false },
+                            { product: 'HAEHNCHEN', qtyEntered: 100, calibrated: false },
                         ],
                     },
                 },

@@ -111,22 +111,20 @@ class CompensationGroupCalibrationServiceTest
 	}
 
 	@Test
-	void noMatchingRule_factorOneAndNoRule()
+	void noMatchingRule_noCalibration()
 	{
 		final ProductId p = product(false);
 		final GroupTemplateRegularLine l = line(p, "100");
-		final GroupCalibrations calibrations = service.computeCalibrations(order(true), template(l));
-		// the line is calibrated (it stores factor 100), but no rule matched
-		assertThat(calibrations.isCalibrated(l.getId())).isTrue();
-		assertThat(calibrations.getByTemplateLineId(l.getId())).isEmpty();
+		// no rule matched: there is no calibration at all, the line is created like an uncalibrated one
+		assertThat(service.computeCalibrations(order(true), template(l))).isSameAs(GroupCalibrations.NONE);
 	}
 
 	@Test
-	void purchaseOrder_noLineIsCalibrated()
+	void purchaseOrder_noCalibrationWithoutRule()
 	{
 		final ProductId p = product(false);
 		final GroupTemplateRegularLine l = line(p, "100");
-		assertThat(service.computeCalibrations(order(false), template(l)).isCalibrated(l.getId())).isFalse();
+		assertThat(service.computeCalibrations(order(false), template(l)).getByTemplateLineId(l.getId())).isEmpty();
 	}
 
 	@Test
@@ -160,8 +158,6 @@ class CompensationGroupCalibrationServiceTest
 		final ProductId menu = product(true);
 		rule(menu, "50");
 		final GroupTemplateRegularLine l = line(menu, "1");
-		final GroupCalibrations calibrations = service.computeCalibrations(order(true), template(l));
-		assertThat(calibrations.isCalibrated(l.getId())).isFalse();
-		assertThat(calibrations.getByTemplateLineId(l.getId())).isEmpty();
+		assertThat(service.computeCalibrations(order(true), template(l)).getByTemplateLineId(l.getId())).isEmpty();
 	}
 }

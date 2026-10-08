@@ -104,9 +104,9 @@ Feature: Compensation group calibration
       | order_z    | schema_base                   | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_kraft | kraft        | 0.15           | 100                                    | 0.15                                        | null                                       |
-      | schema_ol_tomate | tomate      | 0.14           | 100                                    | 0.14                                        | null                                       |
-      | schema_ol_kaese | kaese        | 25             | 100                                    | 25                                          | null                                       |
+      | schema_ol_kraft | kraft        | 0.15           | null                                   | null                                        | null                                       |
+      | schema_ol_tomate | tomate      | 0.14           | null                                   | null                                        | null                                       |
+      | schema_ol_kaese | kaese        | 25             | null                                   | null                                        | null                                       |
 
     # customer in the group: the group rules
     When create compensation group from schema template:
@@ -116,7 +116,7 @@ Feature: Compensation group calibration
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_kraft | kraft        | 0.11           | 66.7                                   | 0.15                                        | r40                                        |
       | schema_ol_tomate | tomate      | 0.10           | 71.4                                   | 0.14                                        | r50                                        |
-      | schema_ol_kaese | kaese        | 25             | 100                                    | 25                                          | null                                       |
+      | schema_ol_kaese | kaese        | 25             | null                                   | null                                        | null                                       |
 
     # customer with own rules: customer rules come before the group rules
     When create compensation group from schema template:
@@ -222,7 +222,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 100                                    | 200                                         | null                                       |
+      | schema_ol_reis | reis         | 200            | null                                   | null                                        | null                                       |
 
 
   # ##########################################################################################
@@ -343,8 +343,8 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID    | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_in_side | in_side      | 50             | 50                                     | rule_cat                                   |
-      | schema_ol_in_other| in_other     | 100            | 100                                    | null                                       |
-      | schema_ol_in_child| in_child     | 100            | 100                                    | null                                       |
+      | schema_ol_in_other| in_other     | 100            | null                                   | null                                       |
+      | schema_ol_in_child| in_child     | 100            | null                                   | null                                       |
 
 
   # ##########################################################################################
@@ -378,14 +378,14 @@ Feature: Compensation group calibration
       | order_x    | schema_2                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 100                                    | null                                       |
+      | schema_ol_reis | reis         | 200            | null                                   | null                                       |
 
 
   # ##########################################################################################
   # No matching rule: quantities exactly as without calibration
   @from:cucumber
   @Id:S26881_TC8
-  Scenario: Without a matching rule quantities stay as they are and the factor is 100
+  Scenario: Without a matching rule quantities stay as they are and no calibration is stored
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name       |
       | schema_1   | CalibNoHit |
@@ -405,8 +405,8 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_milch | milch        | 0.13           | 100                                    | 0.13                                        | null                                       |
-      | schema_ol_kraft | kraft        | 0              | 100                                    | 0                                           | null                                       |
+      | schema_ol_milch | milch        | 0.13           | null                                   | null                                        | null                                       |
+      | schema_ol_kraft | kraft        | 0              | null                                   | null                                        | null                                       |
 
 
   # ##########################################################################################
@@ -561,7 +561,7 @@ Feature: Compensation group calibration
       | order_1    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 100                                    | null                                       |
+      | schema_ol_reis | reis         | 200            | null                                   | null                                       |
 
     When metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
@@ -600,7 +600,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 100                                    | 200                                         | null                                       |
+      | schema_ol_reis | reis         | 200            | null                                   | null                                        | null                                       |
 
 
   # ##########################################################################################
@@ -643,7 +643,7 @@ Feature: Compensation group calibration
       | order_2    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 200            | 100                                    | 200                                         | null                                       |
+      | schema_ol_reis | reis         | 200            | null                                   | null                                        | null                                       |
 
 
   # ##########################################################################################
@@ -674,7 +674,7 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_reis | reis         | 1000           | 50                                     | 2000                                        | rule_10                                    |
-      | schema_ol_fisch | fisch       | 10             | 100                                    | 10                                          | null                                       |
+      | schema_ol_fisch | fisch       | 10             | null                                   | null                                        | null                                       |
     # 10 % of the net of the regular lines: 10 PCE x 5 EUR + 1000 GRM x 1 EUR = 1050 EUR
     And validate C_OrderLine:
       | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
@@ -694,7 +694,7 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_reis  | reis         | 1200           | 50                                     | 2000                                        | rule_10                                    |
-      | schema_ol_fisch | fisch        | 10             | 100                                    | 10                                          | null                                       |
+      | schema_ol_fisch | fisch        | 10             | null                                   | null                                        | null                                       |
     And validate C_OrderLine:
       | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
       | schema_comp_discount | discount     | true                        | -125      |
@@ -728,7 +728,7 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_fisch | fisch        | 0              | 0                                      | 1                                           | rule_zero                                  |
-      | schema_ol_reis  | reis         | 200            | 100                                    | 200                                         | null                                       |
+      | schema_ol_reis  | reis         | 200            | null                                   | null                                        | null                                       |
     # 10 % of the net of the regular lines: 0 PCE x 5 EUR + 200 GRM x 1 EUR = 200 EUR
     And validate C_OrderLine:
       | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
