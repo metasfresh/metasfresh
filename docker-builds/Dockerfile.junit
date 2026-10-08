@@ -20,9 +20,8 @@ COPY --from=common /commons commons
 COPY --from=backend /backend backend
 
 
-# Changing this value invalidates every cached test-result layer below (BuildKit: a changed ARG is a cache miss for all later RUNs).
-# Introducing it evicted the RED results that were cached before CI stopped pushing red test images as build cache
-# (see cicd.yaml, job "junit", step "determine-test-status"). Bump it to force a real re-run of all tests.
+# Cache epoch for the test-result layers below. BuildKit treats a changed ARG as a cache miss for every later RUN,
+# so bumping this value forces all tests to re-run instead of replaying cached results.
 ARG TEST_CACHE_EPOCH=1
 
 WORKDIR /java/commons
