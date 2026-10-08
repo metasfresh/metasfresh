@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -53,6 +54,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
+import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -69,6 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Step definitions for {@code C_Queue_WorkPackage} — locating, validating, and asserting the state of async workpackages. */
 public class C_Queue_WorkPackage_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(C_Queue_WorkPackage_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
@@ -395,8 +399,8 @@ public class C_Queue_WorkPackage_StepDef
 	 *       and runs it itself);</li>
 	 *   <li>afterwards it claims the processor's remaining pending workpackages (e.g. a re-enqueued follow-up), so the
 	 *       planner does not run them between steps; the next invocation of this step processes them. A follow-up the
-	 *       planner already took before this claim is covered by the previous bullet. Claims still held when the
-	 *       scenario ends are released by {@link #releaseClaimedWorkPackages()}.</li>
+	 *       planner already took before this claim is covered by the previous bullet. Claimed workpackages that are
+	 *       still unprocessed when the scenario ends are released by {@link #releaseClaimedWorkPackages()}.</li>
 	 * </ul>
 	 *
 	 * @cucumber.stepdef
@@ -520,7 +524,7 @@ public class C_Queue_WorkPackage_StepDef
 				return true;
 			}
 			return false;
-		});
+		}, () -> logWorkPackageState(workPackageId, processorShortName));
 
 		if (claimedByStep.get())
 		{
@@ -533,6 +537,13 @@ public class C_Queue_WorkPackage_StepDef
 				.as("C_Queue_WorkPackage_ID=%s of processor %s was run by the background queue processor; Processed (IsError=%s, ErrorMsg=%s)",
 						workPackageId.getRepoId(), processorShortName, workPackage.isError(), workPackage.getErrorMsg())
 				.isTrue();
+	}
+
+	private void logWorkPackageState(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
+		logger.info("Waiting for the background queue processor's run of C_Queue_WorkPackage_ID={} of processor {}: Processed={}, IsError={}, LockedAt={}, ErrorMsg={}",
+				workPackageId.getRepoId(), processorShortName, workPackage.isProcessed(), workPackage.isError(), workPackage.getLockedAt(), workPackage.getErrorMsg());
 	}
 
 	@NonNull
