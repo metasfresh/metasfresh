@@ -110,6 +110,7 @@ class InvoiceCandidateGroupRepositoryPackingTest
 		final I_M_Product discountProduct = newProduct();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());

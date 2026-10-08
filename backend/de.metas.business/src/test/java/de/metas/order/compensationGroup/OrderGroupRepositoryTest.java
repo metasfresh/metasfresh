@@ -430,6 +430,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId cartonCategoryId = newProductCategoryId();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
@@ -479,6 +480,7 @@ public class OrderGroupRepositoryTest
 		final ProductCategoryId cartonCategoryId = newProductCategoryId();
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		// bundle-style schema line: no product category, packing-material category only
@@ -592,6 +594,7 @@ public class OrderGroupRepositoryTest
 		saveRecord(order);
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
@@ -631,13 +634,14 @@ public class OrderGroupRepositoryTest
 		assertThat(baseByLineId.get(manualLine).isNone()).isTrue();
 	}
 
-	private static I_C_CompensationGroup_SchemaLine schemaLine(
+	private I_C_CompensationGroup_SchemaLine schemaLine(
 			@NonNull final I_C_CompensationGroup_Schema schema,
 			@Nullable final ProductCategoryId productCategoryId,
 			@Nullable final ProductCategoryId packingMaterialCategoryId)
 	{
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
 		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_ID(productId.getRepoId()); // mandatory; reading the group loads its schema (IsAdditive) with all its lines
 		if (productCategoryId != null)
 		{
 			schemaLine.setM_Product_Category_ID(productCategoryId.getRepoId());
@@ -717,6 +721,7 @@ public class OrderGroupRepositoryTest
 		saveRecord(order);
 
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		schema.setName("Schema"); // mandatory; the group's IsAdditive is read from the loaded schema
 		saveRecord(schema);
 
 		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
