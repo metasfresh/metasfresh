@@ -51,7 +51,6 @@ import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.MoneyService;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.costs.OrderCostRepository;
 import de.metas.order.costs.OrderCostService;
@@ -229,10 +228,7 @@ public class PostDocumentNow_ManualTest
 				.services(acctDocRequiredServicesFacade)
 				.acctSchemas(acctSchemas);
 
-		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
-				new GroupCompensationLineCreateRequestFactory(),
-				Optional.empty() // advisors
-		);
+		final OrderGroupRepository orderGroupRepository = OrderGroupRepository.newInstanceForUnitTesting();
 
 		for (final I_C_Invoice documentModel : records)
 		{

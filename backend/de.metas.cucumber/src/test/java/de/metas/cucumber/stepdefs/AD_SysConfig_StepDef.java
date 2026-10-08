@@ -42,7 +42,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -59,10 +58,9 @@ public class AD_SysConfig_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	/**
-	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url} or
-	 * {@link #temporarily_set_sys_config_int_value}, mapped to their value from BEFORE the overwrite
-	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
-	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
+	 * Sysconfigs this scenario overwrote via one of the "temporarily" steps or {@link #point_sysconfig_at_own_servlet_url}, mapped to
+	 * their SYSTEM-level value from BEFORE the first overwrite (possibly {@code null}, meaning there was no such sysconfig).
+	 * Restored by {@link #restoreTemporarySysConfigsAfterScenario()}.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
@@ -120,8 +118,9 @@ public class AD_SysConfig_StepDef
 	 * embedded servlet container sets once the port is actually bound.
 	 * <p>
 	 * The prior value is captured before the overwrite and restored by
-	 * {@link #restoreRepointedSysConfigsAfterScenario()}, so this run's now-dead ephemeral port does not
-	 * become the NEXT run's version of the exact "stale port" condition this step exists to compensate for.
+	 * {@link #restoreTemporarySysConfigsAfterScenario()} (or the sysconfig is deleted again, if there was none), so this run's
+	 * now-dead ephemeral port does not become the NEXT run's version of the exact "stale port" condition this step exists to
+	 * compensate for.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -138,21 +137,17 @@ public class AD_SysConfig_StepDef
 		final String localServerPort = applicationContext.getEnvironment().getProperty("local.server.port");
 		assertThat(localServerPort).as("local.server.port (this instance's own embedded Tomcat port)").isNotBlank();
 
-		// captured once per sysconfig name per scenario: a second call in the same scenario (unlikely, but
-		// not forbidden) must not overwrite the ALREADY-captured original with this scenario's own first write
-		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+		rememberPriorValue(sysConfigName);
 
 		final String ownServletUrl = "http://localhost:" + localServerPort + servletPath;
 		sysConfigBL.setValue(sysConfigName, ownServletUrl, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		resetSysConfigCache();
 	}
 
 	/**
-	 * Sets a sys config to a scenario-local int value, capturing its PRIOR value (via
-	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
-	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
-	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
+	 * Sets a sys config to an int value for the current scenario; its prior value is restored after the scenario, and a sys config that
+	 * had no value before is deleted again.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -163,44 +158,9 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config int value {int} for sys config {string}")
 	public void temporarily_set_sys_config_int_value(final int value, @NonNull final String sysConfigName)
 	{
-		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
-
+		rememberPriorValue(sysConfigName);
 		setSysConfigIntValue(sysConfigName, value);
-	}
-
-	/**
-	 * Guaranteed-execution cleanup for {@link #point_sysconfig_at_own_servlet_url} and
-	 * {@link #temporarily_set_sys_config_int_value} -- an {@code @After} hook rather than a trailing Gherkin
-	 * step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
-	 * restore. A no-op for every scenario that never called either step.
-	 * <p>
-	 * If the sysconfig had no prior value (a fresh key, {@code null}), there is nothing to restore it TO --
-	 * {@link ISysConfigBL} exposes no delete, so this scenario's own written value is left in place. That
-	 * matches every other sysconfig write in this class (none of which restore either) and does not create a
-	 * new failure mode: the next run still overwrites it with ITS OWN ephemeral port before reading it.
-	 */
-	@After
-	public void restoreRepointedSysConfigsAfterScenario()
-	{
-		if (priorValueBySysConfigName.isEmpty())
-		{
-			return;
-		}
-
-		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
-		{
-			final String sysConfigName = entry.getKey();
-			@Nullable final String priorValue = entry.getValue();
-			if (priorValue == null)
-			{
-				continue;
-			}
-
-			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-		}
-
-		priorValueBySysConfigName.clear();
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		resetSysConfigCache();
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -331,7 +291,8 @@ public class AD_SysConfig_StepDef
 	/**
 	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
 	 * <p>
-	 * Remembers the value a sysconfig had before this scenario first changed it; {@code containsKey}, because {@code null} (no prior value) is a value too.
+	 * Remembers the SYSTEM-level value a sysconfig had before this scenario first changed it; {@code containsKey} (not {@code putIfAbsent}),
+	 * because {@code null} (no prior value) is a value too.
 	 */
 	private void rememberPriorValue(@NonNull final String sysConfigName)
 	{
@@ -342,7 +303,8 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is deleted again.
+	 * The only restore of the sysconfigs this scenario changed temporarily: an {@code @After} hook, so it also runs when a step failed.
+	 * A sysconfig without prior value is deleted again.
 	 */
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()

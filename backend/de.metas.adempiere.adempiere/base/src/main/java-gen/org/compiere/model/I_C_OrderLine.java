@@ -1151,7 +1151,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Calibration factor.
-	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
+	 * Calibration in percent: the quantity of a compensation group component is set to this percentage. 100 = unchanged, 0 = component line with quantity 0.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1161,7 +1161,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Calibration factor.
-	 * Factor the quantity of a compensation group component is multiplied by. With 0, the component line is created with quantity 0.
+	 * Calibration in percent: the quantity of a compensation group component is set to this percentage. 100 = unchanged, 0 = component line with quantity 0.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1192,6 +1192,28 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationPercentage = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationPercentage", null);
 	String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
+
+	/**
+	 * Set Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensation_Product_Category_ID (int GroupCompensation_Product_Category_ID);
+
+	/**
+	 * Get Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getGroupCompensation_Product_Category_ID();
+
+	String COLUMNNAME_GroupCompensation_Product_Category_ID = "GroupCompensation_Product_Category_ID";
 
 	/**
 	 * Set Uncalibrated quantity.
@@ -2543,7 +2565,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Capacity in the respective product's unit of measurement
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2553,7 +2575,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Capacity in the respective product's unit of measurement
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
