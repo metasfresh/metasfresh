@@ -6,8 +6,8 @@ Feature: Compensation group calibration
 
   Components of a compensation group created from a schema scale with the first matching calibration rule.
   - The factor is a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = Qty 0.
-  - Qty = (template Qty x menu Qty, rounded half-up to the UOM precision) x factor %, rounded half-up to the UOM precision.
-  - A result that rounds to 0, and a factor of 0, create the component line with Qty 0; there is no minimum step.
+  - Qty = (template Qty x menu Qty, rounded half-up to the UOM precision) x factor %, rounded up (away from zero) to the UOM precision.
+  - A positive factor never rounds a non-zero base to 0; a factor of 0 creates the component line with Qty 0.
   - The menu line (a product that carries a schema) is never calibrated.
   - Purchase orders are never calibrated.
 
@@ -114,7 +114,7 @@ Feature: Compensation group calibration
       | order_y    | schema_base                   | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_kraft | kraft        | 0.10           | 66.7                                   | 0.15                                        | r40                                        |
+      | schema_ol_kraft | kraft        | 0.11           | 66.7                                   | 0.15                                        | r40                                        |
       | schema_ol_tomate | tomate      | 0.10           | 71.4                                   | 0.14                                        | r50                                        |
       | schema_ol_kaese | kaese        | 25             | 100                                    | 25                                          | null                                       |
 
@@ -125,7 +125,7 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
       | schema_ol_kraft | kraft        | 0.06           | 40                                     | 0.15                                        | r10                                        |
-      | schema_ol_tomate | tomate      | 0.09           | 64.3                                   | 0.14                                        | r20                                        |
+      | schema_ol_tomate | tomate      | 0.10           | 64.3                                   | 0.14                                        | r20                                        |
       | schema_ol_kaese | kaese        | 20             | 80                                     | 25                                          | r30                                        |
 
 
@@ -410,10 +410,10 @@ Feature: Compensation group calibration
 
 
   # ##########################################################################################
-  # Rounding half-up per UOM precision; a result that rounds to 0 gives a line with Qty 0
+  # Calibrated quantities round up per UOM precision; a positive factor never gives Qty 0
   @from:cucumber
   @Id:S26881_TC10
-  Scenario: Calibrated quantities round half-up to the UOM precision and a result that rounds to 0 keeps its line with Qty 0
+  Scenario: Calibrated quantities round up to the UOM precision and a positive factor never rounds to 0
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name       |
       | schema_1   | CalibRound |
@@ -442,10 +442,10 @@ Feature: Compensation group calibration
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated |
       | schema_ol_pce_a | pce_a        | 2              | 50                                     | 3                                           |
-      | schema_ol_pce_b | pce_b        | 1              | 30                                     | 4                                           |
-      | schema_ol_fisch | fisch        | 0              | 40                                     | 1                                           |
-      | schema_ol_kraft | kraft        | 0.10           | 66.7                                   | 0.15                                        |
-      | schema_ol_gram  | gram         | 0              | 40                                     | 0.01                                        |
+      | schema_ol_pce_b | pce_b        | 2              | 30                                     | 4                                           |
+      | schema_ol_fisch | fisch        | 1              | 40                                     | 1                                           |
+      | schema_ol_kraft | kraft        | 0.11           | 66.7                                   | 0.15                                        |
+      | schema_ol_gram  | gram         | 0.01           | 40                                     | 0.01                                        |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_10   | schema_1                      | 10  | Y          | Product         |
@@ -485,7 +485,7 @@ Feature: Compensation group calibration
   @from:cucumber
   @Id:S26881_FractionalMenuQty
   Scenario: A fractional menu quantity is multiplied before rounding
-    # the base (template Qty x menu Qty) is rounded half-up to the UOM precision before the factor applies: 1 PCE x 2.5 = 2.5 -> 3, x 50 % = 1.5 -> 2
+    # the base (template Qty x menu Qty) is rounded half-up to the UOM precision before the factor applies: 1 PCE x 2.5 = 2.5 -> 3, x 50 % = 1.5 -> 2 (rounded up)
     Given metasfresh contains C_CompensationGroup_Schema:
       | Identifier | Name      |
       | schema_1   | CalibFrac |

@@ -522,7 +522,8 @@ public class OrderGroupRepositoryTest
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	// Calibration: the factor is a 100-based percent; the base qty (template qty x menu qty)
-	// is rounded half-up to the UOM precision before the factor is applied, also on lines without a rule.
+	// is rounded half-up to the UOM precision before the factor is applied, also on lines without a rule;
+	// the calibrated result is rounded UP to the UOM precision.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void calibration_matchingRule_roundsBaseThenAppliesPercent()
@@ -615,26 +616,63 @@ public class OrderGroupRepositoryTest
 	}
 
 	@Test
-	void calibration_resultRoundsToZero_precision0()
+	void calibration_nonZeroFactor_resultRoundsUpNotToZero_precision0()
 	{
 		final GroupTemplateRegularLine templateLine = templateLine(1, "1", 0);
 
 		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "40")));
 
-		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
+		// 1 x 40 % = 0.4 -> 1; half-up would give 0
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("1");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("1");
 	}
 
 	@Test
-	void calibration_negativeMenuQty_halfUpAwayFromZero()
+	void calibration_resultRoundsUp_precision0()
 	{
-		final GroupTemplateRegularLine templateLine = templateLine(1, "3", 0);
+		final GroupTemplateRegularLine templateLine = templateLine(1, "2", 0);
 
-		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("-1"), templateLine, calibrationRule(7, "50")));
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("2"), templateLine, calibrationRule(7, "30")));
 
-		// -3 x 50 % = -1.5 -> -2
+		// 4 x 30 % = 1.2 -> 2; half-up would give 1
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("2");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("4");
+	}
+
+	@Test
+	void calibration_resultRoundsUp_baseRoundsHalfUp_precision2()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.152", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "66.7")));
+
+		// base 0.152 -> 0.15 (half-up), 0.15 x 66.7 % = 0.10005 -> 0.11 (up)
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.11");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.15");
+	}
+
+	@Test
+	void calibration_factor100_keepsHalfUpRoundedBase()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.121", 2);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(BigDecimal.ONE, templateLine, calibrationRule(7, "100")));
+
+		// up on the base would give 0.13
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.12");
+	}
+
+	@Test
+	void calibration_negativeMenuQty_roundsUpAwayFromZero()
+	{
+		final GroupTemplateRegularLine templateLine = templateLine(1, "4", 0);
+
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("-1"), templateLine, calibrationRule(7, "30")));
+
+		// -4 x 30 % = -1.2 -> -2 (away from zero, mirrors the positive menu qty); half-up would give -1
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("-2");
-		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("-3");
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("-4");
 	}
 
 	private GroupTemplateRegularLine templateLine(final int templateLineId, final String qty, final int uomPrecision)

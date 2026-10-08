@@ -15,7 +15,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.RoundingMode;
 
 @Value
 public class CalibrationRule
@@ -84,11 +83,12 @@ public class CalibrationRule
 
 	/**
 	 * @param qtyEnteredUncalibrated the base qty (template qty x menu qty), already rounded to its UOM precision
-	 * @return the base qty x {@link #factor} (a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = zero), rounded half-up to the UOM precision
+	 * @return the base qty x {@link #factor} (a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = zero), rounded to the UOM precision
 	 */
 	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
 	{
-		// half-up, like MOrderLine.setQtyEntered; the UOM's own rounding mode (UP) would round 0.121 to 0.13
-		return qtyEnteredUncalibrated.multiply(getFactor(), RoundingMode.HALF_UP);
+		return qtyEnteredUncalibrated
+				.multiply(getFactor().toBigDecimal().movePointLeft(2))
+				.roundToUOMPrecision();
 	}
 }

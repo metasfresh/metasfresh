@@ -143,6 +143,17 @@ class CompensationGroupCalibrationServiceTest
 	}
 
 	@Test
+	void matchingRule_calibratedQtyRoundsUp()
+	{
+		final ProductId p = product(false);
+		rule(p, "66.7");
+		final GroupTemplateRegularLine l = line(p, "0.15");
+		final CalibrationRule c = service.computeCalibrations(order(true), template(l)).getByTemplateLineId(l.getId()).get();
+		// 0.15 x 66.7 % = 0.10005 -> 0.11 (UOM precision 2)
+		assertThat(c.computeQtyCalibrated(Quantity.of(new BigDecimal("0.15"), uom)).toBigDecimal()).isEqualByComparingTo("0.11");
+	}
+
+	@Test
 	void factorZero_qtyZeroAndStoresRule()
 	{
 		final ProductId p = product(false);

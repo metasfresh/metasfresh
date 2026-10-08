@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The factor is a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = Qty 0.
- * The calibrated qty is rounded half-up to the UOM precision.
+ * The calibrated qty is rounded UP (away from zero) to the UOM precision.
  */
 class CalibrationRuleTest
 {
@@ -51,32 +51,45 @@ class CalibrationRuleTest
 	}
 
 	@Test
-	void halfUp_exactHalf_precision0()
+	void up_tie_precision0()
 	{
 		assertThat(computeQtyCalibrated("3", 0, "50")).isEqualByComparingTo("2");
 	}
 
 	@Test
-	void halfUp_exactHalf_negative()
+	void up_belowHalf_precision0()
 	{
-		// HALF_UP rounds ties away from zero
-		assertThat(computeQtyCalibrated("-3", 0, "50")).isEqualByComparingTo("-2");
+		// 4 x 30 % = 1.2; half-up would give 1
+		assertThat(computeQtyCalibrated("4", 0, "30")).isEqualByComparingTo("2");
+		// 2 x 70 % = 1.4
+		assertThat(computeQtyCalibrated("2", 0, "70")).isEqualByComparingTo("2");
 	}
 
 	@Test
-	void halfUp_notUp()
+	void up_precision2()
 	{
-		// RoundingMode.UP would give 2
-		assertThat(computeQtyCalibrated("4", 0, "30")).isEqualByComparingTo("1");
-		// 0.15 x 66.7 % = 0.10005; RoundingMode.UP would give 0.11
-		assertThat(computeQtyCalibrated("0.15", 2, "66.7")).isEqualByComparingTo("0.10");
+		// 0.15 x 66.7 % = 0.10005; half-up would give 0.10
+		assertThat(computeQtyCalibrated("0.15", 2, "66.7")).isEqualByComparingTo("0.11");
 	}
 
 	@Test
-	void precision3()
+	void up_precision3()
 	{
-		// 0.125 x 33.3 % = 0.0416250
+		// 0.125 x 33.3 % = 0.041625
 		assertThat(computeQtyCalibrated("0.125", 3, "33.3")).isEqualByComparingTo("0.042");
+		// 0.125 x 33.6 % = 0.042; exact, no rounding
+		assertThat(computeQtyCalibrated("0.125", 3, "33.6")).isEqualByComparingTo("0.042");
+		// 0.125 x 32.9 % = 0.041125; half-up would give 0.041
+		assertThat(computeQtyCalibrated("0.125", 3, "32.9")).isEqualByComparingTo("0.042");
+	}
+
+	@Test
+	void up_negative_isAwayFromZero()
+	{
+		// -4 x 30 % = -1.2; half-up would give -1
+		assertThat(computeQtyCalibrated("-4", 0, "30")).isEqualByComparingTo("-2");
+		// tie: -3 x 50 % = -1.5
+		assertThat(computeQtyCalibrated("-3", 0, "50")).isEqualByComparingTo("-2");
 	}
 
 	@Test
@@ -84,42 +97,31 @@ class CalibrationRuleTest
 	{
 		// the base 0.375 is rounded to 0.38 (UOM precision 2) before the factor is applied: 0.38 x 120 % = 0.456
 		assertThat(computeQtyCalibrated("0.38", 2, "120")).isEqualByComparingTo("0.46");
+		// 0.31 x 120 % = 0.372; half-up would give 0.37
+		assertThat(computeQtyCalibrated("0.31", 2, "120")).isEqualByComparingTo("0.38");
 	}
 
 	@Test
-	void roundsToZero_precision0()
+	void nonZeroFactor_neverRoundsToZero()
 	{
-		assertThat(computeQtyCalibrated("1", 0, "40")).isEqualByComparingTo("0");
-	}
-
-	@Test
-	void roundsToZero_precision2()
-	{
-		assertThat(computeQtyCalibrated("0.01", 2, "40")).isEqualByComparingTo("0");
-	}
-
-	@Test
-	void roundsToZero_precision3()
-	{
-		assertThat(computeQtyCalibrated("0.001", 3, "40")).isEqualByComparingTo("0");
-	}
-
-	@Test
-	void roundsToZero_negative()
-	{
-		assertThat(computeQtyCalibrated("-1", 0, "40").signum()).isZero();
+		// half-up would give 0 for each of these
+		assertThat(computeQtyCalibrated("1", 0, "40")).isEqualByComparingTo("1");
+		assertThat(computeQtyCalibrated("0.01", 2, "40")).isEqualByComparingTo("0.01");
+		assertThat(computeQtyCalibrated("0.001", 3, "40")).isEqualByComparingTo("0.001");
+		assertThat(computeQtyCalibrated("-1", 0, "40")).isEqualByComparingTo("-1");
 	}
 
 	@Test
 	void factorZero_givesZero()
 	{
 		assertThat(computeQtyCalibrated("6", 2, "0")).isEqualByComparingTo("0");
+		assertThat(computeQtyCalibrated("0.37", 2, "0")).isEqualByComparingTo("0");
 	}
 
 	@Test
-	void factor100_roundsHalfUpToUOMPrecision()
+	void factor100_keepsTheAlreadyRoundedBase()
 	{
-		// RoundingMode.UP would give 0.13
-		assertThat(computeQtyCalibrated("0.121", 2, "100")).isEqualByComparingTo("0.12");
+		assertThat(computeQtyCalibrated("0.12", 2, "100")).isEqualByComparingTo("0.12");
+		assertThat(computeQtyCalibrated("1.5", 1, "100")).isEqualByComparingTo("1.5");
 	}
 }
