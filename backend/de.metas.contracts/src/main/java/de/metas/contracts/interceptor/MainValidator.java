@@ -167,7 +167,7 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
-		invoiceCandidateListeners.addListener(RefundInvoiceCandidateListener.instance);
+		invoiceCandidateListeners.addListener(new RefundInvoiceCandidateListener());
 
 		// a sales order's contract-created compensation lines must not be copied onto its purchase
 		// order (neither the auto-created drop-ship PO nor a manually run C_Order_CreatePOFromSOs) --
