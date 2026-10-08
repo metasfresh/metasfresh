@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
@@ -48,6 +49,7 @@ import de.metas.money.MoneyService;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -57,10 +59,12 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PaymentsViewAllocateCommand
 {
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
@@ -177,7 +181,14 @@ public class PaymentsViewAllocateCommand
 									.feeAmountIncludingTax(serviceFeeAmt)
 									.serviceCompanyBPartnerId(invoiceProcessingContext.getServiceCompanyId())
 									.build())
-					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
+					.orElseThrow(() -> new AdempiereException(
+							MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
+							row.getDocumentNo(),
+							paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
+							Services.get(IBPartnerBL.class).getBPartnerName(invoiceProcessingContext.getServiceCompanyId()))
+							.markAsUserValidationError()
+							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+							.setParameter("C_BPartner_ID", BPartnerId.toRepoId(invoiceProcessingContext.getServiceCompanyId())));
 		}
 		else
 		{
