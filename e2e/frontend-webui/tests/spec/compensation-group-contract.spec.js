@@ -126,7 +126,7 @@ const DE = {
   createContractEndDate: 'Enddatum',
 
   orderCompensationGroupWindow: 'Auftrag Kompensationsgruppe',
-  orderCompensationGroupOrder: 'Auftrag',
+  orderCompensationGroupOrder: 'Auftrag/Bestellung', // the group's order may be a sales or a purchase order
   orderCompensationGroupContract: 'Vertrag',
   orderCompensationGroupLinesTab: 'Auftragsposition',
   compensationTypeDiscount: 'Rabatt', // C_OrderLine.GroupCompensationType D
@@ -534,10 +534,6 @@ test.describe('Compensation-group contract — create through the WebUI and comp
    * Early end of a contract: the first contract is ended with the contract action "Kündigen" (end date X) and a
    * follow-up contract with another schema starts on X + 1. The overlap check must accept the follow-up, and each
    * order gets the discount of the contract that is valid on its order date.
-   * The resulting order compensation groups are then opened in the window "Auftrag Kompensationsgruppe": zoom from
-   * the order line, its order-lines tab, and the "Vertrag" filter that tells the two contracts' groups apart.
-   * Along the way the German captions of the contract's master dates and of the order-line contract columns
-   * (sales and purchase order) and of the schema-line condition fields are checked.
    */
   test('ends a contract early and a follow-up contract takes over from the next day', async ({ page }) => {
     allure.epic('E0170: Contract Management');
@@ -592,15 +588,9 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     });
 
     let termA;
-    let groupPage;
     await test.step('2. Contract A (3 %) from X - 7 to X + 30', async () => {
       termA = await createContractTerm(page, customer, conditionsA, contractAStart, contractAEnd);
       expect(String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'EndDate')).value)).toContain(isoDate(contractAEnd));
-      // the start / end of the whole contract relationship carry German labels
-      await expectLabel(page, 'MasterStartDate', DE.contractMasterStartDate);
-      await expectLabel(page, 'MasterEndDate', DE.contractMasterEndDate);
-      await page.locator('.form-field-MasterStartDate').first().scrollIntoViewIfNeeded();
-      await snap(page, '540359-contract-master-dates');
     });
 
     await test.step('3. Contract action "Kündigen" ends contract A on X', async () => {
@@ -626,11 +616,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await createContractTerm(page, customer, conditionsB, contractBStart, contractBEnd, { openTerm: false });
     });
 
-    let orderX;
-    let groupX;
-    let groupX1;
     await test.step('5. Order dated X gets the 3 % discount line, order dated X + 1 the 5 % discount line', async () => {
-      orderX = await completeSalesOrder(page, customer, goods, x);
+      const orderX = await completeSalesOrder(page, customer, goods, x);
       const linesX = await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB);
       expect(linesX, 'order X: goods line + one discount line').toHaveLength(2);
       const discountX = discountLineOf(linesX, masterdata.products.DISCOUNT_A);
@@ -647,6 +634,84 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(Number(discountX1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-50, 2);
       await expectOrderGridAmount(page, orderX1, masterdata.products.DISCOUNT_B, '-50,00');
       await snap(page, '143-order-x1-5-percent');
+    });
+  });
+
+
+  /**
+   * The order compensation groups of two contracts, seen in the window "Auftrag Kompensationsgruppe" and its
+   * neighbours: zoom from an order line into its group, the group's order-lines tab, and the "Vertrag" filter that
+   * tells the two contracts' groups apart; plus the German captions of the contract's master dates, of the order-line
+   * contract columns (sales and purchase order) and of the schema-line condition fields.
+   */
+  test('order compensation groups of two contracts: group window, contract filter and contract captions', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Order compensation group window: zoom from the order line, order lines, contract filter, captions');
+    allure.severity('normal');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_A: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_B: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsA;
+    let conditionsB;
+    await test.step('1. Setup: transition, and two schemas (3 % and 5 %) with their settings and conditions', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear());
+      conditionsA = await createConditions(page, {
+        schemaName: `CG groups A ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_A, percent: 3 }],
+        transitionId, name: `CG conditions groups A ${runId}`,
+      });
+      conditionsB = await createConditions(page, {
+        schemaName: `CG groups B ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_B, percent: 5 }],
+        transitionId, name: `CG conditions groups B ${runId}`,
+      });
+    });
+
+    let termA;
+    await test.step('2. Contract A (3 %) from X - 7 to X, contract B (5 %) from X + 1; the master dates carry German labels', async () => {
+      termA = await createContractTerm(page, customer, conditionsA, addDays(x, -7), x);
+      // the start / end of the whole contract relationship carry German labels
+      await expectLabel(page, 'MasterStartDate', DE.contractMasterStartDate);
+      await expectLabel(page, 'MasterEndDate', DE.contractMasterEndDate);
+      await page.locator('.form-field-MasterStartDate').first().scrollIntoViewIfNeeded();
+      await snap(page, '540359-contract-master-dates');
+      await createContractTerm(page, customer, conditionsB, addDays(x, 1), endOfYear(x), { openTerm: false });
+    });
+
+    let orderX;
+    let groupX;
+    let groupX1;
+    await test.step('3. One order per contract, each with its compensation group', async () => {
+      orderX = await completeSalesOrder(page, customer, goods, x);
+      const discountX = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB), masterdata.products.DISCOUNT_A);
+      expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
+      const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
+      const discountX1 = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB), masterdata.products.DISCOUNT_B);
+      expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
 
       groupX = lookupKey(discountX.fieldsByName.C_Order_CompensationGroup_ID.value);
       groupX1 = lookupKey(discountX1.fieldsByName.C_Order_CompensationGroup_ID.value);
@@ -654,10 +719,11 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(groupX1, 'order X + 1 has a compensation group').toBeTruthy();
     });
 
+    let groupPage;
     // ------------------------------------------------------------------
-    // 6. Auftrag Kompensationsgruppe (542196): the read-only window of the order compensation groups
+    // 4. Auftrag Kompensationsgruppe (542196): the read-only window of the order compensation groups
     // ------------------------------------------------------------------
-    await test.step('6a. Order line: "Zoom into" its compensation group opens the order compensation group window', async () => {
+    await test.step('4a. Order line: "Zoom into" its compensation group opens the order compensation group window', async () => {
       await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30,00');
       // the order line's own contract columns: conditions of a contract to be created, and the call-off contract
       await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(DE.orderLineConditionsForNewContract);
@@ -692,7 +758,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await snap(groupPage, '542196-order-compensation-group');
     });
 
-    await test.step('6b. Sub-tab "Auftragsposition": the group\'s order lines, the discount line with "Rabatt" / "Prozent"', async () => {
+    await test.step('4b. Sub-tab "Auftragsposition": the group\'s order lines, the discount line with "Rabatt" / "Prozent"', async () => {
       await expectTabCaption(groupPage, ORDER_COMPENSATION_GROUP_LINES_TAB_ID, DE.orderCompensationGroupLinesTab);
       const linesTab = groupPage.getByTestId(`tab-AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`);
       await linesTab.click();
@@ -713,7 +779,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await snap(groupPage, '542196-order-lines-tab');
     });
 
-    await test.step('6c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
+    await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
       // unfiltered: all order compensation groups, sorted by order, newest first
       // (other groups may exist on the DB, so the sort and the size are checked on the backend's view, not on row positions)
       const unfiltered = await readOrderCompensationGroupView(groupPage);
@@ -752,7 +818,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await groupPage.close();
     });
 
-    await test.step('7. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
+    await test.step('5. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
       const schemaId = lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_CompensationGroup_Schema_ID')).value);
       await page.goto(`${FRONTEND_BASE_URL}/window/${SCHEMA_WINDOW_ID}/${schemaId}`);
       await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -784,7 +850,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await closeModal(modal);
     });
 
-    await test.step('8. Purchase order lines (last: the new order stays unsaved): the contract columns carry the same captions', async () => {
+    await test.step('6. Purchase order lines (last: the new order stays unsaved): the contract columns carry the same captions', async () => {
       await openNewRecord(page, PURCHASE_ORDER_WINDOW_ID);
       const purchaseLinesTab = page.getByTestId(`tab-AD_Tab-${PURCHASE_ORDER_LINE_TAB_ID}`);
       await purchaseLinesTab.click();
