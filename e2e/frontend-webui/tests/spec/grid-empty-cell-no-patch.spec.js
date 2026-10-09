@@ -55,11 +55,22 @@ function isDescriptionPatch(request) {
 }
 
 /**
+ * Scroll a grid cell into view. The grid re-renders its rows whenever a line is read again from the
+ * server, so the cell found by the locator can be replaced while it is being scrolled ("Element is not
+ * attached to the DOM"). Retry until the scroll lands on the current element.
+ */
+async function scrollCellIntoView(cell) {
+  await expect(async () => {
+    await cell.scrollIntoViewIfNeeded({ timeout: 2000 });
+  }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
  * Change the quantity of a line and wait until the grid has read the line again from the server.
  */
 async function changeQuantityAndWaitForReread(page, row, quantity) {
   const qtyCell = page.locator(`[data-cy="cell-${QTY_COLUMN}"]`).nth(row);
-  await qtyCell.scrollIntoViewIfNeeded();
+  await scrollCellIntoView(qtyCell);
   await qtyCell.dblclick();
   const editor = qtyCell.locator('input').first();
   await editor.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -120,6 +131,8 @@ test.describe('Sales order-line grid — an empty text cell left without typing 
       await expect(page.locator(`[data-cy="cell-${DESCRIPTION_COLUMN}"]`)).toHaveCount(LINE_COUNT, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
+      // The copied lines may still be read again from the server - let the grid finish rendering.
+      await flushPendingUiTasks(page);
     });
 
     const descriptionPatches = trackDescriptionPatches(page);
@@ -138,7 +151,7 @@ test.describe('Sales order-line grid — an empty text cell left without typing 
     for (const { row, open, leave } of cases) {
       await test.step(`Line ${row + 1}: open the empty description by ${open}, leave it with ${leave}`, async () => {
         const cell = descriptionCell(row);
-        await cell.scrollIntoViewIfNeeded();
+        await scrollCellIntoView(cell);
         await expect(cell, 'the copied line has no description').toHaveText('');
         await changeQuantityAndWaitForReread(page, row, 10 + row);
         const patchesBefore = descriptionPatches.length;
@@ -177,7 +190,7 @@ test.describe('Sales order-line grid — an empty text cell left without typing 
 
     await test.step('Control: clearing a description that has text IS sent', async () => {
       const cell = descriptionCell(LINE_COUNT - 1);
-      await cell.scrollIntoViewIfNeeded();
+      await scrollCellIntoView(cell);
 
       await cell.dblclick();
       const editor = editorOf(cell);
