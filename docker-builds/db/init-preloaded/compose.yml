@@ -16,6 +16,10 @@ services:
       # so we can later commit it again to create the preloaded db with migrations applied
       # /data directories can't be persisted with docker commit!
       - PGDATA=/var/lib/postgresql/initdata
+    # When the migration container exits, compose stops this one and then the data dir is committed
+    # into the -preloaded image. After thousands of scripts Postgres needs longer than docker's default
+    # 10 s for its shutdown checkpoint; when killed, every DB started from the image begins with crash recovery.
+    stop_grace_period: 10m
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 10s
