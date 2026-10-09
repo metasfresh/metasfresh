@@ -44,7 +44,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,6 +55,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Data
 @Builder
@@ -101,11 +101,15 @@ public class ShipmentSchedule
 	 * Example: the shipment candidate export API sets ExportStatus=EXPORTED while the async carrier advise holds an instance it loaded before.
 	 * {@code null} if this instance was not loaded from the DB; then all mutable fields are written.
 	 */
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.NONE)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@Nullable private PersistedMutableFields persistedMutableFields;
+	private final AtomicReference<PersistedMutableFields> persistedMutableFields = new AtomicReference<>(); // initialized final field => not part of the builder
+
+	@Nullable
+	PersistedMutableFields getPersistedMutableFields() {return persistedMutableFields.get();}
+
+	void setPersistedMutableFields(@Nullable final PersistedMutableFields persistedMutableFields) {this.persistedMutableFields.set(persistedMutableFields);}
 
 	@NonNull
 	PersistedMutableFields toPersistedMutableFields()

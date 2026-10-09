@@ -247,6 +247,53 @@ class ShipmentScheduleRepositoryTest
 		assertThat(record.getCarrier_Advising_Status()).isEqualTo(CarrierAdviseStatus.InProgress.getCode());
 	}
 
+	/**
+	 * Mirrors a caller that loads a schedule and then decides not to change it (e.g. the manual carrier advise skipping a not eligible schedule), but saves it anyway.
+	 */
+	@Test
+	void save_withoutChanges_doesNotOverwriteConcurrentChanges()
+	{
+		// given
+		final ShipmentScheduleId shipmentScheduleId = createShipmentScheduleRecord(APIExportStatus.Pending, CarrierAdviseStatus.Requested);
+		final ShipmentSchedule unchangedSchedule = shipmentScheduleRepository.getById(shipmentScheduleId);
+
+		shipmentScheduleRepository.exportStatusMassUpdate(ImmutableSet.of(shipmentScheduleId), APIExportStatus.Exported);
+		final I_M_ShipmentSchedule concurrentlyUpdatedRecord = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		concurrentlyUpdatedRecord.setCarrier_Advising_Status(CarrierAdviseStatus.Completed.getCode());
+		saveRecord(concurrentlyUpdatedRecord);
+
+		// when
+		shipmentScheduleRepository.save(unchangedSchedule);
+
+		// then
+		final I_M_ShipmentSchedule record = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		assertThat(record.getExportStatus()).isEqualTo(APIExportStatus.Exported.getCode());
+		assertThat(record.getCarrier_Advising_Status()).isEqualTo(CarrierAdviseStatus.Completed.getCode());
+	}
+
+	/**
+	 * An instance without a persisted snapshot (not loaded via the repository) has nothing to compare against, so all mutable fields are written.
+	 */
+	@Test
+	void save_withoutPersistedSnapshot_writesAllMutableFields()
+	{
+		// given
+		final ShipmentScheduleId shipmentScheduleId = createShipmentScheduleRecord(APIExportStatus.Pending, CarrierAdviseStatus.Requested);
+		final ShipmentSchedule schedule = shipmentScheduleRepository.getById(shipmentScheduleId);
+		schedule.setPersistedMutableFields(null);
+
+		shipmentScheduleRepository.exportStatusMassUpdate(ImmutableSet.of(shipmentScheduleId), APIExportStatus.Exported);
+
+		// when
+		schedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Completed);
+		shipmentScheduleRepository.save(schedule);
+
+		// then
+		final I_M_ShipmentSchedule record = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		assertThat(record.getExportStatus()).isEqualTo(APIExportStatus.Pending.getCode());
+		assertThat(record.getCarrier_Advising_Status()).isEqualTo(CarrierAdviseStatus.Completed.getCode());
+	}
+
 	private ShipmentScheduleId createShipmentScheduleRecord(@NonNull final APIExportStatus exportStatus, @NonNull final CarrierAdviseStatus carrierAdviseStatus)
 	{
 		final I_M_ShipmentSchedule record = createShipmentScheduleRecord();
