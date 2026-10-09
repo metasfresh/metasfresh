@@ -12,10 +12,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 /*
@@ -43,8 +45,8 @@ import java.util.List;
 /**
  * Repository Tables: C_Flatrate_Term
  * <p>
- * Repository Cluster: ContractCompensationGroupTermRepository, {@code FlatrateDAO} — this one only reads
- * {@code C_Flatrate_Term} (CompensationGroup terms only); {@code FlatrateDAO} reads and writes all terms.
+ * Repository Cluster: ContractCompensationGroupTermRepository, {@code FlatrateDAO} — this one reads
+ * {@code C_Flatrate_Term} (CompensationGroup terms only) and saves their contract status; {@code FlatrateDAO} reads and writes all terms.
  * <p>
  * Queries {@code CompensationGroup}-type contract terms.
  */
@@ -93,6 +95,31 @@ public class ContractCompensationGroupTermRepository
 				.endOrderBy()
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	/**
+	 * @return every active {@code CompensationGroup}-type term of the context client whose {@code DocStatus} is completed/closed
+	 * and whose {@code ContractStatus} is one of {@code contractStatuses}, ordered by {@code C_Flatrate_Term_ID}.
+	 */
+	public List<I_C_Flatrate_Term> getCompletedTermsWithContractStatus(@NonNull final Collection<FlatrateTermStatus> contractStatuses)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Completed, DocStatus.Closed))
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, contractStatuses)
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.endOrderBy()
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	public void saveContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final FlatrateTermStatus contractStatus)
+	{
+		term.setContractStatus(contractStatus.getCode());
+		InterfaceWrapperHelper.saveRecord(term);
 	}
 
 	/** The active-term predicate shared by {@link #findActiveTerms} and {@link #findActiveTermsOverlapping}: active, {@code billPartnerId}, {@code CompensationGroup} type, DocStatus completed/closed, ContractStatus not voided. */
