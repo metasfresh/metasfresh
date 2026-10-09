@@ -56,7 +56,7 @@ class ContractCompensationGroupTermRepositoryTest
 		jvmTimezoneBackup = TimeZone.getDefault();
 		TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
 		AdempiereTestHelper.get().init();
-		repository = new ContractCompensationGroupTermRepository();
+		repository = ContractCompensationGroupTermRepository.newInstanceForUnitTesting();
 	}
 
 	@AfterEach

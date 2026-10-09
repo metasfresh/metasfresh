@@ -1,6 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
@@ -12,6 +13,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.MutableInt;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -59,9 +62,14 @@ public class ContractCompensationGroupTermService
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	@NonNull private final ContractCompensationGroupTermRepository termRepository;
 
+	@VisibleForTesting
 	public static ContractCompensationGroupTermService newInstanceForUnitTesting()
 	{
-		return new ContractCompensationGroupTermService(new ContractCompensationGroupTermRepository());
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ContractCompensationGroupTermService.class,
+				() -> new ContractCompensationGroupTermService(ContractCompensationGroupTermRepository.newInstanceForUnitTesting()));
 	}
 
 	/**

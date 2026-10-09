@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
@@ -13,6 +14,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -54,6 +57,14 @@ import java.util.List;
 public class ContractCompensationGroupTermRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static ContractCompensationGroupTermRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ContractCompensationGroupTermRepository.class, ContractCompensationGroupTermRepository::new);
+	}
 
 	/**
 	 * @return every active {@code CompensationGroup}-type term of {@code billPartnerId} whose {@code DocStatus} is
