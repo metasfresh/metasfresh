@@ -34,18 +34,6 @@ testCases.forEach(({ language, label }) => {
 
       test.setTimeout(180000);
 
-      // capture PATCHes to the order-line tab
-      const qtyPatches = [];
-      page.on('request', (req) => {
-        if (
-          req.method() === 'PATCH' &&
-          req.url().includes('/window/') &&
-          (req.postData() || '').includes('QtyEntered')
-        ) {
-          qtyPatches.push(req.postData());
-        }
-      });
-
       // completed SO with one line (qty 5), created server-side
       const masterdata = await Backend.createMasterdata({
         request: {
@@ -95,6 +83,23 @@ testCases.forEach(({ language, label }) => {
         page.locator('table tbody tr').first().locator('[data-cy="cell-QtyEntered"]').first();
 
       await qtyCell().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // the line grid follows the document status: wait until the qty cell is editable
+      await expect(qtyCell(), 'the qty cell is editable after reactivation').not.toHaveClass(
+        /cell-disabled/,
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+
+      // capture QtyEntered PATCHes — only from the edit below onwards
+      const qtyPatches = [];
+      const captureQtyPatch = (req) => {
+        if (
+          req.method() === 'PATCH' &&
+          req.url().includes('/window/') &&
+          (req.postData() || '').includes('QtyEntered')
+        ) {
+          qtyPatches.push(req.postData());
+        }
+      };
 
       // single-click the qty cell, type a new single-digit value, move away.
       // Start from a clean selection state (click a neutral area first) so the cell
@@ -105,14 +110,16 @@ testCases.forEach(({ language, label }) => {
           .first()
           .click({ position: { x: 5, y: 5 } })
           .catch(() => {});
-        await page.waitForTimeout(300);
+        page.on('request', captureQtyPatch);
         await qtyCell().click();
-        await page.waitForTimeout(500);
+        // keystrokes go to the focused cell (TableCell onKeyDown); wait for that focus
+        await expect(qtyCell(), 'the clicked qty cell has focus').toBeFocused();
         await page.keyboard.type('3', { delay: 80 });
-        await page.waitForTimeout(500);
         // sanity: the typed value is actually in the cell input before we leave it
-        const typed = await qtyCell().locator('input.js-input-field').first().inputValue();
-        expect(typed, 'typed value present in the cell input').toBe('3');
+        await expect(
+          qtyCell().locator('input.js-input-field').first(),
+          'typed value present in the cell input'
+        ).toHaveValue('3');
 
         // Await the actual PATCH round-trip on blur (not a blind sleep). On the buggy path
         // no PATCH is sent, so this resolves null after the timeout and the assertion below fails.
@@ -127,6 +134,7 @@ testCases.forEach(({ language, label }) => {
           .catch(() => null);
         await page.keyboard.press('Tab');
         await patchSettled;
+        page.off('request', captureQtyPatch);
       });
 
       // the edit must have been PATCHed to the server
