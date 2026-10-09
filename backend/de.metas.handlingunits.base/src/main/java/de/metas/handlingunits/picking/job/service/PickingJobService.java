@@ -297,6 +297,7 @@ public class PickingJobService implements PickingSlotListener
 				.shipmentScheduleService(shipmentScheduleService)
 				.configService(configService)
 				.pickingJobScheduleService(pickingJobScheduleService)
+				.loadingSupportingServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				//
 				.query(query)
 				//
