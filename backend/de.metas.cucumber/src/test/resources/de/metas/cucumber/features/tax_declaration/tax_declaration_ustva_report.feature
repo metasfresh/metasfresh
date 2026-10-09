@@ -35,9 +35,9 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | salesPLV    | salesPriceList    |
       | purchasePLV | purchasePriceList |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | PO_PricingSystem_ID | VATaxID      |
-      | customer   | Y          | N        | pricingSystem      |                     | DE822222228  |
-      | vendor     | N          | Y        |                    | pricingSystem       | DE811111113  |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | PO_PricingSystem_ID |
+      | customer   | Y          | N        | pricingSystem      |                     |
+      | vendor     | N          | Y        |                    | pricingSystem       |
     And metasfresh contains C_BPartner_Locations:
       | Identifier        | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | customer_location | customer      | Y               | Y               |
@@ -265,6 +265,11 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And the invoice identified by invP1 is completed
     And the invoice identified by invP2 is completed
     And Wait until documents invP1, invP2 are posted
+    # the VAT ID is entered on the partner after posting: a partner with a VAT ID only matches taxes that require a tax certificate,
+    # and the report reads the partner's current VAT ID at print time
+    And update C_BPartner:
+      | Identifier | VATaxID     |
+      | vendor     | DE811111113 |
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
       | td         | acctSchema      | 2024-01-15 |
