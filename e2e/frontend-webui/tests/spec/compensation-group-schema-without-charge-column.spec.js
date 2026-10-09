@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -34,24 +34,28 @@ async function saveScreenshot(page, filename) {
 }
 
 /**
- * Navigate to the Compensation Group Schema window, open the first record,
- * and click the Template Lines tab (AD_Tab-544005).
+ * Create a login user plus a Compensation Group Schema of its own (one template line), so the test does not
+ * depend on schema records left behind by other specs.
  */
-async function navigateToTemplateLinesTab(page) {
-  // Navigate to the window list view
-  await page.goto(`${FRONTEND_BASE_URL}/window/${COMPENSATION_GROUP_SCHEMA_WINDOW_ID}`);
-  await page.locator('.document-list-wrapper, .document-list').waitFor({
-    state: 'visible',
-    timeout: VERY_SLOW_ACTION_TIMEOUT,
+async function createMasterdataWithSchema(language) {
+  return Backend.createMasterdata({
+    request: {
+      login: { user: { language } },
+      products: {
+        P1: { name: 'WithoutChargeCol', type: 'Item', isStocked: false, prices: [{ price: 1, currencyCode: 'EUR' }] },
+      },
+      compensationGroupSchemas: {
+        schema: { name: 'WithoutChargeCol schema', templateLines: [{ product: 'P1', qty: 1 }] },
+      },
+    },
   });
+}
 
-  // Open the first record
-  const firstRow = page.locator('table tbody tr').first();
-  await firstRow.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-  await firstRow.dblclick();
-
-  // Wait for detail view URL pattern
-  await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+/**
+ * Open the given Compensation Group Schema record and click the Template Lines tab (AD_Tab-544005).
+ */
+async function navigateToTemplateLinesTab(page, schemaId) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${COMPENSATION_GROUP_SCHEMA_WINDOW_ID}/${schemaId}`);
 
   // Template Lines tab: data-testid is tab-AD_Tab-544005 (verified from live WebAPI
   // GET /rest/api/window/540415/layout — tabId=AD_Tab-544005, caption=Template Lines).
@@ -74,17 +78,13 @@ test.describe('Compensation Group Schema — Template Lines "Without Charge" col
     allure.story('IsWithoutCharge column in Compensation Group Schema Template Lines');
     allure.severity('normal');
 
-    const masterdata = await Backend.createMasterdata({
-      request: {
-        login: { user: { language: 'en_US' } },
-      },
-    });
+    const masterdata = await createMasterdataWithSchema('en_US');
 
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await navigateToTemplateLinesTab(page);
+    await navigateToTemplateLinesTab(page, masterdata.compensationGroupSchemas.schema.id);
 
     // Assert the IsWithoutCharge column header is present in the grid
     const col = page.locator(`th[data-testid="column-${WITHOUT_CHARGE_COLUMN}"]`);
@@ -114,17 +114,13 @@ test.describe('Compensation Group Schema — Template Lines "Without Charge" col
     allure.story('IsWithoutCharge column in Compensation Group Schema Template Lines');
     allure.severity('normal');
 
-    const masterdata = await Backend.createMasterdata({
-      request: {
-        login: { user: { language: 'de_DE' } },
-      },
-    });
+    const masterdata = await createMasterdataWithSchema('de_DE');
 
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    await navigateToTemplateLinesTab(page);
+    await navigateToTemplateLinesTab(page, masterdata.compensationGroupSchemas.schema.id);
 
     // Assert the IsWithoutCharge column header is present in the grid
     const col = page.locator(`th[data-testid="column-${WITHOUT_CHARGE_COLUMN}"]`);
