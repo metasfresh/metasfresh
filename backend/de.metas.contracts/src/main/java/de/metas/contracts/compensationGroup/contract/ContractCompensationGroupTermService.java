@@ -1,15 +1,20 @@
 package de.metas.contracts.compensationGroup.contract;
 
-import com.google.common.collect.ImmutableSet;
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.MutableInt;
+import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -48,8 +53,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ContractCompensationGroupTermService
 {
-	private static final ImmutableSet<FlatrateTermStatus> STATUSES_CHANGED_DAILY = ImmutableSet.of(FlatrateTermStatus.Waiting, FlatrateTermStatus.Running);
+	private static final Logger logger = LogManager.getLogger(ContractCompensationGroupTermService.class);
 
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	@NonNull private final ContractCompensationGroupTermRepository termRepository;
 
@@ -95,7 +101,10 @@ public class ContractCompensationGroupTermService
 
 	/**
 	 * Applies {@link ContractCompensationGroupTermStatusRule#computeStatusUpdate} for today to every completed
-	 * compensation-group term of the context client that is "not yet started" or "running".
+	 * compensation-group term of the context client that the rule may change today
+	 * (see {@link ContractCompensationGroupTermRepository#getTermsDueForDailyContractStatusUpdate}).
+	 * <p>
+	 * Each term is updated in its own (nested) transaction: a term that fails is rolled back and logged, and the run continues with the next one.
 	 *
 	 * @return the number of terms whose contract status was changed
 	 */
@@ -103,22 +112,51 @@ public class ContractCompensationGroupTermService
 	{
 		final LocalDate today = SystemTime.asLocalDate();
 
-		int updatedCount = 0;
-		for (final I_C_Flatrate_Term term : termRepository.getCompletedTermsWithContractStatus(STATUSES_CHANGED_DAILY))
+		final MutableInt updatedCount = MutableInt.zero();
+		for (final I_C_Flatrate_Term term : termRepository.getTermsDueForDailyContractStatusUpdate(today))
 		{
-			final Optional<FlatrateTermStatus> newStatus = ContractCompensationGroupTermStatusRule.computeStatusUpdate(
-					FlatrateTermStatus.ofNullableCode(term.getContractStatus()),
-					TimeUtil.asLocalDate(term.getStartDate()),
-					TimeUtil.asLocalDate(term.getEndDate()),
-					term.getC_FlatrateTerm_Next_ID() > 0,
-					today);
-			if (newStatus.isPresent())
+			trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 			{
-				Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.get().getCode());
-				termRepository.saveContractStatus(term, newStatus.get());
-				updatedCount++;
-			}
+				@Override
+				public void run(final String localTrxName)
+				{
+					if (updateContractStatus(term, today))
+					{
+						updatedCount.increment();
+					}
+				}
+
+				// One failing term must not stop the daily run for all the others: roll back this term only, log it and go on.
+				@Override
+				public boolean doCatch(final Throwable ex)
+				{
+					Loggables.withLogger(logger, Level.WARN)
+							.addLog("C_Flatrate_Term_ID={}: contract status update failed: {}", term.getC_Flatrate_Term_ID(), ex.getLocalizedMessage(), ex);
+					return true; // rollback
+				}
+			});
 		}
-		return updatedCount;
+		return updatedCount.getValue();
+	}
+
+	/**
+	 * @return whether the contract status was changed
+	 */
+	private boolean updateContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final LocalDate today)
+	{
+		final Optional<FlatrateTermStatus> newStatus = ContractCompensationGroupTermStatusRule.computeStatusUpdate(
+				FlatrateTermStatus.ofNullableCode(term.getContractStatus()),
+				TimeUtil.asLocalDate(term.getStartDate()),
+				TimeUtil.asLocalDate(term.getEndDate()),
+				term.getC_FlatrateTerm_Next_ID() > 0,
+				today);
+		if (!newStatus.isPresent())
+		{
+			return false;
+		}
+
+		Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.get().getCode());
+		termRepository.saveContractStatus(term, newStatus.get());
+		return true;
 	}
 }

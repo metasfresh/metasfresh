@@ -240,5 +240,23 @@ class ContractCompensationGroupTermServiceTest
 			assertThat(statusOf(subscriptionEndedYesterday)).isEqualTo(FlatrateTermStatus.Running);
 			assertThat(updatedCount).isEqualTo(2);
 		}
+
+		@Test
+		void oneFailingTerm_doesNotStopTheOthers()
+		{
+			setToday("2026-07-01");
+			final I_C_Flatrate_Term endedBefore = term().startDate("2025-07-01").endDate("2026-06-30").contractStatus(FlatrateTermStatus.Running).create();
+			final I_C_Flatrate_Term failing = term().startDate("2025-07-01").endDate("2026-06-30").contractStatus(FlatrateTermStatus.Running).create();
+			failing.setStartDate(null); // corrupt data: the status rule throws for this term
+			saveRecord(failing);
+			final I_C_Flatrate_Term endedAfter = term().startDate("2025-07-01").endDate("2026-06-30").contractStatus(FlatrateTermStatus.Running).create();
+
+			final int updatedCount = service.updateContractStatusOfCompletedTerms();
+
+			assertThat(statusOf(endedBefore)).isEqualTo(FlatrateTermStatus.EndingContract);
+			assertThat(statusOf(failing)).isEqualTo(FlatrateTermStatus.Running);
+			assertThat(statusOf(endedAfter)).isEqualTo(FlatrateTermStatus.EndingContract);
+			assertThat(updatedCount).isEqualTo(2);
+		}
 	}
 }
