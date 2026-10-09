@@ -32,3 +32,29 @@ WHERE AD_Process_ID = 585686 AND AD_Language IN ('de_DE', 'de_CH')
 INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Table_ID, AD_Process_ID, WEBUI_DocumentAction, WEBUI_ViewAction, WEBUI_ViewQuickAction, WEBUI_ViewQuickAction_Default, WEBUI_IncludedTabTopAction, EntityType)
 VALUES (541700 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-08 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-08 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 818, 585686, 'N', 'Y', 'N', 'N', 'N', 'D')
 ;
+
+-- Value: tax_declaration_ustva_report
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/reports/tax_declaration_ustva/report.jasper
+-- 2026-10-09T08:52:59.881Z
+UPDATE AD_Process SET Name='Umsatzsteuer-Voranmeldung',Updated=TO_TIMESTAMP('2026-10-09 08:52:59.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585686
+;
+
+-- 2026-10-09T08:52:59.920Z
+UPDATE AD_Process_Trl trl SET Name='Umsatzsteuer-Voranmeldung' WHERE AD_Process_ID=585686 AND AD_Language='de_DE'
+;
+
+-- Process: tax_declaration_ustva_report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- Table: C_TaxDeclaration
+-- EntityType: D
+-- 2026-10-09T08:53:42.675Z
+UPDATE AD_Table_Process SET WEBUI_DocumentAction='Y', WEBUI_ViewAction='N', WEBUI_ViewQuickAction='N', WEBUI_ViewQuickAction_Default='N',Updated=TO_TIMESTAMP('2026-10-09 08:53:42.675000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_Process_ID=541700
+;
+
+-- Process: tax_declaration_ustva_report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- Table: C_TaxDeclaration
+-- EntityType: D
+-- 2026-10-09T08:53:53.424Z
+UPDATE AD_Table_Process SET WEBUI_ViewQuickAction='Y', WEBUI_ViewQuickAction_Default='Y',Updated=TO_TIMESTAMP('2026-10-09 08:53:53.424000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_Process_ID=541700
+;
+
