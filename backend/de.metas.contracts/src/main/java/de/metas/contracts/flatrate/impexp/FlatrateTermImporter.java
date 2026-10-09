@@ -92,7 +92,11 @@ import java.util.Properties;
 		final I_C_Flatrate_Conditions conditions = importRecord.getC_Flatrate_Conditions();
 		final boolean isCompensationGroup = TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP;
 
-		final ProductId productId = isCompensationGroup ? null : ProductId.ofRepoId(importRecord.getM_Product_ID());
+		// a refund term is based on a product category or a bonus product, so its row needs no product; a compensation group never has one
+		final boolean isProductless = isCompensationGroup
+				|| (TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.REFUND && importRecord.getM_Product_ID() <= 0);
+
+		final ProductId productId = isProductless ? null : ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final ProductAndCategoryId productAndCategoryId = productId == null
 				? null
 				: Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
@@ -125,7 +129,7 @@ import java.util.Properties;
 		setDropShipUser(contract, getCtx());
 		setDropShipLocation(contract, getCtx());
 
-		if (!isCompensationGroup)
+		if (!isProductless)
 		{
 			contract.setM_Product_ID(productId.getRepoId());
 			setUOM(contract, productId);
