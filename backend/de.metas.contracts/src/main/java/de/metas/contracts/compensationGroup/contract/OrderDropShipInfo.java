@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 /*
@@ -39,6 +41,18 @@ public class OrderDropShipInfo
 	@NonNull SOTrx soTrx;
 	boolean isDropShip;
 	@Nullable OrderId linkedOrderId;
+
+	/**
+	 * The linked <b>sales</b> order's invoice partner ({@code Bill_BPartner_ID}, i.e. the customer) — the partner the
+	 * payment-service fee is keyed by. {@code null} when there is no linked sales order. NOT this (purchase) order's partner.
+	 */
+	@Nullable BPartnerId invoicePartnerId;
+
+	/**
+	 * The linked <b>sales</b> order's {@code DateOrdered} — the date the payment-service fee is keyed by.
+	 * {@code null} when there is no linked sales order. NOT this (purchase) order's date.
+	 */
+	@Nullable ZonedDateTime soDate;
 
 	/** @return the linked sales order, if this is a drop-ship purchase order */
 	public Optional<OrderId> getDropShipLinkedSalesOrderId()

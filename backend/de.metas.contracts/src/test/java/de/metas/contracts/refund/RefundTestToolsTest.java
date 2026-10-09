@@ -1,11 +1,9 @@
 package de.metas.contracts.refund;
 
-import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,10 +56,7 @@ public class RefundTestToolsTest
 			@NonNull final String date,
 			final int expected)
 	{
-		SystemTime.setFixedTimeSource(LocalDate.parse(date)
-				.atStartOfDay(ZoneId.systemDefault()));
-
-		final int result = RefundTestTools.computeInvoiceScheduleDayOfMonth();
+		final int result = RefundTestTools.computeInvoiceScheduleDayOfMonth(LocalDate.parse(date));
 		assertThat(result).isEqualTo(expected);
 	}
 

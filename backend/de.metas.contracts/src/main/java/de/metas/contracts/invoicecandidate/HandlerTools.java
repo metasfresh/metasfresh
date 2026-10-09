@@ -229,6 +229,11 @@ public class HandlerTools
 			final IProductBL productBL = Services.get(IProductBL.class);
 			return productBL.getStockUOMId(term.getM_Product_ID());
 		}
+		if (icRecord.getM_Product_ID() > 0)
+		{
+			// e.g. a refund term with a category base has no product; its candidate's product (the bonus product) tells the UOM
+			return Services.get(IProductBL.class).getStockUOMId(icRecord.getM_Product_ID());
+		}
 
 		throw new AdempiereException("The term of param 'icRecord' needs to have a UOM; C_Invoice_Candidate_ID=" + icRecord.getC_Invoice_Candidate_ID())
 				.appendParametersToMessage()
