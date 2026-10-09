@@ -181,7 +181,17 @@ export function shouldPatch({
   return allowPatching;
 }
 
+/**
+ * null and "" are the same empty value: the server stores an empty text or number as null, and the
+ * grid holds an empty cell as "" or as null depending on how the row was loaded.
+ * undefined is deliberately not included: a Button patches `undefined` against its null value.
+ */
+const isNullOrEmptyString = (value) => value === null || value === '';
+
 const equalsByValue = (value1, value2, widgetType) => {
+  if (isNullOrEmptyString(value1) && isNullOrEmptyString(value2)) {
+    return true;
+  }
   if (widgetType === 'Quantity') {
     // NOTE: we might consider the other number based widget types (e.g. Integer, Amount, Number, Quantity, CostPrice)
     // but for now we are checking the Quantity only because that one is in our task focus,
