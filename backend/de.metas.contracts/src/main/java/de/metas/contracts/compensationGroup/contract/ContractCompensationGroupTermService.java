@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Optional;
 
 /*
  * #%L
@@ -157,19 +157,20 @@ public class ContractCompensationGroupTermService
 	 */
 	private boolean updateContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final LocalDate today)
 	{
-		final Optional<FlatrateTermStatus> newStatus = ContractCompensationGroupTermStatusRule.computeStatusUpdate(
-				FlatrateTermStatus.ofNullableCode(term.getContractStatus()),
-				TimeUtil.asLocalDate(term.getStartDate()),
-				TimeUtil.asLocalDate(term.getEndDate()),
-				term.getC_FlatrateTerm_Next_ID() > 0,
-				today);
-		if (!newStatus.isPresent())
+		final FlatrateTermStatus newStatus = ContractCompensationGroupTermStatusRule.computeStatusUpdate(
+						FlatrateTermStatus.ofNullableCode(term.getContractStatus()),
+						TimeUtil.asLocalDate(term.getStartDate()),
+						TimeUtil.asLocalDate(term.getEndDate()),
+						FlatrateTermId.ofRepoIdOrNull(term.getC_FlatrateTerm_Next_ID()) != null,
+						today)
+				.orElse(null);
+		if (newStatus == null)
 		{
 			return false;
 		}
 
-		Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.get().getCode());
-		termRepository.saveContractStatus(term, newStatus.get());
+		Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.getCode());
+		termRepository.saveContractStatus(term, newStatus);
 		return true;
 	}
 }

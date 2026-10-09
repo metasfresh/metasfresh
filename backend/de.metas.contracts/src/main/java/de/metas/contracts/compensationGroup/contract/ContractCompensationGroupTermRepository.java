@@ -115,7 +115,6 @@ public class ContractCompensationGroupTermRepository
 	 *     <li>"not yet started" ({@code Wa}) and started on or before {@code today}, or</li>
 	 *     <li>"running" ({@code Ru}), ended before {@code today} and not extended ({@code C_FlatrateTerm_Next_ID} empty)</li>
 	 * </ul>
-	 * This only narrows the candidates; {@link ContractCompensationGroupTermStatusRule#computeStatusUpdate} still decides per term.
 	 */
 	public List<I_C_Flatrate_Term> getTermsDueForDailyContractStatusUpdate(@NonNull final LocalDate today)
 	{

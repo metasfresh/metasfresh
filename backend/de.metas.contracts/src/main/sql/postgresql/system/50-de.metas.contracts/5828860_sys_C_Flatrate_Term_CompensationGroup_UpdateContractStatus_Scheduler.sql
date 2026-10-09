@@ -1,4 +1,4 @@
--- Daily scheduler (05:00, after the scheduled contract extension at 04:00) for the process
+-- Daily scheduler (05:00; it should run after the instance's daily contract extension, if there is one) for the process
 -- "Kompensationsgruppen-Verträge: Vertragsstatus aktualisieren" (AD_Process_ID 585687, previous migration script).
 -- Client-scoped like the other contract schedulers, run with the WebUI role of that client.
 --
