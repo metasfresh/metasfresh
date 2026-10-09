@@ -15,10 +15,13 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * by Enter - and leaves it again without typing: Escape, Tab or a click somewhere else. Nothing changed,
  * so no change may be sent to the server. Clearing a description that does have text must still be sent.
  *
- * Why the quantity change: an empty value is held as "" after the grid loads, but as null after a line
- * is read again from the server (the server notifies the change and the grid re-reads that line). A
- * fresh Alt+W copy can be in either state depending on timing; changing the quantity puts the line in
- * the re-read state every time, which is the state that used to send "" on leaving the cell.
+ * Why the quantity change: an empty value is held as "" after the grid loads the tab, but as null after
+ * a line is read again from the server (the server notifies a change and the grid re-reads that line
+ * with GET .../AD_Tab-187?ids=...). Only the null state used to send "" on leaving the cell. On a fresh
+ * Alt+W copy, which state the lines end up in depends on whether that re-read arrives after the tab
+ * load: some copies were null, others "" (in which case leaving the cell sent nothing even before the
+ * fix). A case without the quantity change would therefore not fail reliably without the fix, so every
+ * case first changes the quantity, which re-reads the line every time - also a real user path.
  *
  * Features tested:
  * - F5010: Order Lines Grid
