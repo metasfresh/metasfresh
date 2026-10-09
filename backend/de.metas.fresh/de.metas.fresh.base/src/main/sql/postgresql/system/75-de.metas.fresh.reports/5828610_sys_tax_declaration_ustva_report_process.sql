@@ -1,5 +1,5 @@
 -- Function DDL: 5828600_sys_tax_declaration_ustva_report_function.sql
--- Print process "Umsatzsteuer-Voranmeldung (PDF)" on the Tax Declaration window (C_TaxDeclaration, AD_Table_ID 818)
+-- Print process "Umsatzsteuer-Voranmeldung" on the Tax Declaration window (C_TaxDeclaration, AD_Table_ID 818)
 --
 -- IDs allocated from idserver.metas.de on 2026-10-08:
 --   AD_MigrationScript 5828610
@@ -58,3 +58,9 @@ UPDATE AD_Table_Process SET WEBUI_DocumentAction='Y', WEBUI_ViewAction='N', WEBU
 UPDATE AD_Table_Process SET WEBUI_ViewQuickAction='Y', WEBUI_ViewQuickAction_Default='Y',Updated=TO_TIMESTAMP('2026-10-09 08:53:53.424000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_Process_ID=541700
 ;
 
+-- keep the translations in line with the renamed process (no "(PDF)" suffix)
+UPDATE AD_Process_Trl SET Name='Umsatzsteuer-Voranmeldung', Updated=TO_TIMESTAMP('2026-10-09 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=585686 AND AD_Language='de_CH'
+;
+
+UPDATE AD_Process_Trl SET Name='VAT advance return', Updated=TO_TIMESTAMP('2026-10-09 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=585686 AND AD_Language IN ('en_US', 'en_GB')
+;
