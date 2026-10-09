@@ -315,7 +315,7 @@ Keyboard-only workflow: product → Enter → qty → Enter → line added.
       console.log(`[${language}] Product resolved to: "${resolvedValue}"`);
 
       // Fill quantity (click explicitly — toBeFocused unreliable in headless)
-      const quantityInput = page.getByRole('spinbutton');
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput.click();
       await quantityInput.fill('5');
 
@@ -404,7 +404,7 @@ RawLookup.handleSelect_RegularItem — conditional this.focus() with isMouseEven
       );
 
       // Fill quantity
-      const quantityInput = page.getByRole('spinbutton');
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput.click();
       await quantityInput.fill('7');
 
@@ -485,7 +485,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       expect(resolved1).toBeTruthy();
       console.log(`[${language}] Line 1 product resolved: "${resolved1}"`);
 
-      const quantityInput1 = page.getByRole('spinbutton');
+      const quantityInput1 = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput1.click();
       await quantityInput1.fill('3');
 
@@ -509,7 +509,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       expect(resolved2).toBeTruthy();
       console.log(`[${language}] Line 2 product resolved: "${resolved2}"`);
 
-      const quantityInput2 = page.getByRole('spinbutton');
+      const quantityInput2 = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput2.click();
       await quantityInput2.fill('8');
 
@@ -559,7 +559,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       await page.waitForTimeout(1000);
       expect(await piInput.inputValue()).toContain(pi.tuName);
 
-      const quantityInput = page.getByRole('spinbutton');
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput.click();
       await quantityInput.fill('3');
       await page.keyboard.press('Enter');
@@ -602,7 +602,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       await page.locator('.input-dropdown-list-option').getByText(pi.tuName).first().click();
       await page.waitForTimeout(1000);
 
-      const quantityInput = page.getByRole('spinbutton');
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
       await quantityInput.click();
       await quantityInput.fill('3');
       await page.keyboard.press('Enter');
@@ -688,7 +688,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
 
       const piInput = page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field');
-      const quantityInput = page.getByRole('spinbutton');
+      const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
 
       errors.length = 0; // contract: zero browser errors during the keyboard steps
 

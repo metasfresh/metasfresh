@@ -3,7 +3,17 @@ import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 
-import { getWidgetField, shouldPatch } from '../../utils/widgetHelpers';
+import {
+  getWidgetField,
+  isDecimalNumberField,
+  shouldPatch,
+} from '../../utils/widgetHelpers';
+import {
+  formatDecimalNumberForEditing,
+  getRefusedNumberNotification,
+  isValidDecimalNumberString,
+  normalizeDecimalNumberString,
+} from '../../utils/locale';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
@@ -13,6 +23,36 @@ import PropTypes from 'prop-types';
 
 /** Widget types with their own document-change focus rule; `WidgetRenderer` routes these to `Lookup`/`List`. */
 const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
+
+/**
+ * The `InputEvent.inputType`s that bring a whole chunk of text into the field at once (not a single keystroke). When
+ * such a chunk is no number, the decimal widget refuses it visibly (an error notification) instead of swallowing it.
+ */
+const INSERT_WHOLE_TEXT_INPUT_TYPES = [
+  'insertFromPaste',
+  'insertFromDrop',
+  'insertReplacementText',
+];
+
+/**
+ * Tells whether a widget value is just what the user typed, coming back from the parent's state - and not a value from
+ * outside. A document keeps the typed text as is; a filter keeps the dot-decimal.
+ */
+const isEchoOfTypedText = (value, typedText, isFilter) => {
+  const valueStr = value == null ? '' : String(value);
+  return (
+    valueStr === typedText ||
+    (isFilter && valueStr === normalizeDecimalNumberString(typedText))
+  );
+};
+
+/** Tells whether two dot-decimal numbers (or their strings) are the same number, e.g. '2.50' and '2.5' */
+const isSameNumber = (value1, value2) =>
+  value1 != null &&
+  value2 != null &&
+  String(value1).trim() !== '' &&
+  String(value2).trim() !== '' &&
+  Number(value1) === Number(value2);
 
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
@@ -40,6 +80,9 @@ export class RawWidget extends PureComponent {
     this.state = {
       isFocused: false,
       cachedValue,
+      // a decimal number widget shows the text the user is typing, otherwise the stored value the session way
+      typedText: null,
+      typedTextTo: null,
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
@@ -81,6 +124,8 @@ export class RawWidget extends PureComponent {
     ) {
       this.resetCachedValue();
     }
+
+    this.forgetTypedTextOnOutsideChange(prevProps);
 
     // The mount-time focus above never runs again inside a mounted window, so repeat it when the
     // document changes - not while this widget holds the caret, not in a modal (there `dataId` is
@@ -269,15 +314,113 @@ export class RawWidget extends PureComponent {
   };
 
   /**
+   * @method forgetTypedTextOnOutsideChange
+   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
+   *          that value again instead of what the user had typed
+   */
+  forgetTypedTextOnOutsideChange = (prevProps) => {
+    const { widgetType, widgetData, filterWidget } = this.props;
+    const { typedText, typedTextTo } = this.state;
+    if (!isDecimalNumberField(widgetType)) {
+      return;
+    }
+
+    const isChanged = (key) =>
+      prevProps.widgetData?.[0]?.[key] !== widgetData?.[0]?.[key];
+    const isOutsideChange = (key, text) =>
+      text !== null &&
+      isChanged(key) &&
+      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget);
+
+    const isValueChanged = isOutsideChange('value', typedText);
+    const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
+    if (isValueChanged || isValueToChanged) {
+      this.setState({
+        ...(isValueChanged ? { typedText: null } : {}),
+        ...(isValueToChanged ? { typedTextTo: null } : {}),
+      });
+    }
+  };
+
+  /**
+   * @method getDecimalEditText
+   * @summary The text a decimal number widget shows for editing: what the user typed, else the stored value with the
+   *          session's decimal separator (de 3.57 -> '3,57')
+   */
+  getDecimalEditText = (isValueTo = false) => {
+    const { typedText, typedTextTo } = this.state;
+    const typed = isValueTo ? typedTextTo : typedText;
+    if (typed !== null) {
+      return typed;
+    }
+
+    const { data, widgetData } = this.props;
+    const stored = isValueTo
+      ? widgetData?.[0]?.valueTo
+      : data != null
+      ? data
+      : widgetData?.[0]?.value;
+    return formatDecimalNumberForEditing(stored) ?? '';
+  };
+
+  /**
+   * @method isUntouchedDecimalEditText
+   * @summary Tells whether a value is just the text shown for a stored value the user did not type over -
+   *          leaving such a field must not patch anything
+   */
+  isUntouchedDecimalEditText = (value, valueTo) => {
+    const { typedText, typedTextTo } = this.state;
+    return (
+      typedText === null &&
+      typedTextTo === null &&
+      value === this.getDecimalEditText(false) &&
+      (valueTo == null || valueTo === this.getDecimalEditText(true))
+    );
+  };
+
+  /**
+   * @method getEventValues
+   * @summary The value and valueTo of an input event: the edited side from the input, the other side as shown
+   */
+  getEventValues = (e, isValueTo) => {
+    const { widgetType, widgetData, range } = this.props;
+    const valueToSet = e.target.value;
+
+    if (isDecimalNumberField(widgetType) && range) {
+      return {
+        value: !isValueTo ? valueToSet : this.getDecimalEditText(false),
+        valueTo: isValueTo ? valueToSet : this.getDecimalEditText(true),
+      };
+    }
+    return {
+      value: !isValueTo ? valueToSet : widgetData?.[0]?.value,
+      valueTo: isValueTo ? valueToSet : widgetData?.[0]?.valueTo,
+    };
+  };
+
+  /**
+   * @method notifyRefusedNumber
+   * @summary Tells the user why a pasted or dropped text was not taken over as a number - once for the same text
+   */
+  notifyRefusedNumber = (invalidText) => {
+    const { addNotification } = this.props;
+    if (this.lastRefusedNumberText === invalidText) {
+      return;
+    }
+    this.lastRefusedNumberText = invalidText;
+
+    const { title, message } = getRefusedNumberNotification(invalidText);
+    addNotification?.(title, message, 5000, 'error');
+  };
+
+  /**
    * @method handleBlur
    * @summary Wrapper around `handleBlurWithParams` to grab the missing parameters and avoid anonymous function in event handlers
    */
   handleBlur = (e, isValueTo = false) => {
-    const { filterWidget, fields, id, widgetData } = this.props;
+    const { filterWidget, fields, id } = this.props;
 
-    const valueToSet = e.target.value;
-    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
-    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+    const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
@@ -310,13 +453,10 @@ export class RawWidget extends PureComponent {
       fields,
       closeTableField,
       id,
-      widgetData,
     } = this.props;
     const { key } = e;
 
-    const valueToSet = e.target.value;
-    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
-    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+    const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     const widgetField = getWidgetField({ filterWidget, fields });
 
@@ -352,14 +492,28 @@ export class RawWidget extends PureComponent {
   };
 
   handleChange = (e, isValueTo = false) => {
-    const { handleChange, filterWidget, fields, id, widgetData } = this.props;
+    const { handleChange, filterWidget, fields, id, widgetType } = this.props;
     if (!handleChange) return;
 
     const widgetFieldName = getWidgetField({ filterWidget, fields });
 
     const valueToSet = e.target.value;
-    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
-    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+    if (isDecimalNumberField(widgetType)) {
+      // a decimal number widget is a text input, so it takes only a text it can read as a number - any other input
+      // (a letter, a digit string too long to be a number, ...) leaves the field as it was, so it never holds a text
+      // that is no number. A keystroke is ignored silently; a whole chunk of text brought in at once (paste, drag-drop,
+      // autocorrect replacement) is refused visibly. Autocomplete is off and an IME's composition text is typed text.
+      if (!isValidDecimalNumberString(valueToSet)) {
+        if (INSERT_WHOLE_TEXT_INPUT_TYPES.includes(e.nativeEvent?.inputType)) {
+          this.notifyRefusedNumber(valueToSet);
+        }
+        return;
+      }
+      this.lastRefusedNumberText = null;
+      this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
+    }
+    // the other end of a range the way it is shown, so that the parent reads both ends the same way
+    const { value, valueTo } = this.getEventValues(e, isValueTo);
 
     this.updateTypedCharacters(value);
     handleChange(widgetFieldName, value, id, valueTo);
@@ -379,9 +533,45 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
-      this.props;
+    const {
+      handlePatch,
+      inProgress,
+      widgetType,
+      maxLength,
+      widgetData,
+      data,
+      filterWidget,
+    } = this.props;
     const { cachedValue } = this.state;
+
+    // the user typed the number with the separators of his locale (e.g. '3,57' in German), the backend expects '3.57'
+    if (isDecimalNumberField(widgetType)) {
+      const isDocumentField = !filterWidget; // a filter applies on patch, also unchanged (e.g. Enter in an inline filter)
+      if (
+        !isForce &&
+        isDocumentField &&
+        this.isUntouchedDecimalEditText(value, valueTo)
+      ) {
+        return Promise.resolve(null);
+      }
+
+      value = normalizeDecimalNumberString(value);
+      valueTo = normalizeDecimalNumberString(valueTo);
+
+      // e.g. '2,50' retyped for a stored 2.5: nothing to patch - unless the last patch was not taken over by the
+      // server (the stored value differs from it), so that the user can send the same number again
+      const storedValue = data != null ? data : widgetData?.[0]?.value;
+      if (
+        !isForce &&
+        isDocumentField &&
+        valueTo == null &&
+        isSameNumber(value, cachedValue) &&
+        isSameNumber(cachedValue, storedValue)
+      ) {
+        return Promise.resolve(null);
+      }
+    }
+
     const willPatch = shouldPatch({
       property,
       value,
@@ -492,12 +682,13 @@ export class RawWidget extends PureComponent {
     const widgetTitle =
       widgetData[0].widgetType === 'Password' ? null : widgetValue;
 
+    const isDecimalNumber = isDecimalNumberField(this.props.widgetType);
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
       className: 'input-field js-input-field',
-      value: widgetValue,
+      value: isDecimalNumber ? this.getDecimalEditText(false) : widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
       disabled: readonly,
@@ -520,6 +711,12 @@ export class RawWidget extends PureComponent {
           isMultiselect,
           widgetField,
           widgetProperties,
+          decimalRangeValues: isDecimalNumber
+            ? {
+                from: this.getDecimalEditText(false),
+                to: this.getDecimalEditText(true),
+              }
+            : undefined,
           showErrorBorder,
           isFocused,
           isFilterActive,
@@ -802,6 +999,7 @@ RawWidget.propTypes = {
   onBlurWidget: PropTypes.func,
   handleProcess: PropTypes.func,
   handleChange: PropTypes.func,
+  addNotification: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   handleZoomInto: PropTypes.func,
   onShow: PropTypes.func,

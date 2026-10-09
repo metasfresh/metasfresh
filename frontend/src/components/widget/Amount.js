@@ -10,6 +10,7 @@ export default class Amount extends PureComponent {
       widgetField,
       value,
       step,
+      isDecimalNumber,
       devices,
       //
       id,
@@ -35,11 +36,15 @@ export default class Amount extends PureComponent {
           'number-field'
         )}
       >
+        {/* A decimal number is typed into a text input: a browser number input drops the decimal comma (e.g. German
+            '3,57' becomes 357) whatever the user's locale, and the typed text is converted by RawWidget.
+            A negative amount stays possible, as before: min=0 never stopped typing '-5' into a number input, it only
+            flagged the input as invalid, and nothing read that flag. */}
         <input
-          type="number"
+          {...(isDecimalNumber
+            ? { type: 'text', inputMode: 'decimal' }
+            : { type: 'number', min: 0, step })}
           value={value}
-          min={0}
-          step={step}
           id={id}
           autoComplete={autoComplete}
           className={inputClassName}
@@ -72,6 +77,7 @@ Amount.propTypes = {
   widgetField: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   step: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isDecimalNumber: PropTypes.bool,
   devices: PropTypes.any,
   //
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

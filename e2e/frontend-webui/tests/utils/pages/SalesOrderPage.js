@@ -321,8 +321,8 @@ export class SalesOrderPage {
         await dropdownOption.click();
         await page.waitForTimeout(500);
 
-        // Fill quantity — scope to .quick-input-container to avoid matching other spinbuttons
-        const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+        // Fill quantity — the decimal input of the quick input (a text input with inputmode=decimal)
+        const quantityInput = page.locator('.quick-input-container input[inputmode="decimal"]');
         await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
         await quantityInput.click();
         await quantityInput.fill(quantity.toString());
@@ -488,7 +488,7 @@ export class SalesOrderPage {
     return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
       const page = getPage();
 
-      await page.getByRole('spinbutton').fill(quantity.toString());
+      await page.locator('.quick-input-container input[inputmode="decimal"]').fill(quantity.toString());
       await page.keyboard.press('Enter');
       await page.waitForTimeout(500);
 

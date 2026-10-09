@@ -535,7 +535,7 @@ async function addBundleViaQuickInput({ page, recordId, productCode, quantity })
     await page.locator('.input-dropdown-list-option').first().click();
     await page.waitForTimeout(500);
 
-    const qtyField = page.locator('.quick-input-container').getByRole('spinbutton');
+    const qtyField = page.locator('.quick-input-container input[inputmode="decimal"]');
     await qtyField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await qtyField.click();
     await qtyField.fill(String(quantity));

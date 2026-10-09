@@ -172,7 +172,7 @@ Tests tab navigation within document views:
       console.log(`Product input in quick input: ${hasProductField}`);
 
       // Verify quantity input exists
-      const qtyInput = page.locator('.quick-input-container').getByRole('spinbutton');
+      const qtyInput = page.locator('.quick-input-container input[inputmode="decimal"]');
       const hasQtyField = await qtyInput.isVisible().catch(() => false);
       console.log(`Quantity input in quick input: ${hasQtyField}`);
 
