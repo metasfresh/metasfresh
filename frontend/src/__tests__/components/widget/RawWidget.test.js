@@ -954,6 +954,66 @@ describe('RawWidget component', () => {
       expect(wrapper.find('input').props().value).toEqual('1');
     });
 
+    it('keeps the typed text of the next edit when the view reload after a patch re-delivers the patched amount', () => {
+      const handlePatchSpy = jest.fn(() => Promise.resolve(null));
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '0' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '1.000');
+      pressEnter(wrapper.find('input'), '1.000');
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] }); // the PATCH response
+      wrapper.update();
+      expect(wrapper.find('input').props().value).toEqual('1');
+
+      typeWithEcho(wrapper, '3.5');
+      typeWithEcho(wrapper, '3.57');
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] }); // the view reload
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('3.57');
+      pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
+      expect(handlePatchSpy).toHaveBeenLastCalledWith('DiscountAmt', '3.57', undefined, undefined);
+    });
+
+    it('keeps the typed text when a view reload re-delivers the empty amount stored before typing', () => {
+      const handlePatchSpy = jest.fn(() => Promise.resolve(null));
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: null }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '3.57');
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: null }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('3.57');
+      pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
+    });
+
+    it('shows the stored amount of another document instead of the text typed on the previous one', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '3.57');
+
+      // the widget is reused for another document whose amount is the same number
+      wrapper.setProps({ dataId: '1001283', widgetData: [{ ...amountData, value: '1' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('1');
+    });
+
     const amountRangeFilterProps = (extra) =>
       createDummyProps({
         ...amountLayout,

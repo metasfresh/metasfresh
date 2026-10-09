@@ -54,6 +54,12 @@ const isSameNumber = (value1, value2) =>
   String(value2).trim() !== '' &&
   Number(value1) === Number(value2);
 
+/** Tells whether two stored values are the same: both empty, or the same number */
+const isSameStoredValue = (value1, value2) => {
+  const isBlank = (value) => value == null || String(value).trim() === '';
+  return (isBlank(value1) && isBlank(value2)) || isSameNumber(value1, value2);
+};
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -128,6 +134,13 @@ export class RawWidget extends PureComponent {
       this.resetCachedValue();
     }
 
+    // the stored values recorded for an edit belong to the document (row) it was typed on
+    if (
+      prevProps.dataId !== this.props.dataId ||
+      prevProps.rowId !== this.props.rowId
+    ) {
+      this.storedValuesBeforeTyping = {};
+    }
     this.forgetTypedTextOnOutsideChange(prevProps);
 
     // The mount-time focus above never runs again inside a mounted window, so repeat it when the
@@ -335,7 +348,13 @@ export class RawWidget extends PureComponent {
       text !== null &&
       isChanged(key) &&
       !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget) &&
-      !isSameNumber(widgetData?.[0]?.[key], this.storedValuesBeforeTyping[key]);
+      !(
+        key in this.storedValuesBeforeTyping &&
+        isSameStoredValue(
+          widgetData?.[0]?.[key],
+          this.storedValuesBeforeTyping[key]
+        )
+      );
 
     const isValueChanged = isOutsideChange('value', typedText);
     const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
@@ -365,20 +384,13 @@ export class RawWidget extends PureComponent {
       return typed;
     }
 
-    return formatDecimalNumberForEditing(this.getStoredValue(isValueTo)) ?? '';
-  };
-
-  /**
-   * @method getStoredValue
-   * @summary The stored value of one end of the widget (not what the user is typing)
-   */
-  getStoredValue = (isValueTo = false) => {
     const { data, widgetData } = this.props;
-    return isValueTo
+    const stored = isValueTo
       ? widgetData?.[0]?.valueTo
       : data != null
       ? data
       : widgetData?.[0]?.value;
+    return formatDecimalNumberForEditing(stored) ?? '';
   };
 
   /**
@@ -530,7 +542,8 @@ export class RawWidget extends PureComponent {
       this.lastRefusedNumberText = null;
       const key = isValueTo ? 'valueTo' : 'value';
       if (!(key in this.storedValuesBeforeTyping)) {
-        this.storedValuesBeforeTyping[key] = this.getStoredValue(isValueTo);
+        // the same source forgetTypedTextOnOutsideChange compares the incoming value of
+        this.storedValuesBeforeTyping[key] = this.props.widgetData?.[0]?.[key];
       }
       this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
