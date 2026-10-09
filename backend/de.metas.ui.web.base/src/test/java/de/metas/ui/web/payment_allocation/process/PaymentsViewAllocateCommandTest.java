@@ -40,6 +40,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -66,6 +67,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -96,6 +98,7 @@ import java.util.Collections;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -383,6 +386,24 @@ public class PaymentsViewAllocateCommandTest
 					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
 		}
 
+		@Test
+		public void serviceFeeInvoice_withoutPaymentAndWithoutConfig_failsWithUserFriendlyMessage()
+		{
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(),
+					moneyService,
+					invoiceProcessingServiceCompanyService))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner").toAD_Message());
+						// the message names the invoice and the partner as shown in the view (not a raw id)
+						assertThat(ex.getMessage()).contains(invoiceRow.getDocumentNo()).contains("BPartner");
+					});
+		}
+
 		@Nested
 		public class WithServiceFee
 		{
@@ -449,6 +470,33 @@ public class PaymentsViewAllocateCommandTest
 								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
+			}
+
+			@Test
+			public void salesInvoiceAndPaymentOfPartnerWithoutServiceCompanyConfig_failsWithUserFriendlyMessage()
+			{
+				final I_C_BPartner payerRecord = newInstance(I_C_BPartner.class);
+				payerRecord.setName("Payer Without Service Company");
+				saveRecord(payerRecord);
+				final BPartnerId payerId = BPartnerId.ofRepoId(payerRecord.getC_BPartner_ID());
+
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(payerId).paymentDateTrx("2020-08-01").build();
+
+				assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService)),
+						moneyService,
+						invoiceProcessingServiceCompanyService))
+						.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+							assertThat(ex.isUserValidationError()).isTrue();
+							assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner").toAD_Message());
+							// the message names the invoice, the payment and the payment's partner (not a raw id)
+							assertThat(ex.getMessage())
+									.contains(invoiceRow.getDocumentNo())
+									.contains(paymentRow.getDocumentNo())
+									.contains("Payer Without Service Company");
+						});
 			}
 
 			@Test
