@@ -41,6 +41,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -653,5 +654,27 @@ public class PaymentAllocationServiceTest
 		assertThat(paymentAllocationResult.getCandidates().size())
 				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
 				.isEqualByComparingTo(4);
+	}
+
+	@Test
+	public void serviceFeeInvoice_invoicePartnerWithoutConfig_failsWithUserFriendlyMessage()
+	{
+		final I_C_BPartner partnerWithoutConfig = newInstance(I_C_BPartner.class);
+		partnerWithoutConfig.setName("Partner Without Service Company");
+		saveRecord(partnerWithoutConfig);
+
+		final I_C_Payment payment = payment().payAmt(new BigDecimal(100)).build();
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
+		invoice.setC_BPartner_ID(partnerWithoutConfig.getC_BPartner_ID());
+		saveRecord(invoice);
+		final PaymentAllocationPayableItem payableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).serviceFeeAmt(new BigDecimal(10)).invoice(invoice).soTrx(SOTrx.SALES).build();
+
+		assertThatThrownBy(() -> paymentAllocationService.allocatePaymentForRemittanceAdvise(getPaymentAllocationCriteria(payment, Collections.singletonList(payableItem))))
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+					assertThat(ex.isUserValidationError()).isTrue();
+					assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner").toAD_Message());
+					// the message names the invoice and the partner (not a raw id)
+					assertThat(ex.getMessage()).contains(invoice.getDocumentNo()).contains("Partner Without Service Company");
+				});
 	}
 }

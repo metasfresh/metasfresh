@@ -14,7 +14,9 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -197,6 +199,8 @@ public class RefundInvoiceCandidateRepository
 				asTimestamp(invoicableFrom),
 				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
+		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
@@ -259,7 +263,12 @@ public class RefundInvoiceCandidateRepository
 
 		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
 
-		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
+		// a refund config with a category base has no product; then the candidate keeps the product that it was created with
+		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundCandidate.getRefundConfigs());
+		if (refundProductId != null)
+		{
+			record.setM_Product_ID(refundProductId.getRepoId());
+		}
 
 		// note that Quantity = 1 is set elsewhere, in the invoice candidate handler
 		final Money money = refundCandidate.getMoney();
@@ -288,11 +297,17 @@ public class RefundInvoiceCandidateRepository
 
 		LocalDate invoicableFrom;
 
+		/** Only the refund candidates of this side (sales or purchase) match; the refund of a purchase is never merged into the refund of a sale. */
+		@NonNull
+		SOTrx soTrx;
+
 		@Builder
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
-				@NonNull final LocalDate invoicableFrom)
+				@NonNull final LocalDate invoicableFrom,
+				@NonNull final SOTrx soTrx)
 		{
+			this.soTrx = soTrx;
 			this.refundContract = refundContract;
 			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}

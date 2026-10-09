@@ -1,24 +1,43 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.CandidateAssignmentService;
+import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.lang.SOTrx;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -55,6 +74,13 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 public class FlatrateTermRefund_Handler
 		implements ConditionTypeSpecificInvoiceCandidateHandler
 {
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	// this handler is instantiated by the invoice candidate handler framework, not by Spring
+	@NonNull private final SpringContextHolder.Lazy<RefundContractRepository> refundContractRepository = SpringContextHolder.lazyBean(RefundContractRepository.class);
+
 	@Override
 	public String getConditionsType()
 	{
@@ -103,12 +129,67 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link CandidateAssignmentService}.
+	 * The price is updated in {@link CandidateAssignmentService}.
+	 * <p>
+	 * The tax follows the product that the refund is booked on (the bonus product, or else the config's product):
+	 * its tax category comes from the regular pricing of that product for the bill partner, and the tax from the bill location, the date and the SOTrx.
+	 * If there is no such product, then the tax remains unchanged.
+	 * If the product has no price, or its price has no tax category, then the candidate gets an error instead of keeping the tax of the refunded goods.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		return PriceAndTax.NONE; // no changes to be made
+		final RefundContract refundContract = refundContractRepository.get().getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
+		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundContract.getRefundConfigs());
+		if (refundProductId == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
+		{
+			return PriceAndTax.NONE;
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(invoiceCandidateRecord.getAD_Org_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(invoiceCandidateRecord.isSOTrx());
+		// a refund candidate gets its date ordered from the invoice schedule when it is created (RefundInvoiceCandidateFactory)
+		final Timestamp taxDate = CoalesceUtil.coalesce(invoiceCandidateRecord.getDateOrdered(), invoiceCandidateRecord.getDateToInvoice());
+		if (taxDate == null)
+		{
+			return PriceAndTax.NONE;
+		}
+
+		final IEditablePricingContext pricingContext = pricingBL
+				.createInitialContext(
+						orgId,
+						refundProductId,
+						BPartnerId.ofRepoId(invoiceCandidateRecord.getBill_BPartner_ID()),
+						Quantitys.of(ONE, refundProductId),
+						soTrx)
+				.setReferencedObject(invoiceCandidateRecord)
+				.setPriceDate(TimeUtil.asLocalDate(taxDate, orgDAO.getTimeZone(orgId)))
+				.setFailIfNotCalculated();
+		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(invoiceCandidateRecord).getBPartnerLocationAndCaptureId();
+		pricingContext.setCountryId(bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId()));
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(invoiceCandidateRecord.getM_PricingSystem_ID());
+		if (pricingSystemId != null)
+		{
+			pricingContext.setPricingSystemId(pricingSystemId);
+		}
+
+		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+
+		// without a tax category this is the Tax-Not-Found tax, so the candidate gets an error
+		final TaxId taxId = taxBL.getTaxNotNull(
+				invoiceCandidateRecord,
+				pricingResult.getTaxCategoryId(),
+				refundProductId.getRepoId(),
+				taxDate,
+				orgId,
+				null, // warehouseId
+				billLocationId,
+				soTrx);
+
+		return PriceAndTax.builder()
+				.taxCategoryId(pricingResult.getTaxCategoryId())
+				.taxId(taxId)
+				.build();
 	}
 
 	@Override
