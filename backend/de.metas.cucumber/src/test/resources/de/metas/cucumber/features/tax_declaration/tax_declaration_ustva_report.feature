@@ -36,8 +36,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | purchasePLV | purchasePriceList |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | PO_PricingSystem_ID | VATaxID      |
-      | customer   | Y          | N        | pricingSystem      |                     | DE822222222  |
-      | vendor     | N          | Y        |                    | pricingSystem       | DE811111111  |
+      | customer   | Y          | N        | pricingSystem      |                     | DE822222228  |
+      | vendor     | N          | Y        |                    | pricingSystem       | DE811111113  |
     And metasfresh contains C_BPartner_Locations:
       | Identifier        | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | customer_location | customer      | Y               | Y               |
@@ -276,10 +276,10 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | SUMMARY      | v66N          | 85      | 16.15   |
     And the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID | bpartner_vatid |
-      | DETAIL       | v66N          | N          | invP1     | 60.00  | 2024-01-15   | 2024-01-15 | vendor        | DE811111111    |
-      | DETAIL       | v66N          | T          | invP1     | 11.40  | 2024-01-15   | 2024-01-15 | vendor        | DE811111111    |
-      | DETAIL       | v66N          | N          | invP2     | 25.00  | 2024-01-18   | 2024-01-18 | vendor        | DE811111111    |
-      | DETAIL       | v66N          | T          | invP2     | 4.75   | 2024-01-18   | 2024-01-18 | vendor        | DE811111111    |
+      | DETAIL       | v66N          | N          | invP1     | 60.00  | 2024-01-15   | 2024-01-15 | vendor        | DE811111113    |
+      | DETAIL       | v66N          | T          | invP1     | 11.40  | 2024-01-15   | 2024-01-15 | vendor        | DE811111113    |
+      | DETAIL       | v66N          | N          | invP2     | 25.00  | 2024-01-18   | 2024-01-18 | vendor        | DE811111113    |
+      | DETAIL       | v66N          | T          | invP2     | 4.75   | 2024-01-18   | 2024-01-18 | vendor        | DE811111113    |
 
 
 # ############################################################################################################################################
