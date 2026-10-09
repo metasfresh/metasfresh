@@ -114,7 +114,7 @@ public class C_OrderLine
 			return; // QtyEntered is the driver; add_M_HU_PI_Item_Product handles CU→TU
 		}
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU().intValue()); // mirrors callout; intValue() matches callout truncation
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU()); // mirrors callout; a fractional QtyEnteredTU is refused
 		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 

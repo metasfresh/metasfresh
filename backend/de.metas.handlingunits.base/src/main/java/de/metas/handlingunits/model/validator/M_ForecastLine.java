@@ -59,8 +59,7 @@ public class M_ForecastLine
 	public void updateQtyCU(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
-		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 
 	private void updateQtyPacks(final I_M_ForecastLine forecastLine)

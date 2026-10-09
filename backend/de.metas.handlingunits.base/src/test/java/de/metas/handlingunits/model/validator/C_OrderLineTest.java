@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.adempiere.gui.search.impl.HUPackingAwareBL;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -268,5 +269,35 @@ public class C_OrderLineTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("QtyEntered")
 				.hasMessageContaining("QtyDelivered");
+	}
+
+	/**
+	 * A TU quantity is always a whole number: editing QtyEnteredTU to 1.5 must be refused
+	 * instead of silently recomputing QtyEntered from 1 TU (1.5 truncated).
+	 */
+	@Test
+	public void qtyEnteredTU_edit_fractional_isRefused()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		saveRecord(order);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order(order);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product(pip);
+		orderLine.setQtyEntered(new BigDecimal("16"));
+		orderLine.setQtyEnteredTU(new BigDecimal("2"));
+		orderLine.setQtyDelivered(BigDecimal.ZERO);
+		saveRecord(orderLine);  // BEFORE registering the validator
+
+		POJOLookupMap.get().addModelValidator(new C_OrderLine());
+
+		orderLine.setQtyEnteredTU(new BigDecimal("1.5"));
+		assertThatThrownBy(() -> saveRecord(orderLine))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue())
+				.hasMessageContaining(HUPackingAwareBL.MSG_QtyTU_MustBeWholeNumber.toAD_Message());
 	}
 }

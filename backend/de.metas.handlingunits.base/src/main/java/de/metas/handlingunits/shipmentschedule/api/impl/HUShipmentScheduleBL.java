@@ -940,8 +940,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (!qtyTUCalculated.equals(shipmentSchedule.getQtyOrdered_TU()))
 		{
 			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
-			final int qtyTU = packingAware.getQtyTU().intValueExact();
-			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 		}
 
 		final int hupipCalculatedID = shipmentSchedule.getM_HU_PI_Item_Product_Calculated_ID();
@@ -949,8 +948,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		if (hupipCalculatedID != currentHUPIPID)
 		{
-			final BigDecimal qtyTU = packingAware.getQtyTU();
-			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU.intValueExact());
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 			shipmentSchedule.setQtyOrdered_Override(packingAware.getQty());
 		}

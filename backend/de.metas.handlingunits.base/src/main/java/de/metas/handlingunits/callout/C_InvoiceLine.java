@@ -46,8 +46,7 @@ public class C_InvoiceLine
 	public void onQtyEnteredChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = InvoiceLineHUPackingAware.of(invoiceLine);
-		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IInvoiceLineBL.class).updateLineNetAmt(invoiceLine, invoiceLine.getQtyEntered());
