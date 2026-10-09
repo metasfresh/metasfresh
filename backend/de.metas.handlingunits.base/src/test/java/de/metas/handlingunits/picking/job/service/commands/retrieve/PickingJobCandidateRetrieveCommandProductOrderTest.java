@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
@@ -37,6 +38,7 @@ import org.mockito.Mockito;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -57,10 +59,12 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 	private static final OrgId ORG_ID = OrgId.ofRepoId(1);
 	private static final BPartnerId CUSTOMER_ID = BPartnerId.ofRepoId(700);
 	private static final OrderId SALES_ORDER_ID = OrderId.ofRepoId(500);
+	private static final OrderId SALES_ORDER2_ID = OrderId.ofRepoId(600);
 
 	private I_C_UOM uomEach;
 	private IPackagingDAO packagingDAO;
 	private CountingLoaderSupportingServices loadingSupportingServices;
+	private PickingJobAggregationType aggregationType;
 
 	@BeforeEach
 	void beforeEach()
@@ -72,6 +76,7 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 		Services.registerService(IPackagingDAO.class, packagingDAO);
 
 		loadingSupportingServices = new CountingLoaderSupportingServices();
+		aggregationType = PickingJobAggregationType.SALES_ORDER;
 	}
 
 	@Test
@@ -137,11 +142,60 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 				.isEqualTo("productName-103, productName-101, productName-102, productName-104");
 	}
 
+	@Test
+	void twoSalesOrdersInOneLoad_eachCandidateIsOrdered_andAllLinesAreWarmedUpInOneBatch()
+	{
+		final ImmutableList<Packageable> packageablesInArrivalOrder = ImmutableList.of(
+				packageable(SALES_ORDER2_ID, 202, 302, 6032, 20),
+				packageable(SALES_ORDER_ID, 103, 203, 5033, 30),
+				packageable(SALES_ORDER2_ID, 201, 301, 6031, 10),
+				packageable(SALES_ORDER_ID, 101, 201, 5031, 10));
+		Mockito.when(packagingDAO.stream(Mockito.any())).thenAnswer(invocation -> packageablesInArrivalOrder.stream());
+
+		final ImmutableList<PickingJobCandidate> candidates = newCommand().execute().stream().collect(ImmutableList.toImmutableList());
+
+		assertThat(candidates)
+				.extracting(candidate -> candidate.getProducts().getProductNamesJoined(", ").getDefaultValue())
+				.containsExactly(
+						"productName-201, productName-202", // SO 600 arrives first
+						"productName-101, productName-103");
+		assertThat(loadingSupportingServices.warmUpCalls)
+				.containsExactly(ImmutableSet.of(
+						OrderAndLineId.ofRepoIds(SALES_ORDER_ID.getRepoId(), 5031),
+						OrderAndLineId.ofRepoIds(SALES_ORDER_ID.getRepoId(), 5033),
+						OrderAndLineId.ofRepoIds(SALES_ORDER2_ID.getRepoId(), 6031),
+						OrderAndLineId.ofRepoIds(SALES_ORDER2_ID.getRepoId(), 6032)));
+	}
+
+	@Test
+	void deliveryLocationBasedAggregation_ordersProductsBySalesOrderLine()
+	{
+		aggregationType = PickingJobAggregationType.DELIVERY_LOCATION;
+
+		// one delivery location, two sales orders: ordered by Line, then by order line id
+		final ImmutableList<Packageable> packageablesInArrivalOrder = ImmutableList.of(
+				packageable(SALES_ORDER2_ID, 202, 302, 6032, 20),
+				packageable(SALES_ORDER_ID, 101, 201, 5031, 20),
+				packageable(SALES_ORDER2_ID, 201, 301, 6031, 10));
+		Mockito.when(packagingDAO.stream(Mockito.any())).thenAnswer(invocation -> packageablesInArrivalOrder.stream());
+
+		final ImmutableList<PickingJobCandidate> candidates = newCommand().execute().stream().collect(ImmutableList.toImmutableList());
+
+		assertThat(candidates).hasSize(1);
+		assertThat(candidates.get(0).getAggregationType()).isEqualTo(PickingJobAggregationType.DELIVERY_LOCATION);
+		assertThat(candidates.get(0).getProducts().getProductNamesJoined(", ").getDefaultValue())
+				.isEqualTo("productName-201, productName-101, productName-202");
+		assertThat(loadingSupportingServices.warmUpCalls).hasSize(1);
+	}
+
 	private PickingJobCandidateRetrieveCommand newCommand()
 	{
+		final MobileUIPickingUserProfileService configService = Mockito.mock(MobileUIPickingUserProfileService.class);
+		Mockito.when(configService.getAggregationType(Mockito.any())).thenReturn(aggregationType);
+
 		return PickingJobCandidateRetrieveCommand.builder()
 				.shipmentScheduleService(PickingJobShipmentScheduleService.newInstanceForUnitTesting())
-				.configService(MobileUIPickingUserProfileService.newInstanceForUnitTesting())
+				.configService(configService)
 				.pickingJobScheduleService(PickingJobScheduleService.newInstanceForUnitTesting())
 				.loadingSupportingServices(loadingSupportingServices)
 				.query(PickingJobQuery.builder().userId(UserId.ofRepoId(1)).build())
@@ -150,9 +204,19 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 
 	private Packageable packageable(final int productRepoId, final int shipmentScheduleRepoId, @Nullable final Integer salesOrderLineRepoId, final int salesOrderLineSeqNo)
 	{
+		return packageable(SALES_ORDER_ID, productRepoId, shipmentScheduleRepoId, salesOrderLineRepoId, salesOrderLineSeqNo);
+	}
+
+	private Packageable packageable(
+			@NonNull final OrderId salesOrderId,
+			final int productRepoId,
+			final int shipmentScheduleRepoId,
+			@Nullable final Integer salesOrderLineRepoId,
+			final int salesOrderLineSeqNo)
+	{
 		if (salesOrderLineRepoId != null)
 		{
-			loadingSupportingServices.setSalesOrderLineSeqNo(OrderAndLineId.ofRepoIds(SALES_ORDER_ID.getRepoId(), salesOrderLineRepoId), salesOrderLineSeqNo);
+			loadingSupportingServices.setSalesOrderLineSeqNo(OrderAndLineId.ofRepoIds(salesOrderId.getRepoId(), salesOrderLineRepoId), salesOrderLineSeqNo);
 		}
 
 		final Quantity one = Quantity.of("1", uomEach);
@@ -176,8 +240,8 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 				.productId(ProductId.ofRepoId(productRepoId))
 				.productValueAndName(ProductValueAndName.of("productValue-" + productRepoId, TranslatableStrings.anyLanguage("productName-" + productRepoId)))
 				.asiId(AttributeSetInstanceId.NONE)
-				.salesOrderId(SALES_ORDER_ID)
-				.salesOrderDocumentNo("SO-500")
+				.salesOrderId(salesOrderId)
+				.salesOrderDocumentNo("SO-" + salesOrderId.getRepoId())
 				.salesOrderLineIdOrNull(salesOrderLineRepoId != null ? OrderLineId.ofRepoId(salesOrderLineRepoId) : null)
 				.preparationDate(preparationDate)
 				.deliveryDate(preparationDate)
@@ -187,11 +251,26 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 	private static class CountingLoaderSupportingServices extends MockedPickingJobLoaderSupportingServices
 	{
 		private final List<Set<OrderAndLineId>> warmUpCalls = new ArrayList<>();
+		private final Set<OrderAndLineId> warmedUp = new HashSet<>();
 
 		@Override
 		public void warmUpSalesOrderLineSeqNosCache(@NonNull final Set<OrderAndLineId> orderAndLineIds)
 		{
 			warmUpCalls.add(ImmutableSet.copyOf(orderAndLineIds));
+			warmedUp.addAll(orderAndLineIds);
+		}
+
+		/**
+		 * Fails on a line that was not warmed up, because in production that would be one extra query per line.
+		 */
+		@Override
+		public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+		{
+			if (!warmedUp.contains(orderAndLineId))
+			{
+				throw new AssertionError("Sales order line SeqNo read without a batched warm-up: " + orderAndLineId);
+			}
+			return super.getSalesOrderLineSeqNo(orderAndLineId);
 		}
 	}
 }
