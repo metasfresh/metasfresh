@@ -49,6 +49,8 @@ class PricingPaymentBonusTaxProviderTest
 		final I_M_Product bonusProduct = newInstance(I_M_Product.class);
 		bonusProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		bonusProduct.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		bonusProduct.setValue("BONUS-01");
+		bonusProduct.setName("Bonus product without price");
 		saveRecord(bonusProduct);
 
 		assertThatThrownBy(() -> taxProvider.getTax(salesInvoice, ProductId.ofRepoId(bonusProduct.getM_Product_ID())))
@@ -57,6 +59,8 @@ class PricingPaymentBonusTaxProviderTest
 					final AdempiereException adempiereException = (AdempiereException)ex;
 					assertThat(adempiereException.isUserValidationError()).isTrue();
 					assertThat(adempiereException.getErrorCode()).isEqualTo(PricingPaymentBonusTaxProvider.MSG_BONUS_PRODUCT_HAS_NO_PRICE.toAD_Message());
+					// the user sees which bonus product has no price
+					assertThat(adempiereException.getMessage()).contains("BONUS-01_Bonus product without price");
 				});
 	}
 

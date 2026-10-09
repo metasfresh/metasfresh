@@ -2,9 +2,9 @@ package de.metas.contracts.refund.paymentdeduction;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.AdMessageKey;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
@@ -13,6 +13,7 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
@@ -41,6 +42,7 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
@@ -61,7 +63,7 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 		if (!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null)
 		{
-			throw new AdempiereException(MSG_BONUS_PRODUCT_HAS_NO_PRICE)
+			throw new AdempiereException(MSG_BONUS_PRODUCT_HAS_NO_PRICE, productBL.getProductValueAndName(bonusProductId))
 					.markAsUserValidationError()
 					.setParameter("M_Product_ID", bonusProductId.getRepoId())
 					.setParameter("C_Invoice_ID", salesInvoice.getC_Invoice_ID())
