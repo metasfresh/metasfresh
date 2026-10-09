@@ -69,6 +69,9 @@ const computeWidgetTypeClass = (widgetType, fieldsCount) => {
  */
 export class RawWidget extends PureComponent {
   mounted = false;
+  // decimal number widget: the stored value of each end ('value', 'valueTo') when the user started typing over it,
+  // until the typed text is patched or forgotten - see forgetTypedTextOnOutsideChange
+  storedValuesBeforeTyping = {};
 
   constructor(props) {
     super(props);
@@ -316,7 +319,8 @@ export class RawWidget extends PureComponent {
   /**
    * @method forgetTypedTextOnOutsideChange
    * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
-   *          that value again instead of what the user had typed
+   *          that value again instead of what the user had typed. The value stored before the user started typing
+   *          coming back (e.g. a view reload) is no outside change: the user is typing over it.
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
@@ -330,11 +334,18 @@ export class RawWidget extends PureComponent {
     const isOutsideChange = (key, text) =>
       text !== null &&
       isChanged(key) &&
-      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget);
+      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget) &&
+      !isSameNumber(widgetData?.[0]?.[key], this.storedValuesBeforeTyping[key]);
 
     const isValueChanged = isOutsideChange('value', typedText);
     const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
     if (isValueChanged || isValueToChanged) {
+      if (isValueChanged) {
+        delete this.storedValuesBeforeTyping.value;
+      }
+      if (isValueToChanged) {
+        delete this.storedValuesBeforeTyping.valueTo;
+      }
       this.setState({
         ...(isValueChanged ? { typedText: null } : {}),
         ...(isValueToChanged ? { typedTextTo: null } : {}),
@@ -354,13 +365,20 @@ export class RawWidget extends PureComponent {
       return typed;
     }
 
+    return formatDecimalNumberForEditing(this.getStoredValue(isValueTo)) ?? '';
+  };
+
+  /**
+   * @method getStoredValue
+   * @summary The stored value of one end of the widget (not what the user is typing)
+   */
+  getStoredValue = (isValueTo = false) => {
     const { data, widgetData } = this.props;
-    const stored = isValueTo
+    return isValueTo
       ? widgetData?.[0]?.valueTo
       : data != null
       ? data
       : widgetData?.[0]?.value;
-    return formatDecimalNumberForEditing(stored) ?? '';
   };
 
   /**
@@ -510,6 +528,10 @@ export class RawWidget extends PureComponent {
         return;
       }
       this.lastRefusedNumberText = null;
+      const key = isValueTo ? 'valueTo' : 'value';
+      if (!(key in this.storedValuesBeforeTyping)) {
+        this.storedValuesBeforeTyping[key] = this.getStoredValue(isValueTo);
+      }
       this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
     // the other end of a range the way it is shown, so that the parent reads both ends the same way
@@ -596,6 +618,8 @@ export class RawWidget extends PureComponent {
         cachedValue: value,
         clearedFieldWarning: false,
       });
+      // the typed text is patched: the value that comes back (also the old one, if the server refused it) is shown
+      this.storedValuesBeforeTyping = {};
 
       return handlePatch(property, value, id, valueTo);
     }

@@ -891,6 +891,69 @@ describe('RawWidget component', () => {
       expect(wrapper.find('input').props().value).toEqual('1');
     });
 
+    /** Types text the way a grid row does: the row takes the typed text over as the cell's value (echo) */
+    const typeWithEcho = (wrapper, typed) => {
+      wrapper.find('input').simulate('change', { target: { value: typed } });
+      wrapper.setProps({ widgetData: [{ ...amountData, value: typed }] });
+      wrapper.update();
+    };
+
+    it('keeps the typed text and patches it when a view reload re-delivers the amount stored before typing', () => {
+      const handlePatchSpy = jest.fn(() => Promise.resolve(null));
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '3.5');
+      typeWithEcho(wrapper, '3.57');
+
+      // the view reload (after the previous patch) brings the amount stored before the user started typing
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('3.57');
+      pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
+    });
+
+    it('shows a different amount that comes from outside while the user types, instead of the typed text', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '3.57');
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '2.5' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('2,5');
+    });
+
+    it('shows the old amount when the server keeps it after the patch of the typed text', () => {
+      const handlePatchSpy = jest.fn(() => Promise.resolve(null));
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      typeWithEcho(wrapper, '3.57');
+      pressEnter(wrapper.find('input'), '3.57');
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
+
+      // the server did not take the typed amount over: the stored one comes back
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('1');
+    });
+
     const amountRangeFilterProps = (extra) =>
       createDummyProps({
         ...amountLayout,
