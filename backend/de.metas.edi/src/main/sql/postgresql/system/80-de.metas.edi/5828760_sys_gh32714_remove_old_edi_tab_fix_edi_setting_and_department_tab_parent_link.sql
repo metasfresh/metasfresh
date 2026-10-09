@@ -3,12 +3,26 @@
 --    deleted when the EDI columns moved from C_BPartner into C_BPartner_EDI_Setting; the tab is
 --    replaced by tab 549287 "EDI-Einstellungen". Child rows are deleted before the parent; all
 --    deletes are WHERE-based, so the script can be re-run.
+-- User data (saved queries, sort preferences, user-defined tabs) and tab-bound processes, callouts and UI
+-- triggers would block the tab delete (no cascading FKs), so they go first.
+DELETE FROM AD_UserQuery WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_User_SortPref_Line WHERE AD_User_SortPref_Hdr_ID IN (SELECT AD_User_SortPref_Hdr_ID FROM AD_User_SortPref_Hdr WHERE AD_Tab_ID = 548980);
+DELETE FROM AD_User_SortPref_Hdr WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_UserDef_Field WHERE AD_UserDef_Tab_ID IN (SELECT AD_UserDef_Tab_ID FROM AD_UserDef_Tab WHERE AD_Tab_ID = 548980);
+DELETE FROM AD_UserDef_Tab WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_Table_Process WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_Tab_Callout WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_TriggerUI_Action WHERE AD_TriggerUI_ID IN (SELECT AD_TriggerUI_ID FROM AD_TriggerUI WHERE AD_Tab_ID = 548980);
+DELETE FROM AD_TriggerUI_Criteria WHERE AD_TriggerUI_ID IN (SELECT AD_TriggerUI_ID FROM AD_TriggerUI WHERE AD_Tab_ID = 548980);
+DELETE FROM AD_TriggerUI WHERE AD_Tab_ID = 548980;
+UPDATE AD_Field SET Included_Tab_ID = NULL WHERE Included_Tab_ID = 548980;
+UPDATE AD_Tab SET Included_Tab_ID = NULL WHERE Included_Tab_ID = 548980;
+UPDATE AD_Tab SET Template_Tab_ID = NULL WHERE Template_Tab_ID = 548980;
+-- Layout of the tab, plus UI elements elsewhere that inline it or take their labels from it.
+DELETE FROM AD_UI_ElementField WHERE AD_UI_Element_ID IN (
+    SELECT AD_UI_Element_ID FROM AD_UI_Element WHERE 548980 IN (AD_Tab_ID, Inline_Tab_ID, Labels_Tab_ID));
+DELETE FROM AD_UI_Element WHERE 548980 IN (AD_Tab_ID, Inline_Tab_ID, Labels_Tab_ID);
 DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID IN (SELECT AD_UI_Section_ID FROM AD_UI_Section WHERE AD_Tab_ID = 548980);
-DELETE FROM AD_UI_Element WHERE AD_UI_ElementGroup_ID IN (
-    SELECT g.AD_UI_ElementGroup_ID FROM AD_UI_ElementGroup g
-    JOIN AD_UI_Column c ON c.AD_UI_Column_ID = g.AD_UI_Column_ID
-    JOIN AD_UI_Section s ON s.AD_UI_Section_ID = c.AD_UI_Section_ID
-    WHERE s.AD_Tab_ID = 548980);
 DELETE FROM AD_UI_ElementGroup WHERE AD_UI_Column_ID IN (
     SELECT c.AD_UI_Column_ID FROM AD_UI_Column c
     JOIN AD_UI_Section s ON s.AD_UI_Section_ID = c.AD_UI_Section_ID
