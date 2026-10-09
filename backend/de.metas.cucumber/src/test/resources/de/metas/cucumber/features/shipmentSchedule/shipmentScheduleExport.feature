@@ -129,7 +129,7 @@ Feature: Shipment schedule export rest-api
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value | OPT.Carrier_Advising_Status |
       | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            | FA                          |
-    # the async carrier advise re-saves the schedule (on this branch it ends Failed: Siro has no carrier gateway); let it and the resulting recompute settle before exporting
+    # the async carrier advise re-saves the schedule (on this branch it ends Failed: Siro has no carrier gateway); let it and any pending recompute settle before exporting
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | schedule_1                       |
@@ -227,7 +227,7 @@ Feature: Shipment schedule export rest-api
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value | OPT.Carrier_Advising_Status |
       | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            | FA                          |
-    # the async carrier advise re-saves the schedule (on this branch it ends Failed: Siro has no carrier gateway); let it and the resulting recompute settle before exporting
+    # the async carrier advise re-saves the schedule (on this branch it ends Failed: Siro has no carrier gateway); let it and any pending recompute settle before exporting
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | schedule_1                       |
