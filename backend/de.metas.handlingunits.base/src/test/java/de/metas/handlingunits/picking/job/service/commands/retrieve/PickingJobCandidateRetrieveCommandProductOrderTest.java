@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,6 +118,25 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 				.isEqualTo("productName-101, productName-102, productName-103");
 	}
 
+	@Test
+	void productOnSeveralLines_isPlacedByItsFirstLine_andProductWithoutOrderLine_comesLast()
+	{
+		// P104 has no sales order line -> last. P103 is on lines 30 AND 5 -> placed by line 5, i.e. first.
+		final ImmutableList<Packageable> packageablesInArrivalOrder = ImmutableList.of(
+				packageable(104, 204, null, 0),
+				packageable(102, 202, 5032, 20),
+				packageable(103, 203, 5033, 30),
+				packageable(101, 201, 5031, 10),
+				packageable(103, 205, 5035, 5));
+		Mockito.when(packagingDAO.stream(Mockito.any())).thenAnswer(invocation -> packageablesInArrivalOrder.stream());
+
+		final ImmutableList<PickingJobCandidate> candidates = newCommand().execute().stream().collect(ImmutableList.toImmutableList());
+
+		assertThat(candidates).hasSize(1);
+		assertThat(candidates.get(0).getProducts().getProductNamesJoined(", ").getDefaultValue())
+				.isEqualTo("productName-103, productName-101, productName-102, productName-104");
+	}
+
 	private PickingJobCandidateRetrieveCommand newCommand()
 	{
 		return PickingJobCandidateRetrieveCommand.builder()
@@ -128,9 +148,12 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 				.build();
 	}
 
-	private Packageable packageable(final int productRepoId, final int shipmentScheduleRepoId, final int salesOrderLineRepoId, final int salesOrderLineSeqNo)
+	private Packageable packageable(final int productRepoId, final int shipmentScheduleRepoId, @Nullable final Integer salesOrderLineRepoId, final int salesOrderLineSeqNo)
 	{
-		loadingSupportingServices.setSalesOrderLineSeqNo(OrderAndLineId.ofRepoIds(SALES_ORDER_ID.getRepoId(), salesOrderLineRepoId), salesOrderLineSeqNo);
+		if (salesOrderLineRepoId != null)
+		{
+			loadingSupportingServices.setSalesOrderLineSeqNo(OrderAndLineId.ofRepoIds(SALES_ORDER_ID.getRepoId(), salesOrderLineRepoId), salesOrderLineSeqNo);
+		}
 
 		final Quantity one = Quantity.of("1", uomEach);
 		final Quantity zero = Quantity.zero(uomEach);
@@ -155,7 +178,7 @@ class PickingJobCandidateRetrieveCommandProductOrderTest
 				.asiId(AttributeSetInstanceId.NONE)
 				.salesOrderId(SALES_ORDER_ID)
 				.salesOrderDocumentNo("SO-500")
-				.salesOrderLineIdOrNull(OrderLineId.ofRepoId(salesOrderLineRepoId))
+				.salesOrderLineIdOrNull(salesOrderLineRepoId != null ? OrderLineId.ofRepoId(salesOrderLineRepoId) : null)
 				.preparationDate(preparationDate)
 				.deliveryDate(preparationDate)
 				.build();
