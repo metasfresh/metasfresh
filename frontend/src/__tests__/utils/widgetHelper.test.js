@@ -8,6 +8,7 @@ import {
   getFormattedDate,
   getClassNames,
   getWidgetField,
+  shouldPatch,
 } from '../../utils/widgetHelpers';
 import {
   DATE_FORMAT,
@@ -248,6 +249,120 @@ describe('Widget helpers', () => {
       ];
 
       expect(getWidgetField({ fields, filterWidget: true })).toEqual('Name');
+    });
+  });
+
+  describe('shouldPatch', () => {
+    const widgetData = (value, widgetType) => [
+      { field: 'Description', value, widgetType },
+    ];
+
+    describe('an empty cell left without typing sends nothing', () => {
+      it.each(['Text', 'LongText'])(
+        '%s: stored null, editor left with "" -> no patch',
+        (widgetType) => {
+          expect(
+            shouldPatch({
+              property: 'Description',
+              value: '',
+              cachedValue: null,
+              widgetData: widgetData(null, widgetType),
+            })
+          ).toBe(false);
+        }
+      );
+
+      it('Text: stored null, store already holds "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: null,
+            widgetData: widgetData('', 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Text: stored "", editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: '',
+            widgetData: widgetData('', 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Text: never loaded (undefined), editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: undefined,
+            widgetData: widgetData(undefined, 'Text'),
+          })
+        ).toBe(false);
+      });
+
+      it('Number: stored null, editor left with "" -> no patch', () => {
+        expect(
+          shouldPatch({
+            property: 'Qty',
+            value: '',
+            cachedValue: null,
+            widgetData: [{ field: 'Qty', value: null, widgetType: 'Number' }],
+          })
+        ).toBe(false);
+      });
+    });
+
+    describe('real changes still patch', () => {
+      it('Text: clearing a filled cell ("abc" -> "") patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: '',
+            cachedValue: 'abc',
+            widgetData: widgetData('abc', 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('Text: typing into an empty cell patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: 'x',
+            cachedValue: null,
+            widgetData: widgetData(null, 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('keeps the explicit null -> null clear case', () => {
+        expect(
+          shouldPatch({
+            property: 'Description',
+            value: null,
+            cachedValue: null,
+            widgetData: widgetData(null, 'Text'),
+          })
+        ).toBe(true);
+      });
+
+      it('Button with a null value: a click (value undefined) still patches', () => {
+        expect(
+          shouldPatch({
+            property: 'Processing',
+            value: undefined,
+            cachedValue: null,
+            widgetData: [
+              { field: 'Processing', value: null, widgetType: 'Button' },
+            ],
+          })
+        ).toBe(true);
+      });
     });
   });
 });
