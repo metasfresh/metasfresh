@@ -108,7 +108,6 @@ public class M_ShipmentSchedule
 			orderLine.setQtyOrdered(qtyOrderedEffective);
 			InterfaceWrapperHelper.save(orderLine);
 		}
-
 	}
 
 	/**
