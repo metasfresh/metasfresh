@@ -859,6 +859,7 @@ jobs:
           echo "${state}"
           if ! echo "${state}" | grep -qE 'cluster state: +shut down$'; then
             echo "::error::the preloaded DB was not shut down cleanly before docker commit: ${state:-pg_controldata reported no cluster state}"
+            if [ "$(cat migration.exit-code)" != 0 ]; then tail -1000 migration.log; fi
             exit 1
           fi
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
