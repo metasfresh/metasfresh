@@ -2,6 +2,7 @@ package de.metas.contracts.refund;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceSchedule;
@@ -54,6 +55,10 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentSingleLine");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
 	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
@@ -105,6 +110,46 @@ public class RefundConfigs
 		{
 			throw new AdempiereException(MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED).markAsUserValidationError();
 		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is a percentage of the net goods value, booked on the bonus product with its VAT on top.
+	 */
+	public void assertDeductedAtPaymentIsComputable(@NonNull final RefundConfig refundConfig)
+	{
+		if (!refundConfig.isDeductedAtPayment())
+		{
+			return;
+		}
+		if (!RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase()) || refundConfig.getBonusProductId() == null)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is one flat percentage per condition: the minimum quantity is no threshold when paying,
+	 * so a condition that is deducted at payment has exactly one active line, with minimum quantity 0. Separate bonuses are separate conditions.
+	 *
+	 * @param activeRefundConfigs all active configs of one condition
+	 */
+	public void assertDeductedAtPaymentIsSingleLine(@NonNull final List<RefundConfig> activeRefundConfigs)
+	{
+		if (activeRefundConfigs.stream().noneMatch(RefundConfig::isDeductedAtPayment))
+		{
+			return;
+		}
+		if (activeRefundConfigs.size() != 1 || activeRefundConfigs.get(0).getMinQty().signum() != 0)
+		{
+			Loggables.addLog("A condition that is deducted at payment needs exactly one active config with MinQty=0; refundConfigs={}", activeRefundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE).markAsUserValidationError();
+		}
+	}
+
+	public boolean extractDeductedAtPayment(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		return extractSingleElement(refundConfigs, RefundConfig::isDeductedAtPayment);
 	}
 
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
@@ -187,6 +232,14 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
+		}
+
+		// the bonus of a condition is either invoiced by the refund engine or deducted by the customer at payment
+		if (hasDifferentValues(refundConfigs, RefundConfig::isDeductedAtPayment))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same IsDeductedAtPayment; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT).markAsUserValidationError();
 		}
 
 		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.

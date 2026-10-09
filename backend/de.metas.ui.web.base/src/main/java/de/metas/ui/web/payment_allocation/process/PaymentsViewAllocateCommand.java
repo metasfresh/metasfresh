@@ -42,6 +42,8 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -54,6 +56,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -65,9 +68,14 @@ public class PaymentsViewAllocateCommand
 {
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
+	@VisibleForTesting
+	static final AdMessageKey MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusAboveOpenAmt");
+	@VisibleForTesting
+	static final AdMessageKey MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNothingToDeduct");
 
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private final PaymentBonusCreditMemoService paymentBonusCreditMemoService;
 
 	private final ImmutableList<PaymentRow> paymentRows;
 	private final ImmutableList<InvoiceRow> invoiceRows;
@@ -79,6 +87,7 @@ public class PaymentsViewAllocateCommand
 	private PaymentsViewAllocateCommand(
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
+			@NonNull final PaymentBonusCreditMemoService paymentBonusCreditMemoService,
 			//
 			@NonNull @Singular final ImmutableList<PaymentRow> paymentRows,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
@@ -88,6 +97,7 @@ public class PaymentsViewAllocateCommand
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+		this.paymentBonusCreditMemoService = paymentBonusCreditMemoService;
 
 		this.paymentRows = paymentRows;
 		this.invoiceRows = invoiceRows;
@@ -140,6 +150,7 @@ public class PaymentsViewAllocateCommand
 
 		return PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.paymentBonusCreditMemoService(paymentBonusCreditMemoService)
 				//
 				.defaultDateTrx(defaultDateTrx)
 				.paymentDocuments(paymentDocuments)
@@ -206,7 +217,19 @@ public class PaymentsViewAllocateCommand
 				: Money.zero(currencyId);
 		final WriteOffType writeOffType = bankFeeAmt.signum() != 0 ? WriteOffType.BankFee : WriteOffType.WriteOff;
 
-		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		// Bonus that the customer deducted when paying: the amount in the row wins over the computed one
+		@Nullable final PaymentBonusDeduction paymentBonusDeduction = extractPaymentBonusDeduction(row, moneyService);
+		final Money paymentBonus = paymentBonusDeduction != null
+				? paymentBonusDeduction.getGrossAmount()
+				: Money.zero(currencyId);
+		// the customer cannot deduct more than it pays: the open amount minus the discount and the fees
+		final Money maxPaymentBonus = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(maxPaymentBonus))
+		{
+			throw new PaymentBonusAboveWhatTheCustomerPaysException(MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS, moneyService.toAmount(paymentBonus), moneyService.toAmount(maxPaymentBonus), row.getDocumentNo());
+		}
+
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt).subtract(paymentBonus);
 
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
@@ -222,15 +245,37 @@ public class PaymentsViewAllocateCommand
 										   .discountAmt(discountAmt)
 										   .writeOffAmt(bankFeeAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .paymentBonus(paymentBonus)
 										   .build()
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.date(row.getDateInvoiced())
 				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
 				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.writeOffType(writeOffType)
 				.build();
+	}
+
+	@Nullable
+	private static PaymentBonusDeduction extractPaymentBonusDeduction(@NonNull final InvoiceRow row, @NonNull final MoneyService moneyService)
+	{
+		@Nullable final Amount paymentBonusAmt = row.getPaymentBonusAmt();
+		if (paymentBonusAmt == null || paymentBonusAmt.isZero())
+		{
+			return null;
+		}
+
+		final PaymentBonusDeduction computedDeduction = row.getPaymentBonusDeduction();
+		if (computedDeduction == null)
+		{
+			throw new AdempiereException(MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT, row.getDocumentNo())
+					.markAsUserValidationError()
+					.setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG) // a message to the user, not a "Server error" toast
+					.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()));
+		}
+		return computedDeduction.withGrossAmount(moneyService.toMoney(paymentBonusAmt));
 	}
 
 	private static InvoiceProcessingContext extractInvoiceProcessingContext(

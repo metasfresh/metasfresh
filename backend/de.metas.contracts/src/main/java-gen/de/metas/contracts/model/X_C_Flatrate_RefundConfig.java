@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements I_C_Flatrate_RefundConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 253304974L;
+	private static final long serialVersionUID = 394528154L;
 
     /** Standard Constructor */
     public X_C_Flatrate_RefundConfig (final Properties ctx, final int C_Flatrate_RefundConfig_ID, @Nullable final String trxName)
@@ -120,6 +120,18 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	public int getC_InvoiceSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InvoiceSchedule_ID);
+	}
+
+	@Override
+	public void setIsDeductedAtPayment (final boolean IsDeductedAtPayment)
+	{
+		set_Value (COLUMNNAME_IsDeductedAtPayment, IsDeductedAtPayment);
+	}
+
+	@Override
+	public boolean isDeductedAtPayment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeductedAtPayment);
 	}
 
 	@Override

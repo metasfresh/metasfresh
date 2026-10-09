@@ -9,6 +9,9 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,7 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
+import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,11 +55,16 @@ import lombok.NonNull;
 @Callout(I_C_Flatrate_RefundConfig.class)
 public class C_Flatrate_RefundConfig
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final RefundConfigRepository refundConfigRepository;
+	private final RefundContractRepository refundContractRepository;
 
-	public C_Flatrate_RefundConfig(@NonNull final RefundConfigRepository refundConfigRepository)
+	public C_Flatrate_RefundConfig(
+			@NonNull final RefundConfigRepository refundConfigRepository,
+			@NonNull final RefundContractRepository refundContractRepository)
 	{
 		this.refundConfigRepository = refundConfigRepository;
+		this.refundContractRepository = refundContractRepository;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
@@ -95,6 +104,9 @@ public class C_Flatrate_RefundConfig
 			return;
 		}
 
+		// only active lines are used for the bonus at payment, so an invalid line can still be deactivated
+		RefundConfigs.assertDeductedAtPaymentIsComputable(newRefundConfig);
+
 		// the stored state of the record itself is replaced by its new state
 		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getAllActiveByConditions(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID())).stream()
 				.filter(existingConfig -> !Objects.equals(existingConfig.getId(), newRefundConfig.getId()))
@@ -103,6 +115,40 @@ public class C_Flatrate_RefundConfig
 		final ArrayList<RefundConfig> allRefundConfigs = new ArrayList<>(existingRefundConfigs);
 		allRefundConfigs.add(newRefundConfig);
 
+		// first: a condition with a line deducted at payment gets no second line, whatever the new line's own flag
+		RefundConfigs.assertDeductedAtPaymentIsSingleLine(allRefundConfigs);
 		RefundConfigs.assertValid(allRefundConfigs);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment)
+	public void assertDeductedAtPaymentNotChanged(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(configRecord.getC_Flatrate_Conditions_ID());
+		if (conditionsId == null)
+		{
+			return;
+		}
+
+		// the completed contracts already have refund candidates, or bonuses deducted at payment, under the current setting
+		if (refundContractRepository.hasCompletedContracts(conditionsId))
+		{
+			throw new AdempiereException(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * Like when a term is completed: the cache invalidation of the table change is sent before the transaction is committed, so a read in between (e.g. of whether there
+	 * is any contract deducted at payment, by a payment allocation view that is loaded meanwhile) could cache the old state; it is reset again once the change is committed.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_Flatrate_RefundConfig.COLUMNNAME_IsActive,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID })
+	public void resetCachesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		trxManager
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> refundContractRepository.resetCaches());
 	}
 }

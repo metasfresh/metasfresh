@@ -158,6 +158,29 @@ public class RefundConfigsTest
 				.hasMessageContaining("exactly one 1 item");
 	}
 
+	/** A condition's bonus is either invoiced by the refund engine or deducted by the customer at payment, never both. */
+	@Test
+	public void assertValid_configsWithDifferentDeductedAtPayment_fails()
+	{
+		assertThatThrownBy(() -> RefundConfigs.assertValid(ImmutableList.of(
+				config(null, 1, 0).toBuilder().deductedAtPayment(true).build(),
+				config(null, 1, 10))))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT.toAD_Message());
+				});
+	}
+
+	@Test
+	public void assertValid_configsThatAreAllDeductedAtPayment_isValid()
+	{
+		RefundConfigs.assertValid(ImmutableList.of(
+				config(null, 1, 0).toBuilder().deductedAtPayment(true).build(),
+				config(null, 1, 10).toBuilder().deductedAtPayment(true).build()));
+	}
+
 	/** The engine picks a config by quantity only, so the lines of one condition share one base category. */
 	@Test
 	public void assertValid_configsWithTheSameProductCategory_isValid()

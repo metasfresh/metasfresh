@@ -9,12 +9,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
@@ -28,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
@@ -86,6 +89,13 @@ public class RefundContractRepository
 					0,
 					CCache.EXPIREMINUTES_Never);
 
+	/** Reset when a term or a config changes, e.g. when a config is flagged as deducted at payment. */
+	private static final CCache<LocalDate, Boolean> ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE = CCache.<LocalDate, Boolean>builder()
+			.cacheName(I_C_Flatrate_Term.Table_Name + "#anyDeductedAtPaymentContractOn")
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
+			.build();
+
 	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
@@ -103,6 +113,7 @@ public class RefundContractRepository
 	{
 		CACHE.reset();
 		ANY_REFUND_CONTRACT_CACHE.reset();
+		ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.reset();
 	}
 
 	/**
@@ -122,6 +133,55 @@ public class RefundContractRepository
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if there is any completed refund contract that is deducted at payment, of any partner, on the given date
+	 */
+	public boolean hasAnyDeductedAtPaymentContract(@NonNull final LocalDate date)
+	{
+		return ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.getOrLoad(date, () -> anyDeductedAtPaymentContractExists(TimeUtil.asTimestamp(date)));
+	}
+
+	private static boolean anyDeductedAtPaymentContractExists(@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryDeductedAtPaymentConfigs())
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the active configs that are deducted at payment, e.g. to select the terms of their conditions
+	 */
+	public static IQuery<I_C_Flatrate_RefundConfig> queryDeductedAtPaymentConfigs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment, true)
+				.create();
+	}
+
+	/**
+	 * @return {@code true} if there is any completed (or already closed) contract with the given conditions
+	 */
+	public boolean hasCompletedContracts(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed, X_C_Flatrate_Term.DOCSTATUS_Closed)
 				.create()
 				.anyMatch();
 	}
@@ -178,8 +238,32 @@ public class RefundContractRepository
 		return getIdsByQuery(query)
 				.stream()
 				.map(this::getById)
-				.filter(contract -> contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors)))
+				.filter(contract -> isMatching(contract, query, productCategoryIdAndAncestors))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return {@code true} if the given contract matches the query in the sense of {@link #getByQuery(RefundContractQuery)}:
+	 *         it is valid at the query's date, its product (if any) is the query's, its partner is the query's invoice partner, and the query's product is in its base.
+	 *         For callers that load the contracts of several queries at once.
+	 * @param productCategoryIdAndAncestors the category of the query's product and its ancestors; only needed (and called) if the contract has a category base
+	 */
+	public static boolean isMatching(
+			@NonNull final RefundContract contract,
+			@NonNull final RefundContractQuery query,
+			@NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
+	{
+		final LocalDate date = query.getDate();
+		if (date.isBefore(contract.getStartDate()) || date.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		if (contract.getProductId() != null && !contract.getProductId().equals(query.getProductId()))
+		{
+			return false;
+		}
+		return contract.getBPartnerId().equals(query.getBPartnerId())
+				&& contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors));
 	}
 
 	private static ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)
@@ -191,7 +275,7 @@ public class RefundContractRepository
 				: ImmutableSet.of();
 	}
 
-	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestors)
+	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
 	{
 		return config.getProductCategoryId() == null || productCategoryIdAndAncestors.get().contains(config.getProductCategoryId());
 	}
@@ -225,6 +309,7 @@ public class RefundContractRepository
 				.builder()
 				.id(flatrateTermId)
 				.bPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
+				.productId(productId)
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
 				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()));
 

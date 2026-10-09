@@ -31,6 +31,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.ClientAndOrgId;
@@ -96,6 +97,17 @@ public class InvoiceRow implements IViewRow
 	// @Nullable // if you uncomment this, the field will no longer be shown in the modal :^)
 	private final Amount serviceFeeAmt;
 
+	public static final String FIELD_PaymentBonusAmt = "paymentBonusAmt";
+	@ViewColumn(seqNo = 85, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "PaymentBonusAmt", fieldName = FIELD_PaymentBonusAmt)
+	@Getter
+	private final Amount paymentBonusAmt;
+
+	/** Why the payment bonus is not the computed one, e.g. because it could not be computed, or because the entered amount was adjusted to one that can be booked. */
+	@ViewColumn(seqNo = 86, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Large, captionKey = "PaymentBonusNote")
+	@Getter
+	// not annotated @Nullable, like serviceFeeAmt: the field would no longer be shown
+	private final ITranslatableString paymentBonusNote;
+
 	public static final String FIELD_BankFeeAmt = "bankFeeAmt";
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "BankFeeAmt", fieldName = FIELD_BankFeeAmt)
 	@Getter
@@ -125,6 +137,16 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final LocalDate dateAcct;
 
+	/** The payment bonus as the user entered it; {@link #paymentBonusAmt} is the amount that is booked, after the VAT rounding. {@code null} if the user did not enter one. */
+	@Getter
+	@Nullable
+	private final Amount paymentBonusEnteredAmt;
+
+	/** The bonus that the customer may deduct when paying the invoice, as computed; {@link #paymentBonusAmt} is pre-filled with its gross amount, see {@link PaymentBonusRowValues}. */
+	@Getter
+	@Nullable
+	private final PaymentBonusDeduction paymentBonusDeduction;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
 	@Builder(toBuilder = true)
@@ -145,6 +167,10 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount discountAmt,
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
+			@Nullable final Amount paymentBonusAmt,
+			@Nullable final Amount paymentBonusEnteredAmt,
+			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
+			@Nullable final ITranslatableString paymentBonusNote,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
 	{
 		this.isPreparedForAllocation = isPreparedForAllocation;
@@ -161,8 +187,12 @@ public class InvoiceRow implements IViewRow
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
+		this.paymentBonusAmt = paymentBonusAmt;
+		this.paymentBonusEnteredAmt = paymentBonusEnteredAmt;
+		this.paymentBonusDeduction = paymentBonusDeduction;
+		this.paymentBonusNote = paymentBonusNote;
 		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt, this.paymentBonusAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
@@ -183,11 +213,29 @@ public class InvoiceRow implements IViewRow
 		if (soTrx.isSales())
 		{
 			viewEditorRenderModes.put(FIELD_ServiceFeeAmt, ViewEditorRenderMode.ALWAYS);
+			viewEditorRenderModes.put(FIELD_PaymentBonusAmt, ViewEditorRenderMode.ALWAYS);
 		}
 
 		return ViewRowFieldNameAndJsonValuesHolder.builder(InvoiceRow.class)
 				.viewEditorRenderModeByFieldName(viewEditorRenderModes.build())
 				.build();
+	}
+
+	/**
+	 * @return what the customer pays for the invoice: the open amount minus the discount and the fees. The payment bonus cannot be more.
+	 */
+	public Amount getMaxPaymentBonusAmt()
+	{
+		Amount maxPaymentBonusAmt = openAmt.subtract(discountAmt);
+		if (serviceFeeAmt != null)
+		{
+			maxPaymentBonusAmt = maxPaymentBonusAmt.subtract(serviceFeeAmt);
+		}
+		if (bankFeeAmt != null)
+		{
+			maxPaymentBonusAmt = maxPaymentBonusAmt.subtract(bankFeeAmt);
+		}
+		return maxPaymentBonusAmt;
 	}
 
 	static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)

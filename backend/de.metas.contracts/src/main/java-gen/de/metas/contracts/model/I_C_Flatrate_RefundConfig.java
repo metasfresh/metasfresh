@@ -213,6 +213,29 @@ public interface I_C_Flatrate_RefundConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Deducted at payment.
+	 * If enabled, the customer deducts the bonus when paying. No refund is invoiced, the payment allocation creates a payment bonus credit memo instead.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeductedAtPayment (boolean IsDeductedAtPayment);
+
+	/**
+	 * Get Deducted at payment.
+	 * If enabled, the customer deducts the bonus when paying. No refund is invoiced, the payment allocation creates a payment bonus credit memo instead.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeductedAtPayment();
+
+	ModelColumn<I_C_Flatrate_RefundConfig, Object> COLUMN_IsDeductedAtPayment = new ModelColumn<>(I_C_Flatrate_RefundConfig.class, "IsDeductedAtPayment", null);
+	String COLUMNNAME_IsDeductedAtPayment = "IsDeductedAtPayment";
+
+	/**
 	 * Set Filter by packaging.
 	 * If enabled, only lines with one of the listed packaging options get the bonus.
 	 *

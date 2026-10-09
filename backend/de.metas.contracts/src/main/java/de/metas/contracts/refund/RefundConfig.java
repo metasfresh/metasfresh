@@ -98,6 +98,9 @@ public class RefundConfig
 
 	boolean useInProfitCalculation;
 
+	/** If {@code true}, the customer deducts the bonus when paying an invoice; the refund engine then creates no refund candidates for it. */
+	boolean deductedAtPayment;
+
 	RefundMode refundMode;
 
 	@Builder(toBuilder = true)
@@ -113,6 +116,7 @@ public class RefundConfig
 			@Nullable final InvoiceSchedule invoiceSchedule,
 			@NonNull final ConditionsId conditionsId,
 			boolean useInProfitCalculation,
+			boolean deductedAtPayment,
 			@NonNull final BigDecimal minQty,
 			@NonNull final RefundMode refundMode)
 	{
@@ -125,6 +129,7 @@ public class RefundConfig
 		this.invoiceSchedule = invoiceSchedule;
 		this.conditionsId = conditionsId;
 		this.useInProfitCalculation = useInProfitCalculation;
+		this.deductedAtPayment = deductedAtPayment;
 		this.refundMode = refundMode;
 
 		switch (refundBase)
