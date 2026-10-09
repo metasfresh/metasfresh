@@ -1,4 +1,4 @@
-import json, os, sys, time, pathlib, shutil
+import json, os, sys, time, pathlib
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 import update_branch_metadata as ubm
@@ -54,15 +54,13 @@ def test_does_not_wait_for_the_slow_delete(tmp_path, monkeypatch):
     # and the publish job waited for it. The prune must not block the caller.
     for v in ["v1", "v2", "v3"]:
         _publish(tmp_path, v)
-    real_rmtree = shutil.rmtree
-
-    def slow_rmtree(path, *args, **kwargs):
-        time.sleep(3)
-        real_rmtree(path, *args, **kwargs)
-
-    monkeypatch.setattr(shutil, "rmtree", slow_rmtree)
-    d = tmp_path / "branches" / BRANCH / "builds" / "v4" / "allure"
-    d.mkdir(parents=True)
+    stub_bin = tmp_path / "bin"
+    stub_bin.mkdir()
+    slow_rm = stub_bin / "rm"
+    slow_rm.write_text('#!/bin/sh\nsleep 3\nexec /bin/rm "$@"\n', encoding="utf-8")
+    slow_rm.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{stub_bin}{os.pathsep}{os.environ['PATH']}")
+    (tmp_path / "branches" / BRANCH / "builds" / "v4").mkdir()
     started = time.time()
     ubm.main(["x", BRANCH, "v4", str(tmp_path)])
     assert time.time() - started < 1.5
