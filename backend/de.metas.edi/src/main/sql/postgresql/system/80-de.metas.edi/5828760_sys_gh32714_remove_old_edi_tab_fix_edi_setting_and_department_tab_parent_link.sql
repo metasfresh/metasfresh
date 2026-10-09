@@ -34,6 +34,8 @@ DELETE FROM AD_UI_ElementGroup WHERE AD_UI_Column_ID IN (
 DELETE FROM AD_UI_Column WHERE AD_UI_Section_ID IN (SELECT AD_UI_Section_ID FROM AD_UI_Section WHERE AD_Tab_ID = 548980);
 DELETE FROM AD_UI_Section WHERE AD_Tab_ID = 548980;
 DELETE FROM AD_Element_Link WHERE AD_Tab_ID = 548980;
+-- Fields of the tab are removed by the cascading FK; a context-menu row on such a field would block that.
+DELETE FROM AD_Field_ContextMenu WHERE AD_Field_ID IN (SELECT AD_Field_ID FROM AD_Field WHERE AD_Tab_ID = 548980);
 DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = 548980;
 DELETE FROM AD_Tab WHERE AD_Tab_ID = 548980;
 
