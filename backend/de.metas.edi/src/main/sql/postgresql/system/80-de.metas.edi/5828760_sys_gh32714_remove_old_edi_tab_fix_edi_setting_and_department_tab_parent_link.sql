@@ -6,6 +6,10 @@
 -- User data (saved queries, sort preferences, user-defined tabs) and tab-bound processes, callouts and UI
 -- triggers would block the tab delete (no cascading FKs), so they go first.
 DELETE FROM AD_UserQuery WHERE AD_Tab_ID = 548980;
+DELETE FROM AD_User_SortPref_Line_Product WHERE AD_User_SortPref_Line_ID IN (
+    SELECT l.AD_User_SortPref_Line_ID FROM AD_User_SortPref_Line l
+    JOIN AD_User_SortPref_Hdr h ON h.AD_User_SortPref_Hdr_ID = l.AD_User_SortPref_Hdr_ID
+    WHERE h.AD_Tab_ID = 548980);
 DELETE FROM AD_User_SortPref_Line WHERE AD_User_SortPref_Hdr_ID IN (SELECT AD_User_SortPref_Hdr_ID FROM AD_User_SortPref_Hdr WHERE AD_Tab_ID = 548980);
 DELETE FROM AD_User_SortPref_Hdr WHERE AD_Tab_ID = 548980;
 DELETE FROM AD_UserDef_Field WHERE AD_UserDef_Tab_ID IN (SELECT AD_UserDef_Tab_ID FROM AD_UserDef_Tab WHERE AD_Tab_ID = 548980);
