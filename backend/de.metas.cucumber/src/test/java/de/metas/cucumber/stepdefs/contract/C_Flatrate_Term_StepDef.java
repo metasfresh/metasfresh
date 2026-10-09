@@ -36,6 +36,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -167,6 +168,11 @@ public class C_Flatrate_Term_StepDef
 			
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_UOM_ID(conditions.getC_UOM_ID());
+			if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
+			{
+				// the refund engine finds its terms by Type_Conditions; as when a term is created from the conditions, take it over
+				contractRecord.setType_Conditions(conditions.getType_Conditions());
+			}
 			
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());

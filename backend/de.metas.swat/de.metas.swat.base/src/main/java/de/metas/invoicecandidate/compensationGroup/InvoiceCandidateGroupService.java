@@ -88,6 +88,7 @@ public class InvoiceCandidateGroupService
 
 		final ImmutableSet<GroupId> contractCreatedGroupIds = retrieveContractCreatedGroupIdsOfClosedNotInvoiced(candidatesToMove, newGroupId);
 
+		final ImmutableList.Builder<I_C_Invoice_Candidate> movedCandidates = ImmutableList.builder();
 		for (final I_C_Invoice_Candidate ic : candidatesToMove)
 		{
 			if (ic.isProcessed() && !isClosedNotInvoicedCandidateOfContractGroup(ic, newGroupId, contractCreatedGroupIds))
@@ -97,10 +98,15 @@ public class InvoiceCandidateGroupService
 
 			ic.setC_Order_CompensationGroup_ID(newOrderCompensationGroupId);
 			invoiceCandDAO.save(ic);
+			movedCandidates.add(ic);
 
 			// group change alone does not trigger the group recompute
 			groupChangesHandler.onInvoiceCandidateChanged(ic);
 		}
+
+		// the update process recomputes the moved candidates, so that what depends on their group follows it
+		// (e.g. the refund assignment: the discount line of a contract-created group is no refund base)
+		invoiceCandDAO.invalidateCands(movedCandidates.build());
 	}
 
 	/**
