@@ -41,8 +41,11 @@ import org.adempiere.warehouse.WarehouseId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -52,6 +55,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Data
 @Builder
@@ -89,6 +93,46 @@ public class ShipmentSchedule
 
 	@Getter(AccessLevel.NONE)
 	@Nullable private Set<CarrierServiceId> carrierServices;
+
+	/**
+	 * The persisted mutable fields as they were when this instance was loaded (or last saved).
+	 * {@link ShipmentScheduleRepository#save(ShipmentSchedule)} writes only the fields that differ from it,
+	 * so that a field which was changed concurrently in the DB is not overwritten with this instance's stale value.
+	 * Example: the shipment candidate export API sets ExportStatus=EXPORTED while the async carrier advise holds an instance it loaded before.
+	 * {@code null} if this instance was not loaded from the DB; then all mutable fields are written.
+	 */
+	@Getter(AccessLevel.NONE)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	private final AtomicReference<PersistedMutableFields> persistedMutableFields = new AtomicReference<>(); // initialized final field => not part of the builder
+
+	@Nullable
+	PersistedMutableFields getPersistedMutableFields() {return persistedMutableFields.get();}
+
+	void setPersistedMutableFields(@Nullable final PersistedMutableFields persistedMutableFields) {this.persistedMutableFields.set(persistedMutableFields);}
+
+	@NonNull
+	PersistedMutableFields toPersistedMutableFields()
+	{
+		return PersistedMutableFields.builder()
+				.exportStatus(exportStatus)
+				.carrierAdvisingStatus(carrierAdvisingStatus)
+				.carrierAdviseErrorMessage(carrierAdviseErrorMessage)
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.build();
+	}
+
+	@Value
+	@Builder
+	static class PersistedMutableFields
+	{
+		@NonNull APIExportStatus exportStatus;
+		@NonNull CarrierAdviseStatus carrierAdvisingStatus;
+		@Nullable String carrierAdviseErrorMessage;
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+	}
 
 	@NonNull
 	public Set<CarrierServiceId> getCarrierServicesIfLoaded()
