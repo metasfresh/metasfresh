@@ -558,3 +558,51 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And the UStVA report for tax declaration "td" returns:
       | report_level | balance_amt |
       | BALANCE      | 0           |
+
+
+# ############################################################################################################################################
+# Output VAT and input VAT in one period: the balance nets the declared output tax (Kz 81 net + tax rows) against the input tax (Kz 66)
+# ############################################################################################################################################
+  @Id:S32216_UStVA_110
+  @from:cucumber
+  Scenario: the balance nets the output tax of a sales code against the input tax of a purchase code
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19s     | taxCategory      | 19   | DE                       | DE                        |
+      | tax19p     | taxCategory2     | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType | SameVATCodeAs |
+      | v81N       | tax19s   | Y       | N          |               |
+      | v81T       | tax19s   | Y       | T          | v81N          |
+      | v66T       | tax19p   | N       | T          |               |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p20        |
+      | p8655      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | p20          | 20.00    | PCE      | taxCategory      |
+      | purchasePLV            | p8655        | 86.55    | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invS       | customer      | 2024-01-15   | true    | EUR           |
+      | invP       | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invSL1     | invS         | p20          | 1 PCE       | tax19s   |
+      | invPL1     | invP         | p8655        | 1 PCE       | tax19p   |
+    And the invoice identified by invS is completed
+    And the invoice identified by invP is completed
+    And Wait until documents invS, invP are posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    # output tax 20.00 * 19 % = 3.80 (credit, printed positive); input tax 86.55 * 19 % = 16.44; balance = -(-3.80 + 16.44) = -12.64 (refund)
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
+      | SUMMARY      | v66T          | -       | 16.44   |             |
+      | SUMMARY      | v81N          | 20      | 3.80    |             |
+      | BALANCE      |               |         |         | -12.64      |
