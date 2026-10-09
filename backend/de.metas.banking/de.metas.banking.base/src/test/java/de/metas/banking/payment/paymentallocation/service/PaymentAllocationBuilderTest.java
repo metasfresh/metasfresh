@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -46,6 +47,9 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
@@ -53,6 +57,9 @@ import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -81,6 +88,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
@@ -217,6 +225,8 @@ public class PaymentAllocationBuilderTest
 			final String writeOff,
 			final String invoiceProcessingFee,
 			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			final String paymentBonus,
+			final PaymentBonusDeduction paymentBonusDeduction,
 			@Nullable final CurrencyId currency)
 	{
 		final Money openAmt = money(open, currency);
@@ -226,6 +236,7 @@ public class PaymentAllocationBuilderTest
 				.discountAmt(money(discount, currency))
 				.writeOffAmt(money(writeOff, currency))
 				.invoiceProcessingFee(money(invoiceProcessingFee, currency))
+				.paymentBonus(money(paymentBonus, currency))
 				.build();
 
 		final LocalDate acctDate = LocalDate.parse(date);
@@ -265,6 +276,7 @@ public class PaymentAllocationBuilderTest
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
 				.date(acctDate)
 				.build();
@@ -334,6 +346,8 @@ public class PaymentAllocationBuilderTest
 			@Nullable final String writeOffAmt,
 			@Nullable final String invoiceProcessingFee,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@Nullable final String paymentBonus,
+			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
 			@Nullable final String overUnderAmt,
 			@Nullable final String paymentOverUnderAmt,
 			@Nullable final CurrencyId currency,
@@ -359,10 +373,12 @@ public class PaymentAllocationBuilderTest
 								 .discountAmt(money(discountAmt, currency))
 								 .writeOffAmt(money(writeOffAmt, currency))
 								 .invoiceProcessingFee(money(invoiceProcessingFee, currency))
+								 .paymentBonus(money(paymentBonus, currency))
 								 .build())
 				.payableOverUnderAmt(money(overUnderAmt, currency))
 				.paymentOverUnderAmt(money(paymentOverUnderAmt, currency))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				//
 				.build();
 	}
@@ -1219,6 +1235,123 @@ public class PaymentAllocationBuilderTest
 						.build());
 
 		assertExpected(candidatesExpected, builder);
+	}
+
+	@Nested
+	public class PaymentBonus
+	{
+		private PaymentBonusDeduction deduction(final String netAmt)
+		{
+			return PaymentBonusDeduction.builder()
+					.orgId(adOrgId)
+					.invoiceId(InvoiceId.ofRepoId(1111))
+					.customerId(bpartnerId)
+					.currencyId(euroCurrencyId)
+					.precision(CurrencyPrecision.TWO)
+					.line(PaymentBonusDeductionLine.builder()
+							.bonusProductId(ProductId.ofRepoId(4444))
+							.tax(Tax.builder()
+									.taxId(TaxId.ofRepoId(7))
+									.name("7 %")
+									.orgId(OrgId.ANY)
+									.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+									.taxCategoryId(TaxCategoryId.ofRepoId(1))
+									.rate(new BigDecimal("7"))
+									.isTaxExempt(false)
+									.requiresTaxCertificate(false)
+									.seqNo(10)
+									.build())
+							.netAmt(money(netAmt, euroCurrencyId))
+							.build())
+					.build();
+		}
+
+		/**
+		 * The customer pays the invoice minus the bonus: the bonus becomes a candidate of its own, before the payment; the payment pays the rest.
+		 */
+		@Test
+		public void customerInvoice_and_inboundPayment()
+		{
+			final PaymentBonusDeduction deduction = deduction("2.60"); // gross 2.78
+			final PayableDocument invoice1;
+			final PaymentDocument payment1;
+			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+					ImmutableList.of(
+							invoice1 = invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction).date("2021-01-11").build()),
+					ImmutableList.of(
+							payment1 = payment().direction(INBOUND).open("163.72").amtToAllocate("163.72").date("2021-01-12").build()))
+					.defaultDateTrx(LocalDate.parse("2021-01-23"));
+
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					allocation().type(AllocationLineCandidateType.PaymentBonus)
+							.payableRef(invoice1.getReference())
+							.paymentBonus("2.78")
+							.paymentBonusDeduction(deduction)
+							.overUnderAmt("163.72")
+							.date("2021-01-23") // the credit memo is dated like the allocation
+							.dateAcct("2021-01-23")
+							.build(),
+					allocation().type(InvoiceToPayment)
+							.payableRef(invoice1.getReference())
+							.paymentRef(payment1.getReference())
+							.allocatedAmt("163.72")
+							.date("2021-01-12")
+							.build());
+
+			final PaymentAllocationResult result = builder
+					.dryRun() // the payment bonus candidate is converted only when processed, with a real credit memo
+					.build();
+			assertExpected(candidatesExpected, result.getCandidates());
+			assertThat(result.isOK()).isTrue();
+		}
+
+		/**
+		 * Processing (no dry run) generates the credit memo; the bonus candidate itself is not saved as an allocation line.
+		 * The allocation is dated before the invoice, so the credit memo gets the invoice's accounting date.
+		 */
+		@Test
+		public void processing_generatesTheCreditMemo_datedNotBeforeTheInvoice()
+		{
+			final PaymentBonusDeduction deduction = deduction("2.60"); // gross 2.78
+			final ArrayList<PaymentBonusDeduction> generatedDeductions = new ArrayList<>();
+			final ArrayList<LocalDate> generatedDates = new ArrayList<>();
+			final PaymentBonusCreditMemoService creditMemoService = new PaymentBonusCreditMemoService()
+			{
+				@Override
+				public InvoiceId generateCreditMemo(@NonNull final PaymentBonusDeduction deductionParam, @NonNull final LocalDate dateInvoiced)
+				{
+					generatedDeductions.add(deductionParam);
+					generatedDates.add(dateInvoiced);
+					return InvoiceId.ofRepoId(9999);
+				}
+			};
+
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(invoice().type(CustomerInvoice).open("2.78").pay("0").paymentBonus("2.78").paymentBonusDeduction(deduction).date("2021-02-01").build()),
+					ImmutableList.of())
+					.paymentBonusCreditMemoService(creditMemoService)
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.build();
+
+			assertThat(generatedDeductions).containsExactly(deduction);
+			assertThat(generatedDates).containsExactly(LocalDate.parse("2021-02-01"));
+			assertThat(result.getPaymentAllocationIds()).isEmpty();
+		}
+
+		@Test
+		public void payableWithPaymentBonusButWithoutDeduction_fails()
+		{
+			assertThatThrownBy(() -> invoice().type(CustomerInvoice).open("100").pay("97.22").paymentBonus("2.78").date("2021-01-11").build())
+					.hasMessageContaining("paymentBonusDeduction is required");
+		}
+
+		@Test
+		public void payableWithPaymentBonusOtherThanTheDeductionsGrossAmount_fails()
+		{
+			assertThatThrownBy(() -> invoice().type(CustomerInvoice).open("100").pay("97.40").paymentBonus("2.60").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build())
+					.hasMessageContaining("gross amount of the payment bonus deduction");
+		}
 	}
 
 	@Nested
