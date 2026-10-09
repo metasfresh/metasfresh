@@ -49,7 +49,7 @@ INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
                         ColumnName, EntityType, Name, PrintName, Description)
 VALUES (585530 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-09 14:00:04', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-09 14:00:04', 'YYYY-MM-DD HH24:MI:SS'), 100,
         NULL, 'de.metas.contracts', 'Abrufvertrag', 'Abrufvertrag',
-        'Vertrag, aus dem diese Position abgerufen wird; Preis und Restmenge kommen aus dem Vertrag. Den Vertrag einer Kompensationsgruppe zeigt die Kompensationsgruppe.')
+        'Vertrag, aus dem diese Position abgerufen wird; Preis und Restmenge kommen aus dem Vertrag. Der Vertrag einer Kompensationsgruppe steht an der Kompensationsgruppe.')
 ;
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
@@ -60,7 +60,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
 ;
 UPDATE AD_Element_Trl
 SET Name = 'Call-off Contract', PrintName = 'Call-off Contract',
-    Description = 'Contract this line is called off from; price and remaining quantity come from the contract. The contract of a compensation group is shown on the compensation group.',
+    Description = 'Contract this line is called off from; price and remaining quantity come from the contract. The contract of a compensation group is recorded on the compensation group.',
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-10-09 14:00:05', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585530 AND AD_Language = 'en_US'
 ;

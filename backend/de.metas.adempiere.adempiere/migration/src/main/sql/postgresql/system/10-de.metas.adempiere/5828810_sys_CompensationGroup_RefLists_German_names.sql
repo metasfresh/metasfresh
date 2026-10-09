@@ -1,7 +1,7 @@
 -- German names (de_DE, de_CH) for the AD_Ref_List values of the compensation group lists.
--- de_DE and de_CH still carried the English text (IsTranslated='N'). en_US keeps its English text and is
--- marked as translated. fr_CH is left unchanged. Where the base language is German, the base AD_Ref_List.Name
--- is synced too.
+-- de_DE and de_CH still carried the English text (IsTranslated='N'). en_US keeps its English text (except for the
+-- schema line types, see below) and is marked as translated. fr_CH is left unchanged. Where the base language is
+-- German, the base AD_Ref_List.Name is synced too.
 --
 -- AD_Reference 540758 GroupCompensationType (C_OrderLine.GroupCompensationType, "Preisminderung Art"):
 --    541326 D  "Discount"           -> "Rabatt"
@@ -10,8 +10,11 @@
 --    541327 P  "Percent"            -> "Prozent"
 --    541328 Q  "Price and Quantity" -> "Preis und Menge"
 -- AD_Reference 540836 C_CompensationGroup_SchemaLine_Type (C_CompensationGroup_SchemaLine.Type):
---    541594 F  "Flatrate"           -> "Pauschale"
---    541593 R  "Revenue"            -> "Umsatz"
+--    541594 F  "Flatrate"           -> "Vertrag",       en_US "Contract"
+--              (the schema line applies if the group contains lines with the line's contract conditions)
+--    541593 R  "Revenue"            -> "Umsatzstaffel", en_US "Revenue Breaks"
+--              (the schema line applies if the net amount of the group's regular lines is between this line's
+--               break value and that of the next revenue-break line)
 
 -- 541326 D Discount
 UPDATE AD_Ref_List_Trl
@@ -55,7 +58,7 @@ WHERE AD_Ref_List_ID = 541328
 
 -- 541594 F Flatrate
 UPDATE AD_Ref_List_Trl
-SET Name         = 'Pauschale',
+SET Name         = 'Vertrag',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-10-09 10:00:05', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
@@ -65,7 +68,7 @@ WHERE AD_Ref_List_ID = 541594
 
 -- 541593 R Revenue
 UPDATE AD_Ref_List_Trl
-SET Name         = 'Umsatz',
+SET Name         = 'Umsatzstaffel',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-10-09 10:00:06', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
@@ -78,7 +81,24 @@ UPDATE AD_Ref_List_Trl
 SET IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-10-09 10:00:07', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
-WHERE AD_Ref_List_ID IN (541325, 541326, 541327, 541328, 541593, 541594)
+WHERE AD_Ref_List_ID IN (541325, 541326, 541327, 541328)
+  AND AD_Language = 'en_US'
+;
+-- en_US of the schema line types: what the values do
+UPDATE AD_Ref_List_Trl
+SET Name         = 'Contract',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-10-09 10:00:08', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Ref_List_ID = 541594
+  AND AD_Language = 'en_US'
+;
+UPDATE AD_Ref_List_Trl
+SET Name         = 'Revenue Breaks',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-10-09 10:00:09', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Ref_List_ID = 541593
   AND AD_Language = 'en_US'
 ;
 
