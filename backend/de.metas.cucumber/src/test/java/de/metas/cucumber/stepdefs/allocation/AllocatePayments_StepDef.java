@@ -187,12 +187,12 @@ public class AllocatePayments_StepDef
 	 * Same as {@code allocate payments to invoices}, but asserts that the allocation is refused with the given {@code AD_Message.ErrorCode}
 	 * e.g. when the payment's partner is not configured as invoice-processing service company.
 	 * <pre>
-	 * When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG
+	 * When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG:
 	 *   | C_Invoice_ID | C_Payment_ID |
 	 *   | inv1         | pay1         |
 	 * </pre>
 	 */
-	@And("^allocate payments to invoices expecting error code (.*)$")
+	@And("^allocate payments to invoices expecting error code (.*):$")
 	public void allocate_payment_to_invoice_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable table)
 	{
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> allocatePaymentsToInvoices(table));
@@ -567,6 +567,7 @@ public class AllocatePayments_StepDef
 						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())
 						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
 						.build())
+				// mirrors PaymentsViewAllocateCommand.java:193-199 (pinned by PaymentsViewAllocateCommandTest:685-705)
 				.orElseThrow(() -> new AdempiereException(
 						MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
 						invoiceToAllocate.getDocumentNo(),

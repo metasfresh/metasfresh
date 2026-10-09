@@ -68,9 +68,6 @@ Feature: service company fee at payment allocation
       | config2                            | customer2     | 1.5                       |
 
 # ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @allure.label.epic:E0220_Financial
   @allure.label.feature:F01200
@@ -114,10 +111,6 @@ Feature: service company fee at payment allocation
       | B_UnallocatedCash_Acct | 97.40 EUR   |             | serviceCompany1 | alloc_payment |
       | C_Receivable_Acct      |             | 97.40 EUR   | customer1       | alloc_payment |
 
-
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
   @allure.label.epic:E0220_Financial
@@ -136,7 +129,7 @@ Feature: service company fee at payment allocation
       | payment_2  | customer1     | 100.00 EUR | true      | org_EUR_account     |
     And the payment identified by payment_2 is completed
 
-    When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG
+    When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG:
       | C_Invoice_ID | C_Payment_ID |
       | inv_2        | payment_2    |
 
@@ -146,3 +139,7 @@ Feature: service company fee at payment allocation
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment_2    | false       |
+    # neither the payment nor a service fee invoice is allocated against the invoice
+    And there are no allocation lines for invoice
+      | C_Invoice_ID |
+      | inv_2        |
