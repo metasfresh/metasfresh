@@ -129,6 +129,7 @@ const DE = {
   orderCompensationGroupOrder: 'Auftrag/Bestellung', // the group's order may be a sales or a purchase order
   orderCompensationGroupContract: 'Vertrag',
   orderCompensationGroupLinesTab: 'Auftragsposition',
+  orderCompensationGroupLineNo: 'Zeile Nr.', // C_OrderLine.Line on the order-lines tab
   compensationTypeDiscount: 'Rabatt', // C_OrderLine.GroupCompensationType D
   compensationAmtTypePercent: 'Prozent', // C_OrderLine.GroupCompensationAmtType P
 
@@ -436,7 +437,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(discountLine.fieldsByName.IsGroupCompensationLine.value).toBe(true);
       expect(goodsLine.fieldsByName.IsGroupCompensationLine.value).toBe(false);
       // ... and that group is the one of this contract, built from this schema
-      // (read through the testing backend; the window "Auftrag Kompensationsgruppe" is covered in the early-end test)
+      // (read through the testing backend; the window "Auftrag Kompensationsgruppe" is covered by the test 'order compensation groups of two contracts')
       await Backend.expect({
         title: 'the order\'s compensation group belongs to the contract and its schema',
         salesOrders: {
@@ -767,6 +768,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const lines = await getTabRows(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`);
       expect(lines, 'goods line + discount line of order X').toHaveLength(2);
 
+      await expect(groupPage.locator('th[data-testid="column-Line"]')).toHaveText(DE.orderCompensationGroupLineNo);
       const rows = groupPage.locator('table tbody tr');
       await expect(rows).toHaveCount(2, { timeout: SLOW_ACTION_TIMEOUT });
       const discountRow = rows.filter({ has: groupPage.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
@@ -827,6 +829,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(page.locator('th[data-testid="column-BreakValue"]')).toHaveText(DE.schemaLineRevenueFrom);
       await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(DE.schemaLineContractConditions);
       await expect(page.locator('th[data-testid="column-AD_Org_ID"]'), 'no organisation column on the schema lines').toHaveCount(0);
+      await expect(page.locator('th[data-testid="column-AD_Client_ID"]'), 'no client column on the schema lines').toHaveCount(0);
       await page.locator('th[data-testid="column-Type"]').scrollIntoViewIfNeeded();
       await snap(page, '540415-schema-lines-grid');
 
@@ -834,6 +837,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
       await expectLabel(modal, 'Type', DE.schemaLineCondition);
       await expect(modal.locator('.form-field-AD_Org_ID'), 'no organisation in the schema line form').toHaveCount(0);
+      await expect(modal.locator('.form-field-AD_Client_ID'), 'no client in the schema line form').toHaveCount(0);
       await modal.locator('.form-field-Type input').first().click();
       await expect(page.locator('.input-dropdown-list [data-testid="option-F"]')).toContainText(DE.schemaLineTypeContract);
       await expect(page.locator('.input-dropdown-list [data-testid="option-R"]')).toContainText(DE.schemaLineTypeRevenueBreaks);
