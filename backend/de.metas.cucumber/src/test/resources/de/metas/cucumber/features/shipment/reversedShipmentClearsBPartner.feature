@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor5
+@ghActions:run_on_executor1
 Feature: reversed shipment clears HU C_BPartner_ID
 
   Background:

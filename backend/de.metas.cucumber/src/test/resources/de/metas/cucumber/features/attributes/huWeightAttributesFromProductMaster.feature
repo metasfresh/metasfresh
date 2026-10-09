@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E2300_Attributes
 @allure.label.feature:F67043_Weight_Calculation
-@ghActions:run_on_executor7
+@ghActions:run_on_executor4
 Feature: HU weight attributes are derived from product master Net + Gross
 
   When a product has both a NetWeight and a GrossWeight on its master record, the

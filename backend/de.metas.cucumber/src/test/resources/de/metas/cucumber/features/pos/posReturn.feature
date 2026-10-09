@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0500_Point_of_Sale_POS
 @allure.label.feature:F18030_POS_Checkout
-@ghActions:run_on_executor7
+@ghActions:run_on_executor9
 Feature: POS Product Return
 
   Background:

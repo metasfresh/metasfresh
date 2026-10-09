@@ -2,7 +2,7 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350
-@ghActions:run_on_executor3
+@ghActions:run_on_executor10
 Feature: EDI DESADV export via External System
 
   Background:

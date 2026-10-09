@@ -1547,10 +1547,10 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
-      max-parallel: 10
+      max-parallel: 12
       fail-fast: false
       matrix:
-        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, catchall ]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, profile8, profile9, profile10, report, catchall ]
         include:
           - profile: profile1
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor1"
@@ -1566,10 +1566,16 @@ jobs:
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor6"
           - profile: profile7
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor7"
+          - profile: profile8
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor8"
+          - profile: profile9
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor9"
+          - profile: profile10
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor10"
           - profile: report
             params: -DexcludedGroups="ignore,flaky" -Dgroups="report"
           - profile: catchall
-            params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,report,flaky"
+            params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,ghActions:run_on_executor8,ghActions:run_on_executor9,ghActions:run_on_executor10,report,flaky"
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4

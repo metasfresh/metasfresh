@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 Feature: Picking workflow - always split HUs
 ## F00183: Workflow
 
