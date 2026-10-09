@@ -28,7 +28,7 @@ Feature: EDI DESADV for a shipment re-completed after its partner became a DESAD
 # ###############################################################################################################################################
   @Id:S32714_TC3
   Scenario: S32714_TC3 - Shipment with HUs completed for a non-recipient partner, partner becomes DESADV recipient, shipment reactivated and re-completed -> DESADV with packs
-  Order 4 PCE of a product with TU capacity 2 PCE/TU, so the shipment carries an aggregate HU (2 TU).
+  Order 4 PCE; the stock is one TU holding 4 PCE, which is picked and shipped.
   Before the partner is a DESADV recipient: no DESADV, shipment EDI status Don't send.
   After: DESADV exists for the order, shipment is linked to it, shipment EDI status Pending, DESADV pack present.
 
@@ -55,26 +55,38 @@ Feature: EDI DESADV for a shipment re-completed after its partner became a DESAD
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID   |
-      | pi_LU_S32714 |
       | pi_TU_S32714 |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID | M_HU_PI_ID   | HU_UnitType | IsCurrent |
-      | piv_LU_S32714      | pi_LU_S32714 | LU          | Y         |
       | piv_TU_S32714      | pi_TU_S32714 | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
-      | pii_LU_S32714   | piv_LU_S32714      | 10  | HU       | pi_TU_S32714      |
-      | pii_TU_S32714   | piv_TU_S32714      | 0   | PM       |                   |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType |
+      | pii_TU_S32714   | piv_TU_S32714      | 0   | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
-      | pip_S32714              | pii_TU_S32714   | p_S32714     | 2   | 2020-01-01 |
+      | pip_S32714              | pii_TU_S32714   | p_S32714     | 4   | 2020-01-01 |
+
+    # Stock: one TU holding 4 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_S32714     | 2026-03-11   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S32714     | invLine_S32714     | p_S32714     | 0       | 4        | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S32714'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID   |
+      | invLine_S32714     | cu_S32714 |
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cu_S32714           | 4     | pip_S32714                         | tu_S32714                     |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference           |
       | o_S32714   | true    | bp_S32714     | 2026-03-11  | po_ref_S32714_@Date@ |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | ol_S32714  | o_S32714   | p_S32714     | 4          | pip_S32714              |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_S32714  | o_S32714   | p_S32714     | 4          |
 
     When the order identified by o_S32714 is completed
 
@@ -86,9 +98,15 @@ Feature: EDI DESADV for a shipment re-completed after its partner became a DESAD
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_S32714  | ol_S32714      | N             |
 
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tu_S32714          | ss_S32714                        | 4         | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tu_S32714          | ss_S32714                        |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ss_S32714             | D            | true                | false       |
+      | ss_S32714             | P            | true                | false       |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
@@ -109,11 +127,15 @@ Feature: EDI DESADV for a shipment re-completed after its partner became a DESAD
 
     # ─── The partner is now set up as DESADV recipient (partner-wide) ───
     When metasfresh contains C_BPartner_EDI_Setting:
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier          |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier           |
       | bp_S32714     | true                 | 9900032714010         | edi_setting_S32714_1 |
 
     # ─── Reactivate and complete the shipment again ───
     And the shipment identified by io_S32714 is reactivated
+    # the reactivated shipment keeps its TU in status Shipped
+    And validate M_HUs:
+      | Identifier | HUStatus |
+      | tu_S32714  | E        |
     And the shipment identified by io_S32714 is completed
 
     # ─── CORE ASSERTIONS ───
@@ -132,4 +154,12 @@ Feature: EDI DESADV for a shipment re-completed after its partner became a DESAD
       | pack_S32714        | desadv_S32714 | true                |
     And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | QtyTU | QtyCUsPerTU | QtyCUsPerLU | MovementQty | M_InOut_ID | M_InOutLine_ID |
-      | pi_S32714               | pack_S32714        | 2     | 2           | 4           | 4           | io_S32714  | iol_S32714     |
+      | pi_S32714               | pack_S32714        | 1     | 4           | 4           | 4           | io_S32714  | iol_S32714     |
+
+    # ─── The picked TU is again assigned to the re-completed shipment and is shipped ───
+    And load HUs assigned to M_InOut
+      | M_InOut_ID | M_HU_ID   |
+      | io_S32714  | tu_S32714 |
+    And validate M_HUs:
+      | Identifier | HUStatus | M_Product_ID | Qty   |
+      | tu_S32714  | E        | p_S32714     | 4 PCE |
