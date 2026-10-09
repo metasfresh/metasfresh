@@ -75,8 +75,8 @@ const computeWidgetTypeClass = (widgetType, fieldsCount) => {
  */
 export class RawWidget extends PureComponent {
   mounted = false;
-  // decimal number widget: the stored value of each end ('value', 'valueTo') when the user started typing over it,
-  // until the typed text is patched or forgotten - see forgetTypedTextOnOutsideChange
+  // decimal number widget: the value of each end ('value', 'valueTo') when the user started typing over it, as a
+  // dot-decimal number, until the typed text is patched or forgotten - see forgetTypedTextOnOutsideChange
   storedValuesBeforeTyping = {};
 
   constructor(props) {
@@ -331,9 +331,9 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method forgetTypedTextOnOutsideChange
-   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
-   *          that value again instead of what the user had typed. The value stored before the user started typing
-   *          coming back (e.g. a view reload) is no outside change: the user is typing over it.
+   * @summary When the value of a decimal number widget changes from outside, the widget shows that value again instead
+   *          of what the user had typed - unless it is the value the widget held when the user started typing (the same
+   *          number, or both empty) and the typed text is not patched yet: the user is typing over that value.
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
@@ -542,8 +542,11 @@ export class RawWidget extends PureComponent {
       this.lastRefusedNumberText = null;
       const key = isValueTo ? 'valueTo' : 'value';
       if (!(key in this.storedValuesBeforeTyping)) {
-        // the same source forgetTypedTextOnOutsideChange compares the incoming value of
-        this.storedValuesBeforeTyping[key] = this.props.widgetData?.[0]?.[key];
+        // read from widgetData, like the incoming value it is compared with; the row may still hold the text typed
+        // before (e.g. '3,57' while its patch is on the way), so it is kept as the dot-decimal number that text is
+        this.storedValuesBeforeTyping[key] = normalizeDecimalNumberString(
+          this.props.widgetData?.[0]?.[key]
+        );
       }
       this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
