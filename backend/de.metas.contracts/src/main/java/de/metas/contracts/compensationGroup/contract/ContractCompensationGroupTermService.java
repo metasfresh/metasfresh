@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -113,6 +114,7 @@ public class ContractCompensationGroupTermService
 					today);
 			if (newStatus.isPresent())
 			{
+				Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.get().getCode());
 				termRepository.saveContractStatus(term, newStatus.get());
 				updatedCount++;
 			}
