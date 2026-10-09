@@ -83,7 +83,9 @@ testCases.forEach(({ language, label }) => {
         // focus -> action-list fetch -> open.
         const openStatusDropdown = async () => {
           await statusButton.blur();
-          await statusButton.click();
+          // bounded: while a document process is pending the button is `.disabled`
+          // (pointer-events: none), and an unbounded click would outlive the toPass timeout
+          await statusButton.click({ timeout: 5000 });
           await expect(statusButton).toHaveClass(/dropdown-status-open/, { timeout: 5000 });
         };
 
@@ -91,9 +93,10 @@ testCases.forEach(({ language, label }) => {
           timeout: SLOW_ACTION_TIMEOUT,
         });
 
-        // Trigger Reactivate. A retry only re-opens the dropdown and re-clicks while no click
-        // went through (status-RE not offered yet); a click that went through sends the
-        // DocAction=RE PATCH, which is awaited below.
+        // Trigger Reactivate. A retry only re-opens the dropdown and re-clicks while the order is
+        // still Completed; once it left Completed (a click went through) it is already
+        // reactivated and the try succeeds. A click that went through sends the DocAction=RE
+        // PATCH, which is awaited below either way.
         const reactivatePatch = page
           .waitForResponse(
             (resp) =>
@@ -104,6 +107,7 @@ testCases.forEach(({ language, label }) => {
           )
           .catch(() => null);
         await expect(async () => {
+          if (!/tag-success/.test((await statusTag.getAttribute('class')) ?? '')) return;
           await openStatusDropdown();
           await page.getByTestId('status-RE').click({ timeout: 5000 });
         }, 'the Reactivate action is offered on the Completed order').toPass({
