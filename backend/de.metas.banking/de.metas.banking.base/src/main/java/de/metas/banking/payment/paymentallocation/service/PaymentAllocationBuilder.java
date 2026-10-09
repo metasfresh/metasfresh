@@ -34,6 +34,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -83,6 +85,7 @@ public class PaymentAllocationBuilder
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private PaymentBonusCreditMemoService paymentBonusCreditMemoService;
 	// Parameters
 	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
@@ -160,7 +163,13 @@ public class PaymentAllocationBuilder
 		{
 			ImmutableList<AllocationLineCandidate> candidatesEffective = ImmutableList.copyOf(candidates);
 
+			// the payment bonus credit memo references the invoice, so its completion allocates it against the invoice; there is nothing left to save for these candidates
+			candidatesEffective.stream()
+					.filter(candidate -> AllocationLineCandidateType.PaymentBonus.equals(candidate.getType()))
+					.forEach(this::createPaymentBonusCreditMemo);
+
 			candidatesEffective = candidatesEffective.stream()
+					.filter(candidate -> !AllocationLineCandidateType.PaymentBonus.equals(candidate.getType()))
 					.map(this::createServiceFeeInvoiceIfNeeded)
 					.collect(ImmutableList.toImmutableList());
 
@@ -224,6 +233,25 @@ public class PaymentAllocationBuilder
 	}
 
 	/**
+	 * Creates and completes the payment bonus credit memo of the given candidate.
+	 * The credit memo references the invoice; like every credit memo that references an invoice, its completion allocates it against that invoice.
+	 */
+	private void createPaymentBonusCreditMemo(@NonNull final AllocationLineCandidate candidate)
+	{
+		if (paymentBonusCreditMemoService == null)
+		{
+			throw new AdempiereException("Cannot process payment bonus candidates because no service was configured");
+		}
+
+		final AllocationAmounts amounts = candidate.getAmounts();
+		Check.assumeEquals(amounts, AllocationAmounts.builder().paymentBonus(amounts.getPaymentBonus()).build());
+
+		final PaymentBonusDeduction paymentBonusDeduction = Check.assumeNotNull(candidate.getPaymentBonusDeduction(), "paymentBonusDeduction shall be set for {}", candidate);
+		// dated like the allocation, but not before the invoice (the candidate's dateAcct)
+		paymentBonusCreditMemoService.generateCreditMemo(paymentBonusDeduction, candidate.getDateAcct());
+	}
+
+	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
 	 *
 	 * @return created allocation candidates
@@ -248,6 +276,10 @@ public class PaymentAllocationBuilder
 		//
 		// Allocate invoice processing fees first
 		allocationCandidates.addAll(createAllocationLineCandidates_InvoiceProcessingFee(payableDocuments));
+
+		//
+		// Allocate the bonuses that the customers deducted when paying
+		allocationCandidates.addAll(createAllocationLineCandidates_PaymentBonus(payableDocuments));
 
 		//
 		// Try to allocate credit memos to regular invoices
@@ -747,6 +779,60 @@ public class PaymentAllocationBuilder
 		return allocationLine;
 	}
 
+	private List<AllocationLineCandidate> createAllocationLineCandidates_PaymentBonus(final List<PayableDocument> payableDocuments)
+	{
+		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
+		for (final PayableDocument payable : payableDocuments)
+		{
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_PaymentBonus(payable);
+			if (allocationLine != null)
+			{
+				allocationLineCandidates.add(allocationLine);
+			}
+		}
+
+		return allocationLineCandidates;
+	}
+
+	@Nullable
+	private AllocationLineCandidate createAllocationLineCandidate_PaymentBonus(@NonNull final PayableDocument payable)
+	{
+		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
+				.paymentBonus(payable.getAmountsToAllocate().getPaymentBonus())
+				.build();
+		if (amountsToAllocate.isZero())
+		{
+			return null;
+		}
+
+		// the credit memo is dated like the allocation, but not before the invoice
+		final LocalDate dateTrx = getDefaultDateTrx();
+		final LocalDate dateAcct = TimeUtil.max(payable.getDateAcct(), dateTrx);
+		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+				.type(AllocationLineCandidateType.PaymentBonus)
+				//
+				.orgId(payable.getClientAndOrgId().getOrgId())
+				.bpartnerId(payable.getBpartnerId())
+				//
+				.payableDocument(payable)
+				.paymentDocumentRef(null) // the credit memo is created when the candidate is processed
+				//
+				.dateTrx(dateTrx)
+				.dateAcct(dateAcct)
+				//
+				// Amounts:
+				.amounts(amountsToAllocate)
+				.payableOverUnderAmt(payableOverUnderAmt)
+				.paymentBonusDeduction(payable.getPaymentBonusDeduction())
+				//
+				.build();
+
+		payable.addAllocatedAmounts(amountsToAllocate);
+
+		return allocationLine;
+	}
+
 	private OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
 	{
 		//
@@ -1051,6 +1137,13 @@ public class PaymentAllocationBuilder
 	{
 		assertNotBuilt();
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+		return this;
+	}
+
+	public PaymentAllocationBuilder paymentBonusCreditMemoService(@NonNull final PaymentBonusCreditMemoService paymentBonusCreditMemoService)
+	{
+		assertNotBuilt();
+		this.paymentBonusCreditMemoService = paymentBonusCreditMemoService;
 		return this;
 	}
 

@@ -1,8 +1,12 @@
 package de.metas.contracts.refund;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -10,11 +14,15 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 /*
  * #%L
@@ -45,6 +53,14 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameInvoiceSchedule");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
+	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentSingleLine");
+	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
+	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
+	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{
@@ -85,6 +101,57 @@ public class RefundConfigs
 				.get();
 	}
 
+	/**
+	 * The refund line is booked on the bonus product, or else on the config's product. A config that has neither would book it on whatever product was sold, with the wrong accounts and tax.
+	 */
+	public void assertRefundProductIsKnown(@NonNull final RefundConfig refundConfig)
+	{
+		if (refundConfig.getProductId() == null && refundConfig.getBonusProductId() == null)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is a percentage of the net goods value, booked on the bonus product with its VAT on top.
+	 */
+	public void assertDeductedAtPaymentIsComputable(@NonNull final RefundConfig refundConfig)
+	{
+		if (!refundConfig.isDeductedAtPayment())
+		{
+			return;
+		}
+		if (!RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase()) || refundConfig.getBonusProductId() == null)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT).markAsUserValidationError();
+		}
+	}
+
+	/**
+	 * The bonus that the customer deducts at payment is one flat percentage per condition: the minimum quantity is no threshold when paying,
+	 * so a condition that is deducted at payment has exactly one active line, with minimum quantity 0. Separate bonuses are separate conditions.
+	 *
+	 * @param activeRefundConfigs all active configs of one condition
+	 */
+	public void assertDeductedAtPaymentIsSingleLine(@NonNull final List<RefundConfig> activeRefundConfigs)
+	{
+		if (activeRefundConfigs.stream().noneMatch(RefundConfig::isDeductedAtPayment))
+		{
+			return;
+		}
+		if (activeRefundConfigs.size() != 1 || activeRefundConfigs.get(0).getMinQty().signum() != 0)
+		{
+			Loggables.addLog("A condition that is deducted at payment needs exactly one active config with MinQty=0; refundConfigs={}", activeRefundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_SINGLE_LINE).markAsUserValidationError();
+		}
+	}
+
+	public boolean extractDeductedAtPayment(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		return extractSingleElement(refundConfigs, RefundConfig::isDeductedAtPayment);
+	}
+
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		final RefundMode refundMode = extractSingleElement(
@@ -93,12 +160,61 @@ public class RefundConfigs
 		return refundMode;
 	}
 
-	public ProductId extractProductId(@NonNull final List<RefundConfig> refundConfigs)
+	/**
+	 * @return the product that the refund line is booked on: the configs' bonus product, or else their product.
+	 *         {@code null} if the configs have neither, e.g. because their base is a product category.
+	 * @throws RuntimeException if the configs have more than one bonus product, or more than one product
+	 */
+	@Nullable
+	public ProductId extractRefundProductId(@NonNull final List<RefundConfig> refundConfigs)
 	{
-		final ProductId productId = extractSingleElement(
-				refundConfigs,
-				RefundConfig::getProductId);
-		return productId;
+		final ProductId bonusProductId = extractSingleNonNullOrNull(refundConfigs, RefundConfig::getBonusProductId);
+		if (bonusProductId != null)
+		{
+			return bonusProductId;
+		}
+		return extractSingleNonNullOrNull(refundConfigs, RefundConfig::getProductId);
+	}
+
+	@Nullable
+	private ProductId extractSingleNonNullOrNull(
+			@NonNull final List<RefundConfig> refundConfigs,
+			@NonNull final Function<RefundConfig, ProductId> productIdExtractor)
+	{
+		final ImmutableSet<ProductId> productIds = refundConfigs.stream()
+				.map(productIdExtractor)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (productIds.isEmpty())
+		{
+			return null;
+		}
+		return singleElement(productIds);
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods (see {@link RefundContract#computeNextInvoiceDate}),
+	 * so the schedule's distance has to divide the year: 1, 2, 3, 4, 6 or 12 months. Checked when a refund line is saved.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final RefundConfig refundConfig)
+	{
+		assertInvoiceDistanceDividesTheYear(refundConfig.getInvoiceSchedule());
+	}
+
+	/**
+	 * Refund periods of a monthly schedule are calendar periods, so the schedule's distance has to divide the year.
+	 * Checked when a refund line is saved, and again where the periods are computed, because the (shared) schedule can be changed later.
+	 */
+	public void assertInvoiceDistanceDividesTheYear(@NonNull final InvoiceSchedule invoiceSchedule)
+	{
+		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()) && 12 % invoiceSchedule.getInvoiceDistance() != 0)
+		{
+			throw new AdempiereException(MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE)
+					.markAsUserValidationError()
+					.setParameter("C_InvoiceSchedule_ID", invoiceSchedule.getId())
+					.setParameter("InvoiceDistance", invoiceSchedule.getInvoiceDistance())
+					.appendParametersToMessage();
+		}
 	}
 
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)
@@ -116,6 +232,33 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
+		}
+
+		// the bonus of a condition is either invoiced by the refund engine or deducted by the customer at payment
+		if (hasDifferentValues(refundConfigs, RefundConfig::isDeductedAtPayment))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same IsDeductedAtPayment; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT).markAsUserValidationError();
+		}
+
+		// the refund line is booked on one product. Different products per config are fine though: the term's product selects the configs.
+		final long distinctBonusProducts = refundConfigs.stream().map(RefundConfig::getBonusProductId).filter(Objects::nonNull).distinct().count();
+		if (distinctBonusProducts > 1)
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same bonus product; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT).markAsUserValidationError();
+		}
+
+		// the engine picks a config by quantity only and uses the category just to match the contract,
+		// so a condition with lines of several categories would refund a sale with an arbitrary line's percentage
+		// null is a value too: a line without category does not go with a line that has one
+		if (refundConfigs.stream().map(RefundConfig::getProductCategoryId).distinct().count() > 1)
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same product category; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY).markAsUserValidationError();
 		}
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
