@@ -1,5 +1,7 @@
 package de.metas.payment.esr.spi.impl;
 
+import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.esr.ESRTestBase;
@@ -22,7 +24,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ESRActionHandlerTest extends ESRTestBase
@@ -159,7 +161,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		final I_C_Invoice invoice = getC_Invoice();
-		invoice.setGrandTotal(new BigDecimal(50.0));
+		invoice.setGrandTotal(new BigDecimal("50.0"));
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
 		save(invoice);
@@ -193,7 +195,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final boolean ignoreProcessed = false;
 		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 		save(invoice);
-		assertTrue(invoice.isPaid(), "Invoice " + invoice + " shall be allocated");
+		assertInvoiceFullyPaid(invoice);
 
 		final I_C_AllocationLine firstAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0);
 		final I_C_AllocationLine secondAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1);
@@ -202,9 +204,9 @@ public class ESRActionHandlerTest extends ESRTestBase
 		assertThat(invoice.getGrandTotal()).isEqualByComparingTo("50"); // guard this is the granttotal we set above. should still be the same
 		assertThat(firstAllocationLine.getAmount()).isEqualByComparingTo("40"); // guard: this is the allocation line we created. above. amount should be unchanged
 
-		final BigDecimal openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
-		assertThat(openAmt).isZero();
-		assertThat(invoice.isPaid()).as("invoice is paid").isTrue();
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		assertThat(openAmt.toBigDecimal()).isZero();
+		assertInvoiceFullyPaid(invoice);
 		assertThat(secondAllocationLine.getAmount()).isZero();
 		assertThat(secondAllocationLine.getWriteOffAmt()).isEqualByComparingTo("10");
 		assertThat(secondAllocationLine.getC_Invoice_ID()).isGreaterThan(0);

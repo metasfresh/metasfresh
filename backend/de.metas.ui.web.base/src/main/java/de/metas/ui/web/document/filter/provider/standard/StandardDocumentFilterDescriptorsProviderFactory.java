@@ -63,7 +63,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
 
-	private static final String FILTER_ID_Default = "default";
+	public static final String FILTER_ID_Default = "default";
 	private static final AdMessageKey MSG_DefaultFilterName = AdMessageKey.of("default");
 
 	private static final String INLINE_FILTER_ID_PREFIX = "inline-";

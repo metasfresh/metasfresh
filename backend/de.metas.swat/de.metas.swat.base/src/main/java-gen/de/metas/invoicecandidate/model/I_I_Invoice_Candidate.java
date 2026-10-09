@@ -1135,4 +1135,47 @@ public interface I_I_Invoice_Candidate
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_M_PriceList_Version_Name = new ModelColumn<>(I_I_Invoice_Candidate.class, "M_PriceList_Version_Name", null);
 	String COLUMNNAME_M_PriceList_Version_Name = "M_PriceList_Version_Name";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Projekt Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_Value (@Nullable java.lang.String C_Project_Value);
+
+	/**
+	 * Get Projekt Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getC_Project_Value();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_C_Project_Value = new ModelColumn<>(I_I_Invoice_Candidate.class, "C_Project_Value", null);
+	String COLUMNNAME_C_Project_Value = "C_Project_Value";
 }

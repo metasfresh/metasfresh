@@ -23,6 +23,7 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractOrderLineLog;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,10 +39,11 @@ class PurchaseOrderLineLog extends AbstractOrderLineLog
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
 
 	public PurchaseOrderLineLog(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			final @NonNull InformativeLogComputingMethod computingMethod)
+								@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+								@NonNull final  InformativeLogComputingMethod computingMethod,
+								@NonNull final ModularContractLogRepository modularContractLogRepository)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository, modularContractLogRepository);
 		this.computingMethod = computingMethod;
 	}
 }

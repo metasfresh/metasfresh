@@ -71,7 +71,7 @@ public class MockedDataUtil
 
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
 
-		bPartner.setCompanyName("bPartner.companyName");
+		bPartner.setCompanyName("bPartner.name");
 		bPartner.setName("bPartner.name");
 		bPartner.setGroup("bPartner.group");
 		bPartner.setLanguage("bPartner.de_CH");

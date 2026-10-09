@@ -3,7 +3,7 @@ package de.metas.acct;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
-import de.metas.acct.aggregation.IFactAcctLogBL;
+import de.metas.acct.aggregation.FactAcctLogService;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -77,7 +77,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
+	private final FactAcctLogService factAcctLogService;
 
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
@@ -91,12 +91,14 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			@NonNull final ICostElementRepository costElementRepo,
 			@NonNull final TreeNodeService treeNodeService,
 			@NonNull final ProductActivityProvider productActivityProvider,
-			@NonNull final ICurrentCostsRepository currentCostsRepository)
+			@NonNull final ICurrentCostsRepository currentCostsRepository,
+			@NonNull final FactAcctLogService factAcctLogService)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
 		this.productActivityProvider = productActivityProvider;
 		this.currentCostsRepository = currentCostsRepository;
+		this.factAcctLogService = factAcctLogService;
 	}
 
 	@Override
@@ -210,7 +212,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Failed finding the default conversion type. Skip", e);
 			}
@@ -226,7 +228,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		runInThread(FactAcctLogDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
-				.factAcctLogBL(factAcctLogBL)
+				.factAcctLogService(factAcctLogService)
 				.build());
 	}
 

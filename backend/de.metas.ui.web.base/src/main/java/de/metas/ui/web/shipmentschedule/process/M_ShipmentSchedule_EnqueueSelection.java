@@ -32,6 +32,7 @@ import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentDateRule;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -193,7 +194,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 								.queryFilters(getShipmentSchedulesQueryFilters())
 								.quantityType(quantityType)
 								.completeShipments(isCompleteShipments)
-								.isShipmentDateToday(isShipToday)
+								.shipmentDateRule(ShipmentDateRule.ofFlags(isShipToday, false))
 								.fixedShipmentDate(getFixedShipmentDate().orElse(null))
 								.forexContractRef(p_FECParams.getForexContractRef())
 								.build());

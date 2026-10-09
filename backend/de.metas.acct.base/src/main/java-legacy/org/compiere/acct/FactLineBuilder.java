@@ -83,7 +83,7 @@ public final class FactLineBuilder
 	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
-	private ActivityId activityId;
+	@Nullable private ActivityId activityId;
 	private LocationId fromLocationId;
 	private LocationId toLocationId;
 	private CostElementId costElementId;
@@ -668,13 +668,14 @@ public final class FactLineBuilder
 		return locatorId;
 	}
 
-	public FactLineBuilder activityId(final ActivityId activityId)
+	public FactLineBuilder activityId(@Nullable final ActivityId activityId)
 	{
 		assertNotBuild();
 		this.activityId = activityId;
 		return this;
 	}
 
+	@Nullable
 	private ActivityId getActivityId()
 	{
 		return activityId;

@@ -63,6 +63,14 @@ DECLARE
     v_AcctSchemaInfo record;
     v_periodInfo     record;
 BEGIN
+    --
+    -- Process pending fact_acct_logs if any
+    LOOP
+        v_rowcount := de_metas_acct.fact_acct_log_process(p_BatchSize=>1000);
+        IF v_rowcount < 1000 THEN
+            EXIT;
+        END IF;
+    END LOOP;
 
 
     -- Get Accounting Schema Info
@@ -79,17 +87,17 @@ BEGIN
     WHERE c.AD_Client_ID = 1000000;
 
     -- get period info
-    SELECT period_LastYearEnd.EndDate::date   AS period_LastYearEnd_EndDate,
-           period_CurrentYearStart.StartDate::date as period_CurrentYearStart_StartDate,
-           period_PreviousYearStart.StartDate::date as period_PreviousYearStart_StartDate,
-           p.EndDate::date                    AS EndDate,
-           p.StartDate::date                  AS StartDate
+    SELECT period_LastYearEnd.EndDate::date         AS period_LastYearEnd_EndDate,
+           period_CurrentYearStart.StartDate::date  AS period_CurrentYearStart_StartDate,
+           period_PreviousYearStart.StartDate::date AS period_PreviousYearStart_StartDate,
+           p.EndDate::date                          AS EndDate,
+           p.StartDate::date                        AS StartDate
     INTO v_periodInfo
     FROM C_Period p
              -- Get last period of previous year
              LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
              LEFT OUTER JOIN C_Period period_CurrentYearStart ON (period_CurrentYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, (p.PeriodNo - 1)::int)) AND period_CurrentYearStart.isActive = 'Y'
-             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, period_LastYearEnd.PeriodNo::int)) AND period_PreviousYearStart.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, (period_LastYearEnd.PeriodNo - 1)::int)) AND period_PreviousYearStart.isActive = 'Y'
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
@@ -121,20 +129,18 @@ BEGIN
             END)          AS IsConvertToEUR
 
     FROM C_Element_Levels lvl
-             INNER JOIN (
-        SELECT ev.C_ElementValue_ID
-             -- NOTE: by customer requirement, we are not considering the account sign but always DR - CR
-             , 1 AS Multiplicator
-             -- , acctBalance(C_ElementValue_ID, 1, 0) AS Multiplicator
-             , ev.ad_client_id
-             , ev.AccountType
-             , ev.AD_Org_ID
-        FROM C_ElementValue ev
-                 JOIN C_Element e ON e.C_Element_id = ev.C_Element_ID AND e.IsActive = 'Y'
+             INNER JOIN (SELECT ev.C_ElementValue_ID
+                              -- NOTE: by customer requirement, we are not considering the account sign but always DR - CR
+                              , 1 AS Multiplicator
+                              -- , acctBalance(C_ElementValue_ID, 1, 0) AS Multiplicator
+                              , ev.ad_client_id
+                              , ev.AccountType
+                              , ev.AD_Org_ID
+                         FROM C_ElementValue ev
+                                  JOIN C_Element e ON e.C_Element_id = ev.C_Element_ID AND e.IsActive = 'Y'
 
-        WHERE ev.isActive = 'Y'
-          AND e.IsNaturalAccount = 'Y'
-    ) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID
+                         WHERE ev.isActive = 'Y'
+                           AND e.IsNaturalAccount = 'Y') ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID
         -- make sure we show the standard accounts from metasfresh (org 0)
         AND (CASE WHEN lvl.lvl1_value != 'ZZ' THEN (ev.ad_org_id = p_ad_org_id) ELSE (ev.ad_org_id = 0) END))
     --
@@ -163,7 +169,7 @@ BEGIN
          , a.AccountType
          , a.IsConvertToEUR
 
-         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend, v_periodInfo.period_CurrentYearStart_StartDate::date)).Balance * a.Multiplicator                                  AS SameYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend, v_periodInfo.period_CurrentYearStart_StartDate::date)).Balance * a.Multiplicator                                   AS SameYearSum
          , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.period_LastYearEnd_EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend, v_periodInfo.period_PreviousYearStart_StartDate::date)).Balance * a.Multiplicator AS LastYearSum
 
     FROM tmp_accounts a;
@@ -200,7 +206,7 @@ BEGIN
                     , (SELECT C_ConversionType_ID FROM C_ConversionType WHERE Value = 'P' AND isActive = 'Y') -- p_conversiontype_id
                     , a.AD_Client_ID
                     , p_ad_org_id --ad_org_id
-                    )
+                         )
                     ELSE NULL
             END)                                                                                                    AS L4_euroSaldo,
            --
@@ -220,38 +226,36 @@ BEGIN
 
            p_ad_org_id                                                                                              AS ad_org_id,
            a.iso_code
-    FROM (
-             SELECT tb.ParentName1
-                  , tb.ParentValue1
-                  , tb.ParentName2
-                  , tb.ParentValue2
-                  , tb.ParentName3
-                  , tb.ParentValue3
-                  , tb.ParentValue4
-                  , tb.ParentName4
-                  , tb.Name
-                  , tb.Value
-                  , tb.AccountType
+    FROM (SELECT tb.ParentName1
+               , tb.ParentValue1
+               , tb.ParentName2
+               , tb.ParentValue2
+               , tb.ParentName3
+               , tb.ParentValue3
+               , tb.ParentValue4
+               , tb.ParentName4
+               , tb.Name
+               , tb.Value
+               , tb.AccountType
 
-                  , tb.SameYearSum
-                  , tb.LastYearSum
+               , tb.SameYearSum
+               , tb.LastYearSum
 
 
-                  , tb.IsConvertToEUR
+               , tb.IsConvertToEUR
 
-                  --
-                  , v_AcctSchemaInfo.C_Currency_ID -- Accounting currency
-                  , v_AcctSchemaInfo.AD_Client_ID
+               --
+               , v_AcctSchemaInfo.C_Currency_ID -- Accounting currency
+               , v_AcctSchemaInfo.AD_Client_ID
 
-                  , v_AcctSchemaInfo.C_Calendar_ID
-                  , tb.C_ElementValue_ID
-                  , v_AcctSchemaInfo.iso_code
-                  , COUNT(0) OVER () AS OverallCount
-                  , NULL::text       AS activityName
-                  , NULL::text       AS productName
-                  , '1'              AS level
-             FROM tmp_balances tb
-         ) a;
+               , v_AcctSchemaInfo.C_Calendar_ID
+               , tb.C_ElementValue_ID
+               , v_AcctSchemaInfo.iso_code
+               , COUNT(0) OVER () AS OverallCount
+               , NULL::text       AS activityName
+               , NULL::text       AS productName
+               , '1'              AS level
+          FROM tmp_balances tb) a;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Created tmp_reports with % rows', v_rowcount;
@@ -318,7 +322,7 @@ BEGIN
         WHERE fa.dateacct <= p_date
           AND fa.ad_org_id = p_ad_org_id
           AND (fa.PostingType = 'A' OR (p_ExcludePostingTypeYearEnd = 'N' AND fa.PostingType = 'Y') OR (p_IncludePostingTypeStatistical = 'Y' AND fa.PostingType = 'S'))
-          AND (ev.AccountType NOT IN ('E', 'R') OR fa.DateAcct >= DATE_TRUNC('year', p_date))
+          AND (ev.AccountType NOT IN ('E', 'R') OR fa.DateAcct >= v_periodInfo.period_CurrentYearStart_StartDate::date)
         GROUP BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.Account_ID,
                  (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END), (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END);
 

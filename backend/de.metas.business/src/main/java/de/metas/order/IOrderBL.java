@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -63,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -349,6 +352,16 @@ public interface IOrderBL extends ISingletonService
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
+	boolean isClosed(@NonNull OrderId orderId);
+
+	boolean isClosed(@NonNull I_C_Order order);
+
+	boolean isVoidedOrClosed(@NonNull final OrderId orderId);
+
+	void open(@NonNull OrderId orderId);
+
+	boolean isNotJustOpened(@NonNull I_C_Order orderRecord);
+
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
@@ -358,4 +371,14 @@ public interface IOrderBL extends ISingletonService
 	InOutFromOrderProducer newInOutFromOrderProducer();
 
 	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
+
+	Stream<de.metas.interfaces.I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
+
+	boolean anyMatch(@NonNull OrderLineQuery query);
+
+	List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull I_C_Order order);
+
+	ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull OrderId orderId);
 }

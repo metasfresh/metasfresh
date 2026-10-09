@@ -81,21 +81,9 @@ BEGIN
                                      AND fa.DateAcct <= p_dateTo
                                      AND fa.postingtype IN ('A', 'Y')
                                      AND fa.ad_org_id = p_org_id
-                                     AND (CASE
-                                              WHEN p_vatcode IS NULL
-                                                  THEN fa.VatCode IS NULL
-                                                  ELSE fa.VatCode = p_vatcode
-                                          END)
-                                     AND (CASE
-                                              WHEN p_account_id IS NULL
-                                                  THEN TRUE
-                                                  ELSE p_account_id = fa.account_id
-                                          END)
-                                     AND (CASE
-                                              WHEN p_c_tax_id IS NULL
-                                                  THEN TRUE
-                                                  ELSE p_c_tax_id = fa.C_Tax_id
-                                          END)
+                                     AND (p_vatcode IS NULL OR fa.VatCode = p_vatcode)
+                                     AND (p_account_id IS NULL OR p_account_id = fa.account_id)
+                                     AND (p_c_tax_id IS NULL OR p_c_tax_id = fa.C_Tax_id)
                                      AND fa.isActive = 'Y'
                                ) x
                       ) Y

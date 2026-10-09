@@ -22,11 +22,10 @@
 
 package de.metas.ui.web.picking.packageable.filters;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.NonNull;
 
 import java.util.Objects;
 
@@ -41,12 +40,9 @@ public class ProductBarcodeFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public FilterSql getSql(
-			final DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final ProductBarcodeFilterData data = PackageableFilterDescriptorProvider.extractProductBarcodeFilterData(filter).orElse(null);
+		final ProductBarcodeFilterData data = PackageableFilterDescriptorProvider.extractProductBarcodeFilterData(request.getFilter()).orElse(null);
 
 		if (data == null)
 		{

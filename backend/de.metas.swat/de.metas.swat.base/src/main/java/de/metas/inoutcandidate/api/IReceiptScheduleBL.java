@@ -231,4 +231,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
 
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
+
+	@Nullable
+	I_M_ReceiptSchedule retrieveForRecord(@Nullable Object model);
 }

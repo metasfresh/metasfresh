@@ -175,7 +175,10 @@ public interface IBPartnerBL extends ISingletonService
 
     @NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
 
-    @Value
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Value
 	@Builder
 	class RetrieveContactRequest
 	{

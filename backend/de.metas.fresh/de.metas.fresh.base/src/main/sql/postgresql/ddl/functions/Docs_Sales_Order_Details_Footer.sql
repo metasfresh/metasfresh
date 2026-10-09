@@ -21,8 +21,8 @@ SELECT COALESCE(reft.name, ref.name)                                            
        (CASE
             WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
             ELSE null END)                                                                                      AS discount2,
-       to_char((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')                                                    AS discount_date1,
-       to_char((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY')                                                   AS discount_date2,
+       to_char(subtractdays(o.DateOrdered, DiscountDays), 'dd.MM.YYYY')                                                    AS discount_date1,
+       to_char(subtractdays(o.DateOrdered, DiscountDays2), 'dd.MM.YYYY')                                                   AS discount_date2,
        c.cursymbol,
        COALESCE(nullif(dtt.documentnote, ''),
                 nullif(dt.documentnote, ''))                                                                    as documentnote

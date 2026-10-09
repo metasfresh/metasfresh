@@ -37,6 +37,7 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -68,6 +69,8 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Activity_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Activity_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_DocType_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Project_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Project_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_UOM_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Default_OrgCode;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_DocBaseType;
@@ -110,6 +113,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		dbUpdateDocBaseType(selection);
 		dbUpdateInvoiceRule(selection);
 		dbUpdateActivity(selection);
+		dbUpdateProject(selection);
 		dbUpdatePriceListVersion(selection);
 
 		dbUpdateErrorMessagesAfterUpdates(selection);
@@ -404,6 +408,28 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	private static void dbUpdateProject(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sqlProjectId = "SELECT " + COLUMNNAME_C_Project_ID
+				+ " FROM " + I_C_Project.Table_Name + " p"
+				+ " WHERE p." + I_C_Project.COLUMNNAME_Value + " = i." + COLUMNNAME_C_Project_Value
+				+ " AND p." + I_C_Project.COLUMNNAME_AD_Client_ID + " = i." + COLUMNNAME_AD_Client_ID
+				+ " AND p." + I_C_Project.COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND (p." + I_C_Project.COLUMNNAME_C_BPartner_ID + " IS NULL OR p." + I_C_Project.COLUMNNAME_C_BPartner_ID + " = i." + COLUMNNAME_Bill_BPartner_ID + ")"
+				+ " AND p." + COLUMNNAME_IsActive + "= 'Y'"
+				+ " ORDER BY p." + COLUMNNAME_AD_Org_ID + " DESC"
+				+ " LIMIT 1";
+
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_C_Project_ID + " = (" + sqlProjectId + ")"
+				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ " AND i." + COLUMNNAME_C_Project_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_C_Project_Value + " IS NOT NULL "
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	private void dbUpdateErrorMessagesAfterUpdates(@NonNull final ImportRecordsSelection selection)
 	{
 		final String missingMandatoryFieldMessage = "Mandatory " + I_C_Invoice_Candidate.Table_Name + ".";
@@ -448,6 +474,9 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 		//No C_Activity_ID
 		updateActivityErrorMessage(selection);
+
+		//No C_Project_ID
+		updateProjectErrorMessage(selection);
 	}
 
 	private static void dbUpdateErrorMessageExternalSystem(@NonNull final ImportRecordsSelection selection)
@@ -666,6 +695,22 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_C_Activity_ID + " = {}", no);
+		}
+	}
+
+	private void updateProjectErrorMessage(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching C_Project_ID for provided project value !" + ", '"
+				+ " WHERE i." + COLUMNNAME_C_Project_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_C_Project_Value + " IS NOT NULL "
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No " + COLUMNNAME_C_Project_ID + " = {}", no);
 		}
 	}
 }

@@ -89,4 +89,6 @@ public class ModuleConfig
 	{
 		return ColumnOption.equals(getColumnOption(), columnOption);
 	}
+
+	public boolean isMatching(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId) {return ModuleConfigAndSettingsId.equals(id, moduleConfigAndSettingsId);}
 }

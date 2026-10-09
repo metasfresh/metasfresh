@@ -1,14 +1,10 @@
 package de.metas.ui.web.session;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import java.time.Duration;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Stopwatch;
+import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.MapSession;
@@ -18,12 +14,11 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.logging.LogManager;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -58,7 +53,7 @@ import lombok.ToString;
 {
 	private static final Logger logger = LogManager.getLogger(FixedMapSessionRepository.class);
 
-	private final Map<String, MapSession> sessions = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, MapSession> sessions = new ConcurrentHashMap<>();
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 	private final Duration defaultMaxInactiveInterval;

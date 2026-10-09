@@ -12,7 +12,7 @@ import {
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
-import BlankPage from '../BlankPage';
+import { BlankPage } from '../BlankPage';
 import SelectionAttributes from './SelectionAttributes';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';

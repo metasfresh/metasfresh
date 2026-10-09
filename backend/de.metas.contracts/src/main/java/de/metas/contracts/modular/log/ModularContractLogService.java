@@ -31,6 +31,7 @@
  import de.metas.contracts.modular.ComputingMethodType;
  import de.metas.contracts.modular.ContractSpecificPriceRequest;
  import de.metas.contracts.modular.ModularContractPriceService;
+ import de.metas.contracts.modular.settings.BaseModuleConfig;
  import de.metas.contracts.modular.settings.ModularContractModuleId;
  import de.metas.contracts.modular.settings.ModularContractSettings;
  import de.metas.contracts.modular.settings.ModularContractSettingsService;
@@ -45,6 +46,7 @@
  import de.metas.invoice.detail.InvoiceCandidateWithDetails;
  import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
  import de.metas.invoice.detail.InvoiceDetailItem;
+ import de.metas.invoice.service.IInvoiceBL;
  import de.metas.invoicecandidate.InvoiceCandidateId;
  import de.metas.invoicecandidate.api.IInvoiceCandDAO;
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -86,7 +88,10 @@
  import java.time.Instant;
  import java.util.Collection;
  import java.util.List;
+ import java.util.Objects;
  import java.util.Optional;
+ import java.util.Set;
+ import java.util.stream.Collectors;
  import java.util.stream.Stream;
 
  import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
@@ -100,7 +105,7 @@
  {
 	 private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	 private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
-	 public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
+	 private final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
 	 public static final String INVOICE_DETAILS_RECEIVED = "IN";
 	 public static final String INVOICE_DETAILS_SHIPPED = "OUT";
 	 public static final String INVOICE_DETAILS_FINAL_INVOICE_DATE = "finalInvoiceDate";
@@ -113,8 +118,9 @@
 	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 @NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	 @NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
-	 @NonNull private final ModularContractLogDAO modularContractLogDAO;
+	 @NonNull private final ModularContractLogRepository modularContractLogRepository;
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
 	 @NonNull private final ModularContractPriceService modularContractPriceService;
 	 @NonNull private final ModularContractSettingsService modularContractSettingsService;
@@ -123,7 +129,7 @@
 	 {
 		 Adempiere.assertUnitTestMode();
 		 return new ModularContractLogService(
-				 new ModularContractLogDAO(),
+				 new ModularContractLogRepository(),
 				 new InvoiceCandidateWithDetailsRepository(),
 				 ModularContractPriceService.newInstanceForJUnitTesting(),
 				 ModularContractSettingsService.newInstanceForJUnitTesting()
@@ -132,7 +138,7 @@
 
 	 public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	 {
-		 if (modularContractLogDAO.hasAnyModularLogs(tableRecordReference))
+		 if (hasAnyModularLogs(tableRecordReference))
 		 {
 			 throw new AdempiereException(MSG_ERROR_DOCUMENT_LINE_DELETION);
 		 }
@@ -142,7 +148,7 @@
 			 @NonNull final ModularContractLogQuery query,
 			 final boolean isBillable)
 	 {
-		 modularContractLogDAO.changeBillableStatus(query, isBillable);
+		 modularContractLogRepository.changeBillableStatus(query, isBillable);
 	 }
 
 	 @NonNull
@@ -150,7 +156,7 @@
 			 @NonNull final FlatrateTermId modularFlatrateTermId,
 			 @NonNull final OrderLineId orderLineId)
 	 {
-		 return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
+		 return modularContractLogRepository.getLastModularContractLog(modularFlatrateTermId, orderLineId);
 	 }
 
 	 public void throwErrorIfProcessedLogsExistForRecord(
@@ -179,14 +185,14 @@
 				 .contractModuleId(moduleId)
 				 .build();
 
-		 return modularContractLogDAO.anyMatch(query);
+		 return modularContractLogRepository.anyMatch(query);
 	 }
 
 	 public void setICProcessed(
 			 @NonNull final ModularContractLogQuery query,
 			 @NonNull final InvoiceCandidateId invoiceCandidateId)
 	 {
-		 modularContractLogDAO.setICProcessed(query, invoiceCandidateId);
+		 modularContractLogRepository.setICProcessed(query, invoiceCandidateId);
 	 }
 
 	 public void unprocessLogsForInvoice(@NonNull final InvoiceId invoiceId, @NonNull final Collection<ComputingMethodType> computingMethodTypes)
@@ -199,48 +205,48 @@
 				 .computingMethodTypes(computingMethodTypes)
 				 .invoiceCandidateIds(candidateIds)
 				 .build();
-		 modularContractLogDAO.unprocessLogs(query);
+		 modularContractLogRepository.unprocessLogs(query);
 	 }
 
 	 @NonNull
 	 public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	 {
-		 return modularContractLogDAO.getModularContractLogEntries(query);
+		 return modularContractLogRepository.getModularContractLogEntries(query);
 	 }
 
 	 @Nullable
 	 public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
 	 {
-		 return modularContractLogDAO.getModularContractLogEntrySelection(query);
+		 return modularContractLogRepository.getModularContractLogEntrySelection(query);
 	 }
 
 	 @NonNull
 	 public IQueryFilter<I_ModCntr_Log> getModularContractLogEntryFilter(@NonNull final ModularContractLogQuery query)
 	 {
-		 return modularContractLogDAO.getModularContractLogEntryFilter(query);
+		 return modularContractLogRepository.getModularContractLogEntryFilter(query);
 	 }
 
 	 @NonNull
 	 public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	 {
-		 return modularContractLogDAO.streamModularContractLogEntries(query);
+		 return modularContractLogRepository.streamModularContractLogEntries(query);
 	 }
 
 	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
 	{
-		return modularContractLogDAO.anyMatch(query);
+		return modularContractLogRepository.anyMatch(query);
 	}
 
 	@NonNull
 	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
 	{
-		return modularContractLogDAO.getModularContractIds(query);
+		return modularContractLogRepository.getModularContractIds(query);
 	}
 
 	 @Nullable
 	 public PInstanceId getSelection(@NonNull final LockOwner lockOwner)
 	 {
-		 return modularContractLogDAO.getSelection(lockOwner);
+		 return modularContractLogRepository.getSelection(lockOwner);
 	 }
 
 	 public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)
@@ -278,23 +284,51 @@
 
 	 public void updatePriceAndAmount(@NonNull final ModCntrLogPriceUpdateRequest request, @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	 {
-		 modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
+		 final ModularContractLogEntriesList logEntries = modularContractLogRepository.getModularContractLogEntries(ModularContractLogQuery.builder()
 						 .flatrateTermId(request.flatrateTermId())
 						 .processed(false)
 						 .contractModuleId(request.modularContractModuleId())
 						 .excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
 						 .build())
-				 .withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
+				 .withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry);
+		 modularContractLogRepository.save(logEntries);
+
+		 final ModularContractSettings modularContractSettings = modularContractSettingsService.getByFlatrateTermId(request.flatrateTermId());
+		 if(!modularContractSettings.getBaseModuleConfigs().isEmpty())
+		 {
+			 final List<BaseModuleConfig> baseConfigs = modularContractSettings.getBaseModuleConfigsByBaseModuleId(request.modularContractModuleId());
+			 for(final BaseModuleConfig baseModuleConfig : baseConfigs)
+			 {
+				 for(final ModularContractLogEntry log : logEntries)
+				 {
+
+					 modularContractLogRepository.save(modularContractLogRepository.getModularContractLogEntries(ModularContractLogQuery.builder()
+									 .flatrateTermId(request.flatrateTermId())
+									 .processed(false)
+									 .contractModuleId(baseModuleConfig.getModularContractModuleId())
+									 .baseContractModuleId(baseModuleConfig.getBaseModularContractModuleId())
+									 .referenceSet(TableRecordReferenceSet.of(log.getReferencedRecord()))
+									 .excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
+									 .build())
+							 .withPriceActualAndCalculateAmount(
+									 Check.assumeNotNull(log.getAmount(), "Amount shouldn't be null"),
+									 uomConversionBL,
+									 logHandlerRegistry
+							 )
+					 );
+				 }
+			 }
+		 }
 	 }
 
 	 public void updateModularLog(@NonNull final ModularContractLogEntry logEntry)
 	 {
-		 modularContractLogDAO.save(ModularContractLogEntriesList.ofSingle(logEntry));
+		 modularContractLogRepository.save(ModularContractLogEntriesList.ofSingle(logEntry));
 	 }
 
 	 public ModularContractLogEntryId create(@NonNull final LogEntryCreateRequest request)
 	 {
-		 return modularContractLogDAO.create(request);
+		 return modularContractLogRepository.create(request);
 	 }
 
 	 public void setDefinitiveICLogsProcessed(
@@ -367,7 +401,7 @@
 
 	 public void reverse(@NonNull final LogEntryReverseRequest logEntryReverseRequest)
 	 {
-		 modularContractLogDAO.reverse(logEntryReverseRequest);
+		 modularContractLogRepository.reverse(logEntryReverseRequest);
 	 }
 
 	 public void unprocessModularContractLogs(@NonNull final InvoiceId invoiceId, @NonNull final DocTypeId docTypeId)
@@ -390,9 +424,16 @@
 			 invoiceCandidate.setIsActive(false);
 		 }
 		 InterfaceWrapperHelper.saveAll(invoiceCandidates);
+
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
-			 flatrateBL.reverseDefinitiveInvoice(ImmutableSet.of(Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present")));
+			 final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)
+					 .stream()
+					 .map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID)
+					 .map(FlatrateTermId::ofRepoIdOrNull) // invoice might have been imported from a csv-file and have no flatrate term 
+					 .filter(Objects::nonNull)
+					 .collect(Collectors.toSet());
+			 flatrateBL.reverseDefinitiveInvoice(contractIds);
 		 }
 	 }
 
@@ -421,7 +462,7 @@
 	 @NonNull
 	 public ModularContractLogEntry getById(final ModularContractLogEntryId modularContractLogEntryId)
 	 {
-		 return modularContractLogDAO.getById(modularContractLogEntryId);
+		 return modularContractLogRepository.getById(modularContractLogEntryId);
 	 }
 
 	 @NonNull
@@ -439,7 +480,7 @@
 			 @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	 {
 		 final ModularContractModuleId modularContractModuleId = moduleConfig.getModularContractModuleId();
-		 final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(
+		 final ModularContractLogEntriesList logs = modularContractLogRepository.getModularContractLogEntries(
 				 ModularContractLogQuery.builder()
 						 .billable(true)
 						 .contractModuleId(modularContractModuleId)
@@ -458,7 +499,7 @@
 				 .build();
 		 modularContractPriceService.updateAveragePrice(contractSpecificPriceRequest, averagePrice);
 		 final ModularContractLogEntriesList logsToUpdate = logs.subsetOf(TO_UPDATE_WITH_AVERAGE_PRICE_DOCUMENTTYPES).subsetOf(false);
-		 modularContractLogDAO.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
+		 modularContractLogRepository.save(logsToUpdate.withPriceActualAndCalculateAmount(averagePrice, uomConversionBL, logHandlerRegistry));
 	 }
 
 	 @NonNull
@@ -472,13 +513,13 @@
 		 final UomId targetUOMId = productBL.getStockUOMId(productId);
 		 final ModularContractSettings settings = modularContractSettingsService.getById(moduleConfig.getModularContractSettingsId());
 
-		 final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAveragePrice(productId, targetUOMId, uomConversionBL);
 		 if (unprocessedLogsPrice.isPresent())
 		 {
 			 return unprocessedLogsPrice.get();
 		 }
 
-		 final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAveragePrice(productId, targetUOMId, uomConversionBL);
 		 if (processedLogsPrice.isPresent())
 		 {
 			 return processedLogsPrice.get();
@@ -506,4 +547,15 @@
 			 throw new AdempiereException("Couldn't find average price, this shouldn't happen");
 		 }
      }
+
+	 public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
+	 {
+		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build());
+	 }
+
+	 public boolean hasAnyModularLogs(@NonNull final TableRecordReferenceSet recordRefSet)
+	 {
+		 if(recordRefSet.isEmpty()) { return false; }
+		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(recordRefSet).build());
+	 }
  }

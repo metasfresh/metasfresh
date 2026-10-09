@@ -159,6 +159,11 @@ public class SAPGLJournal
 		}
 	}
 
+	public void setProcessed(final boolean processed)
+	{
+		lines.forEach(line -> line.setProcessed(processed));
+	}
+
 	public void regenerateTaxLines(
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
@@ -228,6 +233,7 @@ public class SAPGLJournal
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
+				.description(baseLine.getDescription())
 				.isTaxIncluded(false) // tax can't be included for generated tax lines
 				.build();
 	}

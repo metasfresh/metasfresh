@@ -117,6 +117,10 @@ public class X_CS_Creditpass_CP_Fallback extends org.compiere.model.PO implement
 	public static final String FALLBACKPAYMENTRULE_DirectDebit = "D";
 	/** Mixed = M */
 	public static final String FALLBACKPAYMENTRULE_Mixed = "M";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	/** Set Zahlart Rückgriff.
 		@param FallbackPaymentRule Zahlart Rückgriff	  */
 	@Override

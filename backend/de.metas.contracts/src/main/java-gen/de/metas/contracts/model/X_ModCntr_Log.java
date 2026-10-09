@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1832463929L;
+	private static final long serialVersionUID = -1424541346L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -253,6 +253,31 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setInterestDays (final int InterestDays)
+	{
+		set_Value (COLUMNNAME_InterestDays, InterestDays);
+	}
+
+	@Override
+	public int getInterestDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InterestDays);
+	}
+
+	@Override
+	public void setInterestRate (final @Nullable BigDecimal InterestRate)
+	{
+		set_Value (COLUMNNAME_InterestRate, InterestRate);
+	}
+
+	@Override
+	public BigDecimal getInterestRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setIsBillable (final boolean IsBillable)
 	{
 		set_Value (COLUMNNAME_IsBillable, IsBillable);
@@ -274,6 +299,33 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_ModCntr_Module getModCntr_BaseModule()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_BaseModule_ID, de.metas.contracts.model.I_ModCntr_Module.class);
+	}
+
+	@Override
+	public void setModCntr_BaseModule(final de.metas.contracts.model.I_ModCntr_Module ModCntr_BaseModule)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_BaseModule_ID, de.metas.contracts.model.I_ModCntr_Module.class, ModCntr_BaseModule);
+	}
+
+	@Override
+	public void setModCntr_BaseModule_ID (final int ModCntr_BaseModule_ID)
+	{
+		if (ModCntr_BaseModule_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_BaseModule_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_BaseModule_ID, ModCntr_BaseModule_ID);
+	}
+
+	@Override
+	public int getModCntr_BaseModule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_BaseModule_ID);
 	}
 
 	@Override

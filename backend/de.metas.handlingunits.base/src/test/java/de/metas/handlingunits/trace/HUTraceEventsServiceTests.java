@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +71,8 @@ public class HUTraceEventsServiceTests
 
 	private HUAccessService huAccessService;
 
+	private InventoryRepository inventoryRepository;
+
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -77,7 +81,8 @@ public class HUTraceEventsServiceTests
 		AdempiereTestHelper.get().init();
 
 		huAccessService = Mockito.spy(new HUAccessService());
-		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
+		inventoryRepository = Mockito.spy(new InventoryRepository());
+		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepository);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 
@@ -158,8 +163,9 @@ public class HUTraceEventsServiceTests
 			huAssignment22.setRecord_ID(ref2.getRecord_ID());
 			save(huAssignment22);
 
-			// create a 5th assignment that references user2 but has the same HU-ID *and* updated time! as huAssignment22
-			de.metas.common.util.time.SystemTime.setTimeSource(() -> huAssignment22.getUpdated().getTime());
+			// create a 5th assignment that references user2 but has the same HU-ID as huAssignment22. The updated time might not be the same.
+			final Instant shortlyAfterAssignment22 = huAssignment22.getUpdated().toInstant().plusMillis(1);
+			de.metas.common.util.time.SystemTime.setTimeSource(() -> shortlyAfterAssignment22.toEpochMilli());
 			final I_M_HU_Assignment huAssignment22double = newInstance(I_M_HU_Assignment.class);
 			huAssignment22double.setM_HU_ID(luHu22.getM_HU_ID());
 			huAssignment22double.setVHU_ID(vhu22.getM_HU_ID());

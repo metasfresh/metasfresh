@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getApiBaseUrl } from './util';
 
 export function loginRequest(username, password) {
   return axios.post(
@@ -20,6 +21,19 @@ export function checkLoginRequest() {
   return axios.get(`${config.API_URL}/login/isLoggedIn`);
 }
 
+export function login2FA(code) {
+  return axios.post(
+    `${config.API_URL}/login/2fa`,
+    { code },
+    {
+      validateStatus: () => {
+        // returning true so that we can get the error message
+        return true;
+      },
+    }
+  );
+}
+
 export function loginCompletionRequest(role) {
   return axios.post(`${config.API_URL}/login/loginComplete`, role);
 }
@@ -30,7 +44,6 @@ export function loginCompletionRequest(role) {
  * @method loginWithToken
  * @summary - Allows authenticating with a given token, returns a promise (Note: `  type: "token" ` - passed by default
  *            to trigger the token authentication routine.)
- * @param {string} tokenId
  */
 export function loginWithToken(token) {
   return axios.post(`${config.API_URL}/login/authenticate`, {
@@ -39,17 +52,14 @@ export function loginWithToken(token) {
   });
 }
 
+export function getLoginStatus() {
+  return axios
+    .get(`${config.API_URL}/login/status`)
+    .then((response) => response.data);
+}
+
 export function logoutRequest() {
   return axios.get(`${config.API_URL}/login/logout`);
-}
-
-export function getUserLang() {
-  return axios.get(`${config.API_URL}/userSession/language`);
-}
-
-// TODO: Looks like this is not being used
-export function setUserLang(payload) {
-  return axios.put(`${config.API_URL}/userSession/language`, payload);
 }
 
 export function getAvailableLang() {
@@ -58,15 +68,6 @@ export function getAvailableLang() {
 
 export function getAvatar(id) {
   return `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`;
-}
-
-export function getUserSession() {
-  return axios.get(`${config.API_URL}/userSession`, {
-    validateStatus: (status) => {
-      // returning true so that we can get the error status
-      return (status >= 200 && status < 300) || status === 502;
-    },
-  });
 }
 
 export function resetPasswordRequest(form) {
@@ -85,6 +86,18 @@ export function resetPasswordComplete(token, form) {
   });
 }
 
-export function resetPasswordGetAvatar(token) {
+export function getPasswordResetAvatarUrl(token) {
   return `${config.API_URL}/login/resetPassword/${token}/avatar`;
+}
+
+export function getOAuth2Providers() {
+  return axios
+    .get(`${config.API_URL}/login/oauth2/providers`)
+    .then((response) => response.data); // unbox
+}
+
+export function getOAuth2ProviderUrl({ providerCode }) {
+  return `${getApiBaseUrl()}/oauth2/authorization/${encodeURIComponent(
+    providerCode
+  )}`;
 }

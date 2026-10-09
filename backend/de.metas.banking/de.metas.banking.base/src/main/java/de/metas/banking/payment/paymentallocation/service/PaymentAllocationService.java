@@ -246,7 +246,7 @@ public class PaymentAllocationService
 		// but not for sales invoices and purchase credit memos
 		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
 		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
-		
+
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
@@ -263,7 +263,7 @@ public class PaymentAllocationService
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
 				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
-				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
+				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way
 				.build();
 	}
 
@@ -280,10 +280,18 @@ public class PaymentAllocationService
 		final Amount openAmtWithDiscount = invoiceToAllocate.getOpenAmountConverted().subtract(invoiceToAllocate.getDiscountAmountConverted());
 
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
+		final boolean isVendorCreditMemo = invoiceToAllocate.getDocBaseType().isVendorCreditMemo();
+
 		if (isSoTrx)
 		{
 			return openAmountToMatch.equals(openAmtWithDiscount);
 		}
+		else if (isVendorCreditMemo)
+		{
+			// for vendor credit memos, we need to negate the open amount to match
+			return openAmountToMatch.negate().equals(openAmtWithDiscount);
+		}
+
 		else
 		{
 			return openAmountToMatch.abs().equals(openAmtWithDiscount);

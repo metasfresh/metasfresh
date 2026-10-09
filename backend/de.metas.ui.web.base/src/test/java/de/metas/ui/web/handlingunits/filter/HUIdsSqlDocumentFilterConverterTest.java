@@ -30,6 +30,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -47,7 +48,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUIdsSqlDocumentFilterConverterTest
 {
@@ -102,9 +103,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 			@Nullable
 			@Override
-			public FilterSql getSql(final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
+			public FilterSql getSql(@NonNull final FilterSqlRequest request)
 			{
-				final String noiseSql = filter.getParameterValueAsString("NOISE_SQL_PARAM", null);
+				final String noiseSql = request.getFilterParameterValueAsString("NOISE_SQL_PARAM", null);
 				assert noiseSql != null;
 				return FilterSql.ofWhereClause(noiseSql);
 			}

@@ -2162,4 +2162,70 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_WriteOffAmt = new ModelColumn<>(I_C_Payment.class, "WriteOffAmt", null);
 	String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
+
+	/**
+	 * Set Original Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOriginal_Payment_ID (int Original_Payment_ID);
+
+	/**
+	 * Get Original Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOriginal_Payment_ID();
+
+	String COLUMNNAME_Original_Payment_ID = "Original_Payment_ID";
+
+	/**
+	 * Set Refund.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRefund (boolean IsRefund);
+
+	/**
+	 * Get Refund.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRefund();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_IsRefund = new ModelColumn<>(I_C_Payment.class, "IsRefund", null);
+	String COLUMNNAME_IsRefund = "IsRefund";
+
+
+	/**
+	 * Set Refund Status.
+	 * Indicates the refund processing status of the payment.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRefundStatus (@Nullable java.lang.String RefundStatus);
+
+	/**
+	 * Get Refund Status.
+	 * Indicates the refund processing status of the payment.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRefundStatus();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_RefundStatus = new ModelColumn<>(I_C_Payment.class, "RefundStatus", null);
+	String COLUMNNAME_RefundStatus = "RefundStatus";
+
 }

@@ -84,7 +84,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -614,6 +613,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
+	}
+
+	@Override
+	@Nullable
+	public I_M_ReceiptSchedule retrieveForRecord(@Nullable final Object model)
+	{
+		return receiptScheduleDAO.retrieveForRecord(model);
 	}
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter

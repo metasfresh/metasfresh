@@ -194,6 +194,11 @@ public class C_Invoice
 		{
 			return;
 		}
+		if (invoice.getC_PaymentTerm_ID() <= 0 || invoice.getDateInvoiced() == null)
+		{
+			invoice.setDueDate(null);
+			return;
+		}
 
 		final PaymentTerm paymentTerm = paymentTermRepository.getById(PaymentTermId.ofRepoId(invoice.getC_PaymentTerm_ID()));
 

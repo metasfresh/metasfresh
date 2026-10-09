@@ -2,7 +2,6 @@ package de.metas.ui.web.document.filter.sql;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -90,30 +89,25 @@ import java.util.List;
 	 * Build document filter where clause
 	 */
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final String filterId = filter.getFilterId();
-
 		final SqlAndParams.Builder sql = SqlAndParams.builder();
-		for (final DocumentFilterParam filterParam : filter.getParameters())
+		for (final DocumentFilterParam filterParam : request.getFilterParameters())
 		{
-			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
+			if (filterParam.isNullValues())
 			{
 				// don't include "null" parameters; The frontend might send them e.g. if a string field was cleared. 
 				// we assume that the user never filters for value = "NULL"
 				continue;
 			}
 
-			final SqlAndParams sqlFilterParam = buildSqlWhereClause(filterId, filterParam, sqlOpts);
+			final SqlAndParams sqlFilterParam = buildSqlWhereClause(request.getFilterId(), filterParam, request.getSqlOpts());
 			if (sqlFilterParam == null || sqlFilterParam.isEmpty())
 			{
 				continue;
 			}
 
-			if (sql.length() > 0)
+			if (!sql.isEmpty())
 			{
 				sql.append(filterParam.isJoinAnd() ? " AND " : " OR ");
 			}
@@ -407,7 +401,8 @@ import java.util.List;
 				sqlValueStr);
 	}
 
-	private static SqlAndParams buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo)
+	@VisibleForTesting
+	static SqlAndParams buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo)
 	{
 		if (sqlValue == null)
 		{

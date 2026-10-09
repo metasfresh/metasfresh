@@ -34,7 +34,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Teo Sarca
@@ -57,7 +57,7 @@ public class TimeUtilTest
 		TimeZone.setDefault(jvmTimezoneBackup);
 	}
 
-	private static Timestamp createTimestamp(final int year, int month, int day)
+	private static Timestamp createTimestamp(final int year, final int month, final int day)
 	{
 		//noinspection deprecation
 		return TimeUtil.getDay(year, month, day);
@@ -98,7 +98,10 @@ public class TimeUtilTest
 
 	}
 
-	private void assertIsValid(boolean isValid, Timestamp validFrom, Timestamp validTo, Timestamp now)
+	private void assertIsValid(final boolean isValid,
+							   @Nullable final Timestamp validFrom,
+							   @Nullable final Timestamp validTo,
+							   @Nullable final Timestamp now)
 	{
 		final String message = "Error for validFrom=" + validFrom + ", validTo=" + validTo + ", now=" + now;
 		final boolean isValidActual = TimeUtil.isValid(validFrom, validTo, now);
@@ -502,6 +505,7 @@ public class TimeUtilTest
 		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2021)).isEqualTo(392);
 
 		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2020)).isEqualTo(32);
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, March1_2020)).isEqualTo(3);
 	}
 
 	@Nested

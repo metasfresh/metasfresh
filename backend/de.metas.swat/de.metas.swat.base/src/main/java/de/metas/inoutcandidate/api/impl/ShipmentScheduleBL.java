@@ -683,7 +683,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs, final boolean isThrowErrorIfAlreadyProcessed)
 	{
 		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
@@ -692,7 +692,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				continue;
 			}
-			if (record.isProcessed())
+			if (isThrowErrorIfAlreadyProcessed && record.isProcessed())
 			{
 				throw new AdempiereException(
 						Services.get(IMsgBL.class)

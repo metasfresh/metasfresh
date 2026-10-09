@@ -35,6 +35,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -42,6 +43,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -50,7 +52,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
@@ -88,7 +89,7 @@ public class AllocationDAO implements IAllocationDAO
 			openAmt = invoice.getGrandTotal();
 		}
 
-		if (creditMemoAdjusted && invoiceBL.isCreditMemo(invoice))
+		if (creditMemoAdjusted && Services.get(IInvoiceBL.class).isCreditMemo(invoice))
 		{
 			return Money.of(openAmt.negate(), invoiceCurrencyId);
 		}
@@ -135,9 +136,9 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
 		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
-			final int allocationHdrId,
-			final boolean retrieveAll,
-			final @CacheTrx String trxName)
+															 final int allocationHdrId,
+															 final boolean retrieveAll,
+															 final @CacheTrx String trxName)
 	{
 		final IQueryBuilder<I_C_AllocationLine> builder = queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
@@ -182,35 +183,50 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
+	@Nullable
 	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final int invoiceId = invoiceRecord.getC_Invoice_ID();
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceRecord);
 
-		return retrieveAllocatedAmt(invoiceId, trxName);
+		return retrieveAllocatedAmt(invoiceId, trxName)
+				.map(Money::toBigDecimal)
+				.orElse(null);
 	}
 
-	private BigDecimal retrieveAllocatedAmt(final int invoiceId, final String trxName)
+	@Override
+	public Optional<Money> retrieveAllocatedAmtAsMoney(final InvoiceId invoiceId)
 	{
-		BigDecimal retValue = null;
-		final String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-				+ "FROM C_AllocationLine al"
+		return retrieveAllocatedAmt(invoiceId, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	protected Optional<Money> retrieveAllocatedAmt(@NonNull final InvoiceId invoiceId, final String trxName)
+	{
+		final String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+				+ ", i.C_Currency_ID"
+				+ " FROM C_AllocationLine al"
 				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-				+ "WHERE al.C_Invoice_ID=?"
-				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
+				+ " WHERE al.C_Invoice_ID=? AND ah.IsActive='Y' AND al.IsActive='Y'"
+				+ " GROUP BY i.C_Invoice_ID";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 
 			pstmt = DB.prepareStatement(sql, trxName);
-			pstmt.setInt(1, invoiceId);
+			pstmt.setInt(1, invoiceId.getRepoId());
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				retValue = rs.getBigDecimal(1);
+				final BigDecimal allocatedAmt = rs.getBigDecimal(1);
+				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(2));
+				return Optional.of(Money.of(allocatedAmt, currencyId));
+			}
+			else
+			{
+				// IMPORTANT: return empty if there are NO allocations found
+				return Optional.empty();
 			}
 		}
 		catch (SQLException e)
@@ -221,10 +237,6 @@ public class AllocationDAO implements IAllocationDAO
 		{
 			DB.close(rs, pstmt);
 		}
-		// log.debug("getAllocatedAmt - " + retValue);
-		// ? ROUND(COALESCE(v_AllocatedAmt,0), 2);
-		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
-		return retValue;
 	}
 
 	@Override
@@ -247,12 +259,12 @@ public class AllocationDAO implements IAllocationDAO
 		BigDecimal retValue = null;
 
 		StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-													  + "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-													  + "FROM C_AllocationLine al"
-													  + " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-													  + " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-													  + "WHERE al.C_Invoice_ID=?"
-													  + " AND ah.IsActive='Y' AND al.IsActive='Y'");
+				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+				+ "FROM C_AllocationLine al"
+				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
+				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
+				+ "WHERE al.C_Invoice_ID=?"
+				+ " AND ah.IsActive='Y' AND al.IsActive='Y'");
 		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
 		{
 			sql.append(" AND (al.C_Payment_ID NOT IN (-1");

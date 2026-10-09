@@ -99,9 +99,9 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.setupTimeSource;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class ContactRestControllerTest
 {
 	private ContactRestController contactRestController;
@@ -113,7 +113,7 @@ class ContactRestControllerTest
 	private SectionCodeRepository sectionCodeRepository;
 
 	private IncotermsRepository incotermsRepository;
-	
+
 	private Expect expect;
 
 	@BeforeEach
@@ -150,10 +150,11 @@ class ContactRestControllerTest
 				new CurrencyRepository(),
 				new JobRepository(),
 				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				new BPartnerCreditLimitRepository());
+				new BPartnerCreditLimitRepository(),
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

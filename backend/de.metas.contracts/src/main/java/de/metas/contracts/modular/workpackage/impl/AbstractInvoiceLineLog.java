@@ -33,9 +33,9 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
@@ -74,7 +74,7 @@ public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogH
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
@@ -83,12 +83,12 @@ public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogH
 
 	public AbstractInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
 		super(modularContractService);
-		this.contractLogDAO = contractLogDAO;
+		this.contractLogRepo = contractLogRepo;
 		this.modularContractLogService = modularContractLogService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 	}
@@ -178,7 +178,7 @@ public abstract class AbstractInvoiceLineLog extends AbstractModularContractLogH
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
 
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
+		final Quantity quantity = contractLogRepo.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))

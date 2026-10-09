@@ -22,8 +22,11 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -32,5 +35,11 @@ import javax.annotation.Nullable;
 @Value
 public class OrderLineQuery
 {
-    @Nullable FlatrateTermId modularPurchaseContractId;
+    public static OrderLineQuery EMPTY = builder().build();
+
+    @Nullable OrderId orderId;
+    @NonNull @Singular ImmutableSet<FlatrateTermId> modularPurchaseContractIds;
+    @Nullable Boolean isModularPurchaseContractIdSet;
+
+    public boolean isEmpty() { return this.equals(EMPTY); }
 }

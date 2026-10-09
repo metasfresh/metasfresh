@@ -26,20 +26,17 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.money.Money;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 import java.util.Optional;
 
 public abstract class AbstractStorageCostComputingMethod extends AbstractShipmentComputingMethod
 {
-	@NonNull protected final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
 
     protected AbstractStorageCostComputingMethod(

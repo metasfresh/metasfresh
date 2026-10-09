@@ -1,0 +1,23 @@
+FROM node:18 AS build
+
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+
+WORKDIR /app 
+
+#
+# Install required packages
+# NOTE: copy the bare minimum config files at this point to favor caching
+COPY misc/services/mobile-webui/mobile-webui-frontend-testing/package.json* .
+COPY misc/services/mobile-webui/mobile-webui-frontend-testing/yarn.lock* .
+RUN yarn install
+RUN yarn playwright install --with-deps
+
+#
+# Copy the rest of our source files (i.e. the tests)
+COPY misc/services/mobile-webui/mobile-webui-frontend-testing/ .
+
+#
+# Start command
+CMD ["yarn", "playwright", "test"]

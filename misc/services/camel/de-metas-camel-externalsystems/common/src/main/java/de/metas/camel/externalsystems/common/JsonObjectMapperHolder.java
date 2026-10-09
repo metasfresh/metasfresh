@@ -56,6 +56,7 @@ public class JsonObjectMapperHolder
 				.findAndRegisterModules()
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.enable(MapperFeature.USE_ANNOTATIONS);
 	}
 }

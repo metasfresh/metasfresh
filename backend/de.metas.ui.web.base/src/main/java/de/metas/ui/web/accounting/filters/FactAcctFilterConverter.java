@@ -26,11 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.elementvalue.ElementValueService;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -39,7 +37,7 @@ import org.compiere.util.DB;
 
 public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 {
-	public static final transient FactAcctFilterConverter instance = new FactAcctFilterConverter();
+	public static final FactAcctFilterConverter instance = new FactAcctFilterConverter();
 
 	static final String FILTER_ID = "accountId";
 
@@ -57,18 +55,15 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext ignored)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final String accountValueFrom = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_FROM, null);
-		final String accountValueTo = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_TO, null);
+		final String accountValueFrom = request.getFilterParameterValueAsString(PARAM_ACCOUNT_VALUE_FROM, null);
+		final String accountValueTo = request.getFilterParameterValueAsString(PARAM_ACCOUNT_VALUE_TO, null);
 
 		Check.assumeNotEmpty(accountValueFrom, "AccountValueFrom not empty");
 		Check.assumeNotEmpty(accountValueTo, "AccountValueTo not empty");
 
-		ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
+		final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 		final ImmutableSet<ElementValueId> ids = elementValueService.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 
 		if (ids.isEmpty())
@@ -76,7 +71,7 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 			return FilterSql.ALLOW_NONE;
 		}
 
-		final String columnName = sqlOpts.getTableNameOrAlias() + "." + I_Fact_Acct.COLUMNNAME_Account_ID;
+		final String columnName = request.getTableNameOrAlias() + "." + I_Fact_Acct.COLUMNNAME_Account_ID;
 		return FilterSql.ofWhereClause("(" + DB.buildSqlList(columnName, ids) + ")");
 	}
 }

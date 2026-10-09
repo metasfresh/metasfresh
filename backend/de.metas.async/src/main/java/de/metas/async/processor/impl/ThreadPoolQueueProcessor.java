@@ -119,7 +119,7 @@ public class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 			logger.info("shutdown - waiting for executor to be terminated; retries left={}; executor={}", retryCount, executor);
 			try
 			{
-				terminated = executor.awaitTermination(5 * 1000, TimeUnit.MICROSECONDS);
+				terminated = executor.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS);
 			}
 			catch (final InterruptedException e)
 			{

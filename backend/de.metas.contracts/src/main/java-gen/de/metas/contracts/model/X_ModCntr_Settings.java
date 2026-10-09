@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -316277356L;
+	private static final long serialVersionUID = -952437531L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -99,6 +99,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public int getC_Year_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Year_ID);
+	}
+
+	@Override
+	public void setFreeInterestDays (final int FreeInterestDays)
+	{
+		set_Value (COLUMNNAME_FreeInterestDays, FreeInterestDays);
+	}
+
+	@Override
+	public int getFreeInterestDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FreeInterestDays);
 	}
 
 	@Override
@@ -248,6 +260,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
+	public void setReceiptAVEndDate (final java.sql.Timestamp ReceiptAVEndDate)
+	{
+		set_Value (COLUMNNAME_ReceiptAVEndDate, ReceiptAVEndDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getReceiptAVEndDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ReceiptAVEndDate);
+	}
+
+	@Override
 	public void setStorageCostStartDate (final java.sql.Timestamp StorageCostStartDate)
 	{
 		set_Value (COLUMNNAME_StorageCostStartDate, StorageCostStartDate);
@@ -257,18 +281,5 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public java.sql.Timestamp getStorageCostStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
-	}
-
-	@Override
-	public void setTradeMargin (final BigDecimal TradeMargin)
-	{
-		set_Value (COLUMNNAME_TradeMargin, TradeMargin);
-	}
-
-	@Override
-	public BigDecimal getTradeMargin() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TradeMargin);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

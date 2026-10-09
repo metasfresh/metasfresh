@@ -68,9 +68,14 @@ public class C_Invoice
 		contractService.afterInvoiceReverse(invoiceRecord, logHandlerRegistry);
 		invokeHandlerForEachLine(invoiceRecord, REVERSED);
 
-		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
+		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
-			final FlatrateTermId flatrateTermId = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+			final FlatrateTermId flatrateTermId = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID())).orElse(null);
+			if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
+			{
+				return;
+			}
+
 			logsRecomputationService.recomputeAllFinalInvoiceRelatedLogsLinkedTo(flatrateTermId);
 		}
 	}

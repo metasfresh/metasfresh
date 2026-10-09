@@ -337,6 +337,7 @@ final class BPartnerCompositesLoader
 				.customer(bpartnerRecord.isCustomer())
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
+				.discountPrinted(bpartnerRecord.isDiscountPrinted())
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.paymentRulePO(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRulePO()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
@@ -608,6 +609,11 @@ final class BPartnerCompositesLoader
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
 				.bankId(bankId)
+				.accountName(bankAccountRecord.getA_Name())
+				.accountStreet(bankAccountRecord.getA_Street())
+				.accountZip(bankAccountRecord.getA_Zip())
+				.accountCity(bankAccountRecord.getA_City())
+				.accountCountry(bankAccountRecord.getA_Country())
 				.build();
 	}
 

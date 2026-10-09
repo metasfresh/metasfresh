@@ -34,6 +34,7 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -150,7 +151,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order)
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
 	{
 		return retrieveOrderLines(order, I_C_OrderLine.class);
 	}
@@ -273,7 +274,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, order)
 				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.filterByClientId()
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID);
 	}
@@ -404,6 +404,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return orderRecord;
 	}
 
+	@Nullable
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
@@ -529,13 +530,34 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query)
 	{
+		return toSqlQuery(query).create().stream();
+	}
+
+	private IQueryBuilder<I_C_OrderLine> toSqlQuery(@NonNull final OrderLineQuery query)
+	{
+		Check.assume(!query.isEmpty(), "OrderLineQuery shouldn't be empty");
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class);
 
-		if(query.getModularPurchaseContractId() != null)
+		if(!query.getModularPurchaseContractIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, query.getModularPurchaseContractId());
+			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, query.getModularPurchaseContractIds());
 		}
 
-		return queryBuilder.create().stream();
+		if (query.getOrderId() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
+
+		final Boolean isModularPurchaseContractIdSet = query.getIsModularPurchaseContractIdSet();
+		if (Boolean.TRUE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addNotNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
+		else if (Boolean.FALSE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addIsNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
+
+		return queryBuilder;
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final OrderLineQuery query)
+	{
+		return toSqlQuery(query).create().anyMatch();
 	}
 }

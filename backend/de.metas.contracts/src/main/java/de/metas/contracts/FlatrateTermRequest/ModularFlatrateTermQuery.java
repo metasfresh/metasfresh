@@ -52,4 +52,5 @@ public class ModularFlatrateTermQuery
 	Instant dateFromLessOrEqual;
 	@Nullable
 	Instant dateToGreaterOrEqual;
+	boolean excludeContractsWithInterim;
 }

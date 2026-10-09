@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.service.impl;
 
 import com.google.common.base.Splitter;
@@ -16,9 +38,11 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -87,6 +111,15 @@ public class SysConfigBL implements ISysConfigBL
 				.orElse(defaultValue);
 	}
 
+	@NonNull
+	@Override
+	public BigDecimal getBigDecimalValue(@NonNull final String name, @NonNull final BigDecimal defaultValue)
+	{
+		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
+				.map(valueStr -> StringUtils.toBigDecimal(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
 	@Override
 	public boolean getBooleanValue(final String name, final boolean defaultValue, final int AD_Client_ID)
 	{
@@ -104,7 +137,7 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
-	public String getValue(final String name, final int AD_Client_ID, final int AD_Org_ID)
+	public String getValue(@NonNull final String name, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
 				.orElse(null);
@@ -119,9 +152,15 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
-	public int getIntValue(final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
+	public int getIntValue(@NonNull final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
+		return getIntValue(name, defaultValue, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID));
+	}
+
+	@Override
+	public int getIntValue(@NonNull final String name, final int defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
@@ -259,6 +298,8 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	@Nullable
+	@Contract("_, !null, _ -> !null")
 	public String getValue(@NonNull final String name, @Nullable final String defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigDAO.getValue(name, clientAndOrgId).orElse(defaultValue);

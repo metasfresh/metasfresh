@@ -27,7 +27,7 @@ Feature: BPartner interaction with RabbitMQ after export process was triggered
             "bpartner":{
                "code":"TestCode",
                "name":"BPartnerName",
-               "companyName":"TestCompany",
+               "companyName":"BPartnerName",
                "parentId":null,
                "phone":null,
                "language":"de",
@@ -65,7 +65,7 @@ Feature: BPartner interaction with RabbitMQ after export process was triggered
 """
     Then verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code | Name         | OPT.CompanyName | OPT.Language |
-      | bpartner                 | ext-Other-001      | TestCode | BPartnerName | TestCompany     | de           |
+      | bpartner                 | ext-Other-001      | TestCode | BPartnerName | BPartnerName    | de           |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1 | OPT.Address2 | OPT.City | CountryCode | OPT.Gln       | OPT.IsShipToDefault |
       | ext-Other-001      | gln-1231231231237  | Address 111  | Address 222  | City     | DE          | 1231231231237 | Y                   |

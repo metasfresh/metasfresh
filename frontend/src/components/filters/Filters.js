@@ -3,25 +3,25 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import deepUnfreeze from 'deep-unfreeze';
-import { FILTERS_TYPE_NOT_INCLUDED } from '../../constants/Constants';
-import { getEntityRelatedId, getCachedFilter } from '../../reducers/filters';
+import { getCachedFilter, getEntityRelatedId } from '../../reducers/filters';
 import {
-  updateFilterWidgetShown,
-  updateActiveFilters,
   clearAllFilters,
+  updateActiveFilters,
+  updateFilterWidgetShown,
   updateNotValidFields,
 } from '../../actions/FiltersActions';
 import {
-  setNewFiltersActive,
   annotateFilters,
   isFilterValid,
   normalizeFilterValue,
+  setNewFiltersActive,
 } from '../../utils/filterHelpers';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
 
 const EMPTY_ARRAY = [];
+const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
 
 /**
  * @file Class based component.
@@ -113,38 +113,6 @@ class Filters extends PureComponent {
   };
 
   /**
-   * @method checkClearedFilters
-   * @summary verifies if the active filter has all the parameters (filters) already cleared
-   * @param {object} { activeFilterId, filtersActive, filterType }
-   *                 activeFilterId - the active filter ID to check
-   *                 filtersActive  - the array contining the current active filters
-   *                 filterTyope    - the type of the filter applied
-   */
-  checkClearedFilters = ({ activeFilterId, filtersActive, filterType }) => {
-    if (!filtersActive || filtersActive.length === 0) return false;
-
-    let mainFilter = filtersActive.filter(
-      (item) => item.filterId === activeFilterId
-    );
-
-    if (mainFilter.length) {
-      const { parameters } = mainFilter[0];
-
-      if (parameters && parameters.length) {
-        return parameters.every((filterItem) => {
-          return filterType === FILTERS_TYPE_NOT_INCLUDED &&
-            filterItem.value &&
-            filterItem.value.values &&
-            !filterItem.value.values.length
-            ? true
-            : filterItem.value === null;
-        });
-      }
-    }
-    return false;
-  };
-
-  /**
    * @method render
    * @summary Main render function - renders the filters
    */
@@ -194,7 +162,7 @@ class Filters extends PureComponent {
                 return dropdownFilterItem;
               });
 
-              allChildFiltersCleared = this.checkClearedFilters({
+              allChildFiltersCleared = isActiveFilterCleared({
                 activeFilterId,
                 filtersActive,
               });
@@ -227,7 +195,7 @@ class Filters extends PureComponent {
               );
             }
             if (!item.includedFilters) {
-              allChildFiltersCleared = this.checkClearedFilters({
+              allChildFiltersCleared = isActiveFilterCleared({
                 activeFilterId: item.filterId,
                 filtersActive,
                 filterType: FILTERS_TYPE_NOT_INCLUDED,
@@ -319,3 +287,59 @@ export default connect(mapStateToProps, {
   clearAllFilters,
   updateNotValidFields,
 })(Filters);
+
+//
+//
+//
+//
+//
+
+/**
+ * @method isActiveFilterCleared
+ * @summary verifies if the active filter has all the parameters (filters) already cleared
+ * @param {object} { activeFilterId, filtersActive, filterType }
+ *                 activeFilterId - the active filter ID to check
+ *                 filtersActive  - the array contining the current active filters
+ *                 filterTyope    - the type of the filter applied
+ */
+const isActiveFilterCleared = ({
+  activeFilterId,
+  filtersActive,
+  filterType,
+}) => {
+  if (!filtersActive || filtersActive.length === 0) return false;
+
+  let activeFilter = filtersActive.filter(
+    (item) => item.filterId === activeFilterId
+  );
+
+  if (activeFilter?.length) {
+    const { parameters } = activeFilter[0];
+
+    if (parameters && parameters.length) {
+      return parameters.every((filterParameter) =>
+        isFilterParameterCleared({
+          filterParameter,
+          filterType,
+        })
+      );
+    }
+  }
+  return false;
+};
+
+const isFilterParameterCleared = ({ filterParameter, filterType }) => {
+  if (
+    filterType === FILTERS_TYPE_NOT_INCLUDED &&
+    filterParameter.value &&
+    filterParameter.value.values &&
+    !filterParameter.value.values.length
+  ) {
+    return true;
+  } else {
+    return (
+      filterParameter.value === null &&
+      (filterParameter.valueTo === null || filterParameter.valueTo === '')
+    );
+  }
+};

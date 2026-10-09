@@ -69,8 +69,7 @@ public class ShipmentServiceTestImpl implements IShipmentService
 											   request.getQuantityTypeToUse(),
 											   request.isOnTheFlyPickToPackingInstructions(),
 											   ImmutableMap.of());
-
-		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday(), null);
+		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getShipmentDateRule(), null);
 
 		return Services.get(IHUShipmentScheduleBL.class)
 				.createInOutProducerFromShipmentSchedule()

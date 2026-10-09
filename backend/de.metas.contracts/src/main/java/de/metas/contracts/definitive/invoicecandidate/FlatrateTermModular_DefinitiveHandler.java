@@ -28,8 +28,8 @@ import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Fina
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModCntrInvoiceType;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -49,7 +49,7 @@ import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesA
 
 public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_FinalHandler
 {
-	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final ModularContractLogRepository modularContractLogRepository = SpringContextHolder.instance.getBean(ModularContractLogRepository.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
 
@@ -61,7 +61,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 		{
 			return DONT;
 		}
-		final boolean finalInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
+		final boolean finalInvoiceBillableLogsExist = modularContractLogRepository.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(PURCHASE_FINAL_INVOICE_EXCEPT_INTEREST_SPECIFIC_METHODS)
 				.processed(false)
@@ -72,7 +72,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 			return DONT;
 		}
 
-		final boolean definitiveInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
+		final boolean definitiveInvoiceBillableLogsExist = modularContractLogRepository.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(getModCntrInvoiceType(false).getComputingMethodTypes())
 				.processed(false)
@@ -104,7 +104,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 	{
 		return ImmutableList.builder()
 				.add(term)
-				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
+				.addAll(modularContractLogRepository.list(ModularContractLogQuery.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 						.computingMethodTypes(getModCntrInvoiceType(false).getComputingMethodTypes())
 						.isOnlyActiveComputingMethodTypes(false)

@@ -43,6 +43,15 @@ public class Account
 	}
 
 	@NonNull
+	public static Account of(@NonNull final AccountId accountId, @NonNull final AccountConceptualNameAware accountConceptualNameAware)
+	{
+		return Account.builder()
+				.accountId(accountId)
+				.accountConceptualName(accountConceptualNameAware.getAccountConceptualName())
+				.build();
+	}
+
+	@NonNull
 	public static Account ofId(@NonNull final AccountId accountId)
 	{
 		return Account.builder()

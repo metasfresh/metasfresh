@@ -80,6 +80,22 @@ class ShortcutProvider extends Component {
   keySequence = [];
   fired = {};
 
+  // Stable references for hotkeys and keymap.
+  // Initialized in UNSAFE_componentWillMount from Redux props,
+  // then kept as the single source of truth for subscribe/unsubscribe/handleKeyDown.
+  // This prevents the bug where Redux UPDATE_HOTKEYS creates a new object
+  // via spread operator, causing subscribed handlers to be silently lost.
+  _hotkeys = null;
+  _keymap = null;
+
+  _getHotkeys() {
+    return this._hotkeys || this.props.hotkeys;
+  }
+
+  _getKeymap() {
+    return this._keymap || this.props.keymap;
+  }
+
   getChildContext() {
     return {
       shortcuts: {
@@ -90,9 +106,37 @@ class ShortcutProvider extends Component {
   }
 
   UNSAFE_componentWillMount() {
+    // Capture stable references from Redux props.
+    // These objects will be mutated by subscribe/unsubscribe
+    // and read by handleKeyDown — always the same reference.
+    if (this.props) {
+      this._hotkeys = this.props.hotkeys;
+      this._keymap = this.props.keymap;
+    }
+
     document.addEventListener('keydown', this.handleKeyDown);
     document.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
+  }
+
+  componentDidUpdate(prevProps) {
+    // When Redux creates new hotkeys/keymap objects (e.g., via UPDATE_HOTKEYS),
+    // merge new entries into our stable references instead of adopting the new objects.
+    if (prevProps.hotkeys !== this.props.hotkeys && this._hotkeys) {
+      const reduxHotkeys = this.props.hotkeys;
+      Object.keys(reduxHotkeys).forEach((key) => {
+        if (!(key in this._hotkeys)) {
+          this._hotkeys[key] = reduxHotkeys[key];
+        }
+      });
+    }
+
+    if (prevProps.keymap !== this.props.keymap && this._keymap) {
+      const reduxKeymap = this.props.keymap;
+      Object.keys(reduxKeymap).forEach((key) => {
+        this._keymap[key] = reduxKeymap[key];
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -127,7 +171,7 @@ class ShortcutProvider extends Component {
     }
 
     const { fired } = this;
-    const { hotkeys } = this.props;
+    const hotkeys = this._getHotkeys();
     let { keySequence } = this;
 
     if (event.altKey === true) {
@@ -203,9 +247,10 @@ class ShortcutProvider extends Component {
   };
 
   subscribe = (name, handler) => {
-    const { hotkeys, keymap } = this.props;
+    const hotkeys = this._getHotkeys();
+    const keymap = this._getKeymap();
 
-    if (!(name in this.props.keymap)) {
+    if (!(name in keymap)) {
       // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
@@ -217,15 +262,19 @@ class ShortcutProvider extends Component {
     }
 
     const key = keymap[name].toUpperCase();
+    if (!hotkeys[key]) {
+      hotkeys[key] = [];
+    }
     const bucket = hotkeys[key];
 
     hotkeys[key] = [handler, ...bucket];
   };
 
   unsubscribe = (name, handler) => {
-    const { hotkeys, keymap } = this.props;
+    const hotkeys = this._getHotkeys();
+    const keymap = this._getKeymap();
 
-    if (!(name in this.props.keymap)) {
+    if (!(name in keymap)) {
       // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
@@ -238,6 +287,9 @@ class ShortcutProvider extends Component {
 
     const key = keymap[name].toUpperCase();
     const bucket = hotkeys[key];
+    if (!bucket) {
+      return;
+    }
     let found = false;
 
     hotkeys[key] = bucket.filter((_handler) => {

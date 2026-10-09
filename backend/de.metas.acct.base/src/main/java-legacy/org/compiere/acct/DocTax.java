@@ -161,7 +161,7 @@ public final class DocTax
 	 */
 	private TaxAcctType getAPTaxType()
 	{
-		return isSalesTax() ? TaxAcctType.TaxExpense : TaxAcctType.TaxCredit;
+		return TaxAcctType.getAPTaxType(isSalesTax());
 	}
 
 	/**

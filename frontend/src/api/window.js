@@ -2,7 +2,7 @@ import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery } from '../utils';
+import { formatSortingQuery, getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId = null) {
   const url =
@@ -72,23 +72,39 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     rowId: null, // all rows
     orderBy: formatSortingQuery(orderBy),
   })
-    .then(
-      (res) =>
-        res.data &&
-        res.data.result &&
-        res.data.result.map((row) => ({
+    .then((res) => {
+      const rows =
+        res?.data?.result?.map((row) => ({
           ...row,
           fieldsByName: parseToDisplay(row.fieldsByName),
-        }))
-    )
+        })) ?? [];
+
+      const orderBys = res?.data?.orderBys ?? [];
+
+      return { rows, orderBys };
+    })
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error('getTabRequest error: ', error);
+      // Callers destructure { rows, orderBys } — return a shape-consistent
+      // empty result so a request failure degrades gracefully rather than
+      // crashing the destructure downstream.
+      return { rows: [], orderBys: [] };
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**

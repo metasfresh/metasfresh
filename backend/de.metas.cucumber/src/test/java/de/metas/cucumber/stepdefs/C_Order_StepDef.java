@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.cucumber.stepdefs.auction.C_Auction_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
@@ -106,7 +107,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -136,9 +137,11 @@ public class C_Order_StepDef
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
+	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
@@ -467,6 +470,29 @@ public class C_Order_StepDef
 					.appendParametersToMessage()
 					.setParameter("action:", action);
 		}
+	}
+
+	@And("^the modular order identified by (.*) is opened$")
+	public void modular_order_open(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		modularContractService.openOrder(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
+	@And("^the modular order identified by (.*) is opened expecting error$")
+	public void modular_order_open_expecting_error(@NonNull final String orderIdentifier)
+	{
+		boolean errorThrown = false;
+		try
+		{
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			modularContractService.openOrder(OrderId.ofRepoId(order.getC_Order_ID()));
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+		}
+		assertThat(errorThrown).isTrue();
 	}
 
 	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed) expecting error$")

@@ -152,6 +152,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFreeInterestDays (int FreeInterestDays);
+
+	/**
+	 * Get Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getFreeInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_FreeInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "FreeInterestDays", null);
+	String COLUMNNAME_FreeInterestDays = "FreeInterestDays";
+
+	/**
 	 * Set Free Storage Days.
 	 *
 	 * <br>Type: Integer
@@ -344,7 +365,7 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_M_Processed_Product_ID = "M_Processed_Product_ID";
 
 	/**
-	 * Set Raw Product.
+	 * Set Raw-/Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -353,7 +374,7 @@ public interface I_ModCntr_Settings
 	void setM_Raw_Product_ID (int M_Raw_Product_ID);
 
 	/**
-	 * Get Raw Product.
+	 * Get Raw-/Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -385,6 +406,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReceiptAVEndDate (java.sql.Timestamp ReceiptAVEndDate);
+
+	/**
+	 * Get Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getReceiptAVEndDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_ReceiptAVEndDate = new ModelColumn<>(I_ModCntr_Settings.class, "ReceiptAVEndDate", null);
+	String COLUMNNAME_ReceiptAVEndDate = "ReceiptAVEndDate";
+
+	/**
 	 * Set Storage Cost Start Date.
 	 *
 	 * <br>Type: Date
@@ -404,29 +446,6 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_StorageCostStartDate = new ModelColumn<>(I_ModCntr_Settings.class, "StorageCostStartDate", null);
 	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
-
-	/**
-	 * Set Trade Margin.
-	 * Average Prices will be reduced by given value.
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setTradeMargin (BigDecimal TradeMargin);
-
-	/**
-	 * Get Trade Margin.
-	 * Average Prices will be reduced by given value.
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getTradeMargin();
-
-	ModelColumn<I_ModCntr_Settings, Object> COLUMN_TradeMargin = new ModelColumn<>(I_ModCntr_Settings.class, "TradeMargin", null);
-	String COLUMNNAME_TradeMargin = "TradeMargin";
 
 	/**
 	 * Get Updated.

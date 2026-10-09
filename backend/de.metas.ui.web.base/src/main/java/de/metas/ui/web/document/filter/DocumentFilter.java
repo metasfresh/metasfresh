@@ -112,15 +112,13 @@ public final class DocumentFilter
 				.build();
 	}
 
-	@Getter
-	private final String filterId;
-	private final ITranslatableString caption;
+	@Getter @NonNull private final String filterId;
+	@Nullable private final ITranslatableString caption;
 
-	private final ImmutableList<DocumentFilterParam> parameters;
-	private final ImmutableMap<String, DocumentFilterParam> parametersByName;
-	private final ImmutableSet<String> internalParameterNames;
-	@Getter
-	private final boolean facetFilter;
+	@Getter @NonNull private final ImmutableList<DocumentFilterParam> parameters;
+	@NonNull private final ImmutableMap<String, DocumentFilterParam> parametersByName;
+	@NonNull private final ImmutableSet<String> internalParameterNames;
+	@Getter private final boolean facetFilter;
 
 	@Builder(toBuilder = true)
 	private DocumentFilter(
@@ -136,12 +134,12 @@ public final class DocumentFilter
 		this.caption = caption != null ? caption : TranslatableStrings.empty();
 		this.facetFilter = facetFilter;
 
-		this.parameters = parameters != null ? ImmutableList.copyOf(parameters) : ImmutableList.of();
+		this.parameters = ImmutableList.copyOf(parameters);
 		this.parametersByName = this.parameters.stream()
 				.filter(parameter -> !parameter.isSqlFilter())
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParam::getFieldName));
 
-		this.internalParameterNames = internalParameterNames != null ? ImmutableSet.copyOf(internalParameterNames) : ImmutableSet.of();
+		this.internalParameterNames = ImmutableSet.copyOf(internalParameterNames);
 	}
 
 	private DocumentFilter(@NonNull final DocumentFilter from, @NonNull final String filterId)
@@ -172,11 +170,6 @@ public final class DocumentFilter
 	public boolean hasParameters()
 	{
 		return !parameters.isEmpty();
-	}
-
-	public ImmutableList<DocumentFilterParam> getParameters()
-	{
-		return parameters;
 	}
 
 	public boolean isInternalParameter(final String parameterName)

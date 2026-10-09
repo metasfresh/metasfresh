@@ -88,6 +88,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -116,9 +117,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BPartnerQuickInputService
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
+
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
 	private final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository;
@@ -128,7 +131,9 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
+	private final UserGroupRepository userGroupRepository;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -140,39 +145,11 @@ public class BPartnerQuickInputService
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final UserGroupRepository userGroupRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
 	private final AdMessageKey MSG_C_BPartnerCreatedFromAnotherOrg = AdMessageKey.of("C_BPartnerCreatedFromAnotherOrg");
-
-	public BPartnerQuickInputService(
-			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
-			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository,
-			@NonNull final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository,
-			@NonNull final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository,
-			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
-			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
-			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository,
-			@NonNull final UserGroupRepository userGroupRepository,
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
-	{
-		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
-		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
-		this.bpartnerQuickInputRelatedRecordsRepository = bpartnerQuickInputRelatedRecordsRepository;
-		this.bpartnerContactQuickInputAttributesRepository = bpartnerContactQuickInputAttributesRepository;
-		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
-		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
-		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
-		this.userGroupRepository = userGroupRepository;
-		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
-
-	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
 	{
@@ -285,7 +262,7 @@ public class BPartnerQuickInputService
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
-			@NonNull final NewRecordContext newRecordContext)
+												 @NonNull final NewRecordContext newRecordContext)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 

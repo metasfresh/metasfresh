@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_ERR_DELETION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed");
 
 
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogService contractLogService;
 	@NonNull private final ModularContractService contractService;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -51,15 +51,22 @@ public class C_OrderLine
 	{
 		final TableRecordReference recordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
 
-		if (contractLogDAO.hasAnyModularLogs(recordReference))
+		if (contractLogService.hasAnyModularLogs(recordReference))
 		{
 			throw new AdempiereException(MSG_ERR_DELETION_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updatePurchaseModularContractId(@NonNull final I_C_OrderLine orderLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void updatePurchaseModularContractIdOnChange(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLine.setPurchase_Modular_Flatrate_Term_ID(-1); //prevent error if multiple eligible contracts exists and it can't be updated automatically
+		contractService.updatePurchaseModularContractId(orderLine, false);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setPurchaseModularContractIdOnNew(@NonNull final I_C_OrderLine orderLine)
 	{
 		contractService.updatePurchaseModularContractId(orderLine, false);
 	}

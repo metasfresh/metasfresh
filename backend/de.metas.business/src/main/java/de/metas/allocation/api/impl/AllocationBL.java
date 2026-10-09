@@ -41,6 +41,27 @@ public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
+	/**
+	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
+	 */
+	@VisibleForTesting
+	static void applyBankAccountInvoiceAutoAllocRules(
+			@NonNull final ArrayList<I_C_Payment> eligiblePayments,
+			@NonNull final DocTypeId invoiceDocTypeId,
+			@NonNull final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository)
+	{
+		if (eligiblePayments.isEmpty())
+		{
+			return;
+		}
+
+		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
+		eligiblePayments.removeIf(payment -> {
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+		});
+	}
+
 	@Override
 	public C_AllocationHdr_Builder newBuilder()
 	{
@@ -151,27 +172,6 @@ public class AllocationBL implements IAllocationBL
 				SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class));
 
 		return eligiblePayments;
-	}
-
-	/**
-	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
-	 */
-	@VisibleForTesting
-	static void applyBankAccountInvoiceAutoAllocRules(
-			@NonNull final ArrayList<I_C_Payment> eligiblePayments,
-			@NonNull final DocTypeId invoiceDocTypeId,
-			@NonNull final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository)
-	{
-		if (eligiblePayments.isEmpty())
-		{
-			return;
-		}
-
-		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
-		eligiblePayments.removeIf(payment -> {
-			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
-			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
-		});
 	}
 
 	public void autoAllocateSpecificPayment(
@@ -297,7 +297,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if(request.isUseInvoiceDate())
+		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();
@@ -333,4 +333,5 @@ public class AllocationBL implements IAllocationBL
 				//
 				.create(true); // complete=true
 	}
+
 }

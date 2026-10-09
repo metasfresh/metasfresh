@@ -26,6 +26,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -36,6 +37,7 @@ import org.adempiere.service.ClientId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -208,4 +210,10 @@ public interface ICurrencyBL extends ISingletonService
 	boolean isSOApply5CentCashRounding(@NonNull CurrencyId currencyId);
 
 	boolean isPOApply5CentCashRounding(@NonNull CurrencyId currencyId);
+
+	Money convert(
+			@NonNull Money amount,
+			@NonNull CurrencyId toCurrencyId,
+			@NonNull LocalDate conversionDate,
+			@NonNull ClientAndOrgId clientAndOrgId);
 }

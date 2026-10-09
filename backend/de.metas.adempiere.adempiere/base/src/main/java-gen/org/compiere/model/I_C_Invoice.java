@@ -1664,6 +1664,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsPaid = "IsPaid";
 
 	/**
+	 * Set Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartiallyPaid (boolean IsPartiallyPaid);
+
+	/**
+	 * Get Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartiallyPaid();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartiallyPaid = new ModelColumn<>(I_C_Invoice.class, "IsPartiallyPaid", null);
+	String COLUMNNAME_IsPartiallyPaid = "IsPartiallyPaid";
+
+	/**
 	 * Set Pay Schedule valid.
 	 * Is the Payment Schedule is valid
 	 *
@@ -2004,6 +2025,29 @@ public interface I_C_Invoice
 	int getOrg_BP_Account_ID();
 
 	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
+
+	/**
+	 * Set Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+
+	/**
+	 * Get Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOpenAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Invoice.class, "OpenAmt", null);
+	String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
 	 * Set Payment Rule.

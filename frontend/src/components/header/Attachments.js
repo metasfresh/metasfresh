@@ -27,21 +27,36 @@ class Attachments extends Component {
     this.fetchAttachments();
   };
 
+  isDocumentNotFound = () => {
+    const { windowType, docId } = this.props;
+    return !windowType || docId === 'notfound';
+  };
+
   /**
    * @method fetchAttachments
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
   fetchAttachments = () => {
-    const { windowType, docId } = this.props;
+    const { windowType: windowId, docId: documentId } = this.props;
 
-    attachmentsRequest('window', windowType, docId).then((response) => {
-      this.setState({ data: response.data }, () => {
-        if (this.attachments) {
-          this.attachments.focus();
-        }
+    if (this.isDocumentNotFound()) {
+      this.setState({ data: [] });
+      return;
+    }
+
+    attachmentsRequest('window', windowId, documentId)
+      .then((response) => {
+        this.setState({ data: response.data }, () => {
+          if (this.attachments) {
+            this.attachments.focus();
+          }
+        });
+      })
+      .catch((ex) => {
+        console.log('Got error while fetching the attachments', { ex });
+        this.setState({ data: [] });
       });
-    });
   };
 
   /**
@@ -76,24 +91,11 @@ class Attachments extends Component {
     this.setState({ isAttachUrlOpen: false });
   };
 
-  /**
-   * @method handleClickAttachment
-   * @summary ToDo: Describe the method
-   * @param {*} id
-   * @todo Write the documentation
-   */
   handleClickAttachment = (id) => {
     const { windowType, docId } = this.props;
     openFile('window', windowType, docId, 'attachments', id);
   };
 
-  /**
-   * @method handleDeleteAttachment
-   * @summary ToDo: Describe the method
-   * @param {*} event
-   * @param {*} id
-   * @todo Write the documentation
-   */
   handleDeleteAttachment = (e, id) => {
     const { windowType, docId } = this.props;
     e.stopPropagation();
@@ -240,7 +242,9 @@ class Attachments extends Component {
     const { data } = this.state;
     let actions, content;
 
-    if (data) {
+    if (this.isDocumentNotFound()) {
+      content = this.renderEmpty();
+    } else if (data) {
       content = data.length ? this.renderData() : this.renderEmpty();
       actions = this.renderActions();
     } else {

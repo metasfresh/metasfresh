@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interceptor;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -46,6 +47,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
@@ -53,6 +55,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.VOIDED;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
@@ -96,11 +99,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		interimFlatrateTermService.create(flatrateTermRecord,
-										  flatrateTermRecord.getStartDate(),
-										  flatrateTermRecord.getEndDate()
-		);
+		interimFlatrateTermService.create(flatrateTermRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -169,7 +168,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void createModularContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void modularContractBeforeComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		if (!typeConditions.isModularContractType())
@@ -178,6 +177,27 @@ public class C_Flatrate_Term
 		}
 
 		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord, computingMethodHandlerRegistry);
+		flatrateTermRecord.setContractStatus(FlatrateTermStatus.Running.getCode());
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_ContractStatus)
+	public void onModularOrInterimContractVoid(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularOrInterim())
+		{
+			return;
+		}
+
+		Check.assumeNotNull(flatrateTermRecord.getContractStatus(), "Contract status should be set");
+		if (FlatrateTermStatus.ofCode(flatrateTermRecord.getContractStatus()).isVoided())
+		{
+			modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
+					.tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+					.modelAction(VOIDED)
+					.userInChargeId(Env.getLoggedUserId())
+					.build());
+		}
+	}
 }

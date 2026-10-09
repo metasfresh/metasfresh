@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 456361077L;
+	private static final long serialVersionUID = 591845225L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -1196,6 +1196,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setIsPartiallyPaid (final boolean IsPartiallyPaid)
+	{
+		set_Value (COLUMNNAME_IsPartiallyPaid, IsPartiallyPaid);
+	}
+
+	@Override
+	public boolean isPartiallyPaid() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPartiallyPaid);
+	}
+
+	@Override
 	public void setIsPayScheduleValid (final boolean IsPayScheduleValid)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsPayScheduleValid, IsPayScheduleValid);
@@ -1426,6 +1438,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
 	}
 
+	@Override
+	public void setOpenAmt (final @Nullable BigDecimal OpenAmt)
+	{
+		set_Value (COLUMNNAME_OpenAmt, OpenAmt);
+	}
+
+	@Override
+	public BigDecimal getOpenAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OpenAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
@@ -1453,6 +1478,10 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{

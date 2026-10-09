@@ -55,6 +55,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
+import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -69,6 +70,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -944,4 +946,52 @@ public class PaymentBL implements IPaymentBL
 	{
 		return paymentDAO.getCurrencyConversionTypeId(paymentId);
 	}
+
+	@Override
+	public boolean anyUnallocatedPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		return paymentDAO.stream(paymentsFilter)
+				.anyMatch(this::isNotAllocated);
+	}
+
+	@Override
+	public void markForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		paymentDAO.stream(paymentsFilter)
+				.filter(this::isNotAllocated)
+				.forEach(payment -> setRefundStatus(payment, RefundStatus.ScheduledForRefund.getCode()));
+	}
+
+	private boolean isNotAllocated(@NonNull final I_C_Payment payment)
+	{
+		return !payment.isAllocated();
+	}
+
+	private void setRefundStatus(@NonNull final I_C_Payment payment, @Nullable final String refundStatus)
+	{
+		payment.setRefundStatus(refundStatus);
+		save(payment);
+	}
+
+	@Override
+	public boolean hasScheduledForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		return paymentDAO.stream(paymentsFilter)
+				.anyMatch(this::isScheduledForRefund);
+	}
+
+	@Override
+	public void unmarkForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		paymentDAO.stream(paymentsFilter)
+				.filter(this::isScheduledForRefund)
+				.forEach(payment -> setRefundStatus(payment, null));
+	}
+
+	private boolean isScheduledForRefund(@NonNull final I_C_Payment payment)
+	{
+		final RefundStatus refundStatus = RefundStatus.ofNullableCode(payment.getRefundStatus());
+		return refundStatus != null && refundStatus.isScheduledForRefund();
+	}
+
 }

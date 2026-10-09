@@ -1,6 +1,7 @@
 package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPGroupId;
@@ -9,7 +10,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_BP_Group_Acct;
 import org.springframework.stereotype.Repository;
 
@@ -51,10 +51,10 @@ public class BPartnerGroupAccountsRepository
 	{
 		return BPartnerGroupAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.PayDiscount_Expense_Acct(Account.of(AccountId.ofRepoId(record.getPayDiscount_Exp_Acct()), I_C_BP_Group_Acct.COLUMNNAME_PayDiscount_Exp_Acct))
-				.PayDiscount_Revenue_Acct(Account.of(AccountId.ofRepoId(record.getPayDiscount_Rev_Acct()), I_C_BP_Group_Acct.COLUMNNAME_PayDiscount_Rev_Acct))
-				.WriteOff_Acct(Account.of(AccountId.ofRepoId(record.getWriteOff_Acct()), I_C_BP_Group_Acct.COLUMNNAME_WriteOff_Acct))
-				.NotInvoicedReceipts_Acct(Account.of(AccountId.ofRepoId(record.getNotInvoicedReceipts_Acct()), I_C_BP_Group_Acct.COLUMNNAME_NotInvoicedReceipts_Acct))
+				.PayDiscount_Expense_Acct(Account.of(AccountId.ofRepoId(record.getPayDiscount_Exp_Acct()), BPartnerGroupAccountType.DiscountExp))
+				.PayDiscount_Revenue_Acct(Account.of(AccountId.ofRepoId(record.getPayDiscount_Rev_Acct()), BPartnerGroupAccountType.DiscountRev))
+				.WriteOff_Acct(Account.of(AccountId.ofRepoId(record.getWriteOff_Acct()), BPartnerGroupAccountType.WriteOff))
+				.NotInvoicedReceipts_Acct(Account.of(AccountId.ofRepoId(record.getNotInvoicedReceipts_Acct()), BPartnerGroupAccountType.NotInvoicedReceipts))
 				.build();
 	}
 }

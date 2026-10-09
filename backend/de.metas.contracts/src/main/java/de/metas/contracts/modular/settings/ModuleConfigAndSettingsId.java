@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @RepoIdAwares.SkipTest
@@ -68,5 +69,10 @@ public class ModuleConfigAndSettingsId implements RepoIdAware
 	public int getRepoId()
 	{
 		return modularContractModuleId.getRepoId();
+	}
+
+	public static boolean equals(final ModuleConfigAndSettingsId id1, final ModuleConfigAndSettingsId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

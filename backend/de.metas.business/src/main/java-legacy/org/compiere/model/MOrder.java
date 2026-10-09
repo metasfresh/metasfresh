@@ -1984,7 +1984,6 @@ public class MOrder extends X_C_Order implements IDocument
 			final BigDecimal old = line.getQtyOrdered();
 			if (old.signum() != 0)
 			{
-				line.addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided") + " (" + old + ")");
 				line.setQty(BigDecimal.ZERO);
 				line.setLineNetAmt(BigDecimal.ZERO);
 				line.save(get_TrxName());
@@ -2150,7 +2149,6 @@ public class MOrder extends X_C_Order implements IDocument
 				line.setQtyLostSales(line.getQtyOrdered().subtract(line.getQtyDelivered()));
 				line.setQtyOrdered(line.getQtyDelivered());
 				// QtyEntered unchanged
-				line.addDescription("Close (" + old + ")");
 				InterfaceWrapperHelper.save(line, get_TrxName());
 			}
 		}

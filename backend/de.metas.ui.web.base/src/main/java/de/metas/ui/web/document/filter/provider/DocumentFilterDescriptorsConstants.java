@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +32,7 @@ public class DocumentFilterDescriptorsConstants
 	public final int SORT_NO_INLINE_FILTERS = 11000;
 	public final int SORT_NO_USER_QUERY_START = 20000;
 	public final int SORT_NO_FULL_TEXT_SEARCH = 30000;
+	public final int SORT_NO_POSTGRES_FULL_TEXT_SEARCH = 31000;
 	public final int SORT_NO_GEO_LOCATION = 40000;
 	public final int SORT_NO_FACT_ACCT = 50000;
 

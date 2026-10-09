@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -73,6 +74,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineQuery;
 import de.metas.order.inout.InOutFromOrderProducer;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -116,6 +118,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -140,9 +143,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
 public class OrderBL implements IOrderBL
 {
@@ -1396,6 +1401,50 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order);
+	}
+
+	@Override
+	public boolean isClosed(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isClosed();
+	}
+
+	@Override
+	public boolean isVoidedOrClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order) || isVoided(order);
+	}
+
+	private boolean isVoided(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isVoided();
+	}
+
+	@Override
+	public void open(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		Check.assume(isClosed(orderRecord), "Only closed orders can be opened");
+		orderRecord.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		orderRecord.setDocAction(X_C_Order.DOCACTION_Re_Activate);
+		save(orderRecord);
+	}
+
+	@Override
+	public boolean isNotJustOpened(@NonNull final I_C_Order orderRecord)
+	{
+		final I_C_Order oldOrderRecord = createOld(orderRecord, I_C_Order.class);
+		final DocStatus oldDocStatus = DocStatus.ofCode(oldOrderRecord.getDocStatus());
+		final DocStatus newDocStatus = DocStatus.ofCode(orderRecord.getDocStatus());
+		return !oldDocStatus.isClosed() || !newDocStatus.isCompleted();
+	}
+
+	@Override
 	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
 	{
 		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
@@ -1461,5 +1510,29 @@ public class OrderBL implements IOrderBL
 		final LocalDateAndOrgId dateOrdered = LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(), OrgId.ofRepoId(orderRecord.getAD_Org_ID()), orgDAO::getTimeZone);
 
 		return calendarDAO.findYearByCalendarAndDate(dateOrdered, harvestingCalendarId);
+	}
+
+	@Override
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveOrderLines(order);
+	}
+
+	@Override
+	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query) {return orderDAO.streamOrderLines(query);}
+
+	@Override
+	public boolean anyMatch(@NonNull final OrderLineQuery query) {return orderDAO.anyMatch(query);}
+
+	@Override
+	public List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveInOutsForMatchingOrderLines(order);
+	}
+
+	@Override
+	public final ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveAllOrderLineIds(orderId);
 	}
 }

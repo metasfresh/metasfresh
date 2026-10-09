@@ -65,6 +65,8 @@ export const ARROW_UP_KEY = 'ArrowUp';
  */
 export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
 
+export const NUMERIC_FIELD_TYPES = [...AMOUNT_FIELD_TYPES, 'Integer', 'Number'];
+
 /**
  * @constant
  * @type {array} ToDo: Description for the constant.
@@ -203,12 +205,6 @@ export const INLINE_TAB_SHOW_MORE_FROM = 5;
 
 /**
  * @constant
- * @type {string} Used to identify the type of filter passed to checkClearedFilters
- */
-export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
-
-/**
- * @constant
  * @type {integer} Used to indicate the number of px until we apply left offset
  */
 export const LOOKUP_SHOW_MORE_PIXEL_NO = 250;
@@ -249,3 +245,6 @@ export const TBL_CONTEXT_Y_OFFSET = 65;
  * @type {integer} Used to indicate the popup pre-defined height
  */
 export const TBL_CONTEXT_POPUP_HEIGHT = '215px';
+
+export const EMPTY_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';

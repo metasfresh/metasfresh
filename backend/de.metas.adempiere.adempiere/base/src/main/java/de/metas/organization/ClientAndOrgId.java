@@ -68,6 +68,7 @@ public class ClientAndOrgId
 	}
 
 	public static ClientAndOrgId SYSTEM = new ClientAndOrgId(ClientId.SYSTEM, OrgId.ANY);
+	public static ClientAndOrgId MAIN_ORG = new ClientAndOrgId(ClientId.METASFRESH, OrgId.MAIN);
 
 	@JsonProperty("clientId")
 	@NonNull ClientId clientId;

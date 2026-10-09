@@ -23,7 +23,6 @@
 package de.metas.ui.web.bpartner.filter;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -33,13 +32,13 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
@@ -109,24 +108,21 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	@Nullable
 	@Override
-	public FilterSql getSql(
-			final DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final DocumentFilterParam filterParameter = filter.getParameterOrNull(PARAMETERNAME_SearchText);
+		final DocumentFilterParam filterParameter = request.getFilterParameterOrNull(PARAMETERNAME_SearchText);
 		if (filterParameter == null)
 		{
 			return null;
 		}
-		final String searchText = filterParameter.getValueAsString();
+		final String searchText = Check.assumeNotNull(filterParameter.getValueAsString(), "SearchText shouldn't be null");
 		return FilterSql.ofWhereClause(SqlAndParams.builder()
-				.append(sqlOpts.getTableNameOrAlias())
+				.append(request.getTableNameOrAlias())
 				.append(getSqlCriteria(searchText))
 				.build());
 	}
 
-	private SqlAndParams getSqlCriteria(final String searchText)
+	private SqlAndParams getSqlCriteria(@NonNull final String searchText)
 	{
 		final String searchLikeValue = convertSearchTextToSqlLikeString(searchText);
 		return SqlAndParams.of(BPARTNER_SEARCH_SQL_TEMPLATE, searchLikeValue, searchLikeValue, searchLikeValue);

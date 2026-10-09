@@ -63,5 +63,20 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # this is ignored to prevent accidental git check-in of developer credentials
 **/mvn/local-settings.xml
 
+# local-build-related
+.m2-local/**
+
 # this is ignored to prevent pusing debug snapshots
- **/*.snap.debug
+**/*.snap.debug
+
+# environment files (may contain secrets or local overrides)
+**/.env
+
+# claude related
+.claude
+**/CLAUDE.md
+**/CLAUDE.md.backup
+.mcp.json
+**/claude-docs
+**/REVIEW.md
+/docs/

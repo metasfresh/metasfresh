@@ -50,7 +50,7 @@ public final class CalculateShippingDateRule
 	 */
 	public static final CalculateShippingDateRule DELIVERY_DATE_OR_TODAY = new CalculateShippingDateRule(Type.DELIVERY_DATE_OR_TODAY, null);
 
-	public static CalculateShippingDateRule fixedDate(@NonNull LocalDate fixedDate) {return new CalculateShippingDateRule(Type.FIXED_DATE, fixedDate);}
+	public static CalculateShippingDateRule fixedDate(@NonNull final LocalDate fixedDate) {return new CalculateShippingDateRule(Type.FIXED_DATE, fixedDate);}
 
 	private enum Type
 	{

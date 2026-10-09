@@ -56,6 +56,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCo
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
@@ -154,6 +155,7 @@ public class JsonRetrieverService
 			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
+			.put(BPartner.DISCOUNT_PRINTED, JsonResponseBPartner.DISCOUNT_PRINTED)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.PAYMENT_RULE_PO, JsonResponseBPartner.PAYMENT_RULE_PO)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
@@ -268,6 +270,11 @@ public class JsonRetrieverService
 			.put(BPartnerBankAccount.BPARTNER_ID, JsonResponseBPBankAccount.BPARTNER_ID)
 			.put(BPartnerBankAccount.SWIFT_CODE, JsonResponseBPBankAccount.SWIFT_CODE)
 			.put(BPartnerBankAccount.IS_DEFAULT, JsonResponseBPBankAccount.IS_DEFAULT)
+			.put(BPartnerBankAccount.ACCOUNT_NAME, JsonResponseBPBankAccount.ACCOUNT_NAME)
+			.put(BPartnerBankAccount.ACCOUNT_STREET, JsonResponseBPBankAccount.ACCOUNT_STREET)
+			.put(BPartnerBankAccount.ACCOUNT_ZIP, JsonResponseBPBankAccount.ACCOUNT_ZIP)
+			.put(BPartnerBankAccount.ACCOUNT_CITY, JsonResponseBPBankAccount.ACCOUNT_CITY)
+			.put(BPartnerBankAccount.ACCOUNT_COUNTRY, JsonResponseBPBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -407,6 +414,7 @@ public class JsonRetrieverService
 				.pricingSystemId(JsonMetasfreshId.ofOrNull(PricingSystemId.toRepoId(bpartner.getCustomerPricingSystemId())))
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
 
+				.discountPrinted(bpartner.isDiscountPrinted())
 				.paymentRule(bpartner.mapPaymentRule(ValueMappingHelper::getJsonPaymentRule))
 				.paymentRulePO(bpartner.mapPaymentRulePO(ValueMappingHelper::getJsonPaymentRule))
 
@@ -499,12 +507,19 @@ public class JsonRetrieverService
 
 			final BPartnerContactType contactType = contact.getContactType();
 
-			String greetingTrl = null;
+			JsonResponseGreeting greetingJson = null;
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
-				greetingTrl = greeting.getGreeting(ad_language);
+				final String greetingTrl = greeting.getGreeting(ad_language);
+
+				greetingJson = JsonResponseGreeting.builder()
+						.id(greeting.getId().map(JsonMetasfreshId::of))
+						.greeting(greetingTrl)
+						.name(greeting.getName())
+						.letterSalutation(greeting.getLetterSalutation())
+						.build();
 			}
 
 			String titleTrl = null;
@@ -537,7 +552,7 @@ public class JsonRetrieverService
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
-					.greeting(greetingTrl)
+					.greeting(greetingJson)
 					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
@@ -1066,6 +1081,11 @@ public class JsonRetrieverService
 				.swiftCode(bankAccount.getSwiftCode())
 				.isDefault(bankAccount.isDefault())
 				.active(bankAccount.isActive())
+				.accountName(bankAccount.getAccountName())
+				.accountStreet(bankAccount.getAccountStreet())
+				.accountZip(bankAccount.getAccountZip())
+				.accountCity(bankAccount.getAccountCity())
+				.accountCountry(bankAccount.getAccountCountry())
 				.changeInfo(jsonChangeInfo)
 				.build();
 	}

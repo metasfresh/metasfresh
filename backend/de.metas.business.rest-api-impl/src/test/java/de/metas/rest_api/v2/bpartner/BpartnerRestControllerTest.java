@@ -140,7 +140,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
@@ -194,10 +195,11 @@ class BpartnerRestControllerTest
 				currencyRepository,
 				new JobRepository(),
 				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				bPartnerCreditLimitRepository);
+				bPartnerCreditLimitRepository,
+				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -490,7 +492,8 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
 		bpartnerRecord.setValue("12345");
-		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setCompanyName("bpartnerRecord.name");
+		bpartnerRecord.setIsCompany(true);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
 

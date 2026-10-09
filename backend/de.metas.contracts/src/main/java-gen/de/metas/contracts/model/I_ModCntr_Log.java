@@ -363,6 +363,48 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Initial_Product_ID = "Initial_Product_ID";
 
 	/**
+	 * Set Interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterestDays (int InterestDays);
+
+	/**
+	 * Get Interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getInterestDays();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_InterestDays = new ModelColumn<>(I_ModCntr_Log.class, "InterestDays", null);
+	String COLUMNNAME_InterestDays = "InterestDays";
+
+	/**
+	 * Set Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInterestRate (@Nullable BigDecimal InterestRate);
+
+	/**
+	 * Get Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterestRate();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Log.class, "InterestRate", null);
+	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -428,6 +470,31 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Log.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Base Modules.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_BaseModule_ID (int ModCntr_BaseModule_ID);
+
+	/**
+	 * Get Base Modules.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_BaseModule_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Module getModCntr_BaseModule();
+
+	void setModCntr_BaseModule(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_BaseModule);
+
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_BaseModule_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_BaseModule_ID", de.metas.contracts.model.I_ModCntr_Module.class);
+	String COLUMNNAME_ModCntr_BaseModule_ID = "ModCntr_BaseModule_ID";
 
 	/**
 	 * Set Invoice Group.

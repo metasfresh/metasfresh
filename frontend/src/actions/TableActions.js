@@ -181,6 +181,7 @@ export function createTableData(rawData) {
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
+    orderBys: rawData.orderBys?.length ? rawData.orderBys : undefined,
     expandedDepth: rawData.expandedDepth,
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,

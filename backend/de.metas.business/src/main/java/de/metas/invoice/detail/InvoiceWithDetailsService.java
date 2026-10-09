@@ -24,6 +24,7 @@ package de.metas.invoice.detail;
 
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,15 +58,30 @@ public class InvoiceWithDetailsService
 			{
 				reversedDetail.setC_InvoiceLine_ID(
 						invoiceDAO.retrieveReversalLine(
-								invoiceDAO.retrieveLineById(
-										InvoiceAndLineId.ofRepoId(
-											detail.getC_Invoice_ID(),
-											detail.getC_InvoiceLine_ID())),
+										invoiceDAO.retrieveLineById(
+												InvoiceAndLineId.ofRepoId(
+														detail.getC_Invoice_ID(),
+														detail.getC_InvoiceLine_ID())),
 										reversalInvoiceId.getRepoId())
 								.getC_InvoiceLine_ID());
 			}
 			reversedDetail.setC_Invoice_ID(reversalInvoiceId.getRepoId());
 			InterfaceWrapperHelper.save(reversedDetail);
 		}
+	}
+
+	public void copyDetailsToClone(@NonNull final InvoiceDetailCloneMapper mapper)
+	{
+		invoiceWithDetailsRepository.copyDetailsToClone(mapper);
+	}
+
+	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceId invoiceId)
+	{
+		invoiceWithDetailsRepository.deleteReferencingInvoiceDetails(invoiceId);
+	}
+
+	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		invoiceWithDetailsRepository.deleteReferencingInvoiceDetails(invoiceLineId);
 	}
 }

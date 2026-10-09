@@ -39,7 +39,7 @@ BEGIN
     -- Insert new rows
     WITH inserted_rows AS (
         INSERT INTO c_invoice_adv_search (ad_client_id, address1, ad_org_id, bpname, calendarname, c_bpartner_id, city, companyname, created, createdby, description, descriptionbottom, doctypename, documentno, es_documentid, externalid, firstname, fiscalyear, isactive, iscompany, lastname, poreference, postal, updated, updatedby, warehousename, ad_user_id, c_bpartner_location_id, c_calendar_id,
-                                          c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue)
+                                          c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue, ispaid, ispartiallypaid, DateInvoiced)
             SELECT v.ad_client_id,
                    v.address1,
                    v.ad_org_id,
@@ -73,7 +73,10 @@ BEGIN
                    v.c_invoice_id,
                    v.c_year_id,
                    v.m_warehouse_id,
-                   v.bpartnervalue
+                   v.bpartnervalue,
+                   v.ispaid,
+                   v.ispartiallypaid,
+                   v.DateInvoiced
 
             FROM C_Invoice_ADV_Search_v v
             WHERE (p_C_Invoice_IDs IS NULL OR v.C_Invoice_ID = ANY (p_C_Invoice_IDs))
@@ -114,7 +117,7 @@ BEGIN
     RAISE NOTICE 'Removed % rows', rowcount;
 
     INSERT INTO c_invoice_adv_search (ad_client_id, address1, ad_org_id, bpname, calendarname, c_bpartner_id, city, companyname, created, createdby, description, descriptionbottom, doctypename, documentno, es_documentid, externalid, firstname, fiscalyear, isactive, iscompany, lastname, poreference, postal, updated, updatedby, warehousename, ad_user_id, c_bpartner_location_id, c_calendar_id,
-                                      c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue)
+                                      c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue, ispaid, ispartiallypaid,DateInvoiced)
 
     SELECT v.ad_client_id,
            v.address1,
@@ -149,7 +152,10 @@ BEGIN
            v.c_invoice_id,
            v.c_year_id,
            v.m_warehouse_id,
-           v.bpartnervalue
+           v.bpartnervalue,
+           v.ispaid,
+           v.ispartiallypaid,
+           v.DateInvoiced
     FROM c_invoice_adv_search_v v;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE NOTICE 'Inserted % rows', rowcount;

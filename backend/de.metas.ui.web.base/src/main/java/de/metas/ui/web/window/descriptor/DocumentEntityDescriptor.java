@@ -171,6 +171,9 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -217,6 +220,8 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		notFoundMessages = builder.notFoundMessages;
 
 		queryIfNoFilters = builder.queryIfNoFilters;
 
@@ -502,6 +507,8 @@ public class DocumentEntityDescriptor
 
 		private boolean queryIfNoFilters = true;
 
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
+
 		private Builder()
 		{
 		}
@@ -769,6 +776,11 @@ public class DocumentEntityDescriptor
 		{
 			_dataBinding = dataBindingBuilder;
 			return this;
+		}
+
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
 		}
 
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> ignoredBuilderType)
@@ -1198,6 +1210,12 @@ public class DocumentEntityDescriptor
 		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
 		{
 			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 	}

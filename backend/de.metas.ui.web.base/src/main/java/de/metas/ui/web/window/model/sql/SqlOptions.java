@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.sql;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -65,7 +66,7 @@ public class SqlOptions
 
 	private static final SqlOptions USE_TABLE_ALIAS_MASTER = SqlOptions.builder().useTableAlias(true).tableAlias("master").build();
 
-	private final boolean useTableAlias;
+	@Getter private final boolean useTableAlias;
 	private final String tableAlias;
 	private final String tableName;
 
@@ -90,11 +91,6 @@ public class SqlOptions
 		}
 	}
 
-	public boolean isUseTableAlias()
-	{
-		return useTableAlias;
-	}
-
 	public String getTableAlias()
 	{
 		if (!useTableAlias)
@@ -104,6 +100,7 @@ public class SqlOptions
 		return tableAlias;
 	}
 
+	@NonNull
 	public String getTableNameOrAlias()
 	{
 		return useTableAlias ? tableAlias : tableName;

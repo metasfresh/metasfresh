@@ -7,6 +7,9 @@ Feature: create invoices using invoice API
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
+    And add HTTP header
+      | Key             | Value |
+      | Accept-Language | en_US |
 
   @from:cucumber
   @Id:S0248_100

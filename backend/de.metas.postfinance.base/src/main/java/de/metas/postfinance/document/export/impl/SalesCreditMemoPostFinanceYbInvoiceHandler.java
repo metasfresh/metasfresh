@@ -130,7 +130,7 @@ public class SalesCreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceY
 				.pInstanceReference(postFinanceYbInvoiceRequest.getPInstanceReference())
 				.documentReference(postFinanceYbInvoiceRequest.getDocumentReference())
 				.transactionId(invoice.getTransactionID().getValue())
-				.orgId(postFinanceYbInvoiceRequest.getOrgId())
+				.clientAndOrgId(postFinanceYbInvoiceRequest.getClientAndOrgId())
 				.build();
 	}
 }

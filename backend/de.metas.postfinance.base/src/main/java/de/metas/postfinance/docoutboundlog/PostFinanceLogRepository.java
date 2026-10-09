@@ -25,6 +25,7 @@ package de.metas.postfinance.docoutboundlog;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.model.I_C_Doc_Outbound_Log_PostFinance_Log;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,10 +43,27 @@ public class PostFinanceLogRepository
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public PostFinanceLog create(@NonNull DocOutboundLogId docOutboundLogId, @NonNull String message)
+	{
+		return create(PostFinanceLogCreateRequest.builder()
+				.docOutboundLogId(docOutboundLogId)
+				.message(message)
+				.build());
+	}
+
+	public PostFinanceLog create(@NonNull DocOutboundLogId docOutboundLogId, @NonNull PostFinanceExportException exception)
+	{
+		return create(PostFinanceLogCreateRequest.builder()
+				.docOutboundLogId(docOutboundLogId)
+				.message(exception.getMessage())
+				.postFinanceExportException(exception)
+				.build());
+	}
+
 	public PostFinanceLog create(@NonNull final PostFinanceLogCreateRequest postFinanceLogCreateRequest)
 	{
 		final I_C_Doc_Outbound_Log_PostFinance_Log logRecord = newInstance(I_C_Doc_Outbound_Log_PostFinance_Log.class);
-		if(postFinanceLogCreateRequest.getPostFinanceExportException() != null)
+		if (postFinanceLogCreateRequest.getPostFinanceExportException() != null)
 		{
 			final AdIssueId issueId = errorManager.createIssue(postFinanceLogCreateRequest.getPostFinanceExportException());
 			logRecord.setAD_Issue_ID(issueId.getRepoId());

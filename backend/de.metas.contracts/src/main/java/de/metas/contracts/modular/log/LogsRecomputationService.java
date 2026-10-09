@@ -90,7 +90,7 @@ public class LogsRecomputationService
 	@NonNull
 	private final ModularContractService modularContractService;
 	@NonNull
-	private final ModularContractLogDAO modularContractLogDAO;
+	private final ModularContractLogRepository modularContractLogRepository;
 
 	public void recomputeAllFinalInvoiceRelatedLogsLinkedTo(@NonNull final FlatrateTermId flatrateTermId)
 	{
@@ -187,7 +187,7 @@ public class LogsRecomputationService
 
 	public void recomputeLogs(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
 	{
-		final Iterator<I_ModCntr_Log> logsIterator = modularContractLogDAO.getLogsIteratorOrderedByRecordRef(filter);
+		final Iterator<I_ModCntr_Log> logsIterator = modularContractLogRepository.getLogsIteratorOrderedByRecordRef(filter);
 
 		TableRecordReference currentRecordReference = null;
 		while (logsIterator.hasNext())

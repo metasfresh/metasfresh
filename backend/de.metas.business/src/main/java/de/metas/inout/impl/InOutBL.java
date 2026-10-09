@@ -139,6 +139,9 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public I_M_InOut getByLineIdInTrx(@NonNull final InOutLineId inoutLineId) {return inOutDAO.getByLineIdInTrx(inoutLineId);}
+
+	@Override
 	public void save(@NonNull final I_M_InOut inout)
 	{
 		inOutDAO.save(inout);

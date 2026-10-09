@@ -61,6 +61,8 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOut> getByIds(@NonNull Set<InOutId> inoutIds);
 
+	I_M_InOut getByLineIdInTrx(@NonNull InOutLineId inoutLineId);
+
 	void save(I_M_InOut inout);
 
 	void save(@NonNull I_M_InOutLine inoutLine);

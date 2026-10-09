@@ -17,6 +17,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -265,5 +266,14 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		final I_C_Payment paymentRecord = getById(paymentId);
 
 		return Optional.ofNullable(CurrencyConversionTypeId.ofRepoIdOrNull(paymentRecord.getC_ConversionType_ID()));
+	}
+
+	@Override
+	public Stream<I_C_Payment> stream(@NonNull final IQueryFilter<I_C_Payment> paymentFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.filter(paymentFilter)
+				.create()
+				.iterateAndStream();
 	}
 }

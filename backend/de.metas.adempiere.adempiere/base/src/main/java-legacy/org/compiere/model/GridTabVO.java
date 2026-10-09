@@ -465,7 +465,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			I_AD_Tab.COLUMNNAME_Help,
 			I_AD_Tab.COLUMNNAME_CommitWarning,
 			I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption,
-			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);
+			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption,
+			I_AD_Tab.COLUMNNAME_NotFound_Message,
+			I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);
 
 	private String entityType = null;
 	/**
@@ -1170,6 +1172,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
 	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
 
+	public ITranslatableString getNotFoundMessage() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_Message);}
+
+	public ITranslatableString getNotFoundMessageDetail() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);}
+
 	//
 	//
 	// ------
@@ -1302,7 +1308,17 @@ public class GridTabVO implements Evaluatee, Serializable
 		public void putTranslation(@NonNull final String adLanguage, @Nullable final String captionTrl)
 		{
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-			translations.put(adLanguage, captionTrl != null ? captionTrl.trim() : "");
+
+			final String captionTrlNorm = captionTrl != null ? captionTrl.trim() : "";
+			if (!captionTrlNorm.isEmpty())
+			{
+				translations.put(adLanguage, captionTrlNorm);
+			}
+			else
+			{
+				translations.remove(adLanguage);
+			}
+
 			computedTrl = null;
 		}
 

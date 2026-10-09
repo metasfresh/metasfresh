@@ -22,6 +22,9 @@
 
 package de.metas.payment.sepa.api;
 
+import de.metas.banking.BankAccount;
+import de.metas.util.Check;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +42,16 @@ public class SepaUtils
 	private static final Pattern SEPA_COMPLIANT_PATTERN = Pattern.compile(
 			"([a-zA-Z0-9.,;:'\\+\\-/()\\*\\[\\]{}\\\\`´~ ]|[!\"#%&<>÷=@_$£]|[àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])*");
 
-	private static Map<String, String> SEPA_REPLACEMENT_MAP = new HashMap<>();
+	/**
+	 * Strict ISO-3166-1 alpha-2 country code: exactly two uppercase ASCII letters.
+	 * Used to validate {@link BankAccount#getAccountCountry()} before it is written
+	 * into a SEPA {@code <Ctry>} element. Catches the common data-quality mistake of
+	 * storing a country name (e.g. {@code "Switzerland"}) instead of its ISO code
+	 * ({@code "CH"}), which would otherwise produce schema-invalid SEPA XML.
+	 */
+	private static final Pattern ISO_3166_ALPHA2 = Pattern.compile("^[A-Z]{2}$");
+
+	private final static Map<String, String> SEPA_REPLACEMENT_MAP = new HashMap<>();
 
 	static
 	{
@@ -90,5 +102,51 @@ public class SepaUtils
 		}
 
 		return compliantText.toString();
+	}
+
+	/**
+	 * Joins {@code a} and {@code b} with a single space, skipping blank values. Returns {@code ""}
+	 * when both are blank. Used to assemble the "{zip} {city}" address line on a SEPA PostalAddress
+	 * without emitting "null null" / " " when one side is missing.
+	 */
+	@NonNull
+	public static String joinNonBlank(@Nullable final String a, @Nullable final String b)
+	{
+		final boolean hasA = Check.isNotBlank(a);
+		final boolean hasB = Check.isNotBlank(b);
+		if (hasA && hasB)
+		{
+			return a + " " + b;
+		}
+		return hasA ? a : (hasB ? b : "");
+	}
+
+	/**
+	 * Verifies that the bank account carries a valid ISO-3166-1 alpha-2 country code
+	 * (exactly two uppercase ASCII letters), as required for the {@code <Ctry>} field
+	 * of a SEPA {@code PostalAddress}. To be called from the marshalers' bank-account
+	 * branches whenever any address field is populated, so that data-quality issues
+	 * (missing country, country stored as a full name, lowercase) surface as a clear
+	 * SEPA exception instead of silently producing schema-invalid XML.
+	 */
+	public static void assertValidAccountCountry(@NonNull final BankAccount bankAccount)
+	{
+		final int bankAccountId = bankAccount.getId().getRepoId();
+		final String country = bankAccount.getAccountCountry();
+		if (Check.isBlank(country))
+		{
+			throw new SepaMarshallerException(String.format(
+					"C_BP_BankAccount has an address but no country set; A_Country is required"
+							+ " (C_BP_BankAccount_ID=%d)",
+					bankAccountId));
+		}
+		if (!ISO_3166_ALPHA2.matcher(country).matches())
+		{
+			throw new SepaMarshallerException(String.format(
+					"C_BP_BankAccount.A_Country '%s' is not a valid ISO-3166 alpha-2 country code;"
+							+ " expected two uppercase letters"
+							+ " (C_BP_BankAccount_ID=%d)",
+					country, bankAccountId));
+		}
 	}
 }

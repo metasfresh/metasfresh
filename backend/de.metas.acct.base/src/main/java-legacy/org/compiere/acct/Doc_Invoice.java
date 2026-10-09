@@ -430,16 +430,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxDue CR
 		for (final DocTax docTax : getTaxes())
 		{
-			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
-			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), null, taxAmt);
-				if (tl != null)
-				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
-				}
-			}
+			fact.createLine()
+					.setAccount(docTax.getTaxDueAcct(as))
+					.setAmtSource(getCurrencyId(), null, docTax.getTaxAmt())
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine() // we need this for tax reports
+					.buildAndAdd();
 		}
 
 		// Revenue CR
@@ -554,16 +550,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxDue DR
 		for (final DocTax docTax : getTaxes())
 		{
-			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
-			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), taxAmt, null);
-				if (tl != null)
-				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
-				}
-			}
+			fact.createLine()
+					.setAccount(docTax.getTaxDueAcct(as))
+					.setAmtSource(getCurrencyId(), docTax.getTaxAmt(), null)
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine() // we need this for tax reports
+					.buildAndAdd();
 		}
 		// Revenue CR
 		for (final DocLine_Invoice line : getDocLines())
@@ -676,14 +668,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null,
-					docTax.getAccount(as),  // account
-					currencyId,
-					docTax.getTaxAmt(), null); // DR/CR
-			if (tl != null)
-			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
-			}
+			fact.createLine()
+					.setAccount(docTax.getAccount(as))
+					.setAmtSource(currencyId, docTax.getTaxAmt(), null)
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine() // we need this for tax reports
+					.buildAndAdd();
+
 		}
 
 		// Expense/InventoryClearing DR
@@ -835,12 +826,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
-			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
-					currencyId, null, docTax.getTaxAmt());
-			if (tl != null)
-			{
-				tl.setC_Tax_ID(docTax.getC_Tax_ID());
-			}
+			fact.createLine()
+					.setAccount(docTax.getAccount(as))
+					.setAmtSource(currencyId, null, docTax.getTaxAmt())
+					.setC_Tax_ID(docTax.getC_Tax_ID())
+					.alsoAddZeroLine() // we need this for tax reports
+					.buildAndAdd();
+
 		}
 		// Expense CR
 		for (final DocLine_Invoice line : getDocLines())

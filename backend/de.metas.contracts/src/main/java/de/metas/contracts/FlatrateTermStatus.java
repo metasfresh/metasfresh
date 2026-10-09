@@ -30,6 +30,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+@Getter
 public enum FlatrateTermStatus implements ReferenceListAwareEnum
 {
 	Running(X_C_Flatrate_Term.CONTRACTSTATUS_Running),
@@ -40,7 +41,6 @@ public enum FlatrateTermStatus implements ReferenceListAwareEnum
 	EndingContract(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract),
 	Voided(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 
-	@Getter
 	private final String code;
 
 	FlatrateTermStatus(final String code)
@@ -63,4 +63,8 @@ public enum FlatrateTermStatus implements ReferenceListAwareEnum
 
 	public static final int AD_Reference_ID = X_C_Flatrate_Term.CONTRACTSTATUS_AD_Reference_ID;
 
+	public boolean isVoided()
+	{
+		return Voided.equals(this);
+	}
 }

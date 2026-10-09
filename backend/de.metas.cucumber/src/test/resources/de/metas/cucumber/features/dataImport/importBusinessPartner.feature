@@ -39,5 +39,5 @@ Feature: Import Business Partner via DataImportRestController
       | C_BPartner_Location_ID.Identifier | C_BPartner_ID.Identifier | OPT.Address                  | OPT.Name                              |
       | importedBPLocation                | importedBPartner         | addr1Import\n1101 cityImport | cityImport addr1Import Import Company |
     And validate C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | C_BPartner_ID.Identifier | OPT.Description   | OPT.IBAN                   | OPT.QR_IBAN                | OPT.ISO_Code |
-      | importedBPBankAccount          | importedBPartner         | bankDetailsImport | CH87 0483 5056 8223 8100 0 | CH81 3100 0056 8223 8100 0 | CHF          |
+      | C_BP_BankAccount_ID   | C_BPartner_ID    | Description       | IBAN                       | QR_IBAN                    | ISO_Code |
+      | importedBPBankAccount | importedBPartner | bankDetailsImport | CH87 0483 5056 8223 8100 0 | CH81 3100 0056 8223 8100 0 | CHF      |

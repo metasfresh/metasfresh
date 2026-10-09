@@ -22,15 +22,14 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 
 @Interceptor(I_C_Invoice_Detail.class)
 public class C_Invoice_Detail

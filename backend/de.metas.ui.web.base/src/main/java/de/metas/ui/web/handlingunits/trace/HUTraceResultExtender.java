@@ -3,11 +3,9 @@ package de.metas.ui.web.handlingunits.trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.process.PInstanceId;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -61,21 +59,23 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		if (!filter.hasParameters())
+		if (!request.hasFilterParameters() || isSQLOnly(request))
 		{
-			return converter.getSql(filter, sqlOpts, context); // do whatever the system usually does
+			return converter.getSql(request); // do whatever the system usually does
 		}
 		else
 		{
-			final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
+			final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(request.getFilter());
 			final PInstanceId selectionId = huTraceRepository.queryToSelection(huTraceQuery);
 
 			return FilterSql.ofWhereClause(WHERE_IN_T_SELECTION, selectionId);
 		}
+	}
+
+	private static boolean isSQLOnly(final @NonNull FilterSqlRequest request)
+	{
+		return request.getFilterParameters().stream().allMatch(parameter -> parameter.isSqlFilter());
 	}
 }

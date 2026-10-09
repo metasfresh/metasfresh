@@ -27,7 +27,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -51,7 +51,7 @@ public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IPr
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -61,7 +61,7 @@ public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IPr
 			return ProcessPreconditionsResolution.rejectWithInternalReason("At least one line has no contract set !");
 		}
 
-		final boolean isDocStatusEligible = getSelectedRecords()
+		final boolean isDocStatusEligible = inOutDAO.stream(context.getQueryFilter(I_M_InOut.class))
 				.map(I_M_InOut::getDocStatus)
 				.map(DocStatus::ofCode)
 				.allMatch(DocStatus::isCompleted);
@@ -86,7 +86,7 @@ public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IPr
 				.forEach(inOutRecord -> {
 					inOutRecord.setIsInterimInvoiceable(p_IsInterimInvoiceable);
 
-					inOutBL.save(inOutRecord);
+					inOutDAO.save(inOutRecord);
 				});
 
 		return MSG_OK;

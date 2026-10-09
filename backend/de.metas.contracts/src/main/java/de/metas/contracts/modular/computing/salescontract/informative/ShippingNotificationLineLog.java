@@ -25,7 +25,7 @@ package de.metas.contracts.modular.computing.salescontract.informative;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
@@ -48,11 +48,11 @@ class ShippingNotificationLineLog extends AbstractShippingNotificationLogHandler
 	public ShippingNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final SalesInformativeLogComputingMethod computingMethod)
 	{
-		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO, modularContractService);
+		super(notificationService, modCntrInvoicingGroupRepository, contractLogRepo, modularContractService);
 		this.computingMethod = computingMethod;
 	}
 

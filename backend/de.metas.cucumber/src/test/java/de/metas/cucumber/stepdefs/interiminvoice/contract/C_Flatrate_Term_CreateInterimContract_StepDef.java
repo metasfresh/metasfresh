@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -59,10 +58,7 @@ public class C_Flatrate_Term_CreateInterimContract_StepDef
 			final String flatrateTermTableIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Flatrate_Term flatrateTerm = flatrateTermTable.get(flatrateTermTableIdentifier);
 
-			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateFrom");
-			final Timestamp dateTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateTo");
-
-			interimInvoiceFlatrateTermBL.create(flatrateTerm, dateFrom, dateTo);
+			interimInvoiceFlatrateTermBL.create(flatrateTerm);
 		}
 	}
 
@@ -75,14 +71,11 @@ public class C_Flatrate_Term_CreateInterimContract_StepDef
 			final String flatrateTermTableIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Flatrate_Term flatrateTerm = flatrateTermTable.get(flatrateTermTableIdentifier);
 
-			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateFrom");
-			final Timestamp dateTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateTo");
-
 			final String errorCode = DataTableUtil.extractStringForColumnName(tableRow, "errorCode");
 
 			try
 			{
-				interimInvoiceFlatrateTermBL.create(flatrateTerm, dateFrom, dateTo);
+				interimInvoiceFlatrateTermBL.create(flatrateTerm);
 				assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
 			}
 			catch (final AdempiereException exception)

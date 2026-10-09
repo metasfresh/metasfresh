@@ -28,7 +28,6 @@ class Actions extends Component {
   async componentDidMount() {
     const { windowType, entity, docId, notfound, activeTab, selected } =
       this.props;
-    const requests = [this.requestActions()];
 
     if (!windowType || docId === 'notfound' || notfound) {
       this.setState({
@@ -46,6 +45,7 @@ class Actions extends Component {
       return;
     }
 
+    const requests = [this.requestActions()];
     if (activeTab && selected.length) {
       requests.push(this.requestRowActions());
     }
@@ -342,18 +342,34 @@ class Actions extends Component {
  * @typedef {object} Props Component props
  * @prop {string} [windowType]
  * @prop {string} [viewId]
+ * @prop {string} [viewOrderBy]
  * @prop {string} [childViewId]
  * @prop {array} [childViewSelectedIds]
  * @prop {func} dispatch
  * @prop {array} selected
  * @prop {*} [plugins]
+ * @prop {*} [entity]
+ * @prop {*} [docId]
+ * @prop {bool} [notfound]
+ * @prop {*} [activeTab]
+ * @prop {func} [closeSubheader]
+ * @prop {func} [openModal]
+ * @prop {func} [openModalRow]
  */
 Actions.propTypes = {
   // from <SubHeader>
   windowType: PropTypes.string,
   viewId: PropTypes.string,
+  entity: PropTypes.any,
+  docId: PropTypes.any,
+  notfound: PropTypes.bool,
+  activeTab: PropTypes.any,
+  closeSubheader: PropTypes.func,
+  openModal: PropTypes.func,
+  openModalRow: PropTypes.func,
 
   // from @connect
+  viewOrderBy: PropTypes.string,
   childViewId: PropTypes.string,
   childViewSelectedIds: PropTypes.array,
   dispatch: PropTypes.func.isRequired,
@@ -384,16 +400,6 @@ const mapStateToProps = (state, props) => {
   }
 
   return result;
-};
-
-Actions.propTypes = {
-  entity: PropTypes.any,
-  docId: PropTypes.any,
-  notfound: PropTypes.bool,
-  activeTab: PropTypes.any,
-  closeSubheader: PropTypes.func,
-  openModal: PropTypes.func,
-  openModalRow: PropTypes.func,
 };
 
 export default connect(mapStateToProps)(Actions);

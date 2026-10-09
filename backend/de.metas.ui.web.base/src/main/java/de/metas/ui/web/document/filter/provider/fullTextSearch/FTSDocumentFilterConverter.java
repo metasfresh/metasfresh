@@ -29,15 +29,19 @@ import de.metas.fulltextsearch.query.FTSSearchResult;
 import de.metas.fulltextsearch.query.FTSSearchService;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
@@ -51,18 +55,15 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 
 	@Nullable
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
+		final String searchText = request.getFilterParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
 		if (searchText == null || Check.isBlank(searchText))
 		{
 			return FilterSql.ALLOW_ALL;
 		}
 
-		final FTSFilterContext ftsContext = filter.getParameterValueAs(FTSDocumentFilterDescriptorsProviderFactory.PARAM_Context);
+		final FTSFilterContext ftsContext = request.getFilterParameterValueAs(FTSDocumentFilterDescriptorsProviderFactory.PARAM_Context);
 		Check.assumeNotNull(ftsContext, "Parameter ftsContext is not null"); // shall not happen
 
 		final FTSFilterDescriptor ftsFilterDescriptor = ftsContext.getFilterDescriptor();
@@ -70,11 +71,12 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 		final FTSConfig ftsConfig = searchService.getConfigById(ftsFilterDescriptor.getFtsConfigId());
 
 		final FTSSearchResult ftsResult = searchService.search(FTSSearchRequest.builder()
-				.searchId(extractSearchId(context))
+				.searchId(extractSearchId(request.getContext()))
 				.searchText(searchText)
 				.esIndexName(ftsConfig.getEsIndexName())
-				.userRolePermissionsKey(context.getUserRolePermissionsKey())
+				.userRolePermissionsKey(request.getUserRolePermissionsKey())
 				.filterDescriptor(ftsFilterDescriptor)
+				.defaultFilterParams(toDefaultFilterParamsMap(request))
 				.build());
 
 		if (ftsResult.isEmpty())
@@ -97,6 +99,31 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 						.joinColumns(ftsFilterDescriptor.getJoinColumns())
 						.build())
 				.build();
+	}
+
+	@NonNull
+	private static Map<String, Object> toDefaultFilterParamsMap(@NonNull final FilterSqlRequest request)
+	{
+		return  request.getFilterById(de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory.FILTER_ID_Default).stream()
+				.map(DocumentFilter::getParameters)
+				.flatMap(List::stream)
+				.map(documentFilterParam -> toDefaultFilterParamEntry(documentFilterParam.getFieldName(), documentFilterParam.getValue()))
+				.collect(GuavaCollectors.toImmutableMap());
+	}
+
+	@NonNull
+	private static Map.Entry<String, Object> toDefaultFilterParamEntry(@Nullable final String fieldName, @Nullable final Object value)
+	{
+		Check.assumeNotNull(fieldName, "At this point we should only get NonNull FilterParams fieldNames");
+		Check.assumeNotNull(value, "At this point we should only get NonNull FilterParams values");
+		if(value instanceof LookupValue.IntegerLookupValue)
+		{
+			return GuavaCollectors.entry(fieldName,((LookupValue.IntegerLookupValue)value).getIdAsInt());
+		}
+		else
+		{
+			return GuavaCollectors.entry(fieldName, value);
+		}
 	}
 
 	private static String extractSearchId(@NonNull final SqlDocumentFilterConverterContext context)

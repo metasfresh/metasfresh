@@ -30,6 +30,18 @@ import org.jetbrains.annotations.Nullable;
 
 public class PostFinanceExportException extends AdempiereException
 {
+	@SuppressWarnings("NullableProblems")
+	public static PostFinanceExportException wrapIfNeeded(@NonNull final Throwable ex)
+	{
+		if (ex instanceof PostFinanceExportException)
+		{
+			return (PostFinanceExportException)ex;
+		}
+		else
+		{
+			return new PostFinanceExportException(extractCause(ex));
+		}
+	}
 
 	public PostFinanceExportException(final String message)
 	{

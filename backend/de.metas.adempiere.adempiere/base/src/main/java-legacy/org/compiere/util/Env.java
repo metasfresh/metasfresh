@@ -1520,6 +1520,11 @@ public final class Env
 		return clientsRepo.isMultilingualDocumentsEnabled(clientId);
 	}    // isMultiLingualDocument
 
+	public static void setAD_Language(final String adLanguage)
+	{
+		setAD_Language(getCtx(), adLanguage);
+	}
+
 	public static void setAD_Language(final Properties ctx, final String adLanguage)
 	{
 		setContext(ctx, Env.CTXNAME_AD_Language, adLanguage);
@@ -1615,6 +1620,13 @@ public final class Env
 		return Env.getLanguage(ctx); // metas: 02214
 		// return Language.getLoginLanguage();
 	}    // getLanguage
+
+	public static String verifyLanguageFallbackToBase(@NonNull final String testLang)
+	{
+		Language language = Language.getLanguage(testLang);
+		language = verifyLanguageFallbackToBase(language);
+		return language.getAD_Language();
+	}
 
 	/**
 	 * Check that language is supported by the system. Returns the base language in case parameter language is not supported.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,133 +19,149 @@
 	</parameter>
 	<parameter name="Record_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[SELECT
-(
-SELECT  COALESCE(org.name, '')
-		FROM AD_Org org
-
-		WHERE org.ad_org_ID =i.ad_org_ID
-	) as org_name,
-
-	ps.PayDate,
-	psl.C_PaySelectionLine_ID,
-	bp.C_BPartner_ID,
-	CASE WHEN Length(bp.value || ' ' || bp.name) > 37
-		THEN SubString( bp.value || ' ' || bp.name for 36 ) || '...'
-		ELSE bp.value || ' ' || bp.name
-	END AS BPartner,
-	psl.line,
-	dt.printname || ': ' || i.Documentno AS Description,
-	i.DateInvoiced,
-	i.poreference AS I_DocNo,
-	i.Documentno AS U_DocNo,
-
-	pt.NetDays,
-	pt.DiscountDays,
-     i.DueDate::timestamp with time zone AS DueDate,
-     EXTRACT(day from (TRUNC(ps.PayDate) - i.DueDate)) as DaysDue,
-	AddDays( i.DateInvoiced::timestamp with time zone, pt.DiscountDays ) AS DiscountDate,
-	Round( i.GrandTotal * pt.Discount / 100::numeric, 2 ) AS DiscountAmt,
-	InvoicePaid ( i.C_Invoice_ID, i.C_Currency_ID, 1::numeric ) AS PaidAmt,
-	InvoiceOpenToDate ( i.C_Invoice_ID, 0, ps.PayDate ) AS OpenAmt,
-	i.GrandTotal,
-	c.ISO_Code,
-	psl.DiscountAmt AS ActualDiscountAmt,
-	psl.OpenAmt AS beforePay,
-	psl.DifferenceAmt AS AfterPay,
-	psl.PayAmt AS PayAmt,
-	ps.processed != 'Y' AS isDraft
+		<![CDATA[SELECT org_name,
+       PayDate,
+       C_PaySelectionLine_ID,
+       C_BPartner_ID,
+       BPartner,
+       line,
+       Description,
+       DocDate,
+       I_DocNo,
+       U_DocNo,
+       NetDays,
+       DiscountDays,
+       DueDate,
+       DaysDue,
+       DiscountDate,
+       DiscountAmt,
+       PaidAmt,
+       OpenAmt,
+       GrandTotal,
+       ISO_Code,
+       ActualDiscountAmt,
+       beforePay,
+       AfterPay,
+       PayAmt,
+       isDraft
 FROM
-	-- Payselection records
-	C_PaySelection ps
-	LEFT OUTER JOIN C_PaySelectionLine psl ON ps.C_PaySelection_ID = psl.C_PaySelection_ID AND psl.IsActive = 'Y'
-	-- Documents
-	LEFT OUTER JOIN C_Invoice i ON psl.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
-	LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
-	LEFT OUTER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-	LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
-	LEFT OUTER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-WHERE
-	ps.IsActive = 'Y'
-	AND ps.C_PaySelection_ID = $P{Record_ID}
-	AND bp.C_BPartner_ID = CASE WHEN $P{C_BPartner_ID} IS NULL THEN bp.C_BPartner_ID ELSE $P{C_BPartner_ID} END
-ORDER BY
-	c.ISO_Code, bp.name, Dateinvoiced
+de_metas_endcustomer_fresh_reports.Report_PaySelection
+(p_Record_ID => $P{Record_ID},
+p_C_BPartner_ID =>  $P{C_BPartner_ID} )
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
 	</field>
 	<field name="paydate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="paydate"/>
 		<property name="com.jaspersoft.studio.field.label" value="paydate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselection"/>
 	</field>
 	<field name="c_payselectionline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_payselectionline_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_payselectionline_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_bpartner"/>
 	</field>
 	<field name="bpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpartner"/>
 		<property name="com.jaspersoft.studio.field.label" value="bpartner"/>
 	</field>
 	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
-	<field name="dateinvoiced" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
+	<field name="docdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="docdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="docdate"/>
 	</field>
 	<field name="i_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="i_docno"/>
 		<property name="com.jaspersoft.studio.field.label" value="i_docno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoice"/>
 	</field>
 	<field name="u_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="u_docno"/>
 		<property name="com.jaspersoft.studio.field.label" value="u_docno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoice"/>
 	</field>
 	<field name="netdays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="netdays"/>
 		<property name="com.jaspersoft.studio.field.label" value="netdays"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_paymentterm"/>
 	</field>
 	<field name="discountdays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discountdays"/>
 		<property name="com.jaspersoft.studio.field.label" value="discountdays"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_paymentterm"/>
 	</field>
 	<field name="duedate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="duedate"/>
 		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
 	</field>
-	<field name="daysdue" class="java.lang.Double">
+	<field name="daysdue" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="daysdue"/>
 		<property name="com.jaspersoft.studio.field.label" value="daysdue"/>
 	</field>
-	<field name="discountdate" class="java.sql.Date">
+	<field name="discountdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="discountdate"/>
 		<property name="com.jaspersoft.studio.field.label" value="discountdate"/>
 	</field>
 	<field name="discountamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discountamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="discountamt"/>
 	</field>
 	<field name="paidamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="paidamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="paidamt"/>
 	</field>
 	<field name="openamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="openamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="openamt"/>
 	</field>
 	<field name="grandtotal" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="grandtotal"/>
 		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_invoice"/>
 	</field>
 	<field name="iso_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iso_code"/>
 		<property name="com.jaspersoft.studio.field.label" value="iso_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_currency"/>
 	</field>
 	<field name="actualdiscountamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="actualdiscountamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="actualdiscountamt"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="beforepay" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="beforepay"/>
 		<property name="com.jaspersoft.studio.field.label" value="beforepay"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="afterpay" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="afterpay"/>
 		<property name="com.jaspersoft.studio.field.label" value="afterpay"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="payamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="payamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="payamt"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="c_payselectionline"/>
 	</field>
 	<field name="isdraft" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="isdraft"/>
 		<property name="com.jaspersoft.studio.field.label" value="isdraft"/>
 	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
@@ -246,7 +262,7 @@ ORDER BY
 				<textElement markup="none">
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Rg. Datum]]></text>
+				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-3" x="437" y="75" width="45" height="10" uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9"/>
@@ -335,7 +351,7 @@ ORDER BY
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Rg.-Nr]]></text>
+				<text><![CDATA[Nr]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-3" x="482" y="75" width="45" height="10" uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9"/>
@@ -450,7 +466,7 @@ ORDER BY
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{docdate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-3" x="296" y="0" width="24" height="10" uuid="2b833a5a-b32e-4388-9f51-9dcbacde8821">

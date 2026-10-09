@@ -299,4 +299,16 @@ public class REST_API_StepDef
 
 		testContext.setHttpHeaders(customHeaders);
 	}
+
+	@And("validate the following content is present in the response")
+	public void validate_content_presence_in_response(@NonNull final DataTable table)
+	{
+		final String apiResponse = testContext.getApiResponse().getContent();
+
+		final Map<String, String> row = table.asMaps().get(0);
+
+		final String expectedContent = DataTableUtil.extractStringForColumnName(row, "Content");
+
+		assertThat(apiResponse).contains(expectedContent);
+	}
 }

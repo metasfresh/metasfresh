@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Greeting
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Greeting extends org.compiere.model.PO implements I_C_Greeting, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 425853958L;
+	private static final long serialVersionUID = 2002257322L;
 
     /** Standard Constructor */
     public X_C_Greeting (final Properties ctx, final int C_Greeting_ID, @Nullable final String trxName)
@@ -108,6 +108,18 @@ public class X_C_Greeting extends org.compiere.model.PO implements I_C_Greeting,
 	public boolean isFirstNameOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFirstNameOnly);
+	}
+
+	@Override
+	public void setLetter_Salutation (final @Nullable java.lang.String Letter_Salutation)
+	{
+		set_Value (COLUMNNAME_Letter_Salutation, Letter_Salutation);
+	}
+
+	@Override
+	public java.lang.String getLetter_Salutation() 
+	{
+		return get_ValueAsString(COLUMNNAME_Letter_Salutation);
 	}
 
 	@Override

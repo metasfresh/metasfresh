@@ -365,6 +365,10 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -387,5 +391,20 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public java.lang.String getReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_Reference);
+	}
+
+	@Override
+	public void setOriginal_Payment_ID (final int Original_Payment_ID)
+	{
+		if (Original_Payment_ID < 1)
+			set_Value (COLUMNNAME_Original_Payment_ID, null);
+		else
+			set_Value (COLUMNNAME_Original_Payment_ID, Original_Payment_ID);
+	}
+
+	@Override
+	public int getOriginal_Payment_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Original_Payment_ID);
 	}
 }

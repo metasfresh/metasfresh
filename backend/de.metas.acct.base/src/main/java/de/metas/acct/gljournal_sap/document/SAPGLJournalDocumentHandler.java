@@ -90,6 +90,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 					glJournal.assertHasLines();
 					glJournal.updateLineAcctAmounts(glJournalService.getCurrencyConverter());
 					glJournal.assertTotalsBalanced();
+					glJournal.setProcessed(true);
 				}
 		);
 
@@ -107,6 +108,11 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	{
 		final I_SAP_GLJournal glJournalRecord = extractRecord(docFields);
 		assertPeriodOpen(glJournalRecord);
+		glJournalService.updateWhileSaving(
+				glJournalRecord,
+				glJournal -> glJournal.setProcessed(false)
+		);
+
 		factAcctDAO.deleteForDocumentModel(glJournalRecord);
 		glJournalRecord.setPosted(false);
 		glJournalRecord.setProcessed(false);

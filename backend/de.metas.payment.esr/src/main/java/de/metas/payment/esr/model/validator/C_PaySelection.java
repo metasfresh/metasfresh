@@ -3,6 +3,7 @@ package de.metas.payment.esr.model.validator;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.payment.PaymentId;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -53,7 +54,8 @@ public class C_PaySelection
 
 		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection))
 		{
-			if (hasESRBankAccount(paySelectionLine) && (!isValidESRReference(paySelectionLine)))
+			if (PaymentId.ofRepoIdOrNull(paySelectionLine.getOriginal_Payment_ID()) == null
+					&& hasESRBankAccount(paySelectionLine) && (!isValidESRReference(paySelectionLine)))
 			{
 				joiner.add(String.valueOf(paySelectionLine.getLine()));
 			}

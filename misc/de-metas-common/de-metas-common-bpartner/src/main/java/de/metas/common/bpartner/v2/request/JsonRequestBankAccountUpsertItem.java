@@ -90,6 +90,31 @@ public class JsonRequestBankAccountUpsertItem
 	@Schema(hidden = true)
 	private boolean isDefaultSet;
 
+	@JsonProperty("accountName")
+	private String accountName;
+	@Schema(hidden = true)
+	private boolean accountNameSet;
+
+	@JsonProperty("accountStreet")
+	private String accountStreet;
+	@Schema(hidden = true)
+	private boolean accountStreetSet;
+
+	@JsonProperty("accountZip")
+	private String accountZip;
+	@Schema(hidden = true)
+	private boolean accountZipSet;
+
+	@JsonProperty("accountCity")
+	private String accountCity;
+	@Schema(hidden = true)
+	private boolean accountCitySet;
+
+	@JsonProperty("accountCountry")
+	private String accountCountry;
+	@Schema(hidden = true)
+	private boolean accountCountrySet;
+
 	@Setter
 	@Schema(description = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
@@ -123,6 +148,36 @@ public class JsonRequestBankAccountUpsertItem
 	{
 		this.isDefault = isDefault;
 		this.isDefaultSet = true;
+	}
+
+	public void setAccountName(final String accountName)
+	{
+		this.accountName = accountName;
+		this.accountNameSet = true;
+	}
+
+	public void setAccountStreet(final String accountStreet)
+	{
+		this.accountStreet = accountStreet;
+		this.accountStreetSet = true;
+	}
+
+	public void setAccountZip(final String accountZip)
+	{
+		this.accountZip = accountZip;
+		this.accountZipSet = true;
+	}
+
+	public void setAccountCity(final String accountCity)
+	{
+		this.accountCity = accountCity;
+		this.accountCitySet = true;
+	}
+
+	public void setAccountCountry(final String accountCountry)
+	{
+		this.accountCountry = accountCountry;
+		this.accountCountrySet = true;
 	}
 
 	public boolean getIsActive()
