@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { reactivateDocument } from '../utils/DocumentStatus';
 
 /**
  * Grid inline edit — single-click "type to edit" must be saved.
@@ -83,44 +84,11 @@ testCases.forEach(({ language, label }) => {
 
       await openRecord();
 
-      // reactivate so the line grid becomes editable. Verify reactivation actually
-      // completed (Complete action reappears → document back to Drafted) rather than
-      // relying on the spinner-detached heuristic alone, which can false-pass before
-      // the spinner mounts. Mirrors PurchaseOrderPage.reactivate().
+      // reactivate so the line grid becomes editable. The helper awaits the reactivate PATCH
+      // and then the server offering "Complete" (status-CO) again, i.e. the document is back
+      // in a completable state.
       await test.step('reactivate order', async () => {
-        const maxAttempts = 3;
-        let reactivated = false;
-        for (let attempt = 1; attempt <= maxAttempts && !reactivated; attempt++) {
-          if (!(await page.getByTestId('status-RE').isVisible().catch(() => false))) {
-            await page.getByTestId('status-button').click();
-            await page.waitForTimeout(500);
-          }
-          const re = page.getByTestId('status-RE');
-          const reVisible = await re
-            .waitFor({ state: 'visible', timeout: 10000 })
-            .then(() => true)
-            .catch(() => false);
-          if (!reVisible) {
-            await page.keyboard.press('Escape').catch(() => {});
-            await page.waitForTimeout(1500);
-            continue;
-          }
-          await re.click();
-          await page
-            .locator('.rotating, .indicator-pending')
-            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-            .catch(() => {});
-          // confirm the document is completable again (back to Drafted)
-          await page.getByTestId('status-button').click();
-          await page.waitForTimeout(500);
-          reactivated = await page.getByTestId('status-CO').isVisible().catch(() => false);
-          await page.keyboard.press('Escape');
-          if (!reactivated) await page.waitForTimeout(1500);
-        }
-        expect(
-          reactivated,
-          `order did not reactivate to a Drafted (completable) state after ${maxAttempts} attempts`
-        ).toBe(true);
+        await reactivateDocument({ windowId: SALES_ORDER_WINDOW_ID, documentId: orderId });
       });
 
       const qtyCell = () =>
