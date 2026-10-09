@@ -2,6 +2,7 @@ package de.metas.contracts.compensationGroup.contract;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
@@ -81,6 +82,11 @@ public class ContractCompensationGroupTermService
 	 *     and that one has a master start date, else the term's own start date</li>
 	 * </ul>
 	 * Does not save the term.
+	 * <p>
+	 * A follow-up term created by the contract extension usually has its {@code MasterStartDate} already, copied from the predecessor.
+	 * It is still empty if the predecessor had none when the follow-up term was created and got one only later (e.g. by the backfill migration),
+	 * while the follow-up term was still a draft (transition with {@code IsAutoCompleteNewTerm='N'}).
+	 * Hence the predecessor is consulted on completion.
 	 */
 	public void setDefaultsBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
@@ -95,8 +101,7 @@ public class ContractCompensationGroupTermService
 
 		if (term.getMasterStartDate() == null)
 		{
-			final Timestamp predecessorMasterStartDate = getPredecessorMasterStartDate(term);
-			term.setMasterStartDate(predecessorMasterStartDate != null ? predecessorMasterStartDate : term.getStartDate());
+			term.setMasterStartDate(CoalesceUtil.coalesce(getPredecessorMasterStartDate(term), term.getStartDate()));
 		}
 	}
 

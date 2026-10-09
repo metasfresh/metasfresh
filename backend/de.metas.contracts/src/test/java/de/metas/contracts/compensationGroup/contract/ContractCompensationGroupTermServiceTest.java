@@ -174,12 +174,18 @@ class ContractCompensationGroupTermServiceTest
 			assertThat(TimeUtil.asLocalDate(term.getMasterStartDate())).isEqualTo(LocalDate.parse("2026-07-01"));
 		}
 
+		/**
+		 * The extension copies the predecessor's (then empty) master start date onto the draft follow-up term;
+		 * the predecessor gets its master start date only afterwards (e.g. by the backfill migration), before the follow-up term is completed.
+		 */
 		@Test
-		void masterStartDate_successor_isThePredecessorsMasterStartDate()
+		void masterStartDate_draftSuccessorOfPredecessorFilledLater_isThePredecessorsMasterStartDate()
 		{
 			setToday("2026-12-15");
 			final I_C_Flatrate_Term successor = term().docStatus(DocStatus.Drafted).startDate("2027-01-01").endDate("2027-12-31").create();
-			term().startDate("2026-01-01").endDate("2026-12-31").masterStartDate("2025-01-01").next(successor).create();
+			final I_C_Flatrate_Term predecessor = term().startDate("2026-01-01").endDate("2026-12-31").next(successor).create();
+			predecessor.setMasterStartDate(TimeUtil.asTimestamp(LocalDate.parse("2025-01-01")));
+			saveRecord(predecessor);
 
 			service.setDefaultsBeforeComplete(successor);
 
