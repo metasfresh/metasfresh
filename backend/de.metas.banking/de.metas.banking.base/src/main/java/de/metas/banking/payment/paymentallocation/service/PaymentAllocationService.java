@@ -33,8 +33,10 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
@@ -70,6 +72,8 @@ import java.util.Optional;
 @Service
 public class PaymentAllocationService
 {
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
+
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 	private final PaymentAllocationRepository paymentAllocationRepository;
@@ -77,6 +81,7 @@ public class PaymentAllocationService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public PaymentAllocationService(
 			@NonNull final MoneyService moneyService,
@@ -218,11 +223,13 @@ public class PaymentAllocationService
 			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 
 			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(paymentAllocationPayableItem.getInvoiceBPartnerId()))
-							.appendParametersToMessage()
+					.orElseThrow(() -> new AdempiereException(
+							MSG_NO_CONFIG_FOR_INVOICE_PARTNER,
+							paymentAllocationPayableItem.getDocumentNo(),
+							bpartnerBL.getBPartnerName(paymentAllocationPayableItem.getInvoiceBPartnerId()))
+							.markAsUserValidationError()
 							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(paymentAllocationPayableItem.getInvoiceId()))
-							.setParameter("C_Invoice.DocumentNo", paymentAllocationPayableItem.getDocumentNo())
-					);
+							.setParameter("C_BPartner_ID", BPartnerId.toRepoId(paymentAllocationPayableItem.getInvoiceBPartnerId())));
 
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
