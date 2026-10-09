@@ -6,6 +6,7 @@
 --                      'Ec' (contract end) if the end date has passed and the term was not extended,
 --                      else 'Ru' (running)
 -- Existing contract statuses (e.g. 'Qu' quit, 'Vo' voided, 'Ec' contract end) are left untouched.
+-- Voided terms ('Vo') get no MasterStartDate: voiding a single contract clears it on purpose (ContractChangeBL.setMasterDates).
 
 SELECT backup_table('c_flatrate_term', '_CompGroup_Backfill');
 
@@ -37,6 +38,7 @@ FROM chain
 WHERE chain.C_Flatrate_Term_ID = t.C_Flatrate_Term_ID
   AND t.Type_Conditions = 'CompensationGroup'
   AND t.DocStatus IN ('CO', 'CL')
+  AND t.ContractStatus IS DISTINCT FROM 'Vo'
   AND t.MasterStartDate IS NULL
 ;
 
