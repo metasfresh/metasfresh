@@ -5,8 +5,6 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
 
 // Window 540415: Compensation Group Schema
 const COMPENSATION_GROUP_SCHEMA_WINDOW_ID = 540415;
@@ -14,23 +12,11 @@ const COMPENSATION_GROUP_SCHEMA_WINDOW_ID = 540415;
 // Column added in F00127.1
 const WITHOUT_CHARGE_COLUMN = 'IsWithoutCharge';
 
-// Screenshots destination (relative to repo root in ai-work)
-const SCREENSHOTS_DIR = path.resolve(__dirname, '..', '..', '..', '..', '..', 'ai-work', '29558', 'screenshots');
-
 /**
- * Save a screenshot both as a Playwright buffer attached to Allure
- * and as a file under ai-work/29558/screenshots/.
+ * Attach a screenshot to the Allure report.
  */
 async function saveScreenshot(page, filename) {
-  const buffer = await page.screenshot({ fullPage: false });
-  allure.attachment(filename, buffer, 'image/png');
-
-  if (fs.existsSync(SCREENSHOTS_DIR)) {
-    fs.writeFileSync(path.join(SCREENSHOTS_DIR, filename), buffer);
-    console.log(`[PASS] Screenshot saved: ${path.join(SCREENSHOTS_DIR, filename)}`);
-  } else {
-    console.log(`[WARN] Screenshots dir not found, skipping file save: ${SCREENSHOTS_DIR}`);
-  }
+  allure.attachment(filename, await page.screenshot({ fullPage: false }), 'image/png');
 }
 
 /**
@@ -42,7 +28,7 @@ async function createMasterdataWithSchema(language) {
     request: {
       login: { user: { language } },
       products: {
-        P1: { name: 'WithoutChargeCol', type: 'Item', isStocked: false, prices: [{ price: 1, currencyCode: 'EUR' }] },
+        P1: { name: 'WithoutChargeCol', type: 'Item', isStocked: false },
       },
       compensationGroupSchemas: {
         schema: { name: 'WithoutChargeCol schema', templateLines: [{ product: 'P1', qty: 1 }] },
