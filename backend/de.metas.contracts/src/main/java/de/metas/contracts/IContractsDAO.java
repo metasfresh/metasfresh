@@ -64,6 +64,9 @@ public interface IContractsDAO extends ISingletonService
 
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @return the partner's active term with the earliest master start date (else start date); {@code CompensationGroup} terms are not considered.
+	 */
 	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	<T extends I_C_Flatrate_Conditions> T getConditionsById(ConditionsId conditionsId, Class<T> modelClass);

@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -187,6 +188,7 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate, Direction.Ascending, Nulls.Last)
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Ascending, Nulls.Last)

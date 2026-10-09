@@ -1,6 +1,8 @@
 package de.metas.contracts.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -74,4 +76,31 @@ public class ContractsDAOTest
 		assertThat(termsWithMissingCandidates.get(0).getC_Flatrate_Term_ID()).isEqualTo(term1.getC_Flatrate_Term_ID());
 	}
 
+	/**
+	 * Customer retention (new vs. regular customer) is about subscription contracts only; an earlier compensation-group contract of the same partner must not count as its "first contract".
+	 */
+	@Test
+	public void retrieveFirstFlatrateTermForBPartnerId_ignoresCompensationGroupTerms()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(123);
+
+		final I_C_Flatrate_Term compensationGroupTerm = newInstance(I_C_Flatrate_Term.class);
+		compensationGroupTerm.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
+		compensationGroupTerm.setBill_BPartner_ID(bpartnerId.getRepoId());
+		compensationGroupTerm.setStartDate(TimeUtil.getDay(2024, 1, 1));
+		compensationGroupTerm.setMasterStartDate(TimeUtil.getDay(2024, 1, 1));
+		save(compensationGroupTerm);
+
+		final I_C_Flatrate_Term subscriptionTerm = newInstance(I_C_Flatrate_Term.class);
+		subscriptionTerm.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
+		subscriptionTerm.setBill_BPartner_ID(bpartnerId.getRepoId());
+		subscriptionTerm.setStartDate(TimeUtil.getDay(2025, 1, 1));
+		subscriptionTerm.setMasterStartDate(TimeUtil.getDay(2025, 1, 1));
+		save(subscriptionTerm);
+
+		final I_C_Flatrate_Term firstTerm = new ContractsDAO().retrieveFirstFlatrateTermForBPartnerId(bpartnerId);
+
+		assertThat(firstTerm).isNotNull();
+		assertThat(firstTerm.getC_Flatrate_Term_ID()).isEqualTo(subscriptionTerm.getC_Flatrate_Term_ID());
+	}
 }
