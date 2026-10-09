@@ -61,15 +61,30 @@ function isTrackedJunitArtifact(name) {
   return TRACKED_JUNIT_ARTIFACT.test(name);
 }
 
+// `gh api --paginate --jq '.artifacts[].name'` output (one name per line, pages
+// concatenated) -> the tracked junit artifact names, in order, without duplicates.
+function parseArtifactNames(out) {
+  return [...new Set(out.split('\n').map((n) => n.trim()).filter(isTrackedJunitArtifact))];
+}
+
 // The tracked junit artifacts a given run actually has (expired ones included;
-// downloadArtifact treats those as absent).
+// downloadArtifact treats those as absent). One retry: a single transient API
+// error should not abort a whole --since backfill; a persistent one still throws,
+// so a run is never silently treated as having no test results.
 function listJunitArtifacts(runId) {
-  const out = gh([
+  const args = [
     'api', '--paginate',
     `repos/${REPO}/actions/runs/${runId}/artifacts`,
     '--jq', '.artifacts[].name',
-  ]);
-  return [...new Set(out.split('\n').map((n) => n.trim()).filter(isTrackedJunitArtifact))];
+  ];
+  let out;
+  try {
+    out = gh(args);
+  } catch (e) {
+    console.warn(`listing artifacts of run ${runId} failed, retrying once: ${e.message}`);
+    out = gh(args);
+  }
+  return parseArtifactNames(out);
 }
 
 // Download one artifact for a run into a temp dir; returns the list of .xml
@@ -106,4 +121,4 @@ function buildRunUrl(baseUrl, attempt) {
   return `${baseUrl}/attempts/${n}`;
 }
 
-module.exports = { listRuns, isTrackedJunitArtifact, listJunitArtifacts, downloadArtifact, makeTmpRoot, buildRunUrl, REPO };
+module.exports = { listRuns, isTrackedJunitArtifact, parseArtifactNames, listJunitArtifacts, downloadArtifact, makeTmpRoot, buildRunUrl, REPO };

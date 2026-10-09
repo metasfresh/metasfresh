@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { buildRunUrl, isTrackedJunitArtifact } = require('../lib/gh');
+const { buildRunUrl, isTrackedJunitArtifact, parseArtifactNames } = require('../lib/gh');
 
 const BASE = 'https://github.com/metasfresh/metasfresh/actions/runs/26543609110';
 
@@ -53,4 +53,20 @@ test('isTrackedJunitArtifact: same families as before, nothing else', () => {
   ]) {
     assert.ok(!isTrackedJunitArtifact(name), name);
   }
+});
+
+test('parseArtifactNames: one name per line across pages; keeps tracked, drops blanks and duplicates', () => {
+  const out = [
+    'junit-results-cucumber-profile1',
+    'allure-results-mobile-shard1',
+    '',
+    'junit-results-playwright-frontend-shard6 ',
+    'junit-results-cucumber-profile1', // a name repeated on a later page / attempt
+    'junit-results-jest',
+    '',
+  ].join('\n');
+  assert.deepStrictEqual(parseArtifactNames(out), [
+    'junit-results-cucumber-profile1',
+    'junit-results-playwright-frontend-shard6',
+  ]);
 });
