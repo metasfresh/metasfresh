@@ -1585,23 +1585,39 @@ jobs:
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
-      - name: Install xmllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
       - name: assert success
         run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
 
+          # The JUnit attributes are read with the runner's preinstalled python3, not with xmllint:
+          # installing xmllint needed `apt-get update`, which exits 100 whenever ANY apt source baked
+          # into the runner image serves a bad index (e.g. a dl.google.com chrome "Hash Sum mismatch"),
+          # and that failure, sitting before this step, discarded the cucumber verdict.
+
+          # Prints the value of attribute $1 of the first <testsuite> element (document order, any depth)
+          # that has it -- the same value as `xmllint --xpath 'string(//testsuite/@<attr>)'`; prints nothing
+          # if no <testsuite> has it. Like xmllint, exits non-zero if the file is not well-formed XML, which
+          # fails this step (bash -e).
+          read_testsuite_attr() {
+            python3 -c '
+          import sys, xml.etree.ElementTree as ET
+          try:
+              root = ET.parse(sys.argv[1]).getroot()
+          except Exception as ex:
+              sys.exit(f"ERROR: cannot parse {sys.argv[1]}: {ex}")
+          print(next((e.get(sys.argv[2]) for e in root.iter("testsuite") if e.get(sys.argv[2]) is not None), ""), end="")
+          ' "$junit_xml_path" "$1"
+          }
+
           if [ -f "$junit_xml_path" ]; then
             echo "Parsing JUnit XML report at: $junit_xml_path"
 
-            # Extract failures and errors from the XML using xmllint.
+            # Extract failures and errors from the XML.
             # We explicitly check for 'testsuite' as the root element that holds 'failures' and 'errors'.
-            failures=$(xmllint --xpath 'string(//testsuite/@failures)' "$junit_xml_path" 2>/dev/null)
-            errors=$(xmllint --xpath 'string(//testsuite/@errors)' "$junit_xml_path" 2>/dev/null)
+            failures=$(read_testsuite_attr failures)
+            errors=$(read_testsuite_attr errors)
 
-            # Default to 0 if the attributes are not found or xmllint returns nothing.
+            # Default to 0 if the attributes are not found or the read returns nothing.
             failures=${failures:-0}
             errors=${errors:-0}
 
