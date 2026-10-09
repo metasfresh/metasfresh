@@ -61,10 +61,14 @@ async function changeQuantityAndWaitForReread(page, row, quantity) {
   const editor = qtyCell.locator('input').first();
   await editor.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await editor.fill(String(quantity));
-  const reread = page.waitForResponse(
-    (response) => response.request().method() === 'GET' && /\/AD_Tab-187\?ids=/.test(response.url()),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
+  const reread = page
+    .waitForResponse(
+      (response) => response.request().method() === 'GET' && /\/AD_Tab-187\?ids=/.test(response.url()),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    )
+    .catch((error) => {
+      throw new Error(`the grid did not re-read line ${row + 1} after its quantity change: ${error.message}`);
+    });
   await page.keyboard.press('Tab');
   await reread;
   // Tab opened the next cell's editor - close it.
@@ -74,9 +78,7 @@ async function changeQuantityAndWaitForReread(page, row, quantity) {
 }
 
 test.describe('Sales order-line grid — an empty text cell left without typing sends nothing (de_DE)', () => {
-  test('On a copied order, opening and leaving an empty description sends no change; clearing a filled one does', async ({
-    page,
-  }) => {
+  test('Copied order: leaving an empty description sends nothing; clearing a filled one does', async ({ page }) => {
     allure.epic('E0500: Sales Orders');
     allure.tag('F5010: Order Lines Grid');
     allure.tag('F5010');
@@ -109,9 +111,9 @@ test.describe('Sales order-line grid — an empty text cell left without typing 
     await test.step('Copy the order with Alt+W', async () => {
       await page.locator('body').click({ position: { x: 5, y: 5 } });
       await page.keyboard.press('Alt+W');
-      await page.waitForURL((url) => /\/window\/\d+\/\d+/.test(url.pathname) && !url.pathname.endsWith(`/${originalRecordId}`), {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+      const isCopy = (url) =>
+        /\/window\/\d+\/\d+/.test(url.pathname) && !url.pathname.endsWith(`/${originalRecordId}`);
+      await page.waitForURL(isCopy, { timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator(`[data-cy="cell-${DESCRIPTION_COLUMN}"]`)).toHaveCount(LINE_COUNT, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
