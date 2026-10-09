@@ -1,6 +1,7 @@
 package de.metas.adempiere.gui.search.impl;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,6 +56,7 @@ class HUPackingAwareBL_WholeQtyTU_Test
 	private I_C_UOM uom;
 	private ProductId productId;
 	private I_M_HU_PI_Item_Product pip;
+	private I_M_HU_PI piLU;
 
 	@BeforeEach
 	void beforeEach()
@@ -67,6 +70,10 @@ class HUPackingAwareBL_WholeQtyTU_Test
 		final I_M_HU_PI piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item piItem = helper.createHU_PI_Item_Material(piTU);
 		pip = helper.assignProduct(piItem, productId, CAPACITY_6, uom);
+
+		// LU holding 10 TUs
+		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		helper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("10"));
 	}
 
 	private PlainHUPackingAware newPackingAware()
@@ -130,5 +137,41 @@ class HUPackingAwareBL_WholeQtyTU_Test
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue())
 				.hasMessageContaining(HUPackingAwareBL.MSG_QtyTU_MustBeWholeNumber.toAD_Message());
+	}
+
+	private OrderLineHUPackingAware newLUPackingAware(final String qtyLU)
+	{
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_BPartner_ID(1);
+		orderLine.setM_Product_ID(productId.getRepoId());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
+		orderLine.setM_LU_HU_PI_ID(piLU.getM_HU_PI_ID());
+		orderLine.setQtyLU(new BigDecimal(qtyLU));
+		return new OrderLineHUPackingAware(orderLine);
+	}
+
+	@Test
+	void setQtyTUFromQtyLU_wholeResult_setsQtyTU()
+	{
+		final OrderLineHUPackingAware packingAware = newLUPackingAware("2");
+
+		huPackingAwareBL.setQtyTUFromQtyLU(packingAware);
+
+		assertThat(packingAware.getQtyTU()).isEqualByComparingTo("20");
+	}
+
+	/**
+	 * 0.25 LU x 10 TU/LU = 2.5 TU: refused at the LU, naming the LU quantity as the cause.
+	 */
+	@Test
+	void setQtyTUFromQtyLU_fractionalResult_isRefused()
+	{
+		final OrderLineHUPackingAware packingAware = newLUPackingAware("0.25");
+
+		assertThatThrownBy(() -> huPackingAwareBL.setQtyTUFromQtyLU(packingAware))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue())
+				.hasMessageContaining(HUPackingAwareBL.MSG_QtyLU_ResultsInFractionalQtyTU.toAD_Message());
 	}
 }

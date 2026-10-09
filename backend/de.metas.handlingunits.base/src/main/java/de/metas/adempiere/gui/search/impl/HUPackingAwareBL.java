@@ -55,6 +55,7 @@ import java.math.RoundingMode;
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
 	public static final AdMessageKey MSG_QtyTU_MustBeWholeNumber = AdMessageKey.of("de.metas.handlingunits.QtyTU_MustBeWholeNumber");
+	public static final AdMessageKey MSG_QtyLU_ResultsInFractionalQtyTU = AdMessageKey.of("de.metas.handlingunits.QtyLU_ResultsInFractionalQtyTU");
 	public static final AdMessageKey MSG_MAX_LUS_EXCEEDED = AdMessageKey.of("de.metas.quickinput.orderline.MaxLUsExceeded");
 	public static final String SYS_CONFIG_MAXQTYLU = "de.metas.OrderLine.MaxLUQty";
 	public static final Integer SYS_CONFIG_MAXQTYLU_DEFAULT_VALUE = 100;
@@ -104,6 +105,11 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		setQtyCUFromQtyTU(record, toWholeQtyTU(qtyTU));
 	}
 
+	private static boolean isWholeNumber(@NonNull final BigDecimal qty)
+	{
+		return qty.signum() == 0 || qty.stripTrailingZeros().scale() <= 0;
+	}
+
 	/**
 	 * A TU quantity is always a whole number. A fractional one is refused, never truncated.
 	 */
@@ -117,6 +123,12 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			throw new AdempiereException(MSG_QtyTU_MustBeWholeNumber, qtyTU.stripTrailingZeros().toPlainString()); // user validation error
 		}
+	}
+
+	@Override
+	public void updateQtyIfNeeded(@NonNull final IHUPackingAware record, @NonNull final BigDecimal qtyTU, final Quantity qtyCU)
+	{
+		updateQtyIfNeeded(record, toWholeQtyTU(qtyTU), qtyCU);
 	}
 
 	@Override
@@ -308,6 +320,14 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final BigDecimal qtyTUs = qtyLUs.multiply(capacity);
+		if (!isWholeNumber(qtyTUs))
+		{
+			// A TU quantity is always a whole number; the cause is the LU quantity, so name it
+			throw new AdempiereException(MSG_QtyLU_ResultsInFractionalQtyTU,
+					qtyLUs.stripTrailingZeros().toPlainString(),
+					capacity.stripTrailingZeros().toPlainString(),
+					qtyTUs.stripTrailingZeros().toPlainString()); // user validation error
+		}
 		record.setQtyTU(qtyTUs);
 	}
 

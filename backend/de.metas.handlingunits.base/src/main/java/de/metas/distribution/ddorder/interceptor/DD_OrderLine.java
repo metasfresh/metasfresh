@@ -30,7 +30,6 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.QtyTU;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -172,8 +171,7 @@ public class DD_OrderLine
 		}
 
 		// if the M_HU_PI_Item_Product was changed and the QtyTU was already set, change the CU accordingly
-		final QtyTU qtyPacks = QtyTU.ofBigDecimal(packingAware.getQtyTU());
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU()); // a fractional QtyEnteredTU is refused
 	}
 
 	@ModelChange(timings = {
@@ -248,8 +246,7 @@ public class DD_OrderLine
 		}
 
 		// update the QtyCU only if the QtyTU requires it. If the QtyCU is already fine and fits the QtyTU and M_HU_PI_Item_Product, leave it like it is.
-		final QtyTU qtyPacks = QtyTU.ofBigDecimal(packingAware.getQtyTU());
 		final Quantity qtyCU = Quantitys.of(packingAware.getQty(), UomId.ofRepoId(packingAware.getC_UOM_ID()));
-		Services.get(IHUPackingAwareBL.class).updateQtyIfNeeded(packingAware, qtyPacks.toInt(), qtyCU);
+		Services.get(IHUPackingAwareBL.class).updateQtyIfNeeded(packingAware, packingAware.getQtyTU(), qtyCU); // a fractional QtyEnteredTU is refused
 	}
 }
