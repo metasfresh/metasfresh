@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -30,6 +29,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -115,17 +115,20 @@ public class RefundTestTools
 	// because otherwise the refund candidate we create in here is not found to be a match when searched for via ASSIGNABLE_CANDIDATE_INVOICE_DATE
 	// note that we also need to make sure to have 1 as the min number
 	@VisibleForTesting
-	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth();
+	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth(ASSIGNABLE_CANDIDATE_INVOICE_DATE);
 
+	/**
+	 * A fixed day in the middle of a month (and of a quarter), so that the fixtures' calendar refund periods do not depend on the day the tests run:
+	 * the refund candidate's day after it and the contract's days around it stay in the same month.
+	 */
 	private static LocalDate computeAssignableCandidateInvoiceDate()
 	{
-		return SystemTime.asLocalDate();
+		return LocalDate.of(2026, 8, 12);
 	}
 
 	@VisibleForTesting
-	static int computeInvoiceScheduleDayOfMonth()
+	static int computeInvoiceScheduleDayOfMonth(@NonNull final LocalDate assignableCandidateInvoiceDate)
 	{
-		final LocalDate assignableCandidateInvoiceDate = computeAssignableCandidateInvoiceDate();
 		final LocalDate refundCandidateInvoiceDate = computeRefundCandidateInvoiceDate(assignableCandidateInvoiceDate);
 
 		return ((refundCandidateInvoiceDate.getDayOfMonth() + 4) % 28) + 1;
@@ -295,8 +298,8 @@ public class RefundTestTools
 		saveRecord(conditions);
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_RefundConfig.class);
-		refundConfigRecord.setC_Flatrate_Conditions(conditions);
-		refundConfigRecord.setM_Product(productRecord);
+		refundConfigRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		refundConfigRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice); // keep in sync with the C_DocType's subType that we set up in the constructor.
 		refundConfigRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
 		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
@@ -338,6 +341,7 @@ public class RefundTestTools
 
 		return AssignableInvoiceCandidate
 				.builder()
+				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerLocationId(billBPartnerLocationId)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))

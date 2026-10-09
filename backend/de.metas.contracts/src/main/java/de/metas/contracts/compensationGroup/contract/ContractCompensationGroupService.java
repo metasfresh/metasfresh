@@ -12,6 +12,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.lang.SOTrx;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -24,8 +25,10 @@ import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -96,6 +99,8 @@ public class ContractCompensationGroupService
 	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
 	@NonNull private final ContractSettingsTakeOverService takeOverService;
 
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
 	/**
@@ -150,13 +155,26 @@ public class ContractCompensationGroupService
 				.createGroup(candidateSelection.getLineIds());
 	}
 
-	private static OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
+	private OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)
 	{
-		return OrderDropShipInfo.builder()
+		final OrderId linkedOrderId = OrderId.ofRepoIdOrNull(order.getLink_Order_ID());
+
+		final OrderDropShipInfo.OrderDropShipInfoBuilder builder = OrderDropShipInfo.builder()
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.isDropShip(order.isDropShip())
-				.linkedOrderId(OrderId.ofRepoIdOrNull(order.getLink_Order_ID()))
-				.build();
+				.linkedOrderId(linkedOrderId);
+
+		// the fee is keyed by the linked SALES order's customer and date, not this order's partner/date.
+		// only a drop-ship purchase order takes over (see OrderDropShipInfo.getDropShipLinkedSalesOrderId),
+		// so only then is the linked order the sales order whose customer/date the fee needs.
+		if (linkedOrderId != null && order.isDropShip() && !order.isSOTrx())
+		{
+			final I_C_Order linkedSalesOrder = orderDAO.getById(linkedOrderId);
+			builder.invoicePartnerId(BPartnerId.ofRepoId(linkedSalesOrder.getBill_BPartner_ID()))
+					.soDate(TimeUtil.asZonedDateTime(linkedSalesOrder.getDateOrdered(), OrgId.ofRepoId(linkedSalesOrder.getAD_Org_ID())));
+		}
+
+		return builder.build();
 	}
 
 	/**
