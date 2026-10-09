@@ -53,3 +53,15 @@ UPDATE AD_Tab
 SET AD_Column_ID = 588240, Parent_Column_ID = 2893,
     Updated = TO_TIMESTAMP('2026-10-09 12:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Tab_ID = 547544;
+
+-- 4) Both tabs were sorted behind the TabLevel 0 tab 541397 "Customer Retention" (SeqNo 250), so the WebUI made them
+--    children of that tab and the partner window did not show them. Sort them before it, after "Lieferantenfreigabe" (170).
+UPDATE AD_Tab
+SET SeqNo = 180,
+    Updated = TO_TIMESTAMP('2026-10-09 12:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Tab_ID = 547544;
+
+UPDATE AD_Tab
+SET SeqNo = 190,
+    Updated = TO_TIMESTAMP('2026-10-09 12:00:04', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Tab_ID = 549287;
