@@ -175,7 +175,8 @@ public class CustomerRetentionRepositoryTest
 	}
 
 	/**
-	 * Customer retention is not about compensation-group contracts: a partner whose only contract is a running compensation-group contract does not become a new customer.
+	 * Customer retention is not about compensation-group contracts: a partner whose only contract is a running compensation-group contract is no new customer,
+	 * and a value derived earlier from such a contract is cleared.
 	 */
 	@Test
 	public void updateCustomerRetention_onlyRunningCompensationGroupContract_noCustomerRetention()
@@ -183,6 +184,8 @@ public class CustomerRetentionRepositoryTest
 		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		save(customerRetention);
 		final I_C_Flatrate_Term compensationGroupTerm = createFlatrateTerm(partner.getC_BPartner_ID(), TimeUtil.parseTimestamp("2018-01-01"), TimeUtil.parseTimestamp("2019-12-31"));
 		compensationGroupTerm.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
 		save(compensationGroupTerm);
