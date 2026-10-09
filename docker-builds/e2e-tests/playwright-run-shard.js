@@ -22,6 +22,8 @@
 
 const { spawnSync } = require('child_process');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 function parseShard(value) {
   const m = /^(\d+)\/(\d+)$/.exec(String(value || '').trim());
@@ -69,16 +71,24 @@ function fileFilter(file) {
 }
 
 function listFiles(command, extraArgs) {
-  const res = spawnSync(command[0], [...command.slice(1), '--list', '--reporter=json', ...extraArgs], {
-    encoding: 'utf8',
-    maxBuffer: 256 * 1024 * 1024,
-  });
-  if (res.status !== 0) {
-    process.stderr.write(res.stderr || '');
-    throw new Error(`listing the tests failed (exit ${res.status})`);
+  // The json reporter writes to a file instead of stdout, so console output of the config or global setup cannot corrupt it.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'playwright-list-'));
+  const reportFile = path.join(dir, 'list.json');
+  try {
+    const res = spawnSync(command[0], [...command.slice(1), '--list', '--reporter=json', ...extraArgs], {
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+      env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_FILE: reportFile },
+    });
+    if (res.status !== 0) {
+      process.stderr.write(res.stderr || '');
+      throw new Error(`listing the tests failed (exit ${res.status})`);
+    }
+    const json = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
+    return [...new Set((json.suites || []).map((s) => s.file))].sort();
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
-  const json = JSON.parse(res.stdout.slice(res.stdout.indexOf('{'), res.stdout.lastIndexOf('}') + 1));
-  return [...new Set((json.suites || []).map((s) => s.file))].sort();
 }
 
 function updateDurations(outFile, xmlFiles) {
@@ -118,6 +128,7 @@ function main(argv) {
     const estimate = mine.reduce((sum, f) => sum + (durations[f] ?? fallback), 0);
     console.log(`[shard ${shard.index}/${shard.total}] ${mine.length} of ${allFiles.length} spec files, estimated ${(estimate / 60).toFixed(1)} min`);
     if (mine.length === 0) {
+      // no result files are written then; the cicd.yaml upload steps tolerate missing files (if-no-files-found)
       console.log('[shard] no spec files assigned to this shard');
       return 0;
     }
@@ -136,4 +147,4 @@ if (require.main === module) {
   process.exit(main(process.argv.slice(2)));
 }
 
-module.exports = { assignShards, parseShard, fileFilter, median };
+module.exports = { assignShards, parseShard, fileFilter, median, listFiles };

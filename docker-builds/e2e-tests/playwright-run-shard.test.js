@@ -2,7 +2,10 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { assignShards, parseShard, fileFilter } = require('./playwright-run-shard');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { assignShards, parseShard, fileFilter, listFiles } = require('./playwright-run-shard');
 
 const files = ['spec/a.spec.js', 'spec/b.spec.js', 'spec/c.spec.js', 'spec/d.spec.js', 'spec/e.spec.js', 'spec/new.spec.js'];
 const durations = { 'spec/a.spec.js': 300, 'spec/b.spec.js': 200, 'spec/c.spec.js': 100, 'spec/d.spec.js': 100, 'spec/e.spec.js': 50 };
@@ -46,4 +49,18 @@ test('fileFilter escapes regex characters and anchors at a path segment', () => 
   assert.ok(!re.test('/app/tests/spec/xa.spec.js'));
   assert.ok(!re.test('/app/tests/spec/aXspec.js'));
   assert.ok(!re.test('/app/tests/spec/a.spec.js.snap'));
+});
+
+test('listFiles reads the JSON report even when the config prints braces to stdout', () => {
+  // stands in for `playwright test`: logs noise with braces to stdout, writes the report where the json reporter would
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pw-shard-'));
+  const fake = path.join(dir, 'fake-playwright.js');
+  fs.writeFileSync(fake, `
+    console.log('global setup {config: loaded}');
+    const report = { suites: [{ file: 'spec/b.spec.js' }, { file: 'spec/a.spec.js' }, { file: 'spec/a.spec.js' }] };
+    const target = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+    if (target) require('fs').writeFileSync(target, JSON.stringify(report)); else console.log(JSON.stringify(report));
+    console.log('done }');
+  `);
+  assert.deepStrictEqual(listFiles([process.execPath, fake], []), ['spec/a.spec.js', 'spec/b.spec.js']);
 });
