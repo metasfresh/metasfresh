@@ -2,7 +2,7 @@
 @allure.label.epic:E0110_Shipping
 @allure.label.feature:F17050_Shipment
 @F17050
-@ghActions:run_on_executor7
+@ghActions:run_on_executor8
 Feature: Empties receives
 ## F17050: Shipment
 

@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0106_Distribution
 @allure.label.feature:F5111_DDOrder_Replenishment
-@ghActions:run_on_executor7
+@ghActions:run_on_executor8
 Feature: DD_Order replenishment — the change guards cover every contributor of a shared order
   As a traffic manager editing a workstation assignment,
   I want the refusal that protects a replenishment already in progress to hold for EVERY delivery behind that

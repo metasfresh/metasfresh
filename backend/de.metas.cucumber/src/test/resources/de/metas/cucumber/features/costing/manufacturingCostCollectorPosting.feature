@@ -3,7 +3,7 @@
 @allure.label.feature:F1500_Costing
 @allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
 @F1500
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: Manufacturing cost collector posting - component issue vs material receipt signs
 ## F1500: Costing
 

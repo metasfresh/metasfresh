@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 Feature: create distribution to balance demand
 ## F5100: Material Disposition
 
