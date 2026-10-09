@@ -8,6 +8,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.contracts
@@ -48,13 +50,16 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 	public AssignmentToRefundCandidate createNewAssignment(@NonNull final AssignmentToRefundCandidate existingAssignment)
 	{
 		// note: currentRefundConfig can't be null
-		final Money amountToApply = getCurrentRefundConfig()
+		final BigDecimal amountToApply = getCurrentRefundConfig()
 				.getAmount()
 				.subtract(getFormerRefundConfig().getAmount());
 
 		final Quantity quantityAssigendToRefundCandidate = existingAssignment.getQuantityAssigendToRefundCandidate();
 
-		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal());
+		// the amount per unit is always in the sales currency, i.e. the refund candidate's currency
+		final Money moneyToAssign = Money.of(
+				amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal()),
+				existingAssignment.getRefundInvoiceCandidate().getMoney().getCurrencyId());
 
 		return AssignmentToRefundCandidate.builder()
 				.refundConfigId(getCurrentRefundConfig().getId())

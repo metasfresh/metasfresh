@@ -142,6 +142,28 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(applyToInput(Money.of(100, currencyId), (HUPIItemProductId)null).toBigDecimal()).isEqualByComparingTo("90");
 	}
 
+	/**
+	 * An amount per unit is subtracted in the currency of the sales price, whatever currency the refund config line carries:
+	 * 100 EUR - 10% - 0.50 = 89.50 EUR
+	 */
+	@Test
+	public void applyToInput_subtractsTheAmountPerUnitInTheSalesCurrency()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		final ConditionsId amountConditionsId = createTermWithPercentageConfig(BPARTNER_ID, new BigDecimal("5"), true);
+		final I_C_Flatrate_RefundConfig amountConfig = retrieveConfig(amountConditionsId);
+		amountConfig.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		amountConfig.setRefundPercent(null);
+		amountConfig.setRefundAmt(new BigDecimal("0.50"));
+		amountConfig.setC_Currency_ID(PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId().getRepoId());
+		saveRecord(amountConfig);
+
+		final Money result = applyToInput(Money.of(100, currencyId));
+
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("89.50");
+	}
+
 	private static I_C_Flatrate_RefundConfig retrieveConfig(@NonNull final ConditionsId conditionsId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_RefundConfig.class)

@@ -190,7 +190,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 				.minQty(ZERO)
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.AMOUNT_PER_UNIT)
-				.amount(money_0_30)
+				.amount(money_0_30.toBigDecimal())
 				.productId(productId)
 				.invoiceSchedule(savedInvoiceSchedule)
 				.conditionsId(ConditionsId.ofRepoId(1000017))
@@ -203,7 +203,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 				.minQty(new BigDecimal("15"))
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.AMOUNT_PER_UNIT)
-				.amount(money_0_45) // 0.15 more than the previous config
+				.amount(money_0_45.toBigDecimal()) // 0.15 more than the previous config
 				.productId(productId)
 				.invoiceSchedule(savedInvoiceSchedule)
 				.conditionsId(ConditionsId.ofRepoId(1000017))
@@ -216,7 +216,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 				.minQty(new BigDecimal("50"))
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.AMOUNT_PER_UNIT)
-				.amount(money_0_70) // 0.25 more than the previous config
+				.amount(money_0_70.toBigDecimal()) // 0.25 more than the previous config
 				.productId(productId)
 				.invoiceSchedule(savedInvoiceSchedule)
 				.conditionsId(ConditionsId.ofRepoId(1000017))

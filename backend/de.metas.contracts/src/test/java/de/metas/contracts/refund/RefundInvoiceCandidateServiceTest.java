@@ -13,7 +13,9 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.invoice.InvoiceSchedule;
@@ -22,6 +24,7 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -41,6 +44,7 @@ import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -391,5 +395,47 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(result.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
 		assertThat(result.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2");
 		assertThat(result.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("102");
+	}
+
+	/**
+	 * The refund is always computed in the sales currency (the currency of the refund candidate, which is split off the goods invoice candidate).
+	 * The currency stored on an "amount per unit" refund config line must neither make the computation fail nor convert the amount.
+	 * <p>
+	 * Assignable EUR candidate with quantity = 3; refund config with 0.50 per unit, but with CHF on the config line
+	 * => 1.50 EUR are added to the EUR refund candidate.
+	 */
+	@Test
+	public void addAssignableMoney_amountPerUnit_configLineCurrencyDiffersFromSalesCurrency()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final CurrencyId salesCurrencyId = refundTestTools.getCurrencyId();
+		assertThat(refundCandidate.getMoney().getCurrencyId()).isEqualTo(salesCurrencyId); // guard
+
+		final CurrencyId chfCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		assertThat(chfCurrencyId).isNotEqualTo(salesCurrencyId); // guard
+
+		final I_C_Flatrate_RefundConfig configRecord = load(extractSingleConfig(refundCandidate).getId(), I_C_Flatrate_RefundConfig.class);
+		configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		configRecord.setRefundPercent(null);
+		configRecord.setRefundAmt(new BigDecimal("0.50"));
+		configRecord.setC_Currency_ID(chfCurrencyId.getRepoId());
+		saveRecord(configRecord);
+
+		final RefundConfig amountPerUnitConfig = new RefundConfigRepository(new InvoiceScheduleRepository()).ofRecord(configRecord);
+		final RefundInvoiceCandidate refundCandidateWithAmountConfig = refundCandidate.toBuilder()
+				.clearRefundConfigs()
+				.refundConfig(amountPerUnitConfig)
+				.build();
+
+		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(new BigDecimal("3"));
+		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(salesCurrencyId); // guard
+
+		// invoke the method under test
+		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidateWithAmountConfig, amountPerUnitConfig, assignableCandidate);
+
+		assertThat(result.getMoneyAssignedToRefundCandidate().getCurrencyId()).isEqualTo(salesCurrencyId);
+		assertThat(result.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("1.50");
+		assertThat(result.getRefundInvoiceCandidate().getMoney().getCurrencyId()).isEqualTo(salesCurrencyId);
+		assertThat(result.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("101.50");
 	}
 }

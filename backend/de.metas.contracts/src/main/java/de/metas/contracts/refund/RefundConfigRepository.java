@@ -32,8 +32,6 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.InvoiceScheduleRepository;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -237,7 +235,7 @@ public class RefundConfigRepository
 				.refundInvoiceType(extractRefundInvoiceType(record))
 				.invoiceSchedule(invoiceSchedule)
 				.percent(Percent.of(record.getRefundPercent()))
-				.amount(Money.ofOrNull(record.getRefundAmt(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
+				.amount(record.getRefundAmt())
 				.minQty(record.getMinQty())
 				.refundBase(extractRefundBase(record))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
@@ -319,8 +317,7 @@ public class RefundConfigRepository
 				break;
 			case AMOUNT_PER_UNIT:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
-				configRecord.setRefundAmt(refundConfig.getAmount().toBigDecimal());
-				configRecord.setC_Currency_ID(refundConfig.getAmount().getCurrencyId().getRepoId());
+				configRecord.setRefundAmt(refundConfig.getAmount());
 				configRecord.setRefundPercent(null);
 				break;
 			default:

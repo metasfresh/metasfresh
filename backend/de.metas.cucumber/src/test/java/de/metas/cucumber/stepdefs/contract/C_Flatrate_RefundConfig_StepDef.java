@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.currency.CurrencyRepository;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -60,6 +61,7 @@ public class C_Flatrate_RefundConfig_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_HU_PackingMaterial_StepDefData packingMaterialTable;
+	private final CurrencyRepository currencyRepository = new CurrencyRepository();
 
 	/**
 	 * Creates refund configurations of refund-type conditions.
@@ -69,7 +71,10 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_Flatrate_Conditions_ID</b> — (required, identifier-ref) the refund conditions<br>
 	 *   <b>C_InvoiceSchedule_ID</b> — (required, identifier-ref) invoicing schedule of the refund<br>
-	 *   <b>RefundPercent</b> — (required) the percentage that is refunded<br>
+	 *   <b>RefundPercent</b> — (required unless RefundAmt is given) the percentage that is refunded<br>
+	 *   <b>RefundAmt</b> — (optional) amount refunded per unit; if given, the config's refund base is "amount per unit" and RefundPercent is ignored.
+	 *   The amount is always applied in the sales currency of the refunded invoice candidate<br>
+	 *   <b>C_Currency.ISO_Code</b> — (optional, only with RefundAmt) currency stored on the config line; it is not used for the refund computation<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) product the refund applies to; none = every product<br>
 	 *   <b>RefundMode</b> — (optional, default A) A = accumulated, T = tiered<br>
 	 *   <b>RefundInvoiceType</b> — (optional, default Invoice) Invoice or Creditmemo<br>
@@ -96,8 +101,20 @@ public class C_Flatrate_RefundConfig_StepDef
 			config.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			config.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			config.setC_InvoiceSchedule_ID(row.getAsIdentifier(I_C_Flatrate_RefundConfig.COLUMNNAME_C_InvoiceSchedule_ID).lookupNotNullIn(invoiceScheduleTable).getC_InvoiceSchedule_ID());
-			config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
-			config.setRefundPercent(row.getAsBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundPercent));
+			final Optional<BigDecimal> refundAmt = row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt);
+			if (refundAmt.isPresent())
+			{
+				config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+				config.setRefundAmt(refundAmt.get());
+				row.getAsOptionalCurrencyCode()
+						.map(currencyRepository::getCurrencyIdByCurrencyCode)
+						.ifPresent(currencyId -> config.setC_Currency_ID(currencyId.getRepoId()));
+			}
+			else
+			{
+				config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+				config.setRefundPercent(row.getAsBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundPercent));
+			}
 			config.setRefundMode(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundMode).orElse(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated));
 			config.setRefundInvoiceType(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundInvoiceType).orElse(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice));
 			config.setMinQty(row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_MinQty).orElse(BigDecimal.ZERO));

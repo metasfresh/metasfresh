@@ -35,7 +35,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
-import de.metas.money.Money;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -323,7 +322,7 @@ public class RefundContractRepository
 					.id(null)
 					.minQty(ZERO)
 					.percent(Percent.ZERO)
-					.amount(Money.toZeroOrNull(template.getAmount()))
+					.amount(template.getAmount() != null ? ZERO : null)
 					.build();
 			contractBuilder.refundConfig(zeroConfig);
 		}

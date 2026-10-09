@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -81,7 +80,12 @@ public class RefundConfig
 
 	Percent percent;
 
-	Money amount;
+	/**
+	 * The amount refunded per unit if {@link #refundBase} is {@link RefundBase#AMOUNT_PER_UNIT}.
+	 * It has no currency on purpose: the refund is always computed and booked in the sales currency,
+	 * i.e. in the currency of the invoice candidate whose sales are refunded.
+	 */
+	BigDecimal amount;
 
 	/** {@code null} means that every product is matched (unless there is a {@link #productCategoryId}). */
 	ProductId productId;
@@ -109,7 +113,7 @@ public class RefundConfig
 			@NonNull final RefundInvoiceType refundInvoiceType,
 			@NonNull final RefundBase refundBase,
 			@Nullable final Percent percent,
-			@Nullable final Money amount,
+			@Nullable final BigDecimal amount,
 			@Nullable final ProductId productId,
 			@Nullable final ProductCategoryId productCategoryId,
 			@Nullable final ProductId bonusProductId,
@@ -159,7 +163,7 @@ public class RefundConfig
 	public boolean isZeroConfig()
 	{
 		return minQty.signum() <= 0
-				&& (amount == null || amount.isZero())
+				&& (amount == null || amount.signum() == 0)
 				&& (percent == null || percent.isZero());
 	}
 
