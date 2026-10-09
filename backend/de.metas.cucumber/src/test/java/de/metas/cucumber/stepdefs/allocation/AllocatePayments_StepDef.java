@@ -38,16 +38,19 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.refund.paymentdeduction.PaymentBonusDeductionService;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
@@ -91,6 +94,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
@@ -108,6 +112,10 @@ public class AllocatePayments_StepDef
 {
 	private static final String WRITE_OFF_PROCESS = "WRITEOFF";
 	private static final String DISCOUNT_PROCESS = "DISCOUNT";
+	/**
+	 * Same message as the WebUI payment allocation ({@code PaymentsViewAllocateCommand}), which is not on this module's classpath.
+	 */
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
@@ -119,6 +127,7 @@ public class AllocatePayments_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
@@ -170,6 +179,26 @@ public class AllocatePayments_StepDef
 	 */
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
+	{
+		allocatePaymentsToInvoices(table);
+	}
+
+	/**
+	 * Same as {@code allocate payments to invoices}, but asserts that the allocation is refused with the given {@code AD_Message.ErrorCode}
+	 * e.g. when the payment's partner is not configured as invoice-processing service company.
+	 * <pre>
+	 * When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG
+	 *   | C_Invoice_ID | C_Payment_ID |
+	 *   | inv1         | pay1         |
+	 * </pre>
+	 */
+	@And("^allocate payments to invoices expecting error code (.*)$")
+	public void allocate_payment_to_invoice_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable table)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> allocatePaymentsToInvoices(table));
+	}
+
+	private void allocatePaymentsToInvoices(@NonNull final DataTable table)
 	{
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
@@ -538,7 +567,12 @@ public class AllocatePayments_StepDef
 						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())
 						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
 						.build())
-				.orElseThrow(() -> new AdempiereException("Cannot find service company " + serviceCompanyBPartnerId + " for customer " + invoiceToAllocate.getBpartnerId())));
+				.orElseThrow(() -> new AdempiereException(
+						MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
+						invoiceToAllocate.getDocumentNo(),
+						paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
+						bpartnerBL.getBPartnerName(serviceCompanyBPartnerId))
+						.markAsUserValidationError()));
 	}
 
 	@NonNull
