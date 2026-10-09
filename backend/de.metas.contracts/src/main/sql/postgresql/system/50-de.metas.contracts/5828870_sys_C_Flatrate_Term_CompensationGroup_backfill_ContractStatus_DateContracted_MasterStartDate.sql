@@ -18,6 +18,7 @@ WHERE t.Type_Conditions = 'CompensationGroup'
   AND t.DateContracted IS NULL
 ;
 
+-- MasterStartDate is the FIRST term of the chain's COALESCE(MasterStartDate, StartDate), on purpose unlike the completion hook (direct predecessor's MasterStartDate): legacy chains have no MasterStartDate on any term yet, so the direct-predecessor rule would just copy each term's own StartDate.
 WITH RECURSIVE chain (C_Flatrate_Term_ID, ChainMasterStartDate) AS
                    (SELECT first.C_Flatrate_Term_ID, COALESCE(first.MasterStartDate, first.StartDate)
                     FROM C_Flatrate_Term first
