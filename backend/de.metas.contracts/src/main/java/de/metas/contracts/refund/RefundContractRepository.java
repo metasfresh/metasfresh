@@ -7,28 +7,37 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -62,8 +71,8 @@ import lombok.NonNull;
 @Repository
 public class RefundContractRepository
 {
-	private static final CCache<ArrayKey, I_C_Flatrate_Term> CACHE = //
-			CCache.<ArrayKey, I_C_Flatrate_Term> newCache(
+	private static final CCache<ArrayKey, ImmutableList<FlatrateTermId>> CACHE = //
+			CCache.<ArrayKey, ImmutableList<FlatrateTermId>> newCache(
 					I_C_Flatrate_Term.Table_Name + "#by"
 							+ I_C_Flatrate_Term.COLUMNNAME_Type_Conditions + "#"
 							+ I_C_Flatrate_Term.COLUMNNAME_DocStatus + "#"
@@ -74,6 +83,19 @@ public class RefundContractRepository
 					0,
 					CCache.EXPIREMINUTES_Never);
 
+	private static final CCache<LocalDate, Boolean> ANY_REFUND_CONTRACT_CACHE = //
+			CCache.<LocalDate, Boolean> newCache(
+					I_C_Flatrate_Term.Table_Name + "#anyRefundContractOn",
+					0,
+					CCache.EXPIREMINUTES_Never);
+
+	/** Reset when a term or a config changes, e.g. when a config is flagged as deducted at payment. */
+	private static final CCache<LocalDate, Boolean> ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE = CCache.<LocalDate, Boolean>builder()
+			.cacheName(I_C_Flatrate_Term.Table_Name + "#anyDeductedAtPaymentContractOn")
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
+			.build();
+
 	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
@@ -83,36 +105,108 @@ public class RefundContractRepository
 		this.refundConfigRepository = refundConfigRepository;
 	}
 
-	public Optional<FlatrateTermId> getIdByQuery(@NonNull final RefundContractQuery query)
+	/**
+	 * Resets the caches of the refund contracts. Needed after a refund contract was completed: the cache invalidation of the table change
+	 * is sent before the transaction is committed, and this node ignores its own broadcast, so a read in between could cache the old state.
+	 */
+	public void resetCaches()
 	{
-		final I_C_Flatrate_Term contractRecord = retrieveRecordOrNull(query);
-
-		if (contractRecord != null)
-		{
-			return Optional.of(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
-		}
-		return Optional.empty();
+		CACHE.reset();
+		ANY_REFUND_CONTRACT_CACHE.reset();
+		ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.reset();
 	}
 
-	private I_C_Flatrate_Term retrieveRecordOrNull(@NonNull final RefundContractQuery query)
+	/**
+	 * @return {@code true} if there is any completed refund contract of any partner on the given date
+	 */
+	public boolean hasAnyRefundContract(@NonNull final LocalDate date)
+	{
+		return ANY_REFUND_CONTRACT_CACHE.getOrLoad(date, () -> anyRefundContractExists(TimeUtil.asTimestamp(date)));
+	}
+
+	private static boolean anyRefundContractExists(@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if there is any completed refund contract that is deducted at payment, of any partner, on the given date
+	 */
+	public boolean hasAnyDeductedAtPaymentContract(@NonNull final LocalDate date)
+	{
+		return ANY_DEDUCTED_AT_PAYMENT_CONTRACT_CACHE.getOrLoad(date, () -> anyDeductedAtPaymentContractExists(TimeUtil.asTimestamp(date)));
+	}
+
+	private static boolean anyDeductedAtPaymentContractExists(@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, date)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryDeductedAtPaymentConfigs())
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the active configs that are deducted at payment, e.g. to select the terms of their conditions
+	 */
+	public static IQuery<I_C_Flatrate_RefundConfig> queryDeductedAtPaymentConfigs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsDeductedAtPayment, true)
+				.create();
+	}
+
+	/**
+	 * @return {@code true} if there is any completed (or already closed) contract with the given conditions
+	 */
+	public boolean hasCompletedContracts(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed, X_C_Flatrate_Term.DOCSTATUS_Closed)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return the ids of all refund terms of the query's invoice partner; a term with the queried product comes before a term without product.
+	 */
+	public ImmutableList<FlatrateTermId> getIdsByQuery(@NonNull final RefundContractQuery query)
 	{
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(query.getDate());
 		final int billPartnerId = query.getBPartnerId().getRepoId();
 		final int productId = query.getProductId().getRepoId();
 
 		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
-		final I_C_Flatrate_Term contractRecord = CACHE.getOrLoad(
+		return CACHE.getOrLoad(
 				key,
-				() -> retrieveRecordForCache(invoicableFromTimestamp, billPartnerId, productId));
-		return contractRecord;
+				() -> retrieveIdsForCache(invoicableFromTimestamp, billPartnerId, productId));
 	}
 
-	private static I_C_Flatrate_Term retrieveRecordForCache(
+	private static ImmutableList<FlatrateTermId> retrieveIdsForCache(
 			@NonNull final Timestamp invoicableFromTimestamp,
 			final int billPartnerId,
 			final int productId)
 	{
-		final I_C_Flatrate_Term contractRecord = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
@@ -123,15 +217,67 @@ public class RefundContractRepository
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, null, productId)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.endOrderBy()
 				.create()
-				.first();
-		return contractRecord;
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	public Optional<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
+	/**
+	 * @return all refund contracts that match the query. They are additive: every one of them applies.
+	 *         A contract is the query's if its partner is the query's invoice partner: the refund always goes to the invoice partner.
+	 *         A contract whose configs have a product category base only matches a product of that category or of one of its sub-categories.
+	 *         A config with both a product and a category requires both: the term's product is the config's product, and the product has to be in the category.
+	 *         All active configs of a condition share its category.
+	 */
+	public ImmutableList<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
 	{
-		return getIdByQuery(query).map(this::getById);
+		// only needed (and looked up) if a contract has a category base
+		final Supplier<ImmutableSet<ProductCategoryId>> productCategoryIdAndAncestors = Suppliers.memoize(() -> retrieveProductCategoryIdAndAncestors(query.getProductId()));
+
+		return getIdsByQuery(query)
+				.stream()
+				.map(this::getById)
+				.filter(contract -> isMatching(contract, query, productCategoryIdAndAncestors))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return {@code true} if the given contract matches the query in the sense of {@link #getByQuery(RefundContractQuery)}:
+	 *         it is valid at the query's date, its product (if any) is the query's, its partner is the query's invoice partner, and the query's product is in its base.
+	 *         For callers that load the contracts of several queries at once.
+	 * @param productCategoryIdAndAncestors the category of the query's product and its ancestors; only needed (and called) if the contract has a category base
+	 */
+	public static boolean isMatching(
+			@NonNull final RefundContract contract,
+			@NonNull final RefundContractQuery query,
+			@NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
+	{
+		final LocalDate date = query.getDate();
+		if (date.isBefore(contract.getStartDate()) || date.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		if (contract.getProductId() != null && !contract.getProductId().equals(query.getProductId()))
+		{
+			return false;
+		}
+		return contract.getBPartnerId().equals(query.getBPartnerId())
+				&& contract.getRefundConfigs().stream().anyMatch(config -> isInBase(config, productCategoryIdAndAncestors));
+	}
+
+	private static ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)
+	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productDAO.getProductCategoryIdAndAncestors(productCategoryId)
+				: ImmutableSet.of();
+	}
+
+	private static boolean isInBase(@NonNull final RefundConfig config, @NonNull final Supplier<? extends Set<ProductCategoryId>> productCategoryIdAndAncestors)
+	{
+		return config.getProductCategoryId() == null || productCategoryIdAndAncestors.get().contains(config.getProductCategoryId());
 	}
 
 	public RefundContract getById(@NonNull final FlatrateTermId flatrateTermId)
@@ -163,6 +309,7 @@ public class RefundContractRepository
 				.builder()
 				.id(flatrateTermId)
 				.bPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
+				.productId(productId)
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
 				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()));
 
