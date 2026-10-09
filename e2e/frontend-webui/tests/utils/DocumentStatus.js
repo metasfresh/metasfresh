@@ -46,7 +46,8 @@ export const openDocumentStatusMenu = async ({ windowId, documentId }) => {
  * @param {Object} options
  * @param {number|string} options.windowId - AD_Window_ID of the displayed document
  * @param {number|string} options.documentId - record id of the displayed document
- * @param {number} [options.maxAttempts=3] - how many times the dropdown is opened at most
+ * @param {number} [options.maxAttempts=3] - how many times the dropdown is opened at most,
+ *   including the opening that clicks RE (so at least 2: one to reactivate, one to see CO)
  * @param {string} [options.notReactivatableHint] - appended to the failure message when the
  *   document does not offer RE on the first opening
  */
