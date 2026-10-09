@@ -16,8 +16,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 
 /*
@@ -99,16 +99,33 @@ public class ContractCompensationGroupTermRepository
 
 	/**
 	 * @return every active {@code CompensationGroup}-type term of the context client whose {@code DocStatus} is completed/closed
-	 * and whose {@code ContractStatus} is one of {@code contractStatuses}, ordered by {@code C_Flatrate_Term_ID}.
+	 * and whose contract status the daily update may change on {@code today}, ordered by {@code C_Flatrate_Term_ID}:
+	 * <ul>
+	 *     <li>"not yet started" ({@code Wa}) and started on or before {@code today}, or</li>
+	 *     <li>"running" ({@code Ru}), ended before {@code today} and not extended ({@code C_FlatrateTerm_Next_ID} empty)</li>
+	 * </ul>
+	 * This only narrows the candidates; {@link ContractCompensationGroupTermStatusRule#computeStatusUpdate} still decides per term.
 	 */
-	public List<I_C_Flatrate_Term> getCompletedTermsWithContractStatus(@NonNull final Collection<FlatrateTermStatus> contractStatuses)
+	public List<I_C_Flatrate_Term> getTermsDueForDailyContractStatusUpdate(@NonNull final LocalDate today)
 	{
+		final Timestamp startOfToday = TimeUtil.asTimestamp(today);
+		final Timestamp startOfTomorrow = TimeUtil.asTimestamp(today.plusDays(1));
+
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Completed, DocStatus.Closed))
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, contractStatuses)
+				.filter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+						.setJoinOr()
+						.addFilter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+								.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Waiting)
+								// "StartDate < tomorrow 00:00" rather than "<= today 00:00": a start date with a time of day still counts as today
+								.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS, startOfTomorrow))
+						.addFilter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+								.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running)
+								.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.LESS, startOfToday)
+								.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, null, 0)))
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.endOrderBy()
