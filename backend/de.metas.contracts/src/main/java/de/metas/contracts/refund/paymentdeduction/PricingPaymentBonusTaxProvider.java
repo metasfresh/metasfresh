@@ -1,6 +1,8 @@
 package de.metas.contracts.refund.paymentdeduction;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
@@ -33,6 +35,9 @@ import static java.math.BigDecimal.ONE;
 @Component
 public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_BONUS_PRODUCT_HAS_NO_PRICE = AdMessageKey.of("de.metas.contracts.refund.paymentdeduction.BonusProductHasNoPrice");
+
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -56,8 +61,8 @@ public class PricingPaymentBonusTaxProvider implements PaymentBonusTaxProvider
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 		if (!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null)
 		{
-			throw new AdempiereException("The bonus product has no price in the price list of the invoice, so its tax is unknown")
-					.appendParametersToMessage()
+			throw new AdempiereException(MSG_BONUS_PRODUCT_HAS_NO_PRICE)
+					.markAsUserValidationError()
 					.setParameter("M_Product_ID", bonusProductId.getRepoId())
 					.setParameter("C_Invoice_ID", salesInvoice.getC_Invoice_ID())
 					.setParameter("M_PriceList_ID", salesInvoice.getM_PriceList_ID());
