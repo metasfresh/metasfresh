@@ -572,7 +572,9 @@ public class AllocatePayments_StepDef
 						invoiceToAllocate.getDocumentNo(),
 						paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
 						bpartnerBL.getBPartnerName(serviceCompanyBPartnerId))
-						.markAsUserValidationError()));
+						.markAsUserValidationError()
+						.setParameter("C_Invoice_ID", invoiceToAllocate.getInvoiceId().getRepoId())
+						.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId())));
 	}
 
 	@NonNull
