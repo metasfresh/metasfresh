@@ -7,8 +7,8 @@ import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common
  *
  * The dropdown keeps the action list of its previous opening in state and re-fetches it only
  * when the status button gains focus, so the button is blurred first and the fresh
- * `.../field/DocAction/dropdown` response is awaited — the returned keys never describe a stale
- * document state.
+ * `.../field/DocAction/dropdown` response is awaited — the returned keys reflect the server state
+ * at (or shortly before) the click, not a list left over from an earlier opening.
  *
  * @param {Object} options
  * @param {number|string} options.windowId - AD_Window_ID of the displayed document
@@ -38,16 +38,17 @@ export const openDocumentStatusMenu = async ({ windowId, documentId }) => {
  * offers "Complete" (status-CO) again.
  *
  * Every wait is on a concrete event, never a sleep or a spinner heuristic: the dropdown GET that
- * backs each opening, and the reactivate PATCH on `/window/<windowId>/<documentId>`. Each attempt
- * first checks whether the document is already reactivated (CO offered), so a reactivation that
- * landed after a previous attempt's check is recognised instead of hunting for a vanished RE.
+ * backs each opening, and the reactivate PATCH on `/window/<windowId>/<documentId>`. The first
+ * opening must offer "Reactivate" (status-RE) — a document that is not completed fails at once.
+ * Once RE was clicked, every later opening only checks whether CO is offered, so a reactivation
+ * that lands late is recognised instead of hunting for a vanished RE.
  *
  * @param {Object} options
  * @param {number|string} options.windowId - AD_Window_ID of the displayed document
  * @param {number|string} options.documentId - record id of the displayed document
  * @param {number} [options.maxAttempts=3] - how many times the dropdown is opened at most
  * @param {string} [options.notReactivatableHint] - appended to the failure message when the
- *   dropdown offers neither CO nor RE
+ *   document does not offer RE on the first opening
  */
 export const reactivateDocument = async ({
   windowId,
@@ -57,15 +58,18 @@ export const reactivateDocument = async ({
 }) => {
   const page = getPage();
   let reactivated = false;
+  let reactivateSent = false;
   let offeredActions = [];
 
   for (let attempt = 1; attempt <= maxAttempts && !reactivated; attempt++) {
     offeredActions = await openDocumentStatusMenu({ windowId, documentId });
 
-    if (offeredActions.includes('CO')) {
-      await expect(page.getByTestId('status-CO')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-      reactivated = true;
-    } else if (offeredActions.includes('RE')) {
+    if (!reactivateSent) {
+      expect(
+        offeredActions,
+        `document is not in a reactivatable (completed) state; offered actions: [${offeredActions.join(', ')}]` +
+          (notReactivatableHint ? ` — ${notReactivatableHint}` : '')
+      ).toContain('RE');
       const reOption = page.getByTestId('status-RE');
       await expect(reOption).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
 
@@ -79,6 +83,10 @@ export const reactivateDocument = async ({
       await reOption.click();
       const patchResp = await reactivatePatch;
       expect(patchResp.ok(), `reactivate PATCH returned HTTP ${patchResp.status()}`).toBe(true);
+      reactivateSent = true;
+    } else if (offeredActions.includes('CO')) {
+      await expect(page.getByTestId('status-CO')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      reactivated = true;
     }
 
     await page.keyboard.press('Escape');
@@ -87,7 +95,6 @@ export const reactivateDocument = async ({
   expect(
     reactivated,
     `document did not reactivate to a Drafted (completable) state after ${maxAttempts} attempts; ` +
-      `last offered actions: [${offeredActions.join(', ')}]` +
-      (notReactivatableHint ? ` — ${notReactivatableHint}` : '')
+      `last offered actions: [${offeredActions.join(', ')}]`
   ).toBe(true);
 };
