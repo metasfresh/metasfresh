@@ -482,3 +482,134 @@ Feature: Bonus that the customer deducts when paying an invoice
       | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | Bill_BPartner_ID |
       | refundPeriodic         | termPeriodic       | 3               | customerBP       |
     And the C_Flatrate_Term identified by termDeducted has no refund C_Invoice_Candidate
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # The customer also gets 3 % Bonus Ware on the invoice:
+  # the bonus at payment is a percentage of the goods value before the on-invoice bonus
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC9
+  Scenario: The bonus at payment is computed on the goods value before the on-invoice bonus of a compensation group contract
+    Given set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And metasfresh has date and time 2026-07-15T09:00:00+02:00[Europe/Berlin]
+    # the goods and the on-invoice bonus product sit in the goods category, on which the bonus at payment is granted
+    And metasfresh contains M_Products:
+      | Identifier     | OPT.M_Product_Category_ID.Identifier | OPT.IsStocked |
+      | groupGoods     | goodsCategory                        | false         |
+      | onInvoiceBonus | goodsCategory                        | false         |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
+      | pp_grpGoods  | deductionPLV                      | groupGoods              | 10       | PCE               | lowTaxCateg      |
+      | pp_onInvoice | deductionPLV                      | onInvoiceBonus          | 1        | PCE               | lowTaxCateg      |
+
+    # the on-invoice bonus: a compensation group contract with 3 % Bonus Ware on the goods
+    And load C_DocType:
+      | DocBaseType | DocSubType | C_DocType_ID      |
+      | SOO         | SO         | docTypeSalesOrder |
+    And metasfresh contains C_Flatrate_Transition:
+      | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
+      | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier      | Name          | OPT.IsAdditive |
+      | onInvoiceSchema | Bonus Ware 3% | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier          | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | onInvoiceSchemaLine | onInvoiceSchema                          | onInvoiceBonus          | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier        | Name               | C_CompensationGroup_Schema_ID.Identifier |
+      | onInvoiceSettings | On-invoice bonuses | onInvoiceSchema                          |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | onInvoiceSettings                                  | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier    | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | condOnInvoice | CompensationGroup | zeroDurTrans                            | onInvoiceSettings                                      |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | termOnInvoice | condOnInvoice                       | customerBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by termOnInvoice is completed
+
+    # the bonus at payment: 2.6 % on the goods
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 2.6           | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the order is shipped, then invoiced: goods 40 x 10.00 = 400.00; 3 % on the invoice = -12.00
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | salesOrder | true    | customerBP               | 2026-07-15  | D           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | salesLine  | salesOrder            | groupGoods              | 40         |
+    And the order identified by salesOrder is completed
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | bonusLine                 | salesOrder            | onInvoiceBonus          | 1          | true                        | -12   | termOnInvoice                     |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_goods   | salesLine                 | N             |
+      | ss_bonus   | bonusLine                 | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_goods              |
+      | ss_bonus              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_goods                         | shipment              |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | salesLine      | salesIC                |
+      | bonusLine      | bonusIC                |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | salesIC                           |
+      | bonusIC                           |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | salesInvoice            | salesIC                           |
+    # GrandTotal = 400.00 - 12.00 + 7 % VAT 27.16 = 415.16
+    And validate invoice lines for salesInvoice:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
+      | salesInvoice_goods          | groupGoods              | 40          | 400        |
+      | salesInvoice_bonus          | onInvoiceBonus          | 1           | -12        |
+
+    # bonus at payment: 2.6 % of the 400.00 goods before the on-invoice bonus = 10.40 + 7 % VAT 0.73 = 11.13
+    # (on the 388.00 after the on-invoice bonus it would be 10.09)
+    # the customer pays 415.16 - 11.13 = 404.03
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 404.03 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | salesInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | C_BPartner_ID | GrandTotal | DocBaseType | DocSubType | IsPaid |
+      | salesInvoice    | customerBP    | 415.16 EUR | ARI         |            | true   |
+      | bonusCreditMemo | customerBP    | 11.13 EUR  | ARC         | PB         | true   |
+    And validate created invoice lines
+      | C_Invoice_ID    | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID |
+      | bonusCreditMemo | bonusWare    | 1           | 10.40      | lowTax   |
+    And validate payments
+      | C_Payment_ID | IsAllocated |
+      | payment      | true        |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID       | C_BPartner_ID | Record_ID       | M_Product_ID | C_Tax_ID |
+      | P_Revenue_Acct        | 10.40 EUR   |             | bonusRevenueAcct | customerBP    | bonusCreditMemo | bonusWare    | lowTax   |
+      | T_Due_Acct            | 0.73 EUR    |             |                  | customerBP    | bonusCreditMemo |              | lowTax   |
+      | C_Receivable_Acct     |             | 11.13 EUR   |                  | customerBP    | bonusCreditMemo |              | -        |
+      | *                     |             |             |                  |               | bonusCreditMemo |              |          |
