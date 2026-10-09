@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -39,6 +40,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -63,6 +65,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -82,6 +85,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -92,6 +96,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -99,6 +105,7 @@ import java.util.Set;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
@@ -291,6 +298,86 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.build());
 
 			assertThat(result).isEmpty();
+		}
+	}
+
+	@Nested
+	public class extractInvoiceProcessingContext
+	{
+		private final BPartnerId customerId = BPartnerId.ofRepoId(2);
+
+		@AfterEach
+		public void resetTime()
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		@Test
+		public void withPayment_usesPaymentPartnerAsServiceCompanyAndPaymentDate()
+		{
+			final ZonedDateTime paymentDate = LocalDate.parse("2020-05-10").atStartOfDay(ZoneId.of("UTC"));
+			final BPartnerId paymentPartnerId = BPartnerId.ofRepoId(777);
+
+			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+					customerId,
+					Collections.singletonList(InvoiceProcessingContext.of(paymentPartnerId, paymentDate)),
+					() -> new AdempiereException("no config"));
+
+			assertThat(result).isEqualTo(InvoiceProcessingContext.of(paymentPartnerId, paymentDate));
+		}
+
+		@Test
+		public void withSeveralPaymentsOfSameContext_isAccepted()
+		{
+			final InvoiceProcessingContext context = InvoiceProcessingContext.of(BPartnerId.ofRepoId(777), LocalDate.parse("2020-05-10").atStartOfDay(ZoneId.of("UTC")));
+
+			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+					customerId, Arrays.asList(context, context), () -> new AdempiereException("no config"));
+
+			assertThat(result).isEqualTo(context);
+		}
+
+		@Test
+		public void withPaymentsOfDifferentContexts_fails()
+		{
+			final ZonedDateTime paymentDate = LocalDate.parse("2020-05-10").atStartOfDay(ZoneId.of("UTC"));
+
+			assertThatThrownBy(() -> invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+					customerId,
+					Arrays.asList(
+							InvoiceProcessingContext.of(BPartnerId.ofRepoId(777), paymentDate),
+							InvoiceProcessingContext.of(BPartnerId.ofRepoId(778), paymentDate)),
+					() -> new AdempiereException("no config")))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate").toAD_Message());
+					});
+		}
+
+		@Test
+		public void withoutPayment_usesConfiguredServiceCompanyAndNow()
+		{
+			final ZonedDateTime now = LocalDate.parse("2020-06-01").atStartOfDay(ZoneId.of("UTC"));
+			SystemTime.setFixedTimeSource(now);
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(customerId)
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC")))
+					.build();
+
+			final InvoiceProcessingContext result = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+					customerId, Collections.emptyList(), () -> new AdempiereException("no config"));
+
+			assertThat(result.getServiceCompanyId()).isEqualTo(serviceCompanyBPartnerId);
+			assertThat(result.getPaymentDate().toInstant()).isEqualTo(now.toInstant());
+		}
+
+		@Test
+		public void withoutPaymentAndWithoutConfig_throwsTheGivenError()
+		{
+			assertThatThrownBy(() -> invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+					customerId, Collections.emptyList(), () -> new AdempiereException("no config for customer")))
+					.hasMessageContaining("no config for customer");
 		}
 	}
 
