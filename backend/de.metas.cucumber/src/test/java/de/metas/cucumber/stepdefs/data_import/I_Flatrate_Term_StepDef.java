@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.data_import;
 
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Import;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -8,6 +9,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -44,6 +46,7 @@ public class I_Flatrate_Term_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -51,12 +54,14 @@ public class I_Flatrate_Term_StepDef
 			@NonNull final I_Flatrate_Term_StepDefData iFlatrateTermTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Flatrate_Term_StepDefData contractTable)
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable)
 	{
 		this.iFlatrateTermTable = iFlatrateTermTable;
 		this.bPartnerTable = bPartnerTable;
 		this.productTable = productTable;
 		this.contractTable = contractTable;
+		this.conditionsTable = conditionsTable;
 	}
 
 	/**
@@ -71,10 +76,13 @@ public class I_Flatrate_Term_StepDef
 	 *     the search key, so a scenario never has to hardcode a Value that could collide with another run —
 	 *     mutually exclusive with BPartnerValue<br>
 	 *   <b>C_Flatrate_Conditions_Value</b> — (optional) conditions search key (matched by Name)<br>
+	 *   <b>C_Flatrate_Conditions_ID</b> — (optional, identifier-ref) previously-created conditions; their Name is used as the search key
+	 *     (for conditions that get a unique name per run), instead of C_Flatrate_Conditions_Value<br>
 	 *   <b>StartDate</b> — (optional) the row's start date<br>
 	 *   <b>EndDate</b> — (optional) the row's end date<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) a previously-created product; its own Value is used as the
 	 *     search key (product-less contract types, e.g. CompensationGroup, are imported without it)<br>
+	 *   <b>ProductValue</b> — (optional) a raw product search key, e.g. one that matches no product; mutually exclusive with M_Product_ID<br>
 	 *   <b>Price</b> — (optional) the row's price<br>
 	 *   <b>Qty</b> — (optional) the row's planned qty per unit<br>
 	 * @cucumber.example
@@ -107,6 +115,10 @@ public class I_Flatrate_Term_StepDef
 
 			row.getAsOptionalString(I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_Value)
 					.ifPresent(record::setC_Flatrate_Conditions_Value);
+			row.getAsOptionalIdentifier(I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
+					.map(identifier -> identifier.lookupNotNullIn(conditionsTable))
+					.map(I_C_Flatrate_Conditions::getName)
+					.ifPresent(record::setC_Flatrate_Conditions_Value);
 			row.getAsOptionalLocalDateTimestamp(I_I_Flatrate_Term.COLUMNNAME_StartDate)
 					.ifPresent(record::setStartDate);
 			row.getAsOptionalLocalDateTimestamp(I_I_Flatrate_Term.COLUMNNAME_EndDate)
@@ -115,6 +127,8 @@ public class I_Flatrate_Term_StepDef
 			row.getAsOptionalIdentifier(I_I_Flatrate_Term.COLUMNNAME_M_Product_ID)
 					.map(identifier -> identifier.lookupNotNullIn(productTable))
 					.map(I_M_Product::getValue)
+					.ifPresent(record::setProductValue);
+			row.getAsOptionalString(I_I_Flatrate_Term.COLUMNNAME_ProductValue)
 					.ifPresent(record::setProductValue);
 			row.getAsOptionalBigDecimal(I_I_Flatrate_Term.COLUMNNAME_Price)
 					.ifPresent(record::setPrice);
@@ -181,6 +195,7 @@ public class I_Flatrate_Term_StepDef
 	 *   <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
 	 *   <b>CreatedTermEndDate</b> — (optional) expected EndDate of the C_Flatrate_Term the row created<br>
 	 *   <b>CreatedTermDocStatus</b> — (optional) expected DocStatus of the C_Flatrate_Term the row created<br>
+	 *   <b>CreatedTermHasProduct</b> — (optional, boolean) whether the created C_Flatrate_Term has an M_Product_ID<br>
 	 *   <b>C_Flatrate_Term_ID</b> — (optional) alias to register the row's created C_Flatrate_Term under, in
 	 *     C_Flatrate_Term_StepDefData, so a later step can reference it directly (e.g. "the C_Flatrate_Term
 	 *     identified by ... is completed")<br>
@@ -240,6 +255,14 @@ public class I_Flatrate_Term_StepDef
 				assertThat(contract.getDocStatus())
 						.as("I_Flatrate_Term[%s]'s created C_Flatrate_Term.DocStatus", rowIdentifier)
 						.isEqualTo(expectedDocStatus);
+			});
+
+			row.getAsOptionalBoolean("CreatedTermHasProduct").ifPresent(expectedHasProduct -> {
+				final I_C_Flatrate_Term contract = record.getC_Flatrate_Term();
+				assertThat(contract).as("I_Flatrate_Term[%s].C_Flatrate_Term", rowIdentifier).isNotNull();
+				assertThat(contract.getM_Product_ID() > 0)
+						.as("I_Flatrate_Term[%s]'s created C_Flatrate_Term has an M_Product_ID (is %s)", rowIdentifier, contract.getM_Product_ID())
+						.isEqualTo(expectedHasProduct);
 			});
 
 			row.getAsOptionalIdentifier(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).ifPresent(identifier -> {

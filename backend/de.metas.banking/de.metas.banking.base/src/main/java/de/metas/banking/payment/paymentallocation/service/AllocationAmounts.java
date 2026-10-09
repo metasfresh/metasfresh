@@ -60,15 +60,18 @@ public class AllocationAmounts
 	Money discountAmt;
 	Money writeOffAmt;
 	Money invoiceProcessingFee;
+	/** The bonus that the customer deducted when paying (incl. VAT); booked with a payment bonus credit memo. */
+	Money paymentBonus;
 
 	@Builder(toBuilder = true)
 	private AllocationAmounts(
 			@Nullable final Money payAmt,
 			@Nullable final Money discountAmt,
 			@Nullable final Money writeOffAmt,
-			@Nullable final Money invoiceProcessingFee)
+			@Nullable final Money invoiceProcessingFee,
+			@Nullable final Money paymentBonus)
 	{
-		final Money firstNonNull = CoalesceUtil.coalesce(payAmt, discountAmt, writeOffAmt, invoiceProcessingFee);
+		final Money firstNonNull = CoalesceUtil.coalesce(payAmt, discountAmt, writeOffAmt, invoiceProcessingFee, paymentBonus);
 		if (firstNonNull == null)
 		{
 			throw new AdempiereException("Provide at least one amount. If you want o create a ZERO instance, use the zero(currencyId) method.");
@@ -79,12 +82,14 @@ public class AllocationAmounts
 		this.discountAmt = discountAmt != null ? discountAmt : zero;
 		this.writeOffAmt = writeOffAmt != null ? writeOffAmt : zero;
 		this.invoiceProcessingFee = invoiceProcessingFee != null ? invoiceProcessingFee : zero;
+		this.paymentBonus = paymentBonus != null ? paymentBonus : zero;
 
 		this.currencyId = Money.getCommonCurrencyIdOfAll(
 				this.payAmt,
 				this.discountAmt,
 				this.writeOffAmt,
-				this.invoiceProcessingFee);
+				this.invoiceProcessingFee,
+				this.paymentBonus);
 	}
 
 	@Override
@@ -101,6 +106,7 @@ public class AllocationAmounts
 				.add("discountAmt", toBD.apply(discountAmt))
 				.add("writeOffAmt", toBD.apply(writeOffAmt))
 				.add("invoiceProcessingFee", toBD.apply(invoiceProcessingFee))
+				.add("paymentBonus", toBD.apply(paymentBonus))
 				.toString();
 	}
 
@@ -192,6 +198,7 @@ public class AllocationAmounts
 				.discountAmt(this.discountAmt.add(other.discountAmt))
 				.writeOffAmt(this.writeOffAmt.add(other.writeOffAmt))
 				.invoiceProcessingFee(this.invoiceProcessingFee.add(other.invoiceProcessingFee))
+				.paymentBonus(this.paymentBonus.add(other.paymentBonus))
 				.build();
 	}
 
@@ -202,6 +209,7 @@ public class AllocationAmounts
 				.discountAmt(this.discountAmt.subtract(other.discountAmt))
 				.writeOffAmt(this.writeOffAmt.subtract(other.writeOffAmt))
 				.invoiceProcessingFee(this.invoiceProcessingFee.subtract(other.invoiceProcessingFee))
+				.paymentBonus(this.paymentBonus.subtract(other.paymentBonus))
 				.build();
 	}
 
@@ -227,12 +235,13 @@ public class AllocationAmounts
 				.discountAmt(this.discountAmt.negate())
 				.writeOffAmt(this.writeOffAmt.negate())
 				.invoiceProcessingFee(this.invoiceProcessingFee) // never negate the processing fee because it will be paid to the service provider no matter what kind of invoice it is applied to.
+				.paymentBonus(this.paymentBonus.negate())
 				.build();
 	}
 
 	public Money getTotalAmt()
 	{
-		return payAmt.add(discountAmt).add(writeOffAmt).add(invoiceProcessingFee);
+		return payAmt.add(discountAmt).add(writeOffAmt).add(invoiceProcessingFee).add(paymentBonus);
 	}
 
 	public boolean isZero()
@@ -240,7 +249,8 @@ public class AllocationAmounts
 		return payAmt.signum() == 0
 				&& discountAmt.signum() == 0
 				&& writeOffAmt.signum() == 0
-				&& invoiceProcessingFee.signum() == 0;
+				&& invoiceProcessingFee.signum() == 0
+				&& paymentBonus.signum() == 0;
 	}
 
 	public AllocationAmounts toZero()
