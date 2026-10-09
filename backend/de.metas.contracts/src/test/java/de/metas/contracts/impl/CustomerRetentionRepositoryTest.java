@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.CustomerRetentionId;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.invoice.ContractInvoiceService;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
@@ -171,6 +172,26 @@ public class CustomerRetentionRepositoryTest
 		refresh(customerRetention);
 
 		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
+	}
+
+	/**
+	 * Customer retention is not about compensation-group contracts: a partner whose only contract is a running compensation-group contract does not become a new customer.
+	 */
+	@Test
+	public void updateCustomerRetention_onlyRunningCompensationGroupContract_noCustomerRetention()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		final I_C_Flatrate_Term compensationGroupTerm = createFlatrateTerm(partner.getC_BPartner_ID(), TimeUtil.parseTimestamp("2018-01-01"), TimeUtil.parseTimestamp("2019-12-31"));
+		compensationGroupTerm.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
+		save(compensationGroupTerm);
+
+		repository.createUpdateCustomerRetention(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		refresh(customerRetention);
+
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
 	}
 
 	@Test

@@ -62,6 +62,9 @@ public interface IContractsDAO extends ISingletonService
 
 	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions, boolean ignoreDateFilters);
 
+	/**
+	 * @return the partner's active term with the latest master end date (else end date); {@code CompensationGroup} terms are not considered.
+	 */
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	/**
