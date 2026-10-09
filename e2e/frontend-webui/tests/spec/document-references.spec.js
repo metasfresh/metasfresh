@@ -14,7 +14,6 @@ import { SALES_ORDER_WINDOW_ID, PURCHASE_ORDER_WINDOW_ID } from '../utils/Window
 import {
   openReferencesPanelComplete,
   openRelatedDocument,
-  waitForReferences,
   getVisibleReferences,
   REFERENCE_DATA_CY,
 } from '../utils/DocumentReferences';
@@ -41,11 +40,11 @@ import {
 async function collectReferences(page, stepName, maxRetries = 5, retryDelay = 2000) {
   return await test.step(stepName, async () => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      // once the stream has completed the list is final: no further wait for a first reference is needed
       const completed = await openReferencesPanelComplete({ maxAttempts: 1 });
-      const loaded = completed && (await waitForReferences({ timeout: 5000 }));
+      const refs = completed ? await getVisibleReferences() : [];
 
-      if (loaded) {
-        const refs = await getVisibleReferences();
+      if (refs.length > 0) {
         console.log(`[${stepName}] Found ${refs.length} references (attempt ${attempt}):`);
         refs.forEach((ref) => console.log(`  - ${ref.dataCy}: "${ref.text}"`));
 
