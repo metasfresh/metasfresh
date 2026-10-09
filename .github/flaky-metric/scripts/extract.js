@@ -21,7 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listRuns, junitArtifactNames, downloadArtifact, makeTmpRoot, buildRunUrl } = require('../lib/gh');
+const { listRuns, listJunitArtifacts, downloadArtifact, makeTmpRoot, buildRunUrl } = require('../lib/gh');
 const { parseJUnitFile } = require('../lib/parse-junit');
 const { bucketize } = require('../lib/bucketize');
 
@@ -57,7 +57,7 @@ function processRun(run, tmpRoot, attemptOverride) {
   const attempt = Number(attemptOverride) || Number(run.attempt) || 1;
   const runUrl = buildRunUrl(run.url, attempt);
   const records = [];
-  for (const artifactName of junitArtifactNames()) {
+  for (const artifactName of listJunitArtifacts(runId)) {
     const xmlFiles = downloadArtifact(runId, artifactName, tmpRoot);
     for (const xmlFile of xmlFiles) {
       const { failures } = parseJUnitFile(xmlFile);

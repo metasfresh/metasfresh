@@ -1932,17 +1932,23 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       fail-fast: false
       matrix:
-        shard: [ "1/3", "2/3", "3/3" ]
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
         include:
-          - shard: "1/3"
+          - shard: "1/6"
             shard_label: shard1
-          - shard: "2/3"
+          - shard: "2/6"
             shard_label: shard2
-          - shard: "3/3"
+          - shard: "3/6"
             shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1989,7 +1995,7 @@ jobs:
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
       # stack is torn down as early as it was before this was a separate step, so the runner
       # does not hold ~7 idle containers through report generation, the image push and the
-      # artifact uploads (and x3, once per parallel mobile shard, like the frontend shards).
+      # artifact uploads (once per parallel mobile shard, like the frontend shards).
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
@@ -2070,17 +2076,23 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       fail-fast: false
       matrix:
-        shard: [ "1/3", "2/3", "3/3" ]
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
         include:
-          - shard: "1/3"
+          - shard: "1/6"
             shard_label: shard1
-          - shard: "2/3"
+          - shard: "2/6"
             shard_label: shard2
-          - shard: "3/3"
+          - shard: "3/6"
             shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -2127,7 +2139,7 @@ jobs:
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
       # stack is torn down as early as it was before this was a separate step, so the runner
       # does not hold ~7 idle containers through report generation, the image push and the
-      # artifact uploads (and x3 for the parallel frontend shards).
+      # artifact uploads (once per parallel frontend shard).
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
