@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
@@ -37,6 +38,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -46,6 +48,10 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
@@ -54,6 +60,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -77,11 +84,19 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
+/**
+ * Step definitions for allocating payments to invoices.
+ * <p>
+ * The step {@code allocate payments to invoices} derives the invoice-processing service fee automatically for every sales invoice
+ * that has a service-company config; no fee column is needed in the data table.
+ * The optional column {@code InvoiceProcessing.C_BPartner_ID} only asserts the expected service company.
+ */
 @RequiredArgsConstructor
 public class AllocatePayments_StepDef
 {
@@ -126,21 +141,35 @@ public class AllocatePayments_StepDef
 		});
 	}
 
+	/**
+	 * Allocates the payments to the invoices of the data table in one {@link PaymentAllocationBuilder} run.
+	 * <p>
+	 * Required columns: {@code C_Payment_ID} (payment identifier), {@code C_Invoice_ID} (invoice identifier).
+	 * Optional: {@code InvoiceProcessing.C_Invoice_ID} registers the generated service invoice under that identifier;
+	 * {@code InvoiceProcessing.C_BPartner_ID} asserts the expected service company.
+	 * <p>
+	 * Payments are read first, because the service company and the fee date are derived from them, like in the WebUI payment allocation.
+	 * For every sales invoice with a service-company config the service fee is computed automatically.
+	 * <pre>
+	 * And allocate payments to invoices
+	 *   | C_Payment_ID | C_Invoice_ID | InvoiceProcessing.C_Invoice_ID |
+	 *   | pay1         | inv1         | svcInv1                        |
+	 * </pre>
+	 * @see PaymentAllocationBuilder
+	 */
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
 	{
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
-		DataTableRows.of(table).forEach(row -> {
-			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
-					.ifPresent(payableDocuments::add);
+		DataTableRows.of(table).forEach(row -> row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
+				.map(this::buildPaymentDocument)
+				.ifPresent(paymentDocuments::add));
 
-			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
-					.map(this::buildPaymentDocument)
-					.ifPresent(paymentDocuments::add);
-		});
+		DataTableRows.of(table).forEach(row -> row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+				.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, paymentDocuments))
+				.ifPresent(payableDocuments::add));
 
 		final PaymentAllocationBuilder paymentAllocationBuilder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
@@ -265,10 +294,23 @@ public class AllocatePayments_StepDef
 	}
 
 
+	/**
+	 * The service company is the business partner of the payment (it pays on behalf of its customers).
+	 * The optional column {@code InvoiceProcessing.C_BPartner_ID} only asserts that expectation.
+	 */
 	@NonNull
 	private BPartnerId getServiceCompanyBPartnerId(final @NonNull DataTableRow row)
 	{
-		return row.getAsIdentifier("InvoiceProcessing.C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
+		final I_C_Payment payment = paymentTable.get(row.getAsIdentifier(COLUMNNAME_C_Payment_ID));
+		final BPartnerId serviceCompanyBPartnerId = BPartnerId.ofRepoId(payment.getC_BPartner_ID());
+
+		row.getAsOptionalIdentifier("InvoiceProcessing.C_BPartner_ID")
+				.map(identifier -> identifier.lookupNotNullIdIn(bpartnerTable))
+				.ifPresent(expected -> assertThat(serviceCompanyBPartnerId)
+						.as("service company derived from the payment")
+						.isEqualTo(expected));
+
+		return serviceCompanyBPartnerId;
 	}
 
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
@@ -278,13 +320,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutServiceFee(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -298,16 +340,35 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	/**
+	 * Builds the payable without any invoice-processing service fee.
+	 */
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-												 @NonNull final DataTableRow row)
+	private PayableDocument buildPayableDocumentWithoutServiceFee(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+																  @NonNull final DataTableRow row)
 	{
-		return preparePayableDocument(invoiceIdentifier, row).build();
+		return preparePayableDocument(invoiceIdentifier, row, invoiceToAllocate -> Optional.empty()).build();
 	}
 
+	/**
+	 * Builds the payable and, for a sales invoice with a service-company config, deducts the service fee
+	 * whose service company and date are derived from the given payments.
+	 */
+	@NonNull
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+												 @NonNull final DataTableRow row,
+												 @NonNull final List<PaymentDocument> paymentDocuments)
+	{
+		return preparePayableDocument(invoiceIdentifier, row, invoiceToAllocate -> computeInvoiceProcessingFee(invoiceToAllocate, paymentDocuments)).build();
+	}
+
+	/**
+	 * @param serviceFeeCalculator returns the service fee to deduct from the invoice, or empty for none
+	 */
 	@NonNull
 	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-														  @NonNull final DataTableRow row)
+														  @NonNull final DataTableRow row,
+														  @NonNull final Function<InvoiceToAllocate, Optional<InvoiceProcessingFeeCalculation>> serviceFeeCalculator)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -327,12 +388,24 @@ public class AllocatePayments_StepDef
 		}
 
 
+		//
+		// Service company fee
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = serviceFeeCalculator.apply(invoiceToAllocate).orElse(null);
+		Money invoiceProcessingFee = null;
+		if (invoiceProcessingFeeCalculation != null)
+		{
+			invoiceProcessingFee = moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax());
+			payAmt = payAmt.subtract(invoiceProcessingFee);
+		}
+
 		final AllocationAmounts amounts = AllocationAmounts.builder()
 				.payAmt(payAmt)
 				.discountAmt(discountAmt)
+				.invoiceProcessingFee(invoiceProcessingFee)
 				.build();
 
 		return PayableDocument.builder()
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.bpartnerId(invoiceToAllocate.getBpartnerId())
 				.documentNo(invoiceToAllocate.getDocumentNo())
@@ -344,6 +417,50 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
+	}
+
+	private Optional<InvoiceProcessingFeeCalculation> computeInvoiceProcessingFee(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final List<PaymentDocument> paymentDocuments)
+	{
+		if (!invoiceToAllocate.getDocBaseType().isSales())
+		{
+			return Optional.empty();
+		}
+
+		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+		final Optional<InvoiceProcessingFeeCalculation> computedFee = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+				.evaluationDate(evaluationDate)
+				.customerId(invoiceToAllocate.getBpartnerId())
+				.docTypeId(invoiceToAllocate.getDocTypeId())
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+				.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.UNKNOWN) // like production: let computeFee check for an existing service invoice
+				.build());
+		if (!computedFee.isPresent() || computedFee.get().getFeeAmountIncludingTax().isZero())
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerId customerId = invoiceToAllocate.getBpartnerId();
+		final InvoiceProcessingContext context = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+				customerId,
+				paymentDocuments.stream()
+						.map(PaymentDocument::toInvoiceProcessingContext)
+						.collect(ImmutableList.toImmutableList()),
+				() -> new AdempiereException("No service company config found for customer " + customerId));
+		final BPartnerId serviceCompanyBPartnerId = context.getServiceCompanyId();
+
+		return Optional.of(invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+						.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+						.paymentDate(context.getPaymentDate())
+						.customerId(invoiceToAllocate.getBpartnerId())
+						.invoiceId(invoiceToAllocate.getInvoiceId())
+						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())
+						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
+						.build())
+				.orElseThrow(() -> new AdempiereException("Cannot find service company " + serviceCompanyBPartnerId + " for customer " + invoiceToAllocate.getBpartnerId())));
 	}
 
 	@NonNull
