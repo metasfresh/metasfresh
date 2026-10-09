@@ -1,5 +1,5 @@
 import { test } from '../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
+import { getPage, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
 
 /**
  * DocumentReferences - Utility for working with Alt+6 related documents panel.
@@ -110,23 +110,33 @@ export async function openReferencesPanel({ timeout = 5000 } = {}) {
  * If the stream does not complete (the frontend closes the EventSource on an SSE error and never removes the spinner),
  * the panel is closed and re-opened, which starts a new stream.
  *
+ * The default streamTimeout (FAST_ACTION_TIMEOUT) is far above the observed stream duration (the whole SSE response took
+ * 0.16-0.28 s in CI) and keeps one attempt as cheap as the former "first reference visible" wait, so callers with many
+ * attempts stay within their test timeout.
+ *
  * @param {Object} options - Configuration options
  * @param {number} options.maxAttempts - How often to (re)open the panel (default: 3)
- * @param {number} options.streamTimeout - Maximum time per attempt for the stream to complete (default: SLOW_ACTION_TIMEOUT)
+ * @param {number} options.streamTimeout - Maximum time per attempt for the stream to complete (default: FAST_ACTION_TIMEOUT)
  * @returns {Promise<boolean>} True if the panel is open and its stream completed, false if no attempt completed
  */
-export async function openReferencesPanelComplete({ maxAttempts = 3, streamTimeout = SLOW_ACTION_TIMEOUT } = {}) {
+export async function openReferencesPanelComplete({ maxAttempts = 3, streamTimeout = FAST_ACTION_TIMEOUT } = {}) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const panelOpened = await openReferencesPanel();
-    if (panelOpened) {
-      try {
-        await waitForReferencesComplete({ timeout: streamTimeout });
-        return true;
-      } catch {
-        // stream did not complete within streamTimeout - re-open the panel (new stream)
-      }
+    if (!panelOpened) {
+      console.log(`[openReferencesPanelComplete] Panel did not open (attempt ${attempt}/${maxAttempts})`);
+      continue;
     }
-    console.log(`[openReferencesPanelComplete] Reference stream not completed (attempt ${attempt}/${maxAttempts})`);
+    try {
+      await waitForReferencesComplete({ timeout: streamTimeout });
+      return true;
+    } catch (error) {
+      if (error?.name !== 'TimeoutError') {
+        throw error;
+      }
+      console.log(
+        `[openReferencesPanelComplete] Reference stream not completed within ${streamTimeout}ms (attempt ${attempt}/${maxAttempts})`
+      );
+    }
   }
   return false;
 }
@@ -255,12 +265,10 @@ export async function openRelatedDocument({
           await page.waitForTimeout(1000);
         }
 
-        // Open the references panel
-        const panelOpened = await openReferencesPanel();
-        console.log(`[Attempt ${attempt}] Panel opened: ${panelOpened}`);
-
-        // Wait for spinners to disappear
-        await waitForSpinnersToDisappear();
+        // Open the references panel and wait until its reference stream has completed (a mid-stream read can see a
+        // reference not yet rendered or with an interim data-cy - see openReferencesPanelComplete)
+        const panelComplete = await openReferencesPanelComplete({ maxAttempts: 1 });
+        console.log(`[Attempt ${attempt}] Panel opened and reference stream completed: ${panelComplete}`);
 
         // Wait for SSE references to load
         const referencesLoaded = await waitForReferences();
