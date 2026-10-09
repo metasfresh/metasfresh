@@ -27,6 +27,7 @@ import de.metas.allocation.api.WriteOffType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -104,6 +105,11 @@ public class PayableDocument
 	@Getter
 	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
+	/** The bonus that the customer deducted when paying; its gross amount is the {@link AllocationAmounts#getPaymentBonus()} to allocate. */
+	@Getter
+	@Nullable
+	private final PaymentBonusDeduction paymentBonusDeduction;
+
 	@Getter
 	private final ClientAndOrgId clientAndOrgId;
 
@@ -132,6 +138,7 @@ public class PayableDocument
 			@NonNull final Money openAmt,
 			@NonNull final AllocationAmounts amountsToAllocate,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate date,
 			@Nullable final LocalDate dateAcct,
@@ -148,6 +155,20 @@ public class PayableDocument
 		if (amountsToAllocate.getInvoiceProcessingFee().signum() != 0 && invoiceProcessingFeeCalculation == null)
 		{
 			throw new AdempiereException("invoiceProcessingFeeCalculation is required when the fee is not zero");
+		}
+		if (amountsToAllocate.getPaymentBonus().signum() != 0)
+		{
+			if (paymentBonusDeduction == null)
+			{
+				throw new AdempiereException("paymentBonusDeduction is required when the payment bonus is not zero");
+			}
+			if (!paymentBonusDeduction.getGrossAmount().isEqualByComparingTo(amountsToAllocate.getPaymentBonus()))
+			{
+				throw new AdempiereException("The payment bonus to allocate needs to be the gross amount of the payment bonus deduction")
+						.appendParametersToMessage()
+						.setParameter("paymentBonus", amountsToAllocate.getPaymentBonus())
+						.setParameter("paymentBonusDeduction", paymentBonusDeduction);
+			}
 		}
 
 		if (invoiceId != null)
@@ -185,6 +206,7 @@ public class PayableDocument
 		this.amountsAllocated = amountsToAllocate.toZero();
 
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
+		this.paymentBonusDeduction = paymentBonusDeduction;
 
 		this.clientAndOrgId = clientAndOrgId;
 		this.date = date;
