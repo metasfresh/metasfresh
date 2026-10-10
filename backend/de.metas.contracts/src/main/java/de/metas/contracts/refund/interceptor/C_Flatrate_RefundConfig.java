@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -71,7 +70,6 @@ public class C_Flatrate_RefundConfig
 	private static final ModelDynAttributeAccessor<I_C_Flatrate_RefundConfig, Boolean> DYNATTR_CurrencyCorrectedWithOtherLine = new ModelDynAttributeAccessor<>("CurrencyCorrectedWithOtherLine", Boolean.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final RefundConfigRepository refundConfigRepository;
 	private final RefundContractRepository refundContractRepository;
 	private final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator;
@@ -170,7 +168,7 @@ public class C_Flatrate_RefundConfig
 	 */
 	private void assertCurrencyChangeable(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
-		final boolean anyLineHasInvoicedRefund = Stream.concat(Stream.of(configRecord), retrieveOtherActiveAmountPerUnitLines(configRecord).stream())
+		final boolean anyLineHasInvoicedRefund = Stream.concat(Stream.of(configRecord), refundConfigRepository.getOtherActiveAmountPerUnitRecords(configRecord).stream())
 				.map(record -> RefundConfigId.ofRepoId(record.getC_Flatrate_RefundConfig_ID()))
 				.anyMatch(assignmentToRefundCandidateRepository::hasInvoicedRefund);
 		if (anyLineHasInvoicedRefund)
@@ -183,7 +181,7 @@ public class C_Flatrate_RefundConfig
 
 	private void correctCurrencyOfOtherAmountPerUnitLines(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
-		for (final I_C_Flatrate_RefundConfig otherLine : retrieveOtherActiveAmountPerUnitLines(configRecord))
+		for (final I_C_Flatrate_RefundConfig otherLine : refundConfigRepository.getOtherActiveAmountPerUnitRecords(configRecord))
 		{
 			if (otherLine.getC_Currency_ID() == configRecord.getC_Currency_ID())
 			{
@@ -195,18 +193,6 @@ public class C_Flatrate_RefundConfig
 				InterfaceWrapperHelper.saveRecord(otherLine);
 			}
 		}
-	}
-
-	private List<I_C_Flatrate_RefundConfig> retrieveOtherActiveAmountPerUnitLines(@NonNull final I_C_Flatrate_RefundConfig configRecord)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class, configRecord)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, configRecord.getC_Flatrate_Conditions_ID())
-				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundBase, X_C_Flatrate_RefundConfig.REFUNDBASE_Amount)
-				.addNotEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_RefundConfig_ID, configRecord.getC_Flatrate_RefundConfig_ID())
-				.orderBy(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_RefundConfig_ID)
-				.create()
-				.list();
 	}
 
 	private static RefundConfig withAmountCurrencyOf(@NonNull final RefundConfig config, @NonNull final RefundConfig correctedConfig)

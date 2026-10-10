@@ -29,6 +29,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +37,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -219,17 +221,29 @@ public class RefundInvoiceCandidateRepository
 				.create();
 	}
 
-	/** @return the refund candidates of the given contract that are not processed (invoiced) yet, of all its periods */
-	public List<I_C_Invoice_Candidate> getOpenRefundCandidateRecords(@NonNull final FlatrateTermId contractId)
+	/**
+	 * @return the refund candidates of the given contract, of all its periods, that have issued no refund yet: not processed and not invoiced, also not partly
+	 * (the same notion as {@link AssignmentToRefundCandidateRepository#hasInvoicedRefund})
+	 */
+	public ImmutableList<InvoiceCandidateId> getOpenRefundCandidateIds(@NonNull final FlatrateTermId contractId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, contractId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.filter(queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+						.setJoinOr()
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, null)
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, BigDecimal.ZERO))
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
-				.list();
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+
+	public void delete(@NonNull final InvoiceCandidateId refundCandidateId)
+	{
+		InterfaceWrapperHelper.delete(load(refundCandidateId, I_C_Invoice_Candidate.class));
 	}
 
 	/**

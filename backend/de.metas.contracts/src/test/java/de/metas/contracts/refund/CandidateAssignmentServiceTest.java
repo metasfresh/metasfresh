@@ -570,6 +570,30 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, chf));
 	}
 
+	/**
+	 * A refund candidate that is partly invoiced (QtyInvoiced != 0) but not processed has issued a refund: it keeps its sales too, and is not deleted.
+	 */
+	@Test
+	public void reassignSalesOfOpenRefundCandidates_partlyInvoicedRefundCandidateStaysAsItIs()
+	{
+		final CurrencyId eur = refundTestTools.getCurrencyId();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(chf);
+		final AssignableInvoiceCandidate sale = refundTestTools.createAssignableCandidateStandlone(THREE, eur);
+		invoiceCandidateAssignmentService.updateAssignment(sale);
+		final I_C_Invoice_Candidate chfRefundRecord = singleElement(retrieveRefundCandidateRecords(contract));
+		chfRefundRecord.setProcessed(false);
+		chfRefundRecord.setQtyInvoiced(new BigDecimal("0.5"));
+		saveRecord(chfRefundRecord);
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.reassignSalesOfOpenRefundCandidates(refundContractRepository.getById(contract.getId()));
+
+		assertThat(singleElement(retrieveRefundCandidateRecords(contract)).getC_Invoice_Candidate_ID()).isEqualTo(chfRefundRecord.getC_Invoice_Candidate_ID());
+		final AssignmentToRefundCandidate assignment = singleElement(assignableInvoiceCandidateRepository.getById(sale.getId()).getAssignmentsToRefundCandidates());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, chf));
+	}
+
 	/** A contract whose single config refunds 2 per unit in the given currency. */
 	private RefundContract createAmountPerUnitContract(@NonNull final CurrencyId currencyId)
 	{
