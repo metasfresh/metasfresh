@@ -21,6 +21,7 @@ import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /*
@@ -84,22 +85,33 @@ public class RefundInvoiceCandidateInvalidator
 
 	private void flagCandidatesOfConditions(@NonNull final ConditionsId conditionsId)
 	{
+		// the changed configs are committed now; the contracts that were cached before are stale
+		refundContractRepository.resetCaches();
+
 		final LocalDate today = SystemTime.asLocalDate();
 		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId))
 		{
 			invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, contractId));
-			try
+
+			final RefundContract refundContract = loadOrNull(contractId);
+			if (refundContract != null && !refundContract.getEndDate().isBefore(today)) // an ended contract has no current period
 			{
-				final RefundContract refundContract = refundContractRepository.getById(contractId);
-				if (!refundContract.getEndDate().isBefore(today)) // an ended contract has no current period
-				{
-					flagInvoiceCandidates(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, today));
-				}
+				invoiceCandDAO.invalidateCandsFor(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, today));
 			}
-			catch (final RuntimeException e)
-			{
-				Loggables.withLogger(logger, Level.WARN).addLog("Skipping the sales of C_Flatrate_Term_ID={}, which cannot be loaded as refund contract; e={}", contractId.getRepoId(), e.toString());
-			}
+		}
+	}
+
+	@Nullable
+	private RefundContract loadOrNull(@NonNull final FlatrateTermId contractId)
+	{
+		try
+		{
+			return refundContractRepository.getById(contractId);
+		}
+		catch (final RuntimeException e)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("Skipping the sales of C_Flatrate_Term_ID={}, which cannot be loaded as refund contract; e={}", contractId.getRepoId(), e.toString());
+			return null;
 		}
 	}
 

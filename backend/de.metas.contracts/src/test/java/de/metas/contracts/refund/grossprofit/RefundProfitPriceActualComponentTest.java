@@ -142,6 +142,37 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(applyToInput(Money.of(100, currencyId), (HUPIItemProductId)null).toBigDecimal()).isEqualByComparingTo("90");
 	}
 
+	@Test
+	public void applyToInput_subtractsTheAmountPerUnit()
+	{
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), currencyId);
+
+		assertThat(applyToInput(Money.of(100, currencyId)).toBigDecimal()).isEqualByComparingTo("98");
+	}
+
+	/**
+	 * An amount per unit in another currency than the order line is not converted: it is left out of the profit price instead of failing the order line
+	 * (its refund invoice candidate shows the error).
+	 */
+	@Test
+	public void applyToInput_skipsTheAmountPerUnitInAnotherCurrency()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId());
+
+		assertThat(applyToInput(Money.of(100, currencyId)).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
+	private void createTermWithAmountPerUnitConfig(@NonNull final BigDecimal amount, @NonNull final CurrencyId amountCurrencyId)
+	{
+		final I_C_Flatrate_RefundConfig config = retrieveConfig(createTermWithPercentageConfig(BPARTNER_ID, BigDecimal.ONE, true));
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		config.setRefundPercent(null);
+		config.setRefundAmt(amount);
+		config.setC_Currency_ID(amountCurrencyId.getRepoId());
+		saveRecord(config);
+	}
+
 	private static I_C_Flatrate_RefundConfig retrieveConfig(@NonNull final ConditionsId conditionsId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_RefundConfig.class)

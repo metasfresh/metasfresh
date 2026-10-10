@@ -37,6 +37,7 @@ import java.time.ZoneId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
 public class RefundInvoiceCandidateInvalidatorTest
@@ -199,6 +200,51 @@ public class RefundInvoiceCandidateInvalidatorTest
 		});
 
 		Mockito.verify(invoiceCandDAO, Mockito.times(1)).invalidateCandsThatReference(TableRecordReference.of(term));
+	}
+
+	/** the caches are reset also when there is no running contract to flag the sales of */
+	@Test
+	public void invalidateCandidatesOfConditionsAfterCommit_onlyEndedContract_resetsTheCaches()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		final I_C_Flatrate_Term endedTerm = createRefundTerm(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 6, 30));
+
+		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invalidator.invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(endedTerm.getC_Flatrate_Conditions_ID()));
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		Mockito.verify(refundContractRepository, Mockito.times(1)).resetCaches();
+		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsFor(any(IQuery.class));
+	}
+
+	/** only a contract that cannot be loaded is skipped; a failing flagging is not swallowed */
+	@Test
+	public void invalidateCandidatesOfConditionsAfterCommit_flaggingFails_propagates()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		Mockito.doThrow(new AdempiereException("flagging failed")).when(invoiceCandDAO).invalidateCandsFor(any(IQuery.class));
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			assertThatThrownBy(() -> invalidator.invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID())))
+					.hasMessageContaining("flagging failed");
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)

@@ -144,14 +144,19 @@ public class C_Flatrate_RefundConfig
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void invalidateInvoiceCandidatesOfNewLineAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
-		invalidateInvoiceCandidatesAfterCommit(configRecord);
+		invalidateInvoiceCandidatesOfConditionsAfterCommit(configRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Currency_ID,
 			I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt,
 			I_C_Flatrate_RefundConfig.COLUMNNAME_IsActive })
-	public void invalidateInvoiceCandidatesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	public void invalidateInvoiceCandidatesOfChangedLineAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		invalidateInvoiceCandidatesOfConditionsAfterCommit(configRecord);
+	}
+
+	private void invalidateInvoiceCandidatesOfConditionsAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(configRecord.getC_Flatrate_Conditions_ID());
 		if (conditionsId == null)
