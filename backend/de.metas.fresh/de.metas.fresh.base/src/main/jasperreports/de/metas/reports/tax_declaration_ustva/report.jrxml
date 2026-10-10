@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/tax_declaration_ustva/report" uuid="7c1d9e52-3b4a-4f6e-9a10-5d2e8b7c4a91">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<!-- RECORD_ID = C_TaxDeclaration_ID of the declaration the report was started from (set by the print process) -->
+	<parameter name="RECORD_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT report_level, level_order, vatcode, amount_type, description, net_amt, tax_amt, balance_amt,
+       documentno, docstatus, is_correction, original_documentno, org_name, org_tax_id, org_vat_id,
+       acctschema_name, period_from, period_to, currency, print_date, posting_date, doc_date,
+       bpartner_name, bpartner_vatid, amount
+FROM report.tax_declaration_ustva_report($P{RECORD_ID}, $P{ad_language})
+ORDER BY level_order, vatcode, amount_type, posting_date, documentno]]>
+	</queryString>
+	<field name="report_level" class="java.lang.String"/>
+	<field name="level_order" class="java.lang.Integer"/>
+	<field name="vatcode" class="java.lang.String"/>
+	<field name="amount_type" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
+	<field name="net_amt" class="java.math.BigDecimal"/>
+	<field name="tax_amt" class="java.math.BigDecimal"/>
+	<field name="balance_amt" class="java.math.BigDecimal"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="docstatus" class="java.lang.String"/>
+	<field name="is_correction" class="java.lang.String"/>
+	<field name="original_documentno" class="java.lang.String"/>
+	<field name="org_name" class="java.lang.String"/>
+	<field name="org_tax_id" class="java.lang.String"/>
+	<field name="org_vat_id" class="java.lang.String"/>
+	<field name="acctschema_name" class="java.lang.String"/>
+	<field name="period_from" class="java.util.Date"/>
+	<field name="period_to" class="java.util.Date"/>
+	<field name="currency" class="java.lang.String"/>
+	<field name="print_date" class="java.sql.Timestamp"/>
+	<field name="posting_date" class="java.util.Date"/>
+	<field name="doc_date" class="java.util.Date"/>
+	<field name="bpartner_name" class="java.lang.String"/>
+	<field name="bpartner_vatid" class="java.lang.String"/>
+	<field name="amount" class="java.math.BigDecimal"/>
+	<variable name="sumDetail" class="java.math.BigDecimal" resetType="Group" resetGroup="code" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<group name="level">
+		<groupExpression><![CDATA[$F{report_level}]]></groupExpression>
+		<groupHeader>
+			<band height="32">
+				<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level}) || "DETAIL".equals($F{report_level})]]></printWhenExpression>
+				<textField>
+					<reportElement x="0" y="0" width="535" height="16"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["SUMMARY".equals($F{report_level}) ? $R{summary} : $R{detail}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="16" width="50" height="14">
+						<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+					</reportElement>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{kz}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="50" y="16" width="235" height="14">
+						<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+					</reportElement>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="285" y="16" width="125" height="14">
+						<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+					</reportElement>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{net}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="410" y="16" width="125" height="14">
+						<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+					</reportElement>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="30">
+				<printWhenExpression><![CDATA["BALANCE".equals($F{report_level})]]></printWhenExpression>
+				<textField>
+					<reportElement x="0" y="2" width="535" height="24"/>
+					<textElement verticalAlignment="Top"><font size="8" isItalic="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{balanceNote}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="code">
+		<groupExpression><![CDATA[$F{report_level} + "|" + $F{vatcode} + "|" + $F{amount_type}]]></groupExpression>
+		<groupHeader>
+			<band height="32">
+				<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="0" y="2" width="535" height="14"/>
+					<textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{kz} + " " + ($F{vatcode} != null ? $F{vatcode} : "") + " - " + ("N".equals($F{amount_type}) ? $R{net} : $R{tax})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="16" width="50" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{postingDate}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="50" y="16" width="70" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{documentNo}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="120" y="16" width="50" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{docDate}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="16" width="100" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="16" width="65" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{partnerVatId}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="335" y="16" width="25" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="360" y="16" width="95" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="455" y="16" width="80" height="14"/>
+					<box><bottomPen lineWidth="0.5"/></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{amount}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="22">
+				<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="0" y="2" width="455" height="14"/>
+					<box><topPen lineWidth="0.5"/></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$R{subtotal} + " " + $R{kz} + " " + ($F{vatcode} != null ? $F{vatcode} : "")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="2" width="80" height="14"/>
+					<box><topPen lineWidth="0.5"/></box>
+					<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$V{sumDetail}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="150">
+			<textField>
+				<reportElement x="0" y="0" width="535" height="24"/>
+				<textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="30" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{org}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="30" width="425" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="44" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{taxNo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="44" width="160" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{org_tax_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="270" y="44" width="90" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{vatId}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="360" y="44" width="175" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{org_vat_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="58" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{acctSchema}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="58" width="425" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{acctschema_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="72" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{period}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="72" width="425" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[($F{period_from} != null ? new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{period_from}) : "") + " - " + ($F{period_to} != null ? new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{period_to}) : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="86" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{documentNo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="86" width="160" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="270" y="86" width="90" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="360" y="86" width="175" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{docstatus}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="100" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{kind}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="100" width="425" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA["Y".equals($F{is_correction}) ? $R{correction} + ($F{original_documentno} != null ? " (" + $R{originalDocNo} + " " + $F{original_documentno} + ")" : "") : $R{original}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="114" width="110" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="114" width="160" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="270" y="114" width="90" height="14"/>
+				<textElement><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{printDate}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="360" y="114" width="175" height="14"/>
+				<textElement><font size="9"/></textElement>
+				<textFieldExpression><![CDATA[$F{print_date} != null ? new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm").format($F{print_date}) : ""]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="138" width="535" height="1"/>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="14">
+			<printWhenExpression><![CDATA[!"HEADER".equals($F{report_level})]]></printWhenExpression>
+			<!-- SUMMARY row -->
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="50" height="14">
+					<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{vatcode}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="235" height="14">
+					<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="285" y="0" width="125" height="14">
+					<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{net_amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement x="410" y="0" width="125" height="14">
+					<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement>
+				<textFieldExpression><![CDATA[$F{tax_amt}]]></textFieldExpression>
+			</textField>
+			<!-- BALANCE row -->
+			<textField>
+				<reportElement x="0" y="0" width="410" height="14">
+					<printWhenExpression><![CDATA["BALANCE".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<box><topPen lineWidth="0.5"/></box>
+				<textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement x="410" y="0" width="125" height="14">
+					<printWhenExpression><![CDATA["BALANCE".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<box><topPen lineWidth="0.5"/></box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$F{balance_amt}]]></textFieldExpression>
+			</textField>
+			<!-- DETAIL row -->
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="50" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{posting_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="70" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="120" y="0" width="50" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{doc_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="170" y="0" width="100" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{bpartner_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="270" y="0" width="65" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{bpartner_vatid}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="335" y="0" width="25" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="360" y="0" width="95" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement x="455" y="0" width="80" height="14">
+					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="16">
+			<textField evaluationTime="Page">
+				<reportElement x="0" y="2" width="535" height="12"/>
+				<textElement textAlignment="Right"><font size="7"/></textElement>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

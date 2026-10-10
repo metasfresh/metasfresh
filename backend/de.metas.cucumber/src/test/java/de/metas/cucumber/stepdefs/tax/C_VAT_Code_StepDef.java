@@ -70,6 +70,8 @@ public class C_VAT_Code_StepDef
 	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
 	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
 	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
+	 *     <li>{@code Description} — the VAT code's description</li>
+	 *     <li>{@code SameVATCodeAs} — identifier of another VAT code whose code string is reused (instead of a random one), so a net row and a tax row form one VAT code</li>
 	 * </ul>
 	 *
 	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
@@ -108,7 +110,11 @@ public class C_VAT_Code_StepDef
 
 		// C_VAT_Code.VATCode is VARCHAR(10) — any longer value is silently truncated by the PO
 		// setter, making two codes for the same C_Tax collide on the truncated prefix.
-		final String vatCodeValue = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+		// Optional SameVATCodeAs: reuse the code string of another identifier, so that a net row and a tax row
+		// (or a sales row and a purchase row) form ONE VAT code, like one Kennzahl on the official form.
+		final String vatCodeValue = row.getAsOptionalIdentifier("SameVATCodeAs")
+				.map(sameAs -> sameAs.lookupNotNullIn(vatCodeTable).getCode())
+				.orElseGet(() -> UUID.randomUUID().toString().replace("-", "").substring(0, 10));
 
 		// AmountType: optional column; defaults to 'T' (tax amount).
 		// getAsOptionalEnum resolves by ReferenceListAwareEnum code ('N'/'T'), so invalid values fail fast
@@ -122,6 +128,7 @@ public class C_VAT_Code_StepDef
 				.vatCode(vatCodeValue)
 				.isSOTrx(isSOTrx)
 				.amountType(amountType)
+				.description(row.getAsOptionalString("Description").filter(d -> !d.trim().isEmpty()).orElse(null))
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
 
