@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -132,6 +133,7 @@ class AsyncBatchServiceTest
 						callerBFailure.set(t);
 					}
 				}, "callerB");
+				thread.setDaemon(true); // don't keep the JVM alive if an assertion fails before the join
 				callerB.set(thread);
 				thread.start();
 
@@ -203,7 +205,7 @@ class AsyncBatchServiceTest
 		return () -> 1;
 	}
 
-	private static void waitUntil(@NonNull final java.util.function.BooleanSupplier condition)
+	private static void waitUntil(@NonNull final BooleanSupplier condition)
 	{
 		final Instant deadline = Instant.now().plusSeconds(30);
 		while (!condition.getAsBoolean())
