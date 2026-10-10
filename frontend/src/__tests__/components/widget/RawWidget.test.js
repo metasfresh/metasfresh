@@ -1010,6 +1010,46 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).toHaveBeenLastCalledWith('DiscountAmt', '3.50', undefined, undefined);
     });
 
+    it('keeps the typed amount when a view reload brings back the value it had before typing, and patches it', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      // the parent keeps the typed text as the value
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '3.57' }] });
+      wrapper.update();
+
+      // the view is reloaded while the user types: the stored value before typing comes back
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '1' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('3.57');
+      pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
+    });
+
+    it('shows a different amount that comes from outside while the user types', () => {
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: '1' }],
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '3.57' }] });
+      wrapper.update();
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '2.5' }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('2,5');
+    });
+
     it('applies an untouched number filter on Enter (an inline filter applies on patch)', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps({
