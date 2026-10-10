@@ -1,6 +1,5 @@
 package de.metas.handlingunits.model.validator;
 
-import lombok.NonNull;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
@@ -15,6 +14,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
+
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 

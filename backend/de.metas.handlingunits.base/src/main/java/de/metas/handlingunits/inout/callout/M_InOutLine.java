@@ -41,6 +41,7 @@ public class M_InOutLine
 	public static final M_InOutLine instance = new M_InOutLine();
 
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@CalloutMethod(columnNames = {
 			I_M_InOutLine.COLUMNNAME_IsManualPackingMaterial,
 			I_M_InOutLine.COLUMNNAME_QtyTU_Calculated,

@@ -41,6 +41,7 @@ public class C_InvoiceLine
 	public static final C_InvoiceLine instance = new C_InvoiceLine();
 
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	/**
 	 * Task 06915: If QtyEnteredTU or M_HU_PI_Item_Product_ID change, then update QtyEntered (i.e. the CU qty).
 	 */
