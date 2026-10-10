@@ -591,6 +591,8 @@ public class BankStatementCamt53Service
 			{
 				case V02 -> getAccountStatementsV02(xmlStreamReader);
 				case V04 -> getAccountStatementsV04(xmlStreamReader);
+				// TODO the V08 wrappers exist (wrapper.v08), but the import is not wired up yet
+				case V08 -> throw new AdempiereException("Unsupported Camt53 version: " + camt53Version.getCode());
 			};
 		}
 		catch (final Exception e)
