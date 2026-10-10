@@ -5,6 +5,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
@@ -36,6 +37,7 @@ class C_Flatrate_RefundConfig_InvalidateCandidates_Test
 	private RefundInvoiceCandidateInvalidator invalidator;
 	private I_C_Flatrate_RefundConfig config;
 	private CurrencyId eur;
+	private CurrencyId chf;
 
 	@BeforeEach
 	void init()
@@ -43,7 +45,7 @@ class C_Flatrate_RefundConfig_InvalidateCandidates_Test
 		AdempiereTestHelper.get().init();
 		saveRecord(newInstance(I_C_UOM.class));
 
-		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
 		eur = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
@@ -72,7 +74,7 @@ class C_Flatrate_RefundConfig_InvalidateCandidates_Test
 		saveRecord(config);
 
 		// registered once the config exists: its validation on save needs the record's id, like in the WebUI
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_RefundConfig(refundConfigRepository, new RefundContractRepository(refundConfigRepository), invalidator));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_RefundConfig(refundConfigRepository, new RefundContractRepository(refundConfigRepository), invalidator, Mockito.mock(AssignmentToRefundCandidateRepository.class)));
 	}
 
 	@Test
@@ -114,7 +116,7 @@ class C_Flatrate_RefundConfig_InvalidateCandidates_Test
 		newConfig.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
 		newConfig.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
 		newConfig.setRefundAmt(new BigDecimal("0.50"));
-		newConfig.setC_Currency_ID(eur.getRepoId());
+		newConfig.setC_Currency_ID(chf.getRepoId()); // the per-unit lines of a condition share one currency
 		newConfig.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		newConfig.setMinQty(BigDecimal.ZERO);
 		newConfig.setC_Flatrate_RefundConfig_ID(config.getC_Flatrate_RefundConfig_ID() + 1000); // the WebUI also has the id before the interceptors run

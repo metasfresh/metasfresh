@@ -7,6 +7,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
@@ -41,7 +42,7 @@ public class C_Flatrate_Term_Test
 		saveRecord(newInstance(I_C_UOM.class));
 		refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 		refundContractRepository = Mockito.spy(refundInvoiceCandidateRepository.getRefundContractRepository());
-		interceptor = new C_Flatrate_Term(refundContractRepository, new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository));
+		interceptor = new C_Flatrate_Term(refundContractRepository, new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, Mockito.mock(CandidateAssignmentService.class)));
 	}
 
 	/**

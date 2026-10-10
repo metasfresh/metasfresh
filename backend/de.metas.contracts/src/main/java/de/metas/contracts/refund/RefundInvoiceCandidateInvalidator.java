@@ -59,6 +59,7 @@ public class RefundInvoiceCandidateInvalidator
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	@NonNull private final RefundContractRepository refundContractRepository;
+	@NonNull private final CandidateAssignmentService candidateAssignmentService;
 
 	/** For a contract that was just completed: flags the sales of its partner in the current open period, after the commit. */
 	public void invalidateCandidatesOfContractAfterCommit(@NonNull final RefundContract refundContract)
@@ -72,7 +73,8 @@ public class RefundInvoiceCandidateInvalidator
 	}
 
 	/**
-	 * After the commit, flags the open refund candidates of every completed contract with these conditions, and the sales of each contract's current period.
+	 * After the commit, computes the open refunds of every completed contract with these conditions again: the sales of each refund candidate that is not invoiced yet are assigned again
+	 * (see {@link CandidateAssignmentService#reassignSalesOfOpenRefundCandidates}), and the sales of each contract's current period are flagged, so that those not assigned yet get assigned.
 	 * Each conditions is handled once per transaction.
 	 */
 	public void invalidateCandidatesOfConditionsAfterCommit(@NonNull final ConditionsId conditionsId)
@@ -91,9 +93,15 @@ public class RefundInvoiceCandidateInvalidator
 		final LocalDate today = SystemTime.asLocalDate();
 		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId))
 		{
+			final RefundContract refundContract = loadOrNull(contractId);
+			if (refundContract != null)
+			{
+				// every period whose refund is not invoiced yet, also of an ended contract: e.g. after a currency correction, its refund candidates are in the new currency
+				trxManager.runInNewTrx(() -> candidateAssignmentService.reassignSalesOfOpenRefundCandidates(refundContract));
+			}
+
 			invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, contractId));
 
-			final RefundContract refundContract = loadOrNull(contractId);
 			if (refundContract != null && !refundContract.getEndDate().isBefore(today)) // an ended contract has no current period
 			{
 				invoiceCandDAO.invalidateCandsFor(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, today));

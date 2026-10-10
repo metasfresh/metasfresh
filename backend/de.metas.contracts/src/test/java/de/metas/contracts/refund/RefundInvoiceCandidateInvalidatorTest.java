@@ -48,6 +48,7 @@ public class RefundInvoiceCandidateInvalidatorTest
 	private RefundInvoiceCandidateInvalidator invalidator;
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
+	private CandidateAssignmentService candidateAssignmentService;
 
 	@BeforeEach
 	public void init()
@@ -56,7 +57,8 @@ public class RefundInvoiceCandidateInvalidatorTest
 		saveRecord(newInstance(I_C_UOM.class));
 		refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 		refundContractRepository = Mockito.spy(refundInvoiceCandidateRepository.getRefundContractRepository());
-		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		candidateAssignmentService = Mockito.mock(CandidateAssignmentService.class);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
 	}
 
 	/**
@@ -139,7 +141,7 @@ public class RefundInvoiceCandidateInvalidatorTest
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
 		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
-		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository); // after the mock is registered, because it holds the DAO as field
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService); // after the mock is registered, because it holds the DAO as field
 
 		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
 		final I_C_Invoice_Candidate july = createInvoiceCandidate(LocalDate.of(2026, 7, 20), false);
@@ -182,6 +184,44 @@ public class RefundInvoiceCandidateInvalidatorTest
 	}
 
 	/**
+	 * After a correction of the conditions, the sales of every still-open refund period of each completed contract are assigned again:
+	 * also the ones of a contract that has ended, whose last refund may not be invoiced yet.
+	 */
+	@Test
+	public void invalidateCandidatesOfConditionsAfterCommit_reassignsTheSalesOfTheOpenRefundCandidates()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
+
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+		final I_C_Flatrate_Term endedTerm = createRefundTerm(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 6, 30));
+		endedTerm.setC_Flatrate_Conditions_ID(term.getC_Flatrate_Conditions_ID());
+		saveRecord(endedTerm);
+		final I_C_Flatrate_Term draftTerm = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+		draftTerm.setC_Flatrate_Conditions_ID(term.getC_Flatrate_Conditions_ID());
+		draftTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+		saveRecord(draftTerm);
+
+		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			// invoke the method under test; there is no transaction, so the after-commit listener runs right away
+			invalidator.invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()));
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		@SuppressWarnings("unchecked") final ArgumentCaptor<RefundContract> contractCaptor = ArgumentCaptor.forClass(RefundContract.class);
+		Mockito.verify(candidateAssignmentService, Mockito.times(2)).reassignSalesOfOpenRefundCandidates(contractCaptor.capture());
+		assertThat(contractCaptor.getAllValues())
+				.extracting(contract -> contract.getId().getRepoId())
+				.containsExactlyInAnyOrder(term.getC_Flatrate_Term_ID(), endedTerm.getC_Flatrate_Term_ID());
+	}
+
+	/**
 	 * Several changed refund lines of the same conditions in one transaction flag each contract once, after the commit.
 	 */
 	@Test
@@ -189,7 +229,7 @@ public class RefundInvoiceCandidateInvalidatorTest
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
 		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
-		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
 		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
 
@@ -208,7 +248,7 @@ public class RefundInvoiceCandidateInvalidatorTest
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
 		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
-		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
 		final I_C_Flatrate_Term endedTerm = createRefundTerm(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 6, 30));
 
 		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
@@ -232,7 +272,7 @@ public class RefundInvoiceCandidateInvalidatorTest
 		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
 		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
 		Mockito.doThrow(new AdempiereException("flagging failed")).when(invoiceCandDAO).invalidateCandsFor(any(IQuery.class));
-		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
 		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
 
 		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
