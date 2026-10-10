@@ -53,6 +53,7 @@ import java.math.BigDecimal;
 public class DD_OrderLine
 {
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	public DD_OrderLine(
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService)
@@ -171,7 +172,7 @@ public class DD_OrderLine
 		}
 
 		// if the M_HU_PI_Item_Product was changed and the QtyTU was already set, change the CU accordingly
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU()); // a fractional QtyEnteredTU is refused
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU()); // a fractional QtyEnteredTU is refused
 	}
 
 	@ModelChange(timings = {
@@ -226,7 +227,7 @@ public class DD_OrderLine
 	private void updateQtyPacks(final I_DD_OrderLine ddOrderLine)
 	{
 		final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(ddOrderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		huPackingAwareBL.setQtyTU(packingAware);
 	}
 
 	private void updateQtyCU(final I_DD_OrderLine ddOrderLine)
@@ -247,6 +248,6 @@ public class DD_OrderLine
 
 		// update the QtyCU only if the QtyTU requires it. If the QtyCU is already fine and fits the QtyTU and M_HU_PI_Item_Product, leave it like it is.
 		final Quantity qtyCU = Quantitys.of(packingAware.getQty(), UomId.ofRepoId(packingAware.getC_UOM_ID()));
-		Services.get(IHUPackingAwareBL.class).updateQtyIfNeeded(packingAware, packingAware.getQtyTU(), qtyCU); // a fractional QtyEnteredTU is refused
+		huPackingAwareBL.updateQtyIfNeeded(packingAware, packingAware.getQtyTU(), qtyCU); // a fractional QtyEnteredTU is refused
 	}
 }

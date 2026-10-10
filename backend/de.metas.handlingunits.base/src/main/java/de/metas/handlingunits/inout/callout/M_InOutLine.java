@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.callout;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -39,6 +40,7 @@ public class M_InOutLine
 {
 	public static final M_InOutLine instance = new M_InOutLine();
 
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	@CalloutMethod(columnNames = {
 			I_M_InOutLine.COLUMNNAME_IsManualPackingMaterial,
 			I_M_InOutLine.COLUMNNAME_QtyTU_Calculated,
@@ -81,7 +83,6 @@ public class M_InOutLine
 		{
 			//
 			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
-			final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 			final InOutLineHUPackingAware packingAware = new InOutLineHUPackingAware(shipmentLine);
 			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 		}
@@ -140,7 +141,7 @@ public class M_InOutLine
 		}
 
 		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		huPackingAwareBL.setQtyTU(packingAware);
 		packingAware.setQty(packingAware.getQty());
 	}
 
@@ -165,7 +166,7 @@ public class M_InOutLine
 		}
 
 		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 	}
 }

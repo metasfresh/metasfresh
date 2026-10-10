@@ -1,5 +1,6 @@
 package de.metas.handlingunits.model.validator;
 
+import lombok.NonNull;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
@@ -21,6 +22,8 @@ import java.math.BigDecimal;
 @Callout(I_M_ForecastLine.class)
 public class M_ForecastLine
 {
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@Init
 	public void registerCallout()
 	{
@@ -59,13 +62,13 @@ public class M_ForecastLine
 	public void updateQtyCU(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 
 	private void updateQtyPacks(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		huPackingAwareBL.setQtyTU(packingAware);
 	}
 
 	private void updateQtyCalculated(final I_M_ForecastLine forecastLine)
