@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -24,6 +25,8 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.lang.Percent;
 
 /*
@@ -118,6 +121,24 @@ public class RefundContractTest
 		final RefundConfig result = refundContract.getRefundConfig(FIVE);
 
 		assertThat(result).isEqualTo(refundConfig2);
+	}
+
+	/**
+	 * A per-unit line in another currency than the sales makes the whole contract not computable for those sales, also if that line's scale is not reached yet:
+	 * the contract is misconfigured for them, and the error shows at once instead of when the scale is reached. The currency of a percentage line plays no role.
+	 */
+	@Test
+	public void getAmountPerUnitConfigInOtherCurrency()
+	{
+		final CurrencyId eur = CurrencyId.ofRepoId(102);
+		final CurrencyId chf = CurrencyId.ofRepoId(318);
+		final RefundConfig eurFromZero = refundConfig1.toBuilder().refundBase(RefundBase.AMOUNT_PER_UNIT).percent(null).amount(Money.of(ONE, eur)).build();
+		final RefundConfig chfFromFive = eurFromZero.toBuilder().minQty(FIVE).amount(Money.of(ONE, chf)).build();
+		final RefundContract mixedContract = refundContract.toBuilder().clearRefundConfigs().refundConfig(eurFromZero).refundConfig(chfFromFive).build();
+
+		assertThat(mixedContract.getAmountPerUnitConfigInOtherCurrency(eur)).contains(chfFromFive);
+		assertThat(mixedContract.getAmountPerUnitConfigInOtherCurrency(chf)).contains(eurFromZero);
+		assertThat(refundContract.getAmountPerUnitConfigInOtherCurrency(chf)).isEmpty(); // percentage
 	}
 
 	/**

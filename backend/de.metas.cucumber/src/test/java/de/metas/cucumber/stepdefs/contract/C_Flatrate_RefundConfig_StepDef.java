@@ -27,14 +27,14 @@ import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.currency.ICurrencyBL;
-import de.metas.util.Services;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>C_InvoiceSchedule_ID</b> — (required, identifier-ref) invoicing schedule of the refund<br>
 	 *   <b>RefundPercent</b> — (required unless RefundAmt is given) the percentage that is refunded<br>
 	 *   <b>RefundAmt</b> — (optional) the amount per unit that is refunded, instead of a percentage<br>
-	 *   <b>C_Currency.ISO_Code</b> — (required with RefundAmt) currency of the amount per unit<br>
+	 *   <b>C_Currency.ISO_Code</b> — (required with RefundAmt) currency of the amount per unit; optional with RefundPercent<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) product the refund applies to; none = every product<br>
 	 *   <b>RefundMode</b> — (optional, default A) A = accumulated, T = tiered<br>
 	 *   <b>RefundInvoiceType</b> — (optional, default Invoice) Invoice or Creditmemo<br>
@@ -112,6 +112,8 @@ public class C_Flatrate_RefundConfig_StepDef
 			{
 				config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
 				config.setRefundPercent(row.getAsBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundPercent));
+				row.getAsOptionalCurrencyCode()
+						.ifPresent(currencyCode -> config.setC_Currency_ID(currencyBL.getByCurrencyCode(currencyCode).getId().getRepoId()));
 			}
 			config.setRefundMode(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundMode).orElse(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated));
 			config.setRefundInvoiceType(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundInvoiceType).orElse(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice));

@@ -8,6 +8,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -142,6 +144,14 @@ public class RefundInvoiceCandidateInvalidatorTest
 		draftTerm.setC_Flatrate_Conditions_ID(term.getC_Flatrate_Conditions_ID());
 		draftTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		saveRecord(draftTerm);
+		final I_C_Flatrate_Term endedTerm = createRefundTerm(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 6, 30));
+		endedTerm.setC_Flatrate_Conditions_ID(term.getC_Flatrate_Conditions_ID());
+		saveRecord(endedTerm);
+		// a contract that cannot be loaded does not keep the others from being flagged
+		final I_C_Flatrate_Term brokenTerm = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+		brokenTerm.setC_Flatrate_Conditions_ID(term.getC_Flatrate_Conditions_ID());
+		saveRecord(brokenTerm);
+		Mockito.doThrow(new AdempiereException("broken contract")).when(refundContractRepository).getById(FlatrateTermId.ofRepoId(brokenTerm.getC_Flatrate_Term_ID()));
 
 		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
 		try
@@ -156,6 +166,8 @@ public class RefundInvoiceCandidateInvalidatorTest
 
 		Mockito.verify(invoiceCandDAO).invalidateCandsThatReference(TableRecordReference.of(term));
 		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(draftTerm));
+		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(endedTerm));
+		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(brokenTerm));
 
 		@SuppressWarnings("unchecked") final ArgumentCaptor<IQuery<I_C_Invoice_Candidate>> queryCaptor = ArgumentCaptor.forClass(IQuery.class);
 		Mockito.verify(invoiceCandDAO).invalidateCandsFor(queryCaptor.capture());

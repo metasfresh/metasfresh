@@ -41,7 +41,7 @@ Feature: A refund amount per unit in another currency than the sales
       | monthlySchedule | 31         | 1               |
 
   # ##############################################################################################
-  # TS16: 0.50 CHF per unit on EUR sales -> the refund candidate is in error; corrected to EUR -> 0.50 EUR per unit
+  # 0.50 CHF per unit on EUR sales -> the refund candidate is in error; corrected to EUR -> 0.50 EUR per unit
   # ##############################################################################################
 
   @from:cucumber
@@ -88,3 +88,35 @@ Feature: A refund amount per unit in another currency than the sales
     And after not more than 60s, C_Invoice_Candidate_Assignments are found:
       | C_Invoice_Candidate_Term_ID | C_Invoice_Candidate_Assigned_ID | C_Flatrate_Term_ID | AssignedMoneyAmount | AssignedQuantity |
       | refundIC                    | salesIC                         | termPerUnit        | 5                   | 10               |
+
+  # ##############################################################################################
+  # The currency of a percentage refund line plays no role
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:refundAmountCurrency_TC2
+  Scenario: A percentage refund line with a CHF currency refunds EUR sales normally
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier           | Type_Conditions |
+      | conditionsPercentage | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier       | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | C_Currency.ISO_Code | M_Product_ID |
+      | configPercentage | conditionsPercentage     | monthlySchedule      | 3             | CHF                 | goodsProduct |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier     | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | StartDate  | EndDate    |
+      | termPercentage | conditionsPercentage                | customerBP                  | goodsProduct                | 2026-07-01 | 2026-12-31 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | customerBP               | 2026-07-01  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol1        | order1                | goodsProduct            | 10         |
+    When the order identified by order1 is completed
+
+    # 3 % of 1000 EUR
+    Then after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | IsError | NetAmtToInvoice |
+      | refundIC               | termPercentage     | false   | 30              |

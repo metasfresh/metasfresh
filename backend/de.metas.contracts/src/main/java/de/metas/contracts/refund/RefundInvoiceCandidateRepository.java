@@ -69,6 +69,8 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 @Repository
 public class RefundInvoiceCandidateRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	@Getter
 	private final RefundContractRepository refundContractRepository;
@@ -228,7 +230,7 @@ public class RefundInvoiceCandidateRepository
 		// only the current open period is picked up retroactively; the periods before it get no refund
 		final LocalDate firstDay = refundContract.computeCurrentPeriodStart(today);
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, refundContract.getBPartnerId())
@@ -240,8 +242,6 @@ public class RefundInvoiceCandidateRepository
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_C_Invoice_Candidate> normalFilter = queryBL
 				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_DateToInvoice_Override, null)

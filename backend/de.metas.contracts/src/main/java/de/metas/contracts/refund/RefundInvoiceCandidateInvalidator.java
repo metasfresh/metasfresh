@@ -1,11 +1,16 @@
 package de.metas.contracts.refund;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +18,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -47,6 +53,8 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class RefundInvoiceCandidateInvalidator
 {
+	private static final Logger logger = LogManager.getLogger(RefundInvoiceCandidateInvalidator.class);
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
@@ -66,22 +74,35 @@ public class RefundInvoiceCandidateInvalidator
 	}
 
 	/**
-	 * For a refund config whose amount was changed (e.g. its currency was corrected): flags the refund candidates of every completed contract with these conditions,
+	 * For a refund config whose amount was changed (e.g. its currency was corrected): flags the refund candidates of every completed contract with these conditions that has not ended,
 	 * so that they are checked again (e.g. their currency error is gone), and the invoice candidates of each contract's partner in the current open period,
-	 * so that those that are not assigned yet get assigned.
+	 * so that those that are not assigned yet get assigned. A contract that cannot be loaded is skipped (and logged), so that it does not keep the others from being flagged.
+	 * Only a change of the amount is handled like this, not e.g. a new or deactivated config line.
 	 */
 	public void invalidateCandidatesOfConditionsAfterCommit(@NonNull final ConditionsId conditionsId)
 	{
+		final LocalDate today = SystemTime.asLocalDate();
+		final ImmutableList.Builder<FlatrateTermId> contractIds = ImmutableList.builder();
+		final ImmutableList.Builder<IQuery<I_C_Invoice_Candidate>> queries = ImmutableList.builder();
+		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId, today))
+		{
+			try
+			{
+				queries.add(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContractRepository.getById(contractId), today));
+				contractIds.add(contractId);
+			}
+			catch (final RuntimeException e)
+			{
+				Loggables.withLogger(logger, Level.WARN).addLog("Skipping C_Flatrate_Term_ID={}, which cannot be loaded as refund contract; e={}", contractId.getRepoId(), e.toString());
+			}
+		}
+
 		trxManager
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerHandlingMethod(trx -> {
-					final LocalDate today = SystemTime.asLocalDate();
-					for (final RefundContract refundContract : refundContractRepository.getCompletedByConditions(conditionsId))
-					{
-						invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, refundContract.getId()));
-						flagInvoiceCandidates(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, today));
-					}
+					contractIds.build().forEach(contractId -> invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, contractId)));
+					queries.build().forEach(this::flagInvoiceCandidates);
 				});
 	}
 
