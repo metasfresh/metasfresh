@@ -1033,6 +1033,27 @@ describe('RawWidget component', () => {
       expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
     });
 
+    it('keeps the amount typed into an empty field when a view reload brings back the empty value, and patches it', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps({
+        ...amountLayout,
+        widgetData: [{ ...amountData, value: null }],
+        handlePatch: handlePatchSpy,
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      wrapper.find('input').simulate('focus');
+      wrapper.find('input').simulate('change', { target: { value: '3.57' } });
+      wrapper.setProps({ widgetData: [{ ...amountData, value: '3.57' }] });
+      wrapper.update();
+
+      wrapper.setProps({ widgetData: [{ ...amountData, value: null }] });
+      wrapper.update();
+
+      expect(wrapper.find('input').props().value).toEqual('3.57');
+      pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
+      expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
+    });
+
     it('shows a different amount that comes from outside while the user types', () => {
       const props = createDummyProps({
         ...amountLayout,
