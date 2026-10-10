@@ -1,0 +1,176 @@
+package de.metas.contracts.compensationGroup.contract;
+
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermStatus;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.MutableInt;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TrxRunnableAdapter;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/**
+ * Contract status, contract date and master start date of {@code CompensationGroup}-type contract terms.
+ *
+ * @see ContractCompensationGroupTermStatusRule
+ */
+@Service
+@RequiredArgsConstructor
+public class ContractCompensationGroupTermService
+{
+	private static final Logger logger = LogManager.getLogger(ContractCompensationGroupTermService.class);
+
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final ContractCompensationGroupTermRepository termRepository;
+
+	@VisibleForTesting
+	public static ContractCompensationGroupTermService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ContractCompensationGroupTermService.class,
+				() -> new ContractCompensationGroupTermService(ContractCompensationGroupTermRepository.newInstanceForUnitTesting()));
+	}
+
+	/**
+	 * Fills the values the given term is about to be completed with, each only if it is still empty:
+	 * <ul>
+	 *     <li>{@code ContractStatus} per {@link ContractCompensationGroupTermStatusRule#computeStatusOnComplete}</li>
+	 *     <li>{@code DateContracted}: the day the term was created</li>
+	 *     <li>{@code MasterStartDate}: the predecessor's master start date if the term is the follow-up of an extended term
+	 *     and that one has a master start date, else the term's own start date</li>
+	 * </ul>
+	 * Does not save the term.
+	 * <p>
+	 * A follow-up term created by the contract extension usually has its {@code MasterStartDate} already, copied from the predecessor.
+	 * It is still empty if the predecessor had none when the follow-up term was created and got one only later (e.g. by the backfill migration),
+	 * while the follow-up term was still a draft (transition with {@code IsAutoCompleteNewTerm='N'}).
+	 * Hence the predecessor is consulted on completion.
+	 */
+	public void setDefaultsBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		final LocalDate today = SystemTime.asLocalDate();
+		ContractCompensationGroupTermStatusRule.computeStatusOnComplete(FlatrateTermStatus.ofNullableCode(term.getContractStatus()), TimeUtil.asLocalDate(term.getStartDate()), today)
+				.ifPresent(status -> term.setContractStatus(status.getCode()));
+
+		if (term.getDateContracted() == null)
+		{
+			term.setDateContracted(TimeUtil.truncToDay(term.getCreated()));
+		}
+
+		if (term.getMasterStartDate() == null)
+		{
+			term.setMasterStartDate(CoalesceUtil.coalesce(getPredecessorMasterStartDate(term), term.getStartDate()));
+		}
+	}
+
+	@Nullable
+	private Timestamp getPredecessorMasterStartDate(@NonNull final I_C_Flatrate_Term term)
+	{
+		final I_C_Flatrate_Term predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
+		return predecessor != null ? predecessor.getMasterStartDate() : null;
+	}
+
+	/**
+	 * Applies {@link ContractCompensationGroupTermStatusRule#computeStatusUpdate} for today to every completed
+	 * compensation-group term of the context client that the rule may change today
+	 * (see {@link ContractCompensationGroupTermRepository#getTermsDueForDailyContractStatusUpdate}).
+	 * <p>
+	 * Each term is updated in its own (nested) transaction: a term that fails is rolled back and logged, and the run continues with the next one.
+	 *
+	 * @return the number of terms whose contract status was changed
+	 */
+	public int updateContractStatusOfCompletedTerms()
+	{
+		final LocalDate today = SystemTime.asLocalDate();
+
+		final MutableInt updatedCount = MutableInt.zero();
+		for (final I_C_Flatrate_Term term : termRepository.getTermsDueForDailyContractStatusUpdate(today))
+		{
+			trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+			{
+				@Override
+				public void run(final String localTrxName)
+				{
+					if (updateContractStatus(term, today))
+					{
+						updatedCount.increment();
+					}
+				}
+
+				// One failing term must not stop the daily run for all the others: roll back this term only, log it and go on.
+				@Override
+				public boolean doCatch(final Throwable ex)
+				{
+					Loggables.withLogger(logger, Level.WARN)
+							.addLog("C_Flatrate_Term_ID={}: contract status update failed: {}", term.getC_Flatrate_Term_ID(), ex.getLocalizedMessage(), ex);
+					return true; // rollback
+				}
+			});
+		}
+		return updatedCount.getValue();
+	}
+
+	/**
+	 * @return whether the contract status was changed
+	 */
+	private boolean updateContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final LocalDate today)
+	{
+		final FlatrateTermStatus newStatus = ContractCompensationGroupTermStatusRule.computeStatusUpdate(
+						FlatrateTermStatus.ofNullableCode(term.getContractStatus()),
+						TimeUtil.asLocalDate(term.getStartDate()),
+						TimeUtil.asLocalDate(term.getEndDate()),
+						FlatrateTermId.ofRepoIdOrNull(term.getC_FlatrateTerm_Next_ID()) != null,
+						today)
+				.orElse(null);
+		if (newStatus == null)
+		{
+			return false;
+		}
+
+		Loggables.addLog("C_Flatrate_Term_ID={}: ContractStatus {} -> {}", term.getC_Flatrate_Term_ID(), term.getContractStatus(), newStatus.getCode());
+		termRepository.saveContractStatus(term, newStatus);
+		return true;
+	}
+}

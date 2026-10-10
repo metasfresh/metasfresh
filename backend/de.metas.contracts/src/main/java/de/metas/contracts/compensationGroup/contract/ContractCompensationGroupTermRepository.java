@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
@@ -12,9 +13,13 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -43,8 +48,8 @@ import java.util.List;
 /**
  * Repository Tables: C_Flatrate_Term
  * <p>
- * Repository Cluster: ContractCompensationGroupTermRepository, {@code FlatrateDAO} — this one only reads
- * {@code C_Flatrate_Term} (CompensationGroup terms only); {@code FlatrateDAO} reads and writes all terms.
+ * Repository Cluster: ContractCompensationGroupTermRepository, {@code FlatrateDAO} — this one reads
+ * {@code C_Flatrate_Term} (CompensationGroup terms only) and saves their contract status; {@code FlatrateDAO} reads and writes all terms.
  * <p>
  * Queries {@code CompensationGroup}-type contract terms.
  */
@@ -52,6 +57,14 @@ import java.util.List;
 public class ContractCompensationGroupTermRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static ContractCompensationGroupTermRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ContractCompensationGroupTermRepository.class, ContractCompensationGroupTermRepository::new);
+	}
 
 	/**
 	 * @return every active {@code CompensationGroup}-type term of {@code billPartnerId} whose {@code DocStatus} is
@@ -93,6 +106,47 @@ public class ContractCompensationGroupTermRepository
 				.endOrderBy()
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	/**
+	 * @return every active {@code CompensationGroup}-type term of the context client whose {@code DocStatus} is completed/closed
+	 * and whose contract status the daily update may change on {@code today}, ordered by {@code C_Flatrate_Term_ID}:
+	 * <ul>
+	 *     <li>"not yet started" ({@code Wa}) and started on or before {@code today}, or</li>
+	 *     <li>"running" ({@code Ru}), ended before {@code today} and not extended ({@code C_FlatrateTerm_Next_ID} empty)</li>
+	 * </ul>
+	 */
+	public List<I_C_Flatrate_Term> getTermsDueForDailyContractStatusUpdate(@NonNull final LocalDate today)
+	{
+		final Timestamp startOfToday = TimeUtil.asTimestamp(today);
+		final Timestamp startOfTomorrow = TimeUtil.asTimestamp(today.plusDays(1));
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.COMPENSATION_GROUP)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Completed, DocStatus.Closed))
+				.filter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+						.setJoinOr()
+						.addFilter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+								.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Waiting)
+								// "StartDate < tomorrow 00:00" rather than "<= today 00:00": a start date with a time of day still counts as today
+								.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS, startOfTomorrow))
+						.addFilter(queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+								.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running)
+								.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.LESS, startOfToday)
+								.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, null, 0)))
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.endOrderBy()
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	public void saveContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final FlatrateTermStatus contractStatus)
+	{
+		term.setContractStatus(contractStatus.getCode());
+		InterfaceWrapperHelper.saveRecord(term);
 	}
 
 	/** The active-term predicate shared by {@link #findActiveTerms} and {@link #findActiveTermsOverlapping}: active, {@code billPartnerId}, {@code CompensationGroup} type, DocStatus completed/closed, ContractStatus not voided. */
