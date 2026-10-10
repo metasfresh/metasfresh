@@ -75,6 +75,38 @@ public class ESRDataImporterCamt54V06Tests
 				.isEqualByComparingTo("10");
 	}
 
+	@Test
+	public void testV05Namespace()
+	{
+		assertSampleFileImports("/camt054_v05.xml");
+	}
+
+	@Test
+	public void testV06Namespace()
+	{
+		assertSampleFileImports("/camt054_v06.xml");
+	}
+
+	@Test
+	public void testV06PrefixedNamespace()
+	{
+		assertSampleFileImports("/camt054_v06_prefixed.xml");
+	}
+
+	private void assertSampleFileImports(final String resourceName)
+	{
+		final InputStream inputStream = getClass().getResourceAsStream(resourceName);
+		assertThat(inputStream).isNotNull();
+
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions())
+				.allMatch(t -> t.getErrorMsgs().isEmpty());
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
+		assertThat(importData.getCtrlQty()).as("CtrlQty").isEqualByComparingTo("10");
+	}
+
 	/**
 	 * Verifies that is there is one input file without any "Batch" tag, then CtrlQty is null
 	 */
