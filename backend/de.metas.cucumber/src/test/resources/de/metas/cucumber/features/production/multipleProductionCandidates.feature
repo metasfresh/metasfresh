@@ -316,15 +316,21 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_3  |
 
     # we are expecting two PP_Orders for ppOrderCandidate_3_2 and ppOrderCandidate_3_3, because
-    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 4+2=6:
-    # the first PP_Order (ppOrder_3_1) is filled up to 5 PCE from both candidates, and the remaining 1 PCE ends up in a second PP_Order (ppOrder_3_2).
-    # The candidates are allocated in PP_Order_Candidate_ID order, and which of the two is created first is not pinned.
-    # So we don't assert how each single candidate is split (ppOrder_3_1 = 4 of ppOrderCandidate_3_2 + 1 of ppOrderCandidate_3_3, or 2 of ppOrderCandidate_3_3 + 3 of ppOrderCandidate_3_2),
-    # only the outcome that holds for both orders. How much of each candidate was processed is checked by QtyProcessed below.
-    Then after not more than 60s, load PP_Orders allocated from candidates: ppOrderCandidate_3_2,ppOrderCandidate_3_3
-      | PP_Order_ID | QtyEntered | NumberOfCandidates |
-      | ppOrder_3_1 | 5          | 2                  |
-      | ppOrder_3_2 | 1          | 1                  |
+    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 4+2=6.
+    # GeneratePPOrderFromPPOrderCandidate.getSortedCandidates allocates the candidates in PP_Order_Candidate_ID order, i.e. in creation order.
+    # Material-dispo posts the events for the 10 PCE and the 2 PCE candidate in this order, but they were observed to be delivered
+    # and so created in the reverse order (https://github.com/metasfresh/metasfresh/actions/runs/32971731130).
+    # So the expected allocations depend on which candidate was created first:
+    # - ppOrderCandidate_3_2 first: all (4) of it end up in ppOrder_3_1; of ppOrderCandidate_3_3's 2 PCE, 1 fills ppOrder_3_1 up to 5, the remaining 1 ends up in ppOrder_3_2
+    # - ppOrderCandidate_3_3 first: all (2) of it end up in ppOrder_3_1; of ppOrderCandidate_3_2's 4 PCE, 3 fill ppOrder_3_1 up to 5, the remaining 1 ends up in ppOrder_3_2
+    Then after not more than 60s, PP_OrderCandidate_PP_Order are found, depending on which candidate was created first
+      | CreatedFirst         | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
+      | ppOrderCandidate_3_2 | ppOrderCandidate_3_2  | ppOrder_3_1 | 4 PCE      |
+      | ppOrderCandidate_3_2 | ppOrderCandidate_3_3  | ppOrder_3_1 | 1 PCE      |
+      | ppOrderCandidate_3_2 | ppOrderCandidate_3_3  | ppOrder_3_2 | 1 PCE      |
+      | ppOrderCandidate_3_3 | ppOrderCandidate_3_3  | ppOrder_3_1 | 2 PCE      |
+      | ppOrderCandidate_3_3 | ppOrderCandidate_3_2  | ppOrder_3_1 | 3 PCE      |
+      | ppOrderCandidate_3_3 | ppOrderCandidate_3_2  | ppOrder_3_2 | 1 PCE      |
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
