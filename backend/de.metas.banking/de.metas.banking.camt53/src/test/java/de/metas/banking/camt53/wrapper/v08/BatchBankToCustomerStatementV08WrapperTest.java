@@ -55,6 +55,7 @@ class BatchBankToCustomerStatementV08WrapperTest
 {
 	private static final String XSD_RESOURCE = "/de/metas/banking/camt53/schema/camt_053_001_08/camt.053.001.08.xsd";
 	private static final String SAMPLE_RESOURCE = "/camt053_v08_sample.xml";
+	private static final String EDGE_CASES_RESOURCE = "/camt053_v08_edge_cases.xml";
 	private static final ZoneId ZONE = ZoneId.of("Europe/Berlin");
 
 	private IAccountStatementWrapper statement;
@@ -64,20 +65,25 @@ class BatchBankToCustomerStatementV08WrapperTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final ImmutableList<IAccountStatementWrapper> wrappers = BatchBankToCustomerStatementV08Wrapper
-				.of(unmarshalSample().getBkToCstmrStmt())
+		final ImmutableList<IAccountStatementWrapper> wrappers = toWrappers(SAMPLE_RESOURCE);
+		assertThat(wrappers).hasSize(1);
+		statement = wrappers.get(0);
+	}
+
+	private static ImmutableList<IAccountStatementWrapper> toWrappers(final String resource) throws Exception
+	{
+		return BatchBankToCustomerStatementV08Wrapper
+				.of(unmarshal(resource).getBkToCstmrStmt())
 				.getAccountStatementWrappers(
 						BankAccountService.newInstanceForUnitTesting(),
 						new CurrencyRepository(),
 						Services.get(IMsgBL.class));
-		assertThat(wrappers).hasSize(1);
-		statement = wrappers.get(0);
 	}
 
 	/**
 	 * Unmarshals the sample with XSD validation turned on, so an unmarshal failure means the sample does not conform to the bundled schema.
 	 */
-	private static Document unmarshalSample() throws Exception
+	private static Document unmarshal(final String resource) throws Exception
 	{
 		final URL xsd = BatchBankToCustomerStatementV08WrapperTest.class.getResource(XSD_RESOURCE);
 		assertThat(xsd).as("bundled XSD").isNotNull();
@@ -86,7 +92,7 @@ class BatchBankToCustomerStatementV08WrapperTest
 		final Unmarshaller unmarshaller = JAXBContext.newInstance(Document.class).createUnmarshaller();
 		unmarshaller.setSchema(schema);
 
-		try (final InputStream in = BatchBankToCustomerStatementV08WrapperTest.class.getResourceAsStream(SAMPLE_RESOURCE))
+		try (final InputStream in = BatchBankToCustomerStatementV08WrapperTest.class.getResourceAsStream(resource))
 		{
 			assertThat(in).as("sample xml").isNotNull();
 			return unmarshaller.unmarshal(new StreamSource(in), Document.class).getValue();
@@ -108,7 +114,8 @@ class BatchBankToCustomerStatementV08WrapperTest
 	@Test
 	void sampleConformsToXsd() throws Exception
 	{
-		assertThat(unmarshalSample().getBkToCstmrStmt().getStmt()).hasSize(1);
+		assertThat(unmarshal(SAMPLE_RESOURCE).getBkToCstmrStmt().getStmt()).hasSize(1);
+		assertThat(unmarshal(EDGE_CASES_RESOURCE).getBkToCstmrStmt().getStmt()).hasSize(2);
 	}
 
 	@Test
@@ -187,5 +194,55 @@ class BatchBankToCustomerStatementV08WrapperTest
 		assertThat(txs.get(0).getDbtrNames()).isEqualTo("Batch Payer One");
 		assertThat(txs.get(1).getCcy()).isEqualTo("CHF");
 		assertThat(txs.get(1).isCRDT()).isTrue();
+	}
+
+	@Test
+	void debitOpeningBalance_isNegated() throws Exception
+	{
+		final IAccountStatementWrapper edgeStatement = toWrappers(EDGE_CASES_RESOURCE).get(0);
+		assertThat(edgeStatement.getBeginningBalance()).isEqualByComparingTo("-500.00");
+	}
+
+	@Test
+	void prcdBalance_isUsedWhenOpbdIsAbsent() throws Exception
+	{
+		final IAccountStatementWrapper prcdStatement = toWrappers(EDGE_CASES_RESOURCE).get(1);
+		assertThat(prcdStatement.getBeginningBalance()).isEqualByComparingTo("70.00");
+		assertThat(prcdStatement.hasNoBankStatementLines()).isTrue();
+	}
+
+	@Test
+	void transactionWithoutRefs_andWithoutDbtr_isNullSafe() throws Exception
+	{
+		final IStatementLineWrapper entry = toWrappers(EDGE_CASES_RESOURCE).get(0).getStatementLines().get(0);
+		final ITransactionDtlsWrapper tx = entry.getTransactionDtlsWrapper().get(0);
+
+		assertThat(tx.getAcctSvcrRef()).isNull(); // no Refs element
+		assertThat(tx.getDbtrNames()).isNull(); // Cdtr only
+		assertThat(tx.getCdtrNames()).isEqualTo("Only Creditor AG");
+		assertThat(entry.getDbtrNames()).isEmpty();
+		assertThat(entry.getCdtrNames()).isEqualTo("Only Creditor AG");
+	}
+
+	@Test
+	void transactionWithoutCdtr_isNullSafe() throws Exception
+	{
+		final IStatementLineWrapper entry = toWrappers(EDGE_CASES_RESOURCE).get(0).getStatementLines().get(1);
+		final ITransactionDtlsWrapper tx = entry.getTransactionDtlsWrapper().get(0);
+
+		assertThat(tx.getDbtrNames()).isEqualTo("Only Debtor GmbH");
+		assertThat(tx.getCdtrNames()).isNull(); // Dbtr only
+		assertThat(tx.getAcctSvcrRef()).isEqualTo("ASR-E2-TX");
+		assertThat(entry.getCdtrNames()).isEmpty();
+	}
+
+	@Test
+	void transactionLineDescription_isEmptyWhenAddtlTxInfIsAbsent() throws Exception
+	{
+		final IStatementLineWrapper entryWithoutInfo = toWrappers(EDGE_CASES_RESOURCE).get(0).getStatementLines().get(0);
+		assertThat(entryWithoutInfo.getTransactionDtlsWrapper().get(0).getLineDescription()).isEmpty();
+
+		final IStatementLineWrapper entryWithInfo = toWrappers(EDGE_CASES_RESOURCE).get(0).getStatementLines().get(1);
+		assertThat(entryWithInfo.getTransactionDtlsWrapper().get(0).getLineDescription()).isEqualTo("Extra info");
 	}
 }

@@ -40,9 +40,6 @@ public class BatchBankToCustomerStatementV08Wrapper
 
 	private BatchBankToCustomerStatementV08Wrapper(@NonNull final BankToCustomerStatementV08 bankToCustomerStatementV08)
 	{
-		bankToCustomerStatementV08
-				.getStmt();
-
 		this.bankToCustomerStatementV08 = bankToCustomerStatementV08;
 	}
 

@@ -96,7 +96,7 @@ public class TransactionDtls10Wrapper extends TransactionDtlsWrapper
 	@Override
 	protected @NonNull String getLineDescription(final @NonNull String delimiter)
 	{
-		return entryDtls.getAddtlTxInf();
+		return entryDtls.getAddtlTxInf() != null ? entryDtls.getAddtlTxInf() : "";
 	}
 
 	@Nullable
