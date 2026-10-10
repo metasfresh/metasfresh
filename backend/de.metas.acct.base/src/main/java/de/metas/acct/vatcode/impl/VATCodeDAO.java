@@ -1,6 +1,7 @@
 package de.metas.acct.vatcode.impl;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.model.X_C_VAT_Code;
@@ -33,6 +34,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -158,21 +161,24 @@ public class VATCodeDAO implements IVATCodeDAO
 	@Override
 	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
 	{
-		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
+		// a code usually has a Net and a Tax row for the same tax; both carry the same IsSOTrx
+		final Set<String> isSOTrxValues = queryBL.createQueryBuilder(I_C_VAT_Code.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
-				.firstOnlyOptional()
-				.flatMap(r -> {
-					final String isSOTrxStr = r.getIsSOTrx();
-					if (isSOTrxStr == null || isSOTrxStr.isEmpty())
-					{
-						return Optional.empty();
-					}
-					return Optional.of(X_C_VAT_Code.ISSOTRX_Yes.equals(isSOTrxStr));
-				});
+				.list(I_C_VAT_Code.class)
+				.stream()
+				.map(r -> Strings.nullToEmpty(r.getIsSOTrx()))
+				.collect(Collectors.toSet());
+
+		// no row, a blank IsSOTrx or rows that disagree => unknown
+		if (isSOTrxValues.size() != 1 || isSOTrxValues.contains(""))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(isSOTrxValues.contains(X_C_VAT_Code.ISSOTRX_Yes));
 	}
 
 	/**
