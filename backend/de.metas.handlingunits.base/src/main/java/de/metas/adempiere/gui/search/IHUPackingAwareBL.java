@@ -78,15 +78,36 @@ public interface IHUPackingAwareBL extends ISingletonService
 	void setQtyCUFromQtyTU(IHUPackingAware record, int qtyPacks);
 
 	/**
+	 * Like {@link #setQtyCUFromQtyTU(IHUPackingAware, int)}, but for a TU quantity as entered or stored (e.g. {@code QtyEnteredTU}).
+	 *
+	 * @param qtyTU a.k.a. Qty TUs; must be a whole number
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) if {@code qtyTU} is not a whole number
+	 */
+	void setQtyCUFromQtyTU(IHUPackingAware record, BigDecimal qtyTU);
+
+	/**
 	 * This method verifies if the qtyCU given as parameter fits the qtyPacks. If it does, the record will not be updated.
 	 * In case the QtyCU is too big or too small to fit in the QtyPacks, it will be changed to the maximum capacity required by the QtyPacks and the M_HU_PI_Item_Product of the record
 	 */
 	void updateQtyIfNeeded(IHUPackingAware record, int qtyPacks, Quantity qtyCU);
 
+	/**
+	 * Like {@link #updateQtyIfNeeded(IHUPackingAware, int, Quantity)}, but for a TU quantity as entered or stored (e.g. {@code QtyEnteredTU}).
+	 *
+	 * @param qtyTU a.k.a. Qty TUs; must be a whole number
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) if {@code qtyTU} is not a whole number
+	 */
+	void updateQtyIfNeeded(IHUPackingAware record, BigDecimal qtyTU, Quantity qtyCU);
+
 	void computeAndSetQtysForNewHuPackingAware(final PlainHUPackingAware huPackingAware, final BigDecimal quickInputQty);
 
 	boolean isInfiniteCapacityTU(IHUPackingAware huPackingAware);
 
+	/**
+	 * Sets the TU quantity to QtyLU x the number of TUs per LU.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) if that TU quantity is not a whole number (e.g. 0.25 LU x 10 TU per LU)
+	 */
 	void setQtyTUFromQtyLU(IHUPackingAware packingAware);
 
 	void setQtyLUFromQtyTU(IHUPackingAware record);
