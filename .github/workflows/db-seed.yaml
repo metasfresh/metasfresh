@@ -31,6 +31,13 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
 
+      - name: check the source tag
+        env:
+          SOURCE_TAG: ${{ inputs.source-tag }}
+        run: |
+          # a plain image tag only, so a typo cannot address (and overwrite) some other -seed tag
+          [[ "${SOURCE_TAG}" =~ ^[0-9A-Za-z][0-9A-Za-z._-]{0,100}$ ]] || { echo "::error::invalid source-tag '${SOURCE_TAG}'"; exit 1; }
+
       - name: dump the preloaded DB
         run: |
           docker run -d --name seed-source "${SOURCE_IMAGE}"
@@ -38,6 +45,7 @@ jobs:
             docker exec seed-source pg_isready -q -U postgres -d metasfresh && break
             sleep 5
           done
+          docker exec seed-source pg_isready -U postgres -d metasfresh || { docker logs seed-source; echo "::error::the preloaded DB did not become ready"; exit 1; }
           echo "DBVersion: $(docker exec -u postgres seed-source psql -d metasfresh -tAc 'select DBVersion from AD_System')"
           echo "migration scripts: $(docker exec -u postgres seed-source psql -d metasfresh -tAc 'select count(*) from AD_MigrationScript')"
           docker exec -u postgres seed-source pg_dump -Fc -d metasfresh -f /tmp/metasfresh.pgdump
