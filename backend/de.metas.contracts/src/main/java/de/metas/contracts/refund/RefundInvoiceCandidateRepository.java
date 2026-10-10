@@ -34,10 +34,10 @@ import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -241,6 +241,7 @@ public class RefundInvoiceCandidateRepository
 				.listIds(InvoiceCandidateId::ofRepoId);
 	}
 
+	/** Deletes the given refund candidate; its assignments are removed by the caller (or by the invoice candidate's delete interceptor). */
 	public void delete(@NonNull final InvoiceCandidateId refundCandidateId)
 	{
 		InterfaceWrapperHelper.delete(load(refundCandidateId, I_C_Invoice_Candidate.class));

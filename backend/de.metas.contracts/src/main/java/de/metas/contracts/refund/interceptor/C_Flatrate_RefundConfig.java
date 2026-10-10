@@ -201,6 +201,7 @@ public class C_Flatrate_RefundConfig
 		{
 			return config;
 		}
+		// the same amount in the corrected currency: the currency of the line is corrected, the amount is not converted
 		return config.toBuilder()
 				.amount(Money.of(config.getAmount().toBigDecimal(), correctedConfig.getAmountCurrencyId()))
 				.build();

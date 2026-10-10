@@ -133,7 +133,7 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 					refundConfig.getAmount(),
 					currencyId,
 					request.getDate(),
-					ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY));
+					ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY)); // the request carries no client or org
 		}
 		catch (final NoCurrencyRateFoundException e)
 		{
