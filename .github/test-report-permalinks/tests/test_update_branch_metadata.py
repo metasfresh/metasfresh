@@ -1,4 +1,4 @@
-import json, os, sys, time, pathlib
+import fcntl, json, os, sys, time, pathlib
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 import update_branch_metadata as ubm
@@ -56,9 +56,9 @@ def test_does_not_wait_for_the_slow_delete(tmp_path, monkeypatch):
         _publish(tmp_path, v)
     stub_bin = tmp_path / "bin"
     stub_bin.mkdir()
-    slow_rm = stub_bin / "rm"
-    slow_rm.write_text('#!/bin/sh\nsleep 3\nexec /bin/rm "$@"\n', encoding="utf-8")
-    slow_rm.chmod(0o755)
+    slow_nice = stub_bin / "nice"
+    slow_nice.write_text('#!/bin/sh\nsleep 3\nexec /usr/bin/nice "$@"\n', encoding="utf-8")
+    slow_nice.chmod(0o755)
     monkeypatch.setenv("PATH", f"{stub_bin}{os.pathsep}{os.environ['PATH']}")
     (tmp_path / "branches" / BRANCH / "builds" / "v4").mkdir()
     started = time.time()
@@ -70,5 +70,61 @@ def test_does_not_wait_for_the_slow_delete(tmp_path, monkeypatch):
 def test_evicted_build_is_eventually_deleted(tmp_path):
     for v in ["v1", "v2", "v3", "v4"]:
         _publish(tmp_path, v)
+    # only the deleter's own lock/status files (dot-files) stay behind
+    assert _wait_until(lambda: _trash_entries(tmp_path) == [])
+
+
+def _trash_entries(base):
+    trash = base / "_trash"
+    return sorted(n for n in os.listdir(trash) if not n.startswith(".")) if trash.exists() else []
+
+
+def test_never_more_than_one_deleter(tmp_path):
+    # A hung delete (e.g. a stalled disk) must not be joined by one more deleter per publish.
+    for v in ["v1", "v2", "v3"]:
+        _publish(tmp_path, v)
+    (tmp_path / "_trash").mkdir(exist_ok=True)
+    with open(tmp_path / "_trash" / ".sweep.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)  # stands in for a deleter that is still running
+        _publish(tmp_path, "v4")
+        time.sleep(1.5)
+        assert len(_trash_entries(tmp_path)) == 1, "a second deleter ran while one held the lock"
+    _publish(tmp_path, "v5")  # the lock is free again: this run's deleter also takes the leftover
+    assert _wait_until(lambda: _trash_entries(tmp_path) == [])
+
+
+def test_deleter_records_its_result(tmp_path):
+    for v in ["v1", "v2", "v3", "v4"]:
+        _publish(tmp_path, v)
+    status = tmp_path / "_trash" / ".last-sweep.json"
+    assert _wait_until(status.exists)
+    assert json.loads(status.read_text(encoding="utf-8"))["errors"] == []
+
+
+def test_reports_the_trash_state(tmp_path, capsys):
+    _publish(tmp_path, "v1")
+    out = capsys.readouterr().out
+    assert "trash:" in out
+    assert "::warning::" not in out
+
+
+def test_warns_when_deletion_is_stuck(tmp_path, capsys):
+    # an entry evicted 2 h ago that is still there means the background delete is not working
     trash = tmp_path / "_trash"
-    assert _wait_until(lambda: not trash.exists() or not os.listdir(trash))
+    trash.mkdir()
+    (trash / f"{BRANCH}__v0__{int(time.time()) - 7200}").mkdir()
+    with open(trash / ".sweep.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _publish(tmp_path, "v1")
+    assert "::warning::" in capsys.readouterr().out
+
+
+def test_warns_when_the_last_delete_failed(tmp_path, capsys):
+    trash = tmp_path / "_trash"
+    trash.mkdir()
+    (trash / ".last-sweep.json").write_text(json.dumps({"finished": time.time(), "errors": ["x: Permission denied"]}), encoding="utf-8")
+    with open(trash / ".sweep.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _publish(tmp_path, "v1")
+    out = capsys.readouterr().out
+    assert "::warning::" in out and "Permission denied" in out

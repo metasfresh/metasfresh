@@ -3,10 +3,34 @@
 Runs ON the reports server (the cicd `publish test reports` job pipes it over ssh):
     python3 - <branch> <version> [<base-dir>] < update_branch_metadata.py
 """
-import json, sys, os, subprocess
+import json, sys, os, subprocess, time
 from datetime import datetime, timezone
 
 MAX_BUILDS_PER_BRANCH = 3
+# a trash entry older than this means the background delete is stuck or failing
+STUCK_AFTER_SECONDS = 3600
+
+# Runs detached as its own process: deletes everything in the trash dir, then records the outcome.
+# The non-blocking lock keeps it to ONE deleter: if a previous one still runs (e.g. on a stalled disk),
+# this one exits at once instead of piling up; the running one, or the next publish, takes the leftovers.
+SWEEPER = '''
+import fcntl, json, os, shutil, sys, time
+trash = sys.argv[1]
+lock = open(os.path.join(trash, ".sweep.lock"), "w")
+try:
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    sys.exit(0)
+errors = []
+for name in os.listdir(trash):
+    if not name.startswith("."):
+        try:
+            shutil.rmtree(os.path.join(trash, name))
+        except Exception as ex:
+            errors.append(f"{name}: {ex}")
+with open(os.path.join(trash, ".last-sweep.json"), "w") as f:
+    json.dump({"finished": time.time(), "errors": errors[:5]}, f)
+'''
 
 
 def main(argv):
@@ -50,23 +74,50 @@ def main(argv):
     # which the publish job had to wait for.
     trash_dir = os.path.join(base, "_trash")
     os.makedirs(trash_dir, exist_ok=True)
+    report_trash_state(trash_dir)
     for ver in evicted:
         build_path = os.path.join(builds_dir, ver)
         if os.path.isdir(build_path):
-            os.rename(build_path, os.path.join(trash_dir, f"{branch}__{ver}__{os.getpid()}"))
+            # the epoch seconds in the name date the eviction, for the stuck-delete warning
+            os.rename(build_path, os.path.join(trash_dir, f"{branch}__{ver}__{int(time.time())}"))
             print(f"Pruned old build: {branch}/{ver}")
-    delete_in_background([os.path.join(trash_dir, name) for name in os.listdir(trash_dir)])
+    delete_in_background(trash_dir)
 
     print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
 
 
-def delete_in_background(paths):
-    """Start `rm -rf` detached from this process, so neither it nor the ssh session waits for it.
-    Includes leftovers of earlier runs whose delete was interrupted; deleting an entry another
-    run is already deleting is harmless."""
-    if not paths:
-        return
-    subprocess.Popen(["nice", "-n", "19", "rm", "-rf", "--", *paths],
+def report_trash_state(trash_dir):
+    """Print what is still waiting for deletion and how the last background delete went; emit a
+    GitHub warning annotation when the delete is stuck or failing, so it shows on the cicd run."""
+    now = time.time()
+    entries = [n for n in os.listdir(trash_dir) if not n.startswith(".")]
+    ages = []
+    for name in entries:
+        try:
+            ages.append(now - int(name.rsplit("__", 1)[1]))
+        except (IndexError, ValueError):
+            ages.append(now - os.path.getmtime(os.path.join(trash_dir, name)))
+    oldest_min = int(max(ages) / 60) if ages else 0
+    last = None
+    try:
+        with open(os.path.join(trash_dir, ".last-sweep.json")) as f:
+            last = json.load(f)
+    except (OSError, ValueError):
+        pass
+    last_text = "never" if last is None else (
+        f"{int((now - last.get('finished', now)) / 60)} min ago, "
+        + ("ok" if not last.get("errors") else "errors: " + "; ".join(last["errors"])))
+    print(f"trash: {len(entries)} old build(s) pending deletion, oldest {oldest_min} min; last delete finished {last_text}")
+    if ages and max(ages) > STUCK_AFTER_SECONDS:
+        print(f"::warning::test-reports server: {len(entries)} pruned build(s) not deleted, oldest {oldest_min} min - the background delete in {trash_dir} is stuck")
+    if last and last.get("errors"):
+        print(f"::warning::test-reports server: the last background delete in {trash_dir} failed: " + "; ".join(last["errors"]))
+
+
+def delete_in_background(trash_dir):
+    """Start the sweeper detached from this process (all std streams closed, own session),
+    so neither this script nor the ssh session waits for it."""
+    subprocess.Popen(["nice", "-n", "19", sys.executable, "-c", SWEEPER, trash_dir],
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                      start_new_session=True)
 
