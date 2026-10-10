@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
@@ -378,6 +379,107 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assertThatThrownBy(() -> invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
 					customerId, Collections.emptyList(), () -> new AdempiereException("no config for customer")))
 					.hasMessageContaining("no config for customer");
+		}
+	}
+
+	/**
+	 * A payment of an invoice-processing service company: the service fee is only allowed on invoices of the service company's own customers.
+	 */
+	@Nested
+	public class createFeeCalculationForPayment
+	{
+		private final ZonedDateTime validFrom = LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC"));
+		private final ZonedDateTime paymentDate = LocalDate.parse("2020-05-10").atStartOfDay(ZoneId.of("UTC"));
+		private InvoiceId invoiceId;
+		private BPartnerId serviceCompanyA;
+		private BPartnerId serviceCompanyB;
+		private BPartnerId customerOfA;
+		private BPartnerId customerOfB;
+		private BPartnerId customerWithoutServiceCompany;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			serviceCompanyA = createBPartner("Service Company A");
+			serviceCompanyB = createBPartner("Service Company B");
+			customerOfA = createBPartner("Customer of A");
+			customerOfB = createBPartner("Customer of B");
+			customerWithoutServiceCompany = createBPartner("Customer without service company");
+
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setDocumentNo("INV-4711");
+			saveRecord(invoice);
+			invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+			config().serviceCompanyId(serviceCompanyA).customerId(customerOfA).feePercentageOfGrandTotal("2").validFrom(validFrom).build();
+			config().serviceCompanyId(serviceCompanyB).customerId(customerOfB).feePercentageOfGrandTotal("3").validFrom(validFrom).build();
+		}
+
+		private BPartnerId createBPartner(@NonNull final String name)
+		{
+			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+			bpartner.setName(name);
+			saveRecord(bpartner);
+			return BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		}
+
+		private Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(
+				@NonNull final BPartnerId paymentPartnerId,
+				@NonNull final BPartnerId customerId)
+		{
+			return invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.paymentDate(paymentDate)
+					.customerId(customerId)
+					.invoiceId(invoiceId)
+					.feeAmountIncludingTax(Amount.of(2, CurrencyCode.EUR))
+					.serviceCompanyBPartnerId(paymentPartnerId)
+					.build());
+		}
+
+		@Test
+		public void serviceCompanyPaysInvoiceOfItsOwnCustomer()
+		{
+			final InvoiceProcessingFeeCalculation result = createFeeCalculationForPayment(serviceCompanyA, customerOfA).orElse(null);
+
+			assertThat(result).isNotNull();
+			assertThat(result.getServiceCompanyBPartnerId()).isEqualTo(serviceCompanyA);
+			assertThat(result.getCustomerId()).isEqualTo(customerOfA);
+			assertThat(result.getInvoiceId()).isEqualTo(invoiceId);
+			assertThat(result.getFeeAmountIncludingTax()).isEqualTo(Amount.of(2, CurrencyCode.EUR));
+		}
+
+		@Test
+		public void paymentPartnerIsNotAServiceCompany_noCalculation()
+		{
+			assertThat(createFeeCalculationForPayment(customerOfA, customerOfA)).isEmpty();
+		}
+
+		@Test
+		public void serviceCompanyPaysInvoiceOfCustomerOfAnotherServiceCompany_isRefused()
+		{
+			assertRefusedAsNotAssigned(serviceCompanyA, customerOfB, "Service Company A", "Customer of B");
+		}
+
+		@Test
+		public void serviceCompanyPaysInvoiceOfCustomerWithoutServiceCompany_isRefused()
+		{
+			assertRefusedAsNotAssigned(serviceCompanyB, customerWithoutServiceCompany, "Service Company B", "Customer without service company");
+		}
+
+		private void assertRefusedAsNotAssigned(
+				@NonNull final BPartnerId paymentPartnerId,
+				@NonNull final BPartnerId customerId,
+				@NonNull final String expectedServiceCompanyName,
+				@NonNull final String expectedCustomerName)
+		{
+			assertThatThrownBy(() -> createFeeCalculationForPayment(paymentPartnerId, customerId))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany").toAD_Message());
+						// the message names the invoice, the service company and the customer (not raw ids)
+						assertThat(ex.getMessage()).contains("INV-4711").contains(expectedServiceCompanyName).contains(expectedCustomerName);
+					});
 		}
 	}
 
@@ -784,18 +886,22 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 	}
 
+	/**
+	 * @param serviceCompanyId the config's service company; {@code null} means {@link #serviceCompanyBPartnerId}
+	 */
 	@Builder(builderMethodName = "config", builderClassName = "ConfigBuilder")
 	private void createConfig(
 			@NonNull final String feePercentageOfGrandTotal,
 			@NonNull @Singular final Set<BPartnerId> customerIds,
 			@NonNull final ZonedDateTime validFrom,
-			@Nullable final DocTypeId docTypeId)
+			@Nullable final DocTypeId docTypeId,
+			@Nullable final BPartnerId serviceCompanyId)
 	{
 		Check.assumeNotEmpty(customerIds, "customerIds is not empty");
 
 		final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
 		configRecord.setIsActive(true);
-		configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		configRecord.setServiceCompany_BPartner_ID(CoalesceUtil.coalesceNotNull(serviceCompanyId, serviceCompanyBPartnerId).getRepoId());
 		configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
 		configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
 		configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));

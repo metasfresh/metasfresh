@@ -34,7 +34,6 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -220,9 +219,8 @@ public class PaymentAllocationService
 
 		if (serviceFeeAmt != null && !serviceFeeAmt.isZero())
 		{
-			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
-
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), evaluationDate)
+			// resolved at the payment date, like the config that createFeeCalculationForPayment resolves below
+			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), paymentDate)
 					.orElseThrow(() -> new AdempiereException(
 							MSG_NO_CONFIG_FOR_INVOICE_PARTNER,
 							paymentAllocationPayableItem.getDocumentNo(),
@@ -235,12 +233,13 @@ public class PaymentAllocationService
 							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 									.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
 									.paymentDate(paymentDate)
-									.customerId(paymentAllocationPayableItem.getBPartnerId())
+									.customerId(paymentAllocationPayableItem.getInvoiceBPartnerId()) // the invoice's customer, not the payment partner (which may be the service company)
 									.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 									.feeAmountIncludingTax(serviceFeeAmt)
 									.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 									.build())
-					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
+					// never empty: it is empty only if the service company has no config at all, but config above is one of its configs
+					.get();
 		}
 		else
 		{
