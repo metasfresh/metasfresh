@@ -278,6 +278,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And the tax declaration "td" is built
 
     # net 60.00 + 25.00 = 85.00; tax 11.40 + 4.75 = 16.15
+    # invP2 is dated 2024-01-18 but posted on the system date 2024-01-15: posting date and document date are printed separately
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt |
       | SUMMARY      | v66N          | 85      | 16.15   |
@@ -285,8 +286,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID | bpartner_vatid |
       | DETAIL       | v66N          | N          | invP1     | 60.00  | 2024-01-15   | 2024-01-15 | vendor        | DE811111113    |
       | DETAIL       | v66N          | T          | invP1     | 11.40  | 2024-01-15   | 2024-01-15 | vendor        | DE811111113    |
-      | DETAIL       | v66N          | N          | invP2     | 25.00  | 2024-01-18   | 2024-01-18 | vendor        | DE811111113    |
-      | DETAIL       | v66N          | T          | invP2     | 4.75   | 2024-01-18   | 2024-01-18 | vendor        | DE811111113    |
+      | DETAIL       | v66N          | N          | invP2     | 25.00  | 2024-01-15   | 2024-01-18 | vendor        | DE811111113    |
+      | DETAIL       | v66N          | T          | invP2     | 4.75   | 2024-01-15   | 2024-01-18 | vendor        | DE811111113    |
 
 
 # ############################################################################################################################################
@@ -326,15 +327,17 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
 
+    # the discount reduces the taxable base (par. 17 UStG): net = 1000.00 - 20.00 = 980.00
     # declared tax = -190.00 + 3.80 = -186.20 (credit); the sales code prints it positive; balance = payable 186.20
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | v81N          | 1000    | 186.20  |             |
+      | SUMMARY      | v81N          | 980     | 186.20  |             |
       | BALANCE      |               |         |         | 186.20      |
     And the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date |
       | DETAIL       | v81N          | N          | inv       | 1000   | 2024-01-15   |
       | DETAIL       | v81N          | T          | inv       | 190    | 2024-01-15   |
+      | DETAIL       | v81N          | N          | alloc     | -20.00 | 2024-01-15   |
       | DETAIL       | v81N          | T          | alloc     | -3.80  | 2024-01-15   |
 
 
@@ -626,8 +629,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | AD_Org_ID.Identifier | Value      | Name            |
       | ustvaOrg             | USTVAORG   | UStVA Test Org  |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
-      | ustvaOrgBP | 21/815/08150 | DE136695976 | ustvaOrg               |
+      | Identifier | Value      | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | ustvaOrgBP | USTVAORGBP | 21/815/08150 | DE136695976 | ustvaOrg               |
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       | AD_Org_ID.Identifier |
       | td         | acctSchema      | 2024-01-15 | ustvaOrg             |

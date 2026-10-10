@@ -161,7 +161,8 @@ public class VATCodeDAO implements IVATCodeDAO
 	@Override
 	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
 	{
-		// a code usually has a Net and a Tax row for the same tax; both carry the same IsSOTrx
+		// a code usually has a Net and a Tax row for the same tax, which agree on IsSOTrx;
+		// a code set up for both the sales and the purchase side does not agree, then the caller decides
 		final Set<String> isSOTrxValues = queryBL.createQueryBuilder(I_C_VAT_Code.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)

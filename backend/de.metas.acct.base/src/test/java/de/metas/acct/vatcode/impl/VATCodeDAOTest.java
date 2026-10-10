@@ -206,6 +206,24 @@ public class VATCodeDAOTest
 				.isEmpty();
 	}
 
+	@Test
+	public void test_findIsSOTrxByCode_SinglePurchaseRow()
+	{
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(false).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("66", 51)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("66", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.contains(false);
+	}
+
+	@Test
+	public void test_findIsSOTrxByCode_BlankIsSOTrx()
+	{
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(null).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("77", 61)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("77", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.isEmpty();
+	}
+
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
 	{
 		final VATCode actualVATCode = vatCodeDAO.findVATCode(request)

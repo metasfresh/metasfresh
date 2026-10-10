@@ -74,7 +74,8 @@ public class C_TaxDeclaration_StepDef
 
 	/**
 	 * Create {@link I_C_TaxDeclaration} records.
-	 * Columns: {@code Identifier}, {@code C_AcctSchema_ID}, {@code Date} (any date in the target period), optional {@code Description}.
+	 * Columns: {@code Identifier}, {@code C_AcctSchema_ID}, {@code Date} (any date in the target period), optional {@code Description},
+	 * optional {@code AD_Org_ID} (identifier; default: {@link StepDefConstants#ORG_ID}).
 	 */
 	@Given("metasfresh contains C_TaxDeclaration:")
 	public void metasfresh_contains_c_tax_declaration(@NonNull final DataTable dataTable)
