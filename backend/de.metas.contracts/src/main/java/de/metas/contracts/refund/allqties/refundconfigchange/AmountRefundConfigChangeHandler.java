@@ -3,12 +3,11 @@ package de.metas.contracts.refund.allqties.refundconfigchange;
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.NonNull;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -49,17 +48,17 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 	@Override
 	public AssignmentToRefundCandidate createNewAssignment(@NonNull final AssignmentToRefundCandidate existingAssignment)
 	{
+		// the amounts per unit are applied in the sales currency, i.e. the refund candidate's currency
+		final CurrencyId salesCurrencyId = existingAssignment.getRefundInvoiceCandidate().getMoney().getCurrencyId();
+
 		// note: currentRefundConfig can't be null
-		final BigDecimal amountToApply = getCurrentRefundConfig()
-				.getAmount()
-				.subtract(getFormerRefundConfig().getAmount());
+		final Money amountToApply = getCurrentRefundConfig()
+				.getAmountPerUnit(salesCurrencyId)
+				.subtract(getFormerRefundConfig().getAmountPerUnit(salesCurrencyId));
 
 		final Quantity quantityAssigendToRefundCandidate = existingAssignment.getQuantityAssigendToRefundCandidate();
 
-		// the amount per unit is always in the sales currency, i.e. the refund candidate's currency
-		final Money moneyToAssign = Money.of(
-				amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal()),
-				existingAssignment.getRefundInvoiceCandidate().getMoney().getCurrencyId());
+		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal());
 
 		return AssignmentToRefundCandidate.builder()
 				.refundConfigId(getCurrentRefundConfig().getId())

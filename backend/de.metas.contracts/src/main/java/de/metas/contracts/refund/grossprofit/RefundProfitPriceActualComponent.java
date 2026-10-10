@@ -15,7 +15,6 @@ import de.metas.util.lang.Percent;
 
 import lombok.NonNull;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,12 +77,13 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 				.collect(ImmutableList.toImmutableList());
 
 		Percent totalPercent = Percent.ZERO;
-		BigDecimal amountsPerUnit = null;
+		// the amounts per unit are applied in the sales currency, i.e. the currency of the price
+		Money amountsPerUnit = Money.zero(input.getCurrencyId());
 		for (final RefundConfig refundConfig : refundConfigs)
 		{
 			if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
 			{
-				amountsPerUnit = amountsPerUnit == null ? refundConfig.getAmount() : amountsPerUnit.add(refundConfig.getAmount());
+				amountsPerUnit = amountsPerUnit.add(refundConfig.getAmountPerUnit(input.getCurrencyId()));
 			}
 			else
 			{
@@ -96,10 +96,9 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 		{
 			result = moneyService.subtractPercent(totalPercent, result);
 		}
-		if (amountsPerUnit != null)
+		if (!amountsPerUnit.isZero())
 		{
-			// the amounts per unit are always in the sales currency, i.e. the currency of the price
-			result = result.subtract(Money.of(amountsPerUnit, input.getCurrencyId()));
+			result = result.subtract(amountsPerUnit);
 		}
 		return result;
 	}

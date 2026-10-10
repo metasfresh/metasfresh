@@ -317,7 +317,7 @@ public class RefundConfigRepository
 				break;
 			case AMOUNT_PER_UNIT:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
-				configRecord.setRefundAmt(refundConfig.getAmount());
+				configRecord.setRefundAmt(refundConfig.getAmountPerUnitToPersist());
 				configRecord.setRefundPercent(null);
 				break;
 			default:

@@ -198,10 +198,10 @@ public class RefundInvoiceCandidateService
 		final Money moneyAugend;
 		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
 		{
-			// the amount per unit is always in the sales currency, i.e. the refund candidate's currency
-			moneyAugend = Money.of(
-					refundConfig.getAmount().multiply(assignedQtyAugent.toBigDecimal()),
-					refundCandidate.getMoney().getCurrencyId());
+			// the amount per unit is applied in the sales currency, i.e. the refund candidate's currency
+			moneyAugend = refundConfig
+					.getAmountPerUnit(refundCandidate.getMoney().getCurrencyId())
+					.multiply(assignedQtyAugent.toBigDecimal());
 		}
 		else
 		{

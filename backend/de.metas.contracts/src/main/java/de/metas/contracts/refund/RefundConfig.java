@@ -9,11 +9,15 @@ import javax.annotation.Nullable;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -82,9 +86,9 @@ public class RefundConfig
 
 	/**
 	 * The amount refunded per unit if {@link #refundBase} is {@link RefundBase#AMOUNT_PER_UNIT}.
-	 * It has no currency on purpose: the refund is always computed and booked in the sales currency,
-	 * i.e. in the currency of the invoice candidate whose sales are refunded.
+	 * Like {@link #percent}, it is a currency-agnostic factor; it becomes {@link Money} only when it is applied, see {@link #getAmountPerUnit(CurrencyId)}.
 	 */
+	@Getter(AccessLevel.NONE)
 	BigDecimal amount;
 
 	/** {@code null} means that every product is matched (unless there is a {@link #productCategoryId}). */
@@ -165,6 +169,32 @@ public class RefundConfig
 		return minQty.signum() <= 0
 				&& (amount == null || amount.signum() == 0)
 				&& (percent == null || percent.isZero());
+	}
+
+	/**
+	 * The amount refunded per unit, as {@link Money} in the given currency.
+	 * <p>
+	 * The amount per unit of a refund config is a currency-agnostic factor, like the refund percent. It is applied in the currency of the refunded goods,
+	 * i.e. the currency of the goods invoice candidate (and so of the refund candidate that is split off it, or of the sales price in the gross profit computation).
+	 * There is no currency conversion; the currency of the refund config ({@code C_Flatrate_RefundConfig.C_Currency_ID}) is not used.
+	 * <p>
+	 * Fails if {@link #refundBase} is not {@link RefundBase#AMOUNT_PER_UNIT}.
+	 *
+	 * @param salesCurrencyId the currency of the refunded goods
+	 */
+	public Money getAmountPerUnit(@NonNull final CurrencyId salesCurrencyId)
+	{
+		final BigDecimal amountPerUnit = Check.assumeNotNull(amount, "Only a refund config with refundBase={} has an amount per unit; this={}", RefundBase.AMOUNT_PER_UNIT, this);
+		return Money.of(amountPerUnit, salesCurrencyId);
+	}
+
+	/**
+	 * Only for persisting this refund config: the amount per unit as the currency-agnostic factor that is stored in {@code C_Flatrate_RefundConfig.RefundAmt}.
+	 */
+	@Nullable
+	/* package */ BigDecimal getAmountPerUnitToPersist()
+	{
+		return amount;
 	}
 
 	/**
