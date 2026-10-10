@@ -72,7 +72,9 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
-    trace: 'on',
+    // CI sets PLAYWRIGHT_TRACE=retain-on-failure (traces of passed tests were 93 % of the uploaded results);
+    // local runs record every trace, which the evidence-video captioner needs.
+    trace: process.env.PLAYWRIGHT_TRACE || 'on',
     video: 'on',
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },
