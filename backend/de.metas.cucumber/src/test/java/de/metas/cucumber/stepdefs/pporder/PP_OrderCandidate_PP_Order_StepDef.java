@@ -46,6 +46,9 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -53,13 +56,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class PP_OrderCandidate_PP_Order_StepDef
 {
+	private static final String COLUMNNAME_CreatedFirst = "CreatedFirst";
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
@@ -138,84 +142,104 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	}
 
 	/**
-	 * Loads the PP_Orders that the given candidates were allocated to, without depending on which candidate was allocated first.
+	 * Validates the exact PP_OrderCandidate_PP_Order allocations of several candidates whose allocation order is decided by their creation order.
 	 * <p>
-	 * Candidates of one aggregation group are allocated in {@code PP_Order_Candidate_ID} order (see {@code GeneratePPOrderFromPPOrderCandidate}),
-	 * and material-dispo does not pin which of the candidates it splits a demand into is created first.
-	 * So when the candidates share a PP_Order, how each single candidate is split differs between runs,
-	 * while each PP_Order's allocated quantity and number of allocated candidates do not.
+	 * {@code GeneratePPOrderFromPPOrderCandidate.getSortedCandidates} sorts the candidates by {@code PP_Order_Candidate_ID} before grouping them,
+	 * so candidates of one group fill the PP_Orders in creation order. When material-dispo splits one demand into several candidates,
+	 * it posts their events in a fixed order, but they were observed to be delivered and so created in the reverse order
+	 * (failing run https://github.com/metasfresh/metasfresh/actions/runs/32971731130).
+	 * Therefore the data table has one expected allocation table per possible creation order, keyed by the {@code CreatedFirst} column.
 	 * <p>
-	 * Each row is matched to a distinct PP_Order by the sum of the given candidates' allocations to it ({@code QtyEntered})
-	 * and by how many of the given candidates were allocated to it ({@code NumberOfCandidates}).
-	 * The step waits until every row is matched and no other PP_Order was allocated from the given candidates.
+	 * The step takes the candidate with the lowest {@code PP_Order_Candidate_ID} among the {@code CreatedFirst} values,
+	 * and waits until the allocations of all candidates in the table are exactly the rows with that {@code CreatedFirst} value.
+	 * Each {@code PP_Order_ID} identifier is bound to the PP_Order whose allocations equal that identifier's rows;
+	 * an identifier that is already bound must point to that PP_Order.
 	 */
-	@And("^after not more than (.*)s, load PP_Orders allocated from candidates: (.*)$")
-	public void loadPPOrdersAllocatedFromCandidates(
-			final int timeoutSec,
-			@NonNull final String ppOrderCandidateIdentifiers,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	@And("^after not more than (.*)s, PP_OrderCandidate_PP_Order are found, depending on which candidate was created first$")
+	public void validatePPOrderCandidateAllocationsByCreationOrder(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final ImmutableList<Integer> ppOrderCandidateRepoIds = StepDefUtil.extractIdentifiers(ppOrderCandidateIdentifiers)
-				.stream()
-				.map(identifier -> ppOrderCandidateTable.get(identifier).getPP_Order_Candidate_ID())
-				.collect(ImmutableList.toImmutableList());
-		assertThat(ppOrderCandidateRepoIds).as("PP_Order_Candidate identifiers").isNotEmpty();
+		final ImmutableList<DataTableRow> allRows = DataTableRows.of(dataTable).toList();
+		assertThat(allRows).as("data table rows").isNotEmpty();
 
-		final ImmutableList<DataTableRow> rows = DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_PP_Order.COLUMNNAME_PP_Order_ID)
-				.toList();
+		final ImmutableList<StepDefDataIdentifier> createdFirstCandidates = allRows.stream()
+				.map(row -> row.getAsIdentifier(COLUMNNAME_CreatedFirst))
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+		assertThat(createdFirstCandidates).as("distinct %s values; one expected table per creation order", COLUMNNAME_CreatedFirst).hasSizeGreaterThan(1);
+
+		final StepDefDataIdentifier createdFirst = createdFirstCandidates.stream()
+				.min(Comparator.comparingInt(identifier -> ppOrderCandidateTable.get(identifier).getPP_Order_Candidate_ID()))
+				.orElseThrow();
+		final ImmutableList<DataTableRow> expectedRows = allRows.stream()
+				.filter(row -> row.getAsIdentifier(COLUMNNAME_CreatedFirst).equals(createdFirst))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<Integer> ppOrderCandidateRepoIds = allRows.stream()
+				.map(row -> ppOrderCandidateTable.get(row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID)).getPP_Order_Candidate_ID())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		// expected allocations per PP_Order identifier, each allocation as "PP_Order_Candidate_ID|Qty|C_UOM_ID"
+		final Map<StepDefDataIdentifier, List<String>> expectedAllocationsByPPOrderIdentifier = new LinkedHashMap<>();
+		for (final DataTableRow row : expectedRows)
+		{
+			final int ppOrderCandidateRepoId = ppOrderCandidateTable.get(row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID)).getPP_Order_Candidate_ID();
+			final Quantity qtyEntered = row.getAsQuantity(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered, I_PP_OrderCandidate_PP_Order.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
+			expectedAllocationsByPPOrderIdentifier
+					.computeIfAbsent(row.getAsIdentifier(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID), identifier -> new ArrayList<>())
+					.add(toAllocationKey(ppOrderCandidateRepoId, qtyEntered.toBigDecimal(), qtyEntered.getUomId().getRepoId()));
+		}
+		expectedAllocationsByPPOrderIdentifier.values().forEach(Collections::sort);
+
+		final String expectationLog = "Created first: " + createdFirst + " (lowest PP_Order_Candidate_ID among " + createdFirstCandidates + ")"
+				+ "; expected allocations (PP_Order_Candidate_ID|QtyEntered|C_UOM_ID) per PP_Order: " + expectedAllocationsByPPOrderIdentifier;
 
 		final ItemProvider<ImmutableMap<StepDefDataIdentifier, PPOrderId>> allocationsMatch = () -> {
-			final Map<PPOrderId, List<I_PP_OrderCandidate_PP_Order>> allocationsByPPOrderId = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+			final Map<PPOrderId, List<String>> actualAllocationsByPPOrderId = new LinkedHashMap<>();
+			queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 					.addInArrayFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateRepoIds)
 					.orderBy(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID)
 					.create()
 					.stream()
-					.collect(Collectors.groupingBy(allocation -> PPOrderId.ofRepoId(allocation.getPP_Order_ID()), LinkedHashMap::new, Collectors.toList()));
+					.forEach(allocation -> actualAllocationsByPPOrderId
+							.computeIfAbsent(PPOrderId.ofRepoId(allocation.getPP_Order_ID()), ppOrderId -> new ArrayList<>())
+							.add(toAllocationKey(allocation.getPP_Order_Candidate_ID(), allocation.getQtyEntered(), allocation.getC_UOM_ID())));
+			actualAllocationsByPPOrderId.values().forEach(Collections::sort);
 
-			final StringBuilder allocationsLog = new StringBuilder("PP_OrderCandidate_PP_Order records of PP_Order_Candidate_IDs ")
-					.append(ppOrderCandidateRepoIds).append(":\n");
-			allocationsByPPOrderId.values().stream().flatMap(List::stream)
-					.forEach(allocation -> allocationsLog.append("PP_Order_ID=").append(allocation.getPP_Order_ID())
-							.append("; PP_Order_Candidate_ID=").append(allocation.getPP_Order_Candidate_ID())
-							.append("; QtyEntered=").append(allocation.getQtyEntered())
-							.append("\n"));
-
-			final Set<PPOrderId> unmatchedPPOrderIds = new LinkedHashSet<>(allocationsByPPOrderId.keySet());
-			final ImmutableMap.Builder<StepDefDataIdentifier, PPOrderId> identifier2PPOrderId = ImmutableMap.builder();
-			for (final DataTableRow row : rows)
+			final String log = expectationLog + "\nActual allocations per PP_Order_ID: " + actualAllocationsByPPOrderId;
+			if (actualAllocationsByPPOrderId.size() != expectedAllocationsByPPOrderIdentifier.size())
 			{
-				final BigDecimal expectedQty = row.getAsBigDecimal(I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);
-				final int expectedNumberOfCandidates = row.getAsInt("NumberOfCandidates");
+				return ItemProvider.ProviderResult.resultWasNotFound("Expected " + expectedAllocationsByPPOrderIdentifier.size() + " PP_Orders but found " + actualAllocationsByPPOrderId.size() + "\n" + log);
+			}
 
+			final Set<PPOrderId> unmatchedPPOrderIds = new LinkedHashSet<>(actualAllocationsByPPOrderId.keySet());
+			final ImmutableMap.Builder<StepDefDataIdentifier, PPOrderId> identifier2PPOrderId = ImmutableMap.builder();
+			for (final Map.Entry<StepDefDataIdentifier, List<String>> expected : expectedAllocationsByPPOrderIdentifier.entrySet())
+			{
+				final PPOrderId alreadyBoundPPOrderId = ppOrderTable.getOptional(expected.getKey()).map(ppOrder -> PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())).orElse(null);
 				final PPOrderId matchingPPOrderId = unmatchedPPOrderIds.stream()
-						.filter(ppOrderId -> {
-							final List<I_PP_OrderCandidate_PP_Order> allocations = allocationsByPPOrderId.get(ppOrderId);
-							final BigDecimal allocatedQty = allocations.stream().map(I_PP_OrderCandidate_PP_Order::getQtyEntered).reduce(BigDecimal.ZERO, BigDecimal::add);
-							final long numberOfCandidates = allocations.stream().map(I_PP_OrderCandidate_PP_Order::getPP_Order_Candidate_ID).distinct().count();
-							return allocatedQty.compareTo(expectedQty) == 0 && numberOfCandidates == expectedNumberOfCandidates;
-						})
+						.filter(ppOrderId -> alreadyBoundPPOrderId == null || alreadyBoundPPOrderId.equals(ppOrderId))
+						.filter(ppOrderId -> actualAllocationsByPPOrderId.get(ppOrderId).equals(expected.getValue()))
 						.findFirst()
 						.orElse(null);
 				if (matchingPPOrderId == null)
 				{
-					return ItemProvider.ProviderResult.resultWasNotFound("No PP_Order with QtyEntered=" + expectedQty + " from " + expectedNumberOfCandidates + " candidate(s) for row " + row + "\n" + allocationsLog);
+					return ItemProvider.ProviderResult.resultWasNotFound("No PP_Order with the allocations expected for " + expected.getKey() + "\n" + log);
 				}
 				unmatchedPPOrderIds.remove(matchingPPOrderId);
-				identifier2PPOrderId.put(row.getAsIdentifier(), matchingPPOrderId);
-			}
-
-			if (!unmatchedPPOrderIds.isEmpty())
-			{
-				return ItemProvider.ProviderResult.resultWasNotFound("Unexpected PP_Orders " + unmatchedPPOrderIds + "\n" + allocationsLog);
+				identifier2PPOrderId.put(expected.getKey(), matchingPPOrderId);
 			}
 			return ItemProvider.ProviderResult.resultWasFound(identifier2PPOrderId.build());
 		};
 
-		final Supplier<String> logContext = () -> "PP_Orders allocated from candidates " + ppOrderCandidateIdentifiers + " (PP_Order_Candidate_IDs " + ppOrderCandidateRepoIds + ")";
-		final ImmutableMap<StepDefDataIdentifier, PPOrderId> identifier2PPOrderId = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, allocationsMatch, logContext);
+		final ImmutableMap<StepDefDataIdentifier, PPOrderId> identifier2PPOrderId = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, allocationsMatch, () -> expectationLog);
 
 		identifier2PPOrderId.forEach((identifier, ppOrderId) -> ppOrderTable.putOrReplace(identifier, ppOrderBL.getById(ppOrderId)));
+	}
+
+	private static String toAllocationKey(final int ppOrderCandidateRepoId, @NonNull final BigDecimal qty, final int uomRepoId)
+	{
+		return ppOrderCandidateRepoId + "|" + qty.stripTrailingZeros().toPlainString() + "|" + uomRepoId;
 	}
 
 	private void loadPPOrders(@NonNull final DataTableRows dataTable, @NonNull final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations)
