@@ -54,6 +54,12 @@ const isSameNumber = (value1, value2) =>
   String(value2).trim() !== '' &&
   Number(value1) === Number(value2);
 
+/** Tells whether two stored values are the same: both empty, or the same number */
+const isSameStoredValue = (value1, value2) => {
+  const isBlank = (value) => value == null || String(value).trim() === '';
+  return (isBlank(value1) && isBlank(value2)) || isSameNumber(value1, value2);
+};
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -69,6 +75,9 @@ const computeWidgetTypeClass = (widgetType, fieldsCount) => {
  */
 export class RawWidget extends PureComponent {
   mounted = false;
+  // decimal number widget: the value of each end ('value', 'valueTo') when the user started typing over it, as a
+  // dot-decimal number, until the typed text is patched or forgotten - see forgetTypedTextOnOutsideChange
+  storedValuesBeforeTyping = {};
 
   constructor(props) {
     super(props);
@@ -125,6 +134,13 @@ export class RawWidget extends PureComponent {
       this.resetCachedValue();
     }
 
+    // the stored values recorded for an edit belong to the document (row) it was typed on
+    if (
+      prevProps.dataId !== this.props.dataId ||
+      prevProps.rowId !== this.props.rowId
+    ) {
+      this.storedValuesBeforeTyping = {};
+    }
     this.forgetTypedTextOnOutsideChange(prevProps);
 
     // The mount-time focus above never runs again inside a mounted window, so repeat it when the
@@ -315,8 +331,9 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method forgetTypedTextOnOutsideChange
-   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
-   *          that value again instead of what the user had typed
+   * @summary When the value of a decimal number widget changes from outside, the widget shows that value again instead
+   *          of what the user had typed - unless it is the value the widget held when the user started typing (the same
+   *          number, or both empty) and the typed text is not patched yet: the user is typing over that value.
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
@@ -330,11 +347,24 @@ export class RawWidget extends PureComponent {
     const isOutsideChange = (key, text) =>
       text !== null &&
       isChanged(key) &&
-      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget);
+      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget) &&
+      !(
+        key in this.storedValuesBeforeTyping &&
+        isSameStoredValue(
+          widgetData?.[0]?.[key],
+          this.storedValuesBeforeTyping[key]
+        )
+      );
 
     const isValueChanged = isOutsideChange('value', typedText);
     const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
     if (isValueChanged || isValueToChanged) {
+      if (isValueChanged) {
+        delete this.storedValuesBeforeTyping.value;
+      }
+      if (isValueToChanged) {
+        delete this.storedValuesBeforeTyping.valueTo;
+      }
       this.setState({
         ...(isValueChanged ? { typedText: null } : {}),
         ...(isValueToChanged ? { typedTextTo: null } : {}),
@@ -510,6 +540,14 @@ export class RawWidget extends PureComponent {
         return;
       }
       this.lastRefusedNumberText = null;
+      const key = isValueTo ? 'valueTo' : 'value';
+      if (!(key in this.storedValuesBeforeTyping)) {
+        // read from widgetData, like the incoming value it is compared with; the row may still hold the text typed
+        // before (e.g. '3,57' while its patch is on the way), so it is kept as the dot-decimal number that text is
+        this.storedValuesBeforeTyping[key] = normalizeDecimalNumberString(
+          this.props.widgetData?.[0]?.[key]
+        );
+      }
       this.setState({ [isValueTo ? 'typedTextTo' : 'typedText']: valueToSet });
     }
     // the other end of a range the way it is shown, so that the parent reads both ends the same way
@@ -596,6 +634,8 @@ export class RawWidget extends PureComponent {
         cachedValue: value,
         clearedFieldWarning: false,
       });
+      // the typed text is patched: the value that comes back (also the old one, if the server refused it) is shown
+      this.storedValuesBeforeTyping = {};
 
       return handlePatch(property, value, id, valueTo);
     }
