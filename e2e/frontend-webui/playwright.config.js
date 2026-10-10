@@ -82,7 +82,9 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
-    trace: 'on',
+    // CI sets PLAYWRIGHT_TRACE=retain-on-failure (traces of passed tests were 93 % of the uploaded results);
+    // local runs record every trace, which the evidence-video captioner needs.
+    trace: process.env.PLAYWRIGHT_TRACE || 'on',
     // An evidence-capture run (UAT_CAPTURE=1) records the full 1920x1080 window (see the 'Desktop Chrome' project
     // below, whose device descriptor would otherwise shrink the viewport to 1280x720), so grid headers and labels
     // are not truncated; normal and CI runs keep the default (downscaled) video size.

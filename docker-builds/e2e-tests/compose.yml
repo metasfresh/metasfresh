@@ -183,6 +183,7 @@ services:
       - "WIREMOCK_BASE_URL=http://wiremock:8080"
       - "CI=true"
       - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
+      - "PLAYWRIGHT_TRACE=${PLAYWRIGHT_TRACE:-retain-on-failure}"
     depends_on:
       webui:
         condition: service_healthy
@@ -227,6 +228,7 @@ services:
       - "WIREMOCK_BASE_URL=http://wiremock:8080"
       - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile --disable-web-security --ignore-certificate-errors"
       - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
+      - "PLAYWRIGHT_TRACE=${PLAYWRIGHT_TRACE:-retain-on-failure}"
     depends_on:
       mobile:
         condition: service_healthy
