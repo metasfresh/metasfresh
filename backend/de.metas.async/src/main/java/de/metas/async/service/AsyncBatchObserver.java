@@ -125,6 +125,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	/**
 	 * Waits max. the timeout specified in {@code AD_SysConfig de.metas.async.AsyncBatchObserver.WaitTimeOutMS}
 	 * for the given AsyncBatchId to be completed.
+	 * <p>
+	 * Removes the registration made by {@link #observeOn(AsyncBatchId)} when done, also when failing.
+	 * Callers must not call {@link #removeObserver(AsyncBatchId)} afterwards: by then, another caller might have registered on the same id.
 	 */
 	public void waitToBeProcessed(@NonNull final AsyncBatchId id)
 	{
