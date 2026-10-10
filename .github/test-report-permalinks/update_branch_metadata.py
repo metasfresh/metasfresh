@@ -21,13 +21,18 @@ try:
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except BlockingIOError:
     sys.exit(0)
-errors = []
-for name in os.listdir(trash):
-    if not name.startswith("."):
+errors = {}
+# repeat until empty: entries renamed in while this sweep ran (their own deleter exited on the lock) go too
+while True:
+    pending = [n for n in os.listdir(trash) if not n.startswith(".") and n not in errors]
+    if not pending:
+        break
+    for name in pending:
         try:
             shutil.rmtree(os.path.join(trash, name))
         except Exception as ex:
-            errors.append(f"{name}: {ex}")
+            errors[name] = f"{name}: {ex}"
+errors = list(errors.values())
 with open(os.path.join(trash, ".last-sweep.json"), "w") as f:
     json.dump({"finished": time.time(), "errors": errors[:5]}, f)
 '''
@@ -88,15 +93,30 @@ def main(argv):
 
 def report_trash_state(trash_dir):
     """Print what is still waiting for deletion and how the last background delete went; emit a
-    GitHub warning annotation when the delete is stuck or failing, so it shows on the cicd run."""
+    GitHub warning annotation when the delete is stuck or failing, so it shows on the cicd run.
+    Monitoring only: it never fails the publish."""
+    try:
+        _report_trash_state(trash_dir)
+    except OSError as ex:
+        print(f"trash: state not readable ({ex})")
+
+
+def _entry_age_seconds(trash_dir, name, now):
+    suffix = name.rsplit("__", 1)[-1]
+    # epoch seconds since 2001; the first background-prune version ended the name in a pid instead
+    if suffix.isdigit() and int(suffix) > 1_000_000_000:
+        return now - int(suffix)
+    return now - os.path.getmtime(os.path.join(trash_dir, name))
+
+
+def _one_line(text):
+    return " ".join(str(text).split())
+
+
+def _report_trash_state(trash_dir):
     now = time.time()
     entries = [n for n in os.listdir(trash_dir) if not n.startswith(".")]
-    ages = []
-    for name in entries:
-        try:
-            ages.append(now - int(name.rsplit("__", 1)[1]))
-        except (IndexError, ValueError):
-            ages.append(now - os.path.getmtime(os.path.join(trash_dir, name)))
+    ages = [_entry_age_seconds(trash_dir, name, now) for name in entries]
     oldest_min = int(max(ages) / 60) if ages else 0
     last = None
     try:
@@ -104,14 +124,14 @@ def report_trash_state(trash_dir):
             last = json.load(f)
     except (OSError, ValueError):
         pass
+    errors = _one_line("; ".join(last.get("errors") or [])) if last else ""
     last_text = "never" if last is None else (
-        f"{int((now - last.get('finished', now)) / 60)} min ago, "
-        + ("ok" if not last.get("errors") else "errors: " + "; ".join(last["errors"])))
+        f"{int((now - last.get('finished', now)) / 60)} min ago, " + (f"errors: {errors}" if errors else "ok"))
     print(f"trash: {len(entries)} old build(s) pending deletion, oldest {oldest_min} min; last delete finished {last_text}")
     if ages and max(ages) > STUCK_AFTER_SECONDS:
         print(f"::warning::test-reports server: {len(entries)} pruned build(s) not deleted, oldest {oldest_min} min - the background delete in {trash_dir} is stuck")
-    if last and last.get("errors"):
-        print(f"::warning::test-reports server: the last background delete in {trash_dir} failed: " + "; ".join(last["errors"]))
+    if errors:
+        print(f"::warning::test-reports server: the last background delete in {trash_dir} failed: {errors}")
 
 
 def delete_in_background(trash_dir):

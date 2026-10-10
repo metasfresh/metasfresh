@@ -89,6 +89,7 @@ def test_never_more_than_one_deleter(tmp_path):
         _publish(tmp_path, "v4")
         time.sleep(1.5)
         assert len(_trash_entries(tmp_path)) == 1, "a second deleter ran while one held the lock"
+        assert not (tmp_path / "_trash" / ".last-sweep.json").exists(), "a second deleter completed a sweep"
     _publish(tmp_path, "v5")  # the lock is free again: this run's deleter also takes the leftover
     assert _wait_until(lambda: _trash_entries(tmp_path) == [])
 
@@ -128,3 +129,39 @@ def test_warns_when_the_last_delete_failed(tmp_path, capsys):
         _publish(tmp_path, "v1")
     out = capsys.readouterr().out
     assert "::warning::" in out and "Permission denied" in out
+
+
+def test_monitoring_never_fails_the_publish(tmp_path, monkeypatch, capsys):
+    # an entry the running deleter removes between listing and stat must not fail the publish
+    trash = tmp_path / "_trash"
+    trash.mkdir()
+    (trash / "unparsable-name").mkdir()
+
+    def vanished(path):
+        raise FileNotFoundError(path)
+
+    monkeypatch.setattr(ubm.os.path, "getmtime", vanished)
+    _publish(tmp_path, "v1")
+    assert "trash:" in capsys.readouterr().out
+
+
+def test_old_pid_suffix_is_not_read_as_a_timestamp(tmp_path, capsys):
+    # entries of the first background-prune version end in a pid, not in epoch seconds
+    trash = tmp_path / "_trash"
+    trash.mkdir()
+    (trash / f"{BRANCH}__v0__12345").mkdir()
+    with open(trash / ".sweep.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _publish(tmp_path, "v1")
+    assert "::warning::" not in capsys.readouterr().out
+
+
+def test_warning_text_stays_on_one_line(tmp_path, capsys):
+    trash = tmp_path / "_trash"
+    trash.mkdir()
+    (trash / ".last-sweep.json").write_text(json.dumps({"finished": time.time(), "errors": ["x: line one\nline two"]}), encoding="utf-8")
+    with open(trash / ".sweep.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _publish(tmp_path, "v1")
+    warnings = [l for l in capsys.readouterr().out.splitlines() if l.startswith("::warning::")]
+    assert len(warnings) == 1 and "line one line two" in warnings[0]
