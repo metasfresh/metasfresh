@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -125,14 +126,37 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	@And("^the C_Flatrate_Term identified by (.*) has no refund C_Invoice_Candidate$")
 	public void C_Flatrate_Term_has_no_refund_C_Invoice_Candidate(@NonNull final String termIdentifier)
 	{
+		assertNoRefundInvoiceCandidate(termIdentifier, null);
+	}
+
+	/**
+	 * Asserts that a refund term has no refund invoice candidate in the given currency (e.g. because the currency of its refund config was corrected).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Flatrate_Term identified by refundTerm has no refund C_Invoice_Candidate in CHF
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has no refund C_Invoice_Candidate in ([A-Z]{3})$")
+	public void C_Flatrate_Term_has_no_refund_C_Invoice_Candidate_in_currency(@NonNull final String termIdentifier, @NonNull final String currencyCode)
+	{
+		assertNoRefundInvoiceCandidate(termIdentifier, CurrencyCode.ofThreeLetterCode(currencyCode));
+	}
+
+	private void assertNoRefundInvoiceCandidate(@NonNull final String termIdentifier, @Nullable final CurrencyCode currencyCode)
+	{
 		final I_C_Flatrate_Term term = contractTable.get(termIdentifier);
-		final int count = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
-				.create()
-				.count();
-		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s", term.getC_Flatrate_Term_ID()).isZero();
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID());
+		if (currencyCode != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, currencyBL.getByCurrencyCode(currencyCode).getId());
+		}
+		final int count = queryBuilder.create().count();
+		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s in currency %s", term.getC_Flatrate_Term_ID(), currencyCode).isZero();
 	}
 
 	/**

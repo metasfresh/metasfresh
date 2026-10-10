@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
@@ -144,6 +145,7 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>Identifier</b> — (required, identifier-ref) the refund configuration<br>
 	 *   <b>C_Currency.ISO_Code</b> — (optional) new currency of the amount per unit<br>
 	 *   <b>RefundAmt</b> — (optional) new amount per unit<br>
+	 *   <b>ErrorCode</b> — (optional) the {@code AD_Message.ErrorCode} with which the change is expected to be refused; the change is then not stored<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_RefundConfig_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -164,7 +166,16 @@ public class C_Flatrate_RefundConfig_StepDef
 			row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt)
 					.ifPresent(config::setRefundAmt);
 
-			saveRecord(config);
+			final String expectedErrorCode = row.getAsOptionalString("ErrorCode").orElse(null);
+			if (expectedErrorCode != null)
+			{
+				StepDefUtil.assertRefusedWithErrorCode(expectedErrorCode, () -> saveRecord(config));
+				InterfaceWrapperHelper.refresh(config); // the refused change is not stored
+			}
+			else
+			{
+				saveRecord(config);
+			}
 		});
 	}
 
