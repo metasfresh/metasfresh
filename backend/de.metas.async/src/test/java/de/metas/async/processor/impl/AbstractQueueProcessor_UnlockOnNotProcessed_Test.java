@@ -80,7 +80,15 @@ public class AbstractQueueProcessor_UnlockOnNotProcessed_Test extends QueueProce
 		assertThat(workPackage.getLockedAt()).as("guard: the workpackage must start out locked").isNotNull();
 
 		// when
-		final boolean processed = queueProcessor.processLockedWorkPackage(workPackage);
+		final boolean processed;
+		try
+		{
+			processed = queueProcessor.processLockedWorkPackage(workPackage);
+		}
+		finally
+		{
+			queueProcessor.shutdownExecutor(); // don't leak the processor's thread pool into the test JVM
+		}
 
 		// then
 		assertThat(processed).as("a processor with no permits left cannot process the workpackage").isFalse();
