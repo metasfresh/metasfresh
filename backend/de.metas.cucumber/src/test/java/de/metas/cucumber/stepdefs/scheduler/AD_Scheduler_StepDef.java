@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.scheduler;
 
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.scheduler.AdSchedulerId;
@@ -44,11 +45,13 @@ import org.compiere.model.X_AD_Scheduler;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 
 public class AD_Scheduler_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(AD_Scheduler_StepDef.class);
 	private static final int RESTART_SETTLE_TIMEOUT_SECONDS = 60;
 
 	private final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
@@ -107,7 +110,7 @@ public class AD_Scheduler_StepDef
 		final boolean cronScheduler = X_AD_Scheduler.SCHEDULETYPE_CronSchedulingPattern.equals(adScheduler.getScheduleType())
 				&& Check.isNotBlank(adScheduler.getCronPattern())
 				&& SchedulingPattern.validate(adScheduler.getCronPattern());
-		final AdempiereServer serverBeforeRestart = AdempiereServerMgr.get().getServer(serverId);
+		final AdempiereServer serverBeforeRestart = findServer(serverId);
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 				.schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
@@ -118,7 +121,8 @@ public class AD_Scheduler_StepDef
 		StepDefUtil.tryAndWait(
 				RESTART_SETTLE_TIMEOUT_SECONDS,
 				100,
-				() -> isRestartSettled(serverId, serverBeforeRestart, cronScheduler));
+				() -> isRestartSettled(serverId, serverBeforeRestart, cronScheduler),
+				() -> logRestartState(serverId, serverBeforeRestart, cronScheduler));
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 				.schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
@@ -136,20 +140,49 @@ public class AD_Scheduler_StepDef
 			@Nullable final AdempiereServer serverBeforeRestart,
 			final boolean cronScheduler)
 	{
-		final AdempiereServer server;
-		try
-		{
-			server = AdempiereServerMgr.get().getServer(serverId);
-		}
-		catch (final IndexOutOfBoundsException e)
-		{
-			// getServer() iterates an unsynchronized list by index that RESTART modifies concurrently; just poll again
-			return false;
-		}
+		final AdempiereServer server = findServer(serverId);
 		if (server == null || server == serverBeforeRestart || !server.isAlive())
 		{
 			return false;
 		}
 		return !cronScheduler || server.isSleeping();
+	}
+
+	private static void logRestartState(
+			@NonNull final String serverId,
+			@Nullable final AdempiereServer serverBeforeRestart,
+			final boolean cronScheduler)
+	{
+		final AdempiereServer server = findServer(serverId);
+		logger.info("Scheduler restart not settled: serverId={}, cronScheduler={}, server==null={}, sameAsBeforeRestart={}, isAlive={}, isSleeping={}",
+				serverId,
+				cronScheduler,
+				server == null,
+				server != null && server == serverBeforeRestart,
+				server != null && server.isAlive(),
+				server != null && server.isSleeping());
+	}
+
+	/**
+	 * {@code AdempiereServerMgr.getServer()} iterates an unsynchronized list by index, which a concurrently processed
+	 * RESTART modifies (remove + add). Retry the lookup when that makes it fail.
+	 */
+	@Nullable
+	private static AdempiereServer findServer(@NonNull final String serverId)
+	{
+		for (int attempt = 1; ; attempt++)
+		{
+			try
+			{
+				return AdempiereServerMgr.get().getServer(serverId);
+			}
+			catch (final IndexOutOfBoundsException | NullPointerException e)
+			{
+				if (attempt >= 10)
+				{
+					throw e;
+				}
+			}
+		}
 	}
 }
