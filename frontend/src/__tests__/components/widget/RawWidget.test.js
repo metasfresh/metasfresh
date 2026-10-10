@@ -33,6 +33,13 @@ const createDummyProps = function(props) {
   };
 };
 
+const pressEnter = (input, value) =>
+  input.simulate('keyDown', {
+    key: 'Enter',
+    target: { value },
+    preventDefault: jest.fn(),
+  });
+
 describe('RawWidget component', () => {
   describe('generic tests using LongText widget:', () => {
     // A first field focuses when it mounts, but a new document in an already-mounted window
@@ -722,13 +729,6 @@ describe('RawWidget component', () => {
       });
     });
 
-    const pressEnter = (input, value) =>
-      input.simulate('keyDown', {
-        key: 'Enter',
-        target: { value },
-        preventDefault: jest.fn(),
-      });
-
     it('patches a pasted amount with blanks or no-break spaces as grouping', () => {
       const handlePatchSpy = jest.fn();
       const handleChangeSpy = jest.fn();
@@ -1315,11 +1315,7 @@ describe('RawWidget component', () => {
         wrapper.update();
 
         expect(wrapper.find('input').props().value).toEqual('3.57');
-        wrapper.find('input').simulate('keyDown', {
-          key: 'Enter',
-          target: { value: wrapper.find('input').props().value },
-          preventDefault: jest.fn(),
-        });
+        pressEnter(wrapper.find('input'), wrapper.find('input').props().value);
         expect(handlePatchSpy).toHaveBeenCalledWith('DiscountAmt', '3.57', undefined, undefined);
       }
     );
