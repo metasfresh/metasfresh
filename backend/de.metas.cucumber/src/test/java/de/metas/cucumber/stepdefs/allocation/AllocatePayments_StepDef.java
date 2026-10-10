@@ -235,6 +235,28 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
+	 * Asserts that no service fee invoice (i.e. no purchase invoice referencing the sales invoice, in any document status) was created for the row's invoice.
+	 * <pre>
+	 * And there is no service fee invoice for invoice
+	 *   | C_Invoice_ID |
+	 *   | inv1         |
+	 * </pre>
+	 */
+	@And("there is no service fee invoice for invoice")
+	public void noServiceFeeInvoice(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+			final List<I_C_Invoice> serviceFeeInvoices = queryBL.createQueryBuilder(I_C_Invoice.class)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, false)
+					.create()
+					.list();
+			assertThat(serviceFeeInvoices).as("service fee invoices of C_Invoice_ID=%s", invoiceId.getRepoId()).isEmpty();
+		});
+	}
+
+	/**
 	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
 	 * There has to be exactly one completed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
 	 */

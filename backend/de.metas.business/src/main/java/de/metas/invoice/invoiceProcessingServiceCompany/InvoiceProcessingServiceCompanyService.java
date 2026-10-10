@@ -25,6 +25,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -69,14 +70,16 @@ public class InvoiceProcessingServiceCompanyService
 {
 	private static final AdMessageKey MSG_INVOICE_HAS_SERVICE_INVOICE = AdMessageKey.of("AlreadyGeneratedServiceInvoice");
 	private static final AdMessageKey MSG_PAYMENTS_OF_DIFFERENT_SERVICE_COMPANY_OR_DATE = AdMessageKey.of("InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate");
+	private static final AdMessageKey MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY = AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany");
 
-	private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
-	private final MoneyService moneyService;
+	@NonNull private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
+	@NonNull private final MoneyService moneyService;
 
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public InvoiceProcessingServiceCompanyService(
 			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
@@ -91,6 +94,11 @@ public class InvoiceProcessingServiceCompanyService
 		return configRepository.getByCustomerId(customerId, evaluationDate);
 	}
 
+	/**
+	 * @return the service fee calculation for the given payment's partner, or empty if that partner is not an invoice processing service company
+	 * @throws AdempiereException (user validation error) if the invoice's customer is not assigned to that service company,
+	 *                            because a service company may only retain a service fee on invoices of its own customers
+	 */
 	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
 		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
@@ -112,11 +120,25 @@ public class InvoiceProcessingServiceCompanyService
 			return Optional.empty();
 		}
 
+		final BPartnerId customerId = request.getCustomerId();
+		if (!config.isBPartnerDetailsActive(customerId))
+		{
+			throw new AdempiereException(
+					MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
+					invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId),
+					bpartnerBL.getBPartnerName(serviceCompanyBPartnerId),
+					bpartnerBL.getBPartnerName(customerId))
+					.markAsUserValidationError()
+					.setParameter("C_Invoice_ID", invoiceId.getRepoId())
+					.setParameter("ServiceCompany_BPartner_ID", serviceCompanyBPartnerId.getRepoId())
+					.setParameter("C_BPartner_ID", customerId.getRepoId());
+		}
+
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
 				.evaluationDate(request.getPaymentDate())
 				//
-				.customerId(request.getCustomerId())
+				.customerId(customerId)
 				.invoiceId(invoiceId)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())

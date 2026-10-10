@@ -235,7 +235,7 @@ public class PaymentAllocationService
 							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 									.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
 									.paymentDate(paymentDate)
-									.customerId(paymentAllocationPayableItem.getBPartnerId())
+									.customerId(paymentAllocationPayableItem.getInvoiceBPartnerId()) // the invoice's customer, not the payment partner (which may be the service company)
 									.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 									.feeAmountIncludingTax(serviceFeeAmt)
 									.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())

@@ -449,7 +449,8 @@ public class PaymentAllocationServiceTest
 			@Nullable final BigDecimal serviceFeeAmt,
 			@Nullable final BigDecimal discountAmt,
 			@NonNull final I_C_Invoice invoice,
-			@NonNull final SOTrx soTrx)
+			@NonNull final SOTrx soTrx,
+			@Nullable final BPartnerId paymentBPartnerId)
 	{
 		final boolean creditMemo = isCreditMemo(invoice);
 		final InvoiceAmtMultiplier amtMultiplier = InvoiceAmtMultiplier.create(soTrx, creditMemo, false);
@@ -465,7 +466,7 @@ public class PaymentAllocationServiceTest
 				.orgId(adOrgId)
 				.clientId(clientId)
 				.paymentDate(SystemTime.asInstant())
-				.bPartnerId(bpartnerId)
+				.bPartnerId(paymentBPartnerId != null ? paymentBPartnerId : bpartnerId)
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
@@ -606,6 +607,30 @@ public class PaymentAllocationServiceTest
 				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
 				.isEqualByComparingTo(2);
 
+	}
+
+	/**
+	 * The remittance advice comes from the invoice processing service company itself (not from the customer):
+	 * the service fee is still allocated, for the customer's service company.
+	 */
+	@Test
+	public void paymentValid_OnePayableItem_WithServiceFee_remittedByServiceCompany_FullyAllocated()
+	{
+		final I_C_Payment payment = payment().payAmt(new BigDecimal(100)).build();
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
+		final PaymentAllocationPayableItem payableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).serviceFeeAmt(new BigDecimal(10)).invoice(invoice).soTrx(SOTrx.SALES)
+				.paymentBPartnerId(feeCompanyId1)
+				.build();
+
+		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(getPaymentAllocationCriteria(payment, Collections.singletonList(payableItem)));
+
+		assertThat(paymentAllocationResult.getCandidates()).hasSize(2);
+		assertThat(paymentAllocationResult.getCandidates())
+				.anySatisfy(candidate -> assertThat(candidate.getInvoiceProcessingFeeCalculation()).isNotNull()
+						.satisfies(calculation -> {
+							assertThat(calculation.getServiceCompanyBPartnerId()).isEqualTo(feeCompanyId1);
+							assertThat(calculation.getCustomerId()).isEqualTo(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+						}));
 	}
 
 	@Test
