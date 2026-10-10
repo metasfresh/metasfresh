@@ -121,10 +121,10 @@ public class AsyncBatchService
 		final AsyncBatchId enclosingWorkpackageAsyncBatchId = workpackageProcessorContextFactory.getThreadInheritedWorkpackageAsyncBatch();
 		if (enclosingWorkpackageAsyncBatchId != null)
 		{
-			// dev-note: not thrown, because callers doing exactly this exist today (e.g. AutoProcessingOLCandService's
-			// order/shipment/invoice steps all run inside a ProcessOLCands workpackage). Deliberately WARN and not
-			// DEBUG: waiting here holds a queue-processor thread for up to WaitTimeOutMS, which is how a processor
-			// runs out of permits in the first place - it must stay visible until the call sites are reworked.
+			// dev-note: not thrown, because callers doing exactly this exist today (for example the OLCand
+			// auto-processing chain). Deliberately WARN and not DEBUG: waiting here holds a queue-processor thread
+			// for up to WaitTimeOutMS, which is how a processor runs out of permits in the first place - it must
+			// stay visible until the call sites are reworked.
 			Loggables.withLogger(logger, Level.WARN).addLog(
 					"*** executeBatch: waiting for C_Async_Batch_ID: {} from a thread that is itself processing workpackage-batch {}."
 							+ " This blocks a queue-processor thread until the batch completes or times out.",
