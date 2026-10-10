@@ -61,7 +61,7 @@ public class C_Flatrate_RefundConfig_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final M_HU_PackingMaterial_StepDefData packingMaterialTable;
-	private final CurrencyRepository currencyRepository = new CurrencyRepository();
+	@NonNull private final CurrencyRepository currencyRepository = new CurrencyRepository();
 
 	/**
 	 * Creates refund configurations of refund-type conditions.

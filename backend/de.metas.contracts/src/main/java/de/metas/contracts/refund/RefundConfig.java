@@ -14,6 +14,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -147,7 +148,8 @@ public class RefundConfig
 				this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null; this={}", RefundBase.PERCENTAGE, this);
 				break;
 			case AMOUNT_PER_UNIT:
-				this.amount = Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null; this={}", RefundBase.AMOUNT_PER_UNIT, this);
+				// stripping trailing zeros, like Money does, so that configs with 0.5 and 0.50 per unit are equal
+				this.amount = NumberUtils.stripTrailingDecimalZeros(Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null; this={}", RefundBase.AMOUNT_PER_UNIT, this));
 				this.percent = null;
 				break;
 			default:
