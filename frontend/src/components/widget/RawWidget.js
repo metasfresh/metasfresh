@@ -54,6 +54,9 @@ const isSameNumber = (value1, value2) =>
   String(value2).trim() !== '' &&
   Number(value1) === Number(value2);
 
+/** Tells whether a widget value is empty (no number) */
+const isEmptyValue = (value) => value == null || String(value).trim() === '';
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -315,22 +318,32 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method forgetTypedTextOnOutsideChange
-   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
-   *          that value again instead of what the user had typed
+   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the
+   *          widget shows that value again instead of what the user had typed - unless it is the value the
+   *          widget held before the user typed another number (the same number, or empty): that is a reload
+   *          of the view (e.g. after another row was patched) bringing back the old value, and forgetting the
+   *          typed text then would lose the user's edit
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
-    const { typedText, typedTextTo } = this.state;
+    const { typedText, typedTextTo, cachedValue } = this.state;
     if (!isDecimalNumberField(widgetType)) {
       return;
     }
 
     const isChanged = (key) =>
       prevProps.widgetData?.[0]?.[key] !== widgetData?.[0]?.[key];
+    // cachedValue is the value before typing (it covers the value, not the valueTo of a range)
+    const isOldValueBack = (key, text) =>
+      key === 'value' &&
+      (isSameNumber(widgetData?.[0]?.value, cachedValue) ||
+        (isEmptyValue(widgetData?.[0]?.value) && isEmptyValue(cachedValue))) &&
+      !isSameNumber(normalizeDecimalNumberString(text), cachedValue);
     const isOutsideChange = (key, text) =>
       text !== null &&
       isChanged(key) &&
-      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget);
+      !isEchoOfTypedText(widgetData?.[0]?.[key], text, !!filterWidget) &&
+      !isOldValueBack(key, text);
 
     const isValueChanged = isOutsideChange('value', typedText);
     const isValueToChanged = isOutsideChange('valueTo', typedTextTo);
