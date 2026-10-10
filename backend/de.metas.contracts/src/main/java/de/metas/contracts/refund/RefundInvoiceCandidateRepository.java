@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
@@ -184,9 +185,7 @@ public class RefundInvoiceCandidateRepository
 		final RefundContract refundContract = query.getRefundContract();
 		final LocalDate invoicableFrom = query.getInvoicableFrom();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services
-				.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class);
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class);
 
 		if (invoicableFrom.isBefore(refundContract.getStartDate()) || invoicableFrom.isAfter(refundContract.getEndDate()))
 		{
@@ -218,6 +217,19 @@ public class RefundInvoiceCandidateRepository
 						false)
 				.filter(dateToInvoiceEffectiveFilter)
 				.create();
+	}
+
+	/** @return the refund candidates of the given contract that are not processed (invoiced) yet, of all its periods */
+	public List<I_C_Invoice_Candidate> getOpenRefundCandidateRecords(@NonNull final FlatrateTermId contractId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, contractId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.list();
 	}
 
 	/**

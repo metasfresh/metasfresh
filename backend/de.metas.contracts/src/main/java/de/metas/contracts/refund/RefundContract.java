@@ -124,14 +124,25 @@ public class RefundContract
 	}
 
 	/**
-	 * @return a config whose amount per unit is in another currency than the sales. All configs count, also of a scale not reached yet:
-	 * the contract is misconfigured for those sales (and a contract's configs all have the same refund base).
+	 * @return the currency that the refund of sales in the given currency is issued in: an amount per unit is refunded in the currency of the contract's configs,
+	 * whatever the currency of the sales; a percentage is refunded in the currency of the sales.
 	 */
-	public Optional<RefundConfig> getAmountPerUnitConfigInOtherCurrency(@NonNull final CurrencyId salesCurrencyId)
+	public CurrencyId getRefundCurrencyId(@NonNull final CurrencyId salesCurrencyId)
 	{
-		return refundConfigs.stream()
-				.filter(config -> config.isAmountPerUnitInOtherCurrencyThan(salesCurrencyId))
-				.findFirst();
+		return getAmountPerUnitCurrencyId().orElse(salesCurrencyId);
+	}
+
+	/**
+	 * @return the one currency of the contract's amounts per unit (see {@link RefundConfigs#assertValid(List)}); empty for a percentage contract.
+	 * A contract's configs all have the same refund base.
+	 */
+	public Optional<CurrencyId> getAmountPerUnitCurrencyId()
+	{
+		if (!CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::isAmountPerUnit))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getAmountCurrencyId));
 	}
 
 	public ConditionsId getConditionsId()

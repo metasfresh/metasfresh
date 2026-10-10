@@ -27,6 +27,10 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
@@ -73,6 +77,9 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	private static final int BILL_LOCATION_ID = 77;
 	private static final CountryId COUNTRY_ID = CountryId.ofRepoId(78);
 	private static final LocalDate DATE_ORDERED = LocalDate.of(2026, 7, 31);
+	private static final PricingSystemId PRICING_SYSTEM_ID = PricingSystemId.ofRepoId(60);
+	private static final PriceListId CHF_PRICE_LIST_ID = PriceListId.ofRepoId(61);
+	private static final PriceListVersionId CHF_PRICE_LIST_VERSION_ID = PriceListVersionId.ofRepoId(62);
 
 	private FlatrateTermRefund_Handler handler;
 	private I_C_InvoiceSchedule invoiceSchedule;
@@ -80,6 +87,7 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	private ITaxBL taxBL;
 	private IEditablePricingContext pricingContext;
 	private IPricingResult pricingResult;
+	private IPriceListDAO priceListDAO;
 	private I_C_UOM uom;
 	private CurrencyId eur;
 	private CurrencyId chf;
@@ -110,6 +118,9 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 		final IBPartnerDAO bpartnerDAO = Mockito.mock(IBPartnerDAO.class);
 		when(bpartnerDAO.getCountryId(any(BPartnerLocationId.class))).thenReturn(COUNTRY_ID);
 		Services.registerService(IBPartnerDAO.class, bpartnerDAO);
+
+		priceListDAO = Mockito.mock(IPriceListDAO.class);
+		Services.registerService(IPriceListDAO.class, priceListDAO);
 
 		handler = new FlatrateTermRefund_Handler(); // after the services are registered, because it holds them as fields
 
@@ -253,26 +264,49 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	}
 
 	/**
-	 * A per-unit refund amount in another currency than the refunded sales can't be computed: the refund candidate gets an error that names both currencies, instead of a silent 0.
+	 * A per-unit refund in CHF is priced on the CHF price list of the pricing system, so that the credit memo is issued on that price list;
+	 * its price list version goes to the refund candidate.
 	 */
 	@Test
-	public void amountPerUnitInOtherCurrency_fails()
+	public void refundInOtherCurrency_isPricedOnThePriceListInThatCurrency()
 	{
 		final ProductId bonusProductId = createProduct();
 		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
-		ic.setC_Currency_ID(eur.getRepoId());
+		ic.setC_Currency_ID(chf.getRepoId());
+		ic.setM_PricingSystem_ID(PRICING_SYSTEM_ID.getRepoId());
+		saveRecord(ic);
+		changeToAmountPerUnit(ic, chf);
+		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
+		when(priceListDAO.retrievePriceListIdByPricingSyst(PRICING_SYSTEM_ID, COUNTRY_ID, SOTrx.SALES, chf)).thenReturn(CHF_PRICE_LIST_ID);
+		when(pricingResult.getPriceListVersionId()).thenReturn(CHF_PRICE_LIST_VERSION_ID);
+
+		final PriceAndTax result = handler.calculatePriceAndTax(ic);
+
+		verify(pricingContext).setPriceListId(CHF_PRICE_LIST_ID);
+		assertThat(result.getPriceListVersionId()).isEqualTo(CHF_PRICE_LIST_VERSION_ID);
+		assertThat(result.getTaxId()).isEqualTo(TAX_ID);
+	}
+
+	/**
+	 * Without a price list in the refund's currency, the refund candidate gets an error that names the product and the currency, instead of a credit memo on a price list in another currency.
+	 */
+	@Test
+	public void refundInOtherCurrency_withoutPriceListInThatCurrency_fails()
+	{
+		final ProductId bonusProductId = createProduct();
+		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
+		ic.setC_Currency_ID(chf.getRepoId());
+		ic.setM_PricingSystem_ID(PRICING_SYSTEM_ID.getRepoId());
 		saveRecord(ic);
 		changeToAmountPerUnit(ic, chf);
 		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
 
 		assertThatThrownBy(() -> handler.calculatePriceAndTax(ic))
 				.isInstanceOfSatisfying(AdempiereException.class, e -> {
-					assertThat(e.getErrorCode()).isEqualTo(FlatrateTermRefund_Handler.MSG_REFUND_AMOUNT_CURRENCY_MISMATCH.toAD_Message());
+					assertThat(e.getErrorCode()).isEqualTo(FlatrateTermRefund_Handler.MSG_REFUND_PRODUCT_HAS_NO_PRICE_IN_CURRENCY.toAD_Message());
 					assertThat(e.isUserValidationError()).isTrue();
 				})
-				.hasMessageContaining("refundConditions")
-				.hasMessageContaining("CHF")
-				.hasMessageContaining("EUR");
+				.hasMessageContaining("CHF");
 		verify(pricingBL, never()).calculatePrice(any());
 	}
 

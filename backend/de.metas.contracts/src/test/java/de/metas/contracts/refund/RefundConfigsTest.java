@@ -8,6 +8,8 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -104,6 +106,34 @@ public class RefundConfigsTest
 				.invoiceSchedule(INVOICE_SCHEDULE.toBuilder().frequency(Frequency.DAILY).invoiceDistance(5).build())
 				.build();
 		assertThatCode(() -> RefundConfigs.assertInvoiceDistanceDividesTheYear(config)).doesNotThrowAnyException();
+	}
+
+	private static RefundConfig perUnitConfig(final int minQty, final int currencyRepoId)
+	{
+		return config(null, 1, minQty).toBuilder()
+				.refundBase(RefundBase.AMOUNT_PER_UNIT)
+				.percent(null)
+				.amount(Money.of(BigDecimal.ONE, CurrencyId.ofRepoId(currencyRepoId)))
+				.build();
+	}
+
+	/** The per-unit lines of a condition refund in one currency: the refund of a contract is one amount, and its scales count the units of all lines together. */
+	@Test
+	public void assertValid_perUnitConfigsWithDifferentCurrencies_fails()
+	{
+		assertThatThrownBy(() -> RefundConfigs.assertValid(ImmutableList.of(perUnitConfig(0, 102), perUnitConfig(10, 318))))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adempiereException = (AdempiereException)ex;
+					assertThat(adempiereException.isUserValidationError()).isTrue();
+					assertThat(adempiereException.getErrorCode()).isEqualTo(RefundConfigs.MSG_REFUND_CONFIG_SAME_CURRENCY.toAD_Message());
+				});
+	}
+
+	@Test
+	public void assertValid_perUnitConfigsWithTheSameCurrency_isValid()
+	{
+		assertThatCode(() -> RefundConfigs.assertValid(ImmutableList.of(perUnitConfig(0, 318), perUnitConfig(10, 318)))).doesNotThrowAnyException();
 	}
 
 	@Test

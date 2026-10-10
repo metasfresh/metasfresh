@@ -157,13 +157,12 @@ public class RefundConfig
 				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
 	}
 
-	/** @return {@code true} for an amount per unit in another currency than the refunded sales; it is not converted. */
-	public boolean isAmountPerUnitInOtherCurrencyThan(@NonNull final CurrencyId salesCurrencyId)
+	public boolean isAmountPerUnit()
 	{
-		return RefundBase.AMOUNT_PER_UNIT.equals(refundBase)
-				&& !salesCurrencyId.equals(getAmountCurrencyId());
+		return RefundBase.AMOUNT_PER_UNIT.equals(refundBase);
 	}
 
+	/** The currency of the amount per unit, which is also the currency that this config's refund is issued in. */
 	public CurrencyId getAmountCurrencyId()
 	{
 		return Check.assumeNotNull(amount, "Only a config with an amount per unit has a currency; this={}", this).getCurrencyId();

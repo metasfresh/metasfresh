@@ -10,11 +10,13 @@ import java.util.Iterator;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -35,6 +37,7 @@ import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeS
 import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -245,12 +248,6 @@ public class CandidateAssignmentService
 		// retrieve or create refund candidates to which assignableCandidate shall be assigned
 		final List<RefundInvoiceCandidate> matchingRefundCandidates = //
 				refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
-
-		if (refundContract.getAmountPerUnitConfigInOtherCurrency(assignableCandidate.getCurrencyId()).isPresent())
-		{
-			// not convertible: the refund candidate in the sales currency shows the error, and gets the sale once the config is corrected
-			return UpdateAssignmentResult.noUpdateDone(assignableCandidate);
-		}
 
 		// guards
 		matchingRefundCandidates.forEach(c -> Check.assumeNotEmpty(c.getRefundConfigs(),
@@ -579,6 +576,39 @@ public class CandidateAssignmentService
 			assignedQty = assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().toZero();
 		}
 		return assignedQty;
+	}
+
+	/**
+	 * Computes the open refunds of the given contract again, e.g. after the currency of its amount per unit was corrected:
+	 * the sales of every refund candidate that is not processed yet are unassigned, the candidate is deleted, and the sales are assigned again,
+	 * each to the refund candidate of its own period and in the contract's current refund currency.
+	 * Processed (invoiced) refund candidates keep their sales.
+	 */
+	public void reassignSalesOfOpenRefundCandidates(@NonNull final RefundContract refundContract)
+	{
+		final TreeSet<InvoiceCandidateId> salesIds = new TreeSet<>(Comparator.comparing(InvoiceCandidateId::getRepoId));
+		for (final I_C_Invoice_Candidate openRefundCandidateRecord : refundInvoiceCandidateRepository.getOpenRefundCandidateRecords(refundContract.getId()))
+		{
+			final InvoiceCandidateId openRefundCandidateId = InvoiceCandidateId.ofRepoId(openRefundCandidateRecord.getC_Invoice_Candidate_ID());
+			salesIds.addAll(assignmentToRefundCandidateRepository.getAssignedCandidateIds(openRefundCandidateId));
+
+			assignmentToRefundCandidateRepository.deleteAssignments(DeleteAssignmentsRequest.builder()
+					.removeForRefundCandidateId(openRefundCandidateId)
+					.onlyActive(false)
+					.build());
+			InterfaceWrapperHelper.delete(openRefundCandidateRecord);
+		}
+
+		// in the order of their creation, like the update run assigned them
+		for (final InvoiceCandidateId salesId : salesIds)
+		{
+			final AssignableInvoiceCandidate sale = assignableInvoiceCandidateRepository.getById(salesId);
+			final boolean stillMatches = retrieveMatchingContracts(sale).stream().anyMatch(contract -> contract.getId().equals(refundContract.getId()));
+			if (stillMatches)
+			{
+				updateAssignment(sale, refundContract);
+			}
+		}
 	}
 
 	public void removeAllAssignments(@NonNull final RefundInvoiceCandidate invoiceCandidate)

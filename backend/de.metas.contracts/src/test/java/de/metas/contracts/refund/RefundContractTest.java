@@ -124,21 +124,21 @@ public class RefundContractTest
 	}
 
 	/**
-	 * A per-unit line in another currency than the sales makes the whole contract not computable for those sales, also if that line's scale is not reached yet:
-	 * the contract is misconfigured for them, and the error shows at once instead of when the scale is reached. The currency of a percentage line plays no role.
+	 * A per-unit refund is issued in the currency of its config, whatever the currency of the sales; a percentage refund in the currency of the sales.
 	 */
 	@Test
-	public void getAmountPerUnitConfigInOtherCurrency()
+	public void getRefundCurrencyId()
 	{
 		final CurrencyId eur = CurrencyId.ofRepoId(102);
 		final CurrencyId chf = CurrencyId.ofRepoId(318);
-		final RefundConfig eurFromZero = refundConfig1.toBuilder().refundBase(RefundBase.AMOUNT_PER_UNIT).percent(null).amount(Money.of(ONE, eur)).build();
-		final RefundConfig chfFromFive = eurFromZero.toBuilder().minQty(FIVE).amount(Money.of(ONE, chf)).build();
-		final RefundContract mixedContract = refundContract.toBuilder().clearRefundConfigs().refundConfig(eurFromZero).refundConfig(chfFromFive).build();
+		final RefundConfig chfFromZero = refundConfig1.toBuilder().refundBase(RefundBase.AMOUNT_PER_UNIT).percent(null).amount(Money.of(ONE, chf)).build();
+		final RefundConfig chfFromFive = chfFromZero.toBuilder().minQty(FIVE).build();
+		final RefundContract perUnitContract = refundContract.toBuilder().clearRefundConfigs().refundConfig(chfFromZero).refundConfig(chfFromFive).build();
 
-		assertThat(mixedContract.getAmountPerUnitConfigInOtherCurrency(eur)).contains(chfFromFive);
-		assertThat(mixedContract.getAmountPerUnitConfigInOtherCurrency(chf)).contains(eurFromZero);
-		assertThat(refundContract.getAmountPerUnitConfigInOtherCurrency(chf)).isEmpty(); // percentage
+		assertThat(perUnitContract.getRefundCurrencyId(eur)).isEqualTo(chf);
+		assertThat(perUnitContract.getRefundCurrencyId(chf)).isEqualTo(chf);
+		assertThat(refundContract.getRefundCurrencyId(chf)).isEqualTo(chf); // percentage
+		assertThat(refundContract.getRefundCurrencyId(eur)).isEqualTo(eur); // percentage
 	}
 
 	/**

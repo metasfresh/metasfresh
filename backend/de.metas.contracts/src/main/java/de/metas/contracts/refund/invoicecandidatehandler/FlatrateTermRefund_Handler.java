@@ -6,14 +6,11 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.CandidateAssignmentService;
-import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
@@ -28,7 +25,11 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.location.CountryId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
@@ -81,13 +82,14 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 public class FlatrateTermRefund_Handler
 		implements ConditionTypeSpecificInvoiceCandidateHandler
 {
-	public static final AdMessageKey MSG_REFUND_AMOUNT_CURRENCY_MISMATCH = AdMessageKey.of("de.metas.contracts.refund.RefundAmountCurrencyMismatch");
+	public static final AdMessageKey MSG_REFUND_PRODUCT_HAS_NO_PRICE_IN_CURRENCY = AdMessageKey.of("de.metas.contracts.refund.RefundProductHasNoPriceInCurrency");
 
 	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	// this handler is instantiated by the invoice candidate handler framework, not by Spring
 	@NonNull private final SpringContextHolder.Lazy<RefundContractRepository> refundContractRepository = SpringContextHolder.lazyBean(RefundContractRepository.class);
@@ -146,18 +148,13 @@ public class FlatrateTermRefund_Handler
 	 * its tax category comes from the regular pricing of that product for the bill partner, and the tax from the bill location, the date and the SOTrx.
 	 * If there is no such product, then the tax remains unchanged.
 	 * If the product has no price, or its price has no tax category, then the candidate gets an error instead of keeping the tax of the refunded goods.
-	 * An amount per unit in another currency than this candidate gives an error instead of a silent 0 refund
-	 * (not on a candidate approved for invoicing: the update run keeps its price and tax).
+	 * The product is priced on the price list of the candidate's pricing system in the candidate's currency, which is the currency of the refund (an amount per unit is refunded in the config's currency):
+	 * that price list's version goes to the candidate, so the credit memo is issued on it. Without such a price list, the candidate gets an error.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final RefundContract refundContract = refundContractRepository.get().getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
-		final CurrencyId salesCurrencyId = CurrencyId.ofRepoIdOrNull(invoiceCandidateRecord.getC_Currency_ID());
-		if (salesCurrencyId != null)
-		{
-			assertAmountPerUnitInSalesCurrency(refundContract, salesCurrencyId);
-		}
 
 		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundContract.getRefundConfigs());
 		if (refundProductId == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
@@ -185,11 +182,19 @@ public class FlatrateTermRefund_Handler
 				.setPriceDate(TimeUtil.asLocalDate(taxDate, orgDAO.getTimeZone(orgId)))
 				.setFailIfNotCalculated();
 		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(invoiceCandidateRecord).getBPartnerLocationAndCaptureId();
-		pricingContext.setCountryId(bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId()));
-		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(invoiceCandidateRecord.getM_PricingSystem_ID());
+		final CountryId countryId = bpartnerDAO.getCountryId(billLocationId.getBpartnerLocationId());
+		pricingContext.setCountryId(countryId);
+		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
+				() -> PricingSystemId.ofRepoIdOrNull(invoiceCandidateRecord.getM_PricingSystem_ID()),
+				() -> bpartnerDAO.retrievePricingSystemIdOrNullInTrx(BPartnerId.ofRepoId(invoiceCandidateRecord.getBill_BPartner_ID()), soTrx));
 		if (pricingSystemId != null)
 		{
 			pricingContext.setPricingSystemId(pricingSystemId);
+		}
+		final CurrencyId refundCurrencyId = CurrencyId.ofRepoIdOrNull(invoiceCandidateRecord.getC_Currency_ID());
+		if (pricingSystemId != null && refundCurrencyId != null)
+		{
+			pricingContext.setPriceListId(retrievePriceListIdInCurrency(pricingSystemId, countryId, soTrx, refundCurrencyId, refundProductId));
 		}
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
@@ -206,26 +211,33 @@ public class FlatrateTermRefund_Handler
 				soTrx);
 
 		return PriceAndTax.builder()
+				.priceListVersionId(pricingResult.getPriceListVersionId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.taxId(taxId)
 				.build();
 	}
 
-	private void assertAmountPerUnitInSalesCurrency(@NonNull final RefundContract refundContract, @NonNull final CurrencyId salesCurrencyId)
+	private PriceListId retrievePriceListIdInCurrency(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final SOTrx soTrx,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final ProductId refundProductId)
 	{
-		final RefundConfig configInOtherCurrency = refundContract.getAmountPerUnitConfigInOtherCurrency(salesCurrencyId).orElse(null);
-		if (configInOtherCurrency == null)
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx, currencyId);
+		if (priceListId == null)
 		{
-			return;
+			throw new AdempiereException(
+					MSG_REFUND_PRODUCT_HAS_NO_PRICE_IN_CURRENCY,
+					productBL.getProductValueAndName(refundProductId),
+					currencyBL.getCurrencyCodeById(currencyId).toThreeLetterCode(),
+					priceListDAO.getPricingSystemName(pricingSystemId))
+					.markAsUserValidationError()
+					.setParameter("M_PricingSystem_ID", pricingSystemId.getRepoId())
+					.setParameter("C_Country_ID", countryId.getRepoId())
+					.setParameter("C_Currency_ID", currencyId.getRepoId());
 		}
-
-		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(configInOtherCurrency.getConditionsId());
-		throw new AdempiereException(
-				MSG_REFUND_AMOUNT_CURRENCY_MISMATCH,
-				conditions.getName(),
-				currencyBL.getCurrencyCodeById(configInOtherCurrency.getAmountCurrencyId()).toThreeLetterCode(),
-				currencyBL.getCurrencyCodeById(salesCurrencyId).toThreeLetterCode())
-				.markAsUserValidationError();
+		return priceListId;
 	}
 
 	@Override
@@ -236,8 +248,7 @@ public class FlatrateTermRefund_Handler
 
 			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(ic.getRecord_ID());
 
-			final RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
-			final RefundContract refundContract = refundContractRepository.getById(flatrateTermId);
+			final RefundContract refundContract = refundContractRepository.get().getById(flatrateTermId);
 			final NextInvoiceDate nextInvoiceDate = refundContract.computeNextInvoiceDate(asLocalDate(ic.getDeliveryDate()));
 
 			ic.setC_InvoiceSchedule_ID(nextInvoiceDate.getInvoiceSchedule().getId().getRepoId());
