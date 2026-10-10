@@ -78,6 +78,7 @@ public class RefundInvoiceCandidateService
 	 * Notes:
 	 * <li>in case of {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, there can be multiple refund contracts for an assignable candidate. However, each of them has just one refund config.
 	 * <li>in case of {@link RefundMode#APPLY_TO_ALL_QTIES}, there is just one refund candidate per assignable candidate, but it can have more than one assignment.
+	 * <li>the refund candidates and their quantity scales are per currency of the sales.
 	 */
 	public List<RefundInvoiceCandidate> retrieveOrCreateMatchingRefundCandidates(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
