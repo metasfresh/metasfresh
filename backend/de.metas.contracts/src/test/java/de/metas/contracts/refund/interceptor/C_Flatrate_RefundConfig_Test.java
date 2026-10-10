@@ -9,6 +9,8 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
+import org.mockito.Mockito;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -39,7 +41,7 @@ public class C_Flatrate_RefundConfig_Test
 		saveRecord(newInstance(I_C_UOM.class));
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-		interceptor = new C_Flatrate_RefundConfig(refundConfigRepository, new RefundContractRepository(refundConfigRepository));
+		interceptor = new C_Flatrate_RefundConfig(refundConfigRepository, new RefundContractRepository(refundConfigRepository), Mockito.mock(RefundInvoiceCandidateInvalidator.class));
 
 		conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);

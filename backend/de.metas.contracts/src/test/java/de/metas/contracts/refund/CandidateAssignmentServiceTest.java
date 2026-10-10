@@ -18,7 +18,10 @@ import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -100,6 +103,7 @@ public class CandidateAssignmentServiceTest
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal FOUR = new BigDecimal("4");
+	private static final BigDecimal SIX = new BigDecimal("6");
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THIRTEEN = new BigDecimal("13");
 	private static final BigDecimal FOURTEEN = new BigDecimal("14");
@@ -408,6 +412,110 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignments)
 				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
 				.containsExactly(invoicedContract.getId());
+	}
+
+	/**
+	 * A per-unit amount in another currency than the sales can't be added to the refund: the refund candidate is there (and shows the error, see FlatrateTermRefund_Handler),
+	 * but nothing is assigned to it, instead of the assignment failing as a whole.
+	 */
+	@Test
+	public void updateAssignment_amountPerUnitInOtherCurrency_refundCandidateIsCreatedButNothingIsAssigned()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(chf);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		assertThat(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).isEmpty();
+		assertThat(retrieveRefundCandidateRecords(contract)).hasSize(1);
+	}
+
+	@Test
+	public void updateAssignment_amountPerUnitInSalesCurrency_isAssigned()
+	{
+		final RefundContract contract = createAmountPerUnitContract(refundTestTools.getCurrencyId());
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final AssignmentToRefundCandidate assignment = singleElement(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates());
+		assertThat(assignment.getRefundInvoiceCandidate().getRefundContract().getId()).isEqualTo(contract.getId());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, refundTestTools.getCurrencyId())); // 2 per unit, 3 units
+	}
+
+	/**
+	 * The currency of a percentage config plays no role: the refund is a percentage of the sales, in their currency.
+	 */
+	@Test
+	public void updateAssignment_percentageConfigWithOtherCurrency_isAssigned()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final I_C_Flatrate_RefundConfig configRecord = load(singleElement(contract.getRefundConfigs()).getId(), I_C_Flatrate_RefundConfig.class);
+		configRecord.setC_Currency_ID(chf.getRepoId());
+		saveRecord(configRecord);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final AssignmentToRefundCandidate assignment = singleElement(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(TWO, refundTestTools.getCurrencyId())); // 20 % of 10
+	}
+
+	/**
+	 * Once the currency of the per-unit amount is corrected, the update run assigns the candidate that it couldn't assign before.
+	 */
+	@Test
+	public void assignToNewlyMatchingContracts_afterTheCurrencyIsCorrected_isAssigned()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(chf);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
+		SystemTime.setFixedTimeSource(assignableInvoiceCandidate.getInvoiceableFrom().atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(assignableInvoiceCandidate);
+			assertThat(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).isAssigned()).isFalse();
+
+			final I_C_Flatrate_RefundConfig configRecord = load(singleElement(contract.getRefundConfigs()).getId(), I_C_Flatrate_RefundConfig.class);
+			configRecord.setC_Currency_ID(refundTestTools.getCurrencyId().getRepoId());
+			saveRecord(configRecord);
+
+			// invoke the method under test
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()));
+
+			final AssignmentToRefundCandidate assignment = singleElement(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).getAssignmentsToRefundCandidates());
+			assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, refundTestTools.getCurrencyId()));
+			assertThat(retrieveRefundCandidateRecords(contract)).hasSize(1); // the refund candidate created before, not a second one
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	/** A contract whose single config refunds 2 per unit in the given currency. */
+	private RefundContract createAmountPerUnitContract(@NonNull final CurrencyId currencyId)
+	{
+		final RefundContract percentageContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final I_C_Flatrate_RefundConfig configRecord = load(singleElement(percentageContract.getRefundConfigs()).getId(), I_C_Flatrate_RefundConfig.class);
+		configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		configRecord.setRefundPercent(null);
+		configRecord.setRefundAmt(TWO);
+		configRecord.setC_Currency_ID(currencyId.getRepoId());
+		saveRecord(configRecord);
+		return refundContractRepository.getById(percentageContract.getId());
+	}
+
+	private static List<I_C_Invoice_Candidate> retrieveRefundCandidateRecords(@NonNull final RefundContract contract)
+	{
+		return POJOLookupMap.get().getRecords(I_C_Invoice_Candidate.class, record -> record.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class)
+				&& record.getRecord_ID() == contract.getId().getRepoId());
 	}
 
 	/**

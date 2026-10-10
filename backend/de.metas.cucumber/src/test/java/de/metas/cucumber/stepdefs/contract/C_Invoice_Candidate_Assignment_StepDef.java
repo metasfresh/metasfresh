@@ -82,6 +82,8 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) expected tax of the refund<br>
 	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) the partner the refund is issued to<br>
 	 *   <b>DocBaseType</b>, <b>DocSubType</b> — (optional) type of the document the refund is invoiced with<br>
+	 *   <b>IsError</b> — (optional) whether the refund invoice candidate is in error<br>
+	 *   <b>ErrorMsg</b> — (optional) text that the error message contains<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData, C_Invoice_Candidate_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -207,6 +209,16 @@ public class C_Invoice_Candidate_Assignment_StepDef
 				.map(identifier -> bpartnerTable.getId(identifier).getRepoId())
 				.filter(expectedBPartnerId -> expectedBPartnerId != candidate.getBill_BPartner_ID())
 				.ifPresent(expectedBPartnerId -> mismatch.append("Bill_BPartner_ID expected=").append(expectedBPartnerId).append(" actual=").append(candidate.getBill_BPartner_ID()).append("; "));
+
+		final Boolean expectedIsError = row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError).toBooleanOrNull();
+		if (expectedIsError != null && expectedIsError != candidate.isError())
+		{
+			mismatch.append("IsError expected=").append(expectedIsError).append(" actual=").append(candidate.isError()).append(" (ErrorMsg=").append(candidate.getErrorMsg()).append("); ");
+		}
+
+		row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
+				.filter(expected -> candidate.getErrorMsg() == null || !candidate.getErrorMsg().contains(expected))
+				.ifPresent(expected -> mismatch.append("ErrorMsg expected to contain=").append(expected).append(" actual=").append(candidate.getErrorMsg()).append("; "));
 
 		final String expectedDocBaseType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType).orElse(null);
 		final String expectedDocSubType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType).orElse(null);

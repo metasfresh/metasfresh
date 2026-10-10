@@ -187,6 +187,23 @@ public class RefundContractRepository
 	}
 
 	/**
+	 * @return the completed refund contracts with the given conditions
+	 */
+	public ImmutableList<RefundContract> getCompletedByConditions(@NonNull final ConditionsId conditionsId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.create()
+				.stream()
+				.map(this::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * @return the ids of all refund terms of the query's invoice partner; a term with the queried product comes before a term without product.
 	 */
 	public ImmutableList<FlatrateTermId> getIdsByQuery(@NonNull final RefundContractQuery query)

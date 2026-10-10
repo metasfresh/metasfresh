@@ -12,6 +12,11 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
@@ -46,6 +51,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,6 +81,8 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	private IEditablePricingContext pricingContext;
 	private IPricingResult pricingResult;
 	private I_C_UOM uom;
+	private CurrencyId eur;
+	private CurrencyId chf;
 
 	@BeforeEach
 	public void init()
@@ -113,6 +121,9 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+
+		eur = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
+		chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
 	}
 
 	private static int anyIntValue()
@@ -241,6 +252,77 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 		assertThat(handler.calculatePriceAndTax(icWithoutDates)).isSameAs(PriceAndTax.NONE);
 	}
 
+	/**
+	 * A per-unit refund amount in another currency than the refunded sales can't be computed: the refund candidate gets an error that names both currencies, instead of a silent 0.
+	 */
+	@Test
+	public void amountPerUnitInOtherCurrency_fails()
+	{
+		final ProductId bonusProductId = createProduct();
+		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
+		ic.setC_Currency_ID(eur.getRepoId());
+		saveRecord(ic);
+		changeToAmountPerUnit(ic, chf);
+		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
+
+		assertThatThrownBy(() -> handler.calculatePriceAndTax(ic))
+				.isInstanceOfSatisfying(AdempiereException.class, e -> {
+					assertThat(e.getErrorCode()).isEqualTo(FlatrateTermRefund_Handler.MSG_REFUND_AMOUNT_CURRENCY_MISMATCH.toAD_Message());
+					assertThat(e.isUserValidationError()).isTrue();
+				})
+				.hasMessageContaining("refundConditions")
+				.hasMessageContaining("CHF")
+				.hasMessageContaining("EUR");
+		verify(pricingBL, never()).calculatePrice(any());
+	}
+
+	@Test
+	public void amountPerUnitInSalesCurrency_taxFollowsTheBonusProduct()
+	{
+		final ProductId bonusProductId = createProduct();
+		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
+		ic.setC_Currency_ID(eur.getRepoId());
+		saveRecord(ic);
+		changeToAmountPerUnit(ic, eur);
+		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
+
+		assertThat(handler.calculatePriceAndTax(ic).getTaxId()).isEqualTo(TAX_ID);
+	}
+
+	/**
+	 * The currency of a percentage config plays no role: the refund is a percentage of the sales, in their currency.
+	 */
+	@Test
+	public void percentageWithOtherCurrency_taxFollowsTheBonusProduct()
+	{
+		final ProductId bonusProductId = createProduct();
+		final I_C_Invoice_Candidate ic = createRefundCandidate(bonusProductId, null, BILL_BPARTNER_ID.getRepoId(), DATE_ORDERED, null);
+		ic.setC_Currency_ID(eur.getRepoId());
+		saveRecord(ic);
+		final I_C_Flatrate_RefundConfig config = retrieveConfig(ic);
+		config.setC_Currency_ID(chf.getRepoId());
+		saveRecord(config);
+		when(pricingBL.createInitialContext(any(), any(), any(), any(), any())).thenReturn(pricingContext);
+
+		assertThat(handler.calculatePriceAndTax(ic).getTaxId()).isEqualTo(TAX_ID);
+	}
+
+	private static void changeToAmountPerUnit(final I_C_Invoice_Candidate ic, final CurrencyId currencyId)
+	{
+		final I_C_Flatrate_RefundConfig config = retrieveConfig(ic);
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		config.setRefundPercent(null);
+		config.setRefundAmt(new BigDecimal("0.50"));
+		config.setC_Currency_ID(currencyId.getRepoId());
+		saveRecord(config);
+	}
+
+	private static I_C_Flatrate_RefundConfig retrieveConfig(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = load(ic.getRecord_ID(), I_C_Flatrate_Term.class);
+		return POJOLookupMap.get().getFirstOnly(I_C_Flatrate_RefundConfig.class, config -> config.getC_Flatrate_Conditions_ID() == term.getC_Flatrate_Conditions_ID());
+	}
+
 	private ProductId createProduct()
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
@@ -258,6 +340,7 @@ public class FlatrateTermRefund_Handler_calculatePriceAndTax_Test
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		conditions.setName("refundConditions");
 		saveRecord(conditions);
 
 		final I_C_Flatrate_RefundConfig config = newInstance(I_C_Flatrate_RefundConfig.class);

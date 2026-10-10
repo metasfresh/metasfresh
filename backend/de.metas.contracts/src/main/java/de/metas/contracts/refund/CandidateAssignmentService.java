@@ -246,6 +246,13 @@ public class CandidateAssignmentService
 		final List<RefundInvoiceCandidate> matchingRefundCandidates = //
 				refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
 
+		if (refundContract.getAmountPerUnitConfigInOtherCurrency(assignableCandidate.getMoney().getCurrencyId()).isPresent())
+		{
+			// the amount per unit can't be added to the refund (and is not converted): the refund candidate is in error (see FlatrateTermRefund_Handler) and gets nothing assigned;
+			// once the config's currency is corrected, the candidate is flagged again (RefundInvoiceCandidateInvalidator) and assigned
+			return UpdateAssignmentResult.noUpdateDone(assignableCandidate);
+		}
+
 		// guards
 		matchingRefundCandidates.forEach(c -> Check.assumeNotEmpty(c.getRefundConfigs(),
 				"Every refundInvoiceCandidate returned by retrieveOrCreateMatchingRefundCandidates() needs to have at least one config; candidate that hasn't={}", c));

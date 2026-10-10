@@ -27,6 +27,8 @@ import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -54,6 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class C_Flatrate_RefundConfig_StepDef
 {
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final C_Flatrate_RefundConfig_StepDefData refundConfigTable;
 	@NonNull private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	@NonNull private final C_InvoiceSchedule_StepDefData invoiceScheduleTable;
@@ -69,7 +72,9 @@ public class C_Flatrate_RefundConfig_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_Flatrate_Conditions_ID</b> — (required, identifier-ref) the refund conditions<br>
 	 *   <b>C_InvoiceSchedule_ID</b> — (required, identifier-ref) invoicing schedule of the refund<br>
-	 *   <b>RefundPercent</b> — (required) the percentage that is refunded<br>
+	 *   <b>RefundPercent</b> — (required unless RefundAmt is given) the percentage that is refunded<br>
+	 *   <b>RefundAmt</b> — (optional) the amount per unit that is refunded, instead of a percentage<br>
+	 *   <b>C_Currency.ISO_Code</b> — (required with RefundAmt) currency of the amount per unit<br>
 	 *   <b>M_Product_ID</b> — (optional, identifier-ref) product the refund applies to; none = every product<br>
 	 *   <b>RefundMode</b> — (optional, default A) A = accumulated, T = tiered<br>
 	 *   <b>RefundInvoiceType</b> — (optional, default Invoice) Invoice or Creditmemo<br>
@@ -96,8 +101,18 @@ public class C_Flatrate_RefundConfig_StepDef
 			config.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			config.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			config.setC_InvoiceSchedule_ID(row.getAsIdentifier(I_C_Flatrate_RefundConfig.COLUMNNAME_C_InvoiceSchedule_ID).lookupNotNullIn(invoiceScheduleTable).getC_InvoiceSchedule_ID());
-			config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
-			config.setRefundPercent(row.getAsBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundPercent));
+			final BigDecimal refundAmt = row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt).orElse(null);
+			if (refundAmt != null)
+			{
+				config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+				config.setRefundAmt(refundAmt);
+				config.setC_Currency_ID(currencyBL.getByCurrencyCode(row.getAsCurrencyCode()).getId().getRepoId());
+			}
+			else
+			{
+				config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+				config.setRefundPercent(row.getAsBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundPercent));
+			}
 			config.setRefundMode(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundMode).orElse(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated));
 			config.setRefundInvoiceType(row.getAsOptionalString(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundInvoiceType).orElse(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice));
 			config.setMinQty(row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_MinQty).orElse(BigDecimal.ZERO));
@@ -116,6 +131,38 @@ public class C_Flatrate_RefundConfig_StepDef
 			assignIdBeforeSaving(config);
 			saveRecord(config);
 			refundConfigTable.putOrReplace(row.getAsIdentifier(), config);
+		});
+	}
+
+	/**
+	 * Changes refund configurations like a user who corrects them in the window: the record is saved, so that its interceptors run.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) the refund configuration<br>
+	 *   <b>C_Currency.ISO_Code</b> — (optional) new currency of the amount per unit<br>
+	 *   <b>RefundAmt</b> — (optional) new amount per unit<br>
+	 * @cucumber.depends StepDefData: C_Flatrate_RefundConfig_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Flatrate_RefundConfigs:
+	 *   | Identifier   | C_Currency.ISO_Code |
+	 *   | refundConfig | EUR                 |
+	 * </pre>
+	 */
+	@Given("update C_Flatrate_RefundConfigs:")
+	public void update_C_Flatrate_RefundConfigs(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Flatrate_RefundConfig config = row.getAsIdentifier().lookupNotNullIn(refundConfigTable);
+			InterfaceWrapperHelper.refresh(config);
+
+			row.getAsOptionalCurrencyCode()
+					.ifPresent(currencyCode -> config.setC_Currency_ID(currencyBL.getByCurrencyCode(currencyCode).getId().getRepoId()));
+			row.getAsOptionalBigDecimal(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt)
+					.ifPresent(config::setRefundAmt);
+
+			saveRecord(config);
 		});
 	}
 

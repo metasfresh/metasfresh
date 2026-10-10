@@ -216,6 +216,26 @@ public class RefundInvoiceCandidateRepository
 				.create();
 	}
 
+	/**
+	 * The invoice candidates (also the already invoiced ones) that might belong to the contract: those invoiced to the contract's partner,
+	 * from the start of the current open period (but not before the contract's start) to the contract's end; not the refund candidates themselves.
+	 * The invoice candidate update run decides which of them really match.
+	 */
+	public IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesOfCurrentPeriodQuery(
+			@NonNull final RefundContract refundContract,
+			@NonNull final LocalDate today)
+	{
+		// only the current open period is picked up retroactively; the periods before it get no refund
+		final LocalDate firstDay = refundContract.computeCurrentPeriodStart(today);
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, refundContract.getBPartnerId())
+				.filter(createDateToInvoiceEffectiveFilter(asTimestamp(firstDay), asTimestamp(refundContract.getEndDate())))
+				.create();
+	}
+
 	public IQueryFilter<I_C_Invoice_Candidate> createDateToInvoiceEffectiveFilter(
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)

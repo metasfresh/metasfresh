@@ -24,6 +24,7 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -58,13 +59,16 @@ public class C_Flatrate_RefundConfig
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final RefundConfigRepository refundConfigRepository;
 	private final RefundContractRepository refundContractRepository;
+	private final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator;
 
 	public C_Flatrate_RefundConfig(
 			@NonNull final RefundConfigRepository refundConfigRepository,
-			@NonNull final RefundContractRepository refundContractRepository)
+			@NonNull final RefundContractRepository refundContractRepository,
+			@NonNull final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator)
 	{
 		this.refundConfigRepository = refundConfigRepository;
 		this.refundContractRepository = refundContractRepository;
+		this.refundInvoiceCandidateInvalidator = refundInvoiceCandidateInvalidator;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
@@ -134,6 +138,23 @@ public class C_Flatrate_RefundConfig
 		{
 			throw new AdempiereException(RefundConfigs.MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE).markAsUserValidationError();
 		}
+	}
+
+	/**
+	 * The refund of the completed contracts with these conditions is computed again with the changed amount, e.g. after its currency was corrected
+	 * (until then, the refund candidates are in error and the sales are not assigned to them).
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Currency_ID,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt })
+	public void invalidateInvoiceCandidatesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(configRecord.getC_Flatrate_Conditions_ID());
+		if (conditionsId == null)
+		{
+			return;
+		}
+		refundInvoiceCandidateInvalidator.invalidateCandidatesOfConditionsAfterCommit(conditionsId);
 	}
 
 	/**

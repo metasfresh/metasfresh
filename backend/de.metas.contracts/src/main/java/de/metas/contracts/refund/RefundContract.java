@@ -20,6 +20,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -120,6 +121,17 @@ public class RefundContract
 
 		Check.fail("This contract has no config with id={}; this={}", refundConfigId, this);
 		return null;
+	}
+
+	/**
+	 * @return the config whose amount per unit is in another currency than the given one (the currency of the refunded sales), if there is any.
+	 * The refund of this contract can then not be computed for those sales.
+	 */
+	public Optional<RefundConfig> getAmountPerUnitConfigInOtherCurrency(@NonNull final CurrencyId salesCurrencyId)
+	{
+		return refundConfigs.stream()
+				.filter(config -> config.isAmountPerUnitInOtherCurrencyThan(salesCurrencyId))
+				.findFirst();
 	}
 
 	public ConditionsId getConditionsId()
