@@ -318,10 +318,11 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method forgetTypedTextOnOutsideChange
-   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the widget shows
-   *          that value again instead of what the user had typed - unless it is the value (same number, or empty) the widget held before the
-   *          user typed another one: that is a reload of the view (e.g. after another row was patched) bringing back the
-   *          old value, and forgetting the typed text then would lose the user's edit
+   * @summary When the value of a decimal number widget changes from outside (e.g. the PATCH response), the
+   *          widget shows that value again instead of what the user had typed - unless it is the value the
+   *          widget held before the user typed another number (the same number, or empty): that is a reload
+   *          of the view (e.g. after another row was patched) bringing back the old value, and forgetting the
+   *          typed text then would lose the user's edit
    */
   forgetTypedTextOnOutsideChange = (prevProps) => {
     const { widgetType, widgetData, filterWidget } = this.props;
