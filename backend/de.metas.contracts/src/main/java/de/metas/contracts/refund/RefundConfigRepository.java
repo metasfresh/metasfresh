@@ -206,6 +206,11 @@ public class RefundConfigRepository
 				.list();
 	}
 
+	public void saveConfigRecord(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		saveRecord(configRecord);
+	}
+
 	public RefundConfig getById(@NonNull final RefundConfigId id)
 	{
 		final I_C_Flatrate_RefundConfig record = load(id, I_C_Flatrate_RefundConfig.class);

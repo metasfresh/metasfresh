@@ -190,7 +190,7 @@ public class C_Flatrate_RefundConfig
 			otherLine.setC_Currency_ID(configRecord.getC_Currency_ID());
 			try (final IAutoCloseable ignored = DYNATTR_CurrencyCorrectedWithOtherLine.temporarySetValue(otherLine, true))
 			{
-				InterfaceWrapperHelper.saveRecord(otherLine);
+				refundConfigRepository.saveConfigRecord(otherLine);
 			}
 		}
 	}
