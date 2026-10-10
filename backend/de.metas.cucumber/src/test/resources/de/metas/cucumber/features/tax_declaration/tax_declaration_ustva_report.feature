@@ -327,7 +327,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
 
-    # the discount reduces the taxable base (par. 17 UStG): net = 1000.00 - 20.00 = 980.00
+    # the discount reduces the taxable base (par. 17 UStG): net = 1000.00 - 23.80 + 3.80 = 980.00
+    # (the gross discount leg and the tax correction leg of the allocation both carry the Net code)
     # declared tax = -190.00 + 3.80 = -186.20 (credit); the sales code prints it positive; balance = payable 186.20
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
@@ -337,7 +338,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date |
       | DETAIL       | v81N          | N          | inv       | 1000   | 2024-01-15   |
       | DETAIL       | v81N          | T          | inv       | 190    | 2024-01-15   |
-      | DETAIL       | v81N          | N          | alloc     | -20.00 | 2024-01-15   |
+      | DETAIL       | v81N          | N          | alloc     | -23.80 | 2024-01-15   |
+      | DETAIL       | v81N          | N          | alloc     | 3.80   | 2024-01-15   |
       | DETAIL       | v81N          | T          | alloc     | -3.80  | 2024-01-15   |
 
 
