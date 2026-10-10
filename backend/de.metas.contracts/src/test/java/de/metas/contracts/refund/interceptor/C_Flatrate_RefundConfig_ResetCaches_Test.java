@@ -4,8 +4,11 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
+import org.mockito.Mockito;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -67,7 +70,7 @@ class C_Flatrate_RefundConfig_ResetCaches_Test
 		saveRecord(config);
 
 		// registered once the config exists: its validation on save needs the record's id, like in the WebUI
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_RefundConfig(refundConfigRepository, refundContractRepository));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_RefundConfig(refundConfigRepository, refundContractRepository, Mockito.mock(RefundInvoiceCandidateInvalidator.class), Mockito.mock(AssignmentToRefundCandidateRepository.class)));
 		refundContractRepository.resetCount();
 	}
 

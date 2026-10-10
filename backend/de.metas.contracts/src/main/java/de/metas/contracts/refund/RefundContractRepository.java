@@ -96,6 +96,8 @@ public class RefundContractRepository
 			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
 			.build();
 
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
@@ -178,12 +180,24 @@ public class RefundContractRepository
 	 */
 	public boolean hasCompletedContracts(@NonNull final ConditionsId conditionsId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed, X_C_Flatrate_Term.DOCSTATUS_Closed)
 				.create()
 				.anyMatch();
+	}
+
+	public ImmutableList<FlatrateTermId> getCompletedIdsByConditions(@NonNull final ConditionsId conditionsId)
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	/**

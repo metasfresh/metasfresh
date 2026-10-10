@@ -54,6 +54,7 @@ public class RefundConfigs
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
 	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameBonusProduct");
+	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_CURRENCY = AdMessageKey.of("de.metas.contracts.refund.C_Flatrate_RefundConfig_SameCurrency");
 	public static final AdMessageKey MSG_REFUND_CONFIG_SAME_PRODUCT_CATEGORY = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameProductCategory");
 	static final AdMessageKey MSG_REFUND_CONFIG_SAME_DEDUCTED_AT_PAYMENT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameDeductedAtPayment");
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NEEDS_PERCENTAGE_AND_BONUS_PRODUCT = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentRequiresPercentageAndBonusProduct");
@@ -226,6 +227,14 @@ public class RefundConfigs
 			Loggables.addLog("The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
 			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_BASE).markAsUserValidationError();
+		}
+		// the refund of a per-unit contract is issued in the currency of its amounts; its scales count the units of all lines together, and its candidates are in one currency
+		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfigs.get(0).getRefundBase())
+				&& hasDifferentValues(refundConfigs, RefundConfig::getAmountCurrencyId))
+		{
+			Loggables.addLog("The given per-unit refundConfigs need to all have the same currency; refundConfigs={}", refundConfigs);
+
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_CURRENCY).markAsUserValidationError();
 		}
 		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundMode))
 		{

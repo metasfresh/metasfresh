@@ -191,6 +191,26 @@ public class RefundConfigRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @return the other active per-unit lines of the given line's conditions, in the given line's transaction
+	 */
+	public List<I_C_Flatrate_RefundConfig> getOtherActiveAmountPerUnitRecords(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class, configRecord)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, configRecord.getC_Flatrate_Conditions_ID())
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_RefundBase, X_C_Flatrate_RefundConfig.REFUNDBASE_Amount)
+				.addNotEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_RefundConfig_ID, configRecord.getC_Flatrate_RefundConfig_ID())
+				.orderBy(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_RefundConfig_ID)
+				.create()
+				.list();
+	}
+
+	public void saveConfigRecord(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		saveRecord(configRecord);
+	}
+
 	public RefundConfig getById(@NonNull final RefundConfigId id)
 	{
 		final I_C_Flatrate_RefundConfig record = load(id, I_C_Flatrate_RefundConfig.class);

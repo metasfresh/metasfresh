@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -24,6 +25,8 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.lang.Percent;
 
 /*
@@ -118,6 +121,24 @@ public class RefundContractTest
 		final RefundConfig result = refundContract.getRefundConfig(FIVE);
 
 		assertThat(result).isEqualTo(refundConfig2);
+	}
+
+	/**
+	 * A per-unit refund is issued in the currency of its config, whatever the currency of the sales; a percentage refund in the currency of the sales.
+	 */
+	@Test
+	public void getRefundCurrencyId()
+	{
+		final CurrencyId eur = CurrencyId.ofRepoId(102);
+		final CurrencyId chf = CurrencyId.ofRepoId(318);
+		final RefundConfig chfFromZero = refundConfig1.toBuilder().refundBase(RefundBase.AMOUNT_PER_UNIT).percent(null).amount(Money.of(ONE, chf)).build();
+		final RefundConfig chfFromFive = chfFromZero.toBuilder().minQty(FIVE).build();
+		final RefundContract perUnitContract = refundContract.toBuilder().clearRefundConfigs().refundConfig(chfFromZero).refundConfig(chfFromFive).build();
+
+		assertThat(perUnitContract.getRefundCurrencyId(eur)).isEqualTo(chf);
+		assertThat(perUnitContract.getRefundCurrencyId(chf)).isEqualTo(chf);
+		assertThat(refundContract.getRefundCurrencyId(chf)).isEqualTo(chf); // percentage
+		assertThat(refundContract.getRefundCurrencyId(eur)).isEqualTo(eur); // percentage
 	}
 
 	/**

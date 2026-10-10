@@ -88,6 +88,7 @@ public class AssignableInvoiceCandidateRepository
 	public AssignableInvoiceCandidate saveNew(@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
 		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		assignableCandidateRecord.setC_Currency_ID(assignableCandidate.getCurrencyId().getRepoId()); // the base money of its assignments is in this currency
 		saveRecord(assignableCandidateRecord);
 
 		return assignableCandidate

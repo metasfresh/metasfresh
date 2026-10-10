@@ -78,6 +78,8 @@ public class RefundInvoiceCandidateService
 	 * Notes:
 	 * <li>in case of {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, there can be multiple refund contracts for an assignable candidate. However, each of them has just one refund config.
 	 * <li>in case of {@link RefundMode#APPLY_TO_ALL_QTIES}, there is just one refund candidate per assignable candidate, but it can have more than one assignment.
+	 * <li>a refund candidate is in the currency that its refund is issued in (see {@link RefundContract#getRefundCurrencyId}): an amount per unit in the config's currency,
+	 * so the sales of all currencies go to the same candidate and count together for the scales; a percentage in the currency of the sales, so each currency has its own candidate.
 	 */
 	public List<RefundInvoiceCandidate> retrieveOrCreateMatchingRefundCandidates(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
@@ -164,6 +166,7 @@ public class RefundInvoiceCandidateService
 				.refundContract(refundContract)
 				.invoicableFrom(assignableCandidate.getInvoiceableFrom())
 				.soTrx(assignableCandidate.getSoTrx())
+				.currencyId(refundContract.getRefundCurrencyId(assignableCandidate.getCurrencyId()))
 				.build();
 
 		final List<RefundInvoiceCandidate> existingCandidates = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(refundCandidateQuery);

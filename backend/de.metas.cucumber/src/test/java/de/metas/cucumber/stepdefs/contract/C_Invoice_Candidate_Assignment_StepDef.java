@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -31,8 +33,12 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -44,8 +50,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,9 +67,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Invoice_Candidate_Assignment_StepDef
 {
 	private static final long POLL_INTERVAL_MS = 500;
+	private static final String COLUMNNAME_ErrorMsg_AD_Message = I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg + ".AD_Message";
+	private static final String COLUMNNAME_ErrorMsg_Params = I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg + ".Params";
+	private static final ImmutableList<String> SYSTEM_LANGUAGES = ImmutableList.of("de_DE", "de_CH", "en_US");
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -82,6 +96,10 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) expected tax of the refund<br>
 	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) the partner the refund is issued to<br>
 	 *   <b>DocBaseType</b>, <b>DocSubType</b> — (optional) type of the document the refund is invoiced with<br>
+	 *   <b>IsError</b> — (optional) whether the refund invoice candidate is in error<br>
+	 *   <b>ErrorMsg.AD_Message</b> — (optional) AD_Message value of the error message, in any of the system languages<br>
+	 *   <b>ErrorMsg.Params</b> — (optional, with ErrorMsg.AD_Message) the message's parameters, comma separated; {@code *} matches any value<br>
+	 *   <b>C_Currency.ISO_Code</b> — (optional) selects the refund invoice candidate in this currency<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData, C_Invoice_Candidate_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -108,14 +126,37 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	@And("^the C_Flatrate_Term identified by (.*) has no refund C_Invoice_Candidate$")
 	public void C_Flatrate_Term_has_no_refund_C_Invoice_Candidate(@NonNull final String termIdentifier)
 	{
+		assertNoRefundInvoiceCandidate(termIdentifier, null);
+	}
+
+	/**
+	 * Asserts that a refund term has no refund invoice candidate in the given currency (e.g. because the currency of its refund config was corrected).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Flatrate_Term identified by refundTerm has no refund C_Invoice_Candidate in CHF
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has no refund C_Invoice_Candidate in ([A-Z]{3})$")
+	public void C_Flatrate_Term_has_no_refund_C_Invoice_Candidate_in_currency(@NonNull final String termIdentifier, @NonNull final String currencyCode)
+	{
+		assertNoRefundInvoiceCandidate(termIdentifier, CurrencyCode.ofThreeLetterCode(currencyCode));
+	}
+
+	private void assertNoRefundInvoiceCandidate(@NonNull final String termIdentifier, @Nullable final CurrencyCode currencyCode)
+	{
 		final I_C_Flatrate_Term term = contractTable.get(termIdentifier);
-		final int count = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
-				.create()
-				.count();
-		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s", term.getC_Flatrate_Term_ID()).isZero();
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID());
+		if (currencyCode != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, currencyBL.getByCurrencyCode(currencyCode).getId());
+		}
+		final int count = queryBuilder.create().count();
+		assertThat(count).as("refund invoice candidates of C_Flatrate_Term_ID=%s in currency %s", term.getC_Flatrate_Term_ID(), currencyCode).isZero();
 	}
 
 	/**
@@ -152,6 +193,8 @@ public class C_Invoice_Candidate_Assignment_StepDef
 
 		row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, isSOTrx));
+		row.getAsOptionalCurrencyCode()
+				.ifPresent(currencyCode -> queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, currencyBL.getByCurrencyCode(currencyCode).getId()));
 
 		final StringBuilder lastMismatch = new StringBuilder();
 		try
@@ -178,6 +221,37 @@ public class C_Invoice_Candidate_Assignment_StepDef
 		{
 			throw new AssertionError("Refund invoice candidate does not match: " + lastMismatch, e);
 		}
+	}
+
+	/** The error message is one of the message's translations, with the given parameters ({@code *} = any value). */
+	private boolean isErrorMsgOf(@Nullable final String errorMsg, @NonNull final AdMessageKey messageKey, @Nullable final String paramsCsv)
+	{
+		if (errorMsg == null)
+		{
+			return false;
+		}
+		final List<String> params = paramsCsv != null ? Splitter.on(',').trimResults().splitToList(paramsCsv) : ImmutableList.of();
+		return SYSTEM_LANGUAGES.stream()
+				.map(adLanguage -> msgBL.getMsg(adLanguage, messageKey))
+				.map(template -> toRegex(template, params))
+				.anyMatch(regex -> Pattern.compile(regex, Pattern.DOTALL).matcher(errorMsg).find());
+	}
+
+	private static String toRegex(@NonNull final String template, @NonNull final List<String> params)
+	{
+		final Matcher placeholder = Pattern.compile("\\{(\\d+)}").matcher(template);
+		final StringBuilder regex = new StringBuilder();
+		int last = 0;
+		while (placeholder.find())
+		{
+			regex.append(Pattern.quote(template.substring(last, placeholder.start())));
+			final int index = Integer.parseInt(placeholder.group(1));
+			final String param = index < params.size() ? params.get(index) : "*";
+			regex.append("*".equals(param) ? ".*" : Pattern.quote(param));
+			last = placeholder.end();
+		}
+		regex.append(Pattern.quote(template.substring(last)));
+		return regex.toString();
 	}
 
 	/** @return empty string if the candidate matches the row's expectations */
@@ -207,6 +281,16 @@ public class C_Invoice_Candidate_Assignment_StepDef
 				.map(identifier -> bpartnerTable.getId(identifier).getRepoId())
 				.filter(expectedBPartnerId -> expectedBPartnerId != candidate.getBill_BPartner_ID())
 				.ifPresent(expectedBPartnerId -> mismatch.append("Bill_BPartner_ID expected=").append(expectedBPartnerId).append(" actual=").append(candidate.getBill_BPartner_ID()).append("; "));
+
+		final Boolean expectedIsError = row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError).toBooleanOrNull();
+		if (expectedIsError != null && expectedIsError != candidate.isError())
+		{
+			mismatch.append("IsError expected=").append(expectedIsError).append(" actual=").append(candidate.isError()).append(" (ErrorMsg=").append(candidate.getErrorMsg()).append("); ");
+		}
+
+		row.getAsOptionalString(COLUMNNAME_ErrorMsg_AD_Message)
+				.filter(messageKey -> !isErrorMsgOf(candidate.getErrorMsg(), AdMessageKey.of(messageKey), row.getAsOptionalString(COLUMNNAME_ErrorMsg_Params).orElse(null)))
+				.ifPresent(messageKey -> mismatch.append("ErrorMsg expected to be the message ").append(messageKey).append(" actual=").append(candidate.getErrorMsg()).append("; "));
 
 		final String expectedDocBaseType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType).orElse(null);
 		final String expectedDocSubType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType).orElse(null);
