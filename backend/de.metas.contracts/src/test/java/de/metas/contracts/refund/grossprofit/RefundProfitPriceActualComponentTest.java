@@ -16,6 +16,7 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.money.CurrencyId;
@@ -151,11 +152,28 @@ public class RefundProfitPriceActualComponentTest
 	}
 
 	/**
-	 * An amount per unit in another currency than the order line is not converted: it is left out of the profit price instead of failing the order line
-	 * (its refund invoice candidate shows the error).
+	 * An amount per unit in another currency than the order line is converted to the order line's currency at the date of the price calculation:
+	 * 100 EUR - 10% - 2 CHF at 1.10 EUR/CHF = 87.80 EUR.
 	 */
 	@Test
-	public void applyToInput_skipsTheAmountPerUnitInAnotherCurrency()
+	public void applyToInput_convertsTheAmountPerUnitInAnotherCurrency()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		((PlainCurrencyDAO)Services.get(ICurrencyDAO.class)).setRate(chf, currencyId, new BigDecimal("1.10"));
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), chf);
+
+		final Money result = applyToInput(Money.of(100, currencyId));
+
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("87.80");
+	}
+
+	/**
+	 * Without a conversion rate, the amount per unit in another currency is left out of the profit price, instead of failing the order line.
+	 */
+	@Test
+	public void applyToInput_amountPerUnitInAnotherCurrencyWithoutRate_isLeftOut()
 	{
 		createTermWithPercentageConfig(new BigDecimal("10"), true);
 		createTermWithAmountPerUnitConfig(new BigDecimal("2"), PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId());
