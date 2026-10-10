@@ -96,9 +96,9 @@ public class RefundContractRepository
 			.additionalTableNameToResetFor(I_C_Flatrate_RefundConfig.Table_Name)
 			.build();
 
-	@VisibleForTesting
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@VisibleForTesting
 	@Getter
 	private final RefundConfigRepository refundConfigRepository;
 
