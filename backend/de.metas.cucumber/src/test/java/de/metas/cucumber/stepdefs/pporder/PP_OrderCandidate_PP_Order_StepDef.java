@@ -37,6 +37,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
@@ -169,7 +170,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 		final StepDefDataIdentifier createdFirst = createdFirstCandidates.stream()
 				.min(Comparator.comparingInt(identifier -> ppOrderCandidateTable.get(identifier).getPP_Order_Candidate_ID()))
-				.orElseThrow();
+				.orElseThrow(() -> new AdempiereException("No " + COLUMNNAME_CreatedFirst + " candidate found"));
 		final ImmutableList<DataTableRow> expectedRows = allRows.stream()
 				.filter(row -> row.getAsIdentifier(COLUMNNAME_CreatedFirst).equals(createdFirst))
 				.collect(ImmutableList.toImmutableList());
