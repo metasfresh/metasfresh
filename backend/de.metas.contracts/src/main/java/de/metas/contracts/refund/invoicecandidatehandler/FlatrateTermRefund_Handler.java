@@ -146,9 +146,8 @@ public class FlatrateTermRefund_Handler
 	 * its tax category comes from the regular pricing of that product for the bill partner, and the tax from the bill location, the date and the SOTrx.
 	 * If there is no such product, then the tax remains unchanged.
 	 * If the product has no price, or its price has no tax category, then the candidate gets an error instead of keeping the tax of the refunded goods.
-	 * <p>
-	 * If an amount per unit of the contract is in another currency than the refunded sales (i.e. this candidate), then nothing can be assigned to the candidate:
-	 * it gets an error that tells the user to correct the currency of the refund config, instead of a silent 0.
+	 * An amount per unit in another currency than this candidate gives an error instead of a silent 0 refund
+	 * (not on a candidate approved for invoicing: the update run keeps its price and tax).
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
@@ -224,7 +223,7 @@ public class FlatrateTermRefund_Handler
 		throw new AdempiereException(
 				MSG_REFUND_AMOUNT_CURRENCY_MISMATCH,
 				conditions.getName(),
-				currencyBL.getCurrencyCodeById(configInOtherCurrency.getAmount().getCurrencyId()).toThreeLetterCode(),
+				currencyBL.getCurrencyCodeById(configInOtherCurrency.getAmountCurrencyId()).toThreeLetterCode(),
 				currencyBL.getCurrencyCodeById(salesCurrencyId).toThreeLetterCode())
 				.markAsUserValidationError();
 	}

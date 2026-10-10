@@ -59,6 +59,20 @@ public class C_Flatrate_Term_Test
 		Mockito.verify(refundContractRepository).resetCaches();
 	}
 
+	/** a completed refund term lets the invalidator flag the invoice candidates of its partner */
+	@Test
+	public void complete_invalidatesTheCandidatesOfTheContract()
+	{
+		final RefundInvoiceCandidateInvalidator invalidator = Mockito.mock(RefundInvoiceCandidateInvalidator.class);
+		final C_Flatrate_Term interceptorWithMock = new C_Flatrate_Term(refundContractRepository, invalidator);
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		// invoke the method under test
+		interceptorWithMock.invalidateMatchingInvoiceCandidatesAfterCommit(term);
+
+		Mockito.verify(invalidator).invalidateCandidatesOfContractAfterCommit(refundContractRepository.ofRecord(term));
+	}
+
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)
 	{
 		final I_C_InvoiceSchedule schedule = newInstance(I_C_InvoiceSchedule.class);

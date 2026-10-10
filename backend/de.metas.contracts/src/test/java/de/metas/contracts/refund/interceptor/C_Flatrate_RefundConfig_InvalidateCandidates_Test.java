@@ -93,6 +93,36 @@ class C_Flatrate_RefundConfig_InvalidateCandidates_Test
 		Mockito.verify(invalidator).invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(config.getC_Flatrate_Conditions_ID()));
 	}
 
+	/** deactivating the wrong line (after a corrected line was added) is a correction too */
+	@Test
+	void deactivating_invalidatesTheCandidatesOfTheConditions()
+	{
+		config.setIsActive(false);
+		saveRecord(config);
+
+		Mockito.verify(invalidator).invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(config.getC_Flatrate_Conditions_ID()));
+	}
+
+	/** a corrected line that is added */
+	@Test
+	void addingALine_invalidatesTheCandidatesOfTheConditions()
+	{
+		final I_C_Flatrate_RefundConfig newConfig = newInstance(I_C_Flatrate_RefundConfig.class);
+		newConfig.setC_Flatrate_Conditions_ID(config.getC_Flatrate_Conditions_ID());
+		newConfig.setC_InvoiceSchedule_ID(config.getC_InvoiceSchedule_ID());
+		newConfig.setM_Product_ID(31);
+		newConfig.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+		newConfig.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		newConfig.setRefundAmt(new BigDecimal("0.50"));
+		newConfig.setC_Currency_ID(eur.getRepoId());
+		newConfig.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+		newConfig.setMinQty(BigDecimal.ZERO);
+		newConfig.setC_Flatrate_RefundConfig_ID(config.getC_Flatrate_RefundConfig_ID() + 1000); // the WebUI also has the id before the interceptors run
+		saveRecord(newConfig);
+
+		Mockito.verify(invalidator).invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(config.getC_Flatrate_Conditions_ID()));
+	}
+
 	/** the control: a change that does not affect the refund amount */
 	@Test
 	void changingTheMinQty_doesNotInvalidate()

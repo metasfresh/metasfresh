@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.IQuery;
 import org.mockito.ArgumentCaptor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -36,6 +37,7 @@ import java.time.ZoneId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 public class RefundInvoiceCandidateInvalidatorTest
 {
@@ -166,8 +168,9 @@ public class RefundInvoiceCandidateInvalidatorTest
 
 		Mockito.verify(invoiceCandDAO).invalidateCandsThatReference(TableRecordReference.of(term));
 		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(draftTerm));
-		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(endedTerm));
-		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(TableRecordReference.of(brokenTerm));
+		// the refund candidates of an ended contract may still be open, and of one that cannot be loaded too
+		Mockito.verify(invoiceCandDAO).invalidateCandsThatReference(TableRecordReference.of(endedTerm));
+		Mockito.verify(invoiceCandDAO).invalidateCandsThatReference(TableRecordReference.of(brokenTerm));
 
 		@SuppressWarnings("unchecked") final ArgumentCaptor<IQuery<I_C_Invoice_Candidate>> queryCaptor = ArgumentCaptor.forClass(IQuery.class);
 		Mockito.verify(invoiceCandDAO).invalidateCandsFor(queryCaptor.capture());
@@ -175,6 +178,27 @@ public class RefundInvoiceCandidateInvalidatorTest
 				.extracting(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.containsExactly(july.getC_Invoice_Candidate_ID());
 		Mockito.verify(refundContractRepository).resetCaches();
+	}
+
+	/**
+	 * Several changed refund lines of the same conditions in one transaction flag each contract once, after the commit.
+	 */
+	@Test
+	public void invalidateCandidatesOfConditionsAfterCommit_oncePerTransaction()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository);
+		final I_C_Flatrate_Term term = createRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
+			invalidator.invalidateCandidatesOfConditionsAfterCommit(conditionsId);
+			invalidator.invalidateCandidatesOfConditionsAfterCommit(conditionsId);
+			Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsThatReference(any());
+		});
+
+		Mockito.verify(invoiceCandDAO, Mockito.times(1)).invalidateCandsThatReference(TableRecordReference.of(term));
 	}
 
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)

@@ -46,8 +46,7 @@ import java.time.LocalDate;
  */
 
 /**
- * Flags the invoice candidates that might belong to a refund contract, so that the invoice candidate update run assigns them to the contract (or recomputes them).
- * The flagging is done after the current transaction is committed, so that the update run sees the committed contract and configs.
+ * Flags the invoice candidates of refund contracts for the update run, which then assigns them (or recomputes them).
  */
 @Service
 @RequiredArgsConstructor
@@ -60,9 +59,7 @@ public class RefundInvoiceCandidateInvalidator
 	@NonNull private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	@NonNull private final RefundContractRepository refundContractRepository;
 
-	/**
-	 * For a contract that was just completed: flags the invoice candidates of its partner in the current open period.
-	 */
+	/** For a contract that was just completed: flags the sales of its partner in the current open period, after the commit. */
 	public void invalidateCandidatesOfContractAfterCommit(@NonNull final RefundContract refundContract)
 	{
 		final IQuery<I_C_Invoice_Candidate> query = refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, SystemTime.asLocalDate());
@@ -74,36 +71,36 @@ public class RefundInvoiceCandidateInvalidator
 	}
 
 	/**
-	 * For a refund config whose amount was changed (e.g. its currency was corrected): flags the refund candidates of every completed contract with these conditions that has not ended,
-	 * so that they are checked again (e.g. their currency error is gone), and the invoice candidates of each contract's partner in the current open period,
-	 * so that those that are not assigned yet get assigned. A contract that cannot be loaded is skipped (and logged), so that it does not keep the others from being flagged.
-	 * Only a change of the amount is handled like this, not e.g. a new or deactivated config line.
+	 * After the commit, flags the open refund candidates of every completed contract with these conditions, and the sales of each contract's current period.
+	 * Each conditions is handled once per transaction.
 	 */
 	public void invalidateCandidatesOfConditionsAfterCommit(@NonNull final ConditionsId conditionsId)
 	{
+		trxManager.accumulateAndProcessAfterCommit(
+				RefundInvoiceCandidateInvalidator.class.getName() + "#conditionsIds",
+				ImmutableList.of(conditionsId),
+				conditionsIds -> conditionsIds.stream().distinct().forEach(this::flagCandidatesOfConditions));
+	}
+
+	private void flagCandidatesOfConditions(@NonNull final ConditionsId conditionsId)
+	{
 		final LocalDate today = SystemTime.asLocalDate();
-		final ImmutableList.Builder<FlatrateTermId> contractIds = ImmutableList.builder();
-		final ImmutableList.Builder<IQuery<I_C_Invoice_Candidate>> queries = ImmutableList.builder();
-		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId, today))
+		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId))
 		{
+			invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, contractId));
 			try
 			{
-				queries.add(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContractRepository.getById(contractId), today));
-				contractIds.add(contractId);
+				final RefundContract refundContract = refundContractRepository.getById(contractId);
+				if (!refundContract.getEndDate().isBefore(today)) // an ended contract has no current period
+				{
+					flagInvoiceCandidates(refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, today));
+				}
 			}
 			catch (final RuntimeException e)
 			{
-				Loggables.withLogger(logger, Level.WARN).addLog("Skipping C_Flatrate_Term_ID={}, which cannot be loaded as refund contract; e={}", contractId.getRepoId(), e.toString());
+				Loggables.withLogger(logger, Level.WARN).addLog("Skipping the sales of C_Flatrate_Term_ID={}, which cannot be loaded as refund contract; e={}", contractId.getRepoId(), e.toString());
 			}
 		}
-
-		trxManager
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> {
-					contractIds.build().forEach(contractId -> invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, contractId)));
-					queries.build().forEach(this::flagInvoiceCandidates);
-				});
 	}
 
 	@VisibleForTesting

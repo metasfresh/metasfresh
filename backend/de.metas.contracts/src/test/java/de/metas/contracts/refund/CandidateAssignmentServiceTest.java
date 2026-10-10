@@ -499,6 +499,94 @@ public class CandidateAssignmentServiceTest
 		}
 	}
 
+	/**
+	 * Sales in two currencies on a contract with a per-unit amount in EUR: the EUR sale is refunded on an EUR refund candidate,
+	 * the CHF sale gets a CHF refund candidate of its own (which shows the error) instead of being skipped silently.
+	 */
+	@Test
+	public void updateAssignment_amountPerUnit_salesInTwoCurrencies_eurFirst()
+	{
+		final CurrencyId eur = refundTestTools.getCurrencyId();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(eur);
+
+		invoiceCandidateAssignmentService.updateAssignment(refundTestTools.createAssignableCandidateStandlone(THREE, eur));
+		final AssignableInvoiceCandidate chfSale = refundTestTools.createAssignableCandidateStandlone(THREE, chf);
+		invoiceCandidateAssignmentService.updateAssignment(chfSale);
+
+		assertThat(retrieveRefundCandidateRecords(contract))
+				.extracting(I_C_Invoice_Candidate::getC_Currency_ID)
+				.containsExactlyInAnyOrder(eur.getRepoId(), chf.getRepoId());
+		assertThat(assignableInvoiceCandidateRepository.getById(chfSale.getId()).isAssigned()).isFalse();
+		final AssignmentToRefundCandidate eurAssignment = singleElement(RefundTestTools.retrieveAllAssignmentsToRefundCandidates(new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository)));
+		assertThat(eurAssignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, eur));
+	}
+
+	/**
+	 * The other order: the CHF sale comes first and gets a CHF refund candidate (in error); the EUR sale is refunded on an EUR refund candidate,
+	 * instead of its EUR amount being added to the CHF candidate.
+	 */
+	@Test
+	public void updateAssignment_amountPerUnit_salesInTwoCurrencies_chfFirst()
+	{
+		final CurrencyId eur = refundTestTools.getCurrencyId();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(eur);
+
+		invoiceCandidateAssignmentService.updateAssignment(refundTestTools.createAssignableCandidateStandlone(THREE, chf));
+		final AssignableInvoiceCandidate eurSale = refundTestTools.createAssignableCandidateStandlone(THREE, eur);
+		invoiceCandidateAssignmentService.updateAssignment(eurSale);
+
+		assertThat(retrieveRefundCandidateRecords(contract))
+				.extracting(I_C_Invoice_Candidate::getC_Currency_ID)
+				.containsExactlyInAnyOrder(eur.getRepoId(), chf.getRepoId());
+		final AssignmentToRefundCandidate eurAssignment = singleElement(assignableInvoiceCandidateRepository.getById(eurSale.getId()).getAssignmentsToRefundCandidates());
+		assertThat(eurAssignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, eur));
+		assertThat(eurAssignment.getRefundInvoiceCandidate().getMoney()).isEqualTo(Money.of(SIX, eur));
+	}
+
+	/**
+	 * A percentage refund of sales in two currencies: each currency has its own refund candidate, instead of adding the amounts of both currencies.
+	 */
+	@Test
+	public void updateAssignment_percentage_salesInTwoCurrencies()
+	{
+		final CurrencyId eur = refundTestTools.getCurrencyId();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+
+		invoiceCandidateAssignmentService.updateAssignment(refundTestTools.createAssignableCandidateStandlone(ONE, eur));
+		final AssignableInvoiceCandidate chfSale = refundTestTools.createAssignableCandidateStandlone(ONE, chf);
+		invoiceCandidateAssignmentService.updateAssignment(chfSale);
+
+		assertThat(retrieveRefundCandidateRecords(contract)).hasSize(2);
+		final AssignmentToRefundCandidate chfAssignment = singleElement(assignableInvoiceCandidateRepository.getById(chfSale.getId()).getAssignmentsToRefundCandidates());
+		assertThat(chfAssignment.getRefundInvoiceCandidate().getMoney()).isEqualTo(Money.of(TWO, chf)); // 20 % of 10 CHF
+	}
+
+	/**
+	 * An assignment made while the per-unit amount was in the sales currency stays as it is while the currency is wrong; the refund candidate shows the error.
+	 */
+	@Test
+	public void updateAssignment_amountPerUnitInOtherCurrency_existingAssignmentStaysUntouched()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		final RefundContract contract = createAmountPerUnitContract(refundTestTools.getCurrencyId());
+		final AssignableInvoiceCandidate sale = refundTestTools.createAssignableCandidateStandlone(THREE);
+		invoiceCandidateAssignmentService.updateAssignment(sale);
+
+		final I_C_Flatrate_RefundConfig configRecord = load(singleElement(contract.getRefundConfigs()).getId(), I_C_Flatrate_RefundConfig.class);
+		configRecord.setC_Currency_ID(chf.getRepoId());
+		saveRecord(configRecord);
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.getById(sale.getId()));
+
+		assertThat(result.isUpdateWasDone()).isFalse();
+		final AssignmentToRefundCandidate assignment = singleElement(assignableInvoiceCandidateRepository.getById(sale.getId()).getAssignmentsToRefundCandidates());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(SIX, refundTestTools.getCurrencyId()));
+	}
+
 	/** A contract whose single config refunds 2 per unit in the given currency. */
 	private RefundContract createAmountPerUnitContract(@NonNull final CurrencyId currencyId)
 	{

@@ -140,13 +140,17 @@ public class C_Flatrate_RefundConfig
 		}
 	}
 
-	/**
-	 * The refund of the completed contracts with these conditions is computed again with the changed amount, e.g. after its currency was corrected
-	 * (until then, the refund candidates are in error and the sales are not assigned to them).
-	 */
+	/** A corrected, added or deactivated line: the refund of the completed contracts with these conditions is computed again. */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void invalidateInvoiceCandidatesOfNewLineAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
+	{
+		invalidateInvoiceCandidatesAfterCommit(configRecord);
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_C_Flatrate_RefundConfig.COLUMNNAME_C_Currency_ID,
-			I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt })
+			I_C_Flatrate_RefundConfig.COLUMNNAME_RefundAmt,
+			I_C_Flatrate_RefundConfig.COLUMNNAME_IsActive })
 	public void invalidateInvoiceCandidatesAfterCommit(@NonNull final I_C_Flatrate_RefundConfig configRecord)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(configRecord.getC_Flatrate_Conditions_ID());

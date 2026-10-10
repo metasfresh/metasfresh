@@ -124,10 +124,8 @@ public class RefundContract
 	}
 
 	/**
-	 * @return the config whose amount per unit is in another currency than the given one (the currency of the refunded sales), if there is any.
-	 * The refund of this contract can then not be computed for those sales. All configs count, also the ones of a scale that is not reached yet:
-	 * the contract is misconfigured for those sales, and this shows at once rather than only when the scale is reached
-	 * (a contract's configs all have the same refund base, so a percentage config is never blocked by a per-unit one).
+	 * @return a config whose amount per unit is in another currency than the sales. All configs count, also of a scale not reached yet:
+	 * the contract is misconfigured for those sales (and a contract's configs all have the same refund base).
 	 */
 	public Optional<RefundConfig> getAmountPerUnitConfigInOtherCurrency(@NonNull final CurrencyId salesCurrencyId)
 	{

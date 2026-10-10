@@ -17,6 +17,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -202,6 +203,7 @@ public class RefundInvoiceCandidateRepository
 				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
 		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
 
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
@@ -219,9 +221,7 @@ public class RefundInvoiceCandidateRepository
 	}
 
 	/**
-	 * The invoice candidates (also the already invoiced ones) that might belong to the contract: those invoiced to the contract's partner,
-	 * from the start of the current open period (but not before the contract's start) to the contract's end; not the refund candidates themselves.
-	 * The invoice candidate update run decides which of them really match.
+	 * The sales or purchase invoice candidates of the contract's partner, from the start of the current open period (not before the contract's start) to the contract's end.
 	 */
 	public IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesOfCurrentPeriodQuery(
 			@NonNull final RefundContract refundContract,
@@ -230,7 +230,7 @@ public class RefundInvoiceCandidateRepository
 		// only the current open period is picked up retroactively; the periods before it get no refund
 		final LocalDate firstDay = refundContract.computeCurrentPeriodStart(today);
 
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, refundContract.getBPartnerId())
@@ -321,13 +321,19 @@ public class RefundInvoiceCandidateRepository
 		@NonNull
 		SOTrx soTrx;
 
-		@Builder
+		/** Only the refund candidates in the currency of the sales match. */
+		@NonNull
+		CurrencyId currencyId;
+
+		@Builder(toBuilder = true)
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
 				@NonNull final LocalDate invoicableFrom,
-				@NonNull final SOTrx soTrx)
+				@NonNull final SOTrx soTrx,
+				@NonNull final CurrencyId currencyId)
 		{
 			this.soTrx = soTrx;
+			this.currencyId = currencyId;
 			this.refundContract = refundContract;
 			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}

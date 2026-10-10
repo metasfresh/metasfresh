@@ -188,18 +188,14 @@ public class RefundContractRepository
 				.anyMatch();
 	}
 
-	/**
-	 * @return the ids of the completed refund contracts with the given conditions that have not ended before the given date
-	 */
-	public ImmutableList<FlatrateTermId> getCompletedIdsByConditions(@NonNull final ConditionsId conditionsId, @NonNull final LocalDate notEndedBefore)
+	public ImmutableList<FlatrateTermId> getCompletedIdsByConditions(@NonNull final ConditionsId conditionsId)
 	{
 		return queryBL
-				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.createQueryBuilderOutOfTrx(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(notEndedBefore))
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
 	}
