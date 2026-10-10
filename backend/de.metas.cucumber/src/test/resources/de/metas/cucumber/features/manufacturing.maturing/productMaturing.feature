@@ -86,14 +86,12 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    # Run synchronously with the AD_Scheduler_Para values of its scheduler. Without AutoCloseCandidatesAfterProduction
-    # the candidate stays unclosed. The scheduler "is ran once" step is not used: its RUN_ONCE can fail while the
-    # restarted cron scheduler saves the same AD_Scheduler record, and then the process never runs.
-    And the AD_Process with value 'PP_Order_Candidate_AlreadyMaturedForOrdering' is run with parameters:
-      | ParameterName                        | Value |
-      | IsDocComplete                        | Y     |
-      | AutoProcessCandidatesAfterProduction | Y     |
-      | AutoCloseCandidatesAfterProduction   | Y     |
+    # Intentionally NOT converted to the generic "AD_Process ... is run" step (unlike
+    # CreateMaturingCandidates above):
+    # - A synchronous run only enqueues its selection.
+    # - Its close chain needs the scheduler's own async RUN_ONCE dispatch to flip IsClosed.
+    # - Run synchronously, the candidate stays unclosed. Do not convert this line.
+    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
