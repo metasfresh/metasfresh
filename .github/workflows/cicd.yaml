@@ -853,6 +853,15 @@ jobs:
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          # the committed data dir must be cleanly shut down, otherwise every DB started from it begins with crash recovery
+          state=$(docker run --rm --entrypoint sh metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+            -c '/usr/lib/postgresql/*/bin/pg_controldata /var/lib/postgresql/initdata' | grep 'Database cluster state' || true)
+          echo "${state}"
+          if ! echo "${state}" | grep -qE 'cluster state: +shut down$'; then
+            echo "::error::the preloaded DB was not shut down cleanly before docker commit: ${state:-pg_controldata reported no cluster state}"
+            if [ "$(cat migration.exit-code)" != 0 ]; then tail -1000 migration.log; fi
+            exit 1
+          fi
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
