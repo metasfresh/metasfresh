@@ -316,17 +316,15 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_3  |
 
     # we are expecting two PP_Orders for ppOrderCandidate_3_2 and ppOrderCandidate_3_3, because
-    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 4+2=6
-    # so all (4) of ppOrderCandidate_3_2 end up in the first PP_Order, i.e. ppOrder_3_1.
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_2
-      | PP_Order_ID | QtyEntered |
-      | ppOrder_3_1 | 4          |
-    # Then of ppOrderCandidate_3_3's 2PCE, 1 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
-    # Therefore the remaining 1PCE of ppOrderCandidate_3_3 end up in a new PP_Order, i.e. ppOrder_3_2.
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_3
-      | PP_Order_ID | QtyEntered |
-      | ppOrder_3_1 | 1          |
-      | ppOrder_3_2 | 1          |
+    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 4+2=6:
+    # the first PP_Order (ppOrder_3_1) is filled up to 5 PCE from both candidates, and the remaining 1 PCE ends up in a second PP_Order (ppOrder_3_2).
+    # The candidates are allocated in PP_Order_Candidate_ID order, and which of the two is created first is not pinned.
+    # So we don't assert how each single candidate is split (ppOrder_3_1 = 4 of ppOrderCandidate_3_2 + 1 of ppOrderCandidate_3_3, or 2 of ppOrderCandidate_3_3 + 3 of ppOrderCandidate_3_2),
+    # only the outcome that holds for both orders. How much of each candidate was processed is checked by QtyProcessed below.
+    Then after not more than 60s, load PP_Orders allocated from candidates: ppOrderCandidate_3_2,ppOrderCandidate_3_3
+      | PP_Order_ID | QtyEntered | NumberOfCandidates |
+      | ppOrder_3_1 | 5          | 2                  |
+      | ppOrder_3_2 | 1          | 1                  |
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -338,11 +336,6 @@ Feature: create multiple production candidates
       | Identifier  | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppOrder_3_1 | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
       | ppOrder_3_2 | p_1          | bom_1             | ppln_1                 | testResource  | 1 PCE      | 1          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
-    And after not more than 60s, PP_OrderCandidate_PP_Order are found
-      | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
-      | ppOrderCandidate_3_2  | ppOrder_3_1 | 4 PCE      |
-      | ppOrderCandidate_3_3  | ppOrder_3_1 | 1 PCE      |
-      | ppOrderCandidate_3_3  | ppOrder_3_2 | 1 PCE      |
 
 
 
