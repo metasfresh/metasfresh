@@ -52,7 +52,9 @@ export default defineConfig({
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         //trace: 'on-first-retry',
-        trace: 'on',
+        // CI sets PLAYWRIGHT_TRACE=retain-on-failure (traces of passed tests were 93 % of the uploaded results);
+        // local runs record every trace, which the evidence-video captioner needs.
+        trace: process.env.PLAYWRIGHT_TRACE || 'on',
 
         react: true,  // Enables React component detection
 
