@@ -109,9 +109,7 @@ public class InvoiceProcessingServiceCompanyService
 
 		if (!invoiceIdsWithGeneratedFees.isEmpty())
 		{
-			final String documentNo = invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
-
-			throw new AdempiereException(MSG_INVOICE_HAS_SERVICE_INVOICE, documentNo);
+			throw new AdempiereException(MSG_INVOICE_HAS_SERVICE_INVOICE, getDocumentNo(invoiceId));
 		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
@@ -125,7 +123,7 @@ public class InvoiceProcessingServiceCompanyService
 		{
 			throw new AdempiereException(
 					MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
-					invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId),
+					getDocumentNo(invoiceId),
 					bpartnerBL.getBPartnerName(serviceCompanyBPartnerId),
 					bpartnerBL.getBPartnerName(customerId))
 					.markAsUserValidationError()
@@ -147,6 +145,11 @@ public class InvoiceProcessingServiceCompanyService
 				.feeAmountIncludingTax(feeAmountIncludingTax)
 				//
 				.build());
+	}
+
+	private String getDocumentNo(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
 	}
 
 	/**
