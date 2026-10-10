@@ -55,15 +55,61 @@ async function loginAsMetasfresh(page) {
  * row.
  */
 async function openSingleRecord(page, windowId) {
+  // The list *container* (`.document-list-wrapper`) mounts before its rows
+  // arrive: the row set is fetched by a separate REST call
+  // (GET /documentView/<win>/<viewId>?firstRow=...). Deciding empty-vs-populated
+  // from a DOM row count races that fetch — a row-bearing window (e.g. Product
+  // 140) can momentarily read 0 rows, wrongly take the empty-list ALT+N branch
+  // below, create a NEW draft that never persists to a numeric id, and hang the
+  // `waitForURL(/\d+\/\d+/)` that follows for the full timeout. So take the
+  // decision from that response's own payload — `size`/`result` on the
+  // JSONViewResult is the server's ground truth — rather than from a DOM read
+  // that may precede React's commit. The listener is armed BEFORE navigating so
+  // the response can never be missed. (networkidle is not usable here — the
+  // dashboard's STOMP/KPI traffic keeps the network permanently busy, per
+  // e2e/frontend-webui skill guidance.)
+  const rowDataResponse = page
+    .waitForResponse(
+      (resp) =>
+        resp.url().includes(`/documentView/${windowId}/`) &&
+        resp.url().includes('firstRow='),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    )
+    .catch(() => null);
+
   await page.goto(`/window/${windowId}`, { waitUntil: 'load' });
   await page
     .locator('.document-list-wrapper')
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-  const rows = page.locator('.table-flex-wrapper tbody tr');
-  const rowCount = await rows.count();
+  const resp = await rowDataResponse;
+  // Only trust a 2xx body as ground truth — a non-2xx error response can carry
+  // a JSON body (e.g. Spring's {timestamp,status,error,path}) that parses fine
+  // but has no `size`/`result`, which would otherwise be misread as a confirmed
+  // empty view (wrong ALT+N branch) instead of falling through to the DOM check.
+  const body = resp && resp.ok() ? await resp.json().catch(() => null) : null;
+  // true = has rows, false = empty, null = payload unreadable (fall back to DOM).
+  const serverHasRows = body
+    ? (typeof body.size === 'number' ? body.size : body.result?.length ?? 0) > 0
+    : null;
 
-  if (rowCount === 0) {
+  const rows = page.locator('.table-flex-wrapper tbody tr');
+  let createNewRecord;
+  if (serverHasRows === true) {
+    // Row-bearing window: wait for the fetched row to actually commit to the
+    // DOM before opening it — deterministic, no race with React's render.
+    await rows
+      .first()
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    createNewRecord = false;
+  } else if (serverHasRows === false) {
+    createNewRecord = true;
+  } else {
+    // Payload unreadable — best-effort DOM count after the fetch resolved.
+    createNewRecord = (await rows.count()) === 0;
+  }
+
+  if (createNewRecord) {
     // Create a new record — ALT+N navigates to `/window/<id>/NEW` and persists
     // it, ending up on `/window/<id>/<new-id>` with a Drafted document.
     await page.keyboard.press('Alt+n');
@@ -74,8 +120,18 @@ async function openSingleRecord(page, windowId) {
   await page.waitForURL(/\/window\/\d+\/\d+/, {
     timeout: SLOW_ACTION_TIMEOUT,
   });
+  // Wait for a rendered field of the document, not just the `.window-wrapper`
+  // shell. The shell mounts as soon as the route changes, but the document's
+  // layout and data arrive later through two REST calls (GET
+  // /window/<id>/layout, then GET /window/<id>/<docId>/). Until the data
+  // response is handled, the master `docId` is unset and the header wires no
+  // ALT+E handler (`handleOpenAdvancedEdit` is undefined without a `dataId`),
+  // so an ALT+E pressed in that gap is lost and `.panel-modal` never opens.
+  // `createWindow` dispatches the layout only after the data (and with it the
+  // `docId`), so a field inside `.sections-wrapper` proves the handler is
+  // wired.
   await page
-    .locator('.window-wrapper, .row-selected .form-group')
+    .locator('.window-wrapper .sections-wrapper .form-group')
     .first()
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   // Give React a beat to register shortcut handlers after navigation.
@@ -412,9 +468,14 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
 
     // --- Phase 3: Esc closes modal ---
     await page.keyboard.press('Escape');
+    // Closing the advanced-edit modal commits the focused field and can involve
+    // a document PATCH/refresh round-trip before the modal unmounts and its CSS
+    // transition completes; under CI load that exceeds the 5s FAST budget. The
+    // condition is correct — only the budget was too tight — so use the slow
+    // (server-round-trip) budget.
     await page
       .locator('.panel-modal')
-      .waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+      .waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
     await page.waitForTimeout(300);
 
     // --- Phase 4: Tab in main window (after modal close) ---
@@ -537,7 +598,9 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
       expect(info.isEditable).toBe(true);
 
       await page.keyboard.press('Escape');
-      await modal.waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+      // Same server-round-trip-gated close as Phase 3 of the round-trip test —
+      // use the slow budget so a CI-load-slow close does not flake at 5s.
+      await modal.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       await page.waitForTimeout(300);
     }
   });
