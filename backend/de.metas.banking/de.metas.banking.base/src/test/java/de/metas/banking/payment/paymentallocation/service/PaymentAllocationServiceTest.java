@@ -89,7 +89,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -631,6 +633,83 @@ public class PaymentAllocationServiceTest
 							assertThat(calculation.getServiceCompanyBPartnerId()).isEqualTo(feeCompanyId1);
 							assertThat(calculation.getCustomerId()).isEqualTo(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 						}));
+	}
+
+	/**
+	 * The service company's configs change over time; a remittance advice is processed today for a payment dated in the older config's period.
+	 * The customer's service company is resolved at the payment date, the same date at which the service fee calculation resolves the config.
+	 */
+	@Nested
+	class serviceCompanyConfigChangedAfterPaymentDate
+	{
+		private final ZonedDateTime today = LocalDate.parse("2026-10-10").atStartOfDay(ZoneId.of("UTC"));
+		private final LocalDate paymentDate = LocalDate.parse("2026-08-15");
+		private final ZonedDateTime newConfigValidFrom = LocalDate.parse("2026-09-01").atStartOfDay(ZoneId.of("UTC"));
+
+		@BeforeEach
+		void fixToday()
+		{
+			SystemTime.setFixedTimeSource(today);
+		}
+
+		@AfterEach
+		void resetToday()
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		private PaymentAllocationCriteria remittanceOfInvoiceOf(@NonNull final BPartnerId customerId)
+		{
+			final I_C_Payment payment = payment().payAmt(new BigDecimal(100)).build();
+			payment.setDateTrx(Timestamp.valueOf(paymentDate.atStartOfDay()));
+			saveRecord(payment);
+
+			final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
+			invoice.setC_BPartner_ID(customerId.getRepoId());
+			saveRecord(invoice);
+
+			final PaymentAllocationPayableItem payableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).serviceFeeAmt(new BigDecimal(10)).invoice(invoice).soTrx(SOTrx.SALES)
+					.paymentBPartnerId(feeCompanyId1)
+					.build();
+			return getPaymentAllocationCriteria(payment, Collections.singletonList(payableItem));
+		}
+
+		/**
+		 * The customer was assigned only in the newer config, i.e. not yet at the payment date: refused because the customer had no service company at the payment date.
+		 */
+		@Test
+		void customerAssignedOnlyAfterPaymentDate_refusedAsNoConfigForInvoicePartner()
+		{
+			final BPartnerId customerAddedLater = createBPartnerId();
+			processingServiceCompanyConfig().customerId(customerAddedLater).validFrom(newConfigValidFrom).feePercentageOfGrandTotal("1").serviceCompanyBPartnerId(feeCompanyId1).build();
+
+			assertThatThrownBy(() -> paymentAllocationService.allocatePaymentForRemittanceAdvise(remittanceOfInvoiceOf(customerAddedLater)))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner").toAD_Message());
+					});
+		}
+
+		/**
+		 * The customer was assigned at the payment date and dropped from the newer config: the service fee is allocated, as configured at the payment date.
+		 */
+		@Test
+		void customerDroppedAfterPaymentDate_serviceFeeAllocated()
+		{
+			final BPartnerId customerDroppedLater = createBPartnerId();
+			processingServiceCompanyConfig().customerId(customerDroppedLater).validFrom(LocalDate.parse("2026-01-01").atStartOfDay(ZoneId.of("UTC"))).feePercentageOfGrandTotal("1").serviceCompanyBPartnerId(feeCompanyId1).build();
+			processingServiceCompanyConfig().customerId(createBPartnerId()).validFrom(newConfigValidFrom).feePercentageOfGrandTotal("1").serviceCompanyBPartnerId(feeCompanyId1).build();
+
+			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(remittanceOfInvoiceOf(customerDroppedLater));
+
+			assertThat(paymentAllocationResult.getCandidates()).hasSize(2);
+			assertThat(paymentAllocationResult.getCandidates())
+					.anySatisfy(candidate -> assertThat(candidate.getInvoiceProcessingFeeCalculation()).isNotNull()
+							.satisfies(calculation -> {
+								assertThat(calculation.getServiceCompanyBPartnerId()).isEqualTo(feeCompanyId1);
+								assertThat(calculation.getCustomerId()).isEqualTo(customerDroppedLater);
+							}));
+		}
 	}
 
 	@Test

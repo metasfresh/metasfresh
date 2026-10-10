@@ -34,7 +34,6 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -62,7 +61,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -74,7 +72,6 @@ import java.util.Optional;
 public class PaymentAllocationService
 {
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
-	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
@@ -156,7 +153,7 @@ public class PaymentAllocationService
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
-				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate, paymentDocument.getDocumentNo()))
+				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
 				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx(), timeZone);
@@ -209,8 +206,7 @@ public class PaymentAllocationService
 
 	private PayableDocument toPayableDocument(
 			final PaymentAllocationPayableItem paymentAllocationPayableItem,
-			final ZonedDateTime paymentDate,
-			@Nullable final String paymentDocumentNo)
+			final ZonedDateTime paymentDate)
 	{
 		final Money openAmt = moneyService.toMoney(paymentAllocationPayableItem.getOpenAmt());
 		final Money payAmt = moneyService.toMoney(paymentAllocationPayableItem.getPayAmt());
@@ -223,9 +219,8 @@ public class PaymentAllocationService
 
 		if (serviceFeeAmt != null && !serviceFeeAmt.isZero())
 		{
-			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
-
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), evaluationDate)
+			// resolved at the payment date, like the config that createFeeCalculationForPayment resolves below
+			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), paymentDate)
 					.orElseThrow(() -> new AdempiereException(
 							MSG_NO_CONFIG_FOR_INVOICE_PARTNER,
 							paymentAllocationPayableItem.getDocumentNo(),
@@ -243,15 +238,8 @@ public class PaymentAllocationService
 									.feeAmountIncludingTax(serviceFeeAmt)
 									.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 									.build())
-					// same message and parameters as PaymentsViewAllocateCommand
-					.orElseThrow(() -> new AdempiereException(
-							MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
-							paymentAllocationPayableItem.getDocumentNo(),
-							paymentDocumentNo,
-							bpartnerBL.getBPartnerName(config.getServiceCompanyBPartnerId()))
-							.markAsUserValidationError()
-							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(paymentAllocationPayableItem.getInvoiceId()))
-							.setParameter("C_BPartner_ID", BPartnerId.toRepoId(config.getServiceCompanyBPartnerId())));
+					// never empty: it is empty only if the service company has no config at all, but config above is one of its configs
+					.get();
 		}
 		else
 		{

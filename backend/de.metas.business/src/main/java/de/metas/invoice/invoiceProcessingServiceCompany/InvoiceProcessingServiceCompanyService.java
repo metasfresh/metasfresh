@@ -128,8 +128,8 @@ public class InvoiceProcessingServiceCompanyService
 					bpartnerBL.getBPartnerName(customerId))
 					.markAsUserValidationError()
 					.setParameter("C_Invoice_ID", invoiceId.getRepoId())
-					.setParameter("ServiceCompany_BPartner_ID", serviceCompanyBPartnerId.getRepoId())
-					.setParameter("C_BPartner_ID", customerId.getRepoId());
+					.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
+					.setParameter("Customer_BPartner_ID", customerId.getRepoId());
 		}
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
