@@ -52,7 +52,7 @@ public class TransactionDtls4Wrapper extends TransactionDtlsWrapper
 	@Override
 	public String getAcctSvcrRef()
 	{
-		return entryDtls.getRefs().getAcctSvcrRef();
+		return entryDtls.getRefs() != null ? entryDtls.getRefs().getAcctSvcrRef() : null;
 	}
 
 	@Override
@@ -71,9 +71,8 @@ public class TransactionDtls4Wrapper extends TransactionDtlsWrapper
 	@Override
 	public String getCdtrNames()
 	{
-
 		final TransactionParties3 party = entryDtls.getRltdPties();
-		if (party != null && party.getDbtr() != null)
+		if (party != null && party.getCdtr() != null)
 		{
 			final PartyIdentification43 cdtr = party.getCdtr();
 			return cdtr.getNm();
