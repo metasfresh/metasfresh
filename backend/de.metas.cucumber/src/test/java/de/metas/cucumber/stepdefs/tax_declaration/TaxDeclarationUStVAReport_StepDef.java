@@ -106,7 +106,7 @@ import java.util.Set;
  * {@code AmountType} (DETAIL); {@code description}; {@code net_amt}; {@code tax_amt}; {@code balance_amt}; {@code amount};
  * {@code Record_ID} (identifier of the source document: C_Invoice / C_AllocationHdr; {@code -} = no source document found);
  * {@code posting_date}; {@code doc_date}; {@code C_BPartner_ID} (identifier; the partner name is compared); {@code bpartner_vatid};
- * HEADER only: {@code docstatus}, {@code is_correction}, {@code Original_ID} (identifier of the original declaration;
+ * HEADER only: {@code docstatus}, {@code is_correction}, {@code org_tax_id}, {@code org_vat_id}, {@code Original_ID} (identifier of the original declaration;
  * its document no. is expected in {@code original_documentno}, {@code -} = none).
  * Organisation name, tax number, VAT ID, accounting schema, period, document no. and currency of the HEADER are always asserted
  * against the values stored in the database for the declaration; {@code print_date} must be present.
@@ -227,10 +227,11 @@ public class TaxDeclarationUStVAReport_StepDef
 		softly.assertThat(h.getPrintDate()).as("%s: HEADER print_date", ctx).isNotNull();
 		softly.assertThat(h.getOrgName()).as("%s: HEADER org_name", ctx).isEqualTo(dbString(
 				"SELECT o.Name FROM C_TaxDeclaration td JOIN AD_Org o ON o.AD_Org_ID=td.AD_Org_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
+		// tax number and VAT ID come only from the organisation's business partner (C_BPartner.AD_OrgBP_ID)
 		softly.assertThat(h.getOrgTaxId()).as("%s: HEADER org_tax_id", ctx).isEqualTo(dbString(
-				"SELECT oi.TaxID FROM C_TaxDeclaration td JOIN AD_OrgInfo oi ON oi.AD_Org_ID=td.AD_Org_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
+				"SELECT bp.TaxID FROM C_TaxDeclaration td JOIN C_BPartner bp ON bp.AD_OrgBP_ID=td.AD_Org_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
 		softly.assertThat(h.getOrgVatId()).as("%s: HEADER org_vat_id", ctx).isEqualTo(dbString(
-				"SELECT bp.VATaxID FROM C_TaxDeclaration td JOIN AD_OrgInfo oi ON oi.AD_Org_ID=td.AD_Org_ID JOIN C_BPartner bp ON bp.C_BPartner_ID=oi.Org_BPartner_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
+				"SELECT bp.VATaxID FROM C_TaxDeclaration td JOIN C_BPartner bp ON bp.AD_OrgBP_ID=td.AD_Org_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
 		softly.assertThat(h.getAcctSchemaName()).as("%s: HEADER acctschema_name", ctx).isEqualTo(dbString(
 				"SELECT s.Name FROM C_TaxDeclaration td JOIN C_AcctSchema s ON s.C_AcctSchema_ID=td.C_AcctSchema_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
 		softly.assertThat(h.getPeriodFrom()).as("%s: HEADER period_from", ctx).isEqualTo(dbString(
@@ -395,6 +396,8 @@ public class TaxDeclarationUStVAReport_StepDef
 		}
 		if (!matchText(expected, "docstatus", actual.getDocStatus())
 				|| !matchText(expected, "is_correction", actual.getIsCorrection())
+				|| !matchText(expected, "org_tax_id", actual.getOrgTaxId())
+				|| !matchText(expected, "org_vat_id", actual.getOrgVatId())
 				|| !matchText(expected, "bpartner_vatid", actual.getBpartnerVatId())
 				|| !matchText(expected, "posting_date", actual.getPostingDate())
 				|| !matchText(expected, "doc_date", actual.getDocDate()))

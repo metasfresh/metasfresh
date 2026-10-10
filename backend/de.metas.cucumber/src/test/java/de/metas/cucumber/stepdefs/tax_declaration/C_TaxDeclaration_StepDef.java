@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Services;
@@ -62,6 +63,7 @@ public class C_TaxDeclaration_StepDef
 {
 	@NonNull private final C_TaxDeclaration_StepDefData taxDeclarationTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final TaxDeclarationService taxDeclarationService = SpringContextHolder.instance.getBean(TaxDeclarationService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -117,7 +119,10 @@ public class C_TaxDeclaration_StepDef
 				.firstOnlyNotNull(I_C_Period.class);
 
 		final I_C_TaxDeclaration decl = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
-		decl.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		decl.setAD_Org_ID(row.getAsOptionalIdentifier(I_C_TaxDeclaration.COLUMNNAME_AD_Org_ID)
+				.map(orgTable::getId)
+				.orElse(StepDefConstants.ORG_ID)
+				.getRepoId());
 		decl.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
 		decl.setC_Period_ID(period.getC_Period_ID());
 		decl.setDateAcct(TimeUtil.asTimestamp(period.getEndDate()));

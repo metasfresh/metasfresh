@@ -127,9 +127,9 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | p100         | 100.00   | PCE      | taxCategory      |
-      | salesPLV               | p1000        | 1000.00  | PCE      | taxCategory      |
-      | purchasePLV            | p8655        | 86.55    | PCE      | taxCategory      |
-      | purchasePLV            | p200         | 200.00   | PCE      | taxCategory      |
+      | salesPLV               | p1000        | 1000.00  | PCE      | taxCategory2     |
+      | purchasePLV            | p8655        | 86.55    | PCE      | taxCategory3     |
+      | purchasePLV            | p200         | 200.00   | PCE      | taxCategory4     |
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | inv81      | customer      | 2024-01-15   | true    | EUR           |
@@ -186,12 +186,14 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | Identifier |
       | p100       |
       | p2099      |
+      | p2099b     |
       | p50        |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | p100         | 100.00   | PCE      | taxCategory      |
       | salesPLV               | p2099        | 20.99    | PCE      | taxCategory      |
-      | salesPLV               | p50          | 50.00    | PCE      | taxCategory      |
+      | salesPLV               | p2099b       | 20.99    | PCE      | taxCategory2     |
+      | salesPLV               | p50          | 50.00    | PCE      | taxCategory3     |
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | invA       | customer      | 2024-01-15   | true    | EUR           |
@@ -205,7 +207,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | invAL1     | invA         | p100         | 1 PCE       | taxA     |
       | credAL1    | credA        | p2099        | 1 PCE       | taxA     |
-      | credBL1    | credB        | p2099        | 1 PCE       | taxB     |
+      | credBL1    | credB        | p2099b       | 1 PCE       | taxB     |
       | invCL1     | invC         | p50          | 1 PCE       | taxC     |
       | credCL1    | credC        | p50          | 1 PCE       | taxC     |
     And the invoice identified by invA is completed
@@ -588,7 +590,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | p20          | 20.00    | PCE      | taxCategory      |
-      | purchasePLV            | p8655        | 86.55    | PCE      | taxCategory      |
+      | purchasePLV            | p8655        | 86.55    | PCE      | taxCategory2     |
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | invS       | customer      | 2024-01-15   | true    | EUR           |
@@ -611,3 +613,25 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | SUMMARY      | v66T          | -       | 16.44   |             |
       | SUMMARY      | v81N          | 20      | 3.80    |             |
       | BALANCE      |               |         |         | -12.64      |
+
+
+# ############################################################################################################################################
+# Header: tax number and VAT ID come only from the organisation's business partner
+# ############################################################################################################################################
+  @Id:S32216_UStVA_120
+  @from:cucumber
+  Scenario: the header shows the tax number and the VAT ID of the organisation's business partner
+
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Value      | Name            |
+      | ustvaOrg             | USTVAORG   | UStVA Test Org  |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | ustvaOrgBP | 21/815/08150 | DE136695976 | ustvaOrg               |
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       | AD_Org_ID.Identifier |
+      | td         | acctSchema      | 2024-01-15 | ustvaOrg             |
+
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | org_tax_id   | org_vat_id  |
+      | HEADER       | 21/815/08150 | DE136695976 |
