@@ -382,6 +382,43 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | SUMMARY      | vMixSales     | -       | -190.00 |             |
       | BALANCE      |               |         |         | 190.00      |
 
+  @Id:S32216_UStVA_065
+  @from:cucumber
+  Scenario: a VAT code with a sales row and a row for both sides prints the declared debit minus credit
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+      | tax7       | taxCategory2     | 7    | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType | SameVATCodeAs |
+      | vSalesOnly | tax19    | Y       | T          |               |
+      | vBothSides | tax7     |         | T          | vSalesOnly    |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p1000      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | p1000        | 1000.00  | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv        | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invL1      | inv          | p1000        | 1 PCE       | tax19    |
+    And the invoice identified by inv is completed
+    And Wait until documents inv is posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    # the row without IsSOTrx is not a sales row, so the code is not sales-only: no sign flip, -190.00; balance = +190.00
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
+      | SUMMARY      | vSalesOnly    | -       | -190.00 |             |
+      | BALANCE      |               |         |         | 190.00      |
+
 
 # ############################################################################################################################################
 # Frozen snapshot: a completed declaration prints the same after new postings and a repost
@@ -640,3 +677,71 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     Then the UStVA report for tax declaration "td" returns:
       | report_level | org_tax_id   | org_vat_id  |
       | HEADER       | 21/815/08150 | DE136695976 |
+
+  @Id:S32216_UStVA_125
+  @from:cucumber
+  Scenario: a deactivated former business partner of the organisation is ignored in the header
+
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Value     | Name             |
+      | ustvaOrg2            | USTVAORG2 | UStVA Test Org 2 |
+    # only one active partner may be linked to an organisation (unique index), so the former one is deactivated first
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | Value         | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | formerOrgBP  | USTVAFORMERBP | 99/999/99999 | DE999999999 | ustvaOrg2              |
+    And update C_BPartner:
+      | Identifier  | IsActive |
+      | formerOrgBP | N        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | Value         | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | currentOrgBP | USTVACURRBP   | 21/815/08151 | DE136695977 | ustvaOrg2              |
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       | AD_Org_ID.Identifier |
+      | td         | acctSchema      | 2024-01-15 | ustvaOrg2            |
+
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | org_tax_id   | org_vat_id  |
+      | HEADER       | 21/815/08151 | DE136695977 |
+
+# ############################################################################################################################################
+# Source documents: an SAP GL journal (Hauptbuchjournal) tax booking
+# ############################################################################################################################################
+  @Id:S32216_UStVA_130
+  @from:cucumber
+  Scenario: an SAP GL journal tax booking shows its document no., dates and business partner in the detail
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19p     | taxCategory      | 19   | DE                       | DE                        |
+    # an SAP GL journal is accounted as a purchase document (no IsSOTrx column), so its tax line matches the purchase-side code
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | v66T       | tax19p   | N       | T          |
+    And metasfresh contains C_ElementValues:
+      | Identifier |
+      | sgjCounter |
+
+    # input tax booked by hand: debit the tax's input tax account (tax line), credit a counter account
+    And metasfresh contains SAP_GLJournal:
+      | Identifier | DateDoc    | DateAcct   | C_Currency_ID |
+      | sgj        | 2024-01-10 | 2024-01-12 | EUR           |
+    And metasfresh contains SAP_GLJournalLines:
+      | SAP_GLJournal_ID | PostingSign | Amount | Account_ID | C_Tax_ID | SAP_DetermineTaxBase | C_BPartner_ID |
+      | sgj              | D           | 19.00  |            | tax19p   | Y                    | vendor        |
+      | sgj              | C           | 19.00  | sgjCounter |          |                      |               |
+    And the SAP GL journal "sgj" is completed
+    And Wait until documents sgj is posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    # tax line: debit 19.00; v66T is not a sales-only code, so no sign flip: tax 19.00; balance = -19.00 (refund)
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
+      | SUMMARY      | v66T          | -       | 19.00   |             |
+      | BALANCE      |               |         |         | -19.00      |
+    # posting date = DateAcct, document date = DateDoc of the journal; the partner comes from the journal line
+    And the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID |
+      | DETAIL       | v66T          | T          | sgj       | 19.00  | 2024-01-12   | 2024-01-10 | vendor        |

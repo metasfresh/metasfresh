@@ -58,13 +58,14 @@ lines AS (
     WHERE l.isactive = 'Y'
       AND l.amount <> 0
 ),
--- display sign: -1 when every active C_VAT_Code row of the code + amount type on the schema is a sales code
+-- display sign: -1 when every active C_VAT_Code row of the code + amount type on the schema is a sales code;
+-- a row without IsSOTrx applies to both sides, so it is not a sales row
 signed AS (
     SELECT l.vatcode,
            l.amounttype,
            l.declared_amt,
            CASE
-               WHEN COALESCE((SELECT bool_and(v.issotrx = 'Y')
+               WHEN COALESCE((SELECT bool_and(COALESCE(v.issotrx, 'N') = 'Y')
                               FROM c_vat_code v
                               WHERE v.c_acctschema_id = td.c_acctschema_id
                                 AND v.vatcode = l.vatcode
@@ -104,9 +105,8 @@ header AS (
            NULL::numeric                                       AS amount
     FROM td
              JOIN ad_org o ON o.ad_org_id = td.ad_org_id
-             LEFT JOIN ad_orginfo oi ON oi.ad_org_id = td.ad_org_id
-             LEFT JOIN c_bpartner orgbp_oi ON orgbp_oi.c_bpartner_id = oi.org_bpartner_id
-             LEFT JOIN c_bpartner orgbp_link ON orgbp_link.ad_orgbp_id = td.ad_org_id
+             -- the organisation's business partner; a unique index allows at most one active one per organisation
+             LEFT JOIN c_bpartner orgbp_link ON orgbp_link.ad_orgbp_id = td.ad_org_id AND orgbp_link.isactive = 'Y'
              JOIN c_acctschema s ON s.c_acctschema_id = td.c_acctschema_id
              LEFT JOIN c_currency cur ON cur.c_currency_id = s.c_currency_id
              LEFT JOIN c_period p ON p.c_period_id = td.c_period_id
@@ -172,6 +172,15 @@ detail AS (
                  LEFT JOIN c_currency c ON c.c_currency_id = h.c_currency_id
         WHERE a.ad_table_id = (SELECT t.ad_table_id FROM ad_table t WHERE t.tablename = 'C_AllocationHdr')
           AND h.c_allocationhdr_id = a.record_id
+        UNION ALL
+        SELECT sj.documentno::varchar, sj.dateacct::date, sj.datedoc::date,
+               bp.name::varchar, bp.vataxid::varchar, c.iso_code::varchar
+        FROM sap_gljournal sj
+                 LEFT JOIN sap_gljournalline sjl ON sjl.sap_gljournalline_id = a.line_id
+                 LEFT JOIN c_bpartner bp ON bp.c_bpartner_id = sjl.c_bpartner_id
+                 LEFT JOIN c_currency c ON c.c_currency_id = sj.c_currency_id
+        WHERE a.ad_table_id = (SELECT t.ad_table_id FROM ad_table t WHERE t.tablename = 'SAP_GLJournal')
+          AND sj.sap_gljournal_id = a.record_id
         ) doc ON TRUE
     WHERE a.isactive = 'Y'
       AND a.amount <> 0

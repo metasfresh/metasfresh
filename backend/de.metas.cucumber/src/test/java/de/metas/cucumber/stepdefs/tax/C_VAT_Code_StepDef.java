@@ -62,11 +62,12 @@ public class C_VAT_Code_StepDef
 	 * <ul>
 	 *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
 	 *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
-	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code</li>
 	 * </ul>
 	 *
 	 * <p><b>Optional columns</b>:
 	 * <ul>
+	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code;
+	 *         left empty, the code applies to both sides ({@code C_VAT_Code.IsSOTrx} is NULL)</li>
 	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
 	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
 	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
@@ -105,7 +106,8 @@ public class C_VAT_Code_StepDef
 	{
 		final Tax tax = taxTable.get(row.getAsIdentifier("C_Tax_ID"));
 		final TaxId taxId = tax.getTaxId();
-		final boolean isSOTrx = row.getAsBoolean("IsSOTrx");
+		// empty IsSOTrx => the code applies to both the sales and the purchase side
+		final Boolean isSOTrx = row.getAsOptionalBoolean("IsSOTrx").toBooleanOrNull();
 		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(StepDefConstants.CLIENT_ID);
 
 		// C_VAT_Code.VATCode is VARCHAR(10) — any longer value is silently truncated by the PO
