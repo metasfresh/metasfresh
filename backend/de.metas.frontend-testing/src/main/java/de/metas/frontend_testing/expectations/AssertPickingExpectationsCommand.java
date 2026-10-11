@@ -84,6 +84,13 @@ class AssertPickingExpectationsCommand
 	 * flags the shipment schedules for recompute. Until it commits, the shipment schedules have no recompute record, so
 	 * {@link #waitShipmentSchedulesValid(Set)} would return at once and the schedules would be asserted with their pre-shipment values.
 	 * So when the expectation says the qty-picked records are processed, wait for that first.
+	 * <p>
+	 * Only qty-picked expectations with {@code processed: true} drive this wait; an expectation without a {@code qtyPicked} list
+	 * gets no shipment wait here. A product without shipment schedules, or whose qty-picked record count differs from the expected one,
+	 * is skipped, because {@link #assertShipmentSchedules(Map, Collection)} and {@link #assertQtyPickedList(List, List, ImmutableMap)} report it.
+	 * The schedules loaded here are used only to map products to schedule IDs; the asserted values are loaded after this wait.
+	 *
+	 * @throws AdempiereException if the expected qty-picked records are not processed within {@link #DEFAULT_TIMEOUT}
 	 */
 	private void waitExpectedQtyPickedProcessed(
 			@NonNull final Map<String, JsonShipmentScheduleExpectation> expectations,
