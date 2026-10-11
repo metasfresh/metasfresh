@@ -141,42 +141,52 @@ export class AddressWidget {
 
       // Fill country (C_Country_ID is the column name)
       if (country) {
-        const countryInput = container.locator('#lookup_C_Country_ID input').first();
-        if ((await countryInput.count()) > 0) {
-          await countryInput.click();
-          await page.waitForTimeout(300);
-          await countryInput.fill(country);
-          await page.waitForTimeout(500);
-          // Select from dropdown using data-testid pattern
-          const option = page.locator('[data-testid^="option-"]').filter({ hasText: country }).first();
-          if ((await option.count()) > 0) {
-            await option.click();
-            await page.waitForTimeout(WidgetCommon.DEBOUNCE_DELAY);
-          }
-        }
+        await this.selectLookupOption(container, 'C_Country_ID', country);
       }
 
       // Fill region/state if provided (C_Region_ID is the column name)
       if (region) {
-        const regionInput = container.locator('#lookup_C_Region_ID input').first();
-        if ((await regionInput.count()) > 0) {
-          await regionInput.click();
-          await page.waitForTimeout(300);
-          await regionInput.fill(region);
-          await page.waitForTimeout(500);
-          // Select from dropdown
-          const option = page.locator('[data-testid^="option-"]').filter({ hasText: region }).first();
-          if ((await option.count()) > 0) {
-            await option.click();
-            await page.waitForTimeout(WidgetCommon.DEBOUNCE_DELAY);
-          }
-        }
+        await this.selectLookupOption(container, 'C_Region_ID', region);
       }
 
-      // Click elsewhere to close the editor and trigger save
+      // Click elsewhere: the editor then completes the address and PATCHes the resulting location into the
+      // record's field. Wait for that PATCH. If a mandatory address field (e.g. the country) is still empty,
+      // the editor asks "Do you really want to leave?" instead, nothing is saved, and this wait fails.
+      const addressSaved = page.waitForResponse((response) => isPatchOfField(response, fieldName), {
+        timeout: WidgetCommon.WIDGET_TIMEOUT,
+      });
       await page.locator('body').click({ position: { x: 10, y: 10 } });
-      await WidgetCommon.waitForSaveComplete();
+      const response = await addressSaved;
+      if (!response.ok()) {
+        throw new Error(`Saving ${fieldName} failed: HTTP ${response.status()}`);
+      }
     });
+  }
+
+  /**
+   * Type into a lookup of the inline address editor and pick the matching option.
+   * The options are only rendered once the typeahead request has answered, so this waits for the option
+   * and fails if it never shows up, instead of silently leaving the field empty. Resolves once the
+   * selection has been sent to the backend.
+   *
+   * @param {import('@playwright/test').Locator} container - the address field container
+   * @param {string} lookupFieldName - column name of the lookup inside the editor (e.g. 'C_Country_ID')
+   * @param {string} text - text to type; the option containing it is picked
+   */
+  static async selectLookupOption(container, lookupFieldName, text) {
+    const page = getPage();
+    const input = container.locator(`#lookup_${lookupFieldName} input`).first();
+    await input.click();
+    await input.fill(text);
+
+    const option = page.locator('[data-testid^="option-"]').filter({ hasText: text }).first();
+    await option.waitFor({ state: 'visible', timeout: WidgetCommon.WIDGET_TIMEOUT });
+
+    const selectionSent = page.waitForResponse((response) => isPatchOfField(response, lookupFieldName), {
+      timeout: WidgetCommon.WIDGET_TIMEOUT,
+    });
+    await option.click();
+    await selectionSent;
   }
 
   /**
@@ -233,4 +243,17 @@ export class AddressWidget {
     const value = await this.getValue(fieldName);
     return !value || value === 'none' || value.trim() === '' || value === 'Edit' || value === '---';
   }
+}
+
+/**
+ * True for the WebUI's PATCH of the given field: the address editor PATCHes /address/<id> for each of its own
+ * fields, and the window PATCHes the record when the address is completed; both send [{ op, path, value }].
+ */
+function isPatchOfField(response, fieldName) {
+  const request = response.request();
+  if (request.method() !== 'PATCH') {
+    return false;
+  }
+  const body = request.postDataJSON();
+  return Array.isArray(body) && body.some((change) => change.path === fieldName);
 }
