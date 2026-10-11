@@ -13,4 +13,7 @@ RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
 COPY docker-builds/db/init/ /docker-entrypoint-initdb.d/
 
 # COPY docker-builds/db/metasfresh_latest.pgdump .
-ADD --chown=postgres https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_172_gh24566.pgdump metasfresh.pgdump
+# The seed: a pg_dump of a green cicd run's preloaded DB of THIS branch, built by .github/workflows/db-seed.yaml.
+# cicd (step check-db-seed) fails if its commit is not in the history of the commit being built.
+# Refresh it from time to time (run db-seed, then update this tag): the older the seed, the more scripts each build applies.
+COPY --from=metasfresh/metas-db:5.175-new-dawn-uat.45675-seed --chown=postgres /metasfresh.pgdump metasfresh.pgdump

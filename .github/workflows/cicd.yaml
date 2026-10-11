@@ -759,6 +759,11 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: check-db-seed
+        # the DB seed restored by Dockerfile.db-init must come from this commit's own history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/check-db-seed.sh docker-builds/Dockerfile.db-init "${GITHUB_SHA}"
       - name: build-db-init
         run: |
           docker buildx build \
