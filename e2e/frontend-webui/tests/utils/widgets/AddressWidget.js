@@ -155,6 +155,7 @@ export class AddressWidget {
       const addressSaved = page.waitForResponse((response) => isPatchOfField(response, fieldName), {
         timeout: WidgetCommon.WIDGET_TIMEOUT,
       });
+      addressSaved.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
       await page.locator('body').click({ position: { x: 10, y: 10 } });
       const response = await addressSaved;
       if (!response.ok()) {
@@ -185,6 +186,7 @@ export class AddressWidget {
     const selectionSent = page.waitForResponse((response) => isPatchOfField(response, lookupFieldName), {
       timeout: WidgetCommon.WIDGET_TIMEOUT,
     });
+    selectionSent.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
     await option.click();
     await selectionSent;
   }
@@ -254,6 +256,11 @@ function isPatchOfField(response, fieldName) {
   if (request.method() !== 'PATCH') {
     return false;
   }
-  const body = request.postDataJSON();
+  let body;
+  try {
+    body = request.postDataJSON();
+  } catch {
+    return false; // not a JSON body, so not a field PATCH
+  }
   return Array.isArray(body) && body.some((change) => change.path === fieldName);
 }
