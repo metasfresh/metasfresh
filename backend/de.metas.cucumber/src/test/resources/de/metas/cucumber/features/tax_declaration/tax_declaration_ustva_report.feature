@@ -688,7 +688,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # only one active partner may be linked to an organisation (unique index), so the former one is deactivated first
     And metasfresh contains C_BPartners without locations:
       | Identifier   | Value         | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
-      | formerOrgBP  | USTVAFORMERBP | 99/999/99999 | DE999999999 | ustvaOrg2              |
+      | formerOrgBP  | USTVAFORMERBP | 99/999/99999 | DE999999995 | ustvaOrg2              |
     And update C_BPartner:
       | Identifier  | IsActive |
       | formerOrgBP | N        |
