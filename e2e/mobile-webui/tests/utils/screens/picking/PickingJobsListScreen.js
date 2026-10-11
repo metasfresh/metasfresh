@@ -6,6 +6,7 @@ import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
+import { captionHasField } from '../../launcherCaption';
 import { MassPrintingScanScreen } from './MassPrintingScanScreen';
 // Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen), shared
 // with the distribution job-start helper. Small attempt count with explicit per-step timeouts so the
@@ -217,7 +218,8 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDe
     let locator = page.locator(selector);
 
     if (documentNo != null) {
-        locator = locator.filter({ hasText: documentNo })
+        // documentNo as a whole caption field, never a substring of another launcher's caption - see launcherCaption.js
+        locator = locator.filter({ hasText: captionHasField(documentNo) });
     }
 
     if (index != null) {
