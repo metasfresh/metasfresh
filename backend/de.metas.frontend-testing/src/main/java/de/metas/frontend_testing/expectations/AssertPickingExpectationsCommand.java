@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.frontend_testing.expectations.request.JsonPickingExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
@@ -69,10 +70,51 @@ class AssertPickingExpectationsCommand
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
 			final Set<ShipmentScheduleId> shipmentScheduleIdSet = pickingJob.getScheduleIds().getShipmentScheduleIds();
+			waitExpectedQtyPickedProcessed(pickingExpectation.getShipmentSchedules(), shipmentScheduleIdSet);
 			waitShipmentSchedulesValid(shipmentScheduleIdSet);
 
 			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(shipmentScheduleIdSet);
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
+		}
+	}
+
+	/**
+	 * Completing a picking job only enqueues the shipment generation ({@code PickingShipmentService} uses {@code waitForShipments(false)}).
+	 * That async workpackage is what marks the qty-picked records and the picking job schedules as processed, and in the same transaction
+	 * flags the shipment schedules for recompute. Until it commits, the shipment schedules have no recompute record, so
+	 * {@link #waitShipmentSchedulesValid(Set)} would return at once and the schedules would be asserted with their pre-shipment values.
+	 * So when the expectation says the qty-picked records are processed, wait for that first.
+	 */
+	private void waitExpectedQtyPickedProcessed(
+			@NonNull final Map<String, JsonShipmentScheduleExpectation> expectations,
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		final ArrayListMultimap<ProductId, I_M_ShipmentSchedule> shipmentSchedulesByProductId = indexByProductId(services.getShipmentSchedulesByIds(shipmentScheduleIds));
+		for (final Map.Entry<String, JsonShipmentScheduleExpectation> expectationEntry : expectations.entrySet())
+		{
+			final List<JsonShipmentScheduleQtyPickedExpectation> qtyPickedExpectations = expectationEntry.getValue().getQtyPicked();
+			if (qtyPickedExpectations == null)
+			{
+				continue;
+			}
+
+			final ProductId productId = context.getId(Identifier.ofString(expectationEntry.getKey()), ProductId.class);
+			final Set<ShipmentScheduleId> productShipmentScheduleIds = shipmentSchedulesByProductId.get(productId)
+					.stream()
+					.map(shipmentSchedule -> ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productShipmentScheduleIds.isEmpty())
+			{
+				continue; // reported by assertShipmentSchedules
+			}
+
+			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(productShipmentScheduleIds);
+			if (qtyPickedRecords.size() != qtyPickedExpectations.size())
+			{
+				continue; // reported by assertQtyPickedList
+			}
+
+			waitQtyPickedListProcessed(qtyPickedExpectations, qtyPickedRecords);
 		}
 	}
 
