@@ -60,10 +60,17 @@ function endpointFieldPatch(page, fieldName) {
  * server has answered it.
  *
  * No field is entered until the one before it has been answered, so every field's PATCH is asserted
- * on its own. The wait stops at the response, not at the form having merged it. A response still
- * being applied while the next field is typed into can no longer pull the caret back into a dropdown
- * once that field is clicked into first (see {@link fillFieldLocator}) - the one way such a late
- * response was observed to lose a typed value.
+ * on its own.
+ *
+ * It deliberately stops at the response and does NOT also wait for the answer to be merged into the
+ * form. The save bar's colour cannot express that — `indicator` reads `error` for as long as a
+ * persisted document is invalid, which a half-filled form is — and the only DOM signal that could
+ * was a `data-save-state` attribute on the indicator, i.e. a test affordance in production frontend
+ * code. That area carries too much regression risk to take a change for a test's convenience, so the
+ * affordance was dropped. The residual gap is narrow: Playwright auto-waits for actionability before
+ * the next field's interaction, and every caller's next act is such an interaction. The one way a
+ * response still being applied was observed to lose a typed value — a List dropdown pulling the caret
+ * back — is closed by clicking into each field before typing (see {@link fillFieldLocator}).
  */
 async function commitField(page, fieldName, commit) {
   const patched = endpointFieldPatch(page, fieldName);
