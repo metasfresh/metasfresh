@@ -1,0 +1,89 @@
+# Builds the DB seed that docker-builds/Dockerfile.db-init restores, from a green preloaded DB image of the same branch.
+#
+# The seed is a pg_dump of metasfresh/metas-db:<tag>-preloaded (the migrations of that run already applied),
+# shipped as metasfresh/metas-db:<tag>-seed: a scratch image holding /metasfresh.pgdump, labelled with the
+# commit it was built from (org.opencontainers.image.revision), so cicd can check that this commit is an ancestor
+# of the commit being built and a seed is never ahead of the branch that restores it (that check comes with the
+# Dockerfile.db-init change).
+# Run it with the id of a successful cicd push run on the branch whose seed is refreshed (e.g. new_dawn_uat or
+# soft_panda_hotfix), then point THAT branch's Dockerfile.db-init at the printed -seed tag in a PR. Each branch
+# has its own seed; the ancestor check rejects one built from another branch's history.
+
+name: db-seed
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: "id of a successful cicd push run on the branch to seed (from its URL .../actions/runs/<id>)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  seed:
+    if: ${{ github.repository == 'metasfresh/metasfresh' }}
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    steps:
+      - name: resolve the source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run-id }}
+          BRANCH_MAP: ${{ vars.CICD_BRANCH_MAP }}
+        run: |
+          [[ "${RUN_ID}" =~ ^[0-9]{1,20}$ ]] || { echo "::error::run-id must be a number, got '${RUN_ID}'"; exit 1; }
+          run_info=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" \
+            --jq '[.path, .head_branch, .event, (.conclusion // "none"), .head_sha, .run_number] | map(tostring) | join(" ")') \
+            || { echo "::error::cannot read run ${RUN_ID}"; exit 1; }
+          read -r workflow branch event conclusion sha run_number <<< "${run_info}"
+          if [ "${workflow}" != ".github/workflows/cicd.yaml" ] || [ "${event}" != "push" ] || [ "${conclusion}" != "success" ]; then
+            echo "::error::run ${RUN_ID} is not a successful cicd push run (${workflow}, ${branch}, ${event}, ${conclusion})"
+            exit 1
+          fi
+          # base branches only (the list cicd's base-refname step uses)
+          bases=$(echo "${BRANCH_MAP}" | grep -oE '"[^"]+"' | tr -d '"' || true)
+          grep -qxF "${branch}" <<< "${bases}" || { echo "::error::${branch} is not a base branch (vars.CICD_BRANCH_MAP)"; exit 1; }
+          # the image tag exactly as cicd's init job builds it (step sanitize-ref-name, output tag-fixed)
+          refname=$(echo "${branch}" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')
+          version=$(gh api "repos/${GITHUB_REPOSITORY}/contents/docker-builds/version.info?ref=${sha}" --jq '.content' | base64 -d | tr -d '[:space:]')
+          tag="${version}-${refname}.${run_number}"
+          echo "source run ${RUN_ID}: branch ${branch}, commit ${sha}, image tag ${tag}"
+          {
+            echo "SOURCE_SHA=${sha}"
+            echo "SOURCE_IMAGE=metasfresh/metas-db:${tag}-preloaded"
+            echo "SEED_IMAGE=metasfresh/metas-db:${tag}-seed"
+          } >> "$GITHUB_ENV"
+
+      - uses: docker/login-action@v4
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+
+      - name: dump the preloaded DB
+        run: |
+          docker run -d --name seed-source "${SOURCE_IMAGE}"
+          for i in $(seq 1 120); do
+            docker exec seed-source pg_isready -q -U postgres -d metasfresh && break
+            sleep 5
+          done
+          docker exec seed-source pg_isready -U postgres -d metasfresh || { docker logs seed-source; echo "::error::the preloaded DB did not become ready"; exit 1; }
+          echo "DBVersion: $(docker exec -u postgres seed-source psql -d metasfresh -tAc 'select DBVersion from AD_System')"
+          echo "migration scripts: $(docker exec -u postgres seed-source psql -d metasfresh -tAc 'select count(*) from AD_MigrationScript')"
+          docker exec -u postgres seed-source pg_dump -Fc -d metasfresh -f /tmp/metasfresh.pgdump
+          docker cp seed-source:/tmp/metasfresh.pgdump metasfresh.pgdump
+          docker rm -f seed-source
+          ls -l metasfresh.pgdump
+
+      - name: build and push the seed image
+        run: |
+          printf 'FROM scratch\nCOPY metasfresh.pgdump /metasfresh.pgdump\n' > Dockerfile.seed
+          docker build --file Dockerfile.seed --label "org.opencontainers.image.revision=${SOURCE_SHA}" --tag "${SEED_IMAGE}" .
+          docker push "${SEED_IMAGE}"
+          {
+            echo "#### seed image"
+            echo "* \`${SEED_IMAGE}\` from \`${SOURCE_IMAGE}\` (commit ${SOURCE_SHA})"
+            echo "* in docker-builds/Dockerfile.db-init: \`COPY --from=${SEED_IMAGE} --chown=postgres /metasfresh.pgdump metasfresh.pgdump\`"
+          } >> "$GITHUB_STEP_SUMMARY"
