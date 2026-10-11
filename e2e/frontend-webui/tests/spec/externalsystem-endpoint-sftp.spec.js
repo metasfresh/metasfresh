@@ -36,23 +36,34 @@ async function selectListValue(page, fieldName, optionText) {
 }
 
 /**
+ * Click into `field` the way a user does, then type `value` into it.
+ *
+ * The click is what tells a previously used dropdown that it lost the focus: a List widget learns
+ * that only from a click outside it (or Tab), and until then it re-focuses itself whenever it
+ * re-renders - which every PATCH response makes it do. `fill()` alone moves the caret without any
+ * such event, so a response landing between its focus step and its typing pulled the caret back
+ * into the dropdown and the text went nowhere; the field was then never sent, so the save was
+ * rejected for a missing mandatory field, or an optional field read back empty.
+ */
+async function typeIntoField(page, field, value) {
+  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await field.click();
+  await field.fill(value);
+  await page.waitForTimeout(300);
+}
+
+/**
  * Fill a text input field by column name using the form-field CSS class pattern.
  */
 async function fillTextField(page, fieldName, value) {
-  const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
-  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await field.fill(value);
-  await page.waitForTimeout(300);
+  await typeIntoField(page, page.locator(`.form-field-${fieldName} input[type="text"]`), value);
 }
 
 /**
  * Fill a numeric input field by column name.
  */
 async function fillNumericField(page, fieldName, value) {
-  const field = page.locator(`.form-field-${fieldName} input`);
-  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await field.fill(value);
-  await page.waitForTimeout(300);
+  await typeIntoField(page, page.locator(`.form-field-${fieldName} input`), value);
 }
 
 test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
@@ -218,9 +229,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
 
     // Fill password (mandatory when SFTP + SftpAuthType=PASSWORD)
     const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
-    await passwordField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await passwordField.fill('secret123');
-    await page.waitForTimeout(300);
+    await typeIntoField(page, passwordField, 'secret123');
 
     // Fill remote path (mandatory when SFTP)
     await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
@@ -341,9 +350,7 @@ OAuthTokenUrl is accepted and the record persists).
     await fillTextField(page, 'ClientId', 'docuware.platform.net.client');
     await fillTextField(page, 'LoginUsername', 'svc-user');
     const pwd = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
-    await pwd.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await pwd.fill('svc-secret');
-    await page.waitForTimeout(300);
+    await typeIntoField(page, pwd, 'svc-secret');
 
     // Tab out to trigger save
     await page.keyboard.press('Tab');
