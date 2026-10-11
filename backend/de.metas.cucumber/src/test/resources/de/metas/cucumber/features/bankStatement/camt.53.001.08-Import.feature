@@ -1307,10 +1307,11 @@ Feature: import bank statement in camt.53.001.08 import format
 
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
-  # Review Focus 1 (characterization): a QR payment whose QRR marker is ONLY in the structured remittance info
+  # Characterization of current behaviour: a QR payment whose QRR marker is ONLY in the structured remittance info
   # (RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry) and NOT in AddtlNtryInf is NOT recognized as a QRR transaction today:
-  # the QRR detection looks for the text "QRR" in the line description only.
+  # the QRR detection looks for the text "QRR" in the line description only (AddtlNtryInf/AddtlTxInf are absent here, so the line description is "").
   # So with "import as single summary line" enabled, the entry is NOT collected into the summary line; the summary line stays empty (0) and the entry is imported as a normal line.
+  # Note: the empty summary line (TrxAmt 0, no description) is itself questionable; it is asserted here only to pin today's behaviour.
   # When the QRR detection is extended to look at the structured reference type, flip the expectations below
   # (the summary line then carries the 119 and the entry becomes a detail line with TrxAmt 0).
   @from:cucumber
