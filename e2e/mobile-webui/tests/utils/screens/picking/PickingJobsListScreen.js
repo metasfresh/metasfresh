@@ -6,6 +6,7 @@ import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
+import { captionHasField } from '../../launcherCaption';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { OperatorContextErrorPanel } from '../../components/OperatorContextErrorPanel';
 // Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen), shared
@@ -234,7 +235,8 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, produ
     let locator = page.locator(selector);
 
     if (documentNo != null) {
-        locator = locator.filter({ hasText: documentNo })
+        // documentNo as a whole caption field, never a substring of another launcher's caption - see launcherCaption.js
+        locator = locator.filter({ hasText: captionHasField(documentNo) });
     }
 
     if (index != null) {
