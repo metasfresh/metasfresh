@@ -59,17 +59,11 @@ function endpointFieldPatch(page, fieldName) {
  * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
  * server has answered it.
  *
- * A value typed while the previous field's response is still in flight is re-rendered away before
- * React sees it and is then never patched at all, so no field is entered until the one before it has
- * been answered. That is what this wait prevents.
- *
- * It deliberately stops at the response and does NOT also wait for the answer to be merged into the
- * form. The save bar's colour cannot express that — `indicator` reads `error` for as long as a
- * persisted document is invalid, which a half-filled form is — and the only DOM signal that could
- * was a `data-save-state` attribute on the indicator, i.e. a test affordance in production frontend
- * code. That area carries too much regression risk to take a change for a test's convenience, so the
- * affordance was dropped. The residual gap is narrow: Playwright auto-waits for actionability before
- * the next field's interaction, and every caller's next act is such an interaction.
+ * No field is entered until the one before it has been answered, so every field's PATCH is asserted
+ * on its own. The wait stops at the response, not at the form having merged it. A response still
+ * being applied while the next field is typed into can no longer pull the caret back into a dropdown
+ * once that field is clicked into first (see {@link fillFieldLocator}) - the one way such a late
+ * response was observed to lose a typed value.
  */
 async function commitField(page, fieldName, commit) {
   const patched = endpointFieldPatch(page, fieldName);
@@ -172,10 +166,18 @@ function emptyish(value) {
  * `fill()` only dispatches `input`, which these widgets answer with a local state update; the PATCH
  * comes from the blur. {@link commitField} wraps both so the response wait is armed before either
  * can fire.
+ *
+ * The field is clicked into first, the way a user does, because that click is what tells a
+ * previously used dropdown that it lost the focus: a List widget learns that only from a click
+ * outside it (or Tab), and until then it re-focuses itself whenever it re-renders — which every
+ * PATCH response makes it do. `fill()` alone moves the caret without any such event, so a response
+ * landing between its focus step and its typing pulled the caret back into the dropdown, the text
+ * went nowhere, and this field's PATCH never came.
  */
 async function fillFieldLocator(page, fieldName, field, value) {
   await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await commitField(page, fieldName, async () => {
+    await field.click();
     await field.fill(value);
     await field.blur();
   });
