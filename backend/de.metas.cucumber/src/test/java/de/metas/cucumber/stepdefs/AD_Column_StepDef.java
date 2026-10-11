@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -56,6 +55,7 @@ import org.compiere.model.I_S_ResourceType;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -111,11 +111,13 @@ public class AD_Column_StepDef
 	 */
 	private void waitUntilRestAPICustomColumnFlagsAreEffective(@NonNull final DataTableRows rows) throws InterruptedException
 	{
-		final ImmutableMap<TableAndColumnName, Boolean> expectedFlags = rows.stream()
-				.filter(row -> row.getAsOptionalBoolean("IsRestAPICustomColumn").isPresent())
-				.collect(ImmutableMap.toImmutableMap(
-						row -> new TableAndColumnName(row.getAsString("TableName"), row.getAsString("ColumnName")),
-						row -> row.getAsOptionalBoolean("IsRestAPICustomColumn").isTrue()));
+		final LinkedHashMap<TableAndColumnName, Boolean> expectedFlags = new LinkedHashMap<>();
+		for (final DataTableRow row : rows.toList())
+		{
+			// if the same column is updated more than once, the last row wins - same as in the DB
+			row.getAsOptionalBoolean("IsRestAPICustomColumn")
+					.ifPresent(flag -> expectedFlags.put(new TableAndColumnName(row.getAsString("TableName"), row.getAsString("ColumnName")), flag));
+		}
 		if (expectedFlags.isEmpty())
 		{
 			return;
@@ -131,7 +133,7 @@ public class AD_Column_StepDef
 							.allMatch(entry -> isRestAPICustomColumn(customColumnRepository, entry.getKey()) == entry.getValue());
 					if (!allEffective)
 					{
-						CacheMgt.get().reset(I_AD_Column.Table_Name);
+						CacheMgt.get().resetLocal(I_AD_Column.Table_Name);
 					}
 					return allEffective;
 				},
