@@ -50,6 +50,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.impl.HUQtyService;
@@ -264,7 +265,10 @@ public class HandlingUnitsService
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getKey());
 
-			huAttributesBL.updateHUAttributeRecursive(huId, attributeCode, attribute.getValue(), null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(attributeCode)
+					.attributeValue(attribute.getValue())
+					.build());
 		}
 	}
 

@@ -210,6 +210,27 @@ public interface I_QtyDemand_QtySupply_V
 	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
+	 * Set Bestellt - bestätigt.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyConfirmedBySupplier (@Nullable BigDecimal QtyConfirmedBySupplier);
+
+	/**
+	 * Get Bestellt - bestätigt.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyConfirmedBySupplier();
+
+	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_QtyConfirmedBySupplier = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "QtyConfirmedBySupplier", null);
+	String COLUMNNAME_QtyConfirmedBySupplier = "QtyConfirmedBySupplier";
+
+	/**
 	 * Set MD_Cockpit QtyDemand and QtySupply.
 	 *
 	 * <br>Type: ID
@@ -336,4 +357,25 @@ public interface I_QtyDemand_QtySupply_V
 
 	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_QtyToProduce = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "QtyToProduce", null);
 	String COLUMNNAME_QtyToProduce = "QtyToProduce";
+
+	/**
+	 * Set Bestellt - unbestätigt.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyUnconfirmedBySupplier (@Nullable BigDecimal QtyUnconfirmedBySupplier);
+
+	/**
+	 * Get Bestellt - unbestätigt.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyUnconfirmedBySupplier();
+
+	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_QtyUnconfirmedBySupplier = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "QtyUnconfirmedBySupplier", null);
+	String COLUMNNAME_QtyUnconfirmedBySupplier = "QtyUnconfirmedBySupplier";
 }
