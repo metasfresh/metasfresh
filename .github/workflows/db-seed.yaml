@@ -1,12 +1,13 @@
-# Builds the DB seed that docker-builds/Dockerfile.db-init restores, from a green new_dawn_uat preloaded DB image.
+# Builds the DB seed that docker-builds/Dockerfile.db-init restores, from a green preloaded DB image of the same branch.
 #
 # The seed is a pg_dump of metasfresh/metas-db:<tag>-preloaded (the migrations of that run already applied),
 # shipped as metasfresh/metas-db:<tag>-seed: a scratch image holding /metasfresh.pgdump, labelled with the
 # commit it was built from (org.opencontainers.image.revision), so cicd can check that this commit is an ancestor
 # of the commit being built and a seed is never ahead of the branch that restores it (that check comes with the
 # Dockerfile.db-init change).
-# Run it with the id of a successful cicd push run on new_dawn_uat, then point Dockerfile.db-init at the
-# printed -seed tag in a PR.
+# Run it with the id of a successful cicd push run on the branch whose seed is refreshed (e.g. new_dawn_uat or
+# soft_panda_hotfix), then point THAT branch's Dockerfile.db-init at the printed -seed tag in a PR. Each branch
+# has its own seed; the ancestor check rejects one built from another branch's history.
 
 name: db-seed
 
@@ -14,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       run-id:
-        description: "id of a successful cicd push run on new_dawn_uat (from its URL .../actions/runs/<id>)"
+        description: "id of a successful cicd push run on the branch to seed (from its URL .../actions/runs/<id>)"
         required: true
         type: string
 
@@ -31,19 +32,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ inputs.run-id }}
+          BRANCH_MAP: ${{ vars.CICD_BRANCH_MAP }}
         run: |
           [[ "${RUN_ID}" =~ ^[0-9]{1,20}$ ]] || { echo "::error::run-id must be a number, got '${RUN_ID}'"; exit 1; }
           run_info=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" \
             --jq '[.path, .head_branch, .event, (.conclusion // "none"), .head_sha, .run_number] | map(tostring) | join(" ")') \
             || { echo "::error::cannot read run ${RUN_ID}"; exit 1; }
           read -r workflow branch event conclusion sha run_number <<< "${run_info}"
-          if [ "${workflow}" != ".github/workflows/cicd.yaml" ] || [ "${branch}" != "new_dawn_uat" ] || [ "${event}" != "push" ] || [ "${conclusion}" != "success" ]; then
-            echo "::error::run ${RUN_ID} is not a successful cicd push run on new_dawn_uat (${workflow}, ${branch}, ${event}, ${conclusion})"
+          if [ "${workflow}" != ".github/workflows/cicd.yaml" ] || [ "${event}" != "push" ] || [ "${conclusion}" != "success" ]; then
+            echo "::error::run ${RUN_ID} is not a successful cicd push run (${workflow}, ${branch}, ${event}, ${conclusion})"
             exit 1
           fi
+          # base branches only (the list cicd's base-refname step uses): a feature branch's commit never ends up
+          # in a base branch's history as-is, so its seed could never pass the ancestor check anyway
+          echo "${BRANCH_MAP}" | grep -oE '"[^"]+"' | tr -d '"' | grep -qxF "${branch}" \
+            || { echo "::error::${branch} is not a base branch (vars.CICD_BRANCH_MAP)"; exit 1; }
+          # the image tag exactly as cicd's init job builds it (step sanitize-ref-name, output tag-fixed)
+          refname=$(echo "${branch}" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')
           version=$(gh api "repos/${GITHUB_REPOSITORY}/contents/docker-builds/version.info?ref=${sha}" --jq '.content' | base64 -d | tr -d '[:space:]')
-          tag="${version}-new-dawn-uat.${run_number}"
-          echo "source run ${RUN_ID}: commit ${sha}, image tag ${tag}"
+          tag="${version}-${refname}.${run_number}"
+          echo "source run ${RUN_ID}: branch ${branch}, commit ${sha}, image tag ${tag}"
           {
             echo "SOURCE_SHA=${sha}"
             echo "SOURCE_IMAGE=metasfresh/metas-db:${tag}-preloaded"
