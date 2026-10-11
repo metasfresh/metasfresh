@@ -74,7 +74,7 @@ export class TestWindowPage {
   static getRecordId() {
     const page = getPage();
     const url = page.url();
-    const match = url.match(/\/window\/127\/(\d+)/);
+    const match = url.match(new RegExp(`/window/${TEST_WINDOW_ID}/(\\d+)`));
     return match ? match[1] : null;
   }
 
@@ -85,10 +85,10 @@ export class TestWindowPage {
    * Uses page.reload(): page.keyboard.press('F5') did not reload the page in the frontend-webui e2e runs
    * (e.g. https://github.com/metasfresh/metasfresh/actions/runs/38111487029, shard 4: the trace shows no request
    * after the key press and the page kept its in-memory state), so it could not prove that anything was persisted.
-   * Waits for the record's data to be fetched again, so a reload the page cancels (e.g. its unsaved-changes
-   * "leave page?" prompt, which Playwright dismisses) fails here instead of the checks reading the old page.
-   * Then waits until the record is shown (its read-only "Test ID" field shows the record ID); the field values
-   * come with that same response.
+   * Waits for the record's data to be fetched again by the reloaded page (a response that arrives before the main
+   * frame navigated does not count), so a reload the page cancels (e.g. its unsaved-changes "leave page?" prompt,
+   * which Playwright dismisses) fails here instead of the checks reading the old page. Then waits until the record
+   * is shown (its read-only "Test ID" field shows the record ID); the field values come with that same response.
    */
   static async reload() {
     return await test.step('TestWindowPage - Reload page', async () => {
@@ -97,14 +97,27 @@ export class TestWindowPage {
       if (!recordId) {
         throw new Error(`TestWindowPage.reload: no Test record open (URL: ${page.url()})`);
       }
-      const recordPath = new RegExp(`/window/${TEST_WINDOW_ID}/${recordId}/?$`);
-      const recordFetched = page.waitForResponse(
-        (response) => response.request().method() === 'GET' && recordPath.test(new URL(response.url()).pathname),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-      recordFetched.catch(() => {}); // avoid an unhandled rejection if the reload itself throws; awaited below
-      await page.reload();
-      await recordFetched;
+
+      let navigated = false;
+      const onNavigated = (frame) => {
+        if (frame === page.mainFrame()) {
+          navigated = true;
+        }
+      };
+      page.on('framenavigated', onNavigated);
+      try {
+        const recordPath = new RegExp(`/window/${TEST_WINDOW_ID}/${recordId}/?$`);
+        const recordFetched = page.waitForResponse(
+          (response) =>
+            navigated && response.request().method() === 'GET' && recordPath.test(new URL(response.url()).pathname),
+          { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        recordFetched.catch(() => {}); // avoid an unhandled rejection if the reload itself throws; awaited below
+        await page.reload();
+        await recordFetched;
+      } finally {
+        page.off('framenavigated', onNavigated);
+      }
       await expect(page.locator('.form-field-Test_ID input')).toHaveValue(recordId, { timeout: SLOW_ACTION_TIMEOUT });
     });
   }
