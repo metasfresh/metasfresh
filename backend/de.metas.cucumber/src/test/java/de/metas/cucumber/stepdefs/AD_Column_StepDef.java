@@ -24,9 +24,12 @@ package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,8 +39,11 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
@@ -47,6 +53,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_ResourceType;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +65,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class AD_Column_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(AD_Column_StepDef.class);
+
 	@NonNull private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
@@ -85,9 +94,63 @@ public class AD_Column_StepDef
 	}
 
 	@And("update AD_Column:")
-	public void update_AD_Columns(@NonNull final DataTable dataTable)
+	public void update_AD_Columns(@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach(this::updateAD_Column);
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		rows.forEach(this::updateAD_Column);
+
+		waitUntilRestAPICustomColumnFlagsAreEffective(rows);
+	}
+
+	/**
+	 * {@link CustomColumnService} does not read {@code AD_Column.IsRestAPICustomColumn} from the DB but from {@link CustomColumnRepository}'s
+	 * single-entry, never-expiring cache. Each AD_Column save resets that cache, but a load that is already running in another thread when the
+	 * reset happens is kept by the underlying Guava cache (invalidation does not cancel an in-flight load). Such a load can have read the DB before
+	 * our last save committed, so the cache may keep the old flags until the next reset - waiting alone does not help.
+	 * Therefore, check the flags via the same read path that {@link CustomColumnService} uses, and reset the AD_Column caches again until it agrees.
+	 */
+	private void waitUntilRestAPICustomColumnFlagsAreEffective(@NonNull final DataTableRows rows) throws InterruptedException
+	{
+		final ImmutableMap<TableAndColumnName, Boolean> expectedFlags = rows.stream()
+				.filter(row -> row.getAsOptionalBoolean("IsRestAPICustomColumn").isPresent())
+				.collect(ImmutableMap.toImmutableMap(
+						row -> new TableAndColumnName(row.getAsString("TableName"), row.getAsString("ColumnName")),
+						row -> row.getAsOptionalBoolean("IsRestAPICustomColumn").isTrue()));
+		if (expectedFlags.isEmpty())
+		{
+			return;
+		}
+
+		final CustomColumnRepository customColumnRepository = SpringContextHolder.instance.getBean(CustomColumnRepository.class);
+		StepDefUtil.tryAndWait(
+				10,
+				200,
+				() -> {
+					final boolean allEffective = expectedFlags.entrySet()
+							.stream()
+							.allMatch(entry -> isRestAPICustomColumn(customColumnRepository, entry.getKey()) == entry.getValue());
+					if (!allEffective)
+					{
+						CacheMgt.get().reset(I_AD_Column.Table_Name);
+					}
+					return allEffective;
+				},
+				() -> logger.info("Expected IsRestAPICustomColumn flags not yet seen by CustomColumnRepository: {}", expectedFlags));
+	}
+
+	private static boolean isRestAPICustomColumn(
+			@NonNull final CustomColumnRepository customColumnRepository,
+			@NonNull final TableAndColumnName tableAndColumnName)
+	{
+		final RESTApiTableInfo tableInfo = customColumnRepository.getByTableNameOrNull(tableAndColumnName.getTableName());
+		return tableInfo != null && tableInfo.isCustomRestAPIColumn(tableAndColumnName.getColumnName());
+	}
+
+	@Value
+	private static class TableAndColumnName
+	{
+		@NonNull String tableName;
+		@NonNull String columnName;
 	}
 
 	private void updateAD_Column(final DataTableRow row)
