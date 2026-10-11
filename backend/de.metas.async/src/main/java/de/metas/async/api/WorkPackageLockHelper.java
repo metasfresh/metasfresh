@@ -28,6 +28,7 @@ import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
 import org.slf4j.Logger;
 
 @UtilityClass
@@ -35,16 +36,43 @@ public class WorkPackageLockHelper
 {
 	private static final Logger logger = LogManager.getLogger(WorkPackageLockHelper.class);
 
+	/**
+	 * Releases a workpackage that was claimed for processing but will not be processed now.
+	 * <p>
+	 * Clears {@code C_Queue_WorkPackage.LockedAt}, because the poller only selects workpackages with {@code LockedAt IS NULL}
+	 * and on this path no {@code WorkpackageProcessorTask} runs that would clear it. Then releases the T_Lock.
+	 */
 	public static boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
 	{
+		final boolean lockedAtCleared = clearLockedAtNoFail(workPackage);
 		try
 		{
 			unlock(workPackage);
-			return true;
+			return lockedAtCleared;
 		}
 		catch (final Exception e)
 		{
 			logger.warn("Got exception while unlocking " + workPackage, e);
+			return false;
+		}
+	}
+
+	private static boolean clearLockedAtNoFail(final I_C_Queue_WorkPackage workPackage)
+	{
+		try
+		{
+			// dev-note: update only this column directly, out of trx (like the planner's claim), so we never write a stale model over newer values
+			Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_Queue_WorkPackage.class)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+					.execute();
+			return true;
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Got exception while clearing LockedAt of " + workPackage, e);
 			return false;
 		}
 	}
