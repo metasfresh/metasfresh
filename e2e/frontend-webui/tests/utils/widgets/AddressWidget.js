@@ -17,6 +17,7 @@
  * - Toggle button: container button
  * - Inline fields appear as siblings after the button when expanded
  */
+import { expect } from '@playwright/test';
 import { WidgetCommon } from './WidgetCommon';
 import { getPage } from '../common';
 
@@ -242,9 +243,37 @@ export class AddressWidget {
    * @returns {Promise<boolean>} True if field is empty
    */
   static async isEmpty(fieldName) {
-    const value = await this.getValue(fieldName);
-    return !value || value === 'none' || value.trim() === '' || value === 'Edit' || value === '---';
+    return isEmptyAddressText(await this.getValue(fieldName));
   }
+
+  /**
+   * Wait until the field shows an address, i.e. not one of the empty-state labels (see isEmpty), and return it.
+   * Use it where an address is expected, e.g. after a reload: the button can still show its empty-state label
+   * until the record's data is rendered. Fails if the field still shows no address after the widget timeout.
+   *
+   * @param {string} fieldName - Database column name
+   * @returns {Promise<string>} Formatted address text on the button
+   */
+  static async waitForValue(fieldName) {
+    return await WidgetCommon.withStep(`AddressWidget - Wait for ${fieldName} value`, async () => {
+      let value = '';
+      await expect
+        .poll(
+          async () => {
+            value = await this.getValue(fieldName);
+            return isEmptyAddressText(value);
+          },
+          { timeout: WidgetCommon.WIDGET_TIMEOUT, message: `${fieldName} shows no address (only an empty-state label)` }
+        )
+        .toBe(false);
+      return value;
+    });
+  }
+}
+
+/** The texts the address button shows when no address is set. */
+function isEmptyAddressText(value) {
+  return !value || value === 'none' || value.trim() === '' || value === 'Edit' || value === '---';
 }
 
 /**
