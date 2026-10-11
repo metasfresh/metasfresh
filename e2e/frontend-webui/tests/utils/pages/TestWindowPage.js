@@ -18,6 +18,7 @@
  * - Image: BinaryData
  * - Composed: C_BPartner_Location_ID (BPartner + Location + Contact)
  */
+import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { getPage, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../common';
 import { TEST_WINDOW_ID } from '../WindowIds';
@@ -78,15 +79,23 @@ export class TestWindowPage {
   }
 
   /**
-   * Reload the current page (press F5).
+   * Reload the current record from the backend and wait until its data is shown.
    * Used to verify that field values persist after reload.
+   *
+   * Uses page.reload(): page.keyboard.press('F5') does not reload the page in Playwright's Chromium (no request
+   * is sent and the page keeps its in-memory state), so it would not prove that anything was persisted.
+   * page.reload() returns on the page's load event, before the record has been fetched again; instead of a fixed
+   * sleep, wait until the reloaded record is shown (its read-only "Test ID" field shows the record ID).
    */
   static async reload() {
-    return await test.step('TestWindowPage - Reload page (F5)', async () => {
+    return await test.step('TestWindowPage - Reload page', async () => {
       const page = getPage();
-      await page.keyboard.press('F5');
-      await page.waitForLoadState('networkidle').catch(() => {});
-      await page.waitForTimeout(1000);
+      const recordId = this.getRecordId();
+      if (!recordId) {
+        throw new Error(`TestWindowPage.reload: no Test record open (URL: ${page.url()})`);
+      }
+      await page.reload();
+      await expect(page.locator('.form-field-Test_ID input')).toHaveValue(recordId, { timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 
