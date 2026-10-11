@@ -17,8 +17,8 @@ if [ -z "${seed}" ]; then
   exit 0
 fi
 
-docker pull -q "${seed}" > /dev/null
-rev=$(docker inspect "${seed}" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
+# reads only the manifest; the build pulls the image itself
+rev=$(docker buildx imagetools inspect "${seed}" --format '{{index .Image.Config.Labels "org.opencontainers.image.revision"}}')
 if [ -z "${rev}" ]; then
   echo "::error::the DB seed ${seed} has no org.opencontainers.image.revision label"
   exit 1
