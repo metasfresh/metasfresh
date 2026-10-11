@@ -43,10 +43,9 @@ jobs:
             echo "::error::run ${RUN_ID} is not a successful cicd push run (${workflow}, ${branch}, ${event}, ${conclusion})"
             exit 1
           fi
-          # base branches only (the list cicd's base-refname step uses): a feature branch's commit never ends up
-          # in a base branch's history as-is, so its seed could never pass the ancestor check anyway
-          echo "${BRANCH_MAP}" | grep -oE '"[^"]+"' | tr -d '"' | grep -qxF "${branch}" \
-            || { echo "::error::${branch} is not a base branch (vars.CICD_BRANCH_MAP)"; exit 1; }
+          # base branches only (the list cicd's base-refname step uses)
+          bases=$(echo "${BRANCH_MAP}" | grep -oE '"[^"]+"' | tr -d '"' || true)
+          grep -qxF "${branch}" <<< "${bases}" || { echo "::error::${branch} is not a base branch (vars.CICD_BRANCH_MAP)"; exit 1; }
           # the image tag exactly as cicd's init job builds it (step sanitize-ref-name, output tag-fixed)
           refname=$(echo "${branch}" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')
           version=$(gh api "repos/${GITHUB_REPOSITORY}/contents/docker-builds/version.info?ref=${sha}" --jq '.content' | base64 -d | tr -d '[:space:]')
