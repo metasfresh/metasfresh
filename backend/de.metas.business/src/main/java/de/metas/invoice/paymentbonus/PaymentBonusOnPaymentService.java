@@ -130,7 +130,8 @@ public class PaymentBonusOnPaymentService
 	 * @param allocationDate the credit memo's invoice and accounting date
 	 * @return empty if {@code PaymentBonusAmt} is 0
 	 * @throws AdempiereException a user error if no payment bonus can be deducted for the invoice any more (e.g. another payment already booked it),
-	 *                            or if {@code PaymentBonusAmt} is above what the payment leaves open of the invoice
+	 *                            or if {@code PaymentBonusAmt} is above what the payment leaves open of the invoice;
+	 *                            an error if the credit memo's grand total is above {@code PaymentBonusAmt}
 	 */
 	public Optional<PaymentBonusCreditMemoBooking> generateCreditMemoIfAny(@NonNull final I_C_Payment payment, @NonNull final LocalDate allocationDate)
 	{
@@ -147,10 +148,21 @@ public class PaymentBonusOnPaymentService
 				.orElseThrow(() -> newPaymentBonusNotDeductibleException(payment));
 
 		final InvoiceId creditMemoId = creditMemoService.generateCreditMemo(deductionToBook, allocationDate);
+		final Money creditMemoGrandTotal = Money.of(invoiceBL.getById(creditMemoId).getGrandTotal(), deduction.getCurrencyId());
+		final Money paymentBonus = Money.of(payment.getPaymentBonusAmt(), deduction.getCurrencyId());
+		if (creditMemoGrandTotal.isGreaterThan(paymentBonus))
+		{
+			throw new AdempiereException("The grand total of the payment bonus credit memo is above the payment bonus of the payment")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_ID", payment.getC_Payment_ID())
+					.setParameter("PaymentBonusAmt", paymentBonus)
+					.setParameter("PaymentBonus_CreditMemo_ID", creditMemoId.getRepoId())
+					.setParameter("GrandTotal", creditMemoGrandTotal);
+		}
 		payment.setPaymentBonus_CreditMemo_ID(creditMemoId.getRepoId());
 
 		return Optional.of(PaymentBonusCreditMemoBooking.builder()
-				.creditMemoGrandTotal(Money.of(invoiceBL.getById(creditMemoId).getGrandTotal(), deduction.getCurrencyId()))
+				.creditMemoGrandTotal(creditMemoGrandTotal)
 				.invoiceOpenAmtBeforeCreditMemo(Money.of(openAmtBeforeCreditMemo, deduction.getCurrencyId()))
 				.build());
 	}
