@@ -40,6 +40,7 @@ import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -64,6 +65,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMLineId;
+import org.compiere.model.I_M_Product_Category;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
@@ -110,6 +112,7 @@ public class PPOrderCandidateService
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -505,14 +508,30 @@ public class PPOrderCandidateService
 
 	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
+		// WorkStation (Arbeitsstation): Product Planning first, product-category as fallback (gh31188)
+		ResourceId workStationId = null;
+
 		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
-		if (ppProductPlanningId == null)
+		if (ppProductPlanningId != null)
 		{
-			ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(null));
-			return;
+			final ProductPlanning productPlanning = productPlanningDAO.getById(ppProductPlanningId);
+			workStationId = productPlanning.getWorkstationId();
 		}
-		final ProductPlanning productPlanning = productPlanningDAO.getById(ppProductPlanningId);
-		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(productPlanning.getWorkstationId()));
+
+		if (workStationId == null)
+		{
+			final ProductId productId = ProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_Product_ID());
+			if (productId != null)
+			{
+				final I_M_Product_Category productCategory = productBL.getProductCategoryByProductId(productId);
+				if (productCategory != null)
+				{
+					workStationId = ResourceId.ofRepoIdOrNull(productCategory.getWorkStation_ID());
+				}
+			}
+		}
+
+		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(workStationId));
 	}
 
 	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)
