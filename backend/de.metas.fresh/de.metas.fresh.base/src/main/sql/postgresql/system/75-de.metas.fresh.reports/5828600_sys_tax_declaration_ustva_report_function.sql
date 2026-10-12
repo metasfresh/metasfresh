@@ -177,7 +177,9 @@ detail AS (
                bp.name::varchar, bp.vataxid::varchar, c.iso_code::varchar
         FROM sap_gljournal sj
                  LEFT JOIN sap_gljournalline sjl ON sjl.sap_gljournalline_id = a.line_id
-                 LEFT JOIN c_bpartner bp ON bp.c_bpartner_id = sjl.c_bpartner_id
+                 -- a generated tax line carries no partner; take the one of its base line
+                 LEFT JOIN sap_gljournalline sjl_parent ON sjl_parent.sap_gljournalline_id = sjl.parent_id
+                 LEFT JOIN c_bpartner bp ON bp.c_bpartner_id = COALESCE(sjl.c_bpartner_id, sjl_parent.c_bpartner_id)
                  LEFT JOIN c_currency c ON c.c_currency_id = sj.c_currency_id
         WHERE a.ad_table_id = (SELECT t.ad_table_id FROM ad_table t WHERE t.tablename = 'SAP_GLJournal')
           AND sj.sap_gljournal_id = a.record_id

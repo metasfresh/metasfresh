@@ -78,9 +78,10 @@ import java.sql.Timestamp;
 /**
  * Step definitions for SAP GL journals ({@link I_SAP_GLJournal} / {@code SAP_GLJournalLine}, the "Hauptbuchjournal" window).
  *
- * <p>The journal is created the way the window does it: the header record is saved (document no. from the document type), the lines are added
- * through {@link SAPGLJournalService#createLine}, and the journal is completed through the document engine, which also schedules the posting
- * ({@code Doc_SAPGLJournal}). Use {@code Wait until documents <identifier> is posted} afterwards.
+ * <p>The header record is saved directly (document no. from the document type; the window's callouts do not run), the lines are added
+ * through {@link SAPGLJournalService#createLine} (not through the window's line record save), tax lines can be generated through
+ * {@link SAPGLJournalService#regenerateTaxLines} (as the "Generate tax lines" process does), and the journal is completed through the document
+ * engine, which also schedules the posting ({@code Doc_SAPGLJournal}). Use {@code Wait until documents <identifier> is posted} afterwards.
  *
  * <p><b>Gherkin usage example</b>:
  * <pre>{@code
@@ -123,7 +124,7 @@ public class SAP_GLJournal_StepDef
 	 * <ul>
 	 *     <li>{@code Identifier} — (required) identifier of the journal</li>
 	 *     <li>{@code DateDoc} — (required) document date</li>
-	 *     <li>{@code DateAcct} — (optional) accounting date; defaults to {@code DateDoc} (as the window's callout does)</li>
+	 *     <li>{@code DateAcct} — (optional) accounting date; defaults to {@code DateDoc}</li>
 	 *     <li>{@code C_Currency_ID} — (optional) ISO code of the journal currency; defaults to the accounting schema currency</li>
 	 *     <li>{@code Description} — (optional)</li>
 	 * </ul>
@@ -168,7 +169,8 @@ public class SAP_GLJournal_StepDef
 		record.setAcct_Currency_ID(acctCurrencyId.getRepoId());
 		record.setC_Currency_ID(currencyId.getRepoId());
 		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
-		// same currency => rate 1 (the column default); a foreign currency is converted with the conversion type's rate (CurrencyRate=0 => no fixed rate)
+		// same currency => rate 1 (the column default); a foreign currency is converted with the conversion type's rate (CurrencyRate=0 => no fixed rate),
+		// unlike the window, whose callout stores a fixed rate
 		record.setCurrencyRate(CurrencyId.equals(currencyId, acctCurrencyId) ? BigDecimal.ONE : BigDecimal.ZERO);
 		record.setGL_Category_ID(glCategoryId.getRepoId());
 		record.setDescription(row.getAsOptionalString(I_SAP_GLJournal.COLUMNNAME_Description).orElse("cucumber SAP GL journal " + identifier.getAsString()));
@@ -258,6 +260,20 @@ public class SAP_GLJournal_StepDef
 	private static AcctSchemaId acctSchemaIdOf(@NonNull final I_SAP_GLJournal journalRecord)
 	{
 		return AcctSchemaId.ofRepoId(journalRecord.getC_AcctSchema_ID());
+	}
+
+	/**
+	 * Generates the tax lines of the journal's base lines (lines with {@code C_Tax_ID} and without {@code SAP_DetermineTaxBase}), as the
+	 * "Generate tax lines" process ({@code SAP_GLJournal_GenerateTaxLines}) does. A generated tax line gets {@code Parent_ID} = its base line
+	 * and no business partner.
+	 */
+	@And("the tax lines of SAP GL journal {string} are generated")
+	public void generateTaxLines(@NonNull final String identifier)
+	{
+		final I_SAP_GLJournal record = glJournalTable.get(StepDefDataIdentifier.ofString(identifier));
+		glJournalService.regenerateTaxLines(SAPGLJournalId.ofRepoId(record.getSAP_GLJournal_ID()));
+		// the header totals were updated by the service on another instance of the record
+		InterfaceWrapperHelper.refresh(record);
 	}
 
 	/**

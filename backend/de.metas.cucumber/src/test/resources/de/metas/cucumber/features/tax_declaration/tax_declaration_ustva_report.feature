@@ -682,26 +682,27 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
   @from:cucumber
   Scenario: a deactivated former business partner of the organisation is ignored in the header
 
+    # no Value columns: a unique one is generated per run, so the scenario can run again on the same DB
     And metasfresh contains AD_Org:
-      | AD_Org_ID.Identifier | Value     | Name             |
-      | ustvaOrg2            | USTVAORG2 | UStVA Test Org 2 |
+      | AD_Org_ID.Identifier | Name             |
+      | ustvaOrg2            | UStVA Test Org 2 |
     # only one active partner may be linked to an organisation (unique index), so the former one is deactivated first
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Value         | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
-      | formerOrgBP  | USTVAFORMERBP | 99/999/99999 | DE999999995 | ustvaOrg2              |
+      | Identifier  | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | formerOrgBP | 99/999/99999 | DE999999995 | ustvaOrg2              |
     And update C_BPartner:
       | Identifier  | IsActive |
       | formerOrgBP | N        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Value         | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
-      | currentOrgBP | USTVACURRBP   | 21/815/08151 | DE136695977 | ustvaOrg2              |
+      | Identifier   | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
+      | currentOrgBP | 21/815/08151 | DE136695976 | ustvaOrg2              |
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       | AD_Org_ID.Identifier |
       | td         | acctSchema      | 2024-01-15 | ustvaOrg2            |
 
     Then the UStVA report for tax declaration "td" returns:
       | report_level | org_tax_id   | org_vat_id  |
-      | HEADER       | 21/815/08151 | DE136695977 |
+      | HEADER       | 21/815/08151 | DE136695976 |
 
 # ############################################################################################################################################
 # Source documents: an SAP GL journal (Hauptbuchjournal) tax booking
@@ -745,3 +746,44 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID |
       | DETAIL       | v66T          | T          | sgj       | 19.00  | 2024-01-12   | 2024-01-10 | vendor        |
+
+  @Id:S32216_UStVA_135
+  @from:cucumber
+  Scenario: a generated SAP GL journal tax line shows the business partner of its base line in the detail
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19g     | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | v66Tg      | tax19g   | N       | T          |
+    And metasfresh contains C_ElementValues:
+      | Identifier  |
+      | sgjExpense  |
+      | sgjCounter2 |
+
+    # base line: net 100.00 with tax and partner; "Generate tax lines" adds the tax line 19.00 (Parent_ID = base line, no partner)
+    And metasfresh contains SAP_GLJournal:
+      | Identifier | DateDoc    | DateAcct   | C_Currency_ID |
+      | sgj2       | 2024-01-11 | 2024-01-13 | EUR           |
+    And metasfresh contains SAP_GLJournalLines:
+      | SAP_GLJournal_ID | PostingSign | Amount | Account_ID  | C_Tax_ID | C_BPartner_ID |
+      | sgj2             | D           | 100.00 | sgjExpense  | tax19g   | vendor        |
+      | sgj2             | C           | 119.00 | sgjCounter2 |          |               |
+    And the tax lines of SAP GL journal "sgj2" are generated
+    And the SAP GL journal "sgj2" is completed
+    And Wait until documents sgj2 is posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    # only the generated tax line carries the VAT code (the base line has no SAP_DetermineTaxBase): tax 19.00, balance -19.00
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
+      | SUMMARY      | v66Tg         | -       | 19.00   |             |
+      | BALANCE      |               |         |         | -19.00      |
+    # the generated tax line has no partner of its own; the report takes the one of its base line
+    And the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID |
+      | DETAIL       | v66Tg         | T          | sgj2      | 19.00  | 2024-01-13   | 2024-01-11 | vendor        |
