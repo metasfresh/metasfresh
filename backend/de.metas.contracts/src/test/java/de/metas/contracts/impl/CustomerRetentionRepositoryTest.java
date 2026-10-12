@@ -184,7 +184,7 @@ public class CustomerRetentionRepositoryTest
 	}
 
 	/**
-	 * Customer retention is not about compensation-group contracts: a partner whose only contract is a running compensation-group contract is no new customer,
+	 * Customer retention is derived from subscription contracts only: a partner whose only contract is a running compensation-group contract is no new customer,
 	 * and a value derived earlier from such a contract is cleared.
 	 */
 	@Test

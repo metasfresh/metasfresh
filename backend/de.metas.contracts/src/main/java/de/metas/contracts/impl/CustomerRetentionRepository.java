@@ -172,7 +172,7 @@ public class CustomerRetentionRepository
 
 		if (Check.isEmpty(latestFlatrateTermForBPartnerId))
 		{
-			// no contract that counts for customer retention (e.g. only compensation-group contracts): clear a value derived earlier
+			// no subscription contract (customer retention is derived from subscription contracts only): clear a value derived earlier
 			setNonSubscriptionCustomer(customerRetentionId);
 			return;
 		}
