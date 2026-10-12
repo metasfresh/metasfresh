@@ -373,7 +373,7 @@ public class PaymentAllocationBuilder
 			if (paymentBonus.isGreaterThan(leftOpen))
 			{
 				final PaymentBonusDeduction deduction = Check.assumeNotNull(payable.getPaymentBonusDeduction(), "paymentBonusDeduction shall be set when the payment bonus is not zero: {}", payable);
-				payable.reducePaymentBonusTo(deduction.computeLargestReachableGrossAmountNotAbove(leftOpen));
+				payable.reducePaymentBonusTo(deduction.withLargestReachableGrossAmountNotAbove(leftOpen).orElse(null));
 			}
 			leftOpen = leftOpen.subtract(payable.getAmountsToAllocate().getPaymentBonus());
 		}

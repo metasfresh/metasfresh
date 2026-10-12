@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The bonus that a customer deducts when paying a sales invoice ("bei Zahlung"): a percentage of the invoice's net goods value, plus the VAT of the bonus products on top.
@@ -98,32 +99,35 @@ public class PaymentBonusDeduction
 	}
 
 	/**
-	 * Finds the payment bonus to book when the customer may deduct at most the given amount, e.g. because the payment leaves less open than this deduction.
+	 * Scales this deduction down for a customer who may deduct at most the given amount, e.g. because the payment leaves less open than this deduction.
 	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 * <p>
+	 * Use the returned deduction as it is: scaling this deduction again to the returned gross amount can land on a different amount when the lines have different taxes.
 	 *
 	 * @param maxGrossAmount the limit, in this deduction's currency; may be zero or negative
-	 * @return the largest gross amount that {@link #withGrossAmount(Money)} reaches and that is neither above {@code maxGrossAmount} nor above this deduction's own gross amount;
-	 * zero if {@code maxGrossAmount} is not positive or no positive amount up to it can be reached
+	 * @return this deduction if the limit is not below its gross amount;
+	 * otherwise the scaled deduction with the largest gross amount not above the limit;
+	 * empty if the limit is not positive or no positive amount up to it can be reached
 	 */
-	public Money computeLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	public Optional<PaymentBonusDeduction> withLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
 	{
 		maxGrossAmount.assertCurrencyId(currencyId);
 
-		final Money grossAmount = getGrossAmount();
-		if (!maxGrossAmount.isLessThan(grossAmount))
+		if (!maxGrossAmount.isLessThan(getGrossAmount()))
 		{
-			return grossAmount;
+			return Optional.of(this);
 		}
 
 		final Money oneCent = Money.of(BigDecimal.ONE.movePointLeft(precision.toInt()), currencyId);
-		Money candidate = maxGrossAmount;
-		while (candidate.signum() > 0 && withGrossAmount(candidate).getGrossAmount().isGreaterThan(maxGrossAmount))
+		for (Money candidate = maxGrossAmount; candidate.signum() > 0; candidate = candidate.subtract(oneCent))
 		{
-			candidate = candidate.subtract(oneCent);
+			final PaymentBonusDeduction scaled = withGrossAmount(candidate);
+			if (!scaled.getGrossAmount().isGreaterThan(maxGrossAmount))
+			{
+				return Optional.of(scaled);
+			}
 		}
-		return candidate.signum() > 0
-				? withGrossAmount(candidate).getGrossAmount()
-				: Money.zero(currencyId);
+		return Optional.empty();
 	}
 
 	/**

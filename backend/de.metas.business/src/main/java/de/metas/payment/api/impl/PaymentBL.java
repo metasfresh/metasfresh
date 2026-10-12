@@ -128,7 +128,7 @@ public class PaymentBL implements IPaymentBL
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	// looked up when needed, because PaymentBL is not a Spring bean and can be used before the application context is complete
-	private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -257,6 +257,11 @@ public class PaymentBL implements IPaymentBL
 			{
 				payment.setPaymentBonusAmt(ZERO);
 			}
+		}
+		// Changed Column PaymentBonusAmt: the user's bonus is kept, PayAmt is what the customer paid; only the write-off (or over/under) changes
+		else if (I_C_Payment.COLUMNNAME_PaymentBonusAmt.equals(colName))
+		{
+			updateWriteOffOrOverUnderAmt(payment, creditMemoAdjusted);
 		}
 		// Changed Column C_Currency_ID or C_ConversionType_ID
 		else if (I_C_Payment.COLUMNNAME_C_Currency_ID.equals(colName) || I_C_Payment.COLUMNNAME_C_ConversionType_ID.equals(colName))
@@ -395,10 +400,11 @@ public class PaymentBL implements IPaymentBL
 				payment.setPaymentBonusAmt(ZERO);
 			}
 		}
-		else if (C_Invoice_ID > 0)
+		else if (C_Invoice_ID > 0
+				// the payment bonus is only deducted in the invoice's currency; a deductible bonus stays as it is, like the Skonto
+				&& paymentBonusOnPaymentService.get().clearPaymentBonusIfNotDeductible(payment))
 		{
-			// the payment bonus is only deducted in the invoice's currency
-			paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+			updateWriteOffOrOverUnderAmt(payment, true);
 		}
 
 	}
@@ -418,6 +424,25 @@ public class PaymentBL implements IPaymentBL
 			// the payment bonus is at most what the payment leaves open
 			paymentBonusOnPaymentService.get().capPaymentBonusToShortfall(payment);
 
+			updateWriteOffOrOverUnderAmt(payment, creditMemoAdjusted);
+		}
+	}
+
+	/**
+	 * Books what the payment leaves open of a drafted payment's invoice as write-off, or as over/under amount if the payment is an over/under payment:
+	 * {@code open - PayAmt - DiscountAmt - PaymentBonusAmt - (OverUnderAmt or WriteOffAmt)}. PayAmt is not changed.
+	 */
+	private void updateWriteOffOrOverUnderAmt(@NonNull final I_C_Payment payment, final boolean creditMemoAdjusted)
+	{
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
+		}
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+		if (docStatus.isDrafted())
+		{
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal PayAmt = payment.getPayAmt();
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
@@ -435,7 +460,6 @@ public class PaymentBL implements IPaymentBL
 			payment.setWriteOffAmt(WriteOffAmt);
 			payment.setDiscountAmt(DiscountAmt);
 		}
-
 	}
 
 	@Override

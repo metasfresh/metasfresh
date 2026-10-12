@@ -394,7 +394,10 @@ public class PaymentBLTest
 			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction))));
 		}
 
-		/** A payment in another currency than the invoice cannot deduct the bonus (the credit memo is in the invoice's currency): the bonus goes back into the payment amount. */
+		/**
+		 * A payment in another currency than the invoice cannot deduct the bonus (the credit memo is in the invoice's currency): the bonus is set to 0.
+		 * PayAmt stays what the customer paid (converted), so the shortfall becomes a write-off.
+		 */
 		@Test
 		public void onCurrencyChange_otherCurrency_resetsPaymentBonus()
 		{
@@ -416,8 +419,55 @@ public class PaymentBLTest
 			paymentBL.onCurrencyChange(payment);
 
 			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
-			assertThat(payment.getPayAmt()).as("PayAmt = 2 x 166.50").isEqualByComparingTo("333.00");
+			assertThat(payment.getPayAmt()).as("PayAmt = 2 x 163.72").isEqualByComparingTo("327.44");
+			assertThat(payment.getWriteOffAmt()).as("WriteOffAmt = 2 x 166.50 open - 327.44").isEqualByComparingTo("5.56");
+		}
+
+		/** Like Skonto, a change of the conversion type in the same currency keeps the amounts the user entered: a full payment stays without bonus. */
+		@Test
+		public void onCurrencyChange_sameCurrency_keepsTypedAmounts()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("166.50"));
+			payment.setPaymentBonusAmt(BigDecimal.ZERO);
+			saveRecord(payment);
+
+			// e.g. the user changed C_ConversionType_ID
+			paymentBL.onCurrencyChange(payment);
+
+			assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("166.50");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
 			assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo("0");
+		}
+
+		/**
+		 * The pre-fill on a payment whose bonus is no longer deductible (e.g. the contract ended) drops the bonus left over from before.
+		 * The amounts were just set from the invoice (PayAmt = open - Skonto, see {@code PaymentDAO.updateDiscountAndPayment}), so PayAmt stays open - Skonto.
+		 */
+		@Test
+		public void updatePaymentBonusFromInvoice_noDeduction_dropsLeftoverBonus()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("166.50"));
+			payment.setPaymentBonusAmt(new BigDecimal("2.78"));
+			saveRecord(payment);
+
+			new PaymentBonusOnPaymentService(Optional.empty()).updatePaymentBonusFromInvoice(payment);
+
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("166.50");
 		}
 
 		/** A payment whose invoice is removed has no bonus to deduct. */

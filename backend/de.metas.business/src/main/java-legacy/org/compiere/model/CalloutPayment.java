@@ -22,6 +22,7 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,7 +48,7 @@ import java.sql.Timestamp;
 public class CalloutPayment extends CalloutEngine
 {
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Payment_Invoice. when Invoice selected - set C_Currency_ID -
@@ -144,7 +145,11 @@ public class CalloutPayment extends CalloutEngine
 				//
 				payment.setPayAmt(payAmt);
 				payment.setDiscountAmt(DiscountAmt);
-				paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+				// a PayAmt taken from a payment schedule is not the whole invoice's open amount, which the pre-fill would set; so no bonus there, as before
+				if (C_InvoicePaySchedule_ID <= 0)
+				{
+					paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+				}
 			}
 		}
 		catch (SQLException e)

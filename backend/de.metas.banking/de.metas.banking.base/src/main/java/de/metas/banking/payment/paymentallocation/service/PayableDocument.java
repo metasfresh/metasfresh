@@ -228,27 +228,21 @@ public class PayableDocument
 	}
 
 	/**
-	 * Lowers the payment bonus to the given amount; the amount by which it is lowered is to be paid instead.
+	 * Lowers the payment bonus to the given scaled deduction; the amount by which it is lowered is to be paid instead.
 	 * Nothing may be allocated yet.
-	 * Because of the rounding of the VAT, the new bonus is the closest gross amount that the scaled {@link PaymentBonusDeduction} can reach, see {@link PaymentBonusDeduction#withGrossAmount(Money)}.
 	 *
-	 * @param newPaymentBonus zero or positive, lower than the current bonus
+	 * @param reducedPaymentBonusDeduction the deduction scaled down to the new bonus, e.g. by {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)};
+	 *                                     {@code null} if the customer gets no bonus at all
 	 */
-	void reducePaymentBonusTo(@NonNull final Money newPaymentBonus)
+	void reducePaymentBonusTo(@Nullable final PaymentBonusDeduction reducedPaymentBonusDeduction)
 	{
 		final Money oldPaymentBonus = amountsToAllocate.getPaymentBonus();
-		final Money paymentBonus;
-		if (newPaymentBonus.signum() == 0)
-		{
-			this.paymentBonusDeduction = null;
-			paymentBonus = newPaymentBonus;
-		}
-		else
-		{
-			this.paymentBonusDeduction = Check.assumeNotNull(paymentBonusDeduction, "paymentBonusDeduction shall be set when the payment bonus is not zero: {}", this)
-					.withGrossAmount(newPaymentBonus);
-			paymentBonus = paymentBonusDeduction.getGrossAmount();
-		}
+		final Money paymentBonus = reducedPaymentBonusDeduction != null
+				? reducedPaymentBonusDeduction.getGrossAmount()
+				: oldPaymentBonus.toZero();
+		Check.assume(!paymentBonus.isGreaterThan(oldPaymentBonus), "the payment bonus {} shall not be raised to {}", oldPaymentBonus, paymentBonus);
+
+		this.paymentBonusDeduction = reducedPaymentBonusDeduction;
 
 		final Money payAmtToAdd = oldPaymentBonus.subtract(paymentBonus);
 		this.amountsToAllocate = amountsToAllocate.withPaymentBonus(paymentBonus).addPayAmt(payAmtToAdd);

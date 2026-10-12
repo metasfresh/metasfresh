@@ -102,7 +102,7 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -222,7 +222,8 @@ public class C_Payment_StepDef
 	}
 
 	/**
-	 * Changes fields of a saved draft payment and saves it once. As an UPDATE it runs the same
+	 * Changes fields of a saved draft payment and saves it once, like the WebUI: for each changed amount field it first runs what the field's
+	 * {@code CalloutPayment.amounts} callout runs ({@link IPaymentBL#updateAmounts(I_C_Payment, String, boolean)}), then the save runs the same
 	 * {@code BEFORE_CHANGE} interceptors as the WebUI's save after a field edit.
 	 *
 	 * @cucumber.stepdef
@@ -247,15 +248,32 @@ public class C_Payment_StepDef
 		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
 		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
 
-		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
-		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(payment::setIsOverUnderPayment);
-		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(payment::setPaymentBonusAmt);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payAmt -> {
+			payment.setPayAmt(payAmt);
+			runAmountsCallout(payment, COLUMNNAME_PayAmt);
+		});
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(isOverUnderPayment -> {
+			payment.setIsOverUnderPayment(isOverUnderPayment);
+			runAmountsCallout(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment);
+		});
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(paymentBonusAmt -> {
+			payment.setPaymentBonusAmt(paymentBonusAmt);
+			runAmountsCallout(payment, COLUMNNAME_PaymentBonusAmt);
+		});
 		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
 				.map(dateTrx -> TimeUtil.asTimestamp(dateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(payment.getAD_Org_ID()))))
 				.ifPresent(payment::setDateTrx);
 
 		paymentBL.save(payment);
 		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * What the WebUI's {@code CalloutPayment.amounts} runs when the user changes the given field.
+	 */
+	private void runAmountsCallout(@NonNull final I_C_Payment payment, @NonNull final String columnName)
+	{
+		paymentBL.updateAmounts(payment, columnName, true);
 	}
 
 	/**

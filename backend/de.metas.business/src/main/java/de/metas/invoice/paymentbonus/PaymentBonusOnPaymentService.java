@@ -23,8 +23,8 @@ import java.util.Optional;
 @Service
 public class PaymentBonusOnPaymentService
 {
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final Optional<PaymentBonusDeductionProvider> provider;
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
 
 	public PaymentBonusOnPaymentService(@NonNull final Optional<PaymentBonusDeductionProvider> provider)
 	{
@@ -56,8 +56,9 @@ public class PaymentBonusOnPaymentService
 	 * {@code PayAmt = open - DiscountAmt - PaymentBonusAmt - WriteOffAmt - OverUnderAmt}.
 	 * Like the allocation view, the bonus is not pre-filled (so 0) when it is bigger than the open amount minus the Skonto.
 	 * <p>
-	 * Without a deduction (no „Abzug bei Zahlung“ contract, or a payment in another currency than the invoice) a bonus left over from before is set to 0 and added back to the payment amount;
-	 * a payment without a bonus is left as it is.
+	 * Called right after the amounts were set from the invoice (the „Rechnung“ callout, or {@code PaymentDAO.updateDiscountAndPayment} on a new payment date).
+	 * Without a deduction (no „Abzug bei Zahlung“ contract, or a payment in another currency than the invoice) a bonus left over from before is set to 0
+	 * and PayAmt is computed with the same formula; a payment without a bonus is left as it is.
 	 * Does nothing for a payment that is not a drafted receipt with an invoice.
 	 */
 	public void updatePaymentBonusFromInvoice(@NonNull final I_C_Payment payment)
@@ -68,20 +69,14 @@ public class PaymentBonusOnPaymentService
 		}
 
 		final PaymentBonusDeduction deduction = computeDeduction(payment).orElse(null);
-		if (deduction == null)
+		if (deduction == null && payment.getPaymentBonusAmt().signum() == 0)
 		{
-			final BigDecimal previousPaymentBonusAmt = payment.getPaymentBonusAmt();
-			if (previousPaymentBonusAmt.signum() != 0)
-			{
-				payment.setPaymentBonusAmt(BigDecimal.ZERO);
-				payment.setPayAmt(payment.getPayAmt().add(previousPaymentBonusAmt));
-			}
-			return;
+			return; // nothing to pre-fill and nothing to drop
 		}
 
 		final BigDecimal openAmt = paymentDAO.getInvoiceOpenAmount(payment, true);
 		final BigDecimal maxPaymentBonusAmt = openAmt.subtract(payment.getDiscountAmt());
-		final BigDecimal deductionGrossAmt = deduction.getGrossAmount().toBigDecimal();
+		final BigDecimal deductionGrossAmt = deduction != null ? deduction.getGrossAmount().toBigDecimal() : BigDecimal.ZERO;
 		final BigDecimal paymentBonusAmt = deductionGrossAmt.compareTo(maxPaymentBonusAmt) <= 0 ? deductionGrossAmt : BigDecimal.ZERO;
 
 		payment.setPaymentBonusAmt(paymentBonusAmt);
@@ -94,13 +89,14 @@ public class PaymentBonusOnPaymentService
 
 	/**
 	 * Lets the payment bonus of a drafted receipt for an invoice be at most what the payment leaves open: a customer who pays the full amount gets no bonus.
-	 * With a deduction, {@code PaymentBonusAmt} becomes the largest amount the payment bonus credit memo can reach that is neither above the deduction's gross amount
-	 * nor above {@code max(0, open - DiscountAmt - PayAmt)}, see {@link PaymentBonusDeduction#computeLargestReachableGrossAmountNotAbove(Money)}.
+	 * The bonus is only ever lowered, never raised: a bonus the user lowered or set to 0 stays so, and only the pre-fill ({@link #updatePaymentBonusFromInvoice(I_C_Payment)}) sets it from the deduction.
+	 * With a deduction, {@code PaymentBonusAmt} becomes the largest amount that the payment bonus credit memo can reach and that is not above
+	 * {@code min(PaymentBonusAmt, max(0, open - DiscountAmt - PayAmt))}, see {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)}.
 	 * Without a deduction, or for a payment that is not a drafted receipt with an invoice, {@code PaymentBonusAmt} is left unchanged.
 	 */
 	public void capPaymentBonusToShortfall(@NonNull final I_C_Payment payment)
 	{
-		if (!isDraftedReceiptWithInvoice(payment))
+		if (!isDraftedReceiptWithInvoice(payment) || payment.getPaymentBonusAmt().signum() <= 0)
 		{
 			return;
 		}
@@ -113,8 +109,33 @@ public class PaymentBonusOnPaymentService
 
 		final BigDecimal openAmt = paymentDAO.getInvoiceOpenAmount(payment, true);
 		final Money shortfall = Money.of(openAmt.subtract(payment.getDiscountAmt()).subtract(payment.getPayAmt()), deduction.getCurrencyId());
+		final Money maxPaymentBonus = shortfall.min(Money.of(payment.getPaymentBonusAmt(), deduction.getCurrencyId()));
 
-		payment.setPaymentBonusAmt(deduction.computeLargestReachableGrossAmountNotAbove(shortfall).toBigDecimal());
+		payment.setPaymentBonusAmt(deduction.withLargestReachableGrossAmountNotAbove(maxPaymentBonus)
+				.map(PaymentBonusDeduction::getGrossAmount)
+				.map(Money::toBigDecimal)
+				.orElse(BigDecimal.ZERO));
+	}
+
+	/**
+	 * Sets the payment bonus of a drafted receipt for an invoice to 0 when it can no longer be deducted, e.g. because the payment is now in another currency than the invoice.
+	 * A deductible bonus and the other amounts are left as they are, like the Skonto.
+	 *
+	 * @return true if the bonus was set to 0, so the caller has to recompute the write-off
+	 */
+	public boolean clearPaymentBonusIfNotDeductible(@NonNull final I_C_Payment payment)
+	{
+		if (!isDraftedReceiptWithInvoice(payment) || payment.getPaymentBonusAmt().signum() == 0)
+		{
+			return false;
+		}
+		if (computeDeduction(payment).isPresent())
+		{
+			return false;
+		}
+
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+		return true;
 	}
 
 	private Optional<PaymentBonusDeduction> computeDeduction(@NonNull final I_C_Payment payment)
