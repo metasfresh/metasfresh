@@ -20,6 +20,8 @@ jobs:
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -53,6 +55,25 @@ jobs:
           GIT_REF: ${{ github.ref_name }}
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: determine-base-refname
+        # Resolve the BASE branch this ref derives from; selects the DB seed (see init output base-refname).
+        # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
+        # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
+        # (base branches, merge-queue/merge-* branches, or anything unrecognised).
+        id: base-refname
+        env:
+          GIT_REF: ${{ github.ref_name }}
+          BRANCH_MAP: ${{ vars.CICD_BRANCH_MAP }}
+        run: |
+          best=""
+          for b in $(echo "$BRANCH_MAP" | grep -oE '"[^"]+"' | tr -d '"' || true); do
+            if [ "$GIT_REF" = "$b" ] || [[ "$GIT_REF" == "${b}_"* ]]; then
+              if [ ${#b} -gt ${#best} ]; then best="$b"; fi
+            fi
+          done
+          [ -z "$best" ] && best="$GIT_REF"
+          echo "Base branch resolved for the DB seed: $best"
+          echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
         env:
@@ -706,6 +727,12 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: resolve-db-seed
+        # the base branch's DB seed if it comes from this commit's own history, else the 5.172 dump
+        id: db-seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
         run: |
           docker buildx build \
@@ -714,6 +741,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
