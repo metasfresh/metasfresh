@@ -1725,20 +1725,41 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final String trxName = get_TrxName();
-		if (!trxManager.isActive(trxName))
-		{
-			throw new AdempiereException("The payment bonus credit memo has to be created in the transaction of the payment's completion, but there is none")
-					.appendParametersToMessage()
-					.setParameter("C_Payment_ID", getC_Payment_ID())
-					.setParameter("trxName", trxName);
-		}
-
+		final String trxName = getActiveTrxNameForPaymentBonusCreditMemo();
 		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
 
 		// with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
 		trxManager.call(trxName, () -> paymentBonusOnPaymentService.get().generateCreditMemoIfAny(this, allocationDate))
 				.ifPresent(this::alignPaymentBonusAmtWithCreditMemo);
+	}
+
+	/**
+	 * Reverses this payment's payment bonus credit memo, if any, in this payment's transaction: a failure fails the payment's reversal and nothing stays half-reversed.
+	 */
+	private void reversePaymentBonusCreditMemoIfAny()
+	{
+		if (getPaymentBonus_CreditMemo_ID() <= 0)
+		{
+			return;
+		}
+
+		final String trxName = getActiveTrxNameForPaymentBonusCreditMemo();
+
+		// with this payment's transaction as the thread-inherited one; never in a new transaction
+		trxManager.run(trxName, () -> paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this));
+	}
+
+	private String getActiveTrxNameForPaymentBonusCreditMemo()
+	{
+		final String trxName = get_TrxName();
+		if (!trxManager.isActive(trxName))
+		{
+			throw new AdempiereException("The payment bonus credit memo has to be booked in the transaction of the payment's document action, but there is none")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_ID", getC_Payment_ID())
+					.setParameter("trxName", trxName);
+		}
+		return trxName;
 	}
 
 	/**
@@ -1936,7 +1957,7 @@ public final class MPayment extends X_C_Payment
 		}
 
 		// the payment bonus credit memo is reversed first, then the payment: the invoice gets its bonus back before the payment's allocation is undone
-		paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this);
+		reversePaymentBonusCreditMemoIfAny();
 
 		// Create Reversal
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
