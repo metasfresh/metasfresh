@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,9 @@ public class ContractPartnerRepositoryTest
 
 	/**
 	 * The customer retention process recomputes partners with a subscription contract, and clears the value of partners that have one but no subscription contract (any more);
-	 * partners with only other contracts and no value are left out.
+	 * partners with only other contracts and no value, inactive partners and partners with only an inactive subscription contract are left out.
+	 * <p>
+	 * Not covered here: that the guaranteed iterator walks a snapshot, so clearing values while iterating skips no partner; POJO queries in unit tests do not page.
 	 */
 	@Test
 	public void iteratePartnersForCustomerRetention()
@@ -49,6 +52,18 @@ public class ContractPartnerRepositoryTest
 
 		final BPartnerId draftSubscriptionPartner = createPartner();
 		createTerm(draftSubscriptionPartner, TypeConditions.SUBSCRIPTION, DocStatus.Drafted);
+
+		final BPartnerId inactivePartner = createPartner();
+		createTerm(inactivePartner, TypeConditions.SUBSCRIPTION, DocStatus.Completed);
+		createCustomerRetention(inactivePartner, X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		final I_C_BPartner inactivePartnerRecord = load(inactivePartner.getRepoId(), I_C_BPartner.class);
+		inactivePartnerRecord.setIsActive(false);
+		save(inactivePartnerRecord);
+
+		final BPartnerId inactiveTermPartner = createPartner();
+		final I_C_Flatrate_Term inactiveTerm = createTerm(inactiveTermPartner, TypeConditions.SUBSCRIPTION, DocStatus.Completed);
+		inactiveTerm.setIsActive(false);
+		save(inactiveTerm);
 
 		final Iterator<BPartnerId> partners = new ContractPartnerRepository().iteratePartnersForCustomerRetention();
 		final List<BPartnerId> partnerIds;
@@ -71,13 +86,14 @@ public class ContractPartnerRepositoryTest
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 	}
 
-	private static void createTerm(@NonNull final BPartnerId bpartnerId, @NonNull final TypeConditions typeConditions, @NonNull final DocStatus docStatus)
+	private static I_C_Flatrate_Term createTerm(@NonNull final BPartnerId bpartnerId, @NonNull final TypeConditions typeConditions, @NonNull final DocStatus docStatus)
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setBill_BPartner_ID(bpartnerId.getRepoId());
 		term.setType_Conditions(typeConditions.getCode());
 		term.setDocStatus(docStatus.getCode());
 		save(term);
+		return term;
 	}
 
 	private static void createCustomerRetention(@NonNull final BPartnerId bpartnerId, @Nullable final String customerRetention)
