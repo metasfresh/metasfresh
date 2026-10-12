@@ -147,8 +147,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
       | bsl_1                             | bs_1                          | 10   |
     Then validate C_BankStatementLine
-      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_BPartner_ID.Identifier | OPT.Processed |
-      | bsl_1                             | 166.50     | 166.50      | customerBP                   | false         |
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 166.50     | 166.50      | invoice                     | customerBP                   | false         |
 
     # the invoice is referenced by its ID (the placeholder is replaced by the ID of the invoice); another statement date, so that the line goes to its own statement
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
@@ -162,7 +162,163 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
       | bsl_2                             | bs_2                          | 10   |
     Then validate C_BankStatementLine
-      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_BPartner_ID.Identifier | OPT.Processed |
-      | bsl_2                             | 166.50     | 166.50      | customerBP                   | false         |
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_2                             | 166.50     | 166.50      | invoice                     | customerBP                   | false         |
     # cleanup: the invoice stays unpaid, which would make the next import of this fixed document number ambiguous
     And the invoice identified by invoice is reversed
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC1
+  Scenario: CSV bank statement — a line that pays the invoice minus the payment bonus is linked to the invoice (referenced by its document number) and books the bonus
+    # the sales invoice: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %), GrandTotal = 166.50, no Skonto; the bonus 2.6 % of 100.00 = 2.60 + 7 % VAT = 2.78; the customer pays 163.72
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_2 | invoice      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_2,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.72 | 2.78            | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC2
+  Scenario: CSV bank statement — a line that pays the invoice minus Skonto and the payment bonus books both
+    # Skonto 2 % = 3.33, bonus 2.78; the customer pays 166.50 - 3.33 - 2.78 = 160.39
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | C_PaymentTerm_ID | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_3 | skonto2          | invoice      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,160.39,160.39,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_3,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 160.39     | 160.39      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 160.39 | 3.33        | 2.78            | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC3
+  Scenario: CSV bank statement — the invoice number only in the memo links the line to the invoice, as in the CAMT import
+    # InvoiceDocumentNo empty; the document number is in Memo
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_4 | invoice      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,,bsCsvPaymentBonus_4,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.72 | 2.78            | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC4
+  Scenario: CSV bank statement — the invoice referenced by its ID (no document number, no memo) is linked to the line
+    # C_Invoice_ID = the placeholder of the invoice, InvoiceDocumentNo and Memo empty
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_5 | invoice      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,@invoice@,,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.72 | 2.78            | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
