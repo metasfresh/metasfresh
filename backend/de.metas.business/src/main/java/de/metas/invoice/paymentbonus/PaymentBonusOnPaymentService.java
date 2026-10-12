@@ -2,6 +2,7 @@ package de.metas.invoice.paymentbonus;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
@@ -26,6 +27,9 @@ import java.util.Optional;
 @Service
 public class PaymentBonusOnPaymentService
 {
+	private static final AdMessageKey MSG_PaymentBonusNotDeductible = AdMessageKey.of("de.metas.invoice.paymentbonus.PaymentBonusNotDeductible");
+	private static final AdMessageKey MSG_PaymentBonusAboveOpenAmt = AdMessageKey.of("de.metas.invoice.paymentbonus.PaymentBonusAboveOpenAmt");
+
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
@@ -126,10 +130,12 @@ public class PaymentBonusOnPaymentService
 
 	/**
 	 * Books the payment bonus of a payment that is being completed with a payment bonus credit memo, in the caller's thread-inherited transaction, and links it in {@code PaymentBonus_CreditMemo_ID}.
-	 * The credit memo's amount is the largest reachable one that is not above the bonus nor above what the payment leaves open; it can differ from {@code PaymentBonusAmt}.
+	 * The credit memo's amount is the largest reachable one that is not above {@code PaymentBonusAmt}; because of the VAT rounding it can be a cent lower.
 	 *
 	 * @param allocationDate the credit memo's invoice and accounting date
 	 * @return empty if {@code PaymentBonusAmt} is 0
+	 * @throws AdempiereException a user error if no payment bonus can be deducted for the invoice any more (e.g. another payment already booked it),
+	 *                            or if {@code PaymentBonusAmt} is above what the payment leaves open of the invoice
 	 */
 	public Optional<PaymentBonusCreditMemoBooking> generateCreditMemoIfAny(@NonNull final I_C_Payment payment, @NonNull final LocalDate allocationDate)
 	{
@@ -138,9 +144,12 @@ public class PaymentBonusOnPaymentService
 			return Optional.empty();
 		}
 
-		final PaymentBonusDeduction deduction = getDeductionOrThrow(payment);
+		final PaymentBonusDeduction deduction = computeDeduction(payment).orElseThrow(() -> newPaymentBonusNotDeductibleException(payment));
 		final BigDecimal openAmtBeforeCreditMemo = paymentDAO.getInvoiceOpenAmount(payment, true);
-		final PaymentBonusDeduction deductionToBook = limitToWhatThePaymentLeavesOpen(deduction, payment, openAmtBeforeCreditMemo);
+		assertPaymentBonusNotAboveWhatThePaymentLeavesOpen(payment, openAmtBeforeCreditMemo, deduction.getCurrencyId());
+
+		final PaymentBonusDeduction deductionToBook = deduction.withLargestReachableGrossAmountNotAbove(Money.of(payment.getPaymentBonusAmt(), deduction.getCurrencyId()))
+				.orElseThrow(() -> newPaymentBonusNotDeductibleException(payment));
 
 		final InvoiceId creditMemoId = creditMemoService.generateCreditMemo(deductionToBook, allocationDate);
 		payment.setPaymentBonus_CreditMemo_ID(creditMemoId.getRepoId());
@@ -151,29 +160,34 @@ public class PaymentBonusOnPaymentService
 				.build());
 	}
 
-	private PaymentBonusDeduction getDeductionOrThrow(@NonNull final I_C_Payment payment)
+	private AdempiereException newPaymentBonusNotDeductibleException(@NonNull final I_C_Payment payment)
 	{
-		return computeDeduction(payment)
-				.orElseThrow(() -> new AdempiereException("No payment bonus can be deducted for the payment's invoice")
-						.appendParametersToMessage()
-						.setParameter("C_Payment_ID", payment.getC_Payment_ID())
-						.setParameter("C_Invoice_ID", payment.getC_Invoice_ID())
-						.setParameter("PaymentBonusAmt", payment.getPaymentBonusAmt()));
+		return new AdempiereException(MSG_PaymentBonusNotDeductible, getInvoiceDocumentNo(payment), payment.getPaymentBonusAmt())
+				.setParameter("C_Payment_ID", payment.getC_Payment_ID())
+				.setParameter("C_Invoice_ID", payment.getC_Invoice_ID());
 	}
 
-	private static PaymentBonusDeduction limitToWhatThePaymentLeavesOpen(
-			@NonNull final PaymentBonusDeduction deduction,
+	/**
+	 * A bonus-only save does not cap the bonus to what the payment leaves open (see {@link #capPaymentBonusToShortfall(I_C_Payment)}), so a bonus above it can reach the completion.
+	 */
+	private void assertPaymentBonusNotAboveWhatThePaymentLeavesOpen(
 			@NonNull final I_C_Payment payment,
-			@NonNull final BigDecimal invoiceOpenAmt)
+			@NonNull final BigDecimal invoiceOpenAmt,
+			@NonNull final CurrencyId currencyId)
 	{
-		final Money maxPaymentBonus = computeMaxPaymentBonus(payment, invoiceOpenAmt, deduction.getCurrencyId());
-		return deduction.withLargestReachableGrossAmountNotAbove(maxPaymentBonus)
-				.orElseThrow(() -> new AdempiereException("The payment bonus is not covered by what the payment leaves open of the invoice")
-						.appendParametersToMessage()
-						.setParameter("C_Payment_ID", payment.getC_Payment_ID())
-						.setParameter("C_Invoice_ID", payment.getC_Invoice_ID())
-						.setParameter("PaymentBonusAmt", payment.getPaymentBonusAmt())
-						.setParameter("maxPaymentBonus", maxPaymentBonus));
+		final Money paymentBonus = Money.of(payment.getPaymentBonusAmt(), currencyId);
+		final Money maxPaymentBonus = computeMaxPaymentBonus(payment, invoiceOpenAmt, currencyId);
+		if (paymentBonus.isGreaterThan(maxPaymentBonus))
+		{
+			throw new AdempiereException(MSG_PaymentBonusAboveOpenAmt, paymentBonus.toBigDecimal(), maxPaymentBonus.toZeroIfNegative().toBigDecimal(), getInvoiceDocumentNo(payment))
+					.setParameter("C_Payment_ID", payment.getC_Payment_ID())
+					.setParameter("C_Invoice_ID", payment.getC_Invoice_ID());
+		}
+	}
+
+	private String getInvoiceDocumentNo(@NonNull final I_C_Payment payment)
+	{
+		return invoiceBL.getById(InvoiceId.ofRepoId(payment.getC_Invoice_ID())).getDocumentNo();
 	}
 
 	/**

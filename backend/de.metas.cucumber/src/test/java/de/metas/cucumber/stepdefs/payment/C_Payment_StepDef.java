@@ -183,6 +183,31 @@ public class C_Payment_StepDef
 	}
 
 	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion is refused with the given {@code AD_Message.ErrorCode}.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * Then the payment identified by payment is completed expecting error code PAYMENT_BONUS_NOT_DEDUCTIBLE
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting error code (.*)$")
+	public void completePaymentExpectingErrorCode(@NonNull final String paymentIdentifier, @NonNull final String errorCode)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
+	}
+
+	/**
 	 * Reverses the payment referenced by {@code paymentIdentifierStr} and, if
 	 * {@code reversalIdentifierStr} is given, stores the created reversal under it.
 	 *

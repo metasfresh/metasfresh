@@ -33,12 +33,15 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +68,28 @@ public class C_DocType_StepDef
 		this.docTypeTable = docTypeTable;
 	}
 
+	/**
+	 * {@code C_DocType_ID} -> the {@code IsActive} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreIsActive()} can put it back.
+	 */
+	private final Map<Integer, Boolean> isActiveBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * Updates existing {@code C_DocType}s that were registered before, e.g. with {@code load C_DocType:}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_DocType_ID.Identifier</b> — (required) identifier of the doc type<br>
+	 *   <b>OPT.C_DocTypeInvoice_ID.Identifier</b> — (optional) identifier of the doc type's invoice doc type; {@code null} removes it<br>
+	 *   <b>OPT.C_DocType_Invoicing_Pool_ID.Identifier</b> — (optional) identifier of the doc type's invoicing pool; {@code null} removes it<br>
+	 *   <b>OPT.IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData, C_DocType_Invoicing_Pool_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_DocType:
+	 *   | C_DocType_ID.Identifier | OPT.IsActive |
+	 *   | paymentBonusDocType     | false        |
+	 * </pre>
+	 */
 	@And("update C_DocType:")
 	public void update_C_DocType(@NonNull final DataTable dataTable)
 	{
@@ -162,8 +187,32 @@ public class C_DocType_StepDef
 			}
 		}
 
+		final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_DocType.COLUMNNAME_IsActive);
+		if (isActive != null)
+		{
+			isActiveBeforeScenario.putIfAbsent(docTypeRecord.getC_DocType_ID(), docTypeRecord.isActive());
+			docTypeRecord.setIsActive(isActive);
+		}
+
 		saveRecord(docTypeRecord);
 
 		docTypeTable.putOrReplace(docTypeIdentifier, docTypeRecord);
+	}
+
+	/**
+	 * Sets back the {@code IsActive} of every doc type that {@link #update_C_DocType(DataTable)} changed.
+	 * <p>
+	 * Doc types are shared by every scenario on the executor, so a doc type left inactive would break whatever runs next;
+	 * an {@code @After} hook also runs when a step failed, a trailing Gherkin step would not.
+	 */
+	@After
+	public void restoreIsActive()
+	{
+		isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
+			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+			docTypeRecord.setIsActive(isActive);
+			saveRecord(docTypeRecord);
+		});
+		isActiveBeforeScenario.clear();
 	}
 }

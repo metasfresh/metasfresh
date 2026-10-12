@@ -269,6 +269,24 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
+	 * Asserts that exactly one completed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice, and that it is the one registered under {@code creditMemoIdentifier}:
+	 * the payment bonus of an invoice is booked once.
+	 * <pre>
+	 * And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+	 * </pre>
+	 */
+	@And("^the only payment bonus credit memo for invoice (.*) is (.*)$")
+	public void onlyPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier, @NonNull final String creditMemoIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		final InvoiceId expectedCreditMemoId = invoiceTable.getId(StepDefDataIdentifier.ofString(creditMemoIdentifier));
+		assertThat(PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.extracting(I_C_Invoice::getC_Invoice_ID)
+				.containsExactly(expectedCreditMemoId.getRepoId());
+	}
+
+	/**
 	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
 	 * There has to be exactly one completed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
 	 */
