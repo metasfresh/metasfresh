@@ -187,6 +187,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
+		// the lookup is a read-only query that runs for every line with a reference; the bonus gate decides whether its result is used (no try/catch)
 		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
 				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
 				.orElse(null);

@@ -201,6 +201,13 @@ class BankStatementImportInvoiceResolverTest
 	}
 
 	@Test
+	void invoiceId_ofAnotherOrg_noInvoice()
+	{
+		final InvoiceId invoiceId = invoice().documentNo("100").orgId(ORG + 1).build();
+		assertThat(resolver.resolve(importLine().invoiceId(invoiceId).build())).isEmpty();
+	}
+
+	@Test
 	void aClosedInvoiceIsLinked()
 	{
 		final InvoiceId invoiceId = invoice().documentNo("100").docStatus(DocStatus.Closed).build();

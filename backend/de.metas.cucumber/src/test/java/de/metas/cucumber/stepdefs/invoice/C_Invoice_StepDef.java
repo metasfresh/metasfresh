@@ -919,7 +919,11 @@ public class C_Invoice_StepDef
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(isoCode);
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		row.getAsOptionalString(COLUMNNAME_DocumentNo).map(restTestContext::resolveVariables).ifPresent(invoice::setDocumentNo); // @variable@ placeholders: e.g. a per-run suffix
+		// a DocumentNo with a @variable@ placeholder (e.g. a per-run suffix) is resolved; any other value is taken literally
+		// (the expression compiler throws on a single '@' and turns '@@' into '@')
+		row.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.map(documentNo -> documentNo.matches(".*@[^@]+@.*") ? restTestContext.resolveVariables(documentNo) : documentNo)
+				.ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
