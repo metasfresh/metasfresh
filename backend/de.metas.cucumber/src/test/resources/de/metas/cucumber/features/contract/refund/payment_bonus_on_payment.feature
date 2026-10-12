@@ -955,6 +955,49 @@ Feature: Payment bonus on the payment, next to Skonto
       | invoice      | payment      | 163.72 | 0           | 0.73        |
 
 
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H6d
+  Scenario: Payment for an invoice — completing it books a payment bonus the user raised above the computed one, like the allocation view
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    # the customer pays 163.50 and deducts 3.00 instead of the computed 2.78: 166.50 - 163.50 = 3.00
+    And the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.50 |
+    And the draft payment identified by payment is saved without UI callouts
+      | PaymentBonusAmt |
+      | 3.00            |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt |
+      | payment      | 163.50 | 3.00            | 0           |
+
+    When the payment identified by payment is completed
+
+    # the credit memo books 3.00 gross: net 2.80 + 7 % VAT 0.20; nothing is written off
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.50 | 3.00            | 0           | bonusCreditMemo            | true        |
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 3.00 EUR   | PB         | true   |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID | Amount | DiscountAmt | WriteOffAmt |
+      | invoice      | payment      | 163.50 | 0           | 0           |
+
   # ##############################################################################################
   # ##############################################################################################
   # Payment window and allocation view on the same invoice: the payment bonus is booked once per invoice

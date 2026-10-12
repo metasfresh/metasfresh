@@ -130,7 +130,7 @@ public class PaymentBonusOnPaymentService
 
 	/**
 	 * Books the payment bonus of a payment that is being completed with a payment bonus credit memo, in the caller's thread-inherited transaction, and links it in {@code PaymentBonus_CreditMemo_ID}.
-	 * The credit memo's amount is the largest reachable one that is not above {@code PaymentBonusAmt}; because of the VAT rounding it can be a cent lower.
+	 * The credit memo books {@code PaymentBonusAmt}, also when the user raised it above the computed deduction (like the allocation view); because of the VAT rounding it can be a cent lower.
 	 *
 	 * @param allocationDate the credit memo's invoice and accounting date
 	 * @return empty if {@code PaymentBonusAmt} is 0
@@ -148,7 +148,7 @@ public class PaymentBonusOnPaymentService
 		final BigDecimal openAmtBeforeCreditMemo = paymentDAO.getInvoiceOpenAmount(payment, true);
 		assertPaymentBonusNotAboveWhatThePaymentLeavesOpen(payment, openAmtBeforeCreditMemo, deduction.getCurrencyId());
 
-		final PaymentBonusDeduction deductionToBook = deduction.withLargestReachableGrossAmountNotAbove(Money.of(payment.getPaymentBonusAmt(), deduction.getCurrencyId()))
+		final PaymentBonusDeduction deductionToBook = deduction.withLargestReachableGrossAmountUpTo(Money.of(payment.getPaymentBonusAmt(), deduction.getCurrencyId()))
 				.orElseThrow(() -> newPaymentBonusNotDeductibleException(payment));
 
 		final InvoiceId creditMemoId = creditMemoService.generateCreditMemo(deductionToBook, allocationDate);

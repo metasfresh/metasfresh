@@ -188,4 +188,48 @@ class PaymentBonusDeductionTest
 		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("0"))).isEmpty();
 		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("-1.00"))).isEmpty();
 	}
+
+	/** Unlike {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)}, an amount above the deduction's own gross amount scales the deduction up: the customer deducted more than computed. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_amountAboveTheDeduction_scaledUp()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60")); // gross 2.78
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("3.00")))).isEqualByComparingTo("3.00");
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("2.78"))).containsSame(deduction);
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("1.50")))).isEqualByComparingTo("1.50");
+	}
+
+	/** {@link PaymentBonusDeduction#withGrossAmount(Money)} overshoots 0.03 to 0.04 (19 % VAT); so the cent-down gives 0.02, also above the deduction: 11.93 overshoots to 11.94 and gives 11.92. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_overshootingAmount_nextLowerReachable()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+		assertThat(deduction.withGrossAmount(eur("11.93")).getGrossAmount().toBigDecimal()).isEqualByComparingTo("11.94"); // precondition: the overshoot
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("0.03")))).isEqualByComparingTo("0.02");
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("11.93")))).isEqualByComparingTo("11.92");
+	}
+
+	/** With lines of two taxes, an amount above the deduction is reached by scaling all lines up, keeping both taxes. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_twoTaxes_scaledUp()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "10.40"), line(2, TAX_19, "1.60")); // gross 11.13 + 1.90 = 13.03
+
+		final PaymentBonusDeduction scaled = deduction.withLargestReachableGrossAmountUpTo(eur("20.00")).orElseThrow(AssertionError::new);
+
+		assertThat(scaled.getGrossAmount().toBigDecimal()).isLessThanOrEqualTo(new BigDecimal("20.00")).isGreaterThanOrEqualTo(new BigDecimal("19.99"));
+		assertThat(scaled.getLines()).hasSize(2);
+		assertThat(scaled.getNetAmount().toBigDecimal()).isGreaterThan(deduction.getNetAmount().toBigDecimal());
+	}
+
+	@Test
+	void withLargestReachableGrossAmountUpTo_amountNotPositive_empty()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60"));
+
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("0"))).isEmpty();
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("-1.00"))).isEmpty();
+	}
 }
