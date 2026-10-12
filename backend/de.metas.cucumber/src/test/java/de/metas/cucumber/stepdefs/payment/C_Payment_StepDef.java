@@ -216,6 +216,37 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Changes fields of a saved draft payment and saves it once. As an UPDATE it runs the same
+	 * {@code BEFORE_CHANGE} interceptors as the WebUI's save after a field edit.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment, e.g. {@code 163.72}<br>
+	 *   <b>IsOverUnderPayment</b> — (optional) new value of the "over/under payment" flag<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is changed
+	 *   | PayAmt |
+	 *   | 163.72 |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is changed$")
+	public void changeDraftPayment(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(payment::setIsOverUnderPayment);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
 	@And("validate payments")
 	public void validateCreatedPayments(@NonNull final DataTable table)
 	{
@@ -245,6 +276,8 @@ public class C_Payment_StepDef
 				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(discountAmt));
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
+		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
+				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
 
 		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.ifPresent(rawValue -> {

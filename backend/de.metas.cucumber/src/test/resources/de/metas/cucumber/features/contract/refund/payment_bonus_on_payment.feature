@@ -136,3 +136,66 @@ Feature: Payment bonus on the payment, next to Skonto
       | invoice         | -            | 2.78   | 0           | 0            | alloc_bonus        |
       | bonusCreditMemo | -            | -2.78  | 0           | 0            | alloc_bonus        |
       | invoice         | payment      | 160.39 | 3.33        | 0            | alloc_payment      |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # Payment without invoice: a changed amount leaves write-off and over/under at 0
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_W1
+  Scenario: Payment without invoice — the amount typed on the saved draft creates no write-off
+    # the sales invoice without payment term: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the WebUI saves the new payment first; the user then types the amount: 166.50 - 2.78 bonus = 163.72
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 0.00 EUR | true      | org_EUR_account     |
+    When the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.72 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0           | 0            |
+
+    And the payment identified by payment is completed
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo           |
+    And validate payments
+      | C_Payment_ID | WriteOffAmt | IsAllocated |
+      | payment      | 0           | true        |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # Payment without invoice: switching "over/under payment" leaves write-off and over/under at 0
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_W2
+  Scenario: Payment without invoice — switching on over/under payment creates no write-off
+    Given metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 50.00 EUR | true      | org_EUR_account     |
+    When the draft payment identified by payment is changed
+      | IsOverUnderPayment |
+      | true               |
+    Then validate payments
+      | C_Payment_ID | PayAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 50     | 0           | 0            |

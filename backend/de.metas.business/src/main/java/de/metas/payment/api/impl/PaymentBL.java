@@ -279,6 +279,12 @@ public class PaymentBL implements IPaymentBL
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		payment.setOverUnderAmt(ZERO);
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 
 		if (docStatus.isDrafted())
@@ -375,6 +381,12 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void onPayAmtChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
 		{
