@@ -695,14 +695,14 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | formerOrgBP | N        |
     And metasfresh contains C_BPartners without locations:
       | Identifier   | TaxID        | VATaxID     | AD_OrgBP_ID.Identifier |
-      | currentOrgBP | 21/815/08151 | DE136695976 | ustvaOrg2              |
+      | currentOrgBP | 21/815/08151 | DE271828180 | ustvaOrg2              |
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       | AD_Org_ID.Identifier |
       | td         | acctSchema      | 2024-01-15 | ustvaOrg2            |
 
     Then the UStVA report for tax declaration "td" returns:
       | report_level | org_tax_id   | org_vat_id  |
-      | HEADER       | 21/815/08151 | DE136695976 |
+      | HEADER       | 21/815/08151 | DE271828180 |
 
 # ############################################################################################################################################
 # Source documents: an SAP GL journal (Hauptbuchjournal) tax booking
