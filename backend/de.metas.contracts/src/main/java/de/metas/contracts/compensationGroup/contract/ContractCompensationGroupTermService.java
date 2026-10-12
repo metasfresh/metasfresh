@@ -11,6 +11,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -128,29 +129,36 @@ public class ContractCompensationGroupTermService
 
 		final MutableInt updatedCount = MutableInt.zero();
 		final Iterator<I_C_Flatrate_Term> terms = termRepository.iterateTermsDueForDailyContractStatusUpdate(today);
-		while (terms.hasNext())
+		try
 		{
-			final I_C_Flatrate_Term term = terms.next();
-			trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+			while (terms.hasNext())
 			{
-				@Override
-				public void run(final String localTrxName)
+				final I_C_Flatrate_Term term = terms.next();
+				trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 				{
-					if (updateContractStatus(term, today))
+					@Override
+					public void run(final String localTrxName)
 					{
-						updatedCount.increment();
+						if (updateContractStatus(term, today))
+						{
+							updatedCount.increment();
+						}
 					}
-				}
 
-				// One failing term must not stop the daily run for all the others: roll back this term only, log it and go on.
-				@Override
-				public boolean doCatch(final Throwable ex)
-				{
-					Loggables.withLogger(logger, Level.WARN)
-							.addLog("C_Flatrate_Term_ID={}: contract status update failed: {}", term.getC_Flatrate_Term_ID(), ex.getLocalizedMessage(), ex);
-					return true; // rollback
-				}
-			});
+					// One failing term must not stop the daily run for all the others: roll back this term only, log it and go on.
+					@Override
+					public boolean doCatch(final Throwable ex)
+					{
+						Loggables.withLogger(logger, Level.WARN)
+								.addLog("C_Flatrate_Term_ID={}: contract status update failed: {}", term.getC_Flatrate_Term_ID(), ex.getLocalizedMessage(), ex);
+						return true; // rollback
+					}
+				});
+			}
+		}
+		finally
+		{
+			IteratorUtils.close(terms); // drops the iterator's ID snapshot also when the run aborts
 		}
 		return updatedCount.getValue();
 	}
