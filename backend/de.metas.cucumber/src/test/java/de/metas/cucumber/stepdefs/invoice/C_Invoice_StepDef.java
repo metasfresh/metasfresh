@@ -318,6 +318,7 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
+	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
 	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
@@ -909,6 +910,9 @@ public class C_Invoice_StepDef
 				.ifPresent(warehouseId -> invoice.setM_Warehouse_ID(warehouseId.getRepoId()));
 
 		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
+		row.getAsOptionalLocalDate(COLUMNNAME_DateAcct)
+				.map(TimeUtil::asTimestamp)
+				.ifPresent(invoice::setDateAcct);
 		invoice.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
 
 		final CurrencyCode isoCode = row.getAsCurrencyCode();

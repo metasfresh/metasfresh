@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import com.google.common.base.Throwables;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -64,6 +65,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
@@ -82,6 +84,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
@@ -210,6 +213,33 @@ public class C_Payment_StepDef
 		payment.setDocAction(IDocument.ACTION_Complete);
 
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
+	}
+
+	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion fails because an accounting period is closed.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * When the payment identified by payment is completed expecting a closed accounting period
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting a closed accounting period$")
+	public void completePaymentExpectingClosedPeriod(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		assertThatThrownBy(() -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
+				.satisfies(exception -> assertThat(Throwables.getCausalChain(exception))
+						.as("causal chain of %s", exception)
+						.hasAtLeastOneElementOfType(PeriodClosedException.class));
 
 		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
 	}

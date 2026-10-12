@@ -1298,6 +1298,55 @@ Feature: Payment bonus on the payment, next to Skonto
       | invoice      | 166.50 EUR | false  |
 
 
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H9b
+  Scenario: Payment for an invoice — the payment's allocation fails after its payment bonus credit memo was completed: the credit memo is rolled back with the payment
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | DateAcct   | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | 2026-07-15 | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the customer paid on 2026-07-20; the payment is accounted in August
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID | DateTrx    | DateAcct   |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     | 2026-07-20 | 2026-08-03 |
+    And the payment identified by payment gets its amounts from its invoice
+    And the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.72 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt |
+      | payment      | 163.72 | 2.78            | 0           |
+
+    # the payment allocations of August are closed; July and the receipts of August are open
+    # - the credit memo and its allocation against the invoice are booked on 2026-07-20
+    # - the payment's allocation is booked on the payment's accounting date 2026-08-03
+    And the accounting schema of the organization uses manual period control
+    And update C_PeriodControl:
+      | DocBaseType | DateAcct   | PeriodStatus |
+      | ARI         | 2026-07-15 | O            |
+      | ARC         | 2026-07-20 | O            |
+      | CMA         | 2026-07-20 | O            |
+      | ARR         | 2026-08-03 | O            |
+      | CMA         | 2026-08-03 | C            |
+
+    When the payment identified by payment is completed expecting a closed accounting period
+
+    Then there is no payment bonus credit memo for invoice invoice
+    And validate payments
+      | C_Payment_ID | DocStatus | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | DR        | null                       | false       |
+    And validate created invoices
+      | C_Invoice_ID | GrandTotal | IsPaid | OpenAmt |
+      | invoice      | 166.50 EUR | false  | 166.50  |
+
+
   # ##############################################################################################
   # ##############################################################################################
   # Payment window: reversing the payment reverses its payment bonus credit memo, too
