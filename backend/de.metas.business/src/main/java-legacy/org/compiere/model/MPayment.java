@@ -275,7 +275,6 @@ public final class MPayment extends X_C_Payment
 				setC_Invoice_ID(0);
 				setWriteOffAmt(BigDecimal.ZERO);
 				setDiscountAmt(BigDecimal.ZERO);
-				setPaymentBonusAmt(BigDecimal.ZERO);
 				setIsOverUnderPayment(false);
 				setOverUnderAmt(BigDecimal.ZERO);
 				setIsPrepayment(false);
