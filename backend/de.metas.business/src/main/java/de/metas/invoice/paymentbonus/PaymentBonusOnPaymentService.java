@@ -103,7 +103,8 @@ public class PaymentBonusOnPaymentService
 	 * Lets the payment bonus of a drafted receipt for an invoice be at most what the payment leaves open: a customer who pays the full amount gets no bonus.
 	 * The bonus is only ever lowered, never raised: a bonus the user lowered or set to 0 stays so, and only the pre-fill ({@link #updatePaymentBonusFromInvoice(I_C_Payment)}) sets it from the deduction.
 	 * With a deduction, {@code PaymentBonusAmt} becomes the largest amount that the payment bonus credit memo can reach and that is not above
-	 * {@code min(PaymentBonusAmt, max(0, open - DiscountAmt - PayAmt))}, see {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)}.
+	 * {@code min(PaymentBonusAmt, max(0, open - DiscountAmt - PayAmt))}, see {@link PaymentBonusDeduction#withLargestReachableGrossAmountUpTo(Money)};
+	 * so a bonus the user raised above the computed deduction stays as long as the payment leaves it open.
 	 * Without a deduction, or for a payment that is not a drafted receipt with an invoice, {@code PaymentBonusAmt} is left unchanged.
 	 */
 	public void capPaymentBonusToShortfall(@NonNull final I_C_Payment payment)
@@ -122,7 +123,7 @@ public class PaymentBonusOnPaymentService
 		final BigDecimal openAmt = paymentDAO.getInvoiceOpenAmount(payment, true);
 		final Money maxPaymentBonus = computeMaxPaymentBonus(payment, openAmt, deduction.getCurrencyId());
 
-		payment.setPaymentBonusAmt(deduction.withLargestReachableGrossAmountNotAbove(maxPaymentBonus)
+		payment.setPaymentBonusAmt(deduction.withLargestReachableGrossAmountUpTo(maxPaymentBonus)
 				.map(PaymentBonusDeduction::getGrossAmount)
 				.map(Money::toBigDecimal)
 				.orElse(BigDecimal.ZERO));
