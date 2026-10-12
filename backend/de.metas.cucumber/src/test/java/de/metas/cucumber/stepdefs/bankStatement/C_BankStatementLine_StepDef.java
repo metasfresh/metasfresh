@@ -165,7 +165,11 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(bPartnerIdentifier))
+		if ("null".equals(bPartnerIdentifier))
+		{
+			softly.assertThat(bankStatementLineRecord.getC_BPartner_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner_ID", bslIdentifier).isLessThanOrEqualTo(0);
+		}
+		else if (Check.isNotBlank(bPartnerIdentifier))
 		{
 			final I_C_BPartner bPartnerRecord = partnerTable.get(bPartnerIdentifier);
 			softly.assertThat(bPartnerRecord).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner record for identifier=%s", bslIdentifier, bPartnerIdentifier).isNotNull();
@@ -174,7 +178,11 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoiceIdentifier))
+		if ("null".equals(invoiceIdentifier))
+		{
+			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID", bslIdentifier).isLessThanOrEqualTo(0);
+		}
+		else if (Check.isNotBlank(invoiceIdentifier))
 		{
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();

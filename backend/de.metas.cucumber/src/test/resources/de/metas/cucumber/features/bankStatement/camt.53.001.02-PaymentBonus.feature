@@ -427,3 +427,470 @@ Feature: Payment bonus on the payment that is created from a bank statement line
     And validate created invoices
       | C_Invoice_ID | IsPaid |
       | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsPaymentBonus_TC2
+  Scenario: Bank statement with matching amounts — a line that pays the invoice minus the payment bonus is matched to the invoice and books the bonus
+    # the same invoice and payment as TC1, but the import matches the line amount against the open amount (IsMatchAmounts = Y)
+    # today the line gets no invoice, because 163.72 is neither the open amount nor open - Skonto
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_3 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And bank statement is imported with identifiers bs_1, matching invoice amounts
+    """
+    <?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdBSPB0003</MsgId>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdBSPB0003</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>DE89370400440532013000</IBAN>
+				</Id>
+				<Ccy>EUR</Ccy>
+				<Svcr>
+					<FinInstnId>
+						<BIC>AAAAAAAA82A</BIC>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>PRCD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-19</Dt>
+				</Dt>
+			</Bal>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>CLBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1163.72</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-20</Dt>
+				</Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>00001</NtryRef>
+				<Amt Ccy="EUR">163.72</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2026-07-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2026-07-20</Dt>
+				</ValDt>
+				<AcctSvcrRef>AAA-BSPB0003</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>TRF</Cd>
+						<Issr>SWIFT</Issr>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">163.72</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>AAA-BSPB0003</AcctSvcrRef>
+							<PmtInfId>PmtInfBSPB0003</PmtInfId>
+						</Refs>
+						<Amt Ccy="EUR">163.72</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">163.72</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">163.72</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Customer Test</Nm>
+								<PstlAdr>
+									<StrtNm>Street</StrtNm>
+									<BldgNb>152</BldgNb>
+									<PstCd>0000</PstCd>
+									<TwnNm>TestCity</TwnNm>
+									<Ctry>DE</Ctry>
+								</PstlAdr>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH4189144993834976921</IBAN>
+								</Id>
+							</DbtrAcct>
+							<Cdtr>
+								<Nm>Test CO</Nm>
+								<PstlAdr>
+									<AdrLine>Street 123</AdrLine>
+									<AdrLine>0000 CityTest</AdrLine>
+								</PstlAdr>
+							</Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>bsPaymentBonus_3</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.72 | 2.78            | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsPaymentBonus_TC3
+  Scenario: Bank statement with matching amounts — a line that pays the invoice minus Skonto and the payment bonus is matched and books both
+    # the sales invoice with Skonto: GrandTotal = 166.50, Skonto 2 % = 3.33, bonus 2.78; the customer pays 166.50 - 3.33 - 2.78 = 160.39
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   | C_PaymentTerm_ID |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_4 | skonto2          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And bank statement is imported with identifiers bs_1, matching invoice amounts
+    """
+    <?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdBSPB0004</MsgId>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdBSPB0004</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>DE89370400440532013000</IBAN>
+				</Id>
+				<Ccy>EUR</Ccy>
+				<Svcr>
+					<FinInstnId>
+						<BIC>AAAAAAAA82A</BIC>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>PRCD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-19</Dt>
+				</Dt>
+			</Bal>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>CLBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1160.39</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-20</Dt>
+				</Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>00001</NtryRef>
+				<Amt Ccy="EUR">160.39</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2026-07-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2026-07-20</Dt>
+				</ValDt>
+				<AcctSvcrRef>AAA-BSPB0004</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>TRF</Cd>
+						<Issr>SWIFT</Issr>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">160.39</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>AAA-BSPB0004</AcctSvcrRef>
+							<PmtInfId>PmtInfBSPB0004</PmtInfId>
+						</Refs>
+						<Amt Ccy="EUR">160.39</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">160.39</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">160.39</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Customer Test</Nm>
+								<PstlAdr>
+									<StrtNm>Street</StrtNm>
+									<BldgNb>152</BldgNb>
+									<PstCd>0000</PstCd>
+									<TwnNm>TestCity</TwnNm>
+									<Ctry>DE</Ctry>
+								</PstlAdr>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH4189144993834976921</IBAN>
+								</Id>
+							</DbtrAcct>
+							<Cdtr>
+								<Nm>Test CO</Nm>
+								<PstlAdr>
+									<AdrLine>Street 123</AdrLine>
+									<AdrLine>0000 CityTest</AdrLine>
+								</PstlAdr>
+							</Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>bsPaymentBonus_4</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 160.39     | 160.39      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 160.39 | 3.33        | 2.78            | 0           | bonusCreditMemo            | Y           |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice      | true   |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID | Amount | DiscountAmt | WriteOffAmt | OverUnderAmt |
+      | invoice      | payment      | 160.39 | 3.33        | 0           | 0            |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsPaymentBonus_TC4
+  Scenario: Bank statement with matching amounts — a customer without a payment bonus contract: a line short by 2.78 is not matched to the invoice
+    # plainBP has no contract: 163.72 is neither the open amount nor open - Skonto, so the line stays without an invoice, as before
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
+      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_5 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And bank statement is imported with identifiers bs_1, matching invoice amounts
+    """
+    <?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdBSPB0005</MsgId>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdBSPB0005</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>DE89370400440532013000</IBAN>
+				</Id>
+				<Ccy>EUR</Ccy>
+				<Svcr>
+					<FinInstnId>
+						<BIC>AAAAAAAA82A</BIC>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>PRCD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-19</Dt>
+				</Dt>
+			</Bal>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>CLBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1163.72</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-20</Dt>
+				</Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>00001</NtryRef>
+				<Amt Ccy="EUR">163.72</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2026-07-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2026-07-20</Dt>
+				</ValDt>
+				<AcctSvcrRef>AAA-BSPB0005</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>TRF</Cd>
+						<Issr>SWIFT</Issr>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">163.72</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>AAA-BSPB0005</AcctSvcrRef>
+							<PmtInfId>PmtInfBSPB0005</PmtInfId>
+						</Refs>
+						<Amt Ccy="EUR">163.72</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">163.72</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">163.72</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Customer Test</Nm>
+								<PstlAdr>
+									<StrtNm>Street</StrtNm>
+									<BldgNb>152</BldgNb>
+									<PstCd>0000</PstCd>
+									<TwnNm>TestCity</TwnNm>
+									<Ctry>DE</Ctry>
+								</PstlAdr>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH4189144993834976921</IBAN>
+								</Id>
+							</DbtrAcct>
+							<Cdtr>
+								<Nm>Test CO</Nm>
+								<PstlAdr>
+									<AdrLine>Street 123</AdrLine>
+									<AdrLine>0000 CityTest</AdrLine>
+								</PstlAdr>
+							</Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>bsPaymentBonus_5</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | null                        | null                         | false         |
+    # cleanup: the unmatched invoice stays unpaid, which would make the next import of this fixed document number ambiguous
+    And the invoice identified by invoice is reversed

@@ -154,7 +154,7 @@ public class ReconcilePaymentsCommandTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
-		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()),
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()),
 				PaymentBonusOnPaymentService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 

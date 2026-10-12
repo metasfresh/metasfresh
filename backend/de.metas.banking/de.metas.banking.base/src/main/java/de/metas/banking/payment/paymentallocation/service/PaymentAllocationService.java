@@ -43,6 +43,8 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalc
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -76,6 +78,7 @@ public class PaymentAllocationService
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 	private final PaymentAllocationRepository paymentAllocationRepository;
+	private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -85,11 +88,13 @@ public class PaymentAllocationService
 	public PaymentAllocationService(
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepository)
+			@NonNull final PaymentAllocationRepository paymentAllocationRepository,
+			@NonNull final PaymentBonusOnPaymentService paymentBonusOnPaymentService)
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
 		this.paymentAllocationRepository = paymentAllocationRepository;
+		this.paymentBonusOnPaymentService = paymentBonusOnPaymentService;
 	}
 
 	@VisibleForTesting
@@ -293,7 +298,28 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		if (isSoTrx)
 		{
-			return openAmountToMatch.equals(openAmtWithDiscount);
+			if (openAmountToMatch.equals(openAmtWithDiscount))
+			{
+				return true;
+			}
+
+			// a customer with a payment bonus contract may also pay "open - bonus" or "open - Skonto - bonus"; for everyone else the Skonto rule above is the only one
+			final Amount bonusGrossAmt = paymentBonusOnPaymentService
+					.computeDeduction(invoiceId, moneyService.getCurrencyIdByCurrencyCode(openAmountToMatch.getCurrencyCode()))
+					.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+					.orElse(null);
+			if (bonusGrossAmt == null)
+			{
+				return false;
+			}
+
+			return PaymentBonusAmountMatcher.match(
+							invoiceToAllocate.getOpenAmountConverted(),
+							invoiceToAllocate.getDiscountAmountConverted(),
+							bonusGrossAmt,
+							openAmountToMatch,
+							true)
+					.isPresent();
 		}
 		else
 		{
