@@ -7,6 +7,8 @@
 --   * sub-tab "Auftragsposition" / "Order Line": the order lines of the group (read-only), sorted by line no.
 -- The table's AD_Window_ID is set, so the group field of an order line zooms into this window.
 -- The contract column is opened up as zoom target, so a contract's Related Documents lists its groups.
+-- Product category, activity and BOM are excluded as zoom targets, so the Related Documents of those master-data
+-- records do not list this window (only contract, order and schema do).
 -- The menu entry is created by the follow-up menu script.
 --
 -- Captions reuse existing elements without changing them:
@@ -93,6 +95,14 @@ DELETE FROM AD_Element_Link WHERE AD_Tab_ID = 549518
 UPDATE AD_Column
 SET IsExcludeFromZoomTargets = 'N', Updated = TO_TIMESTAMP('2026-10-09 11:00:05', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Column_ID = 593649 /* C_Order_CompensationGroup.C_Flatrate_Term_ID */
+;
+-- No Related Documents entry on product category, activity and BOM records: the window is meant for contracts,
+-- orders and schemas only
+UPDATE AD_Column
+SET IsExcludeFromZoomTargets = 'Y', Updated = TO_TIMESTAMP('2026-10-09 11:00:05.500000', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy = 100
+WHERE AD_Column_ID IN (557818 /* C_Order_CompensationGroup.M_Product_Category_ID */,
+                       573341 /* C_Order_CompensationGroup.C_Activity_ID */,
+                       564267 /* C_Order_CompensationGroup.PP_Product_BOM_ID */)
 ;
 -- Filters: Name, Order, Contract, Schema, Organisation (Name and AD_Org_ID already are selection columns)
 UPDATE AD_Column
