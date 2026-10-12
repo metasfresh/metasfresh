@@ -2,8 +2,6 @@ package de.metas.invoice.paymentbonus;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -12,10 +10,10 @@ import de.metas.money.Money;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +26,7 @@ import java.util.Optional;
  * The calculation itself is behind {@link PaymentBonusDeductionProvider}, because it lives in a module that this one cannot depend on.
  */
 @Service
+@RequiredArgsConstructor
 public class PaymentBonusOnPaymentService
 {
 	private static final AdMessageKey MSG_PaymentBonusNotDeductible = AdMessageKey.of("de.metas.invoice.paymentbonus.PaymentBonusNotDeductible");
@@ -35,17 +34,8 @@ public class PaymentBonusOnPaymentService
 
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
 	@NonNull private final PaymentBonusCreditMemoService creditMemoService;
-
-	public PaymentBonusOnPaymentService(
-			@NonNull final Optional<PaymentBonusDeductionProvider> provider,
-			@NonNull final PaymentBonusCreditMemoService creditMemoService)
-	{
-		this.provider = provider;
-		this.creditMemoService = creditMemoService;
-	}
 
 	@VisibleForTesting
 	public static PaymentBonusOnPaymentService newInstanceForUnitTesting()
@@ -166,10 +156,8 @@ public class PaymentBonusOnPaymentService
 	}
 
 	/**
-	 * Reverses the payment bonus credit memo that completing the payment booked ({@code PaymentBonus_CreditMemo_ID}), in the caller's transaction.
-	 * The credit memo's reversal first reverses its allocations, so the invoice's open amount grows back by the bonus.
-	 * Does nothing if the payment has no payment bonus credit memo, or the credit memo is already reversed or voided (e.g. the user reversed it first).
-	 * Any other status (e.g. closed) is left to the document engine, which refuses the reversal.
+	 * Reverses the payment's payment bonus credit memo ({@code PaymentBonus_CreditMemo_ID}), if it has one, in the caller's thread-inherited transaction;
+	 * see {@link PaymentBonusCreditMemoService#reverseCreditMemoIfNotReversed(InvoiceId)}.
 	 */
 	public void reverseCreditMemoIfAny(@NonNull final I_C_Payment payment)
 	{
@@ -179,13 +167,7 @@ public class PaymentBonusOnPaymentService
 			return;
 		}
 
-		final I_C_Invoice creditMemo = invoiceBL.getById(creditMemoId);
-		if (DocStatus.ofNullableCodeOrUnknown(creditMemo.getDocStatus()).isReversedOrVoided())
-		{
-			return;
-		}
-
-		documentBL.processEx(creditMemo, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		creditMemoService.reverseCreditMemoIfNotReversed(creditMemoId);
 	}
 
 	private AdempiereException newPaymentBonusNotDeductibleException(@NonNull final I_C_Payment payment)
