@@ -1858,6 +1858,7 @@ public final class MPayment extends X_C_Payment
 			setDiscountAmt(BigDecimal.ZERO);
 			setWriteOffAmt(BigDecimal.ZERO);
 			setOverUnderAmt(BigDecimal.ZERO);
+			setPaymentBonusAmt(BigDecimal.ZERO);
 			setIsAllocated(false);
 			// Unlink & De-Allocate
 			deAllocate();
@@ -1934,7 +1935,7 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
-		// the payment bonus credit memo is reversed first, then the payment: the credit memo was booked on behalf of this payment, so it must not outlive it
+		// the payment bonus credit memo is reversed first, then the payment: the invoice gets its bonus back before the payment's allocation is undone (binding order)
 		paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this);
 
 		// Create Reversal

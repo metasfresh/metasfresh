@@ -151,12 +151,12 @@ public class C_Payment_StepDef
 	}
 
 	/**
-	 * Completes or reverses the payment referenced by {@code paymentIdentifier}.
+	 * Completes, reverses or voids the payment referenced by {@code paymentIdentifier}.
 	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
 	 *
 	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
 	 */
-	@And("^the payment identified by (.*) is (completed|reversed)$")
+	@And("^the payment identified by (.*) is (completed|reversed|voided)$")
 	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
 		switch (StepDefDocAction.valueOf(action))
@@ -164,6 +164,13 @@ public class C_Payment_StepDef
 			case reversed:
 			{
 				reversePayment(StepDefDataIdentifier.ofString(paymentIdentifier), StepDefDataIdentifier.ofString(paymentIdentifier + "^"));
+				break;
+			}
+			case voided:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+				payment.setDocAction(IDocument.ACTION_Void);
+				documentBL.processEx(payment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			}
 			case completed:

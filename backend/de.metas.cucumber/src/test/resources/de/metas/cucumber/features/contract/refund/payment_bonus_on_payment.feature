@@ -1352,3 +1352,74 @@ Feature: Payment bonus on the payment, next to Skonto
       | C_Payment_ID | PaymentBonusAmt | PaymentBonus_CreditMemo_ID |
       | payment^     | -2.78           | null                       |
     And there is no payment bonus credit memo for invoice invoice
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H3b
+  Scenario: The user reversed the payment bonus credit memo first — reversing the payment then succeeds and does not reverse the credit memo a second time (AC12c)
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    And the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.72 |
+    And the payment identified by payment is completed
+    And validate payments
+      | C_Payment_ID | PaymentBonus_CreditMemo_ID |
+      | payment      | bonusCreditMemo            |
+    And the invoice identified by bonusCreditMemo is reversed
+    And validate created invoices
+      | C_Invoice_ID    | DocStatus |
+      | bonusCreditMemo | RE        |
+
+    When the payment identified by payment is reversed
+
+    Then validate created invoices
+      | C_Invoice_ID    | DocStatus |
+      | bonusCreditMemo | RE        |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid | OpenAmt |
+      | invoice      | false  | 166.50  |
+    And validate payments
+      | C_Payment_ID | DocStatus |
+      | payment      | RE        |
+    And validate payments
+      | C_Payment_ID | PaymentBonusAmt | PaymentBonus_CreditMemo_ID |
+      | payment^     | -2.78           | null                       |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H3c
+  Scenario: Voiding a draft payment with a payment bonus sets the bonus to 0, like its other amounts
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    And validate payments
+      | C_Payment_ID | DocStatus | PaymentBonusAmt |
+      | payment      | DR        | 2.78            |
+
+    When the payment identified by payment is voided
+
+    Then validate payments
+      | C_Payment_ID | DocStatus | PayAmt | PaymentBonusAmt |
+      | payment      | VO        | 0      | 0               |
