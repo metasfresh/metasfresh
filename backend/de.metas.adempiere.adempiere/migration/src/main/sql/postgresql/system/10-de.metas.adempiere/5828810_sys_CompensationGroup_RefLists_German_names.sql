@@ -1,7 +1,10 @@
 -- German names (de_DE, de_CH) for the AD_Ref_List values of the compensation group lists.
 -- de_DE and de_CH still carried the English text (IsTranslated='N'). en_US keeps its English text (except for the
--- schema line types, see below) and is marked as translated. fr_CH is left unchanged. Where the base language is
--- German, the base AD_Ref_List.Name is synced too.
+-- schema line types, see below) and is marked as translated. Where the base language is German, the base
+-- AD_Ref_List.Name is synced too (so the base row switches from English to German).
+-- fr_CH: the four GroupCompensation values keep their French names (same meaning as before). The two schema line
+-- types change meaning, so their French names ("Tarif forfaitaire", "Revenus") would be wrong; no French text is
+-- authored here, they get the en_US text with IsTranslated='N' so they are picked up by the next translation pass.
 --
 -- AD_Reference 540758 GroupCompensationType (C_OrderLine.GroupCompensationType, "Preisminderung Art"):
 --    541326 D  "Discount"           -> "Rabatt"
@@ -100,6 +103,23 @@ SET Name         = 'Revenue Breaks',
     UpdatedBy    = 100
 WHERE AD_Ref_List_ID = 541593
   AND AD_Language = 'en_US'
+;
+-- fr_CH of the schema line types: English text, not translated (see header)
+UPDATE AD_Ref_List_Trl
+SET Name         = 'Contract',
+    IsTranslated = 'N',
+    Updated      = TO_TIMESTAMP('2026-10-09 10:00:10', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Ref_List_ID = 541594
+  AND AD_Language = 'fr_CH'
+;
+UPDATE AD_Ref_List_Trl
+SET Name         = 'Revenue Breaks',
+    IsTranslated = 'N',
+    Updated      = TO_TIMESTAMP('2026-10-09 10:00:11', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Ref_List_ID = 541593
+  AND AD_Language = 'fr_CH'
 ;
 
 UPDATE AD_Ref_List base
