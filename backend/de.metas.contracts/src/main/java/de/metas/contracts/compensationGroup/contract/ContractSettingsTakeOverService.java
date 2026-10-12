@@ -75,39 +75,36 @@ public class ContractSettingsTakeOverService
 						ContractServiceFeeTakeOverService.newInstanceForUnitTesting()));
 	}
 
-	/** @return the schema with one own compensation line appended per matching take-over, the vendor's lines unchanged; the given schema when nothing is taken over */
+	/**
+	 * @return the schema with one own compensation line appended per matching take-over and, when the linked sales order's
+	 * invoice partner has a payment-service fee, one more own line carrying only that fee; the vendor's lines unchanged;
+	 * the given schema when nothing is taken over and no fee applies
+	 */
 	public GroupTemplate applyToSchema(
 			@NonNull final GroupTemplate schema,
 			@NonNull final OrderDropShipInfo order,
 			@NonNull final ContractCompensationGroupSettings settings)
 	{
 		final ImmutableList<ContractSettingsTakeOverMatch> matches = computeMatches(order, settings);
-		if (matches.isEmpty())
-		{
-			return schema;
-		}
 
 		// Resolve the customer's payment-service fee once, keyed by the linked SALES order's invoice partner and date.
 		final ContractServiceFee fee = order.getInvoicePartnerId() != null && order.getSoDate() != null
 				? feeService.resolveServiceFee(order.getInvoicePartnerId(), order.getSoDate())
 				: ContractServiceFee.ZERO;
+		final ContractSettingsTakeOver feeTakeOver = fee.isGreaterThanZero() ? findTakeOverForServiceFeeOrNull(matches, order, settings, fee) : null;
 
-		// The per-customer fee is attached once, folded into the single take-over own-line; it cannot be split unambiguously across several.
-		if (fee.isGreaterThanZero() && matches.size() > 1)
+		// note: like every contract line, the fee line is skipped later when no purchase order line falls into its base category
+		if (matches.isEmpty() && feeTakeOver == null)
 		{
-			throw new AdempiereException("The customer's payment-service fee cannot be unambiguously attached to more than one take-over line")
-					.setParameter("invoicePartnerId", order.getInvoicePartnerId())
-					.setParameter("soDate", order.getSoDate())
-					.setParameter("feePercent", fee.getPercent())
-					.setParameter("matchCount", matches.size())
-					.appendParametersToMessage();
+			return schema;
 		}
 
-		// After the guard, more than one match implies a zero fee, so each extra line simply gets no fee.
-		final ContractServiceFee feeToApply = matches.size() == 1 ? fee : ContractServiceFee.ZERO;
-
 		final List<GroupTemplateCompensationLine> lines = new ArrayList<>(schema.getCompensationLines());
-		matches.forEach(match -> appendOwnLine(lines, match, feeToApply));
+		matches.forEach(match -> lines.add(createTakeOverLine(match)));
+		if (feeTakeOver != null)
+		{
+			lines.add(createServiceFeeLine(feeTakeOver, fee));
+		}
 
 		return schema.toBuilder()
 				.clearCompensationLines()
@@ -115,47 +112,80 @@ public class ContractSettingsTakeOverService
 				.build();
 	}
 
-	private void appendOwnLine(
-			@NonNull final List<GroupTemplateCompensationLine> lines,
-			@NonNull final ContractSettingsTakeOverMatch match,
-			@NonNull final ContractServiceFee serviceFee)
+	/**
+	 * The fee line takes its discount product and base from the take-over row that took over the customer's bonus or,
+	 * when no bonus was taken over, from the settings' only take-over row.
+	 *
+	 * @return {@code null} when the settings have no take-over row (the vendor passes nothing on)
+	 */
+	@Nullable
+	private ContractSettingsTakeOver findTakeOverForServiceFeeOrNull(
+			@NonNull final ImmutableList<ContractSettingsTakeOverMatch> matches,
+			@NonNull final OrderDropShipInfo order,
+			@NonNull final ContractCompensationGroupSettings settings,
+			@NonNull final ContractServiceFee fee)
+	{
+		final ImmutableList<ContractSettingsTakeOver> candidates = !matches.isEmpty()
+				? matches.stream().map(ContractSettingsTakeOverMatch::getTakeOver).collect(ImmutableList.toImmutableList())
+				: takeOverRepository.getBySettingsId(settings.getSettingsId());
+		if (candidates.isEmpty())
+		{
+			return null;
+		}
+		if (candidates.size() > 1)
+		{
+			throw new AdempiereException("The customer's payment-service fee cannot be unambiguously attached to more than one take-over line")
+					.setParameter("invoicePartnerId", order.getInvoicePartnerId())
+					.setParameter("soDate", order.getSoDate())
+					.setParameter("feePercent", fee.getPercent())
+					.setParameter("takeOverCount", candidates.size())
+					.appendParametersToMessage();
+		}
+		return candidates.get(0);
+	}
+
+	private GroupTemplateCompensationLine createTakeOverLine(@NonNull final ContractSettingsTakeOverMatch match)
 	{
 		final ContractSettingsTakeOver takeOver = match.getTakeOver();
-		lines.add(GroupTemplateCompensationLine.builder()
+		return newOwnLine(takeOver)
+				.percentage(match.getSummedPercent())
+				.description(createTakeOverLineDescription(match))
+				.build();
+	}
+
+	private GroupTemplateCompensationLine createServiceFeeLine(@NonNull final ContractSettingsTakeOver takeOver, @NonNull final ContractServiceFee fee)
+	{
+		//noinspection ConstantConditions -- feeProductId is non-null when the fee is greater than zero
+		return newOwnLine(takeOver)
+				.percentage(fee.getPercent())
+				.description(formatPercent(fee.getPercent()) + " " + productBL.getProductName(fee.getFeeProductId()))
+				.build();
+	}
+
+	private static GroupTemplateCompensationLine.GroupTemplateCompensationLineBuilder newOwnLine(@NonNull final ContractSettingsTakeOver takeOver)
+	{
+		return GroupTemplateCompensationLine.builder()
 				.productId(takeOver.getOwnLineProductId())
 				.compensationType(GroupCompensationType.Discount)
-				.percentage(match.getSummedPercent().add(serviceFee.getPercent()))
 				.appliesToProductCategoryId(takeOver.getProductCategoryId())
-				.isOwnBase(true)
-				.description(createOwnLineDescription(match, serviceFee))
-				.build());
+				.isOwnBase(true);
 	}
 
 	/**
-	 * e.g. {@code "3% Bonus Ware A + 1% Bonus Ware B"}, one entry per taken-over contract discount line; when the service
-	 * fee applies, its own entry (its percent + the service-fee product's name) is appended in the same style.
+	 * e.g. {@code "3% Bonus Ware A + 1% Bonus Ware B"}, one entry per taken-over contract discount line
 	 */
-	private String createOwnLineDescription(@NonNull final ContractSettingsTakeOverMatch match, @NonNull final ContractServiceFee serviceFee)
+	private String createTakeOverLineDescription(@NonNull final ContractSettingsTakeOverMatch match)
 	{
 		final Map<ProductId, String> productNames = productBL.getProductNames(match.getTakenOverProductIds());
-		final String bonusEntries = match.getTakenOverPercentages()
+		return match.getTakenOverPercentages()
 				.stream()
 				.map(takenOver -> formatPercent(takenOver.getPercent()) + " " + productNames.get(takenOver.getCustomerDiscountProductId()))
 				.collect(Collectors.joining(" + "));
-
-		if (!serviceFee.isGreaterThanZero())
-		{
-			return bonusEntries;
-		}
-
-		//noinspection ConstantConditions -- feeProductId is non-null when the fee is greater than zero
-		final String feeEntry = formatPercent(serviceFee.getPercent()) + " " + productBL.getProductName(serviceFee.getFeeProductId());
-		return bonusEntries + " + " + feeEntry;
 	}
 
-	private static String formatPercent(@NonNull final Percent percent)
+	static String formatPercent(@NonNull final Percent percent)
 	{
-		return percent.toBigDecimal().toPlainString() + "%";
+		return percent.toBigDecimal().stripTrailingZeros().toPlainString() + "%";
 	}
 
 	/**
