@@ -244,7 +244,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	/**
 	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
-	 * in the currency of the line,.
+	 * in the currency of the line.
 	 */
 	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{

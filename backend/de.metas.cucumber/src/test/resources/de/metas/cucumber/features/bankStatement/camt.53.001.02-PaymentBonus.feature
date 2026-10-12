@@ -434,7 +434,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @Id:bsPaymentBonus_TC2
   Scenario: Bank statement with matching amounts — a line that pays the invoice minus the payment bonus is matched to the invoice and books the bonus
     # the import matches the line amount against the open amount (IsMatchAmounts = Y)
-    # today the line gets no invoice, because 163.72 is neither the open amount nor open - Skonto
+    # 163.72 is not the open amount, but open - bonus, so the line is matched to the invoice
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_3 |
