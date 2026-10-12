@@ -5,6 +5,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
@@ -48,13 +49,16 @@ public class DataImport_StepDef
 
 	@NonNull private final AD_ImpFormat_StepDefData impFormatTable;
 	@NonNull private final C_DataImport_StepDefData dataImportTable;
+	@NonNull private final TestContext restTestContext;
 
 	/**
 	 * Creates an AD_ImpFormat record (comma-separated, UTF-8) and its column rows.
 	 *
 	 * @cucumber.columns
 	 * <b>ColumnName</b> — column name in the target import table (e.g. Value, Name, ProductType)<br>
-	 * <b>DataType</b> — data type code: S=String, N=Number, D=Date, C=Constant, B=YesNo
+	 * <b>DataType</b> — data type code: S=String, N=Number, D=Date, C=Constant, B=YesNo<br>
+	 * <b>OPT.DataFormat</b> — (optional) the format of the column's values, e.g. {@code yyyy-MM-dd} for a D column;
+	 * without it a date is parsed with the JVM's default date format
 	 */
 	@Given("AD_ImpFormat {string} for table {string} with columns:")
 	public void ad_ImpFormat_for_table_with_columns(
@@ -138,6 +142,7 @@ public class DataImport_StepDef
 		formatRow.setSeqNo(seqNo);
 		formatRow.setDataType(dataType);
 		formatRow.setDecimalPoint(".");
+		row.getAsOptionalString("OPT.DataFormat").ifPresent(formatRow::setDataFormat);
 		formatRow.setDivideBy100(false);
 		formatRow.setStartNo(csvColumnNo);
 		formatRow.setEndNo(0);
@@ -175,6 +180,37 @@ public class DataImport_StepDef
 	@When("the following CSV is imported via data import config {string}:")
 	@When("the following data is imported via data import config {string}:")
 	public void the_following_CSV_is_imported_via_data_import_config(
+			@NonNull final String configIdentifierStr,
+			@NonNull final String csvContent)
+	{
+		importCsv(configIdentifierStr, csvContent);
+	}
+
+	/**
+	 * Like {@link #the_following_CSV_is_imported_via_data_import_config(String, String)}, but first replaces each
+	 * {@code @name@} token of the CSV with the REST context variable of that name, as the REST steps do for their payloads.
+	 * A token without such a variable stays as it is.
+	 * <p>
+	 * Use it when a CSV has to carry a database ID that a feature file cannot know in advance: give the record's
+	 * creation step a {@code REST.Context} column (e.g. {@code metasfresh contains C_Invoice}) and write {@code @<that name>@} in the CSV.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * When the following CSV with REST context variables is imported via data import config "csvConfig":
+	 *   """
+	 *   2026-07-20,163.72,@invoice@
+	 *   """
+	 * </pre>
+	 */
+	@When("the following CSV with REST context variables is imported via data import config {string}:")
+	public void the_following_CSV_with_context_variables_is_imported_via_data_import_config(
+			@NonNull final String configIdentifierStr,
+			@NonNull final String csvContent)
+	{
+		importCsv(configIdentifierStr, restTestContext.resolveVariables(csvContent));
+	}
+
+	private void importCsv(
 			@NonNull final String configIdentifierStr,
 			@NonNull final String csvContent)
 	{

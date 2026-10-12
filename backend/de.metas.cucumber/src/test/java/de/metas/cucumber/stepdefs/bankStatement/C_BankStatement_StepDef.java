@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.bankStatement;
 
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -34,6 +35,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
@@ -46,11 +48,13 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BP_BankAccount_StepDefData bankAccountTable;
@@ -71,6 +75,37 @@ public class C_BankStatement_StepDef
 		{
 			validateBankStatement(row);
 		}
+	}
+
+	/**
+	 * Loads the newest {@code C_BankStatement} of the given bank account into the step data, to be used after an import
+	 * that does not return the statement it created (e.g. a CSV data import).
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And load C_BankStatement created by the import for bank account "org_EUR_account"
+	 *   | C_BankStatement_ID.Identifier |
+	 *   | bs_1                          |
+	 * </pre>
+	 *
+	 * @cucumber.columns
+	 * <b>C_BankStatement_ID.Identifier</b> — the identifier to store the statement under
+	 */
+	@And("load C_BankStatement created by the import for bank account {string}")
+	public void load_C_BankStatement_created_by_the_import(
+			@NonNull final String bankAccountIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final int bankAccountId = bankAccountTable.get(bankAccountIdentifier).getC_BP_BankAccount_ID();
+
+		final I_C_BankStatement bankStatementRecord = queryBL.createQueryBuilder(I_C_BankStatement.class)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
+				.orderByDescending(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID)
+				.create()
+				.first(I_C_BankStatement.class);
+		assertThat(bankStatementRecord).as("C_BankStatement of C_BP_BankAccount_ID=%s (identifier %s)", bankAccountId, bankAccountIdentifier).isNotNull();
+
+		DataTableRows.of(dataTable).forEach(row -> row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID).putOrReplace(bankStatementTable, bankStatementRecord));
 	}
 
 	@Given("^the C_BankStatement identified by (.*) is completed$")
