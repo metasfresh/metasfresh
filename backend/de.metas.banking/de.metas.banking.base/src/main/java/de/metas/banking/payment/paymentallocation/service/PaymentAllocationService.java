@@ -283,7 +283,8 @@ public class PaymentAllocationService
 				.build();
 	}
 
-	private boolean isOpenAmtWithDiscountMatching(
+	@VisibleForTesting
+	boolean isOpenAmtWithDiscountMatching(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
 			@NonNull final Amount openAmountToMatch)
 	{
@@ -298,6 +299,8 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		if (isSoTrx)
 		{
+			// The legacy exact check stays first, so a customer without a payment bonus is matched exactly as before.
+			// Only a customer with a bonus reaches the matcher below, which compares the amounts numerically (so also "up to scale").
 			if (openAmountToMatch.equals(openAmtWithDiscount))
 			{
 				return true;

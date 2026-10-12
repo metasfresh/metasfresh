@@ -165,7 +165,7 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if ("null".equals(bPartnerIdentifier))
+		if (DataTableUtil.NULL_STRING.equals(row.get("OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER)))
 		{
 			softly.assertThat(bankStatementLineRecord.getC_BPartner_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner_ID", bslIdentifier).isLessThanOrEqualTo(0);
 		}
@@ -178,7 +178,7 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if ("null".equals(invoiceIdentifier))
+		if (DataTableUtil.NULL_STRING.equals(row.get("OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER)))
 		{
 			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID", bslIdentifier).isLessThanOrEqualTo(0);
 		}
