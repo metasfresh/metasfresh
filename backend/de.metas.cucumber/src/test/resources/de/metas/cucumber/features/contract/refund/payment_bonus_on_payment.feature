@@ -107,7 +107,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC0
-  Scenario: Allocation view — Skonto and the payment bonus on the same invoice, each on its own base (reference for AC12d)
+  Scenario: Allocation view — Skonto and the payment bonus on the same invoice, each on its own base
     # the sales invoice with Skonto: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %)
     # GrandTotal = 100.00 + 7.00 + 50.00 + 9.50 = 166.50
     Given metasfresh contains C_Invoice:
@@ -566,7 +566,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H2a
-  Scenario: Payment for an invoice with Skonto — Skonto and the payment bonus are pre-filled side by side (AC12d)
+  Scenario: Payment for an invoice with Skonto — Skonto and the payment bonus are pre-filled side by side
     # the sales invoice with Skonto: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | C_PaymentTerm_ID |
@@ -661,7 +661,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H1
-  Scenario: Payment for an invoice — completing it books the payment bonus with a credit memo, and the invoice is paid without write-off (AC12a)
+  Scenario: Payment for an invoice — completing it books the payment bonus with a credit memo, and the invoice is paid without write-off
     # the sales invoice without payment term: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -753,7 +753,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H2
-  Scenario: Payment for an invoice with Skonto — completing it books Skonto and the payment bonus credit memo side by side, like the allocation view (AC12d)
+  Scenario: Payment for an invoice with Skonto — completing it books Skonto and the payment bonus credit memo side by side, like the allocation view
     # the sales invoice with Skonto: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | C_PaymentTerm_ID |
@@ -793,7 +793,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H4
-  Scenario: Payment for an invoice of a customer without refund contract — completing it books the shortfall as write-off as before (AC17)
+  Scenario: Payment for an invoice of a customer without refund contract — completing it books the shortfall as write-off as before
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
@@ -1308,7 +1308,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H3
-  Scenario: Reversing the completed payment of TC_H1 reverses its payment bonus credit memo, too; the reversal payment negates the bonus and links no credit memo (AC12c)
+  Scenario: Reversing a completed payment with a payment bonus reverses its payment bonus credit memo, too; the reversal payment negates the bonus and links no credit memo
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
@@ -1357,7 +1357,7 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H3b
-  Scenario: The user reversed the payment bonus credit memo first — reversing the payment then succeeds and does not reverse the credit memo a second time (AC12c)
+  Scenario: The user reversed the payment bonus credit memo first — reversing the payment then succeeds and does not reverse the credit memo a second time
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
