@@ -80,6 +80,7 @@ public class ProductPlanning
 	boolean isMatured;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
+	@Nullable ResourceId workstationId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
 	@Nullable MaturingConfigId maturingConfigId;
 	@Nullable MaturingConfigLineId maturingConfigLineId;
@@ -117,6 +118,7 @@ public class ProductPlanning
 						   final boolean isMatured,
 						   @Nullable final ProductBOMVersionsId bomVersionsId,
 						   @Nullable final PPRoutingId workflowId,
+						   @Nullable final ResourceId workstationId,
 						   @Nullable final Quantity maxManufacturedQtyPerOrderDispo,
 						   @Nullable final MaturingConfigId maturingConfigId,
 						   @Nullable final MaturingConfigLineId maturingConfigLineId,
@@ -154,6 +156,7 @@ public class ProductPlanning
 		this.isMatured = isMatured;
 		this.bomVersionsId = bomVersionsId;
 		this.workflowId = workflowId;
+		this.workstationId = workstationId;
 		this.maxManufacturedQtyPerOrderDispo = maxManufacturedQtyPerOrderDispo;
 		this.maturingConfigId = maturingConfigId;
 		this.maturingConfigLineId = maturingConfigLineId;
