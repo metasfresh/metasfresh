@@ -2,12 +2,11 @@
 #
 # The seed is a pg_dump of metasfresh/metas-db:<tag>-preloaded (the migrations of that run already applied),
 # shipped as metasfresh/metas-db:<tag>-seed: a scratch image holding /metasfresh.pgdump, labelled with the
-# commit it was built from (org.opencontainers.image.revision), so cicd can check that this commit is an ancestor
-# of the commit being built and a seed is never ahead of the branch that restores it (that check comes with the
-# Dockerfile.db-init change).
+# commit it was built from (org.opencontainers.image.revision). It is also tagged metasfresh/metas-db:seed-<branch>,
+# the tag cicd looks up (docker-builds/db/resolve-db-seed.sh): it restores that seed for the branch and its feature
+# branches as long as the seed's commit is in the history of the commit being built, and the 5.172 dump otherwise.
 # Run it with the id of a successful cicd push run on the branch whose seed is refreshed (e.g. new_dawn_uat or
-# soft_panda_hotfix), then point THAT branch's Dockerfile.db-init at the printed -seed tag in a PR. Each branch
-# has its own seed; the ancestor check rejects one built from another branch's history.
+# soft_panda_hotfix); no code change is needed. Each branch has its own seed.
 
 name: db-seed
 
@@ -55,6 +54,7 @@ jobs:
             echo "SOURCE_SHA=${sha}"
             echo "SOURCE_IMAGE=metasfresh/metas-db:${tag}-preloaded"
             echo "SEED_IMAGE=metasfresh/metas-db:${tag}-seed"
+            echo "SEED_TAG=metasfresh/metas-db:seed-${refname}"
           } >> "$GITHUB_ENV"
 
       - uses: docker/login-action@v4
@@ -82,8 +82,10 @@ jobs:
           printf 'FROM scratch\nCOPY metasfresh.pgdump /metasfresh.pgdump\n' > Dockerfile.seed
           docker build --file Dockerfile.seed --label "org.opencontainers.image.revision=${SOURCE_SHA}" --tag "${SEED_IMAGE}" .
           docker push "${SEED_IMAGE}"
+          docker tag "${SEED_IMAGE}" "${SEED_TAG}"
+          docker push "${SEED_TAG}"
           {
             echo "#### seed image"
             echo "* \`${SEED_IMAGE}\` from \`${SOURCE_IMAGE}\` (commit ${SOURCE_SHA})"
-            echo "* in docker-builds/Dockerfile.db-init: \`COPY --from=${SEED_IMAGE} --chown=postgres /metasfresh.pgdump metasfresh.pgdump\`"
+            echo "* also tagged \`${SEED_TAG}\`: the next cicd runs of this branch restore it"
           } >> "$GITHUB_STEP_SUMMARY"
