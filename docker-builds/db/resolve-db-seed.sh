@@ -29,14 +29,18 @@ legacy() {
 }
 
 # reads only the manifest; the build pulls the image itself
+err=$(mktemp)
 if ! info=$(docker buildx imagetools inspect "${seed}" \
-    --format '{{.Manifest.Digest}} {{index .Image.Config.Labels "org.opencontainers.image.revision"}}' 2>&1); then
-  case "${info}" in
-    *"not found"*) legacy "there is no DB seed ${seed} (run workflow db-seed on a green cicd run of ${base_refname})" ;;
-    *) legacy "::warning::cannot read the DB seed ${seed}: ${info}" ;;
+    --format '{{.Manifest.Digest}} {{with .Image.Config.Labels}}{{index . "org.opencontainers.image.revision"}}{{end}}' 2>"${err}"); then
+  case "$(cat "${err}")" in
+    *"not found"*) legacy "there is no DB seed ${seed} (run workflow db-seed on a green cicd run of that branch)" ;;
+    *) legacy "::warning::cannot read the DB seed ${seed}: $(cat "${err}")" ;;
   esac
 fi
 read -r digest rev <<< "${info}"
+if ! [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+  legacy "::warning::unexpected digest '${digest}' for the DB seed ${seed}"
+fi
 if [ -z "${rev:-}" ]; then
   legacy "::warning::the DB seed ${seed} has no org.opencontainers.image.revision label"
 fi
