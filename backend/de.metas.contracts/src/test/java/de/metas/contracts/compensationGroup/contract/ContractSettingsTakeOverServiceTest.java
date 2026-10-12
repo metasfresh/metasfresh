@@ -359,7 +359,7 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	@Test
-	void applyToSchema_singleMatchWithServiceFee_foldsFeeIntoPercentageAndDescription()
+	void applyToSchema_singleMatchWithServiceFee_appendsTheFeeAsItsOwnLine()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
 		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
@@ -372,9 +372,41 @@ class ContractSettingsTakeOverServiceTest
 						settings)
 				.getCompensationLines();
 
-		assertThat(lines).hasSize(1);
-		assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("5.60");
-		assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 2.6% Payment Service Fee");
+		assertThat(lines).containsExactly(
+				expectedOwnLine(),
+				expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
+	}
+
+	@Test
+	void applyToSchema_noCustomerBonusWithServiceFee_appendsOnlyTheFeeLineOnTheOnlyTakeOver()
+	{
+		final ProductId bonusWareId = product("Bonus Ware", null, null);
+		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
+		createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
+
+		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+						schema(),
+						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+						settings)
+				.getCompensationLines();
+
+		assertThat(lines).containsExactly(expectedServiceFeeLine("2.15", "2.15% Markant Fee"));
+	}
+
+	@Test
+	void applyToSchema_noCustomerBonusWithServiceFeeAndTwoTakeOvers_throws()
+	{
+		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
+		createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
+
+		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
+
+		assertThatThrownBy(() -> service.applyToSchema(schema(), purchaseOrder, settings))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -455,6 +487,18 @@ class ContractSettingsTakeOverServiceTest
 				.appliesToProductCategoryId(CATEGORY_ID)
 				.isOwnBase(true)
 				.description("3% Bonus Ware")
+				.build();
+	}
+
+	private static GroupTemplateCompensationLine expectedServiceFeeLine(final String percent, final String description)
+	{
+		return GroupTemplateCompensationLine.builder()
+				.productId(OWN_PRODUCT_ID)
+				.compensationType(GroupCompensationType.Discount)
+				.percentage(Percent.of(new BigDecimal(percent)))
+				.appliesToProductCategoryId(CATEGORY_ID)
+				.isOwnBase(true)
+				.description(description)
 				.build();
 	}
 

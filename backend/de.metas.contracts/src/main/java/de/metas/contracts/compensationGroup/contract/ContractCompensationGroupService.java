@@ -18,6 +18,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationBase;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -98,6 +99,7 @@ public class ContractCompensationGroupService
 	@NonNull private final OrderFreightCostsService orderFreightCostService;
 	@NonNull private final InvoiceCandidateGroupRepository invoiceCandidateGroupRepository;
 	@NonNull private final ContractSettingsTakeOverService takeOverService;
+	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -127,7 +129,8 @@ public class ContractCompensationGroupService
 			return;
 		}
 
-		final GroupTemplate schema = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
+		final GroupTemplate schemaFromRepository = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
+		final GroupTemplate schema = order.isSOTrx() ? schemaFromRepository : new PurchaseDiscountLineDescriber(compensationLineCreateRequestFactory).describe(schemaFromRepository);
 
 		// before candidate selection, so that a take-over category joins it
 		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
