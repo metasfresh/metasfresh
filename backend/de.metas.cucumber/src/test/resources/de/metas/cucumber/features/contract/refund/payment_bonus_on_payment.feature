@@ -70,6 +70,8 @@ Feature: Payment bonus on the payment, next to Skonto
       | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | customerBP     | Y              | N            | deductionPS                   | I               |
       | serviceCompany | N              | Y            | deductionPS                   |                 |
+      # a customer without a refund contract
+      | plainBP        | Y              | N            | deductionPS                   | I               |
     # the organization's EUR account (like the service company fee feature); an account of its own would be a second active EUR account for the features that run after this one
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
@@ -311,3 +313,195 @@ Feature: Payment bonus on the payment, next to Skonto
     And validate payments
       | C_Payment_ID | IsAllocated | OpenAmt | WriteOffAmt |
       | payment      | true        | 0.00    | 0           |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # Payment window: the payment for an invoice pre-fills the payment bonus like Skonto; the write-off leaves it out
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H1a
+  Scenario: Payment for an invoice — the payment bonus is pre-filled and the amount the customer pays creates no write-off
+    # the sales invoice without payment term: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the user picks the invoice on the draft payment: Skonto 0 (no payment term), bonus 2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78; 166.50 - 2.78 = 163.72
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0           | 2.78            | 0           | 0            |
+
+    # the user confirms the pre-filled amount
+    When the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.72 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 2.78            | 0           | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H1b
+  Scenario: Payment for an invoice — a customer who pays the full invoice gets no payment bonus
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the user picks the invoice on the draft payment: Skonto 0 (no payment term), bonus 2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78; 166.50 - 2.78 = 163.72
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0           | 2.78            | 0           | 0            |
+
+    # the customer did not deduct the bonus
+    When the draft payment identified by payment is changed
+      | PayAmt |
+      | 166.50 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 166.50 | 0               | 0           | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H1c
+  Scenario: Payment for an invoice — a customer who pays less, but by less than the bonus, gets the shortfall as payment bonus
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the user picks the invoice on the draft payment: Skonto 0 (no payment term), bonus 2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78; 166.50 - 2.78 = 163.72
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0           | 2.78            | 0           | 0            |
+
+    # the customer deducted 1.50 of the 2.78 bonus: 166.50 - 1.50 = 165.00
+    When the draft payment identified by payment is changed
+      | PayAmt |
+      | 165.00 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 165.00 | 1.50            | 0           | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H2a
+  Scenario: Payment for an invoice with Skonto — Skonto and the payment bonus are pre-filled side by side (AC12d)
+    # the sales invoice with Skonto: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | C_PaymentTerm_ID |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | skonto2          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # paid within the 10 Skonto days: Skonto 2 % of 166.50 = 3.33, bonus 2.78; 166.50 - 3.33 - 2.78 = 160.39
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID | DateTrx    |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     | 2026-07-20 |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 160.39 | 3.33        | 2.78            | 0           | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H2b
+  Scenario: Payment for an invoice with Skonto — a later payment date drops the Skonto and keeps the payment bonus
+    # the sales invoice with Skonto: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | C_PaymentTerm_ID |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | skonto2          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # paid within the 10 Skonto days: Skonto 2 % of 166.50 = 3.33, bonus 2.78; 166.50 - 3.33 - 2.78 = 160.39
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID | DateTrx    |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     | 2026-07-20 |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 160.39 | 3.33        | 2.78            | 0           | 0            |
+
+    # after the 10 Skonto days: they end on Sat 2026-07-25, which the payment term moves to the next business day, Mon 2026-07-27
+    When the draft payment identified by payment is changed
+      | DateTrx    |
+      | 2026-07-28 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0           | 2.78            | 0           | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H4a
+  Scenario: Payment for an invoice of a customer without refund contract — no payment bonus, the shortfall is a write-off as before
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | plainBP       | invoice      | true      | org_EUR_account     |
+    When the payment identified by payment gets its amounts from its invoice
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt |
+      | payment      | 166.50 | 0               | 0           |
+
+    # the customer pays 6.50 less
+    When the draft payment identified by payment is changed
+      | PayAmt |
+      | 160.00 |
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 160.00 | 0               | 6.50        | 0            |

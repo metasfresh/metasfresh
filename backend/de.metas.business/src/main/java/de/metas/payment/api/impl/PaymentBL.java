@@ -51,6 +51,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -126,6 +127,8 @@ public class PaymentBL implements IPaymentBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
+	// looked up when needed, because PaymentBL is not a Spring bean and can be used before the application context is complete
+	private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -250,6 +253,10 @@ public class PaymentBL implements IPaymentBL
 			{
 				payment.setOverUnderAmt(ZERO);
 			}
+			if (payment.getPaymentBonusAmt().signum() != 0)
+			{
+				payment.setPaymentBonusAmt(ZERO);
+			}
 		}
 		// Changed Column C_Currency_ID or C_ConversionType_ID
 		else if (I_C_Payment.COLUMNNAME_C_Currency_ID.equals(colName) || I_C_Payment.COLUMNNAME_C_ConversionType_ID.equals(colName))
@@ -268,8 +275,9 @@ public class PaymentBL implements IPaymentBL
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 			final BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
-			final BigDecimal PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
+			final BigDecimal PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
 			payment.setPayAmt(PayAmt);
 		}
 
@@ -292,16 +300,17 @@ public class PaymentBL implements IPaymentBL
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal PayAmt = payment.getPayAmt();
+			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
 			if (payment.isOverUnderPayment())
 			{
-				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
+				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt);
 				payment.setWriteOffAmt(ZERO);
 				payment.setOverUnderAmt(OverUnderAmt);
 			}
 			else
 			{
-				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
+				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt);
 				payment.setWriteOffAmt(WriteOffAmt);
 				payment.setOverUnderAmt(ZERO);
 			}
@@ -341,6 +350,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal DiscountAmt = payment.getDiscountAmt();
 		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+		BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
 		final CurrencyPrecision precision = currencyId != null
 				? currencyDAO.getStdPrecision(currencyId)
@@ -358,6 +368,12 @@ public class PaymentBL implements IPaymentBL
 		OverUnderAmt = precision.round(OverUnderAmt.multiply(currencyRate));
 		payment.setOverUnderAmt(OverUnderAmt);
 
+		if (paymentBonusAmt.signum() != 0) // a payment without bonus stays untouched
+		{
+			paymentBonusAmt = precision.round(paymentBonusAmt.multiply(currencyRate));
+			payment.setPaymentBonusAmt(paymentBonusAmt);
+		}
+
 		// No Invoice or Order - Set Discount, Witeoff, Under/Over to 0
 		if (C_Invoice_ID <= 0 && C_Order_ID <= 0)
 		{
@@ -374,6 +390,15 @@ public class PaymentBL implements IPaymentBL
 			{
 				payment.setOverUnderAmt(ZERO);
 			}
+			if (ZERO.compareTo(paymentBonusAmt) != 0)
+			{
+				payment.setPaymentBonusAmt(ZERO);
+			}
+		}
+		else if (C_Invoice_ID > 0)
+		{
+			// the payment bonus is only deducted in the invoice's currency
+			paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
 		}
 
 	}
@@ -390,19 +415,23 @@ public class PaymentBL implements IPaymentBL
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
 		{
+			// the payment bonus is at most what the payment leaves open
+			paymentBonusOnPaymentService.get().capPaymentBonusToShortfall(payment);
+
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal PayAmt = payment.getPayAmt();
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
+			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 			BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 			BigDecimal OverUnderAmt = payment.getOverUnderAmt();
 
 			if (payment.isOverUnderPayment())
 			{
-				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(WriteOffAmt);
+				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt);
 				payment.setOverUnderAmt(OverUnderAmt);
 			}
 
-			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
+			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(OverUnderAmt);
 			payment.setWriteOffAmt(WriteOffAmt);
 			payment.setDiscountAmt(DiscountAmt);
 		}
@@ -712,6 +741,7 @@ public class PaymentBL implements IPaymentBL
 		}
 		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
 		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
+		paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
 	}
 
 	@Override

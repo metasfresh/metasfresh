@@ -47,6 +47,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
@@ -88,6 +89,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_PaymentBonusAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
 @RequiredArgsConstructor
@@ -100,6 +102,7 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -117,7 +120,9 @@ public class C_Payment_StepDef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
-	 *   <b>PayAmt</b> — (required) amount with currency code, e.g. {@code 5000 EUR}<br>
+	 *   <b>PayAmt</b> — (required unless C_Invoice_ID is given) amount with currency code, e.g. {@code 5000 EUR};
+	 *                   without it the payment is a draft of 0 in the invoice's currency, whose amounts can then come from its invoice
+	 *                   ({@link #updateAmountsFromInvoice(String)})<br>
 	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
 	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
 	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
@@ -224,6 +229,8 @@ public class C_Payment_StepDef
 	 * @cucumber.columns
 	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment, e.g. {@code 163.72}<br>
 	 *   <b>IsOverUnderPayment</b> — (optional) new value of the "over/under payment" flag<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 *   <b>DateTrx</b> — (optional) new payment date, e.g. {@code 2026-07-26}<br>
 	 * @cucumber.depends {@link C_Payment_StepDefData}
 	 * @cucumber.example
 	 * <pre>
@@ -242,6 +249,33 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
 		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(payment::setIsOverUnderPayment);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(payment::setPaymentBonusAmt);
+		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
+				.map(dateTrx -> TimeUtil.asTimestamp(dateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(payment.getAD_Org_ID()))))
+				.ifPresent(payment::setDateTrx);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * Sets the amounts of a saved draft payment from its invoice (open amount, Skonto, payment bonus) and saves it.
+	 * Runs the same code as the {@code C_Payment} interceptor on a {@code DateTrx} change, i.e. {@link IPaymentBL#updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment)};
+	 * the WebUI callout on „Rechnung“ ({@code CalloutPayment.invoice}) has its own SQL and is not driven by this step.
+	 *
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the payment identified by payment gets its amounts from its invoice
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) gets its amounts from its invoice$")
+	public void updateAmountsFromInvoice(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment").isEqualTo(DocStatus.Drafted.getCode());
+
+		paymentBL.updateDiscountAndPayAmtFromInvoiceIfAny(payment);
 
 		paymentBL.save(payment);
 		paymentTable.putOrReplace(paymentIdentifier, payment);
@@ -278,6 +312,8 @@ public class C_Payment_StepDef
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
 				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt)
+				.ifPresent(paymentBonusAmt -> softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo(paymentBonusAmt));
 
 		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.ifPresent(rawValue -> {
@@ -392,7 +428,16 @@ public class C_Payment_StepDef
 		final OrgId orgId = Env.getOrgId();
 		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
 
-		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
+		final Money payAmt = row.getAsOptionalMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode)
+				.orElseGet(() -> {
+					// a draft for an invoice whose amounts are not set yet
+					Check.assumeNotNull(invoiceId, "PayAmt is required for a payment without C_Invoice_ID: {}", row);
+					return Money.zero(CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID()));
+				});
 		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt);
 		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
@@ -402,10 +447,6 @@ public class C_Payment_StepDef
 		final BankAccountId orgBankAccountId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
 				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
-
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.orElse(null);
 
 		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)
