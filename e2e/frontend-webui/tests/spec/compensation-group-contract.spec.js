@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
 
 /**
@@ -77,6 +77,19 @@ const ORDER_COMPENSATION_GROUP_LINES_TAB_ID = 549518;
 // Bestellung (purchase order) and its line tab
 const PURCHASE_ORDER_WINDOW_ID = 181;
 const PURCHASE_ORDER_LINE_TAB_ID = 293;
+// Menu (AD_Menu ids): folder "Kompensationsgruppen" under "Vertrieb", right after "Auftrag", holding these four entries
+const MENU_SALES_FOLDER = '1000010';
+const MENU_SALES_ORDER = '1000040';
+const MENU_COMPENSATION_GROUPS_FOLDER = '542368';
+const MENU_COMPENSATION_GROUPS_ENTRIES = [
+  { nodeId: '542367', type: 'window', elementId: '542196' }, // Auftrag Kompensationsgruppe
+  { nodeId: '541040', type: 'window', elementId: '540415' }, // Kompensationsgruppe Schema
+  { nodeId: '541726', type: 'window', elementId: '541169' }, // Kompensationsgruppe Schema Kategorie
+  { nodeId: '542364', type: 'window', elementId: '542194' }, // Kompensationsgruppen-Vertragseinstellungen
+];
+// Related Documents entry of a contract to its order compensation groups. The data-cy carries the target window's
+// internal name; window 542196 has none, so it is the window's (base) name.
+const CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE = 'reference-Auftrag Kompensationsgruppe';
 // Ref-list keys of C_CompensationGroup_SchemaLine.Type
 const SCHEMA_LINE_TYPE_CONTRACT = 'F';
 const SCHEMA_LINE_TYPE_REVENUE_BREAKS = 'R';
@@ -125,6 +138,8 @@ const DE = {
 
   createContractEndDate: 'Enddatum',
 
+  salesFolder: 'Vertrieb',
+  compensationGroupsFolder: 'Kompensationsgruppen',
   orderCompensationGroupWindow: 'Auftrag Kompensationsgruppe',
   orderCompensationGroupOrder: 'Auftrag/Bestellung', // the group's order may be a sales or a purchase order
   orderCompensationGroupContract: 'Vertrag',
@@ -143,6 +158,29 @@ const DE = {
   schemaLineTypeRevenueBreaks: 'Umsatzstaffel',
   schemaLineRevenueFrom: 'Umsatz ab', // C_CompensationGroup_SchemaLine.BreakValue
   schemaLineContractConditions: 'Vertragsbedingungen', // C_CompensationGroup_SchemaLine.C_Flatrate_Conditions_ID
+};
+
+// The same captions in en_US (AD_*_Trl en_US), for the English pass of the order compensation group test
+const EN = {
+  compensationGroupsFolder: 'Compensation Groups',
+  orderCompensationGroupWindow: 'Order Compensation Group',
+  orderCompensationGroupOrder: 'Sales/Purchase Order',
+  orderCompensationGroupContract: 'Contract',
+  orderCompensationGroupLinesTab: 'Order Line',
+  orderCompensationGroupLineNo: 'Line No',
+  compensationTypeDiscount: 'Discount',
+  compensationAmtTypePercent: 'Percent',
+
+  contractMasterStartDate: 'Master Start Date',
+  contractMasterEndDate: 'Master End Date',
+  orderLineConditionsForNewContract: 'Conditions for New Contract',
+  orderLineCallOffContract: 'Call-off Contract',
+
+  schemaLineCondition: 'Condition',
+  schemaLineTypeContract: 'Contract',
+  schemaLineTypeRevenueBreaks: 'Revenue Breaks',
+  schemaLineRevenueFrom: 'Revenue From',
+  schemaLineContractConditions: 'Contract Conditions',
 };
 
 // Business values
@@ -642,8 +680,9 @@ test.describe('Compensation-group contract — create through the WebUI and comp
   /**
    * The order compensation groups of two contracts, seen in the window "Auftrag Kompensationsgruppe" and its
    * neighbours: zoom from an order line into its group, the group's order-lines tab, and the "Vertrag" filter that
-   * tells the two contracts' groups apart; plus the German captions of the contract's master dates, of the order-line
-   * contract columns (sales and purchase order) and of the schema-line condition fields.
+   * tells the two contracts' groups apart, the menu folder that holds the window, and the contract's Related Documents
+   * entry to its groups; plus the German captions of the contract's master dates, of the order-line contract columns
+   * (sales and purchase order) and of the schema-line condition fields, and finally the same captions in English.
    */
   test('order compensation groups of two contracts: group window, contract filter and contract captions', async ({ page }) => {
     allure.epic('E0170: Contract Management');
@@ -779,6 +818,16 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]')).toContainText(DE.compensationAmtTypePercent);
       await discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]').scrollIntoViewIfNeeded();
       await snap(groupPage, '542196-order-lines-tab');
+
+      // sorted by line no.: the tab's default sort, and the rows as shown
+      const layout = await getWindowLayout(ORDER_COMPENSATION_GROUP_WINDOW_ID);
+      const linesTabLayout = (layout.tabs ?? []).find((tab) => String(tab.tabId).endsWith(String(ORDER_COMPENSATION_GROUP_LINES_TAB_ID)));
+      expect(linesTabLayout, 'layout of the order-lines tab').toBeTruthy();
+      // (the WebUI appends the key column as tie-breaker)
+      expect(linesTabLayout.defaultOrderBys?.[0], 'order-lines tab: default sort by line no., ascending').toEqual({ fieldName: 'Line', ascending: true });
+      const lineNos = (await rows.locator('[data-cy="cell-Line"]').allTextContents()).map((text) => Number(text.replace(/\D/g, '')));
+      expect(lineNos, 'line numbers shown').toHaveLength(2);
+      expect(lineNos, 'rows in line-no. order').toEqual([...lineNos].sort((a, b) => a - b));
     });
 
     await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
@@ -818,6 +867,41 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(rowOf(groupX1)).toHaveCount(0);
       await snap(groupPage, '542196-list-filtered-by-contract');
       await groupPage.close();
+    });
+
+    await test.step('4d. Menu: folder "Kompensationsgruppen" under "Vertrieb", right after "Auftrag", with its four entries', async () => {
+      // depth 2: a sub-folder is listed only together with its own children
+      const salesFolder = await getMenuNode(page, MENU_SALES_FOLDER, 2);
+      expect(salesFolder.caption).toBe(DE.salesFolder);
+      const salesChildIds = (salesFolder.children ?? []).map((child) => String(child.nodeId));
+      expect(salesChildIds.indexOf(MENU_COMPENSATION_GROUPS_FOLDER), 'the folder comes right after "Auftrag"')
+        .toBe(salesChildIds.indexOf(MENU_SALES_ORDER) + 1);
+
+      const folder = await getMenuNode(page, MENU_COMPENSATION_GROUPS_FOLDER);
+      expect(folder.caption).toBe(DE.compensationGroupsFolder);
+      expect(String(folder.parentId), 'parent folder').toBe(MENU_SALES_FOLDER);
+      const entries = (folder.children ?? [])
+        .filter((child) => child.type !== 'newRecord')
+        .map((child) => ({ nodeId: String(child.nodeId), type: child.type, elementId: String(child.elementId) }));
+      expect(entries, 'the four entries, in this order').toEqual(MENU_COMPENSATION_GROUPS_ENTRIES);
+      // (a window entry's caption may carry the internal name in parentheses)
+      expect(folder.children.find((child) => String(child.nodeId) === MENU_COMPENSATION_GROUPS_ENTRIES[0].nodeId).caption)
+        .toContain(DE.orderCompensationGroupWindow);
+    });
+
+    await test.step('4e. Contract A: Related Documents lead to its order compensation group', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await openRelatedDocument({
+        dataCy: CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE,
+        stepName: 'Contract A - open its order compensation groups',
+        maxRetries: 5,
+        retryDelay: 2000,
+      });
+      // the contract has one group, which is opened
+      await page.waitForURL(new RegExp(`/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectWindowTitle(page, DE.orderCompensationGroupWindow);
+      await snap(page, '540359-related-order-compensation-group');
     });
 
     await test.step('5. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
@@ -863,6 +947,65 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(page.locator('th[data-testid="column-C_Flatrate_Term_ID"]')).toHaveText(DE.orderLineCallOffContract);
       await conditionsHeader.scrollIntoViewIfNeeded();
       await snap(page, '181-purchase-order-line-contract-columns');
+    });
+
+    await test.step('7. en_US: the same captions in English', async () => {
+      const english = await Backend.createMasterdata({ request: { login: { user: { language: 'en_US' } } } });
+      await page.context().clearCookies();
+      await LoginPage.goto();
+      await LoginPage.login(english.login.user);
+      await DashboardPage.expectVisible();
+
+      expect((await getMenuNode(page, MENU_COMPENSATION_GROUPS_FOLDER)).caption).toBe(EN.compensationGroupsFolder);
+
+      // order compensation group window and its order-lines tab
+      await page.goto(`${FRONTEND_BASE_URL}/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectWindowTitle(page, EN.orderCompensationGroupWindow);
+      await expectLabel(page, 'C_Order_ID', EN.orderCompensationGroupOrder);
+      await expectLabel(page, 'C_Flatrate_Term_ID', EN.orderCompensationGroupContract);
+      await expectTabCaption(page, ORDER_COMPENSATION_GROUP_LINES_TAB_ID, EN.orderCompensationGroupLinesTab);
+      await page.getByTestId(`tab-AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`).click();
+      await expect(page.locator('th[data-testid="column-Line"]')).toHaveText(EN.orderCompensationGroupLineNo, { timeout: SLOW_ACTION_TIMEOUT });
+      const discountRow = page.locator('table tbody tr')
+        .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
+      await expect(discountRow).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationType"]')).toContainText(EN.compensationTypeDiscount);
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]')).toContainText(EN.compensationAmtTypePercent);
+      await snap(page, '542196-order-lines-tab-en');
+
+      // contract master dates
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectLabel(page, 'MasterStartDate', EN.contractMasterStartDate);
+      await expectLabel(page, 'MasterEndDate', EN.contractMasterEndDate);
+      await page.locator('.form-field-MasterStartDate').first().scrollIntoViewIfNeeded();
+      await snap(page, '540359-contract-master-dates-en');
+
+      // the sales order line's contract columns
+      await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30.00');
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(EN.orderLineConditionsForNewContract);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Term_ID"]')).toHaveText(EN.orderLineCallOffContract);
+      await page.locator('th[data-testid="column-C_Flatrate_Term_ID"]').scrollIntoViewIfNeeded();
+      await snap(page, '143-order-line-contract-columns-en');
+
+      // schema lines: the condition fields and the condition values
+      const schemaId = lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_CompensationGroup_Schema_ID')).value);
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SCHEMA_WINDOW_ID}/${schemaId}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await page.getByTestId(`tab-AD_Tab-${SCHEMA_LINE_TAB_ID}`).click();
+      await expect(page.locator('th[data-testid="column-Type"]')).toHaveText(EN.schemaLineCondition, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('th[data-testid="column-BreakValue"]')).toHaveText(EN.schemaLineRevenueFrom);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(EN.schemaLineContractConditions);
+      const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
+      await expectLabel(modal, 'Type', EN.schemaLineCondition);
+      await modal.locator('.form-field-Type input').first().click();
+      await expect(page.locator('.input-dropdown-list [data-testid="option-F"]')).toContainText(EN.schemaLineTypeContract);
+      await expect(page.locator('.input-dropdown-list [data-testid="option-R"]')).toContainText(EN.schemaLineTypeRevenueBreaks);
+      await snap(page, '540415-schema-line-condition-options-en');
+      await page.keyboard.press('Escape');
+      page.once('dialog', (dialog) => dialog.accept());
+      await closeModal(modal);
     });
   });
 
@@ -1482,6 +1625,13 @@ async function createContractTerm(page, customer, conditionsId, start, end, { op
   const termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
   await expectDocStatus(CONTRACT_WINDOW_ID, termId, 'CO');
   return termId;
+}
+
+/** A menu node (AD_Menu id) with its children down to `depth`, read from the backend's menu tree of the logged-in user. */
+async function getMenuNode(page, nodeId, depth = 1) {
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/menu/node/${nodeId}?depth=${depth}`);
+  expect(response.ok(), `menu node ${nodeId}`).toBe(true);
+  return await response.json();
 }
 
 /** The unfiltered grid view of the order compensation group window, read from the backend: { size, rows (first page) } */
