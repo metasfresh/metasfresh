@@ -47,6 +47,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -56,6 +57,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
@@ -65,6 +67,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -1594,6 +1597,12 @@ public final class MPayment extends X_C_Payment
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
 
+		// allocation's trx date must be the max between the invoice date and payment date
+		final Timestamp allocationDateTrx = invoice.getDateInvoiced().after(getDateTrx()) ? invoice.getDateInvoiced() : getDateTrx();
+
+		// the payment bonus is booked by a credit memo that allocates itself against the invoice; so it has to be created before the open amount is retrieved
+		generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+
 		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
@@ -1647,18 +1656,7 @@ public final class MPayment extends X_C_Payment
 
 		alloc.setDateAcct(dateAcct);
 
-		// allocation's trx date must e the max between the invoice date and payment date
-
-		Timestamp dateTrx = getDateTrx();
-
-		final Timestamp invoiceDateTrx = invoice.getDateInvoiced();
-
-		if (invoiceDateTrx.after(dateTrx))
-		{
-			dateTrx = invoiceDateTrx;
-		}
-
-		alloc.setDateTrx(dateTrx);
+		alloc.setDateTrx(allocationDateTrx);
 
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
@@ -1707,6 +1705,33 @@ public final class MPayment extends X_C_Payment
 		}
 		return true;
 	}    // allocateInvoice
+
+	/**
+	 * Books the payment bonus of this payment with a payment bonus credit memo, in this payment's transaction: a failure fails the payment's completion and nothing stays half-booked.
+	 */
+	private void generatePaymentBonusCreditMemoIfAny(@NonNull final Timestamp allocationDateTrx)
+	{
+		if (getPaymentBonusAmt().signum() == 0)
+		{
+			return;
+		}
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = get_TrxName();
+		if (!trxManager.isActive(trxName))
+		{
+			throw new AdempiereException("The payment bonus credit memo has to be created in the transaction of the payment's completion, but there is none")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_ID", getC_Payment_ID())
+					.setParameter("trxName", trxName);
+		}
+
+		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
+		final PaymentBonusOnPaymentService paymentBonusOnPaymentService = SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class);
+
+		// run with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
+		trxManager.run(trxName, () -> paymentBonusOnPaymentService.generateCreditMemoIfAny(this, allocationDate));
+	}
 
 	/**
 	 * De-allocate Payment. Unkink Invoices and Orders and delete Allocations

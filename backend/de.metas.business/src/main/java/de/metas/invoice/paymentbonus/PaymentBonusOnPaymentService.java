@@ -3,17 +3,21 @@ package de.metas.invoice.paymentbonus;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -24,11 +28,16 @@ import java.util.Optional;
 public class PaymentBonusOnPaymentService
 {
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
+	@NonNull private final PaymentBonusCreditMemoService creditMemoService;
 
-	public PaymentBonusOnPaymentService(@NonNull final Optional<PaymentBonusDeductionProvider> provider)
+	public PaymentBonusOnPaymentService(
+			@NonNull final Optional<PaymentBonusDeductionProvider> provider,
+			@NonNull final PaymentBonusCreditMemoService creditMemoService)
 	{
 		this.provider = provider;
+		this.creditMemoService = creditMemoService;
 	}
 
 	@VisibleForTesting
@@ -38,7 +47,7 @@ public class PaymentBonusOnPaymentService
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				PaymentBonusOnPaymentService.class,
-				() -> new PaymentBonusOnPaymentService(Optional.empty()));
+				() -> new PaymentBonusOnPaymentService(Optional.empty(), new PaymentBonusCreditMemoService()));
 	}
 
 	/**
@@ -115,6 +124,59 @@ public class PaymentBonusOnPaymentService
 				.map(PaymentBonusDeduction::getGrossAmount)
 				.map(Money::toBigDecimal)
 				.orElse(BigDecimal.ZERO));
+	}
+
+	/**
+	 * Books the payment bonus of a payment for an invoice with a payment bonus credit memo („Zahlungsbonus-Gutschrift“), when the payment is completed and before it is allocated.
+	 * The credit memo allocates itself against the invoice, so the invoice's open amount afterwards no longer contains the bonus.
+	 * <ul>
+	 * <li>The credit memo books the largest amount that it can reach and that is not above the payment bonus, nor above what the payment leaves open of the invoice
+	 * ({@code open - DiscountAmt - PayAmt}), see {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)}.</li>
+	 * <li>The payment links the credit memo in {@code PaymentBonus_CreditMemo_ID}.</li>
+	 * <li>If the credit memo's grand total differs from {@code PaymentBonusAmt}, {@code PaymentBonusAmt} becomes the grand total and the write-off (or over/under amount) is recomputed,
+	 * so that the payment, the credit memo and the allocation agree.</li>
+	 * </ul>
+	 * Does nothing if {@code PaymentBonusAmt} is 0. The credit memo is created in the caller's (thread-inherited) transaction, so it is rolled back with the payment's completion.
+	 *
+	 * @param allocationDate the date of the payment's allocation, which becomes the credit memo's invoice and accounting date
+	 */
+	public void generateCreditMemoIfAny(@NonNull final I_C_Payment payment, @NonNull final LocalDate allocationDate)
+	{
+		final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
+		if (paymentBonusAmt.signum() == 0)
+		{
+			return;
+		}
+
+		final PaymentBonusDeduction deduction = computeDeduction(payment)
+				.orElseThrow(() -> new AdempiereException("No payment bonus can be deducted for the payment's invoice")
+						.appendParametersToMessage()
+						.setParameter("C_Payment_ID", payment.getC_Payment_ID())
+						.setParameter("C_Invoice_ID", payment.getC_Invoice_ID())
+						.setParameter("PaymentBonusAmt", paymentBonusAmt));
+
+		// the open amount before the credit memo, which still contains the bonus
+		final BigDecimal openAmt = paymentDAO.getInvoiceOpenAmount(payment, true);
+		final Money shortfall = Money.of(openAmt.subtract(payment.getDiscountAmt()).subtract(payment.getPayAmt()), deduction.getCurrencyId());
+		final Money maxPaymentBonus = shortfall.min(Money.of(paymentBonusAmt, deduction.getCurrencyId()));
+		final PaymentBonusDeduction deductionToBook = deduction.withLargestReachableGrossAmountNotAbove(maxPaymentBonus)
+				.orElseThrow(() -> new AdempiereException("The payment bonus is not covered by what the payment leaves open of the invoice")
+						.appendParametersToMessage()
+						.setParameter("C_Payment_ID", payment.getC_Payment_ID())
+						.setParameter("C_Invoice_ID", payment.getC_Invoice_ID())
+						.setParameter("PaymentBonusAmt", paymentBonusAmt)
+						.setParameter("maxPaymentBonus", maxPaymentBonus));
+
+		final InvoiceId creditMemoId = creditMemoService.generateCreditMemo(deductionToBook, allocationDate);
+		payment.setPaymentBonus_CreditMemo_ID(creditMemoId.getRepoId());
+
+		final BigDecimal creditMemoGrandTotal = invoiceBL.getById(creditMemoId).getGrandTotal();
+		if (creditMemoGrandTotal.compareTo(paymentBonusAmt) != 0)
+		{
+			payment.setPaymentBonusAmt(creditMemoGrandTotal);
+			// looked up here and not in a field: PaymentBL itself uses this service, and its construction needs services that a plain unit test of this one does not have
+			Services.get(IPaymentBL.class).updateWriteOffOrOverUnderAmt(payment, openAmt);
+		}
 	}
 
 	/**

@@ -49,7 +49,6 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -81,10 +80,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -257,6 +254,21 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
+	 * Asserts that no completed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice.
+	 * <pre>
+	 * And there is no payment bonus credit memo for invoice invoice
+	 * </pre>
+	 */
+	@And("^there is no payment bonus credit memo for invoice (.*)$")
+	public void noPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.isEmpty();
+	}
+
+	/**
 	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
 	 * There has to be exactly one completed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
 	 */
@@ -269,17 +281,7 @@ public class AllocatePayments_StepDef
 		}
 
 		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
-		final List<I_C_Invoice> creditMemos = queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
-				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID,
-						I_C_DocType.COLUMNNAME_C_DocType_ID,
-						queryBL.createQueryBuilder(I_C_DocType.class)
-								.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_ARCreditMemo)
-								.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo)
-								.create())
-				.create()
-				.list();
+		final List<I_C_Invoice> creditMemos = PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId);
 
 		if (creditMemoIdentifier.isNullPlaceholder())
 		{

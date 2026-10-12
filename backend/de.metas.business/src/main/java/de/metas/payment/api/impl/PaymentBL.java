@@ -450,23 +450,28 @@ public class PaymentBL implements IPaymentBL
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
 		{
-			final BigDecimal DiscountAmt = payment.getDiscountAmt();
-			final BigDecimal PayAmt = payment.getPayAmt();
-			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
-			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
-			BigDecimal WriteOffAmt = payment.getWriteOffAmt();
-			BigDecimal OverUnderAmt = payment.getOverUnderAmt();
-
-			if (payment.isOverUnderPayment())
-			{
-				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt);
-				payment.setOverUnderAmt(OverUnderAmt);
-			}
-
-			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(OverUnderAmt);
-			payment.setWriteOffAmt(WriteOffAmt);
-			payment.setDiscountAmt(DiscountAmt);
+			updateWriteOffOrOverUnderAmt(payment, fetchOpenAmount(payment, creditMemoAdjusted));
 		}
+	}
+
+	@Override
+	public void updateWriteOffOrOverUnderAmt(@NonNull final I_C_Payment payment, @NonNull final BigDecimal invoiceOpenAmt)
+	{
+		final BigDecimal DiscountAmt = payment.getDiscountAmt();
+		final BigDecimal PayAmt = payment.getPayAmt();
+		final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
+		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
+		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+
+		if (payment.isOverUnderPayment())
+		{
+			OverUnderAmt = invoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt);
+			payment.setOverUnderAmt(OverUnderAmt);
+		}
+
+		WriteOffAmt = invoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(OverUnderAmt);
+		payment.setWriteOffAmt(WriteOffAmt);
+		payment.setDiscountAmt(DiscountAmt);
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
@@ -391,7 +392,7 @@ public class PaymentBLTest
 					.build();
 			assertThat(deduction.getGrossAmount().toBigDecimal()).isEqualByComparingTo("2.78");
 
-			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction))));
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService()));
 		}
 
 		/**
@@ -464,7 +465,7 @@ public class PaymentBLTest
 			payment.setPaymentBonusAmt(new BigDecimal("2.78"));
 			saveRecord(payment);
 
-			new PaymentBonusOnPaymentService(Optional.empty()).updatePaymentBonusFromInvoice(payment);
+			new PaymentBonusOnPaymentService(Optional.empty(), new PaymentBonusCreditMemoService()).updatePaymentBonusFromInvoice(payment);
 
 			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
 			assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("166.50");

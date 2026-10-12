@@ -72,7 +72,7 @@ class PaymentBonusOnPaymentServiceTest
 	@Test
 	void providerReturnsEmpty_noDeduction()
 	{
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.empty()));
+		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.empty()), new PaymentBonusCreditMemoService());
 
 		assertThat(service.computeDeduction(INVOICE_ID, EUR)).isEmpty();
 	}
@@ -81,7 +81,7 @@ class PaymentBonusOnPaymentServiceTest
 	void sameCurrency_returnsDeduction()
 	{
 		final PaymentBonusDeduction deduction = deduction();
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)));
+		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService());
 
 		assertThat(service.computeDeduction(INVOICE_ID, EUR)).contains(deduction);
 	}
@@ -90,7 +90,7 @@ class PaymentBonusOnPaymentServiceTest
 	void paymentCurrencyDiffers_noDeduction()
 	{
 		final PaymentBonusDeduction deduction = deduction();
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)));
+		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService());
 
 		assertThat(service.computeDeduction(INVOICE_ID, CHF)).isEmpty();
 	}

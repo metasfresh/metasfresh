@@ -330,6 +330,15 @@ public class C_Payment_StepDef
 		paymentTable.putOrReplace(paymentIdentifier, payment);
 	}
 
+	/**
+	 * Validates the given columns of the payments; columns that are not given are not checked.
+	 * {@code PaymentBonus_CreditMemo_ID} registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none.
+	 * <pre>
+	 * And validate payments
+	 *   | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID |
+	 *   | payment      | 163.72 | 2.78            | bonusCreditMemo            |
+	 * </pre>
+	 */
 	@And("validate payments")
 	public void validateCreatedPayments(@NonNull final DataTable table)
 	{
@@ -374,6 +383,24 @@ public class C_Payment_StepDef
 					{
 						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
 						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
+
+		// the payment bonus credit memo is registered under the given identifier, so later steps can validate it; "null" expects no credit memo
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_PaymentBonus_CreditMemo_ID)
+				.ifPresent(creditMemoIdentifier -> {
+					final InvoiceId creditMemoId = InvoiceId.ofRepoIdOrNull(payment.getPaymentBonus_CreditMemo_ID());
+					if (creditMemoIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(creditMemoId).as("PaymentBonus_CreditMemo_ID should not be set").isNull();
+					}
+					else if (creditMemoId == null)
+					{
+						softly.fail("PaymentBonus_CreditMemo_ID is not set; expected the payment bonus credit memo %s", creditMemoIdentifier);
+					}
+					else
+					{
+						invoiceTable.putOrReplace(creditMemoIdentifier, invoiceBL.getById(creditMemoId));
 					}
 				});
 
