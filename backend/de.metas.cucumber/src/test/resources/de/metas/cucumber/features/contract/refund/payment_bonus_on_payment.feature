@@ -1296,3 +1296,59 @@ Feature: Payment bonus on the payment, next to Skonto
     And validate created invoices
       | C_Invoice_ID | GrandTotal | IsPaid |
       | invoice      | 166.50 EUR | false  |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # Payment window: reversing the payment reverses its payment bonus credit memo, too
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H3
+  Scenario: Reversing the completed payment of TC_H1 reverses its payment bonus credit memo, too; the reversal payment negates the bonus and links no credit memo (AC12c)
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    And the draft payment identified by payment is changed
+      | PayAmt |
+      | 163.72 |
+    And the payment identified by payment is completed
+    And validate payments
+      | C_Payment_ID | PaymentBonus_CreditMemo_ID |
+      | payment      | bonusCreditMemo            |
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid | DocStatus |
+      | invoice         | 166.50 EUR |            | true   | CO        |
+      | bonusCreditMemo | 2.78 EUR   | PB         | true   | CO        |
+
+    When the payment identified by payment is reversed
+
+    # the credit memo and the payment are both reversed
+    Then validate created invoices
+      | C_Invoice_ID    | DocStatus |
+      | bonusCreditMemo | RE        |
+    And validate created invoices
+      | C_Invoice_ID | DocStatus | IsPaid | OpenAmt |
+      | invoice      | CO        | false  | 166.50  |
+    And validate payments
+      | C_Payment_ID | DocStatus |
+      | payment      | RE        |
+      # the reversal payment is completed and then set to Reversed by MPayment.reverseCorrectIt itself, like any payment reversal
+      | payment^     | RE        |
+    # the reversal negates the bonus and carries no link to the credit memo
+    And validate payments
+      | C_Payment_ID | PaymentBonusAmt | PaymentBonus_CreditMemo_ID |
+      | payment^     | -2.78           | null                       |
+    And there is no payment bonus credit memo for invoice invoice

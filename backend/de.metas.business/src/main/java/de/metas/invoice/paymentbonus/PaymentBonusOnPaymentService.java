@@ -2,6 +2,8 @@ package de.metas.invoice.paymentbonus;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -13,6 +15,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,7 @@ public class PaymentBonusOnPaymentService
 
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
 	@NonNull private final PaymentBonusCreditMemoService creditMemoService;
 
@@ -159,6 +163,28 @@ public class PaymentBonusOnPaymentService
 				.creditMemoGrandTotal(invoiceBL.getById(creditMemoId).getGrandTotal())
 				.invoiceOpenAmtBeforeCreditMemo(openAmtBeforeCreditMemo)
 				.build());
+	}
+
+	/**
+	 * Reverses the payment bonus credit memo that completing the payment booked ({@code PaymentBonus_CreditMemo_ID}), in the caller's transaction.
+	 * The credit memo's reversal first reverses its allocations, so the invoice's open amount grows back by the bonus.
+	 * Does nothing if the payment has no payment bonus credit memo, or the credit memo is not completed any more (e.g. the user already reversed it).
+	 */
+	public void reverseCreditMemoIfAny(@NonNull final I_C_Payment payment)
+	{
+		final InvoiceId creditMemoId = InvoiceId.ofRepoIdOrNull(payment.getPaymentBonus_CreditMemo_ID());
+		if (creditMemoId == null)
+		{
+			return;
+		}
+
+		final I_C_Invoice creditMemo = invoiceBL.getById(creditMemoId);
+		if (!DocStatus.ofNullableCodeOrUnknown(creditMemo.getDocStatus()).isCompleted())
+		{
+			return;
+		}
+
+		documentBL.processEx(creditMemo, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 
 	private AdempiereException newPaymentBonusNotDeductibleException(@NonNull final I_C_Payment payment)

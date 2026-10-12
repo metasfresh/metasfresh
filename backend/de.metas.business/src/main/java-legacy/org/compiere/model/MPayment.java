@@ -1934,6 +1934,9 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
+		// the payment bonus credit memo is reversed first, then the payment: the credit memo was booked on behalf of this payment, so it must not outlive it
+		paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this);
+
 		// Create Reversal
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
@@ -1950,6 +1953,8 @@ public final class MPayment extends X_C_Payment
 		reversal.setDiscountAmt(getDiscountAmt().negate());
 		reversal.setWriteOffAmt(getWriteOffAmt().negate());
 		reversal.setOverUnderAmt(getOverUnderAmt().negate());
+		reversal.setPaymentBonusAmt(getPaymentBonusAmt().negate());
+		reversal.setPaymentBonus_CreditMemo_ID(0); // copyValues copied the link; only the original payment is linked to the credit memo
 		//
 		reversal.setIsAllocated(true);
 		// reversal.setIsReconciled(reconciled); // will be handled by banking module
