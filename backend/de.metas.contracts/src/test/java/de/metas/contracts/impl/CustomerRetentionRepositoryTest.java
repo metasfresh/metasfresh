@@ -24,6 +24,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.CustomerRetentionId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.invoice.ContractInvoiceService;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.order.model.I_C_Order;
+import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice;
@@ -63,6 +71,7 @@ public class CustomerRetentionRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		repository = new CustomerRetentionRepository(new ContractInvoiceService());
+		SpringContextHolder.registerJUnitBean(new ContractOrderService());
 		de.metas.common.util.time.SystemTime.setFixedTimeSource("2018-12-13T00:00:00+01:00");
 	}
 
@@ -421,6 +430,107 @@ public class CustomerRetentionRepositoryTest
 		refresh(customerRetention);
 		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
+	}
+
+	/**
+	 * An invoice of a refund contract is no subscription invoice: completing it leaves the partner's customer retention as it is (and does not fail for want of a subscription contract).
+	 */
+	@Test
+	public void updateCustomerRetentionOnInvoiceComplete_refundContractInvoice_nothingChanges()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		save(customerRetention);
+
+		final I_C_Flatrate_Term refundTerm = createFlatrateTerm(partner.getC_BPartner_ID(), TimeUtil.parseTimestamp("2018-01-01"), TimeUtil.parseTimestamp("2018-12-31"));
+		refundTerm.setType_Conditions(TypeConditions.REFUND.getCode());
+		save(refundTerm);
+		final I_C_Invoice invoice = createContractInvoice(partner.getC_BPartner_ID(), refundTerm, SystemTime.asTimestamp());
+
+		repository.updateCustomerRetentionOnInvoiceComplete(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		refresh(customerRetention);
+		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+	}
+
+	/**
+	 * A subscription invoice whose partner has no (active) subscription contract any more: the value is cleared, as {@link CustomerRetentionRepository#createUpdateCustomerRetention(BPartnerId)} does.
+	 */
+	@Test
+	public void updateCustomerRetentionOnInvoiceComplete_noActiveSubscriptionContract_cleared()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		save(customerRetention);
+
+		final I_C_Flatrate_Term subscriptionTerm = createFlatrateTerm(partner.getC_BPartner_ID(), TimeUtil.parseTimestamp("2018-01-01"), TimeUtil.parseTimestamp("2018-12-31"));
+		subscriptionTerm.setIsActive(false);
+		save(subscriptionTerm);
+		final I_C_Invoice invoice = createContractInvoice(partner.getC_BPartner_ID(), subscriptionTerm, SystemTime.asTimestamp());
+
+		repository.updateCustomerRetentionOnInvoiceComplete(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		refresh(customerRetention);
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
+	}
+
+	@Test
+	public void updateCustomerRetentionOnOrderComplete_subscriptionOrder_newCustomer()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		final I_C_Order order = createContractOrder(partner.getC_BPartner_ID(), TypeConditions.SUBSCRIPTION);
+
+		repository.updateCustomerRetentionOnOrderComplete(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		refresh(customerRetention);
+		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+	}
+
+	/**
+	 * An order of a refund contract is no subscription order: a partner without customer retention does not become a new customer by it.
+	 */
+	@Test
+	public void updateCustomerRetentionOnOrderComplete_refundContractOrder_nothingChanges()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		final I_C_Order order = createContractOrder(partner.getC_BPartner_ID(), TypeConditions.REFUND);
+
+		repository.updateCustomerRetentionOnOrderComplete(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		refresh(customerRetention);
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
+	}
+
+	private I_C_Order createContractOrder(final int partnerId, @NonNull final TypeConditions typeConditions)
+	{
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
+		conditions.setType_Conditions(typeConditions.getCode());
+		save(conditions);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(partnerId);
+		order.setIsSOTrx(true);
+		save(order);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		save(orderLine);
+
+		return order;
+	}
+
+	private I_C_Invoice createContractInvoice(final int partnerId, @NonNull final I_C_Flatrate_Term term, @NonNull final Timestamp dateInvoiced)
+	{
+		final I_C_Invoice_Candidate cand = createInvoiceCandidate(term.getC_Flatrate_Term_ID());
+		final I_C_Invoice invoice = createInvoice(partnerId, "documentNo-" + term.getC_Flatrate_Term_ID(), dateInvoiced);
+		final I_C_InvoiceLine invoiceLine = createInvoiceLine(invoice.getC_Invoice_ID());
+		createInvoiceLineAlloc(cand.getC_Invoice_Candidate_ID(), invoiceLine.getC_InvoiceLine_ID());
+		return invoice;
 	}
 
 	private I_C_Invoice_Line_Alloc createInvoiceLineAlloc(final int candId, final int invoiceLineId)

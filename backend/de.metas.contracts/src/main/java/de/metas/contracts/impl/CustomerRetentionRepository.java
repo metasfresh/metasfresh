@@ -234,7 +234,7 @@ public class CustomerRetentionRepository
 	{
 		if (!contractInvoiceService.isContractSalesInvoice(invoiceId))
 		{
-			// nothing to do
+			// not a subscription sales invoice: nothing to do
 			return;
 		}
 
@@ -244,6 +244,12 @@ public class CustomerRetentionRepository
 		final CustomerRetentionId customerRetentionId = retrieveOrCreateCustomerRetention(bpartnerId);
 
 		final I_C_Flatrate_Term firstFlatrateTerm = contractsDAO.retrieveFirstFlatrateTermForBPartnerId(bpartnerId);
+		if (firstFlatrateTerm == null)
+		{
+			// the invoiced subscription contract is no (active) subscription contract of this partner: clear, as createUpdateCustomerRetention does
+			setNonSubscriptionCustomer(customerRetentionId);
+			return;
+		}
 
 		final OrgId orgId = OrgId.ofRepoId(firstFlatrateTerm.getAD_Org_ID());
 
@@ -324,9 +330,9 @@ public class CustomerRetentionRepository
 		final ContractOrderService contractOrderService = SpringContextHolder.instance.getBean(ContractOrderService.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-		if (!contractOrderService.isContractSalesOrder(orderId))
+		if (!contractOrderService.isSubscriptionSalesOrder(orderId))
 		{
-			// nothing to do
+			// not a subscription sales order: nothing to do
 			return;
 		}
 
