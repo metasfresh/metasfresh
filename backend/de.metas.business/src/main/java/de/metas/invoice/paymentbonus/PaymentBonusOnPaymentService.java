@@ -150,8 +150,8 @@ public class PaymentBonusOnPaymentService
 		payment.setPaymentBonus_CreditMemo_ID(creditMemoId.getRepoId());
 
 		return Optional.of(PaymentBonusCreditMemoBooking.builder()
-				.creditMemoGrandTotal(invoiceBL.getById(creditMemoId).getGrandTotal())
-				.invoiceOpenAmtBeforeCreditMemo(openAmtBeforeCreditMemo)
+				.creditMemoGrandTotal(Money.of(invoiceBL.getById(creditMemoId).getGrandTotal(), deduction.getCurrencyId()))
+				.invoiceOpenAmtBeforeCreditMemo(Money.of(openAmtBeforeCreditMemo, deduction.getCurrencyId()))
 				.build());
 	}
 
