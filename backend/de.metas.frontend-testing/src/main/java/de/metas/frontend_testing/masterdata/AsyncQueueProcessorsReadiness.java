@@ -6,6 +6,7 @@ import de.metas.async.model.validator.Main;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -28,6 +29,9 @@ import java.util.function.BooleanSupplier;
  *
  * <p>Note: {@link IQueueProcessorExecutorService#isInitialized()} turns true when the processors' start begins, so they may still be
  * registering when this returns. That is fine: workpackages are queued in the DB and picked up as soon as the processors run.
+ *
+ * <p>{@link Main} starts the processors only in the app server (Spring profile {@code App}) and not with {@code -Dasync_disable=true}.
+ * The latter fails here right away; anything else that keeps them from starting ends in an exception after the bounded wait.
  */
 public final class AsyncQueueProcessorsReadiness
 {
@@ -59,7 +63,7 @@ public final class AsyncQueueProcessorsReadiness
 			return;
 		}
 
-		if (Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_ASYNC_DISABLE)))
+		if (StringUtils.toBoolean(System.getProperty(SYSTEM_PROPERTY_ASYNC_DISABLE)))
 		{
 			throw new AdempiereException("The async queue processors are not started because " + SYSTEM_PROPERTY_ASYNC_DISABLE + "=true");
 		}
