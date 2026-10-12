@@ -22,17 +22,8 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.util.Optional;
-import de.metas.tax.api.TaxId;
-import de.metas.tax.api.Tax;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
-import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
-import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
-import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.acct.GLCategoryId;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
@@ -45,6 +36,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -57,13 +49,18 @@ import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
@@ -71,7 +68,9 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
@@ -118,6 +117,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
@@ -860,25 +860,25 @@ public class PaymentAllocationServiceTest
 		@Test
 		void openMinusBonus_matches()
 		{
-			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).isTrue();
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).as("open - bonus matches").isTrue();
 		}
 
 		@Test
 		void openMinusSkontoMinusBonus_matches()
 		{
-			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.39", CurrencyCode.EUR))).isTrue();
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.39", CurrencyCode.EUR))).as("open - Skonto - bonus matches").isTrue();
 		}
 
 		@Test
 		void amountMatchingNeitherSkontoNorBonusNorBoth_doesNotMatch()
 		{
-			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.00", CurrencyCode.EUR))).isFalse();
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.00", CurrencyCode.EUR))).as("amount matching neither Skonto, bonus nor both").isFalse();
 		}
 
 		@Test
 		void withoutBonus_openMinusBonusDoesNotMatch()
 		{
-			assertThat(serviceWithBonus(false).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).isFalse();
+			assertThat(serviceWithBonus(false).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).as("open - bonus without a bonus contract").isFalse();
 		}
 
 		@Test
@@ -886,8 +886,8 @@ public class PaymentAllocationServiceTest
 		{
 			PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD);
 			final PaymentAllocationService service = serviceWithBonus(true); // the bonus is in EUR
-			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.17", CurrencyCode.USD))).isTrue(); // open - Skonto
-			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.72", CurrencyCode.USD))).isFalse(); // open - bonus: not accepted
+			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.17", CurrencyCode.USD))).as("foreign currency: open - Skonto").isTrue(); // open - Skonto
+			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.72", CurrencyCode.USD))).as("foreign currency: open - bonus is not accepted").isFalse(); // open - bonus: not accepted
 		}
 	}
 }
