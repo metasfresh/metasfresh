@@ -473,6 +473,7 @@ public class CustomerRetentionRepositoryTest
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 
+		term.setType_Conditions(TypeConditions.SUBSCRIPTION.getCode());
 		term.setBill_BPartner_ID(partnerId);
 		term.setMasterStartDate(masterStartDate);
 		term.setMasterEndDate(masterEndDate);

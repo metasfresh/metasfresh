@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -63,13 +64,15 @@ public interface IContractsDAO extends ISingletonService
 	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions, boolean ignoreDateFilters);
 
 	/**
-	 * @return the partner's active term with the latest master end date (else end date); {@code CompensationGroup} terms are not considered.
+	 * @return the partner's active subscription term with the latest master end date (else end date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
 	 */
+	@Nullable
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	/**
-	 * @return the partner's active term with the earliest master start date (else start date); {@code CompensationGroup} terms are not considered.
+	 * @return the partner's active subscription term with the earliest master start date (else start date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
 	 */
+	@Nullable
 	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	<T extends I_C_Flatrate_Conditions> T getConditionsById(ConditionsId conditionsId, Class<T> modelClass);

@@ -7,6 +7,7 @@ import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,6 +15,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -77,30 +79,64 @@ public class ContractsDAOTest
 	}
 
 	/**
-	 * Customer retention (new vs. regular customer) is about subscription contracts only; an earlier compensation-group contract of the same partner must not count as its "first contract".
+	 * Customer retention (new vs. regular customer) is derived from subscription contracts only: an earlier contract of any other type (here: refund, compensation group)
+	 * must not count as the partner's "first contract".
 	 */
 	@Test
-	public void retrieveFirstFlatrateTermForBPartnerId_ignoresCompensationGroupTerms()
+	public void retrieveFirstFlatrateTermForBPartnerId_onlySubscriptionTerms()
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(123);
-
-		final I_C_Flatrate_Term compensationGroupTerm = newInstance(I_C_Flatrate_Term.class);
-		compensationGroupTerm.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
-		compensationGroupTerm.setBill_BPartner_ID(bpartnerId.getRepoId());
-		compensationGroupTerm.setStartDate(TimeUtil.getDay(2024, 1, 1));
-		compensationGroupTerm.setMasterStartDate(TimeUtil.getDay(2024, 1, 1));
-		save(compensationGroupTerm);
-
-		final I_C_Flatrate_Term subscriptionTerm = newInstance(I_C_Flatrate_Term.class);
-		subscriptionTerm.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		subscriptionTerm.setBill_BPartner_ID(bpartnerId.getRepoId());
-		subscriptionTerm.setStartDate(TimeUtil.getDay(2025, 1, 1));
-		subscriptionTerm.setMasterStartDate(TimeUtil.getDay(2025, 1, 1));
-		save(subscriptionTerm);
+		createTerm(bpartnerId, TypeConditions.REFUND, TimeUtil.getDay(2023, 1, 1), TimeUtil.getDay(2023, 12, 31));
+		createTerm(bpartnerId, TypeConditions.COMPENSATION_GROUP, TimeUtil.getDay(2024, 1, 1), TimeUtil.getDay(2024, 12, 31));
+		final I_C_Flatrate_Term subscriptionTerm = createTerm(bpartnerId, TypeConditions.SUBSCRIPTION, TimeUtil.getDay(2025, 1, 1), TimeUtil.getDay(2025, 12, 31));
 
 		final I_C_Flatrate_Term firstTerm = new ContractsDAO().retrieveFirstFlatrateTermForBPartnerId(bpartnerId);
 
 		assertThat(firstTerm).isNotNull();
 		assertThat(firstTerm.getC_Flatrate_Term_ID()).isEqualTo(subscriptionTerm.getC_Flatrate_Term_ID());
+	}
+
+	/**
+	 * A later contract of any other type than subscription (here: procurement, compensation group) must not count as the partner's "latest contract".
+	 */
+	@Test
+	public void retrieveLatestFlatrateTermForBPartnerId_onlySubscriptionTerms()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(123);
+		final I_C_Flatrate_Term subscriptionTerm = createTerm(bpartnerId, TypeConditions.SUBSCRIPTION, TimeUtil.getDay(2023, 1, 1), TimeUtil.getDay(2023, 12, 31));
+		createTerm(bpartnerId, TypeConditions.PROCUREMENT, TimeUtil.getDay(2024, 1, 1), TimeUtil.getDay(2024, 12, 31));
+		createTerm(bpartnerId, TypeConditions.COMPENSATION_GROUP, TimeUtil.getDay(2025, 1, 1), TimeUtil.getDay(2025, 12, 31));
+
+		final I_C_Flatrate_Term latestTerm = new ContractsDAO().retrieveLatestFlatrateTermForBPartnerId(bpartnerId);
+
+		assertThat(latestTerm).isNotNull();
+		assertThat(latestTerm.getC_Flatrate_Term_ID()).isEqualTo(subscriptionTerm.getC_Flatrate_Term_ID());
+	}
+
+	@Test
+	public void retrieveFirstAndLatestFlatrateTermForBPartnerId_noSubscriptionTerm()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(123);
+		createTerm(bpartnerId, TypeConditions.REFUND, TimeUtil.getDay(2024, 1, 1), TimeUtil.getDay(2024, 12, 31));
+
+		assertThat(new ContractsDAO().retrieveFirstFlatrateTermForBPartnerId(bpartnerId)).isNull();
+		assertThat(new ContractsDAO().retrieveLatestFlatrateTermForBPartnerId(bpartnerId)).isNull();
+	}
+
+	private static I_C_Flatrate_Term createTerm(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final TypeConditions typeConditions,
+			@NonNull final Timestamp startDate,
+			@NonNull final Timestamp endDate)
+	{
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		term.setType_Conditions(typeConditions.getCode());
+		term.setBill_BPartner_ID(bpartnerId.getRepoId());
+		term.setStartDate(startDate);
+		term.setMasterStartDate(startDate);
+		term.setEndDate(endDate);
+		term.setMasterEndDate(endDate);
+		save(term);
+		return term;
 	}
 }
