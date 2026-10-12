@@ -11,10 +11,15 @@
 -- records do not list this window (only contract, order and schema do).
 -- The menu entry is created by the follow-up menu script.
 --
--- Captions reuse existing elements without changing them:
+-- Captions reuse existing elements:
 --   window / header tab : AD_Element 543469 (C_Order_CompensationGroup_ID) "Auftrag Kompensationsgruppe" / "Order Compensation Group"
---   sub-tab             : AD_Element 572851 "Auftragsposition" / "Order Line" (also the sales order's line tab)
+--   sub-tab             : AD_Element 572851 "Auftragsposition" / "Order Line" (also the sales order's line tab); the
+--                         German text is final, so its de_DE / de_CH rows are marked as translated (end of script)
 --   contract field      : AD_Element 574343 "Vertrag" / "Contract" (AD_Name_ID; no other usage)
+--   order field         : AD_Element 577439 "Auftrag/Bestellung" / "Sales/Purchase Order" (AD_Name_ID; groups exist on
+--                         sales and purchase orders; already used as such by two other fields)
+--   line no field       : AD_Element 1002992 "Zeile Nr." / "Line No" (AD_Name_ID, as on the sales order's line tab;
+--                         the column element reads "SeqNo." in en_US)
 --
 -- IDs allocated from idserver.metas.de on 2026-10-09:
 --   AD_MigrationScript 5828830 (this script)
@@ -144,9 +149,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785661
 ;
 /* DDL */ select AD_Element_Link_Create_Missing_Field(785661)
 ;
--- C_Order_ID
+-- C_Order_ID (caption 'Auftrag/Bestellung' via AD_Name_ID 577439)
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Name_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength, EntityType, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, Updated, UpdatedBy)
-VALUES (0, 557816, 785662 /*From ID Server*/, NULL, 0, 549517, TO_TIMESTAMP('2026-10-09 11:00:12', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Auftrag', 20, 20, -1, TO_TIMESTAMP('2026-10-09 11:00:12', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (0, 557816, 785662 /*From ID Server*/, 577439, 0, 549517, TO_TIMESTAMP('2026-10-09 11:00:12', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Auftrag/Bestellung', 20, 20, -1, TO_TIMESTAMP('2026-10-09 11:00:12', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
@@ -154,7 +159,7 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 785662
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(558)
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(577439)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785662
 ;
@@ -307,9 +312,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785671
 -- ============================================================================
 -- 6) AD_Field: order lines tab (default sort: Line ascending)
 -- ============================================================================
--- Line
+-- Line (caption 'Zeile Nr.' via AD_Name_ID 1002992)
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Name_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength, EntityType, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, Updated, UpdatedBy)
-VALUES (0, 2214, 785672 /*From ID Server*/, NULL, 0, 549518, TO_TIMESTAMP('2026-10-09 11:00:22', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Zeile Nr.', 10, 10, 1, TO_TIMESTAMP('2026-10-09 11:00:22', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (0, 2214, 785672 /*From ID Server*/, 1002992, 0, 549518, TO_TIMESTAMP('2026-10-09 11:00:22', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Zeile Nr.', 10, 10, 1, TO_TIMESTAMP('2026-10-09 11:00:22', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
@@ -317,7 +322,7 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 785672
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(439)
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(1002992)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785672
 ;
@@ -603,4 +608,15 @@ VALUES (0, 785679, 0, 549518, 555822, 655008 /*From ID Server*/, 'F', TO_TIMESTA
 -- GroupCompensationAmtType: SeqNo=90, SeqNoGrid=90
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy, WidgetSize)
 VALUES (0, 785680, 0, 549518, 555822, 655009 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-10-09 11:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Preisminderung Betrag Art', 90, 90, 0, TO_TIMESTAMP('2026-10-09 11:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100, NULL)
+;
+-- ============================================================================
+-- 9) Sub-tab caption element 572851 "Auftragsposition": German text is final -> de_DE / de_CH translated; propagated
+-- ============================================================================
+UPDATE AD_Element_Trl
+SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-10-09 11:01:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Element_ID = 572851 AND AD_Language IN ('de_DE', 'de_CH')
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(572851, 'de_DE')
+;
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(572851, 'de_CH')
 ;
