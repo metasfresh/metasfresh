@@ -1395,6 +1395,62 @@ public class PaymentAllocationBuilderTest
 			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("2.78", euroCurrencyId));
 		}
 
+		/**
+		 * The payment leaves 0.23 open, but the closest gross that the scaled deduction reaches is 0.24 (net 0.22 + 7 % VAT).
+		 * The bonus is never more than what the payment leaves open: the largest reachable gross not above 0.23 is 0.22 (net 0.21 + 7 % VAT).
+		 */
+		@Test
+		public void paymentBonus_cappedToTheLargestReachableGrossNotAboveWhatThePaymentLeavesOpen()
+		{
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build()),
+					ImmutableList.of(payment().direction(INBOUND).open("166.27").amtToAllocate("166.27").date("2021-01-12").build()))
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.dryRun()
+					.build();
+
+			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("0.22", euroCurrencyId));
+		}
+
+		/**
+		 * One payment for two invoices leaves 3.00 open: the first invoice in the list keeps its bonus, the second gets what is left.
+		 */
+		@Test
+		public void paymentBonus_capSpreadOverTheInvoicesInTheirOrder()
+		{
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(
+							invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build(),
+							invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build()),
+					ImmutableList.of(payment().direction(INBOUND).open("330.00").amtToAllocate("330.00").date("2021-01-12").build()))
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.dryRun()
+					.build();
+
+			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("2.78", euroCurrencyId), money("0.22", euroCurrencyId));
+		}
+
+		/**
+		 * A credit memo in the selection pays a part of the invoice too: 166.50 - 10.00 credit memo - 154.00 payment leaves 2.50 open.
+		 */
+		@Test
+		public void paymentBonus_cappedByTheCreditMemoInTheSelection()
+		{
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(
+							invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build(),
+							invoice().type(CustomerCreditMemo).open("-10.00").pay("-10.00").date("2021-01-11").build()),
+					ImmutableList.of(payment().direction(INBOUND).open("154.00").amtToAllocate("154.00").date("2021-01-12").build()))
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.dryRun()
+					.build();
+
+			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("2.50", euroCurrencyId));
+		}
+
 		private List<Money> paymentBonusCandidateAmounts(@NonNull final PaymentAllocationResult result)
 		{
 			return result.getCandidates()

@@ -228,15 +228,13 @@ public class PayableDocument
 	}
 
 	/**
-	 * Lowers the payment bonus to the given amount, e.g. because the payments leave less open on this payable than the bonus.
-	 * The amount by which the bonus is lowered is to be paid instead.
-	 * <p>
-	 * The caller makes sure that nothing was allocated yet.
+	 * Lowers the payment bonus to the given amount; the amount by which it is lowered is to be paid instead.
+	 * Nothing may be allocated yet.
 	 * Because of the rounding of the VAT, the new bonus is the closest gross amount that the scaled {@link PaymentBonusDeduction} can reach, see {@link PaymentBonusDeduction#withGrossAmount(Money)}.
 	 *
 	 * @param newPaymentBonus zero or positive, lower than the current bonus
 	 */
-	public void reducePaymentBonusTo(@NonNull final Money newPaymentBonus)
+	void reducePaymentBonusTo(@NonNull final Money newPaymentBonus)
 	{
 		final Money oldPaymentBonus = amountsToAllocate.getPaymentBonus();
 		final Money paymentBonus;
