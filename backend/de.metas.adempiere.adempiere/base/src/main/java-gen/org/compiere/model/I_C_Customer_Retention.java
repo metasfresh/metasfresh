@@ -118,7 +118,7 @@ public interface I_C_Customer_Retention
 
 	/**
 	 * Set Customer Retention.
-	 * Determined from subscription and refund contracts. Compensation-group contracts do not count.
+	 * Determined from subscription contracts.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -128,7 +128,7 @@ public interface I_C_Customer_Retention
 
 	/**
 	 * Get Customer Retention.
-	 * Determined from subscription and refund contracts. Compensation-group contracts do not count.
+	 * Determined from subscription contracts.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
