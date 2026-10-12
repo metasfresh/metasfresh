@@ -1935,7 +1935,7 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
-		// the payment bonus credit memo is reversed first, then the payment: the invoice gets its bonus back before the payment's allocation is undone (binding order)
+		// the payment bonus credit memo is reversed first, then the payment: the invoice gets its bonus back before the payment's allocation is undone
 		paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this);
 
 		// Create Reversal
@@ -1955,7 +1955,7 @@ public final class MPayment extends X_C_Payment
 		reversal.setWriteOffAmt(getWriteOffAmt().negate());
 		reversal.setOverUnderAmt(getOverUnderAmt().negate());
 		reversal.setPaymentBonusAmt(getPaymentBonusAmt().negate());
-		reversal.setPaymentBonus_CreditMemo_ID(0); // copyValues copied the link; only the original payment is linked to the credit memo
+		reversal.setPaymentBonus_CreditMemo_ID(-1); // copyValues copied the link; only the original payment is linked to the credit memo
 		//
 		reversal.setIsAllocated(true);
 		// reversal.setIsReconciled(reconciled); // will be handled by banking module
