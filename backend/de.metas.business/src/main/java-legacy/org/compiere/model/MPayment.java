@@ -138,13 +138,14 @@ public final class MPayment extends X_C_Payment
 	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_INVOICE = AdMessageKey.of("Payment_BPartnerMismatch_Invoice");
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	/**
 	 * Lazy because a PO can be instantiated before the Spring context is up.
 	 */
-	private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Get Payments Of BPartner
@@ -1601,7 +1602,7 @@ public final class MPayment extends X_C_Payment
 		// calculate actual allocation
 		// BigDecimal allocationAmt = getPayAmt(); // underpayment
 		// when allocating an invoice, we don't want to allocate more than the invoice's open amount
-		final I_C_Invoice invoice = Services.get(IInvoiceBL.class).getById(invoiceId);
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
 
@@ -1611,7 +1612,7 @@ public final class MPayment extends X_C_Payment
 		// the payment bonus is booked by a credit memo that allocates itself against the invoice; so it has to be created before the open amount is retrieved
 		generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
 
-		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
+		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do
