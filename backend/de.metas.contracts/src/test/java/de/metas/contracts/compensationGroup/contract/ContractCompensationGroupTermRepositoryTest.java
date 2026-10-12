@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -91,7 +92,7 @@ class ContractCompensationGroupTermRepositoryTest
 	}
 
 	@Test
-	void getTermsDueForDailyContractStatusUpdate_onlyWaitingStartedAndRunningEndedNotExtended()
+	void iterateTermsDueForDailyContractStatusUpdate_onlyWaitingStartedAndRunningEndedNotExtended()
 	{
 		final LocalDate today = LocalDate.parse("2026-07-01");
 
@@ -111,7 +112,7 @@ class ContractCompensationGroupTermRepositoryTest
 		term().docStatus(DocStatus.Drafted).startDate(day("2026-07-01")).endDate(LocalDate.parse("2026-12-31")).contractStatus(FlatrateTermStatus.Waiting).create();
 		term().typeConditions(TypeConditions.SUBSCRIPTION).startDate(day("2025-07-01")).endDate(LocalDate.parse("2026-06-30")).contractStatus(FlatrateTermStatus.Running).create();
 
-		assertThat(repository.getTermsDueForDailyContractStatusUpdate(today))
+		assertThat(ImmutableList.copyOf(repository.iterateTermsDueForDailyContractStatusUpdate(today)))
 				.extracting(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.containsExactly(
 						waitingStartsToday.getC_Flatrate_Term_ID(),

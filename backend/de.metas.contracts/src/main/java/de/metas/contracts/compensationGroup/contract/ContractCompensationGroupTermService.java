@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -115,7 +116,7 @@ public class ContractCompensationGroupTermService
 	/**
 	 * Applies {@link ContractCompensationGroupTermStatusRule#computeStatusUpdate} for today to every completed
 	 * compensation-group term of the context client that the rule may change today
-	 * (see {@link ContractCompensationGroupTermRepository#getTermsDueForDailyContractStatusUpdate}).
+	 * (see {@link ContractCompensationGroupTermRepository#iterateTermsDueForDailyContractStatusUpdate}).
 	 * <p>
 	 * Each term is updated in its own (nested) transaction: a term that fails is rolled back and logged, and the run continues with the next one.
 	 *
@@ -126,8 +127,10 @@ public class ContractCompensationGroupTermService
 		final LocalDate today = SystemTime.asLocalDate();
 
 		final MutableInt updatedCount = MutableInt.zero();
-		for (final I_C_Flatrate_Term term : termRepository.getTermsDueForDailyContractStatusUpdate(today))
+		final Iterator<I_C_Flatrate_Term> terms = termRepository.iterateTermsDueForDailyContractStatusUpdate(today);
+		while (terms.hasNext())
 		{
+			final I_C_Flatrate_Term term = terms.next();
 			trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 			{
 				@Override

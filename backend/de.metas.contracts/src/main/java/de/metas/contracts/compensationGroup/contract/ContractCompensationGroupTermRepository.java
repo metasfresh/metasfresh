@@ -16,11 +16,13 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 
 /*
@@ -115,8 +117,10 @@ public class ContractCompensationGroupTermRepository
 	 *     <li>"not yet started" ({@code Wa}) and started on or before {@code today}, or</li>
 	 *     <li>"running" ({@code Ru}), ended before {@code today} and not extended ({@code C_FlatrateTerm_Next_ID} empty)</li>
 	 * </ul>
+	 * Iterated in buffered chunks, because the number of terms grows with the business data. The iterator is guaranteed:
+	 * it walks a snapshot of the matching IDs, so terms whose status the caller changes while iterating are neither skipped nor repeated.
 	 */
-	public List<I_C_Flatrate_Term> getTermsDueForDailyContractStatusUpdate(@NonNull final LocalDate today)
+	public Iterator<I_C_Flatrate_Term> iterateTermsDueForDailyContractStatusUpdate(@NonNull final LocalDate today)
 	{
 		final Timestamp startOfToday = TimeUtil.asTimestamp(today);
 		final Timestamp startOfTomorrow = TimeUtil.asTimestamp(today.plusDays(1));
@@ -140,7 +144,9 @@ public class ContractCompensationGroupTermRepository
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.endOrderBy()
 				.create()
-				.list(I_C_Flatrate_Term.class);
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_Flatrate_Term.class);
 	}
 
 	public void saveContractStatus(@NonNull final I_C_Flatrate_Term term, @NonNull final FlatrateTermStatus contractStatus)
