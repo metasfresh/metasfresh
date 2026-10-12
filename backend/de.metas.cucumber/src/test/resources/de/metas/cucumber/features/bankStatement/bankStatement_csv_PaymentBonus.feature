@@ -74,7 +74,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | customerBP     | Y              | N            | deductionPS                   | I               | customerName      |
       | serviceCompany | N              | Y            | deductionPS                   |                 |                   |
       # a customer without a refund contract
-      | plainBP        | Y              | N            | deductionPS                   | I               |                   |
+      | plainBP        | Y              | N            | deductionPS                   | I               | plainName         |
     # the organization's EUR account that the statement is imported for: found by its IBAN
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID | IBAN                   |
@@ -322,3 +322,34 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
     And validate created invoices
       | C_Invoice_ID | IsPaid |
       | invoice      | true   |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC5
+  Scenario: CSV bank statement — a customer without a payment bonus contract: the invoice number in the CSV does not link the line to the invoice, as before
+    # plainBP has no refund contract: the line gets its partner (matched by the name in the CSV) but no invoice
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      |
+      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_6 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@plainName@,,bsCsvPaymentBonus_6,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 166.50     | 166.50      | null                        | plainBP                      | false         |
+    # cleanup: the invoice stays unpaid, which would make the next import of this fixed document number ambiguous
+    And the invoice identified by invoice is reversed

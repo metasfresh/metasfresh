@@ -45,6 +45,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceQuery;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,6 +56,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_I_BankStatement;
@@ -195,7 +197,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
-		final I_C_Invoice referencedInvoice = getReferencedInvoice(importRecord).orElse(null);
+		final I_C_Invoice referencedInvoice = getReferencedInvoice(importRecord)
+				.filter(this::hasPaymentBonusDeduction)
+				.orElse(null);
 		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 		final BPartnerId bpartnerId = importedBPartnerId != null || referencedInvoice == null
 				? importedBPartnerId
@@ -245,6 +249,18 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.build());
 
 		importRecord.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
+	}
+
+	/**
+	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract),
+	 * so that the import of every other partner stays as it was.
+	 */
+	private boolean hasPaymentBonusDeduction(@NonNull final I_C_Invoice invoice)
+	{
+		return invoice.isSOTrx()
+				&& SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
+				.computeDeduction(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+				.isPresent();
 	}
 
 	/**
