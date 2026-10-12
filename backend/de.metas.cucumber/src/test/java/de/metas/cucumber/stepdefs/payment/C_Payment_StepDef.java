@@ -269,6 +269,37 @@ public class C_Payment_StepDef
 	}
 
 	/**
+	 * Changes fields of a saved draft payment and saves it once, <b>without</b> running any WebUI callout: like a process, the REST API or any other
+	 * non-WebUI save. Only the {@code BEFORE_CHANGE} interceptors run.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is saved without UI callouts
+	 *   | PaymentBonusAmt |
+	 *   | 0               |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is saved without UI callouts$")
+	public void saveDraftPaymentWithoutCallouts(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(payment::setPaymentBonusAmt);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
 	 * What the WebUI's {@code CalloutPayment.amounts} runs when the user changes the given field.
 	 */
 	private void runAmountsCallout(@NonNull final I_C_Payment payment, @NonNull final String columnName)

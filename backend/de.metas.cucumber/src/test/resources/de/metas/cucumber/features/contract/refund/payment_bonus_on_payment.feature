@@ -357,6 +357,36 @@ Feature: Payment bonus on the payment, next to Skonto
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H1d
+  Scenario: Payment for an invoice — a save that changes only the payment bonus (no UI callout) recomputes the write-off and keeps the PayAmt
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt |
+      | payment      | 163.72 | 2.78            | 0           |
+
+    # a process / REST save that only lowers the bonus: no callout, only the C_Payment interceptor
+    When the draft payment identified by payment is saved without UI callouts
+      | PaymentBonusAmt |
+      | 0               |
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0               | 2.78        | 0            |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H1b
   Scenario: Payment for an invoice — a customer who pays the full invoice gets no payment bonus
     Given metasfresh contains C_Invoice:

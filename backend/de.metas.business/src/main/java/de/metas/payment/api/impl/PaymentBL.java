@@ -428,6 +428,13 @@ public class PaymentBL implements IPaymentBL
 		}
 	}
 
+	@Override
+	public void onPaymentBonusAmtChange(@NonNull final I_C_Payment payment)
+	{
+		// deliberately no capPaymentBonusToShortfall here: the bonus the user entered stays
+		updateWriteOffOrOverUnderAmt(payment, true);
+	}
+
 	/**
 	 * Books what the payment leaves open of a drafted payment's invoice as write-off, or as over/under amount if the payment is an over/under payment:
 	 * {@code open - PayAmt - DiscountAmt - PaymentBonusAmt - (OverUnderAmt or WriteOffAmt)}. PayAmt is not changed.
