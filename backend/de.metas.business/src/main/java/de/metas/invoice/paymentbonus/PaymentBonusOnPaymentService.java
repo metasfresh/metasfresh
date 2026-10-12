@@ -82,8 +82,8 @@ public class PaymentBonusOnPaymentService
 
 		final BigDecimal openAmt = paymentDAO.getInvoiceOpenAmount(payment, true);
 		final BigDecimal maxPaymentBonusAmt = openAmt.subtract(payment.getDiscountAmt());
-		final BigDecimal deductionGrossAmt = deduction != null ? deduction.getGrossAmount().toBigDecimal() : BigDecimal.ZERO;
-		final BigDecimal paymentBonusAmt = deductionGrossAmt.compareTo(maxPaymentBonusAmt) <= 0 ? deductionGrossAmt : BigDecimal.ZERO;
+		final BigDecimal deductionGrossAmtBD = deduction != null ? deduction.getGrossAmount().toBigDecimal() : BigDecimal.ZERO;
+		final BigDecimal paymentBonusAmt = deductionGrossAmtBD.compareTo(maxPaymentBonusAmt) <= 0 ? deductionGrossAmtBD : BigDecimal.ZERO;
 
 		payment.setPaymentBonusAmt(paymentBonusAmt);
 		payment.setPayAmt(openAmt

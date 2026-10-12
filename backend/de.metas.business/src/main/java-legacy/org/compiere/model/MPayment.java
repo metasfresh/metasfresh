@@ -1767,13 +1767,13 @@ public final class MPayment extends X_C_Payment
 	 */
 	private void alignPaymentBonusAmtWithCreditMemo(@NonNull final PaymentBonusCreditMemoBooking booking)
 	{
-		final BigDecimal creditMemoGrandTotal = booking.getCreditMemoGrandTotal().toBigDecimal();
-		if (creditMemoGrandTotal.compareTo(getPaymentBonusAmt()) == 0)
+		final BigDecimal creditMemoGrandTotalBD = booking.getCreditMemoGrandTotal().toBigDecimal();
+		if (creditMemoGrandTotalBD.compareTo(getPaymentBonusAmt()) == 0)
 		{
 			return;
 		}
 
-		setPaymentBonusAmt(creditMemoGrandTotal);
+		setPaymentBonusAmt(creditMemoGrandTotalBD);
 		paymentBL.updateWriteOffOrOverUnderAmt(this, booking.getInvoiceOpenAmtBeforeCreditMemo().toBigDecimal());
 	}
 
