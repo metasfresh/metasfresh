@@ -508,7 +508,7 @@ public class PPOrderCandidateService
 
 	public void setPlantAndWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		// Plant (Produktionsstaette) + WorkStation (Arbeitsstation): Product Planning first, product-category as fallback (gh31188).
+		// Plant (Produktionsstaette) + WorkStation (Arbeitsstation): Product Planning first, product-category as fallback
 		// Wired as a callout on PP_Product_Planning_ID, so both follow the same precedence as the PP_Order callout when the planning is editable.
 		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
 		final ProductPlanning productPlanning = ppProductPlanningId != null ? productPlanningDAO.getById(ppProductPlanningId) : null;
