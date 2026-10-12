@@ -5,13 +5,14 @@
 Feature: Payment bonus on the payment that is created from a bank statement line
 ## - The payment created for a bank statement line books Skonto and the payment bonus: the one the paid amount matches.
 ## - A statement line that references the invoice but pays 'open - bonus' books the bonus, so the invoice is paid completely.
+## - Each scenario has its own customer (Background), but the invoice has a fixed document number, because the camt text references it:
+##   a run that fails before the invoice is paid leaves an unpaid invoice with that number, which makes the next import ambiguous until that invoice is renamed.
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And documents are accounted immediately
-    And set sys config boolean value true for sys config de.metas.payment.esr.Enabled
 
     And metasfresh contains C_TaxCategory
       | Identifier   |
@@ -28,8 +29,8 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | packCategory  |
       | bonusCategory |
     And metasfresh contains M_Product_Category:
-      | Identifier       | Name                 | Value                | OPT.M_Product_Category_Parent_ID.Identifier |
-      | subGoodsCategory | deduction sub-goods  | deductionSubGoods    | goodsCategory                               |
+      | Identifier       | Name                | Value             | OPT.M_Product_Category_Parent_ID.Identifier |
+      | subGoodsCategory | deduction sub-goods | deductionSubGoods | goodsCategory                               |
 
     # the bonus products post on their own revenue account
     # (applied before the products exist: a product copies its category's accounts when it is created)
@@ -72,9 +73,9 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | customerBP     | Y              | N            | deductionPS                   | I               |
       | serviceCompany | N              | Y            | deductionPS                   |                 |
       # a customer without a refund contract
-      | plainBP        | Y              | N            | deductionPS                   | I               |
-    # the organization's EUR account (like the service company fee feature); an account of its own would be a second active EUR account for the features that run after this one
-    # the organization's EUR account that the statement is imported for (found by its IBAN, created if missing)
+      | plainBP | Y | N | deductionPS | I |
+    # the organization's EUR account that the statement is imported for: found by its IBAN (an account of its own would be a second active EUR account for the features that run after this one)
+    # the statement import needs a bank with an import format on it; as in the other camt features, a new C_Bank is created and put on the shared account
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID | IBAN                   |
       | org_EUR_account | EUR           | DE89370400440532013000 |
@@ -83,8 +84,8 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
       | di_camt53                  | 540009              |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                  | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
-      | b_paymentBonus       | bank_paymentBonus_bs  | 2234568   | AAAAAAAA82A | di_camt53                  |
+      | C_Bank_ID.Identifier | Name                 | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
+      | b_paymentBonus       | bank_paymentBonus_bs | 2234568   | AAAAAAAA82A | di_camt53                  |
     And update C_BP_BankAccount:
       | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.C_Bank_ID.Identifier |
       | org_EUR_account                | EUR                     | b_paymentBonus           |
@@ -119,7 +120,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
     # the bonus: 2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78; the customer pays 166.50 - 2.78 = 163.72
     # the line references the invoice by its document number; the amount is not matched against the open amount
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_1 |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
@@ -257,7 +258,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | bsl_1                             | bs_1                          | 10   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
-      | bsl_1                             | 163.72 | 163.72 | invoice          | customerBP        | false         |
+      | bsl_1                             | 163.72     | 163.72      | invoice                     | customerBP                   | false         |
     And the C_BankStatement identified by bs_1 is completed
     And after not more than 60s, C_Payment is found
       | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
@@ -268,7 +269,6 @@ Feature: Payment bonus on the payment that is created from a bank statement line
     And validate created invoices
       | C_Invoice_ID | IsPaid |
       | invoice      | true   |
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
@@ -277,7 +277,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   Scenario: Bank statement — a line that pays the full invoice amount books no payment bonus
     # the customer pays the full 166.50: the matcher never grants a bonus to a full payment
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_2 |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
@@ -415,7 +415,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | bsl_1                             | bs_1                          | 10   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
-      | bsl_1                             | 166.50 | 166.50 | invoice          | customerBP        | false         |
+      | bsl_1                             | 166.50     | 166.50      | invoice                     | customerBP                   | false         |
     And the C_BankStatement identified by bs_1 is completed
     And after not more than 60s, C_Payment is found
       | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
@@ -427,4 +427,3 @@ Feature: Payment bonus on the payment that is created from a bank statement line
     And validate created invoices
       | C_Invoice_ID | IsPaid |
       | invoice      | true   |
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled

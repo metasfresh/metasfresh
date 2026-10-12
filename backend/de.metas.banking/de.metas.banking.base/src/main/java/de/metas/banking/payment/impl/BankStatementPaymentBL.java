@@ -37,10 +37,10 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
@@ -224,17 +224,21 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			
 			if (invoiceToAllocate != null)
 			{
-				// Skonto, or the payment bonus (only on a sales invoice whose partner has a payment bonus contract), or both: the one that the paid amount matches
-				final Amount bonusGrossAmt = paymentBonusOnPaymentService.computeDeduction(invoiceId, payAmount.getCurrencyId())
+				// Skonto, or the payment bonus, or both: the one that the paid amount matches.
+				// Only a sales invoice can have a payment bonus; for any other document the bonus is not even looked up.
+				final boolean bonusAllowed = invoiceToAllocate.getDocBaseType().isSales();
+				final Amount bonusGrossAmt = bonusAllowed
+						? paymentBonusOnPaymentService.computeDeduction(invoiceId, payAmount.getCurrencyId())
 						.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
-						.orElse(null);
+						.orElse(null)
+						: null;
 
 				PaymentBonusAmountMatcher.match(
 								invoiceToAllocate.getOpenAmountConverted(),
 								invoiceToAllocate.getDiscountAmountConverted(),
 								bonusGrossAmt,
 								payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
-								invoiceToAllocate.getDocBaseType().isSales())
+								bonusAllowed)
 						.ifPresent(matched -> {
 							paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
 							paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
