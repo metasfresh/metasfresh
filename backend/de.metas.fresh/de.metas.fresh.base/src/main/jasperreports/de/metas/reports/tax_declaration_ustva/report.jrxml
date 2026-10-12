@@ -105,18 +105,6 @@ ORDER BY level_order, vatcode, amount_type, posting_date, documentno]]>
 				</textField>
 			</band>
 		</groupHeader>
-		<groupFooter>
-			<band height="30">
-				<printWhenExpression><![CDATA["BALANCE".equals($F{report_level})]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="0" y="2" width="535" height="24" uuid="552da1eb-0eae-4bdc-a0ec-ef8c7cbb5aea"/>
-					<textElement verticalAlignment="Top">
-						<font fontName="Arial" size="8" isItalic="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{balanceNote}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupFooter>
 	</group>
 	<group name="code">
 		<groupExpression><![CDATA[$F{report_level} + "|" + $F{vatcode} + "|" + $F{amount_type}]]></groupExpression>
