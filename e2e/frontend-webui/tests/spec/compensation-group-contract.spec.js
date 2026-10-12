@@ -87,9 +87,8 @@ const MENU_COMPENSATION_GROUPS_ENTRIES = [
   { nodeId: '541726', type: 'window', elementId: '541169' }, // Kompensationsgruppe Schema Kategorie
   { nodeId: '542364', type: 'window', elementId: '542194' }, // Kompensationsgruppen-Vertragseinstellungen
 ];
-// Related Documents entry of a contract to its order compensation groups. The data-cy carries the target window's
-// internal name; window 542196 has none, so it is the window's (base) name.
-const CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE = 'reference-Auftrag Kompensationsgruppe';
+// Related Documents entry of a contract to its order compensation groups (data-cy: the target window's InternalName)
+const CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE = 'reference-C_Order_CompensationGroup';
 // Ref-list keys of C_CompensationGroup_SchemaLine.Type
 const SCHEMA_LINE_TYPE_CONTRACT = 'F';
 const SCHEMA_LINE_TYPE_REVENUE_BREAKS = 'R';

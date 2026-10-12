@@ -32,10 +32,11 @@
 --   AD_UI_Element 654990..655000 (header), 655001..655009 (order lines)
 
 -- ============================================================================
--- 1) AD_Window
+-- 1) AD_Window (InternalName: stable id of the window, e.g. in the Related Documents entries; the Name follows the
+--    element's caption)
 -- ============================================================================
-INSERT INTO AD_Window (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Window_ID, Created, CreatedBy, EntityType, IsActive, IsBetaFunctionality, IsDefault, IsEnableRemoteCacheInvalidation, IsOneInstanceOnly, IsSOTrx, Name, Processing, Updated, UpdatedBy, WindowType, WinHeight, WinWidth)
-VALUES (0, 543469, 0, 542196 /*From ID Server*/, TO_TIMESTAMP('2026-10-09 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'N', 'N', 'N', 'N', 'Y', 'Auftrag Kompensationsgruppe', 'N', TO_TIMESTAMP('2026-10-09 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'M', 0, 0)
+INSERT INTO AD_Window (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Window_ID, Created, CreatedBy, EntityType, InternalName, IsActive, IsBetaFunctionality, IsDefault, IsEnableRemoteCacheInvalidation, IsOneInstanceOnly, IsSOTrx, Name, Processing, Updated, UpdatedBy, WindowType, WinHeight, WinWidth)
+VALUES (0, 543469, 0, 542196 /*From ID Server*/, TO_TIMESTAMP('2026-10-09 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'C_Order_CompensationGroup', 'Y', 'N', 'N', 'N', 'N', 'Y', 'Auftrag Kompensationsgruppe', 'N', TO_TIMESTAMP('2026-10-09 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'M', 0, 0)
 ;
 INSERT INTO AD_Window_Trl (AD_Language, AD_Window_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Window_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
