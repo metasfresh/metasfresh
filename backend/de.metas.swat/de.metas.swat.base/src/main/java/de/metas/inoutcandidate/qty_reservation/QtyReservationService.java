@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -23,6 +24,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +92,72 @@ public class QtyReservationService
 		{
 			invalidateShipmentSchedulesForSalesOrderLineId(request.getOrderAndLineId());
 		}
+	}
+
+	/**
+	 * Partially reduces the reservation of one bucket (order line + supply type + date promised) by
+	 * {@code request.qtyToUnreserveTU} TUs, spread across the bucket's rows in reservation-id order.
+	 * A row is never shrunk below its already-delivered qty; rows that reach zero are deleted.
+	 * Shipment schedules of the order line are invalidated afterwards.
+	 * <p>
+	 * Like {@link #deleteReservation}, this assumes an ambient (caller-provided) transaction: the update and the delete are
+	 * not wrapped here.
+	 */
+	public void reduceReservation(@NonNull final ReduceQtyReservationRequest request)
+	{
+		final ImmutableList<QtyReservation> rows = repository.getActiveByBucket(
+				request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
+
+		final int totalReversibleTU = rows.stream().mapToInt(QtyReservationShrinker::getReversibleTU).sum();
+		int remainingTU = request.getQtyToUnreserveTU().toInt();
+		if (remainingTU > totalReversibleTU)
+		{
+			throw new AdempiereException("Cannot unreserve " + remainingTU + " TU: only " + totalReversibleTU
+					+ " TU of the reservation are reversible (the rest is already delivered)")
+					.setParameter("request", request);
+		}
+
+		final Map<QtyReservationId, QtyReservationShrinker.Result> resultsById = new HashMap<>();
+		for (final QtyReservation row : rows)
+		{
+			if (remainingTU <= 0)
+			{
+				break;
+			}
+			final int takeTU = Math.min(remainingTU, QtyReservationShrinker.getReversibleTU(row));
+			if (takeTU <= 0)
+			{
+				continue; // nothing reducible on this row (e.g. fully delivered)
+			}
+
+			resultsById.put(row.getId(), QtyReservationShrinker.shrinkByTU(row, takeTU));
+			remainingTU -= takeTU;
+		}
+
+		if (resultsById.isEmpty())
+		{
+			return;
+		}
+
+		final Set<QtyReservationId> idsToDelete = resultsById.entrySet().stream()
+				.filter(e -> e.getValue().isDelete())
+				.map(Map.Entry::getKey)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (resultsById.size() > idsToDelete.size())
+		{
+			repository.updateByOrderLineIds(
+					ImmutableSet.of(request.getOrderAndLineId().getOrderLineId()),
+					before -> {
+						final QtyReservationShrinker.Result result = resultsById.get(before.getId());
+						return result != null && !result.isDelete()
+								? before.withQty(result.getNewQty(), result.getNewQtyTU())
+								: before;
+					});
+		}
+		repository.deleteByIds(idsToDelete);
+
+		invalidateShipmentSchedulesForSalesOrderLineId(request.getOrderAndLineId());
 	}
 
 	private void invalidateShipmentSchedulesForSalesOrderLineId(@NonNull final OrderAndLineId orderLineId)

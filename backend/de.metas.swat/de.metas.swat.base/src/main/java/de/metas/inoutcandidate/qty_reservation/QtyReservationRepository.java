@@ -15,7 +15,9 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -184,15 +186,40 @@ public class QtyReservationRepository
 
 	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
 	{
-		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(request.getOrderAndLineId())
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, request.getSupplyType().getCode());
+		return toSqlQuery(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
+	}
 
-		if (request.getDatePromised() != null)
+	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(orderAndLineId)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, supplyType.getCode());
+
+		if (datePromised != null)
 		{
-			sqlQueryBuilder.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_DatePromised, TimeUtil.asTimestamp(request.getDatePromised()));
+			sqlQueryBuilder.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_DatePromised, TimeUtil.asTimestamp(datePromised));
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * Active, unprocessed reservations of one bucket (order line + supply type + optional date promised), by reservation id.
+	 */
+	@NonNull
+	public ImmutableList<QtyReservation> getActiveByBucket(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		return toSqlQuery(orderAndLineId, supplyType, datePromised)
+				.orderBy(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID)
+				.create()
+				.stream()
+				.map(QtyReservationLoaderAndSaver::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
