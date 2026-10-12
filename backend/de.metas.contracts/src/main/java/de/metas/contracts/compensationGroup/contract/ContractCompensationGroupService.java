@@ -19,7 +19,6 @@ import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationBase;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -28,11 +27,9 @@ import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -105,7 +102,6 @@ public class ContractCompensationGroupService
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private static final AdMessageKey MSG_ReactivateInvoiced = AdMessageKey.of("ContractCompensationGroup_ReactivateInvoiced");
 
@@ -134,7 +130,7 @@ public class ContractCompensationGroupService
 		}
 
 		final GroupTemplate schemaFromRepository = groupTemplateRepository.getById(termMatch.getSettings().getSchemaId());
-		final GroupTemplate schema = order.isSOTrx() ? schemaFromRepository : describePercentageDiscountLines(schemaFromRepository);
+		final GroupTemplate schema = order.isSOTrx() ? schemaFromRepository : new PurchaseDiscountLineDescriber(compensationLineCreateRequestFactory).describe(schemaFromRepository);
 
 		// before candidate selection, so that a take-over category joins it
 		final GroupTemplate schemaWithTakeOvers = takeOverService.applyToSchema(schema, extractDropShipInfo(order), termMatch.getSettings());
@@ -160,42 +156,6 @@ public class ContractCompensationGroupService
 				.groupTemplate(schemaWithoutUnmatchedCompensationLines)
 				.flatrateTermId(FlatrateTermId.ofRepoId(termMatch.getTerm().getC_Flatrate_Term_ID()))
 				.createGroup(candidateSelection.getLineIds());
-	}
-
-	/**
-	 * On a purchase order, the vendor's own percentage discount lines say what they are, like the take-over lines do,
-	 * e.g. {@code "3% Bonus Salemfrucht"}; otherwise two discount lines with the same discount product are told apart only by their amount.
-	 */
-	private GroupTemplate describePercentageDiscountLines(@NonNull final GroupTemplate schema)
-	{
-		return schema.toBuilder()
-				.clearCompensationLines()
-				.compensationLines(schema.getCompensationLines().stream()
-						.map(this::describeIfPercentageDiscount)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	private GroupTemplateCompensationLine describeIfPercentageDiscount(@NonNull final GroupTemplateCompensationLine line)
-	{
-		final Percent percentage = line.getPercentage();
-		if (percentage == null || percentage.isZero() || line.getDescription() != null)
-		{
-			return line;
-		}
-
-		// a schema line leaves its compensation type to its product
-		final boolean isPercentageDiscount = line.getCompensationType() != null
-				? line.getCompensationType() == GroupCompensationType.Discount
-				: compensationLineCreateRequestFactory.isPercentDiscountProduct(line.getProductId());
-		if (!isPercentageDiscount)
-		{
-			return line;
-		}
-
-		return line.toBuilder()
-				.description(ContractSettingsTakeOverService.formatPercent(percentage) + " " + productBL.getProductName(line.getProductId()))
-				.build();
 	}
 
 	private OrderDropShipInfo extractDropShipInfo(@NonNull final I_C_Order order)

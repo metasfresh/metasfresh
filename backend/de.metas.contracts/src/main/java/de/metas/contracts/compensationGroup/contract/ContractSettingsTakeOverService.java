@@ -93,6 +93,7 @@ public class ContractSettingsTakeOverService
 				: ContractServiceFee.ZERO;
 		final ContractSettingsTakeOver feeTakeOver = fee.isGreaterThanZero() ? findTakeOverForServiceFeeOrNull(matches, order, settings, fee) : null;
 
+		// note: like every contract line, the fee line is skipped later when no purchase order line falls into its base category
 		if (matches.isEmpty() && feeTakeOver == null)
 		{
 			return schema;
@@ -184,7 +185,7 @@ public class ContractSettingsTakeOverService
 
 	static String formatPercent(@NonNull final Percent percent)
 	{
-		return percent.toBigDecimal().toPlainString() + "%";
+		return percent.toBigDecimal().stripTrailingZeros().toPlainString() + "%";
 	}
 
 	/**

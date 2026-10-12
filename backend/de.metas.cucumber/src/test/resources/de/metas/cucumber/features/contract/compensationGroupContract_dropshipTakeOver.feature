@@ -2662,6 +2662,10 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 3                               | -64.66 | customerTerm                      |
     And the order identified by orderDropship has 4 order lines
+    # only purchase-order discount lines get a description; the sales order's stays as it was
+    And validate C_OrderLine:
+      | C_OrderLine_ID | OPT.Description |
+      | ol_soBonusWare |                 |
 
     # drop-ship PO for VendorDropship
     Then the order is created:
@@ -2707,7 +2711,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | elstar2    | goodsCategory                        | Y      | Y           |
       | gala       | goodsCategory                        | Y      | Y           |
     And metasfresh contains M_Products:
-      | Identifier          | Name                | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | Identifier          | Name                   | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
       | bonusWare           | Bonus Ware_19          | discountCategory                     | Y      | Y           |
       | bonusVendorDropship | Bonus Vendor_19        | discountCategory                     | Y      | Y           |
       | serviceFeeProduct   | Payment Service Fee_19 | discountCategory                     | Y      | Y           |
