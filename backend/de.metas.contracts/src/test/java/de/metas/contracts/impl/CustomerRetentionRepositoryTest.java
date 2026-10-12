@@ -528,10 +528,32 @@ public class CustomerRetentionRepositoryTest
 		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
 	}
 
+	/**
+	 * Inactive subscription conditions do not make an order a subscription order.
+	 */
+	@Test
+	public void updateCustomerRetentionOnOrderComplete_inactiveSubscriptionConditions_nothingChanges()
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		final I_C_Order order = createContractOrder(partner.getC_BPartner_ID(), TypeConditions.SUBSCRIPTION, false);
+
+		repository.updateCustomerRetentionOnOrderComplete(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		refresh(customerRetention);
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
+	}
+
 	private I_C_Order createContractOrder(final int partnerId, @NonNull final TypeConditions typeConditions)
+	{
+		return createContractOrder(partnerId, typeConditions, true);
+	}
+
+	private I_C_Order createContractOrder(final int partnerId, @NonNull final TypeConditions typeConditions, final boolean conditionsActive)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(typeConditions.getCode());
+		conditions.setIsActive(conditionsActive);
 		save(conditions);
 
 		final I_C_Order order = newInstance(I_C_Order.class);

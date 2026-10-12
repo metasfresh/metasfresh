@@ -168,6 +168,7 @@ public class ContractOrderService
 				.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID,
 						I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID,
 						queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+								.addOnlyActiveRecordsFilter()
 								.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.SUBSCRIPTION)
 								.create())
 				.create()
