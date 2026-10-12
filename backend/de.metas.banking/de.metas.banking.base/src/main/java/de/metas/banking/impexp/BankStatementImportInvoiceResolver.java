@@ -13,8 +13,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_I_BankStatement;
 
@@ -37,7 +35,6 @@ import java.util.stream.Stream;
 class BankStatementImportInvoiceResolver
 {
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Value
 	static class ReferencedInvoice
@@ -52,16 +49,14 @@ class BankStatementImportInvoiceResolver
 		final OrgId orgId = OrgId.ofRepoId(importRecord.getAD_Org_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(importRecord.getC_Invoice_ID());
 
-		final IQueryFilter<I_C_Invoice> filter;
+		final ImmutableSet<String> documentNos;
 		if (invoiceId != null)
 		{
-			filter = queryBL.createCompositeQueryFilter(I_C_Invoice.class)
-					.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoiceId)
-					.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId);
+			documentNos = null;
 		}
 		else
 		{
-			final ImmutableSet<String> documentNos = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
+			documentNos = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
 					.map(StringUtils::trimBlankToNull)
 					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
@@ -69,15 +64,14 @@ class BankStatementImportInvoiceResolver
 			{
 				return Optional.empty();
 			}
-			filter = queryBL.createCompositeQueryFilter(I_C_Invoice.class)
-					.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNos)
-					.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId);
 		}
 
 		final ImmutableList<I_C_Invoice> invoices = invoiceDAO.retrieveUnpaid(UnpaidInvoiceQuery.builder()
+				.onlyInvoiceId(invoiceId)
+				.onlyDocumentNos(documentNos)
+				.onlyOrgId(orgId)
 				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed, DocStatus.Closed))
 				.queryLimit(QueryLimit.TWO)
-				.additionalFilter(filter)
 				.build());
 		if (invoices.size() != 1) // none, or ambiguous
 		{

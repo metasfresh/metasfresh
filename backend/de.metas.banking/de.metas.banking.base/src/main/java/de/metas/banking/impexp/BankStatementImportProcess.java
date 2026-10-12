@@ -187,7 +187,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
-		// the lookup is a read-only query that runs for every line with a reference; the bonus gate decides whether its result is used (no try/catch)
+		// the lookup is a read-only query that runs for every line with a reference; the bonus gate decides whether its result is used
 		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
 				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
 				.orElse(null);
@@ -244,13 +244,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	/**
 	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
-	 * in the currency of the line, so that the import of every other partner stays as it was.
+	 * in the currency of the line,.
 	 */
 	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{
-		return invoice.isSales()
-				&& SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
-				.computeDeduction(invoice.getInvoiceId(), lineCurrencyId)
+		return SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
+				.computeDeductionGrossAmount(invoice.isSales(), invoice.getInvoiceId(), () -> lineCurrencyId)
 				.isPresent();
 	}
 

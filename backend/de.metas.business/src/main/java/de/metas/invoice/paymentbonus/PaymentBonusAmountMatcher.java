@@ -16,7 +16,7 @@ public final class PaymentBonusAmountMatcher
 
 	/**
 	 * Tries, in this order: open - Skonto, open - bonus, open - Skonto - bonus.
-	 * The Skonto-only rule comes first, so a customer without a payment bonus is matched exactly as before.
+	 * The Skonto-only rule comes first, so a customer without a payment bonus is matched by the Skonto rule only.
 	 *
 	 * All amounts must be in one currency. A deduction in another currency than {@code openAmt} throws when it is subtracted (in {@link Amount#subtract(Amount)}):
 	 * {@code discountAmt} always, {@code bonusGrossAmt} only if {@code bonusAllowed} is {@code true}, it is non-null, and the Skonto-only rule did not match.

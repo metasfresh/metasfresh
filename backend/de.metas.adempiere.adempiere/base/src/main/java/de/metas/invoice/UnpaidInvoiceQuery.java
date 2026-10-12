@@ -25,6 +25,7 @@ package de.metas.invoice;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.DocStatus;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,6 +40,18 @@ public class UnpaidInvoiceQuery
 {
 	@Nullable
 	IQueryFilter<I_C_Invoice> additionalFilter;
+
+	/** If set, only the invoice with this ID. */
+	@Nullable
+	InvoiceId onlyInvoiceId;
+
+	/** If set, only invoices whose document number is one of these. */
+	@Nullable
+	ImmutableSet<String> onlyDocumentNos;
+
+	/** If set, only invoices of this organization. */
+	@Nullable
+	OrgId onlyOrgId;
 
 	@NonNull
 	ImmutableSet<DocStatus> onlyDocStatuses;

@@ -57,6 +57,7 @@ import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -71,31 +72,20 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentAllocationService
 {
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
 
-	private final MoneyService moneyService;
-	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
-	private final PaymentAllocationRepository paymentAllocationRepository;
-	private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
+	@NonNull private final MoneyService moneyService;
+	@NonNull private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	@NonNull private final PaymentAllocationRepository paymentAllocationRepository;
+	@NonNull private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-
-	public PaymentAllocationService(
-			@NonNull final MoneyService moneyService,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepository,
-			@NonNull final PaymentBonusOnPaymentService paymentBonusOnPaymentService)
-	{
-		this.moneyService = moneyService;
-		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
-		this.paymentAllocationRepository = paymentAllocationRepository;
-		this.paymentBonusOnPaymentService = paymentBonusOnPaymentService;
-	}
 
 	@VisibleForTesting
 	public PaymentAllocationResult allocatePaymentForRemittanceAdvise(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
@@ -299,17 +289,16 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		if (isSoTrx)
 		{
-			// The legacy exact check stays first, so a customer without a payment bonus is matched exactly as before.
-			// Only a customer with a bonus reaches the matcher below, which compares the amounts numerically (so also "up to scale").
+			// The Skonto rule is checked first; a customer without a payment bonus is matched by it only.
 			if (openAmountToMatch.equals(openAmtWithDiscount))
 			{
 				return true;
 			}
 
-			// a customer with a payment bonus contract may also pay "open - bonus" or "open - Skonto - bonus"; for everyone else the Skonto rule above is the only one
+			// a customer with a payment bonus contract may also pay "open - bonus" or "open - Skonto - bonus"
 			final Amount bonusGrossAmt = paymentBonusOnPaymentService
-					.computeDeduction(invoiceId, moneyService.getCurrencyIdByCurrencyCode(openAmountToMatch.getCurrencyCode()))
-					.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+					.computeDeductionGrossAmount(true, invoiceId, () -> moneyService.getCurrencyIdByCurrencyCode(openAmountToMatch.getCurrencyCode()))
+					.map(gross -> gross.toAmount(moneyService::getCurrencyCodeByCurrencyId))
 					.orElse(null);
 			if (bonusGrossAmt == null)
 			{

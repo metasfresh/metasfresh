@@ -58,6 +58,7 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
@@ -73,28 +74,17 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBankStatementBL bankStatementBL;
-	private final MoneyService moneyService;
-	private final PaymentAllocationService paymentAllocationService;
-	private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
-
-	public BankStatementPaymentBL(
-			@NonNull final IBankStatementBL bankStatementBL,
-			@NonNull final MoneyService moneyService,
-			@NonNull final PaymentAllocationService paymentAllocationService,
-			@NonNull final PaymentBonusOnPaymentService paymentBonusOnPaymentService)
-	{
-		this.bankStatementBL = bankStatementBL;
-		this.moneyService = moneyService;
-		this.paymentAllocationService = paymentAllocationService;
-		this.paymentBonusOnPaymentService = paymentBonusOnPaymentService;
-	}
+	@NonNull private final IBankStatementBL bankStatementBL;
+	@NonNull private final MoneyService moneyService;
+	@NonNull private final PaymentAllocationService paymentAllocationService;
+	@NonNull private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
@@ -225,13 +215,11 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			if (invoiceToAllocate != null)
 			{
 				// Skonto, or the payment bonus, or both: the one that the paid amount matches.
-				// Only a sales invoice can have a payment bonus; for any other document the bonus is not even looked up.
 				final boolean bonusAllowed = invoiceToAllocate.getDocBaseType().isSales();
-				final Amount bonusGrossAmt = bonusAllowed
-						? paymentBonusOnPaymentService.computeDeduction(invoiceId, payAmount.getCurrencyId())
-						.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
-						.orElse(null)
-						: null;
+				final Amount bonusGrossAmt = paymentBonusOnPaymentService
+						.computeDeductionGrossAmount(bonusAllowed, invoiceId, payAmount::getCurrencyId)
+						.map(gross -> gross.toAmount(moneyService::getCurrencyCodeByCurrencyId))
+						.orElse(null);
 
 				PaymentBonusAmountMatcher.match(
 						invoiceToAllocate.getOpenAmountConverted(),

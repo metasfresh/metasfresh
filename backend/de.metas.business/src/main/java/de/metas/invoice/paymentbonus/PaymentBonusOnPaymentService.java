@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Looks up the payment bonus that a payment on a sales invoice may book ("Abzug bei Zahlung").
@@ -52,9 +53,33 @@ public class PaymentBonusOnPaymentService
 	 */
 	public Optional<PaymentBonusDeduction> computeDeduction(@NonNull final InvoiceId invoiceId, @NonNull final CurrencyId paymentCurrencyId)
 	{
+		return computeDeduction(invoiceId, () -> paymentCurrencyId);
+	}
+
+	private Optional<PaymentBonusDeduction> computeDeduction(@NonNull final InvoiceId invoiceId, @NonNull final Supplier<CurrencyId> paymentCurrencyId)
+	{
 		return provider
 				.flatMap(p -> p.computeForInvoice(invoiceId))
-				.filter(deduction -> CurrencyId.equals(deduction.getCurrencyId(), paymentCurrencyId));
+				.filter(deduction -> CurrencyId.equals(deduction.getCurrencyId(), paymentCurrencyId.get()));
+	}
+
+	/**
+	 * The one rule for "may this invoice be paid with a payment bonus, and how much": only a sales invoice can have one, and only in the currency of the bonus.
+	 *
+	 * @param paymentCurrencyId evaluated only if the invoice is a sales invoice that has a bonus, so a caller that has to look the currency up does not do it for nothing
+	 * @return the gross amount of the bonus; empty if the invoice is not a sales invoice, or the bonus is missing or in another currency (see {@link #computeDeduction(InvoiceId, CurrencyId)})
+	 */
+	public Optional<Money> computeDeductionGrossAmount(
+			final boolean isSalesInvoice,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final Supplier<CurrencyId> paymentCurrencyId)
+	{
+		if (!isSalesInvoice)
+		{
+			return Optional.empty();
+		}
+
+		return computeDeduction(invoiceId, paymentCurrencyId).map(PaymentBonusDeduction::getGrossAmount);
 	}
 
 	/**
