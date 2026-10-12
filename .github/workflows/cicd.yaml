@@ -25,6 +25,8 @@ jobs:
       # layers and pushes only the small delta. For a base branch (or an unrecognised ref) this equals tag-floating,
       # so the extra cache-from is a harmless no-op.
       base-tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.base-refname.outputs.refname }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -745,6 +747,12 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: resolve-db-seed
+        # the base branch's DB seed if it comes from this commit's own history, else the 5.172 dump
+        id: db-seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
         run: |
           docker buildx build \
@@ -754,6 +762,7 @@ jobs:
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
