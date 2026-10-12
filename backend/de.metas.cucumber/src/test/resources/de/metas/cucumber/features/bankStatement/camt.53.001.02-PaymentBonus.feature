@@ -73,7 +73,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | customerBP     | Y              | N            | deductionPS                   | I               |
       | serviceCompany | N              | Y            | deductionPS                   |                 |
       # a customer without a refund contract
-      | plainBP | Y | N | deductionPS | I |
+      | plainBP        | Y              | N            | deductionPS                   | I               |
     # the organization's EUR account that the statement is imported for: found by its IBAN (an account of its own would be a second active EUR account for the features that run after this one)
     # the statement import needs a bank with an import format on it; as in the other camt features, a new C_Bank is created and put on the shared account
     And metasfresh contains organization bank accounts

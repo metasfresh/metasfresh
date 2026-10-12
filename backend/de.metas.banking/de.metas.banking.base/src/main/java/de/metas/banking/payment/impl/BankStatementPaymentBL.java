@@ -234,15 +234,15 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 						: null;
 
 				PaymentBonusAmountMatcher.match(
-								invoiceToAllocate.getOpenAmountConverted(),
-								invoiceToAllocate.getDiscountAmountConverted(),
-								bonusGrossAmt,
-								payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
-								bonusAllowed)
-						.ifPresent(matched -> {
-							paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
-							paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
-						});
+					invoiceToAllocate.getOpenAmountConverted(),
+					invoiceToAllocate.getDiscountAmountConverted(),
+					bonusGrossAmt,
+					payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
+					bonusAllowed)
+					.ifPresent(matched -> {
+						paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
+						paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
+					});
 			}
 
 			paymentBuilder.invoiceId(invoiceId);
