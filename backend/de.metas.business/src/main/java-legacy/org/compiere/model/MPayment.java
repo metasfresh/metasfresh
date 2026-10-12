@@ -47,6 +47,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoBooking;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -137,6 +138,13 @@ public final class MPayment extends X_C_Payment
 	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_INVOICE = AdMessageKey.of("Payment_BPartnerMismatch_Invoice");
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	/**
+	 * Lazy because a PO can be instantiated before the Spring context is up.
+	 */
+	private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Get Payments Of BPartner
@@ -236,7 +244,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	public boolean isCashTrx()
 	{
-		return Services.get(IPaymentBL.class).isCashTrx(this);
+		return paymentBL.isCashTrx(this);
 	}    // isCashTrx
 
 	@Override
@@ -364,7 +372,7 @@ public final class MPayment extends X_C_Payment
 	@Deprecated
 	public boolean testAllocation()
 	{
-		return Services.get(IPaymentBL.class).testAllocation(this);
+		return paymentBL.testAllocation(this);
 	}    // testAllocation
 
 	/**
@@ -1716,7 +1724,6 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = get_TrxName();
 		if (!trxManager.isActive(trxName))
 		{
@@ -1726,11 +1733,25 @@ public final class MPayment extends X_C_Payment
 					.setParameter("trxName", trxName);
 		}
 
-		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
-		final PaymentBonusOnPaymentService paymentBonusOnPaymentService = SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class);
+		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
 
-		// run with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
-		trxManager.run(trxName, () -> paymentBonusOnPaymentService.generateCreditMemoIfAny(this, allocationDate));
+		// with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
+		trxManager.call(trxName, () -> paymentBonusOnPaymentService.get().generateCreditMemoIfAny(this, allocationDate))
+				.ifPresent(this::alignPaymentBonusAmtWithCreditMemo);
+	}
+
+	/**
+	 * Makes the payment bonus the credit memo's grand total, so that this payment, the credit memo and the allocation agree.
+	 */
+	private void alignPaymentBonusAmtWithCreditMemo(@NonNull final PaymentBonusCreditMemoBooking booking)
+	{
+		if (booking.getCreditMemoGrandTotal().compareTo(getPaymentBonusAmt()) == 0)
+		{
+			return;
+		}
+
+		setPaymentBonusAmt(booking.getCreditMemoGrandTotal());
+		paymentBL.updateWriteOffOrOverUnderAmt(this, booking.getInvoiceOpenAmtBeforeCreditMemo());
 	}
 
 	/**
