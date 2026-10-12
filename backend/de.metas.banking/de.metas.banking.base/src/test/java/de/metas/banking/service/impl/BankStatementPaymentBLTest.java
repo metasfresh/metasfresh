@@ -23,6 +23,7 @@
 package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
@@ -142,7 +143,8 @@ class BankStatementPaymentBLTest
 		bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()),
+				PaymentBonusOnPaymentService.newInstanceForUnitTesting());
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));

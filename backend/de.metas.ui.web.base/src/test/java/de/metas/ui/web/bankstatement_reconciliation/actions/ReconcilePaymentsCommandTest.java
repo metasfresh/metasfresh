@@ -2,6 +2,7 @@ package de.metas.ui.web.bankstatement_reconciliation.actions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.attachments.AttachmentEntryService;
@@ -153,7 +154,8 @@ public class ReconcilePaymentsCommandTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
-		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()),
+				PaymentBonusOnPaymentService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
 		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository, LookupDataSourceFactory.sharedInstance());

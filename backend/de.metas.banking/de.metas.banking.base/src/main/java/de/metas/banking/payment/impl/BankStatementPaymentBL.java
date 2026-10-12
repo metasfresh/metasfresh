@@ -40,7 +40,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -79,15 +82,18 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
 	private final PaymentAllocationService paymentAllocationService;
+	private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	public BankStatementPaymentBL(
 			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final MoneyService moneyService,
-			@NonNull final PaymentAllocationService paymentAllocationService)
+			@NonNull final PaymentAllocationService paymentAllocationService,
+			@NonNull final PaymentBonusOnPaymentService paymentBonusOnPaymentService)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.moneyService = moneyService;
 		this.paymentAllocationService = paymentAllocationService;
+		this.paymentBonusOnPaymentService = paymentBonusOnPaymentService;
 	}
 
 	@Override
@@ -216,9 +222,23 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(payAmount.getCurrencyId(), invoiceId, evaluationDate).orElse(null);
 			
-			if (invoiceToAllocate != null && invoiceToAllocate.grantDiscount(payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId)))
+			if (invoiceToAllocate != null)
 			{
-				paymentBuilder.discountAmt(invoiceToAllocate.getDiscountAmountConverted().toBigDecimal());
+				// Skonto, or the payment bonus (only on a sales invoice whose partner has a payment bonus contract), or both: the one that the paid amount matches
+				final Amount bonusGrossAmt = paymentBonusOnPaymentService.computeDeduction(invoiceId, payAmount.getCurrencyId())
+						.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+						.orElse(null);
+
+				PaymentBonusAmountMatcher.match(
+								invoiceToAllocate.getOpenAmountConverted(),
+								invoiceToAllocate.getDiscountAmountConverted(),
+								bonusGrossAmt,
+								payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
+								invoiceToAllocate.getDocBaseType().isSales())
+						.ifPresent(matched -> {
+							paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
+							paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
+						});
 			}
 
 			paymentBuilder.invoiceId(invoiceId);
