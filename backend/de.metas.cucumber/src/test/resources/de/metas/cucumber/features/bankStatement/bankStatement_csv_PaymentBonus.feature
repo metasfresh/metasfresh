@@ -327,7 +327,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsCsvPaymentBonus_TC5
-  Scenario: CSV bank statement — a customer without a payment bonus contract: the invoice number in the CSV does not link the line to the invoice, as before
+  Scenario: CSV bank statement — a customer without a payment bonus contract: the invoice number in the CSV does not link the line to the invoice
     # plainBP has no refund contract: the line gets its partner (matched by the name in the CSV) but no invoice
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                  |

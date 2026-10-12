@@ -433,7 +433,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsPaymentBonus_TC2
   Scenario: Bank statement with matching amounts — a line that pays the invoice minus the payment bonus is matched to the invoice and books the bonus
-    # the same invoice and payment as TC1, but the import matches the line amount against the open amount (IsMatchAmounts = Y)
+    # the import matches the line amount against the open amount (IsMatchAmounts = Y)
     # today the line gets no invoice, because 163.72 is neither the open amount nor open - Skonto
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
@@ -751,7 +751,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsPaymentBonus_TC4
   Scenario: Bank statement with matching amounts — a customer without a payment bonus contract: a line short by 2.78 is not matched to the invoice
-    # plainBP has no contract: 163.72 is neither the open amount nor open - Skonto, so the line stays without an invoice, as before
+    # plainBP has no contract: 163.72 is neither the open amount nor open - Skonto, so the line stays without an invoice
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
       | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_5 |

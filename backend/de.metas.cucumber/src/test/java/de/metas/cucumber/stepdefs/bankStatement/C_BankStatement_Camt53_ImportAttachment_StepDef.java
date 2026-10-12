@@ -64,6 +64,14 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 	/**
 	 * Imports without matching the statement line's amount against the invoice's open amount, so the invoice is found by its reference only;
 	 * for a customer who pays less than the open amount, e.g. because of the payment bonus.
+	 * The CAMT file is the step's doc string.
+	 * <pre>{@code
+	 * And bank statement is imported with identifiers bs1, not matching invoice amounts
+	 *   """
+	 *   <?xml version="1.0" encoding="UTF-8"?>
+	 *   <Document> ... </Document>
+	 *   """
+	 * }</pre>
 	 */
 	@And("^bank statement is imported with identifiers (.*), not matching invoice amounts$")
 	public void import_camt53_document_notMatchingInvoiceAmounts(@NonNull final String identifier, @NonNull final String fileContent)
