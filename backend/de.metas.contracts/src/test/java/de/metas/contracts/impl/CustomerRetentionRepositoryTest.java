@@ -18,6 +18,8 @@ import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -203,6 +205,27 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
+	}
+
+	/**
+	 * A drafted or voided subscription contract is no subscription contract the partner has: a value held from earlier is cleared.
+	 */
+	@ParameterizedTest
+	@EnumSource(value = DocStatus.class, names = { "Drafted", "Voided" })
+	public void updateCustomerRetention_onlyNotCompletedSubscriptionContract_cleared(final DocStatus docStatus)
+	{
+		final I_C_BPartner partner = createPartner("Partner1");
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
+		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		save(customerRetention);
+		final I_C_Flatrate_Term term = createFlatrateTerm(partner.getC_BPartner_ID(), TimeUtil.parseTimestamp("2018-01-01"), TimeUtil.parseTimestamp("2019-12-31"));
+		term.setDocStatus(docStatus.getCode());
+		save(term);
+
+		repository.createUpdateCustomerRetention(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		refresh(customerRetention);
 		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
 	}
 
@@ -584,6 +607,7 @@ public class CustomerRetentionRepositoryTest
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 
 		term.setType_Conditions(TypeConditions.SUBSCRIPTION.getCode());
+		term.setDocStatus(DocStatus.Completed.getCode());
 		term.setBill_BPartner_ID(partnerId);
 		term.setMasterStartDate(masterStartDate);
 		term.setMasterEndDate(masterEndDate);

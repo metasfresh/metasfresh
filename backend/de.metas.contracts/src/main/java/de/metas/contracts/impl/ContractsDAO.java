@@ -8,6 +8,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.document.engine.DocStatus;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -172,6 +173,7 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId.getRepoId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.SUBSCRIPTION)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderBy()
 					.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate, Direction.Descending, Nulls.Last)
 					.addColumn(I_C_Flatrate_Term.COLUMNNAME_EndDate, Direction.Descending, Nulls.Last)
@@ -190,6 +192,7 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.SUBSCRIPTION)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate, Direction.Ascending, Nulls.Last)
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Ascending, Nulls.Last)

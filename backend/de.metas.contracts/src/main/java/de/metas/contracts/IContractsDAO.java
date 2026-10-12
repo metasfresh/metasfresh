@@ -64,13 +64,13 @@ public interface IContractsDAO extends ISingletonService
 	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions, boolean ignoreDateFilters);
 
 	/**
-	 * @return the partner's active subscription term with the latest master end date (else end date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
+	 * @return the partner's active, completed or closed subscription term with the latest master end date (else end date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
 	 */
 	@Nullable
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
 	/**
-	 * @return the partner's active subscription term with the earliest master start date (else start date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
+	 * @return the partner's active, completed or closed subscription term with the earliest master start date (else start date), or {@code null} if the partner has none; other contract types are not considered (customer retention).
 	 */
 	@Nullable
 	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);

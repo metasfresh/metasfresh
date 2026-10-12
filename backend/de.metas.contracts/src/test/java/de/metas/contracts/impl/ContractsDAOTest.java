@@ -7,6 +7,7 @@ import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -123,6 +124,27 @@ public class ContractsDAOTest
 		assertThat(new ContractsDAO().retrieveLatestFlatrateTermForBPartnerId(bpartnerId)).isNull();
 	}
 
+	/**
+	 * Only completed or closed subscription contracts count: a drafted or voided one is neither the first nor the latest contract.
+	 */
+	@Test
+	public void retrieveFirstAndLatestFlatrateTermForBPartnerId_onlyCompletedOrClosedTerms()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(123);
+		final I_C_Flatrate_Term draftedTerm = createTerm(bpartnerId, TypeConditions.SUBSCRIPTION, TimeUtil.getDay(2023, 1, 1), TimeUtil.getDay(2023, 12, 31));
+		draftedTerm.setDocStatus(DocStatus.Drafted.getCode());
+		save(draftedTerm);
+		final I_C_Flatrate_Term closedTerm = createTerm(bpartnerId, TypeConditions.SUBSCRIPTION, TimeUtil.getDay(2024, 1, 1), TimeUtil.getDay(2024, 12, 31));
+		closedTerm.setDocStatus(DocStatus.Closed.getCode());
+		save(closedTerm);
+		final I_C_Flatrate_Term voidedTerm = createTerm(bpartnerId, TypeConditions.SUBSCRIPTION, TimeUtil.getDay(2025, 1, 1), TimeUtil.getDay(2025, 12, 31));
+		voidedTerm.setDocStatus(DocStatus.Voided.getCode());
+		save(voidedTerm);
+
+		assertThat(new ContractsDAO().retrieveFirstFlatrateTermForBPartnerId(bpartnerId).getC_Flatrate_Term_ID()).isEqualTo(closedTerm.getC_Flatrate_Term_ID());
+		assertThat(new ContractsDAO().retrieveLatestFlatrateTermForBPartnerId(bpartnerId).getC_Flatrate_Term_ID()).isEqualTo(closedTerm.getC_Flatrate_Term_ID());
+	}
+
 	private static I_C_Flatrate_Term createTerm(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final TypeConditions typeConditions,
@@ -131,6 +153,7 @@ public class ContractsDAOTest
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setType_Conditions(typeConditions.getCode());
+		term.setDocStatus(DocStatus.Completed.getCode());
 		term.setBill_BPartner_ID(bpartnerId.getRepoId());
 		term.setStartDate(startDate);
 		term.setMasterStartDate(startDate);
