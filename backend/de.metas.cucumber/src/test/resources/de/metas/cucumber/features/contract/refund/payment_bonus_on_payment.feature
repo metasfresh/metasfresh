@@ -1225,8 +1225,8 @@ Feature: Payment bonus on the payment, next to Skonto
       | DocBaseType | DocSubType | C_DocType_ID        |
       | ARC         | PB         | paymentBonusDocType |
     And update C_DocType:
-      | C_DocType_ID.Identifier | OPT.IsActive |
-      | paymentBonusDocType     | false        |
+      | C_DocType_ID        | IsActive |
+      | paymentBonusDocType | false    |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |

@@ -24,13 +24,12 @@ package de.metas.cucumber.stepdefs.doctype;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -42,12 +41,9 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
@@ -78,26 +74,22 @@ public class C_DocType_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>C_DocType_ID.Identifier</b> — (required) identifier of the doc type<br>
-	 *   <b>OPT.C_DocTypeInvoice_ID.Identifier</b> — (optional) identifier of the doc type's invoice doc type; {@code null} removes it<br>
-	 *   <b>OPT.C_DocType_Invoicing_Pool_ID.Identifier</b> — (optional) identifier of the doc type's invoicing pool; {@code null} removes it<br>
-	 *   <b>OPT.IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed
+	 *   <b>C_DocType_ID</b> — (required) identifier of the doc type<br>
+	 *   <b>C_DocTypeInvoice_ID</b> — (optional) identifier of the doc type's invoice doc type; {@code null} removes it<br>
+	 *   <b>C_DocType_Invoicing_Pool_ID</b> — (optional) identifier of the doc type's invoicing pool; {@code null} removes it<br>
+	 *   <b>IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed
 	 * @cucumber.depends StepDefData: C_DocType_StepDefData, C_DocType_Invoicing_Pool_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_DocType:
-	 *   | C_DocType_ID.Identifier | OPT.IsActive |
-	 *   | paymentBonusDocType     | false        |
+	 *   | C_DocType_ID        | IsActive |
+	 *   | paymentBonusDocType | false    |
 	 * </pre>
 	 */
 	@And("update C_DocType:")
 	public void update_C_DocType(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateDocType(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateDocType);
 	}
 
 	/**
@@ -144,55 +136,28 @@ public class C_DocType_StepDef
 		tableRow.getAsIdentifier(COLUMNNAME_C_DocType_ID).put(docTypeTable, docTypeRecord);
 	}
 
-	private void updateDocType(@NonNull final Map<String, String> tableRow)
+	private void updateDocType(@NonNull final DataTableRow tableRow)
 	{
-		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-		assertThat(docTypeRecord).isNotNull();
+		final StepDefDataIdentifier docTypeIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_DocType_ID);
+		final I_C_DocType docTypeRecord = docTypeIdentifier.lookupNotNullIn(docTypeTable);
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_DocTypeInvoice_ID)
+				.ifPresent(invoiceDocTypeIdentifier -> {
+					final I_C_DocType invoiceDocTypeRecord = invoiceDocTypeIdentifier.lookupIn(docTypeTable);
+					docTypeRecord.setC_DocTypeInvoice_ID(invoiceDocTypeRecord != null ? invoiceDocTypeRecord.getC_DocType_ID() : 0);
+				});
 
-		final String invoiceDocTypeIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID+ "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoiceDocTypeIdentifier))
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_DocType_Invoicing_Pool_ID)
+				.ifPresent(invoicingPoolIdentifier -> {
+					final I_C_DocType_Invoicing_Pool invoicingPoolRecord = invoicingPoolIdentifier.lookupIn(invoicingPoolTable);
+					docTypeRecord.setC_DocType_Invoicing_Pool_ID(invoicingPoolRecord != null ? invoicingPoolRecord.getC_DocType_Invoicing_Pool_ID() : 0);
+				});
 
-		{
-			final String invoiceDocTypeIdentifierValue = DataTableUtil.nullToken2Null(invoiceDocTypeIdentifier);
-			if (invoiceDocTypeIdentifierValue != null)
-			{
-				final I_C_DocType invoiceDocTypeRecord = docTypeTable.get(invoiceDocTypeIdentifier);
-				assertThat(invoiceDocTypeRecord).isNotNull();
-
-				docTypeRecord.setC_DocTypeInvoice_ID(invoiceDocTypeRecord.getC_DocType_ID());
-			}
-			else
-			{
-				docTypeRecord.setC_DocTypeInvoice_ID(0);
-			}
-		}
-
-
-		final String invoicingPoolIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocType_Invoicing_Pool_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoicingPoolIdentifier))
-		{
-			final String invoicingPoolIdentifierValue = DataTableUtil.nullToken2Null(invoicingPoolIdentifier);
-			if (invoicingPoolIdentifierValue != null)
-			{
-				final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord = invoicingPoolTable.get(invoicingPoolIdentifier);
-				assertThat(docTypeInvoicingPoolRecord).isNotNull();
-
-				docTypeRecord.setC_DocType_Invoicing_Pool_ID(docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID());
-			}
-			else
-			{
-				docTypeRecord.setC_DocType_Invoicing_Pool_ID(0);
-			}
-		}
-
-		final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_DocType.COLUMNNAME_IsActive);
-		if (isActive != null)
-		{
-			isActiveBeforeScenario.putIfAbsent(docTypeRecord.getC_DocType_ID(), docTypeRecord.isActive());
-			docTypeRecord.setIsActive(isActive);
-		}
+		tableRow.getAsOptionalBoolean(I_C_DocType.COLUMNNAME_IsActive)
+				.ifPresent(isActive -> {
+					isActiveBeforeScenario.putIfAbsent(docTypeRecord.getC_DocType_ID(), docTypeRecord.isActive());
+					docTypeRecord.setIsActive(isActive);
+				});
 
 		saveRecord(docTypeRecord);
 
