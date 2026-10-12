@@ -271,6 +271,8 @@ public class PaymentAllocationBuilder
 		// Make sure that we allow allocation one payment for vendor documents
 		assertOnlyOnePaymentVendorDocType(paymentDocuments);
 
+		capPaymentBonusesToWhatThePaymentsLeaveOpen(payableDocuments, paymentDocuments);
+
 		final ImmutableList.Builder<AllocationLineCandidate> allocationCandidates = ImmutableList.builder();
 
 		//
@@ -314,6 +316,66 @@ public class PaymentAllocationBuilder
 		allocationCandidates.addAll(createAllocationLineCandidates_WriteOffs(payableDocuments));
 
 		return allocationCandidates.build();
+	}
+
+	/**
+	 * A customer who pays (almost) the full invoice did not deduct the payment bonus, or only a part of it.
+	 * So the bonus is booked only up to what the payments leave open on the invoices:
+	 * {@code open = sum(invoices' payAmt + paymentBonus) - sum(|credit memos' payAmt|) - sum(|payments' amountToAllocate|)};
+	 * the payables' bonuses are lowered in their order until their sum fits into that.
+	 * <p>
+	 * Only for inbound payments against sales documents, all in one currency; otherwise nothing is changed.
+	 */
+	private static void capPaymentBonusesToWhatThePaymentsLeaveOpen(
+			@NonNull final List<PayableDocument> payableDocuments,
+			@NonNull final List<PaymentDocument> paymentDocuments)
+	{
+		if (payableDocuments.stream().noneMatch(payable -> payable.getAmountsToAllocate().getPaymentBonus().signum() > 0))
+		{
+			return;
+		}
+		if (paymentDocuments.isEmpty()
+				|| !paymentDocuments.stream().allMatch(payment -> payment.getPaymentDirection().isInboundPayment())
+				|| !payableDocuments.stream().allMatch(payable -> payable.getSoTrx().isSales()))
+		{
+			return;
+		}
+
+		final CurrencyId currencyId = payableDocuments.get(0).getCurrencyId();
+		if (!payableDocuments.stream().allMatch(payable -> CurrencyId.equals(payable.getCurrencyId(), currencyId))
+				|| !paymentDocuments.stream().allMatch(payment -> CurrencyId.equals(payment.getCurrencyId(), currencyId)))
+		{
+			return;
+		}
+
+		Money leftOpen = Money.zero(currencyId);
+		for (final PayableDocument payable : payableDocuments)
+		{
+			final AllocationAmounts amounts = payable.getAmountsToAllocate();
+			leftOpen = payable.isCreditMemo()
+					? leftOpen.subtract(amounts.getPayAmt().abs())
+					: leftOpen.add(amounts.getPayAmt()).add(amounts.getPaymentBonus());
+		}
+		for (final PaymentDocument payment : paymentDocuments)
+		{
+			leftOpen = leftOpen.subtract(payment.getAmountToAllocate().abs());
+		}
+		leftOpen = leftOpen.max(Money.zero(currencyId));
+
+		for (final PayableDocument payable : payableDocuments)
+		{
+			final Money paymentBonus = payable.getAmountsToAllocate().getPaymentBonus();
+			if (paymentBonus.signum() <= 0)
+			{
+				continue;
+			}
+
+			if (paymentBonus.isGreaterThan(leftOpen))
+			{
+				payable.reducePaymentBonusTo(leftOpen);
+			}
+			leftOpen = leftOpen.subtract(payable.getAmountsToAllocate().getPaymentBonus()).max(Money.zero(currencyId));
+		}
 	}
 
 	/***

@@ -161,6 +161,13 @@ public class AllocationAmounts
 				: toBuilder().invoiceProcessingFee(invoiceProcessingFee).build();
 	}
 
+	public AllocationAmounts withPaymentBonus(@NonNull final Money paymentBonus)
+	{
+		return Objects.equals(this.paymentBonus, paymentBonus)
+				? this
+				: toBuilder().paymentBonus(paymentBonus).build();
+	}
+
 	public AllocationAmounts movePayAmtToDiscount()
 	{
 		if (payAmt.signum() == 0)

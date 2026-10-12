@@ -456,6 +456,38 @@ public class PaymentAllocationBuilderTest
 				.isEqualTo(expectedCount);
 	}
 
+	/**
+	 * multiplyRate for EURO is set; multiplyRate for CHF is derived
+	 * <p>
+	 * example:
+	 * 1 euro = 10 chf and
+	 * 1 chf  = 0.1 euro (1/10)
+	 */
+	private void createConversionRates(final double multiplyRate)
+	{
+		final LocalDate dateFrom = LocalDate.parse("2000-01-01");
+		final LocalDate dateTo = LocalDate.parse("2025-12-31");
+		final CurrencyConversionTypeId conversionType = Services.get(ICurrencyDAO.class).getConversionTypeId(ConversionTypeMethod.Spot);
+
+		final I_C_Conversion_Rate euroChfRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+		euroChfRate.setC_ConversionType_ID(conversionType.getRepoId());
+		euroChfRate.setC_Currency_ID(euroCurrencyId.getRepoId());
+		euroChfRate.setC_Currency_ID_To(chfCurrencyId.getRepoId());
+		euroChfRate.setMultiplyRate(BigDecimal.valueOf(multiplyRate));
+		euroChfRate.setValidFrom(TimeUtil.asTimestamp(dateFrom));
+		euroChfRate.setValidTo(TimeUtil.asTimestamp(dateTo));
+		InterfaceWrapperHelper.save(euroChfRate);
+
+		final I_C_Conversion_Rate chfEuroRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+		chfEuroRate.setC_ConversionType_ID(conversionType.getRepoId());
+		chfEuroRate.setC_Currency_ID(chfCurrencyId.getRepoId());
+		chfEuroRate.setC_Currency_ID_To(euroCurrencyId.getRepoId());
+		chfEuroRate.setMultiplyRate(BigDecimal.ONE.divide(BigDecimal.valueOf(multiplyRate), 13, RoundingMode.HALF_UP));
+		chfEuroRate.setValidFrom(TimeUtil.asTimestamp(dateFrom));
+		chfEuroRate.setValidTo(TimeUtil.asTimestamp(dateTo));
+		InterfaceWrapperHelper.save(chfEuroRate);
+	}
+
 	//
 	//
 	// -----------------------------------------------
@@ -573,38 +605,6 @@ public class PaymentAllocationBuilderTest
 			assertExpected(candidatesExpected, builder);
 			assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
 			assertPaymentAllocatedAmt(payment2.getPaymentId(), +5000);
-		}
-
-		/**
-		 * multiplyRate for EURO is set; multiplyRate for CHF is derived
-		 * <p>
-		 * example:
-		 * 1 euro = 10 chf and
-		 * 1 chf  = 0.1 euro (1/10)
-		 */
-		void createConversionRates(final double multiplyRate)
-		{
-			final LocalDate dateFrom = LocalDate.parse("2000-01-01");
-			final LocalDate dateTo = LocalDate.parse("2025-12-31");
-			final CurrencyConversionTypeId conversionType = Services.get(ICurrencyDAO.class).getConversionTypeId(ConversionTypeMethod.Spot);
-
-			final I_C_Conversion_Rate euroChfRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
-			euroChfRate.setC_ConversionType_ID(conversionType.getRepoId());
-			euroChfRate.setC_Currency_ID(euroCurrencyId.getRepoId());
-			euroChfRate.setC_Currency_ID_To(chfCurrencyId.getRepoId());
-			euroChfRate.setMultiplyRate(BigDecimal.valueOf(multiplyRate));
-			euroChfRate.setValidFrom(TimeUtil.asTimestamp(dateFrom));
-			euroChfRate.setValidTo(TimeUtil.asTimestamp(dateTo));
-			InterfaceWrapperHelper.save(euroChfRate);
-
-			final I_C_Conversion_Rate chfEuroRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
-			chfEuroRate.setC_ConversionType_ID(conversionType.getRepoId());
-			chfEuroRate.setC_Currency_ID(chfCurrencyId.getRepoId());
-			chfEuroRate.setC_Currency_ID_To(euroCurrencyId.getRepoId());
-			chfEuroRate.setMultiplyRate(BigDecimal.ONE.divide(BigDecimal.valueOf(multiplyRate), 13, RoundingMode.HALF_UP));
-			chfEuroRate.setValidFrom(TimeUtil.asTimestamp(dateFrom));
-			chfEuroRate.setValidTo(TimeUtil.asTimestamp(dateTo));
-			InterfaceWrapperHelper.save(chfEuroRate);
 		}
 	}
 
@@ -1351,6 +1351,57 @@ public class PaymentAllocationBuilderTest
 		{
 			assertThatThrownBy(() -> invoice().type(CustomerInvoice).open("100").pay("97.40").paymentBonus("2.60").paymentBonusDeduction(deduction("2.60")).date("2021-01-11").build())
 					.hasMessageContaining("gross amount of the payment bonus deduction");
+		}
+
+		/**
+		 * A payment in another currency than the invoice pays it in full (166.50 EUR = 499.50 CHF).
+		 * The bonus is not capped, because what the payments leave open cannot be computed across currencies.
+		 */
+		@Test
+		public void paymentBonus_notCapped_whenCurrenciesDiffer()
+		{
+			createConversionRates(3);
+			final PaymentBonusDeduction deduction = deduction("2.60"); // gross 2.78
+
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(invoice().type(CustomerInvoice).currency(euroCurrencyId).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction).date("2021-01-11").build()),
+					ImmutableList.of(payment().direction(INBOUND).currency(chfCurrencyId).open("499.50").amtToAllocate("499.50").date("2021-01-12").build()))
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.dryRun()
+					.build();
+
+			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("2.78", euroCurrencyId));
+		}
+
+		/**
+		 * Without a payment, a credit memo that covers the invoice in full does not cap the bonus.
+		 */
+		@Test
+		public void paymentBonus_notCapped_withoutPaymentDocuments()
+		{
+			final PaymentBonusDeduction deduction = deduction("2.60"); // gross 2.78
+
+			final PaymentAllocationResult result = newPaymentAllocationBuilder(
+					ImmutableList.of(
+							invoice().type(CustomerInvoice).open("166.50").pay("163.72").paymentBonus("2.78").paymentBonusDeduction(deduction).date("2021-01-11").build(),
+							invoice().type(CustomerCreditMemo).open("-166.50").pay("-166.50").date("2021-01-12").build()),
+					ImmutableList.of())
+					.defaultDateTrx(LocalDate.parse("2021-01-23"))
+					.allowPartialAllocations(true)
+					.dryRun()
+					.build();
+
+			assertThat(paymentBonusCandidateAmounts(result)).containsExactly(money("2.78", euroCurrencyId));
+		}
+
+		private List<Money> paymentBonusCandidateAmounts(@NonNull final PaymentAllocationResult result)
+		{
+			return result.getCandidates()
+					.stream()
+					.filter(candidate -> AllocationLineCandidateType.PaymentBonus.equals(candidate.getType()))
+					.map(candidate -> candidate.getAmounts().getPaymentBonus())
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 

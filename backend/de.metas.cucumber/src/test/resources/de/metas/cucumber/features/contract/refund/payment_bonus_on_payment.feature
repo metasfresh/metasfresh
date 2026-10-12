@@ -199,3 +199,115 @@ Feature: Payment bonus on the payment, next to Skonto
     Then validate payments
       | C_Payment_ID | PayAmt | WriteOffAmt | OverUnderAmt |
       | payment      | 50     | 0           | 0            |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # Allocation view: the bonus is booked only up to what the payments leave open on the invoices
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_V1
+  Scenario: Allocation view — a customer who pays the full invoice gets no payment bonus
+    # the sales invoice without payment term: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50; the computed bonus is 2.78
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the customer did not deduct the bonus
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 166.50 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | null                      |
+
+    Then validate created invoices
+      | C_Invoice_ID | GrandTotal | DocSubType | IsPaid |
+      | invoice      | 166.50 EUR |            | true   |
+    And validate payments
+      | C_Payment_ID | IsAllocated | OpenAmt | WriteOffAmt |
+      | payment      | true        | 0.00    | 0           |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_V2
+  Scenario: Allocation view — a customer who pays less than the invoice, but by less than the bonus, gets the shortfall as payment bonus
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the customer deducted 1.50 of the 2.78 bonus: 166.50 - 1.50 = 165.00
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 165.00 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 1.50 EUR   | PB         | true   |
+    And validate payments
+      | C_Payment_ID | IsAllocated | OpenAmt | WriteOffAmt |
+      | payment      | true        | 0.00    | 0           |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_V3
+  Scenario: Allocation view — one payment for two invoices, each short by its bonus, keeps both bonuses
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+      | invoice2   | customerBP    | Ausgangsrechnung        | 2026-07-16   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+      | goodsLine2 | invoice2     | goodsProduct | 10 PCE      |
+      | crateLine2 | invoice2     | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+    And the invoice identified by invoice2 is completed
+
+    # each invoice 166.50 minus its bonus 2.78 = 163.72; 2 x 163.72 = 327.44
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 327.44 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo1          |
+      | invoice2     |              | bonusCreditMemo2          |
+
+    Then validate created invoices
+      | C_Invoice_ID     | GrandTotal | DocSubType | IsPaid |
+      | invoice          | 166.50 EUR |            | true   |
+      | invoice2         | 166.50 EUR |            | true   |
+      | bonusCreditMemo1 | 2.78 EUR   | PB         | true   |
+      | bonusCreditMemo2 | 2.78 EUR   | PB         | true   |
+    And validate payments
+      | C_Payment_ID | IsAllocated | OpenAmt | WriteOffAmt |
+      | payment      | true        | 0.00    | 0           |
