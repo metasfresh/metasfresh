@@ -151,18 +151,24 @@ public class C_PeriodControl_StepDef
 	@After
 	public void restorePeriodControl()
 	{
-		periodStatusBeforeScenario.forEach((periodControlId, periodStatus) -> {
-			final I_C_PeriodControl periodControl = load(periodControlId, I_C_PeriodControl.class);
-			periodControl.setPeriodStatus(periodStatus);
-			saveRecord(periodControl);
-		});
-		periodStatusBeforeScenario.clear();
-
-		autoPeriodControlBeforeScenario.forEach((acctSchemaId, autoPeriodControl) -> {
-			final I_C_AcctSchema acctSchemaRecord = acctSchemaDAO.getRecordById(acctSchemaId);
-			acctSchemaRecord.setAutoPeriodControl(autoPeriodControl);
-			saveRecord(acctSchemaRecord);
-		});
-		autoPeriodControlBeforeScenario.clear();
+		try
+		{
+			periodStatusBeforeScenario.forEach((periodControlId, periodStatus) -> {
+				final I_C_PeriodControl periodControl = load(periodControlId, I_C_PeriodControl.class);
+				periodControl.setPeriodStatus(periodStatus);
+				saveRecord(periodControl);
+			});
+			periodStatusBeforeScenario.clear();
+		}
+		finally
+		{
+			// must run even if restoring a period status failed
+			autoPeriodControlBeforeScenario.forEach((acctSchemaId, autoPeriodControl) -> {
+				final I_C_AcctSchema acctSchemaRecord = acctSchemaDAO.getRecordById(acctSchemaId);
+				acctSchemaRecord.setAutoPeriodControl(autoPeriodControl);
+				saveRecord(acctSchemaRecord);
+			});
+			autoPeriodControlBeforeScenario.clear();
+		}
 	}
 }

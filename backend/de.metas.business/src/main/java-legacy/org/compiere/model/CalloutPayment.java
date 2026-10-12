@@ -48,6 +48,7 @@ import java.sql.Timestamp;
 public class CalloutPayment extends CalloutEngine
 {
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	// looked up when needed, because CalloutPayment is not a Spring bean and can be used before the application context is complete
 	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
