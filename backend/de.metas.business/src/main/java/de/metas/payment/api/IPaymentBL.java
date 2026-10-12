@@ -89,7 +89,7 @@ public interface IPaymentBL extends ISingletonService
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
-	 * Updates the write-off / over-under amount when only {@code PaymentBonusAmt} changed (e.g. a save without the WebUI callout).
+	 * Updates the write-off / over-under amount after only {@code PaymentBonusAmt} changed.
 	 * Never changes PayAmt or the payment bonus itself: the bonus the user entered stays.
 	 */
 	void onPaymentBonusAmtChange(final I_C_Payment payment);

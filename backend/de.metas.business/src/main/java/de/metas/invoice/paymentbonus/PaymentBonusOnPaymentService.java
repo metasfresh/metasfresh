@@ -62,7 +62,7 @@ public class PaymentBonusOnPaymentService
 	 * {@code PayAmt = open - DiscountAmt - PaymentBonusAmt - WriteOffAmt - OverUnderAmt}.
 	 * Like the allocation view, the bonus is not pre-filled (so 0) when it is bigger than the open amount minus the Skonto.
 	 * <p>
-	 * Called right after the amounts were set from the invoice (the „Rechnung“ callout, or {@code PaymentDAO.updateDiscountAndPayment} on a new payment date).
+	 * Expects {@code DiscountAmt}, {@code WriteOffAmt} and {@code OverUnderAmt} to be already set from the invoice.
 	 * Without a deduction (no „Abzug bei Zahlung“ contract, or a payment in another currency than the invoice) a bonus left over from before is set to 0
 	 * and PayAmt is computed with the same formula; a payment without a bonus is left as it is.
 	 * Does nothing for a payment that is not a drafted receipt with an invoice.
@@ -178,7 +178,7 @@ public class PaymentBonusOnPaymentService
 	}
 
 	/**
-	 * A bonus-only save does not cap the bonus to what the payment leaves open (see {@link #capPaymentBonusToShortfall(I_C_Payment)}), so a bonus above it can reach the completion.
+	 * @throws AdempiereException a user error if {@code PaymentBonusAmt} is above {@code invoiceOpenAmt - DiscountAmt - PayAmt}
 	 */
 	private void assertPaymentBonusNotAboveWhatThePaymentLeavesOpen(
 			@NonNull final I_C_Payment payment,
