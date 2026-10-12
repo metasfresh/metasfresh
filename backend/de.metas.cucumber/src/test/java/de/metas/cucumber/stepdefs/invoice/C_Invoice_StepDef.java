@@ -919,7 +919,7 @@ public class C_Invoice_StepDef
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(isoCode);
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
+		row.getAsOptionalString(COLUMNNAME_DocumentNo).map(restTestContext::resolveVariables).ifPresent(invoice::setDocumentNo); // @variable@ placeholders: e.g. a per-run suffix
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)

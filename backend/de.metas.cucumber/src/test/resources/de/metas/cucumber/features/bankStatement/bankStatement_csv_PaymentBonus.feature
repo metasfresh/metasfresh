@@ -4,8 +4,8 @@
 @ghActions:run_on_executor3
 Feature: Payment bonus on the payment that is created from a CSV bank statement line
 ## - The CSV bank statement import creates a bank statement line for each CSV line; the payment bonus paths build on it.
-## - Each scenario has its own customer (Background), but the invoice has a fixed document number, because the CSV references it:
-##   a run that fails before the invoice is paid leaves an unpaid invoice with that number, which makes the next import ambiguous until that invoice is renamed.
+## - Each scenario has its own customer (Background), and its invoice has a document number of its own with the customer's ID as suffix (the CSV references the invoice by that number),
+##   so a run that fails before the invoice is paid cannot make the lookup of the next run ambiguous.
 ## - The CSV Name column is concatenated into SQL by BankStatementImportTableSqlUpdater, so it must not contain an apostrophe.
 ## - The organization's EUR account is the one shared with the camt features (found by its IBAN): a second active EUR account would break payment_bonus_on_payment.feature.
 
@@ -70,11 +70,11 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | pp_service | servicePLV                        | serviceProduct          | 0        | PCE               | highTaxCateg     |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule | REST.Context.Name |
-      | customerBP     | Y              | N            | deductionPS                   | I               | customerName      |
-      | serviceCompany | N              | Y            | deductionPS                   |                 |                   |
+      | Identifier     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule | REST.Context.Name | REST.Context.C_BPartner_ID |
+      | customerBP     | Y              | N            | deductionPS                   | I               | customerName      | customerBPId               |
+      | serviceCompany | N              | Y            | deductionPS                   |                 |                   |                            |
       # a customer without a refund contract
-      | plainBP        | Y              | N            | deductionPS                   | I               | plainName         |
+      | plainBP        | Y              | N            | deductionPS                   | I               | plainName         | plainBPId                  |
     # the organization's EUR account that the statement is imported for: found by its IBAN
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID | IBAN                   |
@@ -127,8 +127,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
     # the statement name is the customer's (new per run), so that every run creates its own statement and not a new line in the statement of the last run
     # the CSV columns: StatementDate, StatementLineDate, ValutaDate, StmtAmt, TrxAmt, IBAN, IBAN_To, Bill_BPartner_Name, C_Invoice_ID, InvoiceDocumentNo, Memo, ISO_Code, Name
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_1 | invoice      |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_1_@customerBPId@ | invoice      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -138,7 +138,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
     # the invoice is referenced by its document number
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
     """
-    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_1,,EUR,@customerName@
+    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_1_@customerBPId@,,EUR,@customerName@
     """
     And load C_BankStatement created by the import for bank account "org_EUR_account"
       | C_BankStatement_ID.Identifier | Name           |
@@ -174,8 +174,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   Scenario: CSV bank statement — a line that pays the invoice minus the payment bonus is linked to the invoice (referenced by its document number) and books the bonus
     # the sales invoice: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %), GrandTotal = 166.50, no Skonto; the bonus 2.6 % of 100.00 = 2.60 + 7 % VAT = 2.78; the customer pays 163.72
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_2 | invoice      |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_2_@customerBPId@ | invoice      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -184,7 +184,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
 
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
     """
-    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_2,,EUR,@customerName@
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_2_@customerBPId@,,EUR,@customerName@
     """
     And load C_BankStatement created by the import for bank account "org_EUR_account"
       | C_BankStatement_ID.Identifier | Name           |
@@ -213,8 +213,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   Scenario: CSV bank statement — a line that pays the invoice minus Skonto and the payment bonus books both
     # Skonto 2 % = 3.33, bonus 2.78; the customer pays 166.50 - 3.33 - 2.78 = 160.39
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | C_PaymentTerm_ID | REST.Context |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_3 | skonto2          | invoice      |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | C_PaymentTerm_ID | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_3_@customerBPId@ | skonto2          | invoice      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -223,7 +223,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
 
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
     """
-    2026-07-20,2026-07-20,2026-07-20,160.39,160.39,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_3,,EUR,@customerName@
+    2026-07-20,2026-07-20,2026-07-20,160.39,160.39,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_3_@customerBPId@,,EUR,@customerName@
     """
     And load C_BankStatement created by the import for bank account "org_EUR_account"
       | C_BankStatement_ID.Identifier | Name           |
@@ -252,8 +252,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   Scenario: CSV bank statement — the invoice number only in the memo links the line to the invoice, as in the CAMT import
     # InvoiceDocumentNo empty; the document number is in Memo
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_4 | invoice      |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_4_@customerBPId@ | invoice      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -262,7 +262,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
 
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
     """
-    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,,bsCsvPaymentBonus_4,EUR,@customerName@
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@customerName@,,,bsCsvPaymentBonus_4_@customerBPId@,EUR,@customerName@
     """
     And load C_BankStatement created by the import for bank account "org_EUR_account"
       | C_BankStatement_ID.Identifier | Name           |
@@ -291,8 +291,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   Scenario: CSV bank statement — the invoice referenced by its ID (no document number, no memo) is linked to the line
     # C_Invoice_ID = the placeholder of the invoice, InvoiceDocumentNo and Memo empty
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      | REST.Context |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_5 | invoice      |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_5_@customerBPId@ | invoice      |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -330,8 +330,8 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
   Scenario: CSV bank statement — a customer without a payment bonus contract: the invoice number in the CSV does not link the line to the invoice, as before
     # plainBP has no refund contract: the line gets its partner (matched by the name in the CSV) but no invoice
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo      |
-      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_6 |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                  |
+      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_6_@plainBPId@ |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -340,7 +340,7 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
 
     When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
     """
-    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@plainName@,,bsCsvPaymentBonus_6,,EUR,@customerName@
+    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@plainName@,,bsCsvPaymentBonus_6_@plainBPId@,,EUR,@customerName@
     """
     And load C_BankStatement created by the import for bank account "org_EUR_account"
       | C_BankStatement_ID.Identifier | Name           |
@@ -353,3 +353,34 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | bsl_1                             | 166.50     | 166.50      | null                        | plainBP                      | false         |
     # cleanup: the invoice stays unpaid, which would make the next import of this fixed document number ambiguous
     And the invoice identified by invoice is reversed
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC6
+  Scenario: CSV bank statement — the invoice number of another partner's invoice does not link the line, which keeps the partner of the CSV
+    # the invoice is the bonus customer's; the CSV line names the other customer (plainBP) as the payer
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_7_@customerBPId@ |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,163.72,163.72,DE89370400440532013000,CH4189144993834976921,@plainName@,,bsCsvPaymentBonus_7_@customerBPId@,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.72     | 163.72      | null                        | plainBP                      | false         |
+    And the invoice identified by invoice is reversed
+

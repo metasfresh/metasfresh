@@ -24,11 +24,10 @@ package de.metas.banking.impexp;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.impexp.BankStatementImportInvoiceResolver.ReferencedInvoice;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
@@ -42,23 +41,17 @@ import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
-import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
@@ -68,17 +61,14 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
 
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
@@ -197,13 +187,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
-		final I_C_Invoice referencedInvoice = getReferencedInvoice(importRecord)
-				.filter(this::hasPaymentBonusDeduction)
+		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
+				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
 				.orElse(null);
 		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 		final BPartnerId bpartnerId = importedBPartnerId != null || referencedInvoice == null
 				? importedBPartnerId
-				: BPartnerId.ofRepoId(referencedInvoice.getC_BPartner_ID());
+				: referencedInvoice.getBpartnerId();
 
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(
 				BankStatementLineCreateRequest.builder()
@@ -212,7 +202,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.lineNo(importRecord.getLine())
 						//
 						.bpartnerId(bpartnerId)
-						.invoiceId(referencedInvoice != null ? InvoiceId.ofRepoId(referencedInvoice.getC_Invoice_ID()) : null)
+						.invoiceId(referencedInvoice != null ? referencedInvoice.getInvoiceId() : null)
 						.importedBillPartnerName(importRecord.getBill_BPartner_Name())
 						.importedBillPartnerIBAN(importRecord.getIBAN_To())
 						//
@@ -252,51 +242,15 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	/**
-	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract),
-	 * so that the import of every other partner stays as it was.
+	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
+	 * in the currency of the line, so that the import of every other partner stays as it was.
 	 */
-	private boolean hasPaymentBonusDeduction(@NonNull final I_C_Invoice invoice)
+	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{
-		return invoice.isSOTrx()
+		return invoice.isSales()
 				&& SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
-				.computeDeduction(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+				.computeDeduction(invoice.getInvoiceId(), lineCurrencyId)
 				.isPresent();
-	}
-
-	/**
-	 * The invoice the imported line refers to:
-	 * <ol>
-	 * <li>the invoice of {@link I_I_BankStatement#COLUMNNAME_C_Invoice_ID}, if set;</li>
-	 * <li>else the one unpaid, completed or closed invoice whose document number is the InvoiceDocumentNo, the Memo or the LineDescription (as in the CAMT import). No amount is matched. If more than one invoice matches, none is referenced.</li>
-	 * </ol>
-	 */
-	private Optional<I_C_Invoice> getReferencedInvoice(@NonNull final I_I_BankStatement importRecord)
-	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(importRecord.getC_Invoice_ID());
-		if (invoiceId != null)
-		{
-			return Optional.of(invoiceDAO.getByIdInTrx(invoiceId));
-		}
-
-		final ImmutableSet<String> documentNoCandidates = Stream.of(importRecord.getInvoiceDocumentNo(), importRecord.getMemo(), importRecord.getLineDescription())
-				.map(StringUtils::trimBlankToNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (documentNoCandidates.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableList<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.retrieveUnpaid(UnpaidInvoiceQuery.builder()
-				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed, DocStatus.Closed))
-				.queryLimit(QueryLimit.TWO)
-				.additionalFilter(Services.get(IQueryBL.class)
-										  .createCompositeQueryFilter(de.metas.adempiere.model.I_C_Invoice.class)
-										  .addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNoCandidates))
-				.build());
-
-		// ambiguous (more than one) or none
-		return invoices.size() == 1 ? Optional.of(invoices.get(0)) : Optional.empty();
 	}
 
 	private BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
