@@ -448,7 +448,8 @@ public class C_OrderLine_StepDef
 	 * compensation group — resolved via the line itself, so it also works for an auto-created, e.g.
 	 * contract-triggered, group that was never registered under its own identifier).
 	 * {@code OPT.GroupCompensation_Product_Category_ID} (identifier of an {@code M_Product_Category}, or {@code null} for none)
-	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart.
+	 * also narrows the lookup, so that two compensation lines with the same product and quantity can be told apart;
+	 * so does {@code OPT.GroupCompensationPercentage} when given, for two such lines that share the category as well.
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -470,7 +471,7 @@ public class C_OrderLine_StepDef
 
 					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
-					//dev-note: we assume the tests are not using the same product on different lines, unless they tell them apart by OPT.GroupCompensation_Product_Category_ID
+					//dev-note: we assume the tests are not using the same product on different lines, unless they tell them apart by OPT.GroupCompensation_Product_Category_ID and/or OPT.GroupCompensationPercentage
 					final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class)
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
@@ -479,6 +480,8 @@ public class C_OrderLine_StepDef
 							.ifPresent(categoryIdentifier -> orderLineQueryBuilder.addEqualsFilter(
 									I_C_OrderLine.COLUMNNAME_GroupCompensation_Product_Category_ID,
 									categoryIdentifier.isNullPlaceholder() ? null : productCategoryTable.getId(categoryIdentifier)));
+					row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
+							.ifPresent(percentage -> orderLineQueryBuilder.addEqualsFilter(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage, percentage));
 					final I_C_OrderLine orderLineRecord = orderLineQueryBuilder
 							.create()
 							.firstOnlyNotNull(I_C_OrderLine.class);
