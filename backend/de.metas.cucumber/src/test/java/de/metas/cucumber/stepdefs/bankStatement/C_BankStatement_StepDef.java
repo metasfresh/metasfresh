@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.bankStatement;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.organization.IOrgDAO;
@@ -58,13 +59,16 @@ public class C_BankStatement_StepDef
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BP_BankAccount_StepDefData bankAccountTable;
+	private final TestContext restTestContext;
 
 	public C_BankStatement_StepDef(
 			@NonNull final C_BankStatement_StepDefData bankStatementTable,
-			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.bankStatementTable = bankStatementTable;
 		this.bankAccountTable = bankAccountTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@And("validate C_BankStatement")
@@ -78,18 +82,20 @@ public class C_BankStatement_StepDef
 	}
 
 	/**
-	 * Loads the newest {@code C_BankStatement} of the given bank account into the step data, to be used after an import
-	 * that does not return the statement it created (e.g. a CSV data import).
+	 * Loads the newest {@code C_BankStatement} of the given bank account and name into the step data, to be used after an import
+	 * that does not return the statement it created (e.g. a CSV data import). Fails if there is no such statement,
+	 * so an import that created none is not mistaken for an earlier run's statement.
 	 * <p>
 	 * Example:
 	 * <pre>
 	 * And load C_BankStatement created by the import for bank account "org_EUR_account"
-	 *   | C_BankStatement_ID.Identifier |
-	 *   | bs_1                          |
+	 *   | C_BankStatement_ID.Identifier | Name            |
+	 *   | bs_1                          | @customerName@  |
 	 * </pre>
 	 *
 	 * @cucumber.columns
-	 * <b>C_BankStatement_ID.Identifier</b> — the identifier to store the statement under
+	 * <b>C_BankStatement_ID.Identifier</b> — the identifier to store the statement under<br>
+	 * <b>Name</b> — the name of the statement (the one given in the import); {@code @name@} tokens are replaced by the REST context variable of that name
 	 */
 	@And("load C_BankStatement created by the import for bank account {string}")
 	public void load_C_BankStatement_created_by_the_import(
@@ -98,14 +104,19 @@ public class C_BankStatement_StepDef
 	{
 		final int bankAccountId = bankAccountTable.get(bankAccountIdentifier).getC_BP_BankAccount_ID();
 
-		final I_C_BankStatement bankStatementRecord = queryBL.createQueryBuilder(I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
-				.orderByDescending(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID)
-				.create()
-				.first(I_C_BankStatement.class);
-		assertThat(bankStatementRecord).as("C_BankStatement of C_BP_BankAccount_ID=%s (identifier %s)", bankAccountId, bankAccountIdentifier).isNotNull();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String name = restTestContext.resolveVariables(row.getAsString(I_C_BankStatement.COLUMNNAME_Name));
 
-		DataTableRows.of(dataTable).forEach(row -> row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID).putOrReplace(bankStatementTable, bankStatementRecord));
+			final I_C_BankStatement bankStatementRecord = queryBL.createQueryBuilder(I_C_BankStatement.class)
+					.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
+					.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, name)
+					.orderByDescending(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID)
+					.create()
+					.first(I_C_BankStatement.class);
+			assertThat(bankStatementRecord).as("C_BankStatement of C_BP_BankAccount_ID=%s (identifier %s) with Name=%s", bankAccountId, bankAccountIdentifier, name).isNotNull();
+
+			row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID).putOrReplace(bankStatementTable, bankStatementRecord);
+		});
 	}
 
 	@Given("^the C_BankStatement identified by (.*) is completed$")
