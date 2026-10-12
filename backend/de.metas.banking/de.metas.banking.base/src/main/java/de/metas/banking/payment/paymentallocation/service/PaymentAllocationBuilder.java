@@ -57,7 +57,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -373,27 +372,11 @@ public class PaymentAllocationBuilder
 
 			if (paymentBonus.isGreaterThan(leftOpen))
 			{
-				payable.reducePaymentBonusTo(computeLargestReachablePaymentBonusNotAbove(payable, leftOpen));
+				final PaymentBonusDeduction deduction = Check.assumeNotNull(payable.getPaymentBonusDeduction(), "paymentBonusDeduction shall be set when the payment bonus is not zero: {}", payable);
+				payable.reducePaymentBonusTo(deduction.computeLargestReachableGrossAmountNotAbove(leftOpen));
 			}
 			leftOpen = leftOpen.subtract(payable.getAmountsToAllocate().getPaymentBonus());
 		}
-	}
-
-	/**
-	 * @return the largest gross amount, not above the given maximum, that the payable's scaled {@link PaymentBonusDeduction} reaches exactly; zero if there is none.
-	 * Because of the rounding of the VAT, the closest reachable gross amount can lie one cent above the requested one, so lower amounts are tried, one cent at a time.
-	 */
-	private static Money computeLargestReachablePaymentBonusNotAbove(@NonNull final PayableDocument payable, @NonNull final Money maxPaymentBonus)
-	{
-		final PaymentBonusDeduction deduction = Check.assumeNotNull(payable.getPaymentBonusDeduction(), "paymentBonusDeduction shall be set when the payment bonus is not zero: {}", payable);
-		final Money oneCent = Money.of(BigDecimal.ONE.movePointLeft(deduction.getPrecision().toInt()), maxPaymentBonus.getCurrencyId());
-
-		Money paymentBonus = maxPaymentBonus;
-		while (paymentBonus.signum() > 0 && deduction.withGrossAmount(paymentBonus).getGrossAmount().isGreaterThan(maxPaymentBonus))
-		{
-			paymentBonus = paymentBonus.subtract(oneCent);
-		}
-		return paymentBonus.max(maxPaymentBonus.toZero());
 	}
 
 	/***

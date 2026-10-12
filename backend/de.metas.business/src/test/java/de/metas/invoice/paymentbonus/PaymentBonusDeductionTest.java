@@ -122,4 +122,48 @@ class PaymentBonusDeductionTest
 		final PaymentBonusDeduction tiny = deduction.withGrossAmount(Money.of(new BigDecimal("0.03"), EUR));
 		assertThat(tiny.getGrossAmount().subtract(Money.of(new BigDecimal("0.03"), EUR)).abs().toBigDecimal()).isLessThanOrEqualTo(new BigDecimal("0.01"));
 	}
+
+	private static Money eur(final String amount)
+	{
+		return Money.of(new BigDecimal(amount), EUR);
+	}
+
+	/** A limit at or above the deduction's own gross amount gives the deduction's gross amount, never more. */
+	@Test
+	void computeLargestReachableGrossAmountNotAbove_limitAboveTheDeduction_deductionGross()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("20.00")).toBigDecimal()).isEqualByComparingTo("11.90");
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("11.90")).toBigDecimal()).isEqualByComparingTo("11.90");
+	}
+
+	/** A reachable limit is returned as it is, e.g. a 2.78 bonus capped to the 0.22 or 1.50 that a payment leaves open. */
+	@Test
+	void computeLargestReachableGrossAmountNotAbove_reachableLimit_limit()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60")); // gross 2.78
+
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("0.22")).toBigDecimal()).isEqualByComparingTo("0.22");
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("1.50")).toBigDecimal()).isEqualByComparingTo("1.50");
+	}
+
+	/** {@link PaymentBonusDeduction#withGrossAmount(Money)} overshoots 0.03 to 0.04 (19 % VAT); the largest reachable amount not above 0.03 is 0.02. */
+	@Test
+	void computeLargestReachableGrossAmountNotAbove_overshootingLimit_nextLowerReachable()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+		assertThat(deduction.withGrossAmount(eur("0.03")).getGrossAmount().toBigDecimal()).isEqualByComparingTo("0.04"); // precondition: the overshoot
+
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("0.03")).toBigDecimal()).isEqualByComparingTo("0.02");
+	}
+
+	@Test
+	void computeLargestReachableGrossAmountNotAbove_limitNotPositive_zero()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60"));
+
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("0")).signum()).isZero();
+		assertThat(deduction.computeLargestReachableGrossAmountNotAbove(eur("-1.00")).signum()).isZero();
+	}
 }

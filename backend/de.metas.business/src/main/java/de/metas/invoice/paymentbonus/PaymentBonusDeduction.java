@@ -98,6 +98,35 @@ public class PaymentBonusDeduction
 	}
 
 	/**
+	 * Finds the payment bonus to book when the customer may deduct at most the given amount, e.g. because the payment leaves less open than this deduction.
+	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 *
+	 * @param maxGrossAmount the limit, in this deduction's currency; may be zero or negative
+	 * @return the largest gross amount that {@link #withGrossAmount(Money)} reaches and that is neither above {@code maxGrossAmount} nor above this deduction's own gross amount;
+	 * zero if {@code maxGrossAmount} is not positive or no positive amount up to it can be reached
+	 */
+	public Money computeLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	{
+		maxGrossAmount.assertCurrencyId(currencyId);
+
+		final Money grossAmount = getGrossAmount();
+		if (!maxGrossAmount.isLessThan(grossAmount))
+		{
+			return grossAmount;
+		}
+
+		final Money oneCent = Money.of(BigDecimal.ONE.movePointLeft(precision.toInt()), currencyId);
+		Money candidate = maxGrossAmount;
+		while (candidate.signum() > 0 && withGrossAmount(candidate).getGrossAmount().isGreaterThan(maxGrossAmount))
+		{
+			candidate = candidate.subtract(oneCent);
+		}
+		return candidate.signum() > 0
+				? withGrossAmount(candidate).getGrossAmount()
+				: Money.zero(currencyId);
+	}
+
+	/**
 	 * Scales the lines' net amounts so that the gross amount is the given one, e.g. because the customer deducted a different amount than computed.
 	 * Because of the rounding of the VAT, not every gross amount can be reached; then the result's gross amount is the closest one.
 	 */
