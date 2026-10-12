@@ -88,9 +88,9 @@ public class PP_Order_Candidate
 	@CalloutMethod(columnNames = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 				 ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
-	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public void setPlantAndWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		ppOrderCandidateService.setWorkStationFromProductPlanning(ppOrderCandidateRecord);
+		ppOrderCandidateService.setPlantAndWorkStationFromProductPlanning(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })

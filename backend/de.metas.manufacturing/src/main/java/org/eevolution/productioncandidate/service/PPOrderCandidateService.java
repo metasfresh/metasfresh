@@ -506,31 +506,33 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
 	}
 
-	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public void setPlantAndWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		// WorkStation (Arbeitsstation): Product Planning first, product-category as fallback (gh31188)
-		ResourceId workStationId = null;
-
+		// Plant (Produktionsstaette) + WorkStation (Arbeitsstation): Product Planning first, product-category as fallback (gh31188).
+		// Wired as a callout on PP_Product_Planning_ID, so both follow the same precedence as the PP_Order callout when the planning is editable.
 		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
-		if (ppProductPlanningId != null)
+		final ProductPlanning productPlanning = ppProductPlanningId != null ? productPlanningDAO.getById(ppProductPlanningId) : null;
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_Product_ID());
+		final I_M_Product_Category productCategory = productId != null ? productBL.getProductCategoryByProductId(productId) : null;
+
+		// Plant: override from planning, else category; keep the existing (mandatory) plant if neither provides one
+		ResourceId plantId = productPlanning != null ? productPlanning.getPlantId() : null;
+		if (plantId == null && productCategory != null)
 		{
-			final ProductPlanning productPlanning = productPlanningDAO.getById(ppProductPlanningId);
-			workStationId = productPlanning.getWorkstationId();
+			plantId = ResourceId.ofRepoIdOrNull(productCategory.getS_Resource_ID());
+		}
+		if (plantId != null)
+		{
+			ppOrderCandidateRecord.setS_Resource_ID(plantId.getRepoId());
 		}
 
-		if (workStationId == null)
+		// WorkStation: planning, else category; cleared when neither provides one
+		ResourceId workStationId = productPlanning != null ? productPlanning.getWorkstationId() : null;
+		if (workStationId == null && productCategory != null)
 		{
-			final ProductId productId = ProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_Product_ID());
-			if (productId != null)
-			{
-				final I_M_Product_Category productCategory = productBL.getProductCategoryByProductId(productId);
-				if (productCategory != null)
-				{
-					workStationId = ResourceId.ofRepoIdOrNull(productCategory.getWorkStation_ID());
-				}
-			}
+			workStationId = ResourceId.ofRepoIdOrNull(productCategory.getWorkStation_ID());
 		}
-
 		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(workStationId));
 	}
 
