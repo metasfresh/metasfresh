@@ -1,3 +1,13 @@
+# The DB seed restored below: either a seed image (a pg_dump of a green cicd run's preloaded DB, built by
+# .github/workflows/db-seed.yaml) or, by default, the 5.172 dump (stage seed-legacy). cicd picks it per base branch
+# with docker-builds/db/resolve-db-seed.sh and passes it as --build-arg DB_SEED; nothing here is branch-specific.
+ARG DB_SEED=seed-legacy
+
+FROM scratch AS seed-legacy
+ADD https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_172_gh24566.pgdump /metasfresh.pgdump
+
+FROM ${DB_SEED} AS seed
+
 FROM postgres:15.4
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
@@ -13,7 +23,4 @@ RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
 COPY docker-builds/db/init/ /docker-entrypoint-initdb.d/
 
 # COPY docker-builds/db/metasfresh_latest.pgdump .
-# The seed: a pg_dump of a green cicd run's preloaded DB of THIS branch, built by .github/workflows/db-seed.yaml.
-# cicd (step check-db-seed) fails if its commit is not in the history of the commit being built.
-# Refresh it from time to time (run db-seed, then update this tag): the older the seed, the more scripts each build applies.
-COPY --from=metasfresh/metas-db:5.175-new-dawn-uat.45675-seed --chown=postgres /metasfresh.pgdump metasfresh.pgdump
+COPY --from=seed --chown=postgres /metasfresh.pgdump metasfresh.pgdump
