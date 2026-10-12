@@ -19,7 +19,7 @@ public final class PaymentBonusAmountMatcher
 	 * The Skonto-only rule comes first, so a customer without a payment bonus is matched exactly as before.
 	 *
 	 * All amounts must be in one currency. A deduction in another currency than {@code openAmt} throws when it is subtracted (in {@link Amount#subtract(Amount)}):
-	 * {@code discountAmt} always, {@code bonusGrossAmt} only if {@code bonusAllowed} is {@code true} and it is non-null.
+	 * {@code discountAmt} always, {@code bonusGrossAmt} only if {@code bonusAllowed} is {@code true}, it is non-null, and the Skonto-only rule did not match.
 	 * A {@code paidAmt} in another currency matches no rule, so the result is empty.
 	 *
 	 * @param bonusGrossAmt the gross payment bonus, or {@code null} if there is none
