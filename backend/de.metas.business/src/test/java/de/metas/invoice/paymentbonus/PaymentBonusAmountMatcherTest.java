@@ -60,16 +60,26 @@ class PaymentBonusAmountMatcherTest
 	@Test
 	void noBonus_onlySkontoRule()
 	{
-		// bonus amount null
-		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), null, eur("90"), true)).isEmpty();
-		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), null, eur("97"), true)).isPresent();
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), null, eur("90"), true))
+				.as("bonusGrossAmt null, paid 90 (open - 10): no match")
+				.isEmpty();
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), null, eur("97"), true))
+				.as("bonusGrossAmt null, paid 97 (open - Skonto): Skonto rule still matches")
+				.isPresent();
 
-		// bonus not allowed (e.g. purchase documents)
-		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("90"), false)).isEmpty();
-		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("87"), false)).isEmpty();
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("90"), false))
+				.as("bonusAllowed false, paid 90 (open - bonus): no match")
+				.isEmpty();
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("87"), false))
+				.as("bonusAllowed false, paid 87 (open - Skonto - bonus): no match")
+				.isEmpty();
 		final Optional<PaymentBonusAmountMatcher.MatchedDeductions> skonto = PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("97"), false);
-		assertThat(skonto).isPresent();
-		assertThat(skonto.get().getBonusAmt()).isEqualByComparingTo(eur("0"));
+		assertThat(skonto)
+				.as("bonusAllowed false, paid 97 (open - Skonto): Skonto rule matches")
+				.isPresent();
+		assertThat(skonto.get().getBonusAmt())
+				.as("bonusAllowed false, paid 97: no bonus is returned")
+				.isEqualByComparingTo(eur("0"));
 	}
 
 	@Test
