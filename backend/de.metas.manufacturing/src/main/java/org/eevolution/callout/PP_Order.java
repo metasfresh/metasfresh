@@ -123,7 +123,12 @@ public class PP_Order extends CalloutEngine
 		ppOrder.setAD_Workflow_ID(PPRoutingId.toRepoId(pp.getWorkflowId()));
 
 		//
-		// WorkStation (Arbeitsstation): Product Planning takes precedence over the product-category fallback set above
+		// Plant (Produktionsstätte) + WorkStation (Arbeitsstation): Product Planning takes precedence over the product-category fallback set above
+		final ResourceId planningPlantId = pp.getPlantId();
+		if (planningPlantId != null)
+		{
+			ppOrder.setS_Resource_ID(planningPlantId.getRepoId());
+		}
 		final ResourceId planningWorkStationId = pp.getWorkstationId();
 		if (planningWorkStationId != null)
 		{
