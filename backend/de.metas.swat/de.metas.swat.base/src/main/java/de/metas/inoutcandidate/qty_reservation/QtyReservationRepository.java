@@ -179,11 +179,6 @@ public class QtyReservationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
-	{
-		return getReservedQtyTU(toSqlQuery(request));
-	}
-
 	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
 	{
 		return toSqlQuery(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());

@@ -294,6 +294,22 @@ class QtyReservationServiceTest
 		assertThat(reload(open).getQtyTU()).isEqualByComparingTo("1");
 	}
 
+	// --- getTotalReversibleQtyTU ---
+
+	@Test
+	void getTotalReversibleQtyTU_sumsReversibleTU_subtractingDelivered_scopedToBucket()
+	{
+		final OrderAndLineId orderLineId = createOrderLine(new BigDecimal("100"));
+		// ON_HAND bucket: 4 TU reserved with 10 CU (= 1 TU @ 10 CU/TU) delivered -> 3 reversible; plus a healthy 2 TU -> 2 reversible
+		createBucketRow(orderLineId, SupplyType.ON_HAND, 4, new BigDecimal("10"));
+		createBucketRow(orderLineId, SupplyType.ON_HAND, 2, BigDecimal.ZERO);
+		// a different supply-type bucket must NOT be counted towards ON_HAND
+		createBucketRow(orderLineId, SupplyType.PLANNED_SUPPLY, 7, BigDecimal.ZERO);
+
+		assertThat(service.getTotalReversibleQtyTU(orderLineId, SupplyType.ON_HAND, null).toInt()).isEqualTo(5);
+		assertThat(service.getTotalReversibleQtyTU(orderLineId, SupplyType.PLANNED_SUPPLY, null).toInt()).isEqualTo(7);
+	}
+
 	private ReduceQtyReservationRequest reduceRequest(final OrderAndLineId orderLineId, final SupplyType supplyType, final int tu)
 	{
 		return ReduceQtyReservationRequest.builder()

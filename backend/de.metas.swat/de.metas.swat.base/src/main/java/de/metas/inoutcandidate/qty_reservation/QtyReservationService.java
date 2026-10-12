@@ -22,10 +22,12 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,7 +110,7 @@ public class QtyReservationService
 		final ImmutableList<QtyReservation> rows = repository.getActiveByBucket(
 				request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
 
-		final int totalReversibleTU = rows.stream().mapToInt(QtyReservationShrinker::getReversibleTU).sum();
+		final int totalReversibleTU = sumReversibleTU(rows);
 		int remainingTU = request.getQtyToUnreserveTU().toInt();
 		if (remainingTU > totalReversibleTU)
 		{
@@ -160,6 +162,24 @@ public class QtyReservationService
 		invalidateShipmentSchedulesForSalesOrderLineId(request.getOrderAndLineId());
 	}
 
+	/**
+	 * Total TUs of the bucket (order line + supply type + optional date promised) that can still be unreserved,
+	 * i.e. reserved minus already delivered. This is the upper bound {@link #reduceReservation} enforces.
+	 */
+	@NonNull
+	public QtyTU getTotalReversibleQtyTU(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		return QtyTU.ofInt(sumReversibleTU(repository.getActiveByBucket(orderAndLineId, supplyType, datePromised)));
+	}
+
+	private static int sumReversibleTU(@NonNull final List<QtyReservation> rows)
+	{
+		return rows.stream().mapToInt(QtyReservationShrinker::getReversibleTU).sum();
+	}
+
 	private void invalidateShipmentSchedulesForSalesOrderLineId(@NonNull final OrderAndLineId orderLineId)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderLineId);
@@ -176,11 +196,6 @@ public class QtyReservationService
 						.warehouseId(WarehouseId.ofRepoId(orderLine.getM_Warehouse_ID()))
 						.build()
 		);
-	}
-
-	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
-	{
-		return repository.getReservedQtyTU(request);
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
