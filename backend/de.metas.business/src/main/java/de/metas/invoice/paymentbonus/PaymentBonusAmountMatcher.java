@@ -18,8 +18,9 @@ public final class PaymentBonusAmountMatcher
 	 * Tries, in this order: open - Skonto, open - bonus, open - Skonto - bonus.
 	 * The Skonto-only rule comes first, so a customer without a payment bonus is matched exactly as before.
 	 *
-	 * All amounts must be in one currency. A deduction ({@code discountAmt}, {@code bonusGrossAmt}) in another currency than {@code openAmt} throws (in {@link Amount#subtract(Amount)});
-	 * a {@code paidAmt} in another currency matches no rule, so the result is empty.
+	 * All amounts must be in one currency. A deduction in another currency than {@code openAmt} throws when it is subtracted (in {@link Amount#subtract(Amount)}):
+	 * {@code discountAmt} always, {@code bonusGrossAmt} only if {@code bonusAllowed} is {@code true} and it is non-null.
+	 * A {@code paidAmt} in another currency matches no rule, so the result is empty.
 	 *
 	 * @param bonusGrossAmt the gross payment bonus, or {@code null} if there is none
 	 * @param bonusAllowed  {@code false} if no payment bonus may be deducted (e.g. a purchase document); then only the Skonto rule applies
