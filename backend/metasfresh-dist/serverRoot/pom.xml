@@ -135,6 +135,11 @@
             <artifactId>de.metas.postfinance.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.frontend-testing</groupId>
+            <artifactId>de.metas.frontend-testing</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
