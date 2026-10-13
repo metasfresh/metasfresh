@@ -1051,9 +1051,12 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_110 is completed
 
+    # QtyToDeliver=100 is the settle signal, not IsToRecompute=N alone: the recompute deletes its marker in a
+    # separate transaction before its own transaction commits the computed QtyToDeliver. In that window the
+    # schedule reads IsToRecompute=N with QtyToDeliver still 0, and 'generate shipments' finds nothing to ship.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_110    | ol_110_1                  | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_110    | ol_110_1                  | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
