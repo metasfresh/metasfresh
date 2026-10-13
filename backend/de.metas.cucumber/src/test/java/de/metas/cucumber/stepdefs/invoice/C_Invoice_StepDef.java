@@ -132,6 +132,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -167,6 +168,11 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
 {
+	/**
+	 * An {@code @name@} placeholder: two '@' with at least one other character between them.
+	 */
+	private static final Pattern DOCUMENT_NO_PLACEHOLDER = Pattern.compile("@[^@]+@");
+
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
@@ -629,7 +635,7 @@ public class C_Invoice_StepDef
 	 */
 	private String resolveDocumentNo(@NonNull final String documentNo)
 	{
-		return documentNo.matches(".*@[^@]+@.*") ? restTestContext.resolveVariables(documentNo) : documentNo;
+		return DOCUMENT_NO_PLACEHOLDER.matcher(documentNo).find() ? restTestContext.resolveVariables(documentNo) : documentNo;
 	}
 
 	private BigDecimal computeOpenAmount(@NonNull final InvoiceId invoiceId)

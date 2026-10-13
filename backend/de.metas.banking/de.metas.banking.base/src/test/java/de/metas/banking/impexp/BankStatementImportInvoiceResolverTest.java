@@ -5,6 +5,7 @@ import de.metas.banking.impexp.BankStatementImportInvoiceResolver.ReferencedInvo
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -89,7 +90,7 @@ class BankStatementImportInvoiceResolverTest
 		assertThat(result).isNotNull();
 		assertThat(result.getInvoiceId()).isEqualTo(invoiceId);
 		assertThat(result.getBpartnerId()).isEqualTo(BPartnerId.ofRepoId(PARTNER_A));
-		assertThat(result.isSales()).isTrue();
+		assertThat(result.getSoTrx()).isEqualTo(SOTrx.SALES);
 	}
 
 	@Test
@@ -218,6 +219,6 @@ class BankStatementImportInvoiceResolverTest
 	void aPurchaseInvoiceIsResolved_butNotMarkedAsSales()
 	{
 		invoice().documentNo("100").sales(false).build();
-		assertThat(resolver.resolve(importLine().invoiceDocumentNo("100").build()).map(ReferencedInvoice::isSales)).contains(false);
+		assertThat(resolver.resolve(importLine().invoiceDocumentNo("100").build()).map(ReferencedInvoice::getSoTrx)).contains(SOTrx.PURCHASE);
 	}
 }

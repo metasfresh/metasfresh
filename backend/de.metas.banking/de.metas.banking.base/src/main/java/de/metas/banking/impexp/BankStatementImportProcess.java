@@ -249,7 +249,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{
 		return SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
-				.computeDeductionGrossAmount(invoice.isSales(), invoice.getInvoiceId(), () -> lineCurrencyId)
+				.computeDeductionGrossAmount(invoice.getSoTrx().isSales(), invoice.getInvoiceId(), () -> lineCurrencyId)
 				.isPresent();
 	}
 

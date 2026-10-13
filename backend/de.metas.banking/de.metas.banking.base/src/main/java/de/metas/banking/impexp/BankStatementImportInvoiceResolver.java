@@ -8,6 +8,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -41,7 +42,7 @@ class BankStatementImportInvoiceResolver
 	{
 		@NonNull InvoiceId invoiceId;
 		@NonNull BPartnerId bpartnerId;
-		boolean sales;
+		@NonNull SOTrx soTrx;
 	}
 
 	Optional<ReferencedInvoice> resolve(@NonNull final I_I_BankStatement importRecord)
@@ -86,6 +87,6 @@ class BankStatementImportInvoiceResolver
 			return Optional.empty();
 		}
 
-		return Optional.of(new ReferencedInvoice(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoiceBPartnerId, invoice.isSOTrx()));
+		return Optional.of(new ReferencedInvoice(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoiceBPartnerId, SOTrx.ofBooleanNotNull(invoice.isSOTrx())));
 	}
 }
