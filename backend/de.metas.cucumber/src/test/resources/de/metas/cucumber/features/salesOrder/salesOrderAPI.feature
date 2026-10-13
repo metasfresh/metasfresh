@@ -105,9 +105,10 @@ Feature: Sales order API
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
     And the order identified by so is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss1        | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss1        | so_l1          | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                              | D            | true                | false       |
