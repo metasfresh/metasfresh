@@ -156,12 +156,12 @@ public class ReconcileQtyReservationsCommand
 
 						final BigDecimal reductionInLineUOM = excessInLineUOM.min(reducibleRowQtyInLineUOM);
 
-						// convert the reduction back to the reservation's own UOM
-						final BigDecimal reductionInRowUOM = uomConversionBL.convertQuantityTo(
-										qtyOrdered.toZero().add(reductionInLineUOM),
-										reservation.getProductId(),
-										reservation.getQty().getUomId())
-								.toBigDecimal();
+						// convert the reduction back to the reservation's own UOM (kept as a Quantity so the shrink
+						// clamp is UOM-guarded by the type, not just by this conversion's intent)
+						final Quantity reductionInRowUOM = uomConversionBL.convertQuantityTo(
+								qtyOrdered.toZero().add(reductionInLineUOM),
+								reservation.getProductId(),
+								reservation.getQty().getUomId());
 
 						// shared shrink logic: clamps at delivered, rounds QtyTU up, signals deletion of zero rows
 						final QtyReservationShrinker.Result shrunk = QtyReservationShrinker.shrink(reservation, reductionInRowUOM);

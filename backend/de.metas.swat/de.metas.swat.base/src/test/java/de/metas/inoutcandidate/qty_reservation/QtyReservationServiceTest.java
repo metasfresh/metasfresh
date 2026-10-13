@@ -5,7 +5,11 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
+import org.adempiere.warehouse.WarehouseId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
@@ -308,6 +312,29 @@ class QtyReservationServiceTest
 
 		assertThat(service.getTotalReversibleQtyTU(orderLineId, SupplyType.ON_HAND, null).toInt()).isEqualTo(5);
 		assertThat(service.getTotalReversibleQtyTU(orderLineId, SupplyType.PLANNED_SUPPLY, null).toInt()).isEqualTo(7);
+	}
+
+	// --- QtyReservationShrinker UOM guard ---
+
+	@Test
+	void shrink_reductionInForeignUOM_isRejectedByType()
+	{
+		// the row is in `uom`; a reduction expressed in a different UOM must throw (type-enforced invariant),
+		// not be silently subtracted as a bare number
+		final I_C_UOM otherUom = BusinessTestHelper.createUOM("Stk");
+		final QtyReservation reservation = QtyReservation.builder()
+				.id(QtyReservationId.ofRepoId(1_000_000))
+				.orderLineId(OrderLineId.ofRepoId(1_000_001))
+				.productId(ProductId.ofRepoId(productId))
+				.warehouseId(WarehouseId.ofRepoId(warehouseId))
+				.attributesKey(AttributesKey.NONE)
+				.qtyTU(QtyTU.ofInt(4))
+				.qty(Quantity.of(40, uom))
+				.qtyDelivered(Quantity.of(0, uom))
+				.build();
+
+		assertThatThrownBy(() -> QtyReservationShrinker.shrink(reservation, Quantity.of(10, otherUom)))
+				.isInstanceOf(QuantitiesUOMNotMatchingExpection.class);
 	}
 
 	private ReduceQtyReservationRequest reduceRequest(final OrderAndLineId orderLineId, final SupplyType supplyType, final int tu)

@@ -19,15 +19,19 @@ final class QtyReservationShrinker
 	private QtyReservationShrinker() {}
 
 	/**
-	 * @param reductionInRowUOM the intended reduction, in the reservation's own UOM
+	 * @param reductionInRowUOM the intended reduction, in the reservation's own UOM. Typed as {@link Quantity} so a
+	 *                          reduction accidentally expressed in a foreign UOM throws (UOM-mismatch) rather than being
+	 *                          silently subtracted; the cross-dimension TU ratio below necessarily stays on {@link BigDecimal}.
 	 */
-	static Result shrink(@NonNull final QtyReservation reservation, @NonNull final BigDecimal reductionInRowUOM)
+	static Result shrink(@NonNull final QtyReservation reservation, @NonNull final Quantity reductionInRowUOM)
 	{
-		final BigDecimal rowQty = reservation.getQty().toBigDecimal();
-		final BigDecimal rowQtyDelivered = reservation.getQtyDelivered().toBigDecimal().max(BigDecimal.ZERO);
+		final Quantity reserved = reservation.getQty();
+		final BigDecimal rowQty = reserved.toBigDecimal();
 
-		// clamp: never shrink below already-delivered qty
-		final BigDecimal newQtyBD = rowQty.subtract(reductionInRowUOM).max(rowQtyDelivered);
+		// clamp: never shrink below the already-delivered qty (floored at 0). subtract/max are UOM-aware,
+		// so a reductionInRowUOM in a foreign UOM throws here instead of silently miscomputing.
+		final Quantity deliveredFloor = reservation.getQtyDelivered().max(reserved.toZero());
+		final BigDecimal newQtyBD = reserved.subtract(reductionInRowUOM).max(deliveredFloor).toBigDecimal();
 		final BigDecimal actualReduction = rowQty.subtract(newQtyBD);
 
 		if (newQtyBD.signum() <= 0)
@@ -35,6 +39,7 @@ final class QtyReservationShrinker
 			return new Result(true, null, null, actualReduction);
 		}
 
+		// cross-dimension ratio (TU-scalar × CU/CU → TU count), rounded UP: a partially-filled TU still occupies a whole TU
 		final BigDecimal rowQtyTU = reservation.getQtyTU().toBigDecimal();
 		final BigDecimal newQtyTUBD = rowQtyTU
 				.multiply(newQtyBD)
@@ -42,7 +47,7 @@ final class QtyReservationShrinker
 
 		return new Result(
 				false,
-				reservation.getQty().toZero().add(newQtyBD),
+				reserved.toZero().add(newQtyBD),
 				QtyTU.ofBigDecimal(newQtyTUBD),
 				actualReduction);
 	}
