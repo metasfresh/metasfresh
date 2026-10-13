@@ -91,18 +91,26 @@ public class CreateMasterdataCommand
 
 	private List<JsonSetupInlineFilterResponse> setupInlineFilters()
 	{
-		final List<JsonSetupInlineFilterResponse> responses = new ArrayList<>();
-		if (request.getInlineFilters() != null)
+		if (request.getInlineFilters() == null)
 		{
-			for (final JsonSetupInlineFilterRequest inlineFilterRequest : request.getInlineFilters())
-			{
-				responses.add(SetupInlineFilterCommand.builder()
-						.repository(services.inlineFilterRepository)
-						.request(inlineFilterRequest)
-						.build()
-						.execute());
-			}
+			return new ArrayList<>();
 		}
+
+		// resolve and validate all entries before the first write, so that one bad entry writes nothing
+		final List<SetupInlineFilterCommand> commands = new ArrayList<>();
+		for (final JsonSetupInlineFilterRequest inlineFilterRequest : request.getInlineFilters())
+		{
+			commands.add(SetupInlineFilterCommand.builder()
+					.adTableDAO(services.adTableDAO)
+					.adWindowDAO(services.adWindowDAO)
+					.adReferenceService(services.adReferenceService)
+					.request(inlineFilterRequest)
+					.build()
+					.validate());
+		}
+
+		final List<JsonSetupInlineFilterResponse> responses = new ArrayList<>();
+		commands.forEach(command -> responses.add(command.execute()));
 		return responses;
 	}
 }

@@ -1231,6 +1231,12 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	public void saveUIElement(@NonNull final I_AD_UI_Element uiElement)
+	{
+		save(uiElement);
+	}
+
+	@Override
 	public I_AD_Window getById(@NonNull final AdWindowId adWindowId)
 	{
 		return loadOutOfTrx(adWindowId, I_AD_Window.class);

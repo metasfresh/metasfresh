@@ -1,13 +1,13 @@
 package de.metas.frontend_testing;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
-import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
@@ -46,7 +46,7 @@ class FrontendTestingRestControllerTest
 				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes()),
 				new ExternalReferenceTypes(),
 				new ExternalSystems(),
-				new InlineFilterRepository()));
+				ADReferenceService.newMocked()));
 	}
 
 	private void setEnabled(final String value)

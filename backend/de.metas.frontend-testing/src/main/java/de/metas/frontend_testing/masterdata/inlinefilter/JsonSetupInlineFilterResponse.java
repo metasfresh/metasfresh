@@ -6,7 +6,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 
-/** The values before the request, so that a test can restore them. One response per request entry, in request order. */
+/** The values before the request, for information. One response per request entry, in request order. */
 @Value
 @Builder
 @Jacksonized

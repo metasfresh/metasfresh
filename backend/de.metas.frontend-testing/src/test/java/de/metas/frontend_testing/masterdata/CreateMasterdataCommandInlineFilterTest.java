@@ -3,10 +3,15 @@ package de.metas.frontend_testing.masterdata;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.ad_reference.ADRefListItemCreateRequest;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterRequest;
 import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterResponse;
 import de.metas.util.Services;
@@ -17,7 +22,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_UI_Element;
@@ -34,6 +38,8 @@ class CreateMasterdataCommandInlineFilterTest
 	private static final String TABLE = "C_Invoice";
 	private static final String COLUMN = "C_BPartner_ID";
 
+	private IQueryBL queryBL;
+	private IADTableDAO adTableDAO;
 	private CreateMasterdataCommandSupportingServices services;
 
 	private int windowId;
@@ -47,30 +53,36 @@ class CreateMasterdataCommandInlineFilterTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL = Services.get(IQueryBL.class);
+		adTableDAO = Services.get(IADTableDAO.class);
+
+		// not newMocked(): that auto-creates lists on demand, which would make every widgetSize valid
+		final AdRefListRepositoryMocked refListRepository = new AdRefListRepositoryMocked();
+		final ADReferenceService adReferenceService = new ADReferenceService(refListRepository, new AdRefTableRepositoryMocked());
+		refListRepository.setAutoCreateOnDemand(true);
+		for (final String size : new String[] { "S", "M", "L", "XL", "XXL" })
+		{
+			adReferenceService.saveRefList(ADRefListItemCreateRequest.builder()
+					.referenceId(ReferenceId.ofRepoId(X_AD_UI_Element.WIDGETSIZE_AD_Reference_ID))
+					.value(size)
+					.name(TranslatableStrings.constant(size))
+					.build());
+		}
+		refListRepository.setAutoCreateOnDemand(false);
 
 		services = new CreateMasterdataCommandSupportingServices(
 				new ExternalReferenceRepository(queryBL, new ExternalSystems(), new ExternalReferenceTypes()),
 				new ExternalReferenceTypes(),
 				new ExternalSystems(),
-				new InlineFilterRepository());
-
-		for (final String size : new String[] { "S", "M", "L", "XL", "XXL" })
-		{
-			final I_AD_Ref_List item = InterfaceWrapperHelper.newInstance(I_AD_Ref_List.class);
-			item.setAD_Reference_ID(X_AD_UI_Element.WIDGETSIZE_AD_Reference_ID);
-			item.setValue(size);
-			item.setName(size);
-			InterfaceWrapperHelper.saveRecord(item);
-		}
+				adReferenceService);
 
 		final I_AD_Table table = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
-		table.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(TABLE)); // in unit tests table ids are resolved by a fixed list
+		table.setAD_Table_ID(adTableDAO.retrieveTableId(TABLE)); // in unit tests table ids are resolved by a fixed list
 		table.setTableName(TABLE);
 		InterfaceWrapperHelper.saveRecord(table);
 
 		columnId = newColumn(table.getAD_Table_ID(), COLUMN, true);
-		otherColumnId = newColumn(table.getAD_Table_ID(), "M_Warehouse_ID", false);
+		otherColumnId = newColumn(table.getAD_Table_ID(), "M_Warehouse_ID", true);
 
 		final I_AD_Window window = InterfaceWrapperHelper.newInstance(I_AD_Window.class);
 		window.setName("Invoice");
@@ -81,11 +93,26 @@ class CreateMasterdataCommandInlineFilterTest
 		final int childTabId = newTab(windowId, table.getAD_Table_ID(), 5, 1);
 		mainTabId = newTab(windowId, table.getAD_Table_ID(), 10, 0);
 		newTab(windowId, table.getAD_Table_ID(), 20, 0);
+		// inactive records that look like better candidates must be ignored: a main tab with a lower SeqNo, a duplicate field and a duplicate element
+		final int inactiveTabId = newTab(windowId, table.getAD_Table_ID(), 1, 0);
+		deactivate(I_AD_Tab.class, inactiveTabId);
+		newElement(inactiveTabId, newField(inactiveTabId, columnId), "XXL");
 
 		elementId = newElement(mainTabId, newField(mainTabId, columnId), "M");
 		otherElementId = newElement(mainTabId, newField(mainTabId, otherColumnId), "L");
+		final int inactiveFieldId = newField(mainTabId, columnId);
+		deactivate(I_AD_Field.class, inactiveFieldId);
+		newElement(mainTabId, inactiveFieldId, "XXL"); // an active element of an inactive field
+		deactivate(I_AD_UI_Element.class, newElement(mainTabId, InterfaceWrapperHelper.load(elementId, I_AD_UI_Element.class).getAD_Field_ID(), "XXL"));
 		// the same column in the child tab: its element must stay untouched
 		newElement(childTabId, newField(childTabId, columnId), "XL");
+	}
+
+	private static <T> void deactivate(final Class<T> modelClass, final int id)
+	{
+		final T record = InterfaceWrapperHelper.load(id, modelClass);
+		InterfaceWrapperHelper.setValue(record, "IsActive", false);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	private static int newColumn(final int tableId, final String name, final boolean showInline)
@@ -174,9 +201,9 @@ class CreateMasterdataCommandInlineFilterTest
 		execute(request().showInline(false).widgetSize("S").build());
 
 		assertThat(showInline(columnId)).isFalse();
-		assertThat(showInline(otherColumnId)).isFalse();
+		assertThat(showInline(otherColumnId)).isTrue();
 		assertThat(widgetSize(otherElementId)).isEqualTo("L");
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Element.class)
+		assertThat(queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addEqualsFilter(I_AD_UI_Element.COLUMNNAME_WidgetSize, "XL").create().count())
 				.as("the element of the same column in the child tab").isEqualTo(1);
 	}
@@ -256,6 +283,42 @@ class CreateMasterdataCommandInlineFilterTest
 
 		assertThat(showInline(columnId)).isFalse();
 		assertThat(widgetSize(elementId)).isEqualTo("M");
+	}
+
+	@Test
+	void missingWindowId_isRejected()
+	{
+		assertThatThrownBy(() -> execute(request().windowId(0).showInline(false).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("windowId is required");
+		assertThat(showInline(columnId)).isTrue();
+	}
+
+	@Test
+	void oneBadEntry_writesNothing()
+	{
+		assertThatThrownBy(() -> execute(
+				request().showInline(false).widgetSize("XXL").build(),
+				request().columnName("NoSuchColumn").showInline(false).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("NoSuchColumn");
+
+		assertThat(showInline(columnId)).isTrue();
+		assertThat(widgetSize(elementId)).isEqualTo("M");
+	}
+
+	@Test
+	void severalEntries_areAppliedInOrder()
+	{
+		final JsonCreateMasterdataResponse response = execute(
+				request().showInline(false).widgetSize("S").build(),
+				request().columnName("M_Warehouse_ID").showInline(false).widgetSize("XL").build());
+
+		assertThat(response.getInlineFilters()).containsExactly(
+				JsonSetupInlineFilterResponse.builder().previousShowInline(true).previousWidgetSize("M").build(),
+				JsonSetupInlineFilterResponse.builder().previousShowInline(true).previousWidgetSize("L").build());
+		assertThat(widgetSize(elementId)).isEqualTo("S");
+		assertThat(widgetSize(otherElementId)).isEqualTo("XL");
 	}
 
 	@Test
