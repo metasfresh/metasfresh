@@ -225,6 +225,24 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
+	@Override
+	public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, @NonNull final Collection<Integer> recordIds)
+	{
+		if (recordIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, adTableId)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, recordIds)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, Integer.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	/**
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
