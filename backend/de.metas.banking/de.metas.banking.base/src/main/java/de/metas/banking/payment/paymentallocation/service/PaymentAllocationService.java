@@ -44,6 +44,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWith
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -289,33 +290,44 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		if (isSoTrx)
 		{
-			// The Skonto rule is checked first; a customer without a payment bonus is matched by it only.
-			if (openAmountToMatch.equals(openAmtWithDiscount))
-			{
-				return true;
-			}
-
-			// a customer with a payment bonus contract may also pay "open - bonus" or "open - Skonto - bonus"
-			final Amount bonusGrossAmt = paymentBonusOnPaymentService
-					.computeDeductionGrossAmount(true, invoiceId, () -> moneyService.getCurrencyIdByCurrencyCode(openAmountToMatch.getCurrencyCode()))
-					.map(gross -> gross.toAmount(moneyService::getCurrencyCodeByCurrencyId))
-					.orElse(null);
-			if (bonusGrossAmt == null)
-			{
-				return false;
-			}
-
-			return PaymentBonusAmountMatcher.match(
-							invoiceToAllocate.getOpenAmountConverted(),
-							invoiceToAllocate.getDiscountAmountConverted(),
-							bonusGrossAmt,
-							openAmountToMatch,
-							true)
-					.isPresent();
+			// the statement amount is matched as it is: only an amount coming in can match
+			return matchDeductions(invoiceToAllocate, openAmountToMatch, PaymentDirection.ofInboundPaymentFlag(openAmountToMatch.signum() >= 0)).isPresent();
 		}
 		else
 		{
 			return openAmountToMatch.abs().equals(openAmtWithDiscount);
 		}
+	}
+
+	/**
+	 * Decides which deductions explain that {@code paidAmt} is lower than the open amount of the invoice: Skonto, the payment bonus, or both; see {@link PaymentBonusAmountMatcher}.
+	 * The payment bonus is only deducted from an inbound payment for a sales invoice, in the currency of the bonus.
+	 * It is looked up only if the Skonto rule alone does not match, so an amount that the Skonto rule matches costs no lookup.
+	 *
+	 * @param paidAmt the paid amount, positive, in the currency of the invoice's converted amounts
+	 * @return the matched deductions, or empty if the paid amount matches none of the rules
+	 */
+	public Optional<MatchedDeductions> matchDeductions(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final Amount paidAmt,
+			@NonNull final PaymentDirection paymentDirection)
+	{
+		final Amount openAmt = invoiceToAllocate.getOpenAmountConverted();
+		final Amount discountAmt = invoiceToAllocate.getDiscountAmountConverted();
+
+		final Optional<MatchedDeductions> skontoOnly = PaymentBonusAmountMatcher.match(openAmt, discountAmt, null, paidAmt, false);
+		final InvoiceId invoiceId = invoiceToAllocate.getInvoiceId();
+		final boolean bonusAllowed = invoiceId != null && paymentDirection.isInboundPayment() && invoiceToAllocate.getDocBaseType().isSales();
+		if (skontoOnly.isPresent() || !bonusAllowed)
+		{
+			return skontoOnly;
+		}
+
+		final Amount bonusGrossAmt = paymentBonusOnPaymentService
+				.computeDeduction(invoiceId, moneyService.getCurrencyIdByCurrencyCode(paidAmt.getCurrencyCode()))
+				.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+				.orElse(null);
+
+		return PaymentBonusAmountMatcher.match(openAmt, discountAmt, bonusGrossAmt, paidAmt, true);
 	}
 }

@@ -120,8 +120,7 @@ public class BankStatementDocumentHandlerTest
 		final BankStatementPaymentBL bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()),
-				PaymentBonusOnPaymentService.newInstanceForUnitTesting());
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()));
 
 		final BankStatementDocumentHandlerRequiredServicesFacade servicesFacade = new BankStatementDocumentHandlerRequiredServicesFacade(
 				bankStatementPaymentBL,

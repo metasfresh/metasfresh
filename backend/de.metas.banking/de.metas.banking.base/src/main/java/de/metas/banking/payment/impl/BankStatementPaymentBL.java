@@ -37,13 +37,10 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
-import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -84,7 +81,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	@NonNull private final IBankStatementBL bankStatementBL;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final PaymentAllocationService paymentAllocationService;
-	@NonNull private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
@@ -214,24 +210,15 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			
 			if (invoiceToAllocate != null)
 			{
-				// Skonto, or the payment bonus, or both: the one that the paid amount matches.
-				// Like the CAMT matching, the payment bonus is only for money coming in for a sales invoice, never for a refund.
-				final boolean bonusAllowed = inboundPayment && invoiceToAllocate.getDocBaseType().isSales();
-				final Amount bonusGrossAmt = paymentBonusOnPaymentService
-						.computeDeductionGrossAmount(bonusAllowed, invoiceId, payAmount::getCurrencyId)
-						.map(gross -> gross.toAmount(moneyService::getCurrencyCodeByCurrencyId))
-						.orElse(null);
-
-				PaymentBonusAmountMatcher.match(
-						invoiceToAllocate.getOpenAmountConverted(),
-						invoiceToAllocate.getDiscountAmountConverted(),
-						bonusGrossAmt,
-						payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
-						bonusAllowed)
-					.ifPresent(matched -> {
-						paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
-						paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
-					});
+				// Skonto, or the payment bonus, or both: the one that the paid amount matches
+				paymentAllocationService.matchDeductions(
+								invoiceToAllocate,
+								payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
+								PaymentDirection.ofInboundPaymentFlag(inboundPayment))
+						.ifPresent(matched -> {
+							paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
+							paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
+						});
 			}
 
 			paymentBuilder.invoiceId(invoiceId);

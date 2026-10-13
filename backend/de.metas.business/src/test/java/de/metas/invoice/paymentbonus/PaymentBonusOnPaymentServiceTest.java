@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -104,43 +103,6 @@ class PaymentBonusOnPaymentServiceTest
 		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService());
 
 		assertThat(service.computeDeduction(INVOICE_ID, CHF)).isEmpty();
-	}
-
-	@Test
-	void computeDeductionGrossAmount_notSalesInvoice_emptyAndCurrencyNotLookedUp()
-	{
-		final PaymentBonusDeduction deduction = deduction();
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService());
-		final AtomicInteger currencyLookups = new AtomicInteger();
-
-		assertThat(service.computeDeductionGrossAmount(false, INVOICE_ID, () -> {
-			currencyLookups.incrementAndGet();
-			return EUR;
-		})).isEmpty();
-		assertThat(currencyLookups).hasValue(0);
-	}
-
-	@Test
-	void computeDeductionGrossAmount_salesInvoiceWithoutBonus_emptyAndCurrencyNotLookedUp()
-	{
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.empty()), new PaymentBonusCreditMemoService());
-		final AtomicInteger currencyLookups = new AtomicInteger();
-
-		assertThat(service.computeDeductionGrossAmount(true, INVOICE_ID, () -> {
-			currencyLookups.incrementAndGet();
-			return EUR;
-		})).isEmpty();
-		assertThat(currencyLookups).hasValue(0);
-	}
-
-	@Test
-	void computeDeductionGrossAmount_salesInvoiceWithBonusInTheCurrency_returnsGrossAmount()
-	{
-		final PaymentBonusDeduction deduction = deduction();
-		final PaymentBonusOnPaymentService service = new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService());
-
-		assertThat(service.computeDeductionGrossAmount(true, INVOICE_ID, () -> EUR)).contains(deduction.getGrossAmount());
-		assertThat(service.computeDeductionGrossAmount(true, INVOICE_ID, () -> CHF)).isEmpty();
 	}
 
 	/**

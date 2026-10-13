@@ -53,6 +53,7 @@ import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -62,6 +63,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -118,6 +120,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
@@ -824,10 +827,15 @@ public class PaymentAllocationServiceTest
 					.build();
 		}
 
+		private final AtomicInteger bonusLookups = new AtomicInteger();
+
 		private PaymentAllocationService serviceWithBonus(final boolean withBonus)
 		{
 			final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-			final PaymentBonusDeductionProvider provider = invoiceId -> withBonus ? Optional.of(deduction()) : Optional.empty();
+			final PaymentBonusDeductionProvider provider = invoiceId -> {
+				bonusLookups.incrementAndGet();
+				return withBonus ? Optional.of(deduction()) : Optional.empty();
+			};
 			return new PaymentAllocationService(
 					moneyService,
 					new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService),
@@ -837,6 +845,11 @@ public class PaymentAllocationServiceTest
 
 		// open 166.50, Skonto 3.33, bonus 2.78
 		private InvoiceToAllocate invoice(final CurrencyCode currencyCode)
+		{
+			return invoice(currencyCode, CustomerInvoice);
+		}
+
+		private InvoiceToAllocate invoice(final CurrencyCode currencyCode, final InvoiceDocBaseType docBaseType)
 		{
 			return InvoiceToAllocate.builder()
 					.invoiceId(InvoiceId.ofRepoId(1111))
@@ -853,7 +866,7 @@ public class PaymentAllocationServiceTest
 					.openAmountConverted(Amount.of("166.50", currencyCode))
 					.discountAmountConverted(Amount.of("3.33", currencyCode))
 					.docTypeId(DocTypeId.ofRepoId(1))
-					.docBaseType(CustomerInvoice)
+					.docBaseType(docBaseType)
 					.build();
 		}
 
@@ -879,6 +892,39 @@ public class PaymentAllocationServiceTest
 		void withoutBonus_openMinusBonusDoesNotMatch()
 		{
 			assertThat(serviceWithBonus(false).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).as("open - bonus without a bonus contract").isFalse();
+		}
+
+		@Test
+		void matchDeductions_openMinusSkontoMinusBonus_both()
+		{
+			final MatchedDeductions matched = serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("160.39", CurrencyCode.EUR), PaymentDirection.INBOUND).orElse(null);
+			assertThat(matched).isNotNull();
+			assertThat(matched.getDiscountAmt()).isEqualTo(Amount.of("3.33", CurrencyCode.EUR));
+			assertThat(matched.getBonusAmt()).isEqualTo(Amount.of("2.78", CurrencyCode.EUR));
+		}
+
+		@Test
+		void matchDeductions_skontoMatches_bonusIsNotLookedUp()
+		{
+			final MatchedDeductions matched = serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("163.17", CurrencyCode.EUR), PaymentDirection.INBOUND).orElse(null);
+			assertThat(matched).isNotNull();
+			assertThat(matched.getBonusAmt().signum()).isZero();
+			assertThat(bonusLookups).hasValue(0);
+		}
+
+		@Test
+		void matchDeductions_outboundPayment_noBonus_andBonusIsNotLookedUp()
+		{
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.OUTBOUND)).isEmpty();
+			assertThat(bonusLookups).hasValue(0);
+		}
+
+		@Test
+		void matchDeductions_purchaseInvoice_noBonus_andBonusIsNotLookedUp()
+		{
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR, VendorInvoice), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.OUTBOUND)).isEmpty();
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR, VendorInvoice), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.INBOUND)).isEmpty();
+			assertThat(bonusLookups).hasValue(0);
 		}
 
 		@Test

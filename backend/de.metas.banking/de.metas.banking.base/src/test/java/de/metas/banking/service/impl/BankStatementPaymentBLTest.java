@@ -166,8 +166,7 @@ class BankStatementPaymentBLTest
 		bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()),
-				PaymentBonusOnPaymentService.newInstanceForUnitTesting());
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
@@ -778,7 +777,7 @@ class BankStatementPaymentBLTest
 				}
 			};
 
-			return new BankStatementPaymentBL(bankStatementBL, moneyService, paymentAllocationService, paymentBonusOnPaymentService);
+			return new BankStatementPaymentBL(bankStatementBL, moneyService, paymentAllocationService);
 		}
 
 		private PaymentBonusDeduction deduction(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
