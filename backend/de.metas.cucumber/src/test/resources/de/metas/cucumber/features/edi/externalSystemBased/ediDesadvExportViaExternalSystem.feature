@@ -65,9 +65,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_1 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -133,9 +134,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_2 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_2      | ol_2_1                    | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_2      | ol_2_1                    | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -229,12 +231,13 @@ Feature: EDI DESADV export via External System
       | dB_140                   | customer1                | oB_140                | P                |
 
     # Both shipment schedules must be ready before batching into one M_InOut
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ssA_140    | olA_140                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ssA_140    | olA_140                   | N             | 10           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ssB_140    | olB_140                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ssB_140    | olB_140                   | N             | 10           |
 
     # Batch-generate ONE shipment covering both schedules (the aggregated M_InOut).
     # The legacy interceptor sets M_InOut.C_Order_ID = null because the lines come from 2 orders.
@@ -326,12 +329,13 @@ Feature: EDI DESADV export via External System
       | d_repl_150               | customer1                | o_repl_150            | P                |
 
     # ── Generate one shipment per shipment schedule ───────────────────────────
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ss_ext_150  | ol_ext_150                | N             |
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_ext_150  | ol_ext_150                | N             | 10           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ss_repl_150  | ol_repl_150               | N             |
+      | Identifier   | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_repl_150  | ol_repl_150               | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
