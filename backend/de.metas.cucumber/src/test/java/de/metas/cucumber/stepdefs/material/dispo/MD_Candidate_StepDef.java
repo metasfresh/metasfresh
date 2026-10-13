@@ -502,7 +502,21 @@ public class MD_Candidate_StepDef
 			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
-		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		final ImmutableList<MaterialDispoDataItem> items;
+		try
+		{
+			items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		}
+		catch (final RuntimeException ex)
+		{
+			// getAllBy() loads the candidates first and then, with separate statements, each candidate's STOCK candidate and business-case detail.
+			// A material event that commits in between (e.g. a StockEstimateDeletedEvent deleting a candidate together with its STOCK candidate
+			// and its MD_Candidate_StockChange_Detail) makes this read see a candidate whose related records are already gone
+			// ("No stock candidate found for ..." / "businessCase and businessCaseDetail need to be both null or both not-null").
+			// That is a torn read of a write in flight, not a settled state => retry; if it persists, the timeout reports this message.
+			logger.warn("Failed loading MD_Candidates for {}; will retry", candidatesQuery, ex);
+			return ProviderResult.resultWasNotFound(ex);
+		}
 		return newValidator().findValidItem(items, row, candidateIdsToExclude);
 	}
 
