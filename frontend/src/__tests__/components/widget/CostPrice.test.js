@@ -153,7 +153,7 @@ describe('CostPrice component', () => {
     });
   });
 
-  describe('handleChange — Swiss-format strip', () => {
+  describe('handleChange — Swiss-format strip + decimal comma', () => {
     // Helper: shallow-mount, invoke handleChange, return the value the
     // parent's onChange callback was invoked with.
     const valueFlowingUpstream = (typedOrPasted) => {
@@ -230,6 +230,18 @@ describe('CostPrice component', () => {
 
       it('drops multiple thousands separators', () => {
         expect(valueFlowingUpstream('1.200.000,50')).toBe('1200000.50');
+      });
+
+      it('converts a lone comma (first keystroke)', () => {
+        expect(valueFlowingUpstream(',')).toBe('.');
+      });
+
+      it('converts "-0,5" (negative fraction)', () => {
+        expect(valueFlowingUpstream('-0,5')).toBe('-0.5');
+      });
+
+      it('reads a single comma as decimal even in an EN grouping like "1,500" (accepted DE/AT trade-off)', () => {
+        expect(valueFlowingUpstream('1,500')).toBe('1.500');
       });
     });
 
