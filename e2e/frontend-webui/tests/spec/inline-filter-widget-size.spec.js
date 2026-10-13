@@ -22,7 +22,7 @@
  */
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import { loginAsMetasfresh, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { Backend } from '../utils/Backend';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
@@ -46,6 +46,38 @@ const NAME_FILLER =
 
 const FILLER_PARTNERS_COUNT = 20; // plus probe, 46, 52 and 106 = 24 partners
 const TARGET_TEXT_LENGTHS = { medium: 46, p99: 52, long: 106 };
+
+// self-contained like the other specs
+async function loginAsMetasfresh(page) {
+  await page.goto('/logout', { waitUntil: 'load' });
+  await page.goto('/', { waitUntil: 'load' });
+
+  await page
+    .locator('.login-container')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  await page.locator('input[name="username"]').fill('metasfresh');
+  await page.locator('input[name="password"]').fill('metasfresh');
+  await page.locator('.login-container .btn-meta-success').click();
+
+  // Click through role-selection screen if it appears.
+  try {
+    const roleSubmitBtn = page.locator(
+      '.login-container .btn-meta-success:visible'
+    );
+    await roleSubmitBtn.waitFor({
+      state: 'visible',
+      timeout: FAST_ACTION_TIMEOUT,
+    });
+    await roleSubmitBtn.click();
+  } catch {
+    // No role selection needed.
+  }
+
+  await page
+    .locator('.dashboard')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
 
 async function setupInlineFilters() {
   await Backend.createMasterdata({

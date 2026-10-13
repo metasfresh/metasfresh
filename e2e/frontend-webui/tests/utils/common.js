@@ -80,37 +80,3 @@ export const expectErrorToast = async (title, func) =>
       // Error toast appeared, test passes
     }
   });
-
-/**
- * Log in as user metasfresh and click through the role selection if it appears.
- */
-export const loginAsMetasfresh = async (page) => {
-  await page.goto('/logout', { waitUntil: 'load' });
-  await page.goto('/', { waitUntil: 'load' });
-
-  await page
-    .locator('.login-container')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-  await page.locator('input[name="username"]').fill('metasfresh');
-  await page.locator('input[name="password"]').fill('metasfresh');
-  await page.locator('.login-container .btn-meta-success').click();
-
-  // Click through role-selection screen if it appears.
-  try {
-    const roleSubmitBtn = page.locator(
-      '.login-container .btn-meta-success:visible'
-    );
-    await roleSubmitBtn.waitFor({
-      state: 'visible',
-      timeout: FAST_ACTION_TIMEOUT,
-    });
-    await roleSubmitBtn.click();
-  } catch {
-    // No role selection needed.
-  }
-
-  await page
-    .locator('.dashboard')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-};
