@@ -68,8 +68,8 @@ public class C_CompensationGroup_ContractSettings_StepDef
 	 * </ul>
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_ContractSettings:
-	 *   | Identifier      | Name             | C_CompensationGroup_Schema_ID.Identifier | PassOn_InvoiceProcessingServiceCompany_ID |
-	 *   | contractSchema1 | contract compGrp | compGroupSchema                          | serviceCompanyConfig                      |
+	 *   | Identifier      | Name             | C_CompensationGroup_Schema_ID.Identifier | PassOn_InvoiceProcessingServiceCompany_ID.Identifier |
+	 *   | contractSchema1 | contract compGrp | compGroupSchema                          | serviceCompanyConfig                                 |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_CompensationGroup_ContractSettings:")
