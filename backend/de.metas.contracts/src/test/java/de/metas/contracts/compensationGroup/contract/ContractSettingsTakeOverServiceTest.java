@@ -658,7 +658,7 @@ class ContractSettingsTakeOverServiceTest
 		}
 	}
 
-	/** An active, doc-type-null fee assignment for {@code customerId}, valid before {@link #SO_DATE}. @return the configured service-fee product. */
+	/** An active, doc-type-null fee assignment for {@code customerId}, valid before {@link #SO_DATE}. @return the saved service-company config record. */
 	private I_InvoiceProcessingServiceCompany createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName)
 	{
 		return createFeeConfig(customerId, feePercent, feeProductName, SERVICE_COMPANY_ID, true);
