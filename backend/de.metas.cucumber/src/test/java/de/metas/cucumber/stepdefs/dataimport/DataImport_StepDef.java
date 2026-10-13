@@ -22,6 +22,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.Params;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
@@ -31,8 +32,11 @@ import org.compiere.model.X_C_DataImport;
 import org.compiere.util.DB;
 import org.springframework.core.io.ByteArrayResource;
 
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +54,9 @@ public class DataImport_StepDef
 	@NonNull private final AD_ImpFormat_StepDefData impFormatTable;
 	@NonNull private final C_DataImport_StepDefData dataImportTable;
 	@NonNull private final TestContext restTestContext;
+
+	/** The parameters of the import process for the next data import of this scenario; see {@link #the_next_data_import_has_the_parameters(DataTable)}. */
+	@Nullable private Params nextImportParameters;
 
 	/**
 	 * Creates an AD_ImpFormat record (comma-separated, UTF-8) and its column rows.
@@ -177,6 +184,27 @@ public class DataImport_StepDef
 	 * The content is parsed using the AD_ImpFormat (CSV, TSV, etc.), loaded into the import staging table,
 	 * validated, and then processed into target tables — all synchronously.
 	 */
+	/**
+	 * Gives the next data import of the scenario these parameters of its import process, e.g. the {@code Name} of the bank statement that the bank statement import creates.
+	 * <p>
+	 * <b>Name</b> — the name of the parameter<br>
+	 * <b>Value</b> — its value; {@code @name@} tokens are replaced by the REST context variable of that name
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And the next data import has the parameters
+	 *   | Name | Value                 |
+	 *   | Name | O'Brien @customerName@ |
+	 * </pre>
+	 */
+	@And("the next data import has the parameters")
+	public void the_next_data_import_has_the_parameters(@NonNull final DataTable dataTable)
+	{
+		final Map<String, Object> parameters = new HashMap<>();
+		DataTableRows.of(dataTable).forEach(row -> parameters.put(row.getAsString("Name"), restTestContext.resolveVariables(row.getAsString("Value"))));
+		nextImportParameters = Params.ofMap(parameters);
+	}
+
 	@When("the following CSV is imported via data import config {string}:")
 	@When("the following data is imported via data import config {string}:")
 	public void the_following_CSV_is_imported_via_data_import_config(
@@ -219,6 +247,8 @@ public class DataImport_StepDef
 		final DataImportConfigId configId = DataImportConfigId.ofRepoId(config.getC_DataImport_ID());
 
 		final ByteArrayResource csvResource = new ByteArrayResource(csvContent.getBytes(StandardCharsets.UTF_8));
+		final Params additionalParameters = nextImportParameters != null ? nextImportParameters : Params.EMPTY;
+		nextImportParameters = null;
 
 		final DataImportResult result = dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(csvResource)
@@ -229,6 +259,7 @@ public class DataImport_StepDef
 				.completeDocuments(false)
 				.processImportRecordsSynchronously(true)
 				.stopOnFirstError(true)
+				.additionalParameters(additionalParameters)
 				.build());
 
 		assertThat(result.hasErrors())

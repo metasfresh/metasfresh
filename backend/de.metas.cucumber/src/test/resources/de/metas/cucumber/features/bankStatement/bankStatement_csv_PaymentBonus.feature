@@ -6,7 +6,6 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
 ## - The CSV bank statement import creates a bank statement line for each CSV line; the payment bonus paths build on it.
 ## - Each scenario has its own customer (Background), and its invoice has a document number of its own with the customer's ID as suffix (the CSV references the invoice by that number),
 ##   so a run that fails before the invoice is paid cannot make the lookup of the next run ambiguous.
-## - The CSV Name column is concatenated into SQL by BankStatementImportTableSqlUpdater, so it must not contain an apostrophe.
 ## - The organization's EUR account is the one shared with the camt features (found by its IBAN): a second active EUR account would break payment_bonus_on_payment.feature.
 
   Background:
@@ -384,3 +383,24 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | bsl_1                             | 163.72     | 163.72      | null                        | plainBP                      | false         |
     And the invoice identified by invoice is reversed
 
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC7
+  Scenario: CSV bank statement — the statement name given to the import (not in the CSV) may contain an apostrophe
+    Given the next data import has the parameters
+      | Name | Value                  |
+      | Name | O'Brien @customerName@ |
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,50.00,50.00,DE89370400440532013000,CH4189144993834976921,@plainName@,,,,EUR,
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name                   |
+      | bs_1                          | O'Brien @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 50.00      | 50.00       | null                        | plainBP                      | false         |
