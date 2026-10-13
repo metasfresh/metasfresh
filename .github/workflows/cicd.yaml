@@ -1466,11 +1466,8 @@ jobs:
           dbqualifier: preloaded
         run: |
           timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app webapi webui > infra.log 2>&1 || true
-      - name: commit post-test db image
-        run: |
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation: tear the stack down
-      # before report generation, the image push and the artifact uploads.
+      # before the artifact uploads.
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
@@ -1488,17 +1485,6 @@ jobs:
           path: docker-builds/e2e-tests/allure-results/
           if-no-files-found: ignore
           retention-days: 1
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-        uses: nick-fields/retry@v4
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-      - name: produce-summary
-        run: |
-          echo '#### images' >> "$GITHUB_STEP_SUMMARY"
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> "$GITHUB_STEP_SUMMARY"
       - name: assert success
         working-directory: docker-builds/e2e-tests/
         run: |

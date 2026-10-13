@@ -5,7 +5,7 @@
 #
 # Required env vars (set by CI; for local usage export them or put them into a local, git-ignored .env):
 #   mfregistry=metasfresh
-#   mfversion=<image tag, e.g. 5.175-inner_silence_uat.123>
+#   mfversion=<image tag, e.g. 5.176-inner-silence-uat.123>
 #   dbqualifier=preloaded
 #
 # The db is a THROWAWAY container started from the preloaded DB image: the tests write data into it,
