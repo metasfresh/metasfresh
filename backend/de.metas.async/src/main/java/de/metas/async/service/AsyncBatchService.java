@@ -116,15 +116,24 @@ public class AsyncBatchService
 	 */
 	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> workPackageEnqueuer, @NonNull final AsyncBatchId asyncBatchId)
 	{
+		// dev-note: remove only our own registration, and exactly once.
+		// Removal is keyed by asyncBatchId. That is safe only because, from a successful observeOn until our own removal,
+		// we hold the per-async-batch lock (see AsyncBatchObserver.lockBatch), so no other caller can register on this id meanwhile.
+		// Once our registration is removed, that lock is released and another caller may register; removing again by id would then
+		// remove that other caller's registration and release its lock.
+		// So: observeOn stays outside the try - if it fails, we registered nothing and must remove nothing;
+		// and waitToBeProcessed already removes our registration itself, also when it fails.
+		asyncBatchObserver.observeOn(asyncBatchId);
+
 		final T result;
+		boolean registrationRemovedByWait = false;
 		try
 		{
-			asyncBatchObserver.observeOn(asyncBatchId);
-
 			result = trxManager.callInNewTrx(workPackageEnqueuer::get); // let the workPackageEnqueuer enqueue its workpackages
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
+				registrationRemovedByWait = true;
 				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
 			else
@@ -134,7 +143,10 @@ public class AsyncBatchService
 		}
 		finally
 		{
-			asyncBatchObserver.removeObserver(asyncBatchId);
+			if (!registrationRemovedByWait)
+			{
+				asyncBatchObserver.removeObserver(asyncBatchId);
+			}
 		}
 
 		return result;
