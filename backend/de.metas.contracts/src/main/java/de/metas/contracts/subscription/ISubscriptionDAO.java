@@ -109,12 +109,18 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * Same selection as {@link #retrievePlannedAndDelayedDeliveries(Properties, Timestamp, String)}, but only for entries
 	 * of terms whose product is of type Item (the product type is the only term-related filter; the term's {@code IsActive} is not considered),
 	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}. The query is a guaranteed iterator that reads {@code pageSize} records per page.
+	 * <p>
+	 * Only records of {@code ctx}'s client are selected. The returned query is already configured (guaranteed iterator, buffer size = {@code pageSize}); callers must not change its options.
 	 */
 	IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(Properties ctx, Timestamp date, String trxName, int pageSize);
 
 	/**
 	 * Streams the result of {@link #createPlannedAndDelayedDeliveriesQuery(Properties, Timestamp, String, int)} page by page.
 	 * Never collect the returned stream into a list: the point is to keep only one page in memory.
+	 * <p>
+	 * Only records of {@code ctx}'s client are selected. The pages are loaded lazily, in {@code trxName}, while the stream is consumed;
+	 * so the caller must consume the stream completely inside that transaction (not after it ended).
+	 * The stream holds no resource of its own (no {@code onClose} handler), so closing it is not required.
 	 */
 	Stream<I_C_SubscriptionProgress> streamPlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
 

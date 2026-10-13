@@ -19,12 +19,12 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.util.Services;
-import de.metas.common.util.time.SystemTime;
 
 public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 {
@@ -50,11 +50,17 @@ public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 
 	private I_C_SubscriptionProgress entry(final I_C_Flatrate_Term term, final String status)
 	{
+		return entry(term, status, -1, 0);
+	}
+
+	private I_C_SubscriptionProgress entry(final I_C_Flatrate_Term term, final String status, final int eventDateDaysFromNow, final int seqNo)
+	{
 		final I_C_SubscriptionProgress sp = newInstance(I_C_SubscriptionProgress.class);
 		sp.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 		sp.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		sp.setStatus(status);
-		sp.setEventDate(TimeUtil.addDays(now, -1));
+		sp.setEventDate(TimeUtil.addDays(now, eventDateDaysFromNow));
+		sp.setSeqNo(seqNo);
 		saveRecord(sp);
 		return sp;
 	}
@@ -94,5 +100,24 @@ public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 
 		assertThat(query.<Boolean> getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
 		assertThat(query.<Integer> getOption(IQuery.OPTION_IteratorBufferSize)).isEqualTo(7);
+	}
+
+	@Test // multi-row streaming over several pages, in ORDER BY EventDate, C_Flatrate_Term_ID, SeqNo
+	public void stream_returnsAllRowsInQueryOrder()
+	{
+		final I_C_Flatrate_Term termA = term(X_M_Product.PRODUCTTYPE_Item, true);
+		final I_C_Flatrate_Term termB = term(X_M_Product.PRODUCTTYPE_Item, true);
+
+		// inserted out of order
+		final I_C_SubscriptionProgress latestB = entry(termB, X_C_SubscriptionProgress.STATUS_Planned, -1, 1);
+		final I_C_SubscriptionProgress midASeq2 = entry(termA, X_C_SubscriptionProgress.STATUS_Delayed, -2, 2);
+		final I_C_SubscriptionProgress oldest = entry(termB, X_C_SubscriptionProgress.STATUS_Planned, -3, 1);
+		final I_C_SubscriptionProgress midASeq1 = entry(termA, X_C_SubscriptionProgress.STATUS_Planned, -2, 1);
+
+		assertThat(streamIds()).containsExactly(
+				oldest.getC_SubscriptionProgress_ID(),
+				midASeq1.getC_SubscriptionProgress_ID(),
+				midASeq2.getC_SubscriptionProgress_ID(),
+				latestB.getC_SubscriptionProgress_ID());
 	}
 }
