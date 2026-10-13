@@ -12,6 +12,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerDirectDebitMarshaler_Pain_008_003_02;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03;
 import de.metas.util.FileUtil;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +20,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.MimeType;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -28,9 +30,9 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
 
 	@Override
-	public I_SEPA_Export createSEPAExportFromPaySelection(final I_C_PaySelection from)
+	public I_SEPA_Export createSEPAExportFromPaySelection(@NonNull final I_C_PaySelection from, @Nullable final SEPAProtocol chosenCreditTransferProtocol)
 	{
-		return new CreateSEPAExportFromPaySelectionCommand(from).run();
+		return new CreateSEPAExportFromPaySelectionCommand(from, chosenCreditTransferProtocol).run();
 	}
 
 	@Override
@@ -76,6 +78,10 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		{
 			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
 			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
+		}
+		else if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.equals(protocol))
+		{
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03();
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{

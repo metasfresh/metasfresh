@@ -8,6 +8,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -45,6 +46,10 @@ public class C_PaySelection_SEPA_XmlExport
 	private final static String REFERENCE_AS_END_TO_END_ID = "ReferenceAsEndToEndId";
 	@Param(parameterName = REFERENCE_AS_END_TO_END_ID)
 	private boolean referenceAsEndToEndId;
+
+	private final static String PARAM_SEPA_PROTOCOL = "SEPA_Protocol";
+	@Param(parameterName = PARAM_SEPA_PROTOCOL)
+	private String sepaProtocolCode;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -86,7 +91,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, sepaProtocolCode != null ? SEPAProtocol.ofCode(sepaProtocolCode) : null);
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)

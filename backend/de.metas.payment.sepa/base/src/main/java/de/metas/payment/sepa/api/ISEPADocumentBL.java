@@ -27,11 +27,15 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_PaySelection;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
-	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from);
+	/**
+	 * @param chosenCreditTransferProtocol the credit transfer protocol to use; {@code null} means the default. Ignored for direct debit pay selections.
+	 */
+	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from, @Nullable SEPAProtocol chosenCreditTransferProtocol);
 
 	Date getDueDate(I_SEPA_Export_Line line);
 
