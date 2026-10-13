@@ -63,9 +63,11 @@ public interface IShipmentSchedulePA extends ISingletonService
 	List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(TableRecordReference recordRef);
 
 	/**
+	 * @param recordIds non-null elements; an empty collection yields an empty result without running a query.
+	 *                  The IDs are inlined into one {@code IN} clause, so callers shall pass bounded batches (e.g. at most 500).
 	 * @return those of the given record IDs (of the given table) that have at least one active, unprocessed shipment schedule. One query for all IDs.
 	 */
-	ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(int adTableId, Collection<Integer> recordIds);
+	ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(int adTableId, @NonNull Collection<Integer> recordIds);
 
 	Stream<I_M_ShipmentSchedule> streamUnprocessedByPartnerIdAndAllowConsolidateInOut(BPartnerId bpartnerId, boolean allowConsolidateInOut);
 
