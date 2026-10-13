@@ -2599,10 +2599,20 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    # the payment-service company and its configuration; the vendor's settings pass this company's fee on
+    And metasfresh contains C_BPartners without locations:
+      | Identifier            | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
+      | paymentServiceCompany | N          | Y        | contractPS                    |
+    And load C_DocType:
+      | C_DocType_ID.Identifier | Name                         |
+      | serviceFeeDocType       | Rechnung für Servicegebühren |
+    And metasfresh contains InvoiceProcessingServiceCompany
+      | Identifier           | ServiceCompany_BPartner_ID | ServiceFee_Product_ID | ServiceInvoice_DocType_ID | ValidFrom  |
+      | serviceCompanyConfig | paymentServiceCompany      | serviceFeeProduct     | serviceFeeDocType         | 2026-01-01 |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
-      | customerSettings | Customer settings | customerSchema                           |
-      | vendorSettings   | Vendor settings   | vendorSchema                             |
+      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier | PassOn_InvoiceProcessingServiceCompany_ID |
+      | customerSettings | Customer settings | customerSchema                           | null                                      |
+      | vendorSettings   | Vendor settings   | vendorSchema                             | serviceCompanyConfig                      |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | customerSettings                                   | docTypeSalesOrder       |
@@ -2628,16 +2638,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2% payment-service fee (no doc type), labelled by the service-fee product
-    And metasfresh contains C_BPartners without locations:
-      | Identifier            | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
-      | paymentServiceCompany | N          | Y        | contractPS                    |
-    And load C_DocType:
-      | C_DocType_ID.Identifier | Name                         |
-      | serviceFeeDocType       | Rechnung für Servicegebühren |
-    And metasfresh contains InvoiceProcessingServiceCompany
-      | Identifier           | ServiceCompany_BPartner_ID | ServiceFee_Product_ID | ServiceInvoice_DocType_ID | ValidFrom  |
-      | serviceCompanyConfig | paymentServiceCompany      | serviceFeeProduct     | serviceFeeDocType         | 2026-01-01 |
+    # the head office is assigned a 2% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2                         |
@@ -2737,9 +2738,19 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    # the payment-service company and its configuration; the vendor's settings pass this company's fee on
+    And metasfresh contains C_BPartners without locations:
+      | Identifier        | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
+      | feeServiceCompany | N          | Y        | contractPS                    |
+    And load C_DocType:
+      | C_DocType_ID.Identifier | Name                         |
+      | serviceFeeDocType       | Rechnung für Servicegebühren |
+    And metasfresh contains InvoiceProcessingServiceCompany
+      | Identifier           | ServiceCompany_BPartner_ID | ServiceFee_Product_ID | ServiceInvoice_DocType_ID | ValidFrom  |
+      | serviceCompanyConfig | feeServiceCompany          | serviceFeeProduct     | serviceFeeDocType         | 2026-01-01 |
     And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
+      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier | PassOn_InvoiceProcessingServiceCompany_ID |
+      | vendorSettings | Vendor settings | vendorSchema                             | serviceCompanyConfig                      |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | vendorSettings                                     | docTypePurchaseOrder    |
@@ -2761,16 +2772,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2% payment-service fee (no doc type), labelled by the service-fee product
-    And metasfresh contains C_BPartners without locations:
-      | Identifier        | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
-      | feeServiceCompany | N          | Y        | contractPS                    |
-    And load C_DocType:
-      | C_DocType_ID.Identifier | Name                         |
-      | serviceFeeDocType       | Rechnung für Servicegebühren |
-    And metasfresh contains InvoiceProcessingServiceCompany
-      | Identifier           | ServiceCompany_BPartner_ID | ServiceFee_Product_ID | ServiceInvoice_DocType_ID | ValidFrom  |
-      | serviceCompanyConfig | feeServiceCompany          | serviceFeeProduct     | serviceFeeDocType         | 2026-01-01 |
+    # the head office is assigned a 2% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2                         |
