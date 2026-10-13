@@ -2,7 +2,6 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -16,7 +15,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_InvoiceProcessingServiceCompany;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -52,7 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * {@code Repository Tables:} line for them; {@code C_Flatrate_Conditions} is only read here, via
  * its plain {@code C_CompensationGroup_ContractSettings_ID} column).
  * <p>
- * Loads a {@code C_CompensationGroup_ContractSettings} record and resolves the settings id a
+ * Loads a {@code C_CompensationGroup_ContractSettings} record, including the id of its pass-on
+ * {@code InvoiceProcessingServiceCompany} (not loaded here), and resolves the settings id a
  * {@code C_Flatrate_Conditions} record points to.
  */
 @Repository
@@ -63,7 +62,6 @@ public class ContractCompensationGroupSettingsRepository
 	private final CCache<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings> settingsById = CCache.<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings>builder()
 			.tableName(I_C_CompensationGroup_ContractSettings.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_DocType.Table_Name)
-			.additionalTableNameToResetFor(I_InvoiceProcessingServiceCompany.Table_Name)
 			.initialCapacity(10)
 			.maximumSize(100)
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -95,21 +93,8 @@ public class ContractCompensationGroupSettingsRepository
 				.settingsId(settingsId)
 				.schemaId(schemaId)
 				.docTypeIds(docTypeIds)
-				.passOnServiceCompanyBPartnerId(retrievePassOnServiceCompanyBPartnerIdOrNull(settingsRecord))
+				.passOnServiceCompanyConfigId(InvoiceProcessingServiceCompanyConfigId.ofRepoIdOrNull(settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID()))
 				.build();
-	}
-
-	/** @return the service company of the referenced {@code InvoiceProcessingServiceCompany} record; {@code null} when the reference is unset */
-	@Nullable
-	private static BPartnerId retrievePassOnServiceCompanyBPartnerIdOrNull(@NonNull final I_C_CompensationGroup_ContractSettings settingsRecord)
-	{
-		final InvoiceProcessingServiceCompanyConfigId passOnConfigId = InvoiceProcessingServiceCompanyConfigId.ofRepoIdOrNull(settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID());
-		if (passOnConfigId == null)
-		{
-			return null;
-		}
-		final I_InvoiceProcessingServiceCompany passOnConfig = load(passOnConfigId, I_InvoiceProcessingServiceCompany.class);
-		return BPartnerId.ofRepoId(passOnConfig.getServiceCompany_BPartner_ID());
 	}
 
 	/** @return the settings id that {@code conditionsId}'s {@code C_CompensationGroup_ContractSettings_ID} points to, or {@code null} when unset */

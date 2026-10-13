@@ -9,6 +9,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.util.Services;
@@ -116,33 +117,21 @@ class ContractCompensationGroupSettingsRepositoryTest
 	}
 
 	@Test
-	void getBySettingsId_passOnReferenceSet_returnsTheServiceCompanyOfTheReferencedRecord()
+	void getBySettingsId_passOnReferenceSet_returnsTheReferencedConfigId()
 	{
 		final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
 		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
 
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(111));
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId())
+				.isEqualTo(InvoiceProcessingServiceCompanyConfigId.ofRepoId(passOnConfig.getInvoiceProcessingServiceCompany_ID()));
 	}
 
 	@Test
-	void getBySettingsId_passOnReferenceUnset_returnsNoServiceCompany()
+	void getBySettingsId_passOnReferenceUnset_returnsNoConfigId()
 	{
 		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema());
 
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isNull();
-	}
-
-	@Test
-	void getBySettingsId_savingTheReferencedServiceCompanyRecord_isSeenByTheNextRead()
-	{
-		final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
-		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(111));
-
-		passOnConfig.setServiceCompany_BPartner_ID(112);
-		saveRecord(passOnConfig);
-
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(112));
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId()).isNull();
 	}
 
 	private static I_InvoiceProcessingServiceCompany createInvoiceProcessingServiceCompany(final BPartnerId serviceCompanyId)

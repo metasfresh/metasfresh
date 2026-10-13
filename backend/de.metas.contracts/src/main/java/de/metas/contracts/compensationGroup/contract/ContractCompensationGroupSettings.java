@@ -1,8 +1,8 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,8 +45,8 @@ public class ContractCompensationGroupSettings
 	@NonNull ImmutableSet<DocTypeId> docTypeIds;
 
 	/**
-	 * The service company whose payment-service fee the vendor passes on: the {@code ServiceCompany_BPartner_ID} of the
-	 * referenced {@code InvoiceProcessingServiceCompany} record. {@code null} = no fee is passed on.
+	 * The {@code InvoiceProcessingServiceCompany} record whose service company's payment-service fee the vendor passes on.
+	 * {@code null} = no fee is passed on.
 	 */
-	@Nullable BPartnerId passOnServiceCompanyBPartnerId;
+	@Nullable InvoiceProcessingServiceCompanyConfigId passOnServiceCompanyConfigId;
 }

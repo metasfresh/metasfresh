@@ -2599,7 +2599,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    # the payment-service company and its configuration; the vendor's settings pass this company's fee on
     And metasfresh contains C_BPartners without locations:
       | Identifier            | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | paymentServiceCompany | N          | Y        | contractPS                    |
@@ -2638,7 +2637,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2                         |
@@ -2738,7 +2736,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    # the payment-service company and its configuration; the vendor's settings pass this company's fee on
     And metasfresh contains C_BPartners without locations:
       | Identifier        | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | feeServiceCompany | N          | Y        | contractPS                    |
@@ -2772,7 +2769,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2                         |
@@ -2874,7 +2870,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 1.8                       | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3.6                       | goodsCategory                        |
-    # the payment-service companies and their configurations
     And metasfresh contains C_BPartners without locations:
       | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | serviceCompany20 | N          | Y        | contractPS                    |
@@ -2913,7 +2908,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2.15% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2.15                      |
@@ -2922,7 +2916,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
 
-    # SO: 3 goods lines + 2 Pfand lines
     When metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
       | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
@@ -2941,7 +2934,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 1.8                             | -38.79 | customerTerm                      |
     And the order identified by orderDropship has 6 order lines
 
-    # drop-ship PO for VendorDropship
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
@@ -3021,7 +3013,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 1.8                       | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3.6                       | goodsCategory                        |
-    # the payment-service companies and their configurations
     And metasfresh contains C_BPartners without locations:
       | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | serviceCompany21 | N          | Y        | contractPS                    |
@@ -3060,7 +3051,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2.15% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2.15                      |
@@ -3069,7 +3059,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
 
-    # SO: 3 goods lines + 2 Pfand lines
     When metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
       | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
@@ -3088,7 +3077,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 1.8                             | -38.79 | customerTerm                      |
     And the order identified by orderDropship has 6 order lines
 
-    # drop-ship PO for VendorDropship
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
@@ -3165,7 +3153,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 1.8                       | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3.6                       | goodsCategory                        |
-    # the payment-service companies and their configurations
     And metasfresh contains C_BPartners without locations:
       | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | serviceCompany22 | N          | Y        | contractPS                    |
@@ -3208,7 +3195,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2.15% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | otherServiceCompanyConfig          | customerHeadOffice | 2.15                      |
@@ -3217,7 +3203,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
 
-    # SO: 3 goods lines + 2 Pfand lines
     When metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
       | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
@@ -3236,12 +3221,12 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 1.8                             | -38.79 | customerTerm                      |
     And the order identified by orderDropship has 6 order lines
 
-    # drop-ship PO for VendorDropship
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | poDropship     | orderDropship            | false   | POO         | CO            | true           |
 
-    # PO side: the vendor passes on company A's fee, the head office is assigned to company B: own line (-77.59) and take-over line (-38.79) only
+    # PO side: the vendor's settings pass on serviceCompanyConfig (serviceCompany22), but the head office is assigned to otherServiceCompanyConfig (otherCompany22):
+    # own line (-77.59) and take-over line (-38.79) only, no fee line
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier | OPT.GroupCompensation_Product_Category_ID |
       | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                 |        |                                   |                                           |
@@ -3314,7 +3299,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 1.8                       | goodsCategory                        |
       | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3.6                       | goodsCategory                        |
-    # the payment-service companies and their configurations
     And metasfresh contains C_BPartners without locations:
       | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID.Identifier |
       | serviceCompany23 | N          | Y        | contractPS                    |
@@ -3353,7 +3337,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     And the C_Flatrate_Term identified by customerTerm is completed
     And the C_Flatrate_Term identified by vendorTerm is completed
 
-    # the head office is assigned a 2.15% payment-service fee (no doc type)
     And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
       | InvoiceProcessingServiceCompany_ID | C_BPartner_ID      | FeePercentageOfGrandTotal |
       | serviceCompanyConfig               | customerHeadOffice | 2.15                      |
@@ -3362,7 +3345,6 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | Identifier        | IsDropShipWarehouse |
       | dropshipWarehouse | Y                   |
 
-    # SO: 3 goods lines + 2 Pfand lines
     When metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
       | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |

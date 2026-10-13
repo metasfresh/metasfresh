@@ -3,6 +3,7 @@ package de.metas.contracts.compensationGroup.contract;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
@@ -34,6 +35,13 @@ public class ContractServiceFeeTakeOverService
 				() -> new ContractServiceFeeTakeOverService(new InvoiceProcessingServiceCompanyService(
 						new InvoiceProcessingServiceCompanyConfigRepository(),
 						new MoneyService(new CurrencyRepository()))));
+	}
+
+	/** @return the service company of the given config record, whether or not the record is active */
+	@NonNull
+	public BPartnerId getServiceCompanyBPartnerId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		return invoiceProcessingServiceCompanyService.getServiceCompanyBPartnerIdByConfigId(configId);
 	}
 
 	/**

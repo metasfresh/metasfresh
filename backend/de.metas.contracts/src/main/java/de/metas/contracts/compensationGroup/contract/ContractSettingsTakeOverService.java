@@ -2,6 +2,8 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -87,13 +89,7 @@ public class ContractSettingsTakeOverService
 	{
 		final ImmutableList<ContractSettingsTakeOverMatch> matches = computeMatches(order, settings);
 
-		// Resolve the customer's payment-service fee once, keyed by the linked SALES order's invoice partner and date.
-		final ContractServiceFee customerFee = order.getInvoicePartnerId() != null && order.getSoDate() != null
-				? feeService.resolveServiceFee(order.getInvoicePartnerId(), order.getSoDate())
-				: ContractServiceFee.ZERO;
-		// The fee is passed on only when the settings reference the very service company the customer's fee belongs to;
-		// otherwise it counts as zero (also before the take-over lookup, which would throw on an ambiguous take-over).
-		final ContractServiceFee fee = isFeeOfPassedOnServiceCompany(customerFee, settings) ? customerFee : ContractServiceFee.ZERO;
+		final ContractServiceFee fee = resolveFeeToPassOn(order, settings);
 		final ContractSettingsTakeOver feeTakeOver = fee.isGreaterThanZero() ? findTakeOverForServiceFeeOrNull(matches, order, settings, fee) : null;
 
 		// note: like every contract line, the fee line is skipped later when no purchase order line falls into its base category
@@ -115,10 +111,27 @@ public class ContractSettingsTakeOverService
 				.build();
 	}
 
-	private static boolean isFeeOfPassedOnServiceCompany(@NonNull final ContractServiceFee fee, @NonNull final ContractCompensationGroupSettings settings)
+	/**
+	 * The customer's payment-service fee, keyed by the linked SALES order's invoice partner and date, counts only when
+	 * the settings reference the very service company the fee belongs to; otherwise it is zero (also before the take-over
+	 * lookup, which would throw on an ambiguous take-over).
+	 */
+	private ContractServiceFee resolveFeeToPassOn(@NonNull final OrderDropShipInfo order, @NonNull final ContractCompensationGroupSettings settings)
 	{
-		return settings.getPassOnServiceCompanyBPartnerId() != null
-				&& settings.getPassOnServiceCompanyBPartnerId().equals(fee.getServiceCompanyBPartnerId());
+		final InvoiceProcessingServiceCompanyConfigId passOnConfigId = settings.getPassOnServiceCompanyConfigId();
+		if (passOnConfigId == null || order.getInvoicePartnerId() == null || order.getSoDate() == null)
+		{
+			return ContractServiceFee.ZERO;
+		}
+
+		final ContractServiceFee customerFee = feeService.resolveServiceFee(order.getInvoicePartnerId(), order.getSoDate());
+		if (!customerFee.isGreaterThanZero())
+		{
+			return ContractServiceFee.ZERO;
+		}
+
+		final BPartnerId passOnServiceCompanyId = feeService.getServiceCompanyBPartnerId(passOnConfigId);
+		return passOnServiceCompanyId.equals(customerFee.getServiceCompanyBPartnerId()) ? customerFee : ContractServiceFee.ZERO;
 	}
 
 	/**

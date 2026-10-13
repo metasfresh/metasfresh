@@ -44,7 +44,7 @@ public class ContractServiceFee
 
 	public static ContractServiceFee of(@NonNull final Percent percent, @NonNull final ProductId feeProductId, @NonNull final BPartnerId serviceCompanyBPartnerId)
 	{
-		return new ContractServiceFee(percent, feeProductId, serviceCompanyBPartnerId);
+		return percent.isZero() ? ZERO : new ContractServiceFee(percent, feeProductId, serviceCompanyBPartnerId);
 	}
 
 	private ContractServiceFee(@NonNull final Percent percent, @Nullable final ProductId feeProductId, @Nullable final BPartnerId serviceCompanyBPartnerId)
