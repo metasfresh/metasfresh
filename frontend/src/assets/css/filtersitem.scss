@@ -20,6 +20,29 @@
 
   .form-group {
     @include widget-size-rules;
+
+    /*
+     * A sized widget must make the VISIBLE box (not its Bootstrap "row" wrapper) as wide
+     * as the size says: drop the row's negative side margins and the column's side padding.
+     */
+    &.widgetType-Lookup.widgetSize-S,
+    &.widgetType-Lookup.widgetSize-L,
+    &.widgetType-List.widgetSize-S,
+    &.widgetType-List.widgetSize-L {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col-sm-12 {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+
+    /* the generic lookup minimum of 200px (inputs.scss) must not exceed the S width */
+    &.widgetType-Lookup.widgetSize-S .input-dropdown-container,
+    &.widgetType-List.widgetSize-S .input-dropdown-container {
+      min-width: 0;
+    }
   }
 }
 
