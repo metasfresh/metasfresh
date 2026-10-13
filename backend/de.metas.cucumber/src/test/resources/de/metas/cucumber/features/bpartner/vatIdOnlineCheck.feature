@@ -268,6 +268,7 @@ Feature: VAT-ID is checked against the online validation service
     # result. This scenario covers the other path: the partner is saved while the online check is off, so the
     # save schedules no check, and the explicit check is the only one that asks the service and writes a row.
     # AD_Session_ID 'false' pins the row to the explicit check: a save-triggered check always records a session.
+    # The RequestIdentifier values are synthetic stub answers, there only to prove the field is stored for every status.
     Given no VATaxID_CheckLog records exist for VATaxID '<VATaxID>'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
@@ -275,6 +276,7 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value          | VATaxID   |
       | bp_vies8   | <BPartnerName> | <VATaxID> |
+    # Now switch the online check on, for the explicit check below only: the save above has already passed.
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | true               | 30               | ServiceUnavailable   |
