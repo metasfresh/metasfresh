@@ -204,6 +204,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						//
 						.bpartnerId(bpartnerId)
 						.invoiceId(referencedInvoice != null ? referencedInvoice.getInvoiceId() : null)
+						// the amounts of a line with an invoice are coming from the bank, so they must not be overwritten with the invoice's open amount (like the CAMT import);
+						// a line without an invoice keeps the default, for a user who picks the invoice later
+						.updateAmountsFromInvoice(referencedInvoice == null)
 						.importedBillPartnerName(importRecord.getBill_BPartner_Name())
 						.importedBillPartnerIBAN(importRecord.getIBAN_To())
 						//
