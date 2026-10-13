@@ -260,3 +260,41 @@ Feature: VAT-ID is checked against the online validation service
     And validate C_BPartner VAT-ID status:
       | C_BPartner_ID | VATaxIDStatus |
       | bp_vies7      | NotChecked    |
+
+  @from:cucumber
+  @Id:S0614_090
+  Scenario Outline: TC12 — an explicit check with no save-triggered check in flight asks the service itself and records its own evidence row
+    # TC1, TC2 and TC4 wait for the check their own save schedules, so their explicit check re-uses that fresh
+    # result. This scenario covers the other path: the partner is saved while the online check is off, so the
+    # save schedules no check, and the explicit check is the only one that asks the service and writes a row.
+    # AD_Session_ID 'false' pins the row to the explicit check: a save-triggered check always records a session.
+    Given no VATaxID_CheckLog records exist for VATaxID '<VATaxID>'
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | false              | 30               | ServiceUnavailable   |
+    And metasfresh contains C_BPartners:
+      | Identifier | Value          | VATaxID   |
+      | bp_vies8   | <BPartnerName> | <VATaxID> |
+    And metasfresh contains VATaxID_Config:
+      | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
+      | true                 | true               | 30               | ServiceUnavailable   |
+    And the VAT-ID online checker is stubbed to answer:
+      | VATaxID   | VATaxIDStatus   | RequestIdentifier   |
+      | <VATaxID> | <VATaxIDStatus> | <RequestIdentifier> |
+    When the VAT-ID check runs for C_BPartner:
+      | C_BPartner_ID |
+      | bp_vies8      |
+    Then the VAT-ID check returned status '<VATaxIDStatus>' for C_BPartner 'bp_vies8'
+    And the VAT-ID online checker was called for VATaxID '<VATaxID>'
+    And validate C_BPartner VAT-ID status:
+      | C_BPartner_ID | VATaxIDStatus   | VATaxIDCheckedAt    | HasTaxCertificate   | VATaxID_CheckLog_ID |
+      | bp_vies8      | <VATaxIDStatus> | 2026-06-19T10:00:00 | <HasTaxCertificate> | true                |
+    And validate VATaxID_CheckLog records of C_BPartner 'bp_vies8':
+      | VATaxID   | VATaxIDStatus   | RequestDate         | ResponseDate        | RequestIdentifier   | AD_Session_ID | AD_PInstance_ID |
+      | <VATaxID> | <VATaxIDStatus> | 2026-06-19T10:00:00 | 2026-06-19T10:00:00 | <RequestIdentifier> | false         | false           |
+
+    Examples:
+      | VATaxID          | VATaxIDStatus | HasTaxCertificate | RequestIdentifier | BPartnerName         |
+      | DE136695976      | Valid         | true              | WAPIAAAAExplVal1  | ViesTC12Valid        |
+      | ATU13585627      | Invalid       | false             | WAPIAAAAExplInv1  | ViesTC12Invalid      |
+      | CHE100155212MWST | NotSupported  | true              | WAPIAAAAExplNsp1  | ViesTC12NotSupported |
