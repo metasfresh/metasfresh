@@ -91,9 +91,10 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID | Column     | REST.Context   |
       | o_1        | DocumentNo | o_1_DocumentNo |
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
        
     # This controls the SSCC18 value such that our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
