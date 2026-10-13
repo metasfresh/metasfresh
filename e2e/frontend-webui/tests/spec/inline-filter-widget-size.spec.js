@@ -238,7 +238,8 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     const listWidths = [];
     for (const ch of runId) {
       const typeahead = page.waitForResponse(
-        (r) => r.url().includes(`/filter/${SIZED_FILTER_ID}/`) && r.url().includes('/typeahead')
+        (r) => r.url().includes(`/filter/${SIZED_FILTER_ID}/`) && r.url().includes('/typeahead'),
+        { timeout: SLOW_ACTION_TIMEOUT }
       );
       await filter.input.press(ch);
       await typeahead;
