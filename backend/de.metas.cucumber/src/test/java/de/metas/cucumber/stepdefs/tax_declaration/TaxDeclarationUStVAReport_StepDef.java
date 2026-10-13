@@ -256,7 +256,7 @@ public class TaxDeclarationUStVAReport_StepDef
 		{
 			if (previous != null)
 			{
-				final int byCode = row.getVatCode().compareTo(previous.getVatCode());
+				final int byCode = compareInDB(row.getVatCode(), previous.getVatCode());
 				final boolean unknownAfterRegular = byCode == 0
 						&& AMOUNT_TYPE_UNKNOWN.equals(row.getAmountType())
 						&& !AMOUNT_TYPE_UNKNOWN.equals(previous.getAmountType());
@@ -539,6 +539,12 @@ public class TaxDeclarationUStVAReport_StepDef
 	}
 
 	@Nullable
+	/** compares like the function's {@code ORDER BY vatcode} (DB collation), not like {@link String#compareTo(String)} */
+	private static int compareInDB(final String a, final String b)
+	{
+		return DB.getSQLValueEx(null, "SELECT CASE WHEN ?::varchar < ?::varchar THEN -1 WHEN ?::varchar = ?::varchar THEN 0 ELSE 1 END", a, b, a, b);
+	}
+
 	private static String dbString(final String sql, final int id)
 	{
 		final String value = DB.getSQLValueStringEx(null, sql, id);
