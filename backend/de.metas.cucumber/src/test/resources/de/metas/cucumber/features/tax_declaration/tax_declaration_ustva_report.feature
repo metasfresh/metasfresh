@@ -787,3 +787,48 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     And the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | posting_date | doc_date   | C_BPartner_ID |
       | DETAIL       | v66Tg         | T          | sgj2      | 19.00  | 2024-01-13   | 2024-01-11 | vendor        |
+
+# ############################################################################################################################################
+# Declaration lines without amount type: postings made before the amount type existed, which the backfill could not type
+# ############################################################################################################################################
+  @Id:S32216_UStVA_140
+  @from:cucumber
+  Scenario: a declaration line without amount type gets its own summary row "type unknown" with the amount in the net column, and its postings stay in the detail list
+
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19u     | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType | SameVATCodeAs |
+      | v67N       | tax19u   | N       | N          |               |
+      | v67T       | tax19u   | N       | T          | v67N          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p100u      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | p100u        | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invU       | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invUL1     | invU         | p100u        | 1 PCE       | tax19u   |
+    And the invoice identified by invU is completed
+    And Wait until documents invU is posted
+    And the Net VAT code amount type is removed from the Fact_Acct records of documents invU, as on postings made before the amount type existed
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    # net 100.00 has no amount type: own summary row (AmountType U) with the amount in the net column; the tax 19.00 stays on the code's regular row
+    Then the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | AmountType | net_amt | tax_amt | balance_amt |
+      | SUMMARY      | v67N          |            | -       | 19.00   |             |
+      | SUMMARY      | v67N          | U          | 100     | -       |             |
+      | BALANCE      |               |            |         |         | -19.00      |
+    And the UStVA report for tax declaration "td" returns:
+      | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount | C_BPartner_ID |
+      | DETAIL       | v67N          | U          | invU      | 100.00 | vendor        |
+      | DETAIL       | v67N          | T          | invU      | 19.00  | vendor        |

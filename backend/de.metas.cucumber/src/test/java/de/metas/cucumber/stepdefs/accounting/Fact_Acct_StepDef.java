@@ -15,12 +15,15 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Fact_Acct_StepDef
 {
@@ -86,6 +89,23 @@ public class Fact_Acct_StepDef
 		final TableRecordReferenceSet recordRefs = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
 		AccountingCucumberHelper.repost(recordRefs);
 		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+	}
+
+	/**
+	 * Makes the documents' Net postings look like postings made before Fact_Acct.VATCodeAmountType existed: the VAT code stays, the amount type is empty
+	 * (the one-shot backfill leaves such rows empty when it cannot derive the type).
+	 */
+	@And("^the Net VAT code amount type is removed from the Fact_Acct records of documents (.*), as on postings made before the amount type existed$")
+	public void removeNetVATCodeAmountType(@NonNull final String commaSeparatedIdentifiers)
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			final int updated = DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE Fact_Acct SET VATCodeAmountType=NULL WHERE AD_Table_ID=? AND Record_ID=? AND VATCodeAmountType='N'",
+					new Object[] { recordRef.getAD_Table_ID(), recordRef.getRecord_ID() },
+					ITrx.TRXNAME_None);
+			assertThat(updated).as("Net Fact_Acct records of %s", recordRef).isPositive();
+		}
 	}
 
 	/**

@@ -80,9 +80,10 @@ import java.util.Set;
  *     <li>HEADER: {@code print_date, org_name, org_tax_id, org_vat_id, acctschema_name, period_from, period_to,
  *         documentno (of the declaration), docstatus, is_correction ('Y'/'N'), original_documentno, currency}</li>
  *     <li>SUMMARY: {@code vatcode, description (C_VAT_Code.Description), net_amt (whole euros, cut off toward zero,
- *         NULL when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied</li>
+ *         NULL when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied;
+ *         a code's lines without amount type get an own row with {@code amount_type = 'U'} ("type unknown"), amount in net_amt</li>
  *     <li>BALANCE: {@code balance_amt = - sum of the declared Tax amounts (debit - credit)}</li>
- *     <li>DETAIL: {@code vatcode, amount_type ('N'/'T'), description (C_TaxDeclarationAcct.Description), amount (display sign
+ *     <li>DETAIL: {@code vatcode, amount_type ('N'/'T', 'U' when the posting has no amount type), description (C_TaxDeclarationAcct.Description), amount (display sign
  *         applied, not cut off), documentno (source document no.), posting_date, doc_date, bpartner_name, bpartner_vatid, currency}</li>
  * </ul>
  *
@@ -116,6 +117,8 @@ public class TaxDeclarationUStVAReport_StepDef
 {
 	private static final String LEVEL_HEADER = "HEADER";
 	private static final String LEVEL_SUMMARY = "SUMMARY";
+	/** amount_type of the rows whose postings carry no amount type */
+	private static final String AMOUNT_TYPE_UNKNOWN = "U";
 	private static final String LEVEL_BALANCE = "BALANCE";
 	private static final String LEVEL_DETAIL = "DETAIL";
 
@@ -247,16 +250,22 @@ public class TaxDeclarationUStVAReport_StepDef
 	private void assertSummaryOrdering(
 			final SoftAssertions softly, final String ctx, final List<UStVAReportRow> actualRows, final String dump)
 	{
-		String previous = null;
+		// ordered by vatcode; within a code, the regular row comes before the "type unknown" row
+		UStVAReportRow previous = null;
 		for (final UStVAReportRow row : rowsOfLevel(actualRows, LEVEL_SUMMARY))
 		{
 			if (previous != null)
 			{
-				softly.assertThat(row.getVatCode().compareTo(previous))
-						.as("%s: SUMMARY rows ordered by vatcode (%s after %s)\n%s", ctx, row.getVatCode(), previous, dump)
-						.isGreaterThan(0);
+				final int byCode = row.getVatCode().compareTo(previous.getVatCode());
+				final boolean unknownAfterRegular = byCode == 0
+						&& AMOUNT_TYPE_UNKNOWN.equals(row.getAmountType())
+						&& !AMOUNT_TYPE_UNKNOWN.equals(previous.getAmountType());
+				softly.assertThat(byCode > 0 || unknownAfterRegular)
+						.as("%s: SUMMARY rows ordered by vatcode, regular row before \"type unknown\" (%s/%s after %s/%s)\n%s",
+							ctx, row.getVatCode(), row.getAmountType(), previous.getVatCode(), previous.getAmountType(), dump)
+						.isTrue();
 			}
-			previous = row.getVatCode();
+			previous = row;
 		}
 	}
 
@@ -317,8 +326,10 @@ public class TaxDeclarationUStVAReport_StepDef
 			{
 				continue;
 			}
-			final BigDecimal netSum = detailSums.get(summary.getVatCode() + "|N");
-			final BigDecimal taxSum = detailSums.get(summary.getVatCode() + "|T");
+			// a "type unknown" summary row carries the code's rows without amount type in its net column, and no tax
+			final boolean typeUnknown = AMOUNT_TYPE_UNKNOWN.equals(summary.getAmountType());
+			final BigDecimal netSum = detailSums.get(summary.getVatCode() + "|" + (typeUnknown ? AMOUNT_TYPE_UNKNOWN : "N"));
+			final BigDecimal taxSum = typeUnknown ? null : detailSums.get(summary.getVatCode() + "|T");
 			if (summary.getNetAmt() == null)
 			{
 				softly.assertThat(netSum).as("%s: code %s has no net summary, so no Net detail rows\n%s", ctx, summary.getVatCode(), dump).isNull();
