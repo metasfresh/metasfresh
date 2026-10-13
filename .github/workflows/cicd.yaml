@@ -25,6 +25,8 @@ jobs:
       # layers and pushes only the small delta. For a base branch (or an unrecognised ref) this equals tag-floating,
       # so the extra cache-from is a harmless no-op.
       base-tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.base-refname.outputs.refname }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -745,6 +747,12 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: resolve-db-seed
+        # the base branch's DB seed if it comes from this commit's own history, else the 5.172 dump
+        id: db-seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
         run: |
           docker buildx build \
@@ -754,6 +762,7 @@ jobs:
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -839,6 +848,15 @@ jobs:
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          # the committed data dir must be cleanly shut down, otherwise every DB started from it begins with crash recovery
+          state=$(docker run --rm --entrypoint sh metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+            -c '/usr/lib/postgresql/*/bin/pg_controldata /var/lib/postgresql/initdata' | grep 'Database cluster state' || true)
+          echo "${state}"
+          if ! echo "${state}" | grep -qE 'cluster state: +shut down$'; then
+            echo "::error::the preloaded DB was not shut down cleanly before docker commit: ${state:-pg_controldata reported no cluster state}"
+            if [ "$(cat migration.exit-code)" != 0 ]; then tail -1000 migration.log; fi
+            exit 1
+          fi
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
@@ -2473,55 +2491,7 @@ jobs:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os, shutil
-          from datetime import datetime, timezone
-
-          MAX_BUILDS_PER_BRANCH = 3
-
-          branch = sys.argv[1]
-          version = sys.argv[2]
-          metadata_dir = "/var/www/test-reports/_metadata"
-          metadata_file = os.path.join(metadata_dir, f"{branch}.json")
-          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
-
-          os.makedirs(metadata_dir, exist_ok=True)
-
-          # Read existing metadata or create new
-          if os.path.exists(metadata_file):
-              with open(metadata_file, "r") as f:
-                  try:
-                      data = json.load(f)
-                  except json.JSONDecodeError:
-                      data = {"branch": branch, "builds": []}
-          else:
-              data = {"branch": branch, "builds": []}
-
-          # Deduplicate: remove existing entry for this version
-          data["builds"] = [b for b in data["builds"] if b.get("version") != version]
-
-          # Prepend new build
-          data["builds"].insert(0, {
-              "version": version,
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          })
-
-          # Cap metadata and collect evicted versions
-          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
-          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
-
-          with open(metadata_file, "w") as f:
-              json.dump(data, f, indent=2)
-
-          # Delete build directories for evicted versions
-          for ver in evicted:
-              build_path = os.path.join(builds_dir, ver)
-              if os.path.isdir(build_path):
-                  shutil.rmtree(build_path)
-                  print(f"Pruned old build: {branch}/{ver}")
-
-          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
-          PYEOF
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" < .github/test-report-permalinks/update_branch_metadata.py
 
       - name: Generate feature/spec permalinks
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
