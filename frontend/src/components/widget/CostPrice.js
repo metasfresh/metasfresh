@@ -3,6 +3,22 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { fieldValueToString } from '../../utils/tableHelpers';
 
+const normalizeDecimalComma = (value) => {
+  if (!value.includes(',')) {
+    return value;
+  }
+
+  const decimalSeparatorIndex = Math.max(
+    value.lastIndexOf('.'),
+    value.lastIndexOf(',')
+  );
+  const integerPart = value
+    .substring(0, decimalSeparatorIndex)
+    .replace(/[.,]/g, '');
+  const fractionPart = value.substring(decimalSeparatorIndex + 1);
+  return `${integerPart}.${fractionPart}`;
+};
+
 // NOTE: we cannot convert to functional component because we need callers need a ref to this object in order to call the focus() function.
 export default class CostPrice extends PureComponent {
   constructor(props) {
@@ -46,10 +62,16 @@ export default class CostPrice extends PureComponent {
   // Keeping the keypress filter permissive (apostrophe allowed in the
   // field) makes copy-paste from a price catalogue work; the strip here
   // makes sure the cleaned value is what actually gets PATCHed.
+  //
+  // A decimal comma (DE/AT users) is accepted by the keypress filter, but the
+  // same backend parser rejects it ("77,5" -> NumberFormatException). So when
+  // the value contains a comma, the last "." or "," is the decimal separator
+  // and every other one is a thousands separator: "77,5" -> "77.5",
+  // "1.500,50" -> "1500.50", "1,500.50" -> "1500.50".
   handleChange = (e) => {
     const { onChange } = this.props;
     const raw = e.target.value;
-    const cleaned = raw.replace(/['\u2019 \u00A0]/g, '');
+    const cleaned = normalizeDecimalComma(raw.replace(/['\u2019 \u00A0]/g, ''));
     if (cleaned !== raw) {
       onChange({ ...e, target: { ...e.target, value: cleaned } });
     } else {

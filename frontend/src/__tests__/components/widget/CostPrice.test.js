@@ -199,8 +199,38 @@ describe('CostPrice component', () => {
       expect(valueFlowingUpstream("-1'500.00")).toBe('-1500.00');
     });
 
-    it("preserves a decimal comma while stripping separators (DE/AT users)", () => {
-      expect(valueFlowingUpstream("1'500,50")).toBe('1500,50');
+    it("converts a decimal comma while stripping separators (DE/AT users)", () => {
+      expect(valueFlowingUpstream("1'500,50")).toBe('1500.50');
+    });
+
+    describe('decimal comma — the backend BigDecimal parser accepts only "."', () => {
+      it('converts a decimal comma to a decimal point', () => {
+        expect(valueFlowingUpstream('77,5')).toBe('77.5');
+      });
+
+      it('converts a trailing comma while typing', () => {
+        expect(valueFlowingUpstream('77,')).toBe('77.');
+      });
+
+      it('converts a leading comma', () => {
+        expect(valueFlowingUpstream(',5')).toBe('.5');
+      });
+
+      it('preserves a leading minus sign', () => {
+        expect(valueFlowingUpstream('-12,35')).toBe('-12.35');
+      });
+
+      it('treats the last separator as decimal and drops dot thousands separators (DE format)', () => {
+        expect(valueFlowingUpstream('1.500,50')).toBe('1500.50');
+      });
+
+      it('treats the last separator as decimal and drops comma thousands separators (EN format)', () => {
+        expect(valueFlowingUpstream('1,500.50')).toBe('1500.50');
+      });
+
+      it('drops multiple thousands separators', () => {
+        expect(valueFlowingUpstream('1.200.000,50')).toBe('1200000.50');
+      });
     });
 
     it('calls the parent onChange with an event whose target.value is the cleaned string', () => {
