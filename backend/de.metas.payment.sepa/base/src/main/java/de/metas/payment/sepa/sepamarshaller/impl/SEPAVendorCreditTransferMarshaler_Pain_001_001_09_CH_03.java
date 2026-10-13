@@ -825,9 +825,32 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		String reference = REFERENCE_FORBIDDEN_CHARS.matcher(text).replaceAll(" ");
 		reference = reference.replaceAll("/{2,}", "/");
 		reference = StringUtils.trunc(reference.trim(), REFERENCE_MAX_LENGTH, TruncateAt.STRING_START);
-		reference = reference.replaceAll("^[\\s/]+", "").replaceAll("[\\s/]+$", "");
+		reference = stripSpacesAndSlashes(reference);
 
 		return reference.isEmpty() ? null : reference;
+	}
+
+	/**
+	 * Removes leading and trailing whitespace and "/" without a regex, so the runtime stays linear for any input.
+	 */
+	private static String stripSpacesAndSlashes(@NonNull final String text)
+	{
+		int start = 0;
+		int end = text.length();
+		while (start < end && isSpaceOrSlash(text.charAt(start)))
+		{
+			start++;
+		}
+		while (end > start && isSpaceOrSlash(text.charAt(end - 1)))
+		{
+			end--;
+		}
+		return text.substring(start, end);
+	}
+
+	private static boolean isSpaceOrSlash(final char c)
+	{
+		return c == '/' || Character.isWhitespace(c);
 	}
 
 	private XMLGregorianCalendar newXMLGregorianCalendar(final Date date)
