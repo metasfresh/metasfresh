@@ -59,6 +59,10 @@
 
 	<build>
 		<resources>
+			<!-- declaring resources replaces the default; keep src/main/resources -->
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
 			<!-- ship the XSD on the classpath, so the generated XML can be validated against it -->
 			<resource>
 				<directory>src/main/xsd</directory>

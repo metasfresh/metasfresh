@@ -82,6 +82,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +178,21 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private static final Pattern REFERENCE_FORBIDDEN_CHARS = Pattern.compile("[^A-Za-z0-9 '()+,\\-./:?]");
 	private static final int REFERENCE_MAX_LENGTH = 35;
 
+	/**
+	 * IG 3.9: version of the implemented Swiss Implementation Guidelines, in the format nnnn (SPS 2026 version 2.3).
+	 */
+	private static final String SPS_IG_VERSION = "0230";
+
+	/**
+	 * Maximum lengths of the XSD types (Max140Text, Max70Text, Max16Text, Max35Text) resp. of the IG.
+	 */
+	private static final int MAX_LENGTH_NAME = 140;
+	private static final int MAX_LENGTH_NAME_SEPA = 70; // IG 3.11 / 4.3 Cdtr/Nm: "S: max. 70 characters"
+	private static final int MAX_LENGTH_STREET_NAME = 70;
+	private static final int MAX_LENGTH_BUILDING_NUMBER = 16;
+	private static final int MAX_LENGTH_POST_CODE = 16;
+	private static final int MAX_LENGTH_TOWN_NAME = 35;
+
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
 	private final SEPAExportContext exportContext;
@@ -189,6 +205,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 	private int endToEndIdCounter = 0;
 	private int pmtInfCounter = 0;
+	private final Map<PaymentInstruction30, Integer> pmtInfNumbers = new IdentityHashMap<>();
 
 	public SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(
 			@NonNull final SEPAExportContext exportContext,
@@ -329,7 +346,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		groupHeader.setCtrlSum(ZERO);
 
 		final PartyIdentification135 initgPty = objectFactory.createPartyIdentification135();
-		initgPty.setNm(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()));
+		initgPty.setNm(truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME)); // IG 3.4: no empty Nm
 		initgPty.setCtctDtls(createSoftwareInformation());
 		groupHeader.setInitgPty(initgPty);
 
@@ -348,6 +365,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		// if we must truncate, then keep the end of the version string (STRING_START), like the .03 marshaller does
 		final String versionString = Adempiere.getBuildVersion().getFullVersion();
 		ctctDtls.getOthr().add(createOtherContact("VRSN", StringUtils.trunc(versionString.trim(), 128, TruncateAt.STRING_START))); // Id is Max128Text
+
+		ctctDtls.getOthr().add(createOtherContact("SPSV", SPS_IG_VERSION));
 
 		return ctctDtls;
 	}
@@ -395,6 +414,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 		// PaymentInformationIdentification: A system-generated internal code.
 		pmtInfCounter++;
+		pmtInfNumbers.put(pmtInf, pmtInfCounter);
 		pmtInf.setPmtInfId(StringUtils.formatMessage("PMTINF-{}", pmtInfCounter));
 
 		// Sets payment code - credit transfer.
@@ -485,7 +505,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		cdtTrfTxInf.setCdtrAgt(createCreditorAgent(line, paymentType));
 
 		// Creditor BPartner
-		cdtTrfTxInf.setCdtr(createCreditor(line, bankAccount));
+		cdtTrfTxInf.setCdtr(createCreditor(line, bankAccount, paymentType));
 
 		// creditor BPartner Account
 		{
@@ -517,7 +537,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			}
 			final PaymentIdentification6 pmtId = objectFactory.createPaymentIdentification6();
 			pmtId.setEndToEndId(endToEndId);
-			pmtId.setInstrId(StringUtils.formatMessage("INSTRID-{}-{}", pmtInfCounter, pmtInf.getCdtTrfTxInf().size() + 1));
+			// the number of the PmtInf this transaction belongs to (the PmtInfs are not necessarily filled one after the other)
+			pmtId.setInstrId(StringUtils.formatMessage("INSTRID-{}-{}", pmtInfNumbers.get(pmtInf), pmtInf.getCdtTrfTxInf().size() + 1));
 
 			cdtTrfTxInf.setPmtId(pmtId);
 		}
@@ -628,22 +649,25 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 	private PartyIdentification135 createCreditor(
 			@NonNull final I_SEPA_Export_Line line,
-			@Nullable final BankAccount bankAccount)
+			@Nullable final BankAccount bankAccount,
+			@NonNull final String paymentType)
 	{
-		final PartyIdentification135 cdtr = objectFactory.createPartyIdentification135();
+		final String name;
 		if (bankAccount == null)
 		{
-			cdtr.setNm(SepaUtils.replaceForbiddenChars(getFirstNonEmpty(
+			name = getFirstNonEmpty(
 					line::getSEPA_MandateRefNo,
-					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
+					() -> getBPartnerNameById(line.getC_BPartner_ID()));
 		}
 		else
 		{
-			cdtr.setNm(SepaUtils.replaceForbiddenChars(getFirstNonEmpty(
+			name = getFirstNonEmpty(
 					bankAccount::getAccountName,
 					line::getSEPA_MandateRefNo,
-					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
+					() -> getBPartnerNameById(line.getC_BPartner_ID()));
 		}
+		final PartyIdentification135 cdtr = objectFactory.createPartyIdentification135();
+		cdtr.setNm(truncate(SepaUtils.replaceForbiddenChars(name), PAYMENT_TYPE_5.equals(paymentType) ? MAX_LENGTH_NAME_SEPA : MAX_LENGTH_NAME));
 
 		// Bank account is authoritative: when it carries any address data we use it
 		// verbatim and never consult the partner billing location. The partner
@@ -667,9 +691,36 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 
 		// IG 3.11: structured addresses for all payment types (.03 used AdrLine-only addresses for SEPA, which is no longer accepted)
-		cdtr.setPstlAdr(createPstlAdr(bankAccount, location));
+		cdtr.setPstlAdr(toCompletePstlAdrOrNull(createPstlAdr(bankAccount, location)));
 
 		return cdtr;
+	}
+
+	/**
+	 * IG 3.11: if a postal address is sent, TwnNm and Ctry must always be supplied. For now an incomplete address is not sent at all.
+	 * This is the single place where the completeness of the creditor address is decided (to be turned into a validation error with the partner name).
+	 */
+	@Nullable
+	private static PostalAddress24 toCompletePstlAdrOrNull(@NonNull final PostalAddress24 pstlAdr)
+	{
+		final boolean complete = Check.isNotBlank(pstlAdr.getTwnNm()) && Check.isNotBlank(pstlAdr.getCtry());
+		return complete ? pstlAdr : null;
+	}
+
+	/**
+	 * Cuts the given text to the given maximum length (keeping the beginning), as required by the XSD types / IG field lengths.
+	 *
+	 * @return {@code null} if the text is blank, because empty elements are not allowed (IG 3.4)
+	 */
+	@Nullable
+	private static String truncate(@Nullable final String text, final int maxLength)
+	{
+		final String textNorm = StringUtils.trimBlankToNull(text);
+		if (textNorm == null)
+		{
+			return null;
+		}
+		return textNorm.length() <= maxLength ? textNorm : textNorm.substring(0, maxLength).trim();
 	}
 
 	/**
@@ -687,14 +738,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 			final PostalAddress24 pstlAdr = objectFactory.createPostalAddress24();
 			splitStreetAndNumber(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet()), pstlAdr);
-			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
-			{
-				pstlAdr.setPstCd(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountZip()));
-			}
-			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
-			{
-				pstlAdr.setTwnNm(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountCity()));
-			}
+			pstlAdr.setPstCd(truncate(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountZip()), MAX_LENGTH_POST_CODE));
+			pstlAdr.setTwnNm(truncate(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountCity()), MAX_LENGTH_TOWN_NAME));
 			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
 			return pstlAdr;
 		}
@@ -703,8 +748,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 		final PostalAddress24 pstlAdr = objectFactory.createPostalAddress24();
 		splitStreetAndNumber(SepaUtils.replaceForbiddenChars(location.getAddress1()), pstlAdr);
-		pstlAdr.setPstCd(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(location.getPostal())));
-		pstlAdr.setTwnNm(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(location.getCity())));
+		pstlAdr.setPstCd(truncate(SepaUtils.replaceForbiddenChars(location.getPostal()), MAX_LENGTH_POST_CODE));
+		pstlAdr.setTwnNm(truncate(SepaUtils.replaceForbiddenChars(location.getCity()), MAX_LENGTH_TOWN_NAME));
 		pstlAdr.setCtry(countryDAO.getById(CountryId.ofRepoId(location.getC_Country_ID())).getCountryCode());
 		return pstlAdr;
 	}
@@ -716,11 +761,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final IPair<String, String> splitStreetAndHouseNumber = de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull(streetAndNumber);
 		if (splitStreetAndHouseNumber == null)
 		{
+			// e.g. "12 rue de la Paix" (number first) cannot be split; IG 3.11 permits the building number within StrtNm
+			pstlAdr.setStrtNm(truncate(streetAndNumber, MAX_LENGTH_STREET_NAME));
 			return;
 		}
 
-		pstlAdr.setStrtNm(splitStreetAndHouseNumber.getLeft());
-		pstlAdr.setBldgNb(splitStreetAndHouseNumber.getRight());
+		pstlAdr.setStrtNm(truncate(splitStreetAndHouseNumber.getLeft(), MAX_LENGTH_STREET_NAME));
+		pstlAdr.setBldgNb(truncate(splitStreetAndHouseNumber.getRight(), MAX_LENGTH_BUILDING_NUMBER));
 	}
 
 	/**
@@ -790,7 +837,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	}
 
 	/**
-	 * Same payment type detection as the .03 marshaller, restricted to the payment types this marshaller supports.
+	 * Payment type detection as in the .03 marshaller (except for the ESR flag, see below), restricted to the payment types this marshaller supports.
 	 */
 	@NonNull
 	private String extractPaymentType(@NonNull final I_SEPA_Export_Line line)
@@ -809,7 +856,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			final CurrencyCode currencyCode = extractCurrencyCode(line);
 			final String iban = line.getIBAN();
 
-			if (isSwissIBAN(iban) || bPBankAccount.isEsrAccount())
+			// IG 3.15 (figure 10): without SEPA service level, only a CH/LI IBAN makes it "D"; unlike .03, the ESR flag of the account no longer counts
+			if (isSwissIBAN(iban))
 			{
 				// "domestic" IBAN. it contains the IID and we will use it.
 				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
@@ -829,9 +877,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			}
 		}
 
-		if (!PAYMENT_TYPE_3.equals(paymentType) && !PAYMENT_TYPE_5.equals(paymentType))
+		if (PAYMENT_TYPE_1.equals(paymentType))
 		{
-			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " currently only supports domestic and SEPA payments with an IBAN, but got " + paymentType + "; " + createInfo(line));
+			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments; only domestic (payment type D) and SEPA (payment type S) payments with an IBAN are supported; " + createInfo(line));
+		}
+		else if (PAYMENT_TYPE_6.equals(paymentType))
+		{
+			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support foreign (payment type X) payments yet; only domestic (payment type D) and SEPA (payment type S) payments with an IBAN are supported; " + createInfo(line));
 		}
 		return paymentType;
 	}
