@@ -3,19 +3,27 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { fieldValueToString } from '../../utils/tableHelpers';
 
-const normalizeDecimalComma = (value) => {
-  if (!value.includes(',')) {
-    return value;
+// Normalises a typed / pasted number to the backend format; the backend
+// BigDecimal parser accepts only digits, "-" and "." and fails with
+// NumberFormatException otherwise:
+// - strip thousands separators: apostrophes (' and ’), space, NBSP
+// - if the value contains a comma (DE/AT decimal comma), the last "." or ","
+//   is the decimal separator and every other one a thousands separator:
+//   "77,5" -> "77.5", "1.500,50" -> "1500.50", "1,500.50" -> "1500.50"
+const normalizeNumberInput = (value) => {
+  const withoutGrouping = value.replace(/['\u2019 \u00A0]/g, '');
+  if (!withoutGrouping.includes(',')) {
+    return withoutGrouping;
   }
 
   const decimalSeparatorIndex = Math.max(
-    value.lastIndexOf('.'),
-    value.lastIndexOf(',')
+    withoutGrouping.lastIndexOf('.'),
+    withoutGrouping.lastIndexOf(',')
   );
-  const integerPart = value
+  const integerPart = withoutGrouping
     .substring(0, decimalSeparatorIndex)
     .replace(/[.,]/g, '');
-  const fractionPart = value.substring(decimalSeparatorIndex + 1);
+  const fractionPart = withoutGrouping.substring(decimalSeparatorIndex + 1);
   return `${integerPart}.${fractionPart}`;
 };
 
@@ -52,17 +60,10 @@ export default class CostPrice extends PureComponent {
     }
   };
 
-  // Normalise the typed value to the backend format before it flows upstream;
-  // the backend BigDecimal parser accepts only digits, "-" and "." and fails
-  // with NumberFormatException otherwise:
-  // - strip thousands separators: apostrophes (' and ’), space, NBSP
-  // - if the value contains a comma (DE/AT decimal comma), the last "." or ","
-  //   is the decimal separator and every other one a thousands separator:
-  //   "77,5" -> "77.5", "1.500,50" -> "1500.50", "1,500.50" -> "1500.50"
   handleChange = (e) => {
     const { onChange } = this.props;
     const raw = e.target.value;
-    const cleaned = normalizeDecimalComma(raw.replace(/['\u2019 \u00A0]/g, ''));
+    const cleaned = normalizeNumberInput(raw);
     if (cleaned !== raw) {
       onChange({ ...e, target: { ...e.target, value: cleaned } });
     } else {
