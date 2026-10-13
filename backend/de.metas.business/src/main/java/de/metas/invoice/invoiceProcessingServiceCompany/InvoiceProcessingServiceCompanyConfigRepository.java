@@ -45,6 +45,10 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Repository Tables: InvoiceProcessingServiceCompany, InvoiceProcessingServiceCompany_BPartnerAssignment
+ * Repository Cluster: InvoiceProcessingServiceCompanyConfigRepository
+ */
 @Repository
 public class InvoiceProcessingServiceCompanyConfigRepository
 {
@@ -81,7 +85,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	@NonNull
 	private BPartnerId retrieveServiceCompanyBPartnerId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
 	{
-		final I_InvoiceProcessingServiceCompany record = InterfaceWrapperHelper.load(configId, I_InvoiceProcessingServiceCompany.class);
+		final I_InvoiceProcessingServiceCompany record = InterfaceWrapperHelper.loadNotNull(configId, I_InvoiceProcessingServiceCompany.class);
 		return BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID());
 	}
 

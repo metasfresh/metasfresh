@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -43,35 +44,39 @@ class InvoiceProcessingServiceCompanyConfigRepositoryTest
 		repository = new InvoiceProcessingServiceCompanyConfigRepository();
 	}
 
-	@Test
-	void getServiceCompanyBPartnerIdByConfigId_returnsTheServiceCompanyOfTheConfig()
+	@Nested
+	class getServiceCompanyBPartnerIdByConfigId
 	{
-		final InvoiceProcessingServiceCompanyConfigId configId = createConfig(BPartnerId.ofRepoId(111), true);
+		@Test
+		void returnsTheServiceCompanyOfTheConfig()
+		{
+			final InvoiceProcessingServiceCompanyConfigId configId = createConfig(BPartnerId.ofRepoId(111), true);
 
-		assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
-	}
+			assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
+		}
 
-	@Test
-	void getServiceCompanyBPartnerIdByConfigId_inactiveConfig_isStillResolved()
-	{
-		final InvoiceProcessingServiceCompanyConfigId configId = createConfig(BPartnerId.ofRepoId(111), false);
+		@Test
+		void inactiveConfig_isStillResolved()
+		{
+			final InvoiceProcessingServiceCompanyConfigId configId = createConfig(BPartnerId.ofRepoId(111), false);
 
-		assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
-	}
+			assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
+		}
 
-	@Test
-	void getServiceCompanyBPartnerIdByConfigId_savingTheConfig_isSeenByTheNextRead()
-	{
-		final I_InvoiceProcessingServiceCompany record = newInstance(I_InvoiceProcessingServiceCompany.class);
-		record.setServiceCompany_BPartner_ID(111);
-		saveRecord(record);
-		final InvoiceProcessingServiceCompanyConfigId configId = InvoiceProcessingServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID());
-		assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
+		@Test
+		void savingTheConfig_isSeenByTheNextRead()
+		{
+			final I_InvoiceProcessingServiceCompany record = newInstance(I_InvoiceProcessingServiceCompany.class);
+			record.setServiceCompany_BPartner_ID(111);
+			saveRecord(record);
+			final InvoiceProcessingServiceCompanyConfigId configId = InvoiceProcessingServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID());
+			assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(111));
 
-		record.setServiceCompany_BPartner_ID(112);
-		saveRecord(record);
+			record.setServiceCompany_BPartner_ID(112);
+			saveRecord(record);
 
-		assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(112));
+			assertThat(repository.getServiceCompanyBPartnerIdByConfigId(configId)).isEqualTo(BPartnerId.ofRepoId(112));
+		}
 	}
 
 	private static InvoiceProcessingServiceCompanyConfigId createConfig(final BPartnerId serviceCompanyId, final boolean isActive)

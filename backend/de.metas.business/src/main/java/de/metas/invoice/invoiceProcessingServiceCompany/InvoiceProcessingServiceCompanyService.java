@@ -89,7 +89,6 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
-	/** @return the service company of the given config record, whether or not the record is active */
 	@NonNull
 	public BPartnerId getServiceCompanyBPartnerIdByConfigId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
 	{

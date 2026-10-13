@@ -17,6 +17,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -116,22 +117,26 @@ class ContractCompensationGroupSettingsRepositoryTest
 		assertThat(settingsRepository.getBySettingsId(settingsId).getDocTypeIds()).containsExactlyInAnyOrder(DOC_TYPE_2_ID, DOC_TYPE_3_ID);
 	}
 
-	@Test
-	void getBySettingsId_passOnReferenceSet_returnsTheReferencedConfigId()
+	@Nested
+	class getBySettingsId
 	{
-		final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
-		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
+		@Test
+		void passOnReferenceSet_returnsTheReferencedConfigId()
+		{
+			final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
+			final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
 
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId())
-				.isEqualTo(InvoiceProcessingServiceCompanyConfigId.ofRepoId(passOnConfig.getInvoiceProcessingServiceCompany_ID()));
-	}
+			assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId())
+					.isEqualTo(InvoiceProcessingServiceCompanyConfigId.ofRepoId(passOnConfig.getInvoiceProcessingServiceCompany_ID()));
+		}
 
-	@Test
-	void getBySettingsId_passOnReferenceUnset_returnsNoConfigId()
-	{
-		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema());
+		@Test
+		void passOnReferenceUnset_returnsNoConfigId()
+		{
+			final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema());
 
-		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId()).isNull();
+			assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyConfigId()).isNull();
+		}
 	}
 
 	private static I_InvoiceProcessingServiceCompany createInvoiceProcessingServiceCompany(final BPartnerId serviceCompanyId)

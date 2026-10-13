@@ -30,6 +30,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -470,138 +471,142 @@ class ContractSettingsTakeOverServiceTest
 				.containsExactlyInAnyOrder("3% Bonus Ware A", "1% Bonus Ware B");
 	}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyEmpty_noFeeLine_takeOverLineUnchanged()
+	@Nested
+	class applyToSchema
 	{
-		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
-		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+		@Test
+		void passOnServiceCompanyEmpty_noFeeLine_takeOverLineUnchanged()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
 
-		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
-						schema(),
-						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
-						settings)
-				.getCompensationLines();
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
 
-		assertThat(lines).containsExactly(expectedOwnLine());
-	}
+			assertThat(lines).containsExactly(expectedOwnLine());
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyEmptyAndTwoTakeOvers_noFeeLine_noException()
-	{
-		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
-		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(null, bonusWareAId, bonusWareBId); // field empty
-		final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
-		createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
-		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
+		@Test
+		void passOnServiceCompanyEmptyAndTwoTakeOvers_noFeeLine_noException()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(null, bonusWareAId, bonusWareBId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
+			createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
+			final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
 
-		final GroupTemplate schema = schema();
+			final GroupTemplate schema = schema();
 
-		assertThat(service.applyToSchema(schema, purchaseOrder, settings)).isSameAs(schema);
-	}
+			assertThat(service.applyToSchema(schema, purchaseOrder, settings)).isSameAs(schema);
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyIsAnotherCompany_noFeeLine()
-	{
-		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
-		final ContractCompensationGroupSettings settings = createSettings(otherCompanyConfig, bonusWareId);
-		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
+		@Test
+		void passOnServiceCompanyIsAnotherCompany_noFeeLine()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
+			final ContractCompensationGroupSettings settings = createSettings(otherCompanyConfig, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
 
-		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
-						schema(),
-						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
-						settings)
-				.getCompensationLines();
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
 
-		assertThat(lines).containsExactly(expectedOwnLine());
-	}
+			assertThat(lines).containsExactly(expectedOwnLine());
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyReferencesOlderVersionOfTheCustomersCompany_feeLineWithNewerPercent()
-	{
-		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		// older version of the company's config: ValidFrom 2025-01-01, record stays active, only the customer's assignment on it is deactivated;
-		// the settings reference it, but the fee is resolved from the version valid at SO_DATE (2026-01-01, active assignment)
-		final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", SERVICE_COMPANY_ID, LocalDate.parse("2025-01-01"), false);
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // newer version, active assignment
-		final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
-		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+		@Test
+		void passOnServiceCompanyReferencesOlderVersionOfTheCustomersCompany_feeLineWithNewerPercent()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			// older version of the company's config: ValidFrom 2025-01-01, record stays active, only the customer's assignment on it is deactivated;
+			// the settings reference it, but the fee is resolved from the version valid at SO_DATE (2026-01-01, active assignment)
+			final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", SERVICE_COMPANY_ID, LocalDate.parse("2025-01-01"), false);
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // newer version, active assignment
+			final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 
-		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
-						schema(),
-						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
-						settings)
-				.getCompensationLines();
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
 
-		assertThat(lines).containsExactly(
-				expectedOwnLine(),
-				expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
-	}
+			assertThat(lines).containsExactly(
+					expectedOwnLine(),
+					expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyEmpty_doesNotResolveTheCustomersFee()
-	{
-		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
-		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+		@Test
+		void passOnServiceCompanyEmpty_doesNotResolveTheCustomersFee()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
 
-		service.applyToSchema(schema(), purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings);
+			service.applyToSchema(schema(), purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings);
 
-		Mockito.verify(feeServiceSpy, Mockito.never()).resolveServiceFee(any(), any());
-	}
+			Mockito.verify(feeServiceSpy, Mockito.never()).resolveServiceFee(any(), any());
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyReferencesInactiveOlderVersion_stillMatchesByCompany()
-	{
-		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", null, LocalDate.parse("2025-01-01"), true);
-		olderVersion.setIsActive(false); // the older version was deactivated when the newer one took over
-		saveRecord(olderVersion);
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // active newer version of the same company
-		final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
-		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+		@Test
+		void passOnServiceCompanyReferencesInactiveOlderVersion_stillMatchesByCompany()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", null, LocalDate.parse("2025-01-01"), true);
+			olderVersion.setIsActive(false); // the older version was deactivated when the newer one took over
+			saveRecord(olderVersion);
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // active newer version of the same company
+			final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 
-		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
-						schema(),
-						purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
-						settings)
-				.getCompensationLines();
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
 
-		assertThat(lines).containsExactly(
-				expectedOwnLine(),
-				expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
-	}
+			assertThat(lines).containsExactly(
+					expectedOwnLine(),
+					expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanySetButSettingsHaveNoTakeOver_schemaUnchanged()
-	{
-		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
-		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord(feeConfig)); // no take-over row
-		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
-		final GroupTemplate schema = schema();
+		@Test
+		void passOnServiceCompanySetButSettingsHaveNoTakeOver_schemaUnchanged()
+		{
+			final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+			final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord(feeConfig)); // no take-over row
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
+			final GroupTemplate schema = schema();
 
-		assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
-				.isSameAs(schema);
-	}
+			assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
+					.isSameAs(schema);
+		}
 
-	@Test
-	void applyToSchema_passOnServiceCompanyIsAnotherCompanyAndTwoTakeOvers_noFeeLine_noException()
-	{
-		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
-		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
-		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(otherCompanyConfig, bonusWareAId, bonusWareBId);
-		final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
-		createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
-		final GroupTemplate schema = schema();
+		@Test
+		void passOnServiceCompanyIsAnotherCompanyAndTwoTakeOvers_noFeeLine_noException()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
+			final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(otherCompanyConfig, bonusWareAId, bonusWareBId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
+			createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
+			final GroupTemplate schema = schema();
 
-		assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
-				.isSameAs(schema);
+			assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
+					.isSameAs(schema);
+		}
 	}
 
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */

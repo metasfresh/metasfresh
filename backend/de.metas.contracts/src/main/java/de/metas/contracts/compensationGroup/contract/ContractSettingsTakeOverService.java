@@ -113,8 +113,7 @@ public class ContractSettingsTakeOverService
 
 	/**
 	 * The customer's payment-service fee, keyed by the linked SALES order's invoice partner and date, counts only when
-	 * the settings reference the very service company the fee belongs to; otherwise it is zero (also before the take-over
-	 * lookup, which would throw on an ambiguous take-over).
+	 * the settings reference the very service company the fee belongs to; otherwise it is zero.
 	 */
 	private ContractServiceFee resolveFeeToPassOn(@NonNull final OrderDropShipInfo order, @NonNull final ContractCompensationGroupSettings settings)
 	{

@@ -3,6 +3,7 @@ package de.metas.contracts.compensationGroup.contract;
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,19 +35,23 @@ class ContractServiceFeeTest
 	private static final ProductId FEE_PRODUCT_ID = ProductId.ofRepoId(201);
 	private static final BPartnerId SERVICE_COMPANY_ID = BPartnerId.ofRepoId(111);
 
-	@Test
-	void of_zeroPercent_isTheZeroFee()
+	@Nested
+	class of
 	{
-		assertThat(ContractServiceFee.of(Percent.ZERO, FEE_PRODUCT_ID, SERVICE_COMPANY_ID)).isSameAs(ContractServiceFee.ZERO);
-	}
+		@Test
+		void zeroPercent_isTheZeroFee()
+		{
+			assertThat(ContractServiceFee.of(Percent.ZERO, FEE_PRODUCT_ID, SERVICE_COMPANY_ID)).isSameAs(ContractServiceFee.ZERO);
+		}
 
-	@Test
-	void of_positivePercent_carriesProductAndServiceCompany()
-	{
-		final ContractServiceFee fee = ContractServiceFee.of(Percent.of(2), FEE_PRODUCT_ID, SERVICE_COMPANY_ID);
+		@Test
+		void positivePercent_carriesProductAndServiceCompany()
+		{
+			final ContractServiceFee fee = ContractServiceFee.of(Percent.of(2), FEE_PRODUCT_ID, SERVICE_COMPANY_ID);
 
-		assertThat(fee.isGreaterThanZero()).isTrue();
-		assertThat(fee.getFeeProductId()).isEqualTo(FEE_PRODUCT_ID);
-		assertThat(fee.getServiceCompanyBPartnerId()).isEqualTo(SERVICE_COMPANY_ID);
+			assertThat(fee.isGreaterThanZero()).isTrue();
+			assertThat(fee.getFeeProductId()).isEqualTo(FEE_PRODUCT_ID);
+			assertThat(fee.getServiceCompanyBPartnerId()).isEqualTo(SERVICE_COMPANY_ID);
+		}
 	}
 }
