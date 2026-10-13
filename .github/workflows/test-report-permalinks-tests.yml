@@ -48,7 +48,7 @@ jobs:
         run: pip install pytest
 
       - name: Run generator tests (pytest)
-        run: python -m pytest tests/test_generate_permalinks.py -q
+        run: python -m pytest tests/test_generate_permalinks.py tests/test_update_branch_metadata.py -q
 
       - name: Run resolver tests (node)
         run: node tests/permalink.test.js
