@@ -1,6 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.CCacheConfig;
 import de.metas.cache.CCacheStatsPredicate;
@@ -13,6 +14,7 @@ import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -111,6 +113,53 @@ class ContractCompensationGroupSettingsRepositoryTest
 		docType1.setC_DocType_ID(DOC_TYPE_2_ID.getRepoId());
 		saveRecord(docType1);
 		assertThat(settingsRepository.getBySettingsId(settingsId).getDocTypeIds()).containsExactlyInAnyOrder(DOC_TYPE_2_ID, DOC_TYPE_3_ID);
+	}
+
+	@Test
+	void getBySettingsId_passOnReferenceSet_returnsTheServiceCompanyOfTheReferencedRecord()
+	{
+		final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
+		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
+
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(111));
+	}
+
+	@Test
+	void getBySettingsId_passOnReferenceUnset_returnsNoServiceCompany()
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema());
+
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isNull();
+	}
+
+	@Test
+	void getBySettingsId_savingTheReferencedServiceCompanyRecord_isSeenByTheNextRead()
+	{
+		final I_InvoiceProcessingServiceCompany passOnConfig = createInvoiceProcessingServiceCompany(BPartnerId.ofRepoId(111));
+		final ContractCompensationGroupSettingsId settingsId = createSettings(createSchema(), passOnConfig);
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(111));
+
+		passOnConfig.setServiceCompany_BPartner_ID(112);
+		saveRecord(passOnConfig);
+
+		assertThat(settingsRepository.getBySettingsId(settingsId).getPassOnServiceCompanyBPartnerId()).isEqualTo(BPartnerId.ofRepoId(112));
+	}
+
+	private static I_InvoiceProcessingServiceCompany createInvoiceProcessingServiceCompany(final BPartnerId serviceCompanyId)
+	{
+		final I_InvoiceProcessingServiceCompany record = newInstance(I_InvoiceProcessingServiceCompany.class);
+		record.setServiceCompany_BPartner_ID(serviceCompanyId.getRepoId());
+		saveRecord(record);
+		return record;
+	}
+
+	private static ContractCompensationGroupSettingsId createSettings(final GroupTemplateId schemaId, final I_InvoiceProcessingServiceCompany passOnConfig)
+	{
+		final I_C_CompensationGroup_ContractSettings settings = newInstance(I_C_CompensationGroup_ContractSettings.class);
+		settings.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
+		settings.setPassOn_InvoiceProcessingServiceCompany_ID(passOnConfig.getInvoiceProcessingServiceCompany_ID());
+		saveRecord(settings);
+		return ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID());
 	}
 
 	private static GroupTemplateId createSchema()

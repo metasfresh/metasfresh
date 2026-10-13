@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
@@ -102,12 +103,12 @@ public class ContractCompensationGroupSettingsRepository
 	@Nullable
 	private static BPartnerId retrievePassOnServiceCompanyBPartnerIdOrNull(@NonNull final I_C_CompensationGroup_ContractSettings settingsRecord)
 	{
-		final int passOnConfigRepoId = settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID();
-		if (passOnConfigRepoId <= 0)
+		final InvoiceProcessingServiceCompanyConfigId passOnConfigId = InvoiceProcessingServiceCompanyConfigId.ofRepoIdOrNull(settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID());
+		if (passOnConfigId == null)
 		{
 			return null;
 		}
-		final I_InvoiceProcessingServiceCompany passOnConfig = load(passOnConfigRepoId, I_InvoiceProcessingServiceCompany.class);
+		final I_InvoiceProcessingServiceCompany passOnConfig = load(passOnConfigId, I_InvoiceProcessingServiceCompany.class);
 		return BPartnerId.ofRepoId(passOnConfig.getServiceCompany_BPartner_ID());
 	}
 

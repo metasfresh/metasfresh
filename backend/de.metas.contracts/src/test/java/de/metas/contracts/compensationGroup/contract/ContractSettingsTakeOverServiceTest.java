@@ -364,7 +364,7 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_singleMatchWithServiceFee_appendsTheFeeAsItsOwnLine()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-				final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
 		final ContractCompensationGroupSettings settings = createSettings(feeConfig, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 
@@ -383,7 +383,7 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_noCustomerBonusWithServiceFee_appendsOnlyTheFeeLineOnTheOnlyTakeOver()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-				final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B");
 		final ContractCompensationGroupSettings settings = createSettings(feeConfig, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
 
@@ -393,7 +393,7 @@ class ContractSettingsTakeOverServiceTest
 						settings)
 				.getCompensationLines();
 
-		assertThat(lines).containsExactly(expectedServiceFeeLine("2.15", "2.15% Markant Fee"));
+		assertThat(lines).containsExactly(expectedServiceFeeLine("2.15", "2.15% Service Fee B"));
 	}
 
 	@Test
@@ -401,7 +401,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-				final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B");
 		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(feeConfig, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
 
@@ -435,7 +435,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-				final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
 		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(feeConfig, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(bonusWareAId, "3"),
@@ -493,7 +493,7 @@ class ContractSettingsTakeOverServiceTest
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
 		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId); // field empty
 		final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
-		createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
+		createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B");
 		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
 
 		final GroupTemplate schema = schema();
@@ -523,8 +523,9 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_passOnServiceCompanyReferencesOlderVersionOfTheCustomersCompany_feeLineWithNewerPercent()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		// older version of the company's config (deactivated assignment), referenced by the settings
-		final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", SERVICE_COMPANY_ID, false);
+		// older version of the company's config: ValidFrom 2025-01-01, record stays active, only the customer's assignment on it is deactivated;
+		// the settings reference it, but the fee is resolved from the version valid at SO_DATE (2026-01-01, active assignment)
+		final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", SERVICE_COMPANY_ID, false, LocalDate.parse("2025-01-01"));
 		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee"); // newer version, active assignment
 		final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
@@ -663,20 +664,26 @@ class ContractSettingsTakeOverServiceTest
 		return createFeeConfig(customerId, feePercent, feeProductName, SERVICE_COMPANY_ID, true);
 	}
 
-	private I_InvoiceProcessingServiceCompany createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName, final BPartnerId serviceCompanyId, final boolean active)
+	private I_InvoiceProcessingServiceCompany createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName, final BPartnerId serviceCompanyId, final boolean isAssignmentActive)
+	{
+		return createFeeConfig(customerId, feePercent, feeProductName, serviceCompanyId, isAssignmentActive, LocalDate.parse("2026-01-01"));
+	}
+
+	/** The config record is always active; {@code isAssignmentActive} only governs the customer's assignment on it. */
+	private I_InvoiceProcessingServiceCompany createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName, final BPartnerId serviceCompanyId, final boolean isAssignmentActive, final LocalDate validFrom)
 	{
 		final ProductId feeProductId = product(feeProductName, null, null);
 
 		final I_InvoiceProcessingServiceCompany config = newInstance(I_InvoiceProcessingServiceCompany.class);
-		config.setIsActive(active);
+		config.setIsActive(true);
 		config.setServiceCompany_BPartner_ID(serviceCompanyId.getRepoId());
 		config.setServiceInvoice_DocType_ID(222);
 		config.setServiceFee_Product_ID(feeProductId.getRepoId());
-		config.setValidFrom(TimeUtil.asTimestamp(LocalDate.parse("2026-01-01").atStartOfDay(ZONE)));
+		config.setValidFrom(TimeUtil.asTimestamp(validFrom.atStartOfDay(ZONE)));
 		saveRecord(config);
 
 		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignment = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
-		assignment.setIsActive(active);
+		assignment.setIsActive(isAssignmentActive);
 		assignment.setInvoiceProcessingServiceCompany_ID(config.getInvoiceProcessingServiceCompany_ID());
 		assignment.setC_BPartner_ID(customerId.getRepoId());
 		assignment.setFeePercentageOfGrandTotal(new BigDecimal(feePercent));
