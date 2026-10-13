@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The bonus that a customer deducts when paying a sales invoice ("bei Zahlung"): a percentage of the invoice's net goods value, plus the VAT of the bonus products on top.
@@ -95,6 +96,58 @@ public class PaymentBonusDeduction
 			grossAmt = grossAmt.add(taxesById.get(entry.getKey()).calculateGross(entry.getValue(), precision.toInt()));
 		}
 		return Money.of(grossAmt, currencyId);
+	}
+
+	/**
+	 * Scales this deduction down for a customer who may deduct at most the given amount, e.g. because the payment leaves less open than this deduction.
+	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 * <p>
+	 * Use the returned deduction as it is: scaling this deduction again to the returned gross amount can land on a different amount when the lines have different taxes.
+	 *
+	 * @param maxGrossAmount the limit, in this deduction's currency; may be zero or negative
+	 * @return this deduction if the limit is not below its gross amount;
+	 * otherwise the scaled deduction with the largest gross amount not above the limit;
+	 * empty if the limit is not positive or no positive amount up to it can be reached
+	 */
+	public Optional<PaymentBonusDeduction> withLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	{
+		maxGrossAmount.assertCurrencyId(currencyId);
+
+		if (!maxGrossAmount.isLessThan(getGrossAmount()))
+		{
+			return Optional.of(this);
+		}
+
+		return scaleToLargestReachableGrossAmountNotAbove(maxGrossAmount);
+	}
+
+	/**
+	 * Scales this deduction to the given gross amount, up or down, e.g. to the amount that the customer actually deducted, like {@link #withGrossAmount(Money)}.
+	 * Unlike {@link #withLargestReachableGrossAmountNotAbove(Money)}, an amount above this deduction's gross amount is booked as it is, not lowered to this deduction.
+	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 *
+	 * @param grossAmount the amount to reach, in this deduction's currency; may be zero or negative
+	 * @return the scaled deduction with the largest gross amount not above the given one (this deduction if that is its own gross amount);
+	 * empty if the amount is not positive or no positive amount up to it can be reached
+	 */
+	public Optional<PaymentBonusDeduction> withLargestReachableGrossAmountUpTo(@NonNull final Money grossAmount)
+	{
+		grossAmount.assertCurrencyId(currencyId);
+		return scaleToLargestReachableGrossAmountNotAbove(grossAmount);
+	}
+
+	private Optional<PaymentBonusDeduction> scaleToLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	{
+		final Money oneCent = Money.of(BigDecimal.ONE.movePointLeft(precision.toInt()), currencyId);
+		for (Money candidate = maxGrossAmount; candidate.signum() > 0; candidate = candidate.subtract(oneCent))
+		{
+			final PaymentBonusDeduction scaled = withGrossAmount(candidate);
+			if (!scaled.getGrossAmount().isGreaterThan(maxGrossAmount))
+			{
+				return Optional.of(scaled);
+			}
+		}
+		return Optional.empty();
 	}
 
 	/**

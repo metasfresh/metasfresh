@@ -35,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -97,7 +98,7 @@ public class PayableDocument
 	private final Money openAmtInitial;
 
 	@Getter
-	private final AllocationAmounts amountsToAllocateInitial;
+	private AllocationAmounts amountsToAllocateInitial;
 	@Getter
 	private AllocationAmounts amountsToAllocate;
 	private AllocationAmounts amountsAllocated;
@@ -108,7 +109,7 @@ public class PayableDocument
 	/** The bonus that the customer deducted when paying; its gross amount is the {@link AllocationAmounts#getPaymentBonus()} to allocate. */
 	@Getter
 	@Nullable
-	private final PaymentBonusDeduction paymentBonusDeduction;
+	private PaymentBonusDeduction paymentBonusDeduction;
 
 	@Getter
 	private final ClientAndOrgId clientAndOrgId;
@@ -224,6 +225,28 @@ public class PayableDocument
 	{
 		amountsAllocated = amountsAllocated.add(amounts);
 		amountsToAllocate = amountsToAllocate.subtract(amounts);
+	}
+
+	/**
+	 * Lowers the payment bonus to the given scaled deduction; the amount by which it is lowered is to be paid instead.
+	 * Nothing may be allocated yet.
+	 *
+	 * @param reducedPaymentBonusDeduction the deduction scaled down to the new bonus, e.g. by {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)};
+	 *                                     {@code null} if the customer gets no bonus at all
+	 */
+	void reducePaymentBonusTo(@Nullable final PaymentBonusDeduction reducedPaymentBonusDeduction)
+	{
+		final Money oldPaymentBonus = amountsToAllocate.getPaymentBonus();
+		final Money paymentBonus = reducedPaymentBonusDeduction != null
+				? reducedPaymentBonusDeduction.getGrossAmount()
+				: oldPaymentBonus.toZero();
+		Check.assume(!paymentBonus.isGreaterThan(oldPaymentBonus), "the payment bonus {} shall not be raised to {}", oldPaymentBonus, paymentBonus);
+
+		this.paymentBonusDeduction = reducedPaymentBonusDeduction;
+
+		final Money payAmtToAdd = oldPaymentBonus.subtract(paymentBonus);
+		this.amountsToAllocate = amountsToAllocate.withPaymentBonus(paymentBonus).addPayAmt(payAmtToAdd);
+		this.amountsToAllocateInitial = amountsToAllocateInitial.withPaymentBonus(paymentBonus).addPayAmt(payAmtToAdd);
 	}
 
 	public void moveRemainingOpenAmtToDiscount()

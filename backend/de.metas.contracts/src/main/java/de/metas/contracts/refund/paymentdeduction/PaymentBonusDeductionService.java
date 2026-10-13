@@ -22,6 +22,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -72,7 +73,7 @@ import java.util.Optional;
  * It is deducted once per invoice: there is none if the invoice already has a payment bonus credit memo.
  */
 @Service
-public class PaymentBonusDeductionService
+public class PaymentBonusDeductionService implements PaymentBonusDeductionProvider
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -102,6 +103,7 @@ public class PaymentBonusDeductionService
 	/**
 	 * @return the bonus that the customer may deduct when paying the given invoice; empty if there is none, e.g. because it is no sales invoice, or none of its lines is in the base of a term that is deducted at payment
 	 */
+	@Override
 	public Optional<PaymentBonusDeduction> computeForInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		return newCalculator(ImmutableSet.of(invoiceId)).computeForInvoice(invoiceId);
