@@ -25,6 +25,9 @@ package de.metas.contracts.subscription;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
+
+import org.compiere.model.IQuery;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -101,6 +104,19 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName);
+
+	/**
+	 * Same selection as {@link #retrievePlannedAndDelayedDeliveries(Properties, Timestamp, String)}, but only for entries
+	 * of terms whose product is of type Item (the product type is the only term-related filter; the term's {@code IsActive} is not considered),
+	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}. The query is a guaranteed iterator that reads {@code pageSize} records per page.
+	 */
+	IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(Properties ctx, Timestamp date, String trxName, int pageSize);
+
+	/**
+	 * Streams the result of {@link #createPlannedAndDelayedDeliveriesQuery(Properties, Timestamp, String, int)} page by page.
+	 * Never collect the returned stream into a list: the point is to keep only one page in memory.
+	 */
+	Stream<I_C_SubscriptionProgress> streamPlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
 
 	/**
 	 * 

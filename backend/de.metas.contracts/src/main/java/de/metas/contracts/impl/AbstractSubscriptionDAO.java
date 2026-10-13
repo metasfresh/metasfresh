@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,6 +16,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -195,5 +198,46 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.addColumn(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID)
 				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
 				.create().list();
+	}
+
+	@Override
+	public final IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(
+			@NonNull final Properties ctx,
+			@NonNull final Timestamp date,
+			final String trxName,
+			final int pageSize)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		// product type only; deliberately no term IsActive filter (unlike SubscriptionShipmentScheduleHandler)
+		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
+				.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned, X_C_SubscriptionProgress.STATUS_Delayed)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, date)
+				.addInSubQueryFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, itemProductTermsQuery)
+				.orderBy()
+				.addColumn(I_C_SubscriptionProgress.COLUMN_EventDate)
+				.addColumn(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID)
+				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, pageSize);
+	}
+
+	@Override
+	public final Stream<I_C_SubscriptionProgress> streamPlannedAndDelayedDeliveries(
+			@NonNull final Properties ctx,
+			@NonNull final Timestamp date,
+			final String trxName,
+			final int pageSize)
+	{
+		return createPlannedAndDelayedDeliveriesQuery(ctx, date, trxName, pageSize).iterateAndStream();
 	}
 }
