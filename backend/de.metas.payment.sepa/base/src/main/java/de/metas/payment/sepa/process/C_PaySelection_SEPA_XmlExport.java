@@ -91,7 +91,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, sepaProtocolCode != null ? SEPAProtocol.ofCode(sepaProtocolCode) : null);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, SEPAProtocol.ofNullableCode(sepaProtocolCode));
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)

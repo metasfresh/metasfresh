@@ -59,4 +59,13 @@ public class SEPAProtocolTest
 		assertThat(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.isCreditTransfer()).isTrue();
 		assertThat(SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.isCreditTransfer()).isFalse();
 	}
+
+	@Test
+	void ofNullableCode_blankOrNull_returnsNull()
+	{
+		assertThat(SEPAProtocol.ofNullableCode(null)).isNull();
+		assertThat(SEPAProtocol.ofNullableCode("")).isNull();
+		assertThat(SEPAProtocol.ofNullableCode("  ")).isNull();
+		assertThat(SEPAProtocol.ofNullableCode("pain.001.001.03.ch.02")).isSameAs(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
+	}
 }

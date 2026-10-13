@@ -56,6 +56,12 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	@Nullable
+	public static SEPAProtocol ofNullableCode(@Nullable final String code)
+	{
+		return code != null && !code.trim().isEmpty() ? ofCode(code) : null;
+	}
+
 	public boolean isCreditTransfer()
 	{
 		return this == CREDIT_TRANSFER_PAIN_001_001_03_CH_02 || this == CREDIT_TRANSFER_PAIN_001_001_09_CH_03;
