@@ -1330,9 +1330,10 @@ Feature: EDI DESADV export via postgREST
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S29231_160 | ol_S29231_160  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S29231_160 | ol_S29231_160  | N             | 20           |
 
     # ─── First partial: ship 10 of 20 ──────────────────────────────────────────
     # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
@@ -1350,9 +1351,10 @@ Feature: EDI DESADV export via postgREST
     # Wait for the schedule to reflect the first partial delivery before invoking the second
     # generate-shipments run.  Without this recompute-wait the second workpackage may see a
     # stale QtyToDeliver and produce no shipment (same pattern as duplicateShipmentLineGuard.feature).
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S29231_160 | ol_S29231_160  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S29231_160 | ol_S29231_160  | N             | 10           |
 
     # ─── Second partial: ship the remaining 10 of 20 ───────────────────────────
     # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
