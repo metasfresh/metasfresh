@@ -7,6 +7,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
+import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -150,6 +152,25 @@ public class ContractOrderService
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addNotNull(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * @return {@code true} if the order has a line with subscription contract conditions; other contract types do not count for customer retention.
+	 */
+	public boolean isSubscriptionSalesOrder(@NonNull final OrderId orderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID,
+						I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID,
+						queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.SUBSCRIPTION)
+								.create())
 				.create()
 				.anyMatch();
 	}
