@@ -13,6 +13,7 @@
 	<properties>
 		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 		<metasfresh.version>10.0.0</metasfresh.version>
+		<migration-sql-basedir/>
 	</properties>
 
 	<groupId>de.metas.frontend-testing</groupId>
@@ -38,6 +39,11 @@
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>10.0.0</version>
 			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

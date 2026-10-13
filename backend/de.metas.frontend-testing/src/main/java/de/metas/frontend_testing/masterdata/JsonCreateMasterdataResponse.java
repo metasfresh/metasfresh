@@ -15,5 +15,9 @@ public class JsonCreateMasterdataResponse
 {
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> context;
 
+	/**
+	 * Sysconfig name to its value before the request; a sysconfig that did not exist before is present with a {@code null} value
+	 * (so the caller can tell "restore" from "delete").
+	 */
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
 }

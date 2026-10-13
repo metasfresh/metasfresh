@@ -4,57 +4,113 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.organization.OrgId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class FrontendTestingRestControllerTest
 {
+	private static final String SYSCONFIG_Enabled = "frontend.testing";
+
+	private ISysConfigBL sysConfigBL;
+	private UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
 	private FrontendTestingRestController controller;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		controller = new FrontendTestingRestController(new UserAuthTokenFilterConfiguration(), new CreateMasterdataCommandSupportingServices());
+		sysConfigBL = Services.get(ISysConfigBL.class);
+		userAuthTokenFilterConfiguration = mock(UserAuthTokenFilterConfiguration.class);
+		controller = new FrontendTestingRestController(userAuthTokenFilterConfiguration, new CreateMasterdataCommandSupportingServices());
 	}
 
-	private static void setEnabled(final String value)
+	private void setEnabled(final String value)
 	{
-		Services.get(ISysConfigBL.class).setValue("frontend.testing", value, ClientId.SYSTEM, OrgId.ANY);
+		sysConfigBL.setValue(SYSCONFIG_Enabled, value, ClientId.SYSTEM, OrgId.ANY);
+	}
+
+	private static JsonCreateMasterdataRequest requestWithSysconfig()
+	{
+		return JsonCreateMasterdataRequest.builder()
+				.sysconfigs(ImmutableMap.of("x", "1"))
+				.build();
 	}
 
 	@Test
 	void createMasterdata_refused_whenSysconfigNotSet()
 	{
-		assertThatThrownBy(() -> controller.createMasterdata(JsonCreateMasterdataRequest.builder().build()))
+		assertThatThrownBy(() -> controller.createMasterdata(requestWithSysconfig()))
 				.isInstanceOf(PermissionNotGrantedException.class);
+		assertThat(sysConfigBL.getValue("x")).isNull();
 	}
 
 	@Test
 	void createMasterdata_refused_whenSysconfigIsN()
 	{
 		setEnabled("N");
-		assertThatThrownBy(() -> controller.createMasterdata(JsonCreateMasterdataRequest.builder().build()))
+		assertThatThrownBy(() -> controller.createMasterdata(requestWithSysconfig()))
 				.isInstanceOf(PermissionNotGrantedException.class);
+		assertThat(sysConfigBL.getValue("x")).isNull();
 	}
 
 	@Test
-	void createMasterdata_allowed_whenSysconfigIsY()
+	void setSysconfigs_refused_whenSysconfigNotSet()
+	{
+		assertThatThrownBy(() -> controller.setSysconfigs(ImmutableMap.of("x", "1")))
+				.isInstanceOf(PermissionNotGrantedException.class);
+		assertThat(sysConfigBL.getValue("x")).isNull();
+	}
+
+	@Test
+	void setSysconfigs_refused_whenSysconfigIsN()
+	{
+		setEnabled("N");
+		assertThatThrownBy(() -> controller.setSysconfigs(ImmutableMap.of("x", "1")))
+				.isInstanceOf(PermissionNotGrantedException.class);
+		assertThat(sysConfigBL.getValue("x")).isNull();
+	}
+
+	@Test
+	void createMasterdata_writesSysconfigs_andReportsPreviousValues_whenSysconfigIsY()
 	{
 		setEnabled("Y");
+		sysConfigBL.setValue("existing", "old", ClientId.METASFRESH, OrgId.MAIN);
+
+		final HashMap<String, String> sysconfigs = new HashMap<>();
+		sysconfigs.put("existing", "new");
+		sysconfigs.put("brandNew", "1");
 		final JsonCreateMasterdataResponse response = controller.createMasterdata(JsonCreateMasterdataRequest.builder()
-				.sysconfigs(ImmutableMap.of("some.test.sysconfig", "abc"))
+				.sysconfigs(sysconfigs)
 				.build());
-		assertThat(response).isNotNull();
+
+		assertThat(sysConfigBL.getValue("existing", ClientAndOrgId.MAIN_ORG)).isEqualTo("new");
+		assertThat(sysConfigBL.getValue("brandNew", ClientAndOrgId.MAIN_ORG)).isEqualTo("1");
+		final HashMap<String, String> expectedPrevious = new HashMap<>();
+		expectedPrevious.put("existing", "old");
+		expectedPrevious.put("brandNew", null);
+		assertThat(response.getPreviousSysconfigs()).isEqualTo(expectedPrevious);
+	}
+
+	@Test
+	void postConstruct_registersUnauthenticatedPath()
+	{
+		controller.postConstruct();
+
+		verify(userAuthTokenFilterConfiguration).doNotAuthenticatePathsContaining(FrontendTestingRestController.ENDPOINT);
 	}
 }

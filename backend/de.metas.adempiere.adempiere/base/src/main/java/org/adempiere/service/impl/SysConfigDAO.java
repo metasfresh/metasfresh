@@ -120,6 +120,16 @@ public class SysConfigDAO implements ISysConfigDAO
 	}
 
 	@Override
+	public Optional<String> getConfigurationLevel(@NonNull final String name)
+	{
+		final String level = DB.getSQLValueStringEx(
+				ITrx.TRXNAME_None,
+				"SELECT ConfigurationLevel FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0",
+				name);
+		return Optional.ofNullable(level);
+	}
+
+	@Override
 	public List<String> retrieveNamesForPrefix(
 			@NonNull final String prefix,
 			@NonNull final ClientAndOrgId clientAndOrgId)

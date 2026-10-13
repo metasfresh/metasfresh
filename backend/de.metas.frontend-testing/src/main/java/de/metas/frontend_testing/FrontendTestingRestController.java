@@ -104,6 +104,7 @@ public class FrontendTestingRestController
 	public void setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
 	{
 		callInContext(() -> {
+			logger.warn("Frontend testing: setting sysconfigs {}", sysconfigs.keySet());
 			SysconfigCommand.builder()
 					.sysconfigs(sysconfigs)
 					.build()
