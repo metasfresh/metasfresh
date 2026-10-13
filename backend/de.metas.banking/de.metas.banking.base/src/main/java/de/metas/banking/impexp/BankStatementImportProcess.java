@@ -246,13 +246,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	/**
-	 * The line is only linked to the invoice if it is a sales invoice whose partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
+	 * The line is only linked to the (sales) invoice if its partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
 	 * in the currency of the line.
 	 */
 	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{
 		return SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
-				.computeDeductionGrossAmount(invoice.getSoTrx().isSales(), invoice.getInvoiceId(), () -> lineCurrencyId)
+				.computeDeduction(invoice.getInvoiceId(), lineCurrencyId)
 				.isPresent();
 	}
 

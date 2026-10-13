@@ -22,15 +22,16 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Finds the invoice that an imported bank statement line refers to.
+ * Finds the sales invoice that an imported bank statement line refers to; only a sales invoice can have a payment bonus.
  * <ol>
  * <li>{@code I_BankStatement.C_Invoice_ID}, if set (no fallback to the document number if that invoice does not qualify);</li>
  * <li>else the invoice whose document number is the InvoiceDocumentNo, the Memo or the LineDescription.
- * This mirrors the document-number rule of the CAMT import, without its ESR reference leg.
+ * Like the document-number rule of the CAMT import (without its ESR reference leg), but stricter: the invoice has to be of the same organization and, if known, of the same partner.
  * If the candidates refer to more than one invoice, none is referenced.</li>
  * </ol>
- * The invoice has to be unpaid and completed or closed, and of the organization of the import record.
- * If the import record already has a business partner, the invoice has to be of that partner.
+ * The invoice has to be an unpaid, completed or closed sales invoice of the organization of the import record.
+ * If the import record already has a business partner, the invoice has to be of that partner;
+ * so a purchase invoice or an invoice of another partner with the same document number does not make the match ambiguous.
  * No amount is matched.
  */
 class BankStatementImportInvoiceResolver
@@ -42,13 +43,13 @@ class BankStatementImportInvoiceResolver
 	{
 		@NonNull InvoiceId invoiceId;
 		@NonNull BPartnerId bpartnerId;
-		@NonNull SOTrx soTrx;
 	}
 
 	Optional<ReferencedInvoice> resolve(@NonNull final I_I_BankStatement importRecord)
 	{
 		final OrgId orgId = OrgId.ofRepoId(importRecord.getAD_Org_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(importRecord.getC_Invoice_ID());
+		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 
 		final ImmutableSet<String> documentNos;
 		if (invoiceId != null)
@@ -71,6 +72,8 @@ class BankStatementImportInvoiceResolver
 				.onlyInvoiceId(invoiceId)
 				.onlyDocumentNos(documentNos)
 				.onlyOrgId(orgId)
+				.onlyBPartnerId(importedBPartnerId)
+				.onlySOTrx(SOTrx.SALES)
 				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed, DocStatus.Closed))
 				.queryLimit(QueryLimit.TWO)
 				.build());
@@ -80,13 +83,6 @@ class BankStatementImportInvoiceResolver
 		}
 
 		final I_C_Invoice invoice = invoices.get(0);
-		final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
-		if (importedBPartnerId != null && !importedBPartnerId.equals(invoiceBPartnerId))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(new ReferencedInvoice(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoiceBPartnerId, SOTrx.ofBooleanNotNull(invoice.isSOTrx())));
+		return Optional.of(new ReferencedInvoice(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
 	}
 }

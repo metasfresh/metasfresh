@@ -5,7 +5,6 @@ import de.metas.banking.impexp.BankStatementImportInvoiceResolver.ReferencedInvo
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -90,7 +89,6 @@ class BankStatementImportInvoiceResolverTest
 		assertThat(result).isNotNull();
 		assertThat(result.getInvoiceId()).isEqualTo(invoiceId);
 		assertThat(result.getBpartnerId()).isEqualTo(BPartnerId.ofRepoId(PARTNER_A));
-		assertThat(result.getSoTrx()).isEqualTo(SOTrx.SALES);
 	}
 
 	@Test
@@ -216,9 +214,40 @@ class BankStatementImportInvoiceResolverTest
 	}
 
 	@Test
-	void aPurchaseInvoiceIsResolved_butNotMarkedAsSales()
+	void aPurchaseInvoice_noInvoice()
 	{
 		invoice().documentNo("100").sales(false).build();
-		assertThat(resolver.resolve(importLine().invoiceDocumentNo("100").build()).map(ReferencedInvoice::getSoTrx)).contains(SOTrx.PURCHASE);
+		assertThat(resolver.resolve(importLine().invoiceDocumentNo("100").build())).isEmpty();
+	}
+
+	@Test
+	void invoiceId_ofAPurchaseInvoice_noInvoice()
+	{
+		final InvoiceId invoiceId = invoice().documentNo("100").sales(false).build();
+		assertThat(resolver.resolve(importLine().invoiceId(invoiceId).build())).isEmpty();
+	}
+
+	@Test
+	void aPurchaseInvoiceWithTheSameNumber_doesNotMakeItAmbiguous()
+	{
+		invoice().documentNo("100").partnerId(PARTNER_B).sales(false).build();
+		final InvoiceId salesInvoiceId = invoice().documentNo("100").build();
+		assertThat(resolvedInvoiceId(importLine().invoiceDocumentNo("100").build())).isEqualTo(salesInvoiceId);
+	}
+
+	@Test
+	void anInvoiceOfAnotherPartnerThanTheImportedOneWithTheSameNumber_doesNotMakeItAmbiguous()
+	{
+		invoice().documentNo("100").partnerId(PARTNER_B).build();
+		final InvoiceId ownInvoiceId = invoice().documentNo("100").partnerId(PARTNER_A).build();
+		assertThat(resolvedInvoiceId(importLine().invoiceDocumentNo("100").partnerId(PARTNER_A).build())).isEqualTo(ownInvoiceId);
+	}
+
+	@Test
+	void anInvoiceOfAnotherPartnerThanTheImportedOneReferencedInTheMemo_doesNotMakeItAmbiguous()
+	{
+		final InvoiceId ownInvoiceId = invoice().documentNo("100").partnerId(PARTNER_A).build();
+		invoice().documentNo("200").partnerId(PARTNER_B).build();
+		assertThat(resolvedInvoiceId(importLine().invoiceDocumentNo("100").memo("200").partnerId(PARTNER_A).build())).isEqualTo(ownInvoiceId);
 	}
 }

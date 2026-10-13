@@ -24,7 +24,9 @@ package de.metas.invoice;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,6 +54,14 @@ public class UnpaidInvoiceQuery
 	/** If set, only invoices of this organization. */
 	@Nullable
 	OrgId onlyOrgId;
+
+	/** If set, only invoices of this business partner. */
+	@Nullable
+	BPartnerId onlyBPartnerId;
+
+	/** If set, only sales or only purchase invoices. */
+	@Nullable
+	SOTrx onlySOTrx;
 
 	@NonNull
 	ImmutableSet<DocStatus> onlyDocStatuses;
