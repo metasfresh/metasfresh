@@ -29,6 +29,8 @@ import java.util.Map;
 
 public class CreateBPartnerCommand
 {
+	private static final String DEFAULT_COUNTRY_CODE = "DE";
+
 	@NonNull private final IBPartnerDAO bpartnerDAO;
 	@NonNull private final IBPGroupDAO bpGroupDAO;
 	@NonNull private final ICountryDAO countryDAO;
@@ -140,9 +142,7 @@ public class CreateBPartnerCommand
 
 	private LocationId createLocation(@NonNull final JsonCreateBPartnerRequest.Location locationRequest)
 	{
-		final CountryId countryId = locationRequest.getCountryCode() != null
-				? countryDAO.getCountryIdByCountryCode(locationRequest.getCountryCode())
-				: countryDAO.getDefaultCountryId();
+		final CountryId countryId = countryDAO.getCountryIdByCountryCode(CoalesceUtil.coalesceNotNull(locationRequest.getCountryCode(), DEFAULT_COUNTRY_CODE));
 
 		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 		location.setC_Country_ID(countryId.getRepoId());

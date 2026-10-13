@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
@@ -53,7 +54,7 @@ class CreateMasterdataCommandBPartnerTest
 		defaultGroupId = newBPGroup("Standard", true);
 		customGroupId = newBPGroup("Kunde", false);
 
-		germanCountryId = newCountry("DE", 101) /* the platform default country, see CountryDAO */;
+		germanCountryId = newCountry("DE", 201) /* deliberately not the platform default country 101: a missing countryCode must still mean DE, as on new_dawn */;
 		swissCountryId = newCountry("CH", 102);
 	}
 
@@ -226,6 +227,25 @@ class CreateMasterdataCommandBPartnerTest
 		assertThat(bpartner.isVendor()).isTrue();
 		assertThat(bpartner.isCustomer()).isFalse();
 		assertThat(request.getExternalReferences()).containsExactly(externalReference("BPartner", "bp1"));
+	}
+
+	@Test
+	void responseJsonContract() throws Exception
+	{
+		final JsonCreateMasterdataResponse response = JsonCreateMasterdataResponse.builder()
+				.bpartners(ImmutableMap.of(
+						"bp1", JsonCreateBPartnerResponse.builder().id(BPartnerId.ofRepoId(11)).bpartnerCode("X1").bpartnerLocationId(12).build(),
+						"bp2", JsonCreateBPartnerResponse.builder().id(BPartnerId.ofRepoId(21)).bpartnerCode("X2")
+								.locations(ImmutableMap.of("loc1", JsonCreateBPartnerResponse.Location.builder().id(22).build()))
+								.build()))
+				.build();
+
+		final JsonNode json = JsonObjectMapperHolder.sharedJsonObjectMapper().valueToTree(response);
+
+		assertThat(json.at("/bpartners/bp1/id").asInt()).isEqualTo(11);
+		assertThat(json.at("/bpartners/bp1/bpartnerCode").asText()).isEqualTo("X1");
+		assertThat(json.at("/bpartners/bp1/bpartnerLocationId").asInt()).isEqualTo(12);
+		assertThat(json.at("/bpartners/bp2/locations/loc1/id").asInt()).isEqualTo(22);
 	}
 
 	private static JsonCreateExternalReferenceRequest externalReference(final String type, final String referencedRecord)

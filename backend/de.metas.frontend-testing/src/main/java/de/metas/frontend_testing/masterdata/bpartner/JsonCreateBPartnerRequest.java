@@ -48,7 +48,7 @@ public class JsonCreateBPartnerRequest
 		@Nullable String city;
 		@Nullable String postal;
 		@Nullable String address1;
-		/** ISO 2-letter country code, e.g. {@code "DE"}. If null, the default country is used. */
+		/** ISO 2-letter country code, e.g. {@code "CH"}. If null, Germany ({@code "DE"}) is used, as on new_dawn. */
 		@Nullable String countryCode;
 	}
 }
