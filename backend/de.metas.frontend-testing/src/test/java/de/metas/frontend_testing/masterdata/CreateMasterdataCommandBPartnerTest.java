@@ -2,6 +2,10 @@ package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -58,7 +62,7 @@ class CreateMasterdataCommandBPartnerTest
 		final I_C_BP_Group record = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		record.setName(name);
 		record.setIsDefault(isDefault);
-		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", ClientId.METASFRESH.getRepoId());
+		InterfaceWrapperHelper.setValue(record, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		record.setAD_Org_ID(0);
 		InterfaceWrapperHelper.saveRecord(record);
 		return record.getC_BP_Group_ID();
@@ -80,20 +84,23 @@ class CreateMasterdataCommandBPartnerTest
 	}
 
 	@Test
-	void createsBPartnerWithLocationAndExternalReference()
+	void createsBPartnerWithLocationsAndExternalReference()
 	{
 		final JsonCreateMasterdataResponse response = execute(JsonCreateMasterdataRequest.builder()
+				.context(ImmutableMap.of(BPGroupId.class.getName() + ":grp", customGroupId))
 				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder()
-						.code("BP-100")
+						.bpartnerCode("BP-100")
 						.name("Test Partner")
-						.group("Kunde")
+						.bpGroup(Identifier.ofString("grp"))
 						.isVendor(true)
-						.location(JsonCreateBPartnerRequest.Location.builder()
-								.address1("Main St 1")
-								.postal("8000")
-								.city("Zurich")
-								.countryCode("CH")
-								.build())
+						.locations(ImmutableMap.of(
+								"loc1", JsonCreateBPartnerRequest.Location.builder()
+										.address1("Main St 1")
+										.postal("8000")
+										.city("Zurich")
+										.countryCode("CH")
+										.build(),
+								"loc2", JsonCreateBPartnerRequest.Location.builder().build()))
 						.build()))
 				.externalReferences(ImmutableList.of(JsonCreateExternalReferenceRequest.builder()
 						.type("BPartner")
@@ -104,6 +111,8 @@ class CreateMasterdataCommandBPartnerTest
 				.build());
 
 		final JsonCreateBPartnerResponse bpResponse = response.getBpartners().get("bp1");
+		assertThat(bpResponse.getBpartnerCode()).isEqualTo("BP-100");
+		assertThat(bpResponse.getBpartnerLocationId()).isNull();
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpResponse.getId(), I_C_BPartner.class);
 		assertThat(bpartner.getValue()).isEqualTo("BP-100");
 		assertThat(bpartner.getName()).isEqualTo("Test Partner");
@@ -111,13 +120,18 @@ class CreateMasterdataCommandBPartnerTest
 		assertThat(bpartner.isCustomer()).isTrue();
 		assertThat(bpartner.isVendor()).isTrue();
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.load(bpResponse.getLocationId(), I_C_BPartner_Location.class);
-		assertThat(bpLocation.getC_BPartner_ID()).isEqualTo(bpartner.getC_BPartner_ID());
-		final I_C_Location location = bpLocation.getC_Location();
+		final I_C_BPartner_Location bpLocation1 = InterfaceWrapperHelper.load(bpResponse.getLocations().get("loc1").getId(), I_C_BPartner_Location.class);
+		assertThat(bpLocation1.getC_BPartner_ID()).isEqualTo(bpartner.getC_BPartner_ID());
+		assertThat(bpLocation1.isBillToDefault()).isTrue();
+		final I_C_Location location = bpLocation1.getC_Location();
 		assertThat(location.getAddress1()).isEqualTo("Main St 1");
 		assertThat(location.getPostal()).isEqualTo("8000");
 		assertThat(location.getCity()).isEqualTo("Zurich");
 		assertThat(location.getC_Country_ID()).isEqualTo(swissCountryId);
+
+		final I_C_BPartner_Location bpLocation2 = InterfaceWrapperHelper.load(bpResponse.getLocations().get("loc2").getId(), I_C_BPartner_Location.class);
+		assertThat(bpLocation2.isBillToDefault()).isFalse();
+		assertThat(bpLocation2.getC_Location().getC_Country_ID()).isEqualTo(germanCountryId);
 
 		final List<I_S_ExternalReference> externalReferences = queryBL.createQueryBuilder(I_S_ExternalReference.class).create().list();
 		assertThat(externalReferences).hasSize(1);
@@ -127,25 +141,32 @@ class CreateMasterdataCommandBPartnerTest
 		assertThat(externalReference.getExternalReference()).isEqualTo("12345");
 		assertThat(externalReference.getRecord_ID()).isEqualTo(bpartner.getC_BPartner_ID());
 
-		assertThat(response.getContext()).containsValue(bpartner.getC_BPartner_ID());
+		assertThat(response.getContext())
+				.containsEntry(BPartnerId.class.getName() + ":bp1", bpartner.getC_BPartner_ID())
+				.containsEntry(BPartnerLocationId.class.getName() + ":loc1", bpartner.getC_BPartner_ID() + "_" + bpResponse.getLocations().get("loc1").getId());
 	}
 
 	@Test
-	void defaultsGroupNameAndCountry()
+	void defaultsCodeNameGroupAndSingleLocation()
 	{
 		final JsonCreateMasterdataResponse response = execute(JsonCreateMasterdataRequest.builder()
-				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().code("BP-200").build()))
+				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().build()))
 				.build());
 
 		final JsonCreateBPartnerResponse bpResponse = response.getBpartners().get("bp1");
+		assertThat(bpResponse.getBpartnerCode()).startsWith("bp1_");
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpResponse.getId(), I_C_BPartner.class);
-		assertThat(bpartner.getName()).isEqualTo("BP-200");
+		assertThat(bpartner.getValue()).isEqualTo(bpResponse.getBpartnerCode());
+		assertThat(bpartner.getName()).isEqualTo(bpResponse.getBpartnerCode());
 		assertThat(bpartner.getC_BP_Group_ID()).isEqualTo(defaultGroupId);
 		assertThat(bpartner.isCustomer()).isTrue();
 		assertThat(bpartner.isVendor()).isFalse();
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.load(bpResponse.getLocationId(), I_C_BPartner_Location.class);
+		assertThat(bpResponse.getLocations()).isNull();
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.load(bpResponse.getBpartnerLocationId(), I_C_BPartner_Location.class);
+		assertThat(bpLocation.getC_BPartner_ID()).isEqualTo(bpartner.getC_BPartner_ID());
 		assertThat(bpLocation.getC_Location().getC_Country_ID()).isEqualTo(germanCountryId);
+		assertThat(response.getContext()).containsKey(BPartnerLocationId.class.getName() + ":bp1" + MasterdataContext.SINGLE_BP_LOCATION_SUFFIX);
 		assertThat(queryBL.createQueryBuilder(I_S_ExternalReference.class).create().count()).isZero();
 	}
 
@@ -153,12 +174,7 @@ class CreateMasterdataCommandBPartnerTest
 	void externalReferenceToUnknownBPartner_isRejected()
 	{
 		assertThatThrownBy(() -> execute(JsonCreateMasterdataRequest.builder()
-				.externalReferences(ImmutableList.of(JsonCreateExternalReferenceRequest.builder()
-						.type("BPartner")
-						.externalSystem("Other")
-						.value("12345")
-						.referencedRecord("missing")
-						.build()))
+				.externalReferences(ImmutableList.of(externalReference("BPartner", "missing")))
 				.build()))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("missing");
@@ -167,26 +183,66 @@ class CreateMasterdataCommandBPartnerTest
 	@Test
 	void unknownExternalReferenceType_isRejected()
 	{
-		assertThatThrownBy(() -> execute(JsonCreateMasterdataRequest.builder()
-				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().code("BP-300").build()))
-				.externalReferences(ImmutableList.of(JsonCreateExternalReferenceRequest.builder()
-						.type("NoSuchType")
-						.externalSystem("Other")
-						.value("12345")
-						.referencedRecord("bp1")
-						.build()))
-				.build()))
+		assertThatThrownBy(() -> execute(requestWithBPartnerAndExternalReference("NoSuchType")))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("NoSuchType");
 	}
 
 	@Test
-	void unknownBPGroup_isRejected()
+	void externalReferenceTypeOfOtherTable_isRejected()
+	{
+		assertThatThrownBy(() -> execute(requestWithBPartnerAndExternalReference("Product")))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Product");
+		assertThat(queryBL.createQueryBuilder(I_S_ExternalReference.class).create().count()).isZero();
+	}
+
+	@Test
+	void unknownBPGroupIdentifier_isRejected()
 	{
 		assertThatThrownBy(() -> execute(JsonCreateMasterdataRequest.builder()
-				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().code("BP-400").group("NoSuchGroup").build()))
+				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().bpGroup(Identifier.ofString("noSuchGroup")).build()))
 				.build()))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("NoSuchGroup");
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("noSuchGroup");
+	}
+
+	@Test
+	void requestJsonContract() throws Exception
+	{
+		final JsonCreateMasterdataRequest request = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(
+				"{\"bpartners\":{\"bp1\":{\"bpartnerCode\":\"X1\",\"name\":\"N1\",\"bpGroup\":\"grp\","
+						+ "\"locations\":{\"loc1\":{\"city\":\"Berlin\",\"postal\":\"10115\",\"address1\":\"A 1\",\"countryCode\":\"DE\"}},"
+						+ "\"isVendor\":true,\"isCustomer\":false}},"
+						+ "\"externalReferences\":[{\"type\":\"BPartner\",\"externalSystem\":\"Other\",\"value\":\"12345\",\"referencedRecord\":\"bp1\"}]}",
+				JsonCreateMasterdataRequest.class);
+
+		final JsonCreateBPartnerRequest bpartner = request.getBpartners().get("bp1");
+		assertThat(bpartner.getBpartnerCode()).isEqualTo("X1");
+		assertThat(bpartner.getName()).isEqualTo("N1");
+		assertThat(bpartner.getBpGroup()).isEqualTo(Identifier.ofString("grp"));
+		assertThat(bpartner.getLocations().get("loc1")).isEqualTo(JsonCreateBPartnerRequest.Location.builder()
+				.city("Berlin").postal("10115").address1("A 1").countryCode("DE").build());
+		assertThat(bpartner.isVendor()).isTrue();
+		assertThat(bpartner.isCustomer()).isFalse();
+		assertThat(request.getExternalReferences()).containsExactly(externalReference("BPartner", "bp1"));
+	}
+
+	private static JsonCreateExternalReferenceRequest externalReference(final String type, final String referencedRecord)
+	{
+		return JsonCreateExternalReferenceRequest.builder()
+				.type(type)
+				.externalSystem("Other")
+				.value("12345")
+				.referencedRecord(referencedRecord)
+				.build();
+	}
+
+	private static JsonCreateMasterdataRequest requestWithBPartnerAndExternalReference(final String type)
+	{
+		return JsonCreateMasterdataRequest.builder()
+				.bpartners(ImmutableMap.of("bp1", JsonCreateBPartnerRequest.builder().bpartnerCode("BP-300").build()))
+				.externalReferences(ImmutableList.of(externalReference(type, "bp1")))
+				.build();
 	}
 }

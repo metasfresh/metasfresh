@@ -22,6 +22,6 @@ public class JsonCreateMasterdataRequest
 	/** Business partners to create, by identifier. */
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 
-	/** External references to create; they refer to partners from {@code bpartners} (or the {@code context}). */
+	/** External references to create; each refers to a partner by identifier: a key of {@code bpartners} or a {@code context} identifier. Not present in the later (new_dawn-based) releases. */
 	@Nullable List<JsonCreateExternalReferenceRequest> externalReferences;
 }

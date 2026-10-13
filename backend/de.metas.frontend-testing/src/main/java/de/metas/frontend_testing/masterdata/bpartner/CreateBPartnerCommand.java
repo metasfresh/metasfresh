@@ -2,17 +2,20 @@ package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -21,9 +24,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class CreateBPartnerCommand
 {
-	@NonNull private final IQueryBL queryBL;
+	@NonNull private final IBPartnerDAO bpartnerDAO;
 	@NonNull private final IBPGroupDAO bpGroupDAO;
 	@NonNull private final ICountryDAO countryDAO;
 	@NonNull private final ILocationDAO locationDAO;
@@ -34,7 +40,7 @@ public class CreateBPartnerCommand
 
 	@Builder
 	private CreateBPartnerCommand(
-			@NonNull final IQueryBL queryBL,
+			@NonNull final IBPartnerDAO bpartnerDAO,
 			@NonNull final IBPGroupDAO bpGroupDAO,
 			@NonNull final ICountryDAO countryDAO,
 			@NonNull final ILocationDAO locationDAO,
@@ -42,7 +48,7 @@ public class CreateBPartnerCommand
 			@NonNull final Identifier identifier,
 			@NonNull final JsonCreateBPartnerRequest request)
 	{
-		this.queryBL = queryBL;
+		this.bpartnerDAO = bpartnerDAO;
 		this.bpGroupDAO = bpGroupDAO;
 		this.countryDAO = countryDAO;
 		this.locationDAO = locationDAO;
@@ -53,8 +59,10 @@ public class CreateBPartnerCommand
 
 	public JsonCreateBPartnerResponse execute()
 	{
-		final String code = CoalesceUtil.coalesceNotNull(request.getCode(), identifier.getAsString());
-		final String name = CoalesceUtil.coalesceNotNull(request.getName(), code);
+		final String code = CoalesceUtil.coalesceNotNull(
+				StringUtils.trimBlankToNull(request.getBpartnerCode()),
+				identifier.toUniqueString());
+		final String name = CoalesceUtil.coalesceNotNull(StringUtils.trimBlankToNull(request.getName()), code);
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setAD_Org_ID(OrgId.MAIN.getRepoId());
@@ -65,74 +73,83 @@ public class CreateBPartnerCommand
 		bpartner.setC_BP_Group_ID(getBPGroupId().getRepoId());
 		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setIsVendor(request.isVendor());
-		InterfaceWrapperHelper.saveRecord(bpartner);
+		bpartnerDAO.save(bpartner);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(identifier, bpartnerId);
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		bpLocation.setAD_Org_ID(OrgId.MAIN.getRepoId());
-		bpLocation.setC_BPartner_ID(bpartnerId.getRepoId());
-		bpLocation.setC_Location_ID(createLocation().getC_Location_ID());
-		bpLocation.setIsBillToDefault(true);
-		bpLocation.setIsShipToDefault(true);
-		bpLocation.setIsShipTo(true);
-		InterfaceWrapperHelper.saveRecord(bpLocation);
+		final JsonCreateBPartnerResponse.JsonCreateBPartnerResponseBuilder response = JsonCreateBPartnerResponse.builder()
+				.id(bpartnerId)
+				.bpartnerCode(code);
 
-		return JsonCreateBPartnerResponse.builder()
-				.id(bpartnerId.getRepoId())
-				.code(code)
-				.locationId(bpLocation.getC_BPartner_Location_ID())
-				.build();
+		if (request.getLocations() == null || request.getLocations().isEmpty())
+		{
+			final BPartnerLocationId bpLocationId = createBPLocation(JsonCreateBPartnerRequest.Location.builder().build(), bpartnerId, true);
+			context.putIdentifier(Identifier.ofString(identifier.getAsString() + MasterdataContext.SINGLE_BP_LOCATION_SUFFIX), bpLocationId);
+			response.bpartnerLocationId(bpLocationId.getRepoId());
+		}
+		else
+		{
+			final Map<String, JsonCreateBPartnerResponse.Location> responseLocations = new LinkedHashMap<>();
+			boolean isFirstLocation = true;
+			for (final Map.Entry<String, JsonCreateBPartnerRequest.Location> entry : request.getLocations().entrySet())
+			{
+				final BPartnerLocationId bpLocationId = createBPLocation(entry.getValue(), bpartnerId, isFirstLocation);
+				isFirstLocation = false;
+
+				context.putIdentifier(Identifier.ofString(entry.getKey()), bpLocationId);
+				responseLocations.put(entry.getKey(), JsonCreateBPartnerResponse.Location.builder().id(bpLocationId.getRepoId()).build());
+			}
+			response.locations(responseLocations);
+		}
+
+		return response.build();
 	}
 
 	private BPGroupId getBPGroupId()
 	{
-		if (request.getGroup() == null)
+		if (request.getBpGroup() != null)
 		{
-			final I_C_BP_Group defaultGroup = bpGroupDAO.getDefaultByClientId(ClientId.METASFRESH);
-			if (defaultGroup == null)
-			{
-				throw new AdempiereException("No default BP group found; specify `group`");
-			}
-			return BPGroupId.ofRepoId(defaultGroup.getC_BP_Group_ID());
+			return context.getId(request.getBpGroup(), BPGroupId.class);
 		}
 
-		final BPGroupId bpGroupId = queryBL.createQueryBuilder(I_C_BP_Group.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_Name, request.getGroup())
-				.create()
-				.firstIdOnly(BPGroupId::ofRepoIdOrNull);
-		if (bpGroupId == null)
+		final I_C_BP_Group defaultGroup = bpGroupDAO.getDefaultByClientId(ClientId.METASFRESH);
+		if (defaultGroup == null)
 		{
-			throw new AdempiereException("No BP group found with name `" + request.getGroup() + "`");
+			throw new AdempiereException("No default BP group found; specify `bpGroup`");
 		}
-		return bpGroupId;
+		return BPGroupId.ofRepoId(defaultGroup.getC_BP_Group_ID());
 	}
 
-	private I_C_Location createLocation()
+	private BPartnerLocationId createBPLocation(
+			@NonNull final JsonCreateBPartnerRequest.Location locationRequest,
+			@NonNull final BPartnerId bpartnerId,
+			final boolean isDefault)
 	{
-		final JsonCreateBPartnerRequest.Location locationRequest = request.getLocation();
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bpLocation.setAD_Org_ID(OrgId.MAIN.getRepoId());
+		bpLocation.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpLocation.setC_Location_ID(createLocation(locationRequest).getRepoId());
+		bpLocation.setIsBillToDefault(isDefault);
+		bpLocation.setIsShipToDefault(isDefault);
+		bpLocation.setIsShipTo(true);
+		bpartnerDAO.save(bpLocation);
 
-		final CountryId countryId;
-		if (locationRequest != null && locationRequest.getCountryCode() != null)
-		{
-			countryId = countryDAO.getCountryIdByCountryCode(locationRequest.getCountryCode());
-		}
-		else
-		{
-			countryId = countryDAO.getDefaultCountryId();
-		}
+		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocation.getC_BPartner_Location_ID());
+	}
+
+	private LocationId createLocation(@NonNull final JsonCreateBPartnerRequest.Location locationRequest)
+	{
+		final CountryId countryId = locationRequest.getCountryCode() != null
+				? countryDAO.getCountryIdByCountryCode(locationRequest.getCountryCode())
+				: countryDAO.getDefaultCountryId();
 
 		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 		location.setC_Country_ID(countryId.getRepoId());
-		if (locationRequest != null)
-		{
-			location.setAddress1(locationRequest.getAddress1());
-			location.setPostal(locationRequest.getPostal());
-			location.setCity(locationRequest.getCity());
-		}
+		location.setAddress1(locationRequest.getAddress1());
+		location.setPostal(locationRequest.getPostal());
+		location.setCity(locationRequest.getCity());
 		locationDAO.save(location);
-		return location;
+		return LocationId.ofRepoId(location.getC_Location_ID());
 	}
 }

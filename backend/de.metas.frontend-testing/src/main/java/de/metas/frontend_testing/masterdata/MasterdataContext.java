@@ -18,6 +18,11 @@ import java.util.Objects;
 
 public class MasterdataContext
 {
+	/**
+	 * Suffix under which a partner's single default location is registered, if the partner was created without explicit locations.
+	 */
+	public static final String SINGLE_BP_LOCATION_SUFFIX = "_singleBPLocationI";
+
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
 
 	public <T extends RepoIdAware> void putIdentifier(@NonNull final Identifier identifier, @NonNull final T id)

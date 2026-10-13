@@ -6,9 +6,15 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @EqualsAndHashCode(doNotUseGetters = true)
 public class Identifier
 {
+	private static final String DATETIME_PATTEN = "yyyyMMdd'T'HHmmssSSS";
+	private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern(DATETIME_PATTEN);
+
 	@NonNull private final String string;
 
 	private Identifier(@NonNull final String string)
@@ -34,4 +40,6 @@ public class Identifier
 
 	@JsonValue
 	public String getAsString() {return string;}
+
+	public String toUniqueString() {return string + "_" + DATETIME_FORMAT.format(LocalDateTime.now());}
 }

@@ -49,7 +49,7 @@ public class CreateMasterdataCommand
 		if (request.getBpartners() != null)
 		{
 			request.getBpartners().forEach((identifier, bpartnerRequest) -> responses.put(identifier, CreateBPartnerCommand.builder()
-					.queryBL(services.queryBL)
+					.bpartnerDAO(services.bpartnerDAO)
 					.bpGroupDAO(services.bpGroupDAO)
 					.countryDAO(services.countryDAO)
 					.locationDAO(services.locationDAO)

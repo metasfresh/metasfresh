@@ -6,7 +6,9 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * Creates one {@code S_ExternalReference} pointing at a business partner created in the same request.
+ * Creates one {@code S_ExternalReference} pointing at a business partner.
+ * <p>
+ * Addition of this release line: there is no counterpart in the later (new_dawn-based) releases.
  */
 @Value
 @Builder
@@ -22,6 +24,6 @@ public class JsonCreateExternalReferenceRequest
 	/** {@code S_ExternalReference.ExternalReference}, i.e. the value in the external system. */
 	@NonNull String value;
 
-	/** Identifier (map key of the {@code bpartners} section) of the referenced business partner. */
+	/** Identifier of the referenced business partner: a key of the {@code bpartners} section or a {@code context} identifier. */
 	@NonNull String referencedRecord;
 }
