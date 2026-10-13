@@ -2,11 +2,13 @@ SELECT db_drop_functions('report.tax_declaration_ustva_report')
 ;
 
 -- UStVA (German VAT advance return) report for one tax declaration (C_TaxDeclaration).
--- One flat row set, discriminated by report_level: HEADER (1 row), SUMMARY (1 row per VAT code), BALANCE (1 row), DETAIL.
+-- One flat row set, discriminated by report_level: HEADER (1 row), SUMMARY (1 row per VAT code, + 1 per code with lines of type unknown), BALANCE (1 row), DETAIL.
 -- Figures come only from C_TaxDeclarationLine / C_TaxDeclarationAcct (the frozen snapshot), never from Fact_Acct amounts.
+-- amount_type 'U' (type unknown): lines and rows without amount type (postings made before Fact_Acct.VATCodeAmountType existed);
+-- they get an own SUMMARY row per code with the amount in net_amt.
 CREATE FUNCTION report.tax_declaration_ustva_report(
     p_C_TaxDeclaration_ID numeric,
-    p_AD_Language         varchar
+    p_AD_Language         varchar -- not used: C_VAT_Code.Description has no translation; kept for the Jasper report's standard parameters
 )
     RETURNS TABLE
             (
@@ -49,13 +51,13 @@ WITH td AS (SELECT td.c_taxdeclaration_id,
             FROM c_taxdeclaration td
             WHERE td.c_taxdeclaration_id = p_C_TaxDeclaration_ID),
      -- declared (debit - credit) non-zero lines; zero-amount lines are dropped everywhere
-     lines AS (SELECT l.vatcode, l.amounttype, l.amount AS declared_amt
+     lines AS (SELECT l.vatcode, COALESCE(l.amounttype, 'U') AS amounttype, l.amount AS declared_amt
                FROM c_taxdeclarationline l
                         JOIN td ON td.c_taxdeclaration_id = l.c_taxdeclaration_id
                WHERE l.isactive = 'Y'
                  AND l.amount <> 0),
      -- display sign: -1 when every active C_VAT_Code row of the code + amount type on the schema is a sales code;
-     -- a row without IsSOTrx applies to both sides, so it is not a sales row
+     -- a row without IsSOTrx applies to both sides, so it is not a sales row; type unknown: all rows of the code
      signed AS (SELECT l.vatcode,
                        l.amounttype,
                        l.declared_amt,
@@ -64,7 +66,7 @@ WITH td AS (SELECT td.c_taxdeclaration_id,
                                           FROM c_vat_code v
                                           WHERE v.c_acctschema_id = td.c_acctschema_id
                                             AND v.vatcode = l.vatcode
-                                            AND v.amounttype = l.amounttype
+                                            AND (v.amounttype = l.amounttype OR l.amounttype = 'U')
                                             AND v.isactive = 'Y'), FALSE)
                                THEN -1
                                ELSE 1
@@ -107,22 +109,23 @@ WITH td AS (SELECT td.c_taxdeclaration_id,
      summary AS (SELECT 'SUMMARY'::varchar                                                          AS report_level,
                         2                                                                           AS level_order,
                         c.vatcode::varchar                                                          AS vatcode,
-                        NULL::varchar                                                               AS amount_type,
+                        CASE WHEN BOOL_OR(c.amounttype = 'U') THEN 'U' END::varchar                 AS amount_type,
                         (SELECT MAX(v.description)
                          FROM c_vat_code v
                          WHERE v.c_acctschema_id = td.c_acctschema_id
                            AND v.vatcode = c.vatcode
                            AND v.isactive = 'Y')::varchar                                           AS description,
-                        TRUNC(SUM(CASE WHEN c.amounttype = 'N' THEN c.declared_amt * c.sgn END), 0) AS net_amt,
+                        TRUNC(SUM(CASE WHEN c.amounttype IN ('N', 'U') THEN c.declared_amt * c.sgn END), 0) AS net_amt,
                         SUM(CASE WHEN c.amounttype = 'T' THEN c.declared_amt * c.sgn END)           AS tax_amt
                  FROM signed c,
                       td
-                 GROUP BY c.vatcode, td.c_acctschema_id),
+                 -- the code's lines without amount type get an own row
+                 GROUP BY c.vatcode, td.c_acctschema_id, c.amounttype = 'U'),
      balance AS (SELECT -COALESCE(SUM(l.declared_amt), 0) AS balance_amt
                  FROM lines l
                  WHERE l.amounttype = 'T'),
      detail AS (SELECT a.vatcode,
-                       a.amounttype,
+                       sg.amounttype,
                        a.description,
                        a.amount * sg.sgn AS amount,
                        doc.documentno,
@@ -133,7 +136,7 @@ WITH td AS (SELECT td.c_taxdeclaration_id,
                        doc.currency
                 FROM c_taxdeclarationacct a
                          JOIN td ON td.c_taxdeclaration_id = a.c_taxdeclaration_id
-                         JOIN signed sg ON sg.vatcode = a.vatcode AND sg.amounttype = a.amounttype
+                         JOIN signed sg ON sg.vatcode = a.vatcode AND sg.amounttype = COALESCE(a.amounttype, 'U')
                          LEFT JOIN LATERAL (
                     -- read-only lookup of the referenced source document
                     SELECT i.documentno::varchar,
@@ -296,7 +299,8 @@ SELECT 'DETAIL'::varchar,
        d.bpartner_vatid,
        d.amount
 FROM detail d
-ORDER BY level_order, vatcode, amount_type, posting_date, documentno
+-- NULLS FIRST: a code's regular SUMMARY row before its "type unknown" row
+ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 $BODY$
     LANGUAGE sql
     STABLE

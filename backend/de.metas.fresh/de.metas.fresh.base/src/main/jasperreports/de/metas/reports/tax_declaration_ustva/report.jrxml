@@ -13,7 +13,7 @@
        acctschema_name, period_from, period_to, currency, print_date, posting_date, doc_date,
        bpartner_name, bpartner_vatid, amount
 FROM report.tax_declaration_ustva_report($P{RECORD_ID}, $P{ad_language})
-ORDER BY level_order, vatcode, amount_type, posting_date, documentno]]>
+ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno]]>
 	</queryString>
 	<field name="report_level" class="java.lang.String"/>
 	<field name="level_order" class="java.lang.Integer"/>
@@ -116,7 +116,7 @@ ORDER BY level_order, vatcode, amount_type, posting_date, documentno]]>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{kz} + " " + ($F{vatcode} != null ? $F{vatcode} : "") + " - " + ("N".equals($F{amount_type}) ? $R{net} : $R{tax})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{kz} + " " + ($F{vatcode} != null ? $F{vatcode} : "") + " - " + ("N".equals($F{amount_type}) ? $R{net} : "T".equals($F{amount_type}) ? $R{tax} : $R{typeUnknown})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement stretchType="ContainerHeight" x="0" y="16" width="50" height="14" uuid="46e9da8b-5ee6-4b84-9d42-9859e582c5c8"/>
@@ -399,7 +399,7 @@ ORDER BY level_order, vatcode, amount_type, posting_date, documentno]]>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["U".equals($F{amount_type}) ? ($F{description} != null ? $F{description} + " - " : "") + $R{typeUnknown} : $F{description}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="285" y="0" width="125" height="14" uuid="dd9c0f87-496a-4ba6-ab43-2c639de0fa83">

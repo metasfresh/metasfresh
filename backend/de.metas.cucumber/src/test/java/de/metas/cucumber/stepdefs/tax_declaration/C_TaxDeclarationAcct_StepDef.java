@@ -45,6 +45,8 @@ import org.compiere.model.I_C_TaxDeclarationAcct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RequiredArgsConstructor
 public class C_TaxDeclarationAcct_StepDef
 {
@@ -53,6 +55,9 @@ public class C_TaxDeclarationAcct_StepDef
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+	/** a record ID that no document has (IDs stay far below it) */
+	private static final int NOT_EXISTING_RECORD_ID = 2_000_000_000;
 
 	/**
 	 * Assert that {@link I_C_TaxDeclarationAcct} contains rows for the given documents with correct fields.
@@ -122,9 +127,9 @@ public class C_TaxDeclarationAcct_StepDef
 				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, ref.getRecord_ID())
 				.create()
 				.updateDirectly()
-				.addSetColumnValue(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, 2_000_000_000)
+				.addSetColumnValue(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, NOT_EXISTING_RECORD_ID)
 				.execute();
-		org.assertj.core.api.Assertions.assertThat(updatedCount)
+		assertThat(updatedCount)
 				.as("snapshot rows of declaration %s referencing %s", declarationIdentifier, documentIdentifier)
 				.isGreaterThan(0);
 	}
