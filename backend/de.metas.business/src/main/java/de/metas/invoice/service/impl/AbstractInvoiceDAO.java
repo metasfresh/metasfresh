@@ -519,15 +519,28 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			return ImmutableSet.of();
 		}
 
+		return streamReferencingCompletedInvoices(invoiceIds, targetDocType)
+				.map(I_C_Invoice::getRef_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_C_Invoice> retrieveReferencingCompletedInvoices(@NonNull final InvoiceId invoiceId, @NonNull final DocBaseAndSubType targetDocType)
+	{
+		return streamReferencingCompletedInvoices(ImmutableSet.of(invoiceId), targetDocType)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Stream<I_C_Invoice> streamReferencingCompletedInvoices(@NonNull final Collection<InvoiceId> invoiceIds, @Nullable final DocBaseAndSubType targetDocType)
+	{
 		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceIds)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
 				.stream()
-				.filter(invoice -> matchesDocType(invoice, targetDocType))
-				.map(I_C_Invoice::getRef_Invoice_ID)
-				.map(InvoiceId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.filter(invoice -> matchesDocType(invoice, targetDocType));
 	}
 
 	@Override
