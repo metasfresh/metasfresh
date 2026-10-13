@@ -132,6 +132,14 @@ async function getListWidgetOptionKeys(fieldName) {
   await WidgetCommon.waitForDropdown();
 
   const dropdown = page.locator('.input-dropdown-list');
+  // The list paints before its options arrive (the options come from their own dropdown request),
+  // so reading it the moment it is visible can return an empty list. Wait for the options to render;
+  // the exact-set assertion is made by the caller on what was rendered.
+  await dropdown.locator('[data-testid^="option-"]').first()
+    .waitFor({ state: 'attached', timeout: WidgetCommon.WIDGET_TIMEOUT })
+    .catch(() => {
+      throw new Error(`${fieldName} dropdown rendered no options within ${WidgetCommon.WIDGET_TIMEOUT} ms`);
+    });
   const testIds = await dropdown.locator('[data-testid^="option-"]').evaluateAll(
     (nodes) => nodes.map((n) => n.getAttribute('data-testid'))
   );
