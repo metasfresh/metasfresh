@@ -91,6 +91,17 @@ public class C_BankStatementLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates the bank statement lines. All columns are optional except the identifier; a column that is absent or empty is not checked.
+	 * <p>
+	 * {@code OPT.C_BPartner_ID.Identifier} and {@code OPT.C_Invoice_ID.Identifier} may also be {@code null}, which asserts that the line has no partner / no invoice.
+	 * <pre>{@code
+	 * And validate C_BankStatementLine
+	 *   | C_BankStatementLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
+	 *   | bsl1                              | bp1                          | invoice1                    |
+	 *   | bsl2                              | bp2                          | null                        |
+	 * }</pre>
+	 */
 	@And("validate C_BankStatementLine")
 	public void validate_C_BankStatementLine(@NonNull final DataTable dataTable)
 	{
@@ -99,6 +110,15 @@ public class C_BankStatementLine_StepDef
 		{
 			validateBankStatementLine(row);
 		}
+	}
+
+	/**
+	 * @return {@code true} if the cell is given and is the null placeholder; an absent or empty cell is "not checked", so {@code false}
+	 */
+	private static boolean isExplicitNull(@NonNull final Map<String, String> row, @NonNull final String columnName)
+	{
+		final String cell = row.get(columnName);
+		return Check.isNotBlank(cell) && DataTableUtil.isNullPlaceholder(cell);
 	}
 
 	private void loadBankStatementLine(@NonNull final Map<String, String> row)
@@ -165,7 +185,11 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(bPartnerIdentifier))
+		if (isExplicitNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
+		{
+			softly.assertThat(bankStatementLineRecord.getC_BPartner_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner_ID", bslIdentifier).isLessThanOrEqualTo(0);
+		}
+		else if (Check.isNotBlank(bPartnerIdentifier))
 		{
 			final I_C_BPartner bPartnerRecord = partnerTable.get(bPartnerIdentifier);
 			softly.assertThat(bPartnerRecord).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner record for identifier=%s", bslIdentifier, bPartnerIdentifier).isNotNull();
@@ -174,7 +198,11 @@ public class C_BankStatementLine_StepDef
 		}
 
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoiceIdentifier))
+		if (isExplicitNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER))
+		{
+			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID", bslIdentifier).isLessThanOrEqualTo(0);
+		}
+		else if (Check.isNotBlank(invoiceIdentifier))
 		{
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();
