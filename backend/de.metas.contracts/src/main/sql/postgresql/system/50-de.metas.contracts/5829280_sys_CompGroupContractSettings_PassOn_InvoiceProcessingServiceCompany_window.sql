@@ -12,7 +12,7 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 785684
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(585538 /*PassOn_InvoiceProcessingServiceCompany_ID element*/)
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585538 /*PassOn_InvoiceProcessingServiceCompany_ID element*/)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785684
 ;

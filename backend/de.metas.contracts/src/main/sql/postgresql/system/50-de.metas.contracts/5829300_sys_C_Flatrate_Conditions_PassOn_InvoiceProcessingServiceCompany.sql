@@ -16,7 +16,7 @@ FROM AD_Language l, AD_Column t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 593737
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID)
 ;
-/* DDL */ select update_Column_Translation_From_AD_Element(585538)
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585538)
 ;
 -- ============================================================================
 -- 2) Cache invalidation: a change of the settings' field refreshes the conditions linked to them
