@@ -34,6 +34,18 @@ public class MasterdataContext
 		identifiers.put(typeAndIdentifier, id);
 	}
 
+	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, @NonNull final Class<T> idClass)
+	{
+		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
+		//noinspection unchecked
+		final T id = (T)identifiers.get(typeAndIdentifier);
+		if (id == null)
+		{
+			throw new IllegalArgumentException("No actual ID found for " + identifier + "/" + idClass.getSimpleName() + " in " + identifiers.keySet());
+		}
+		return id;
+	}
+
 	public Map<String, Object> toJson()
 	{
 		final HashMap<String, Object> result = new HashMap<>();

@@ -1,6 +1,9 @@
 package de.metas.frontend_testing;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
@@ -9,6 +12,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -37,7 +41,10 @@ class FrontendTestingRestControllerTest
 		AdempiereTestHelper.get().init();
 		sysConfigBL = Services.get(ISysConfigBL.class);
 		userAuthTokenFilterConfiguration = mock(UserAuthTokenFilterConfiguration.class);
-		controller = new FrontendTestingRestController(userAuthTokenFilterConfiguration, new CreateMasterdataCommandSupportingServices());
+		controller = new FrontendTestingRestController(userAuthTokenFilterConfiguration, new CreateMasterdataCommandSupportingServices(
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes()),
+				new ExternalReferenceTypes(),
+				new ExternalSystems()));
 	}
 
 	private void setEnabled(final String value)

@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -20,4 +21,6 @@ public class JsonCreateMasterdataResponse
 	 * Deletion is not supported: to undo such a sysconfig, callers reset it to a neutral value.
 	 */
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
+
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCreateBPartnerResponse> bpartners;
 }
