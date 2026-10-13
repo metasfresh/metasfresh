@@ -16,7 +16,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -157,31 +156,24 @@ public class ReconcileQtyReservationsCommand
 
 						final BigDecimal reductionInLineUOM = excessInLineUOM.min(reducibleRowQtyInLineUOM);
 
-						// convert the reduction back to the reservation's own UOM
-						final BigDecimal reductionInRowUOM = uomConversionBL.convertQuantityTo(
-										qtyOrdered.toZero().add(reductionInLineUOM),
-										reservation.getProductId(),
-										reservation.getQty().getUomId())
-								.toBigDecimal();
+						// convert the reduction back to the reservation's own UOM (kept as a Quantity so the shrink
+						// clamp is UOM-guarded by the type, not just by this conversion's intent)
+						final Quantity reductionInRowUOM = uomConversionBL.convertQuantityTo(
+								qtyOrdered.toZero().add(reductionInLineUOM),
+								reservation.getProductId(),
+								reservation.getQty().getUomId());
 
-						// clamp: never shrink below already-delivered qty
-						final BigDecimal newQtyBD = rowQty.subtract(reductionInRowUOM).max(rowQtyDelivered);
+						// shared shrink logic: clamps at delivered, rounds QtyTU up, signals deletion of zero rows
+						final QtyReservationShrinker.Result shrunk = QtyReservationShrinker.shrink(reservation, reductionInRowUOM);
 
-						if (newQtyBD.signum() <= 0)
+						if (shrunk.isDelete())
 						{
 							// fully reduced (nothing delivered) → delete the row instead of keeping a Qty=0 reservation
 							reservationIdsToDelete.add(reservation.getId());
 						}
 						else
 						{
-							// QtyTU is rounded UP — a partially-filled TU still occupies a whole TU.
-							final BigDecimal rowQtyTU = reservation.getQtyTU().toBigDecimal();
-							final BigDecimal newQtyTUBD = rowQtyTU
-									.multiply(newQtyBD)
-									.divide(rowQty, 0, RoundingMode.CEILING);
-
-							final Quantity newQty = reservation.getQty().toZero().add(newQtyBD);
-							newQtyByReservationId.put(reservation.getId(), new NewQty(newQty, QtyTU.ofBigDecimal(newQtyTUBD)));
+							newQtyByReservationId.put(reservation.getId(), new NewQty(shrunk.getNewQty(), shrunk.getNewQtyTU()));
 						}
 						lineChanged = true;
 
@@ -190,7 +182,7 @@ public class ReconcileQtyReservationsCommand
 						// delivered-clamp kicks in or when a non-integer UOM round-trip shifts the value. Tracking the
 						// real reduction (converted back to the order-line UOM) keeps `excessInLineUOM` accurate and
 						// avoids a phantom residual across rows. In same-UOM scenarios the conversion is the identity.
-						final BigDecimal actualReductionInRowUOM = rowQty.subtract(newQtyBD);
+						final BigDecimal actualReductionInRowUOM = shrunk.getActualReduction();
 						final BigDecimal actualReductionInLineUOM = uomConversionBL.convertQuantityTo(
 										reservation.getQty().toZero().add(actualReductionInRowUOM),
 										reservation.getProductId(),
