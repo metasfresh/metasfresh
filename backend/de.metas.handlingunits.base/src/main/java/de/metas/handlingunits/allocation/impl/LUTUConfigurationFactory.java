@@ -279,7 +279,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public boolean isNoLU(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 
-		return lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0;
+		return HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_Item_ID()) == null;
 	}
 
 	private ArrayKey createKeyForHUProducer(final I_M_HU_LUTU_Configuration lutuConfiguration)

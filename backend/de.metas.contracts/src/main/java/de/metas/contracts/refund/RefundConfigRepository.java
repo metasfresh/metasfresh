@@ -19,10 +19,12 @@ import org.springframework.stereotype.Repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
@@ -32,6 +34,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -64,6 +67,8 @@ import lombok.NonNull;
 @Repository
 public class RefundConfigRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	@Getter
 	private final InvoiceScheduleRepository invoiceScheduleRepository;
@@ -79,6 +84,12 @@ public class RefundConfigRepository
 				.anyMatch();
 	}
 
+	/**
+	 * Note on the product: if the query has a product, then configs of that product or without product are candidates;
+	 * as soon as there is a candidate with a product, only the product-specific candidates are returned and the ones without product are dropped
+	 * (so a product-specific config wins over a category-only config of the same conditions; both lines share the condition's category).
+	 * A config's product category is not considered here; it is a condition of the contract match, see {@link RefundContractRepository#getByQuery(RefundContractQuery)}.
+	 */
 	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)
 	{
 		final IQueryBuilder<I_C_Flatrate_RefundConfig> builder = Services.get(IQueryBL.class)
@@ -98,7 +109,7 @@ public class RefundConfigRepository
 		if (query.getProductId() != null)
 		{
 			builder.addInArrayFilter(
-					I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
+					I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
 					null,
 					query.getProductId());
 		}
@@ -136,6 +147,46 @@ public class RefundConfigRepository
 					: ImmutableList.of();
 		}
 		return recordsWithProductId.stream()
+				.map(this::ofRecordOrNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return the packing materials ({@code M_HU_PackingMaterial_ID}s) of the packing options of the given conditions' active configs that are restricted to packing options;
+	 * empty if no config is restricted or if the restricted configs list no option, i.e. if all packaging is accepted
+	 */
+	public ImmutableSet<Integer> retrievePackingMaterialIdsOfPackingOptionFilteredConfigs(@NonNull final ConditionsId conditionsId)
+	{
+		final ImmutableSet<Integer> restrictedConfigIds = queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMNNAME_IsPackingOptionFiltered, true)
+				.create()
+				.listIds()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+		if (restrictedConfigIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_RefundConfig_PackingOption.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_C_Flatrate_RefundConfig_ID, restrictedConfigIds)
+				.create()
+				.listDistinct(I_C_Flatrate_RefundConfig_PackingOption.COLUMNNAME_M_HU_PackingMaterial_ID, Integer.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return all active configs of the given conditions, without {@link #getByQuery(RefundConfigQuery)}'s precedence of product-specific configs.
+	 */
+	public List<RefundConfig> getAllActiveByConditions(@NonNull final ConditionsId conditionsId)
+	{
+		return createRefundConfigQueryBuilder(conditionsId)
+				.create()
+				.stream()
 				.map(this::ofRecordOrNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -190,8 +241,11 @@ public class RefundConfigRepository
 				.minQty(record.getMinQty())
 				.refundBase(extractRefundBase(record))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.bonusProductId(ProductId.ofRepoIdOrNull(record.getBonus_Product_ID()))
 				.refundMode(extractRefundMode(record))
-				.useInProfitCalculation(record.isUseInProfitCalculation());
+				.useInProfitCalculation(record.isUseInProfitCalculation())
+				.deductedAtPayment(record.isDeductedAtPayment());
 
 		return builder.build();
 	}
@@ -281,6 +335,9 @@ public class RefundConfigRepository
 		configRecord.setMinQty(refundConfig.getMinQty());
 
 		configRecord.setM_Product_ID(ProductId.toRepoId(refundConfig.getProductId()));
+		configRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(refundConfig.getProductCategoryId()));
+		configRecord.setBonus_Product_ID(ProductId.toRepoId(refundConfig.getBonusProductId()));
+		configRecord.setIsDeductedAtPayment(refundConfig.isDeductedAtPayment());
 
 		switch (refundConfig.getRefundInvoiceType())
 		{

@@ -21,6 +21,7 @@ public class JsonDistributionJob
 	boolean requireScanningProductCode;
 	boolean completeJobAutomatically;
 	boolean navigateToJobsListAfterPickFromComplete;
+	boolean canSwitchPickFromLocator;
 	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
 	public static JsonDistributionJob.JsonDistributionJobBuilder builderFrom(
@@ -29,6 +30,7 @@ public class JsonDistributionJob
 	{
 		return builder()
 				.pickingInstruction(job.getPickingInstruction().translate(jsonOpts.getAdLanguage()))
+				.canSwitchPickFromLocator(job.canSwitchPickFromLocator())
 				.lines(job.getLines()
 						.stream()
 						.map(line -> JsonDistributionJobLine.of(line, job, jsonOpts))

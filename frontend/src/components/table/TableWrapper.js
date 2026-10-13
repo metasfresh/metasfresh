@@ -7,6 +7,7 @@ import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import { getTableId } from '../../reducers/tables';
+import { getIncludedTabCreateNewDisabledReason } from '../../reducers/windowHandler';
 
 import Prompt from '../app/Prompt';
 import TableContextMenu from './TableContextMenu';
@@ -394,6 +395,7 @@ class TableWrapper extends PureComponent {
               tabId={tabId}
               handleBatchEntryToggle={this.handleBatchEntryToggle}
               allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+              createNewDisabled={getIncludedTabCreateNewDisabledReason(tabInfo)}
               wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
             />
           )}

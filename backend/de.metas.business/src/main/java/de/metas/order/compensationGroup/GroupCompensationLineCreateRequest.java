@@ -2,12 +2,15 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -46,4 +49,19 @@ public class GroupCompensationLineCreateRequest
 	BigDecimal price;
 
 	GroupTemplateLineId groupTemplateLineId;
+
+	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	@Nullable
+	ProductCategoryId appliesToProductCategoryId;
+
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Nullable
+	ProductCategoryId packingMaterialProductCategoryId;
+
+	/** see {@link GroupCompensationLine#isOwnBase()} */
+	boolean isOwnBase;
+
+	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
+	@Nullable
+	String description;
 }

@@ -85,6 +85,15 @@ public class DistributionRestController
 		return distributionMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 
+	@PostMapping("/job/{wfProcessId}/switchPickFromLocatorToNext")
+	public JsonWFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		final WFProcess wfProcess = distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+		// toJson carries the activity detail with the switched locator; a raw WFProcess serializes summary-only.
+		return workflowRestController.toJson(wfProcess);
+	}
+
 	@PostMapping("/print/materialInTransitReport")
 	public void printMaterialInTransitReport()
 	{

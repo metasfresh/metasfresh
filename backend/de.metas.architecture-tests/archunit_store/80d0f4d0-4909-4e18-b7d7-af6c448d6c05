@@ -1,0 +1,4 @@
+Field <de.metas.procurement.base.PMMContractBuilder._endDate> has raw type java.sql.Timestamp in (PMMContractBuilder.java:0)
+Field <de.metas.procurement.base.PMMContractBuilder._startDate> has raw type java.sql.Timestamp in (PMMContractBuilder.java:0)
+Field <de.metas.procurement.base.process.C_Flatrate_Term_Create_ProcurementContract.p_EndDate> has raw type java.sql.Timestamp in (C_Flatrate_Term_Create_ProcurementContract.java:0)
+Field <de.metas.procurement.base.process.C_Flatrate_Term_Create_ProcurementContract.p_StartDate> has raw type java.sql.Timestamp in (C_Flatrate_Term_Create_ProcurementContract.java:0)

@@ -2,7 +2,7 @@
 @allure.label.epic:E0225_Accounting
 @allure.label.feature:F01000_Accounting
 @F01000
-@ghActions:run_on_executor7
+@ghActions:run_on_executor9
 Feature: Inventory Value report / Lagerwert
 ## F01000: Accounting
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -183,6 +184,11 @@ public class AssignmentToRefundCandidateRepository
 					removeForAssignedCandidateId.getRepoId());
 		}
 
+		if (request.getFlatrateTermId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_Term_ID, request.getFlatrateTermId());
+		}
+
 		if (!request.getRefundConfigIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, request.getRefundConfigIds());
@@ -211,6 +217,9 @@ public class AssignmentToRefundCandidateRepository
 
 		List<RefundConfigId> refundConfigIds;
 
+		/** If set, only the assignments to this refund term are deleted. */
+		FlatrateTermId flatrateTermId;
+
 		boolean onlyActive;
 
 		@Builder
@@ -218,6 +227,7 @@ public class AssignmentToRefundCandidateRepository
 				@Nullable final InvoiceCandidateId removeForRefundCandidateId,
 				@Nullable final InvoiceCandidateId removeForAssignedCandidateId,
 				@Singular final List<RefundConfigId> refundConfigIds,
+				@Nullable final FlatrateTermId flatrateTermId,
 				@Nullable final Boolean onlyActive)
 		{
 			Check.errorIf(
@@ -230,6 +240,7 @@ public class AssignmentToRefundCandidateRepository
 			this.removeForRefundCandidateId = removeForRefundCandidateId;
 			this.removeForAssignedCandidateId = removeForAssignedCandidateId;
 			this.refundConfigIds = refundConfigIds;
+			this.flatrateTermId = flatrateTermId;
 		}
 	}
 }

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -1055,6 +1056,24 @@ public class ModelValidationEngine implements IModelValidationEngine
 			m_docValidateListeners.remove(propertyName);
 		}
 	}	// removeDocValidate
+
+	/**
+	 * @return the globally-registered DocValidate listeners of {@code tableName}, in registration/invocation order (read-only; for tests and diagnostics).
+	 * <p>
+	 * Serves the cucumber test that pins the order of the {@code C_Order} interceptors (compensation-group contract vs. HU packing material vs. freight).
+	 */
+	@VisibleForTesting
+	public List<String> getGlobalDocValidateListenerDescriptions(@NonNull final String tableName)
+	{
+		final ArrayList<ModelValidator> listeners = m_docValidateListeners.get(getPropertyName(tableName));
+		if (listeners == null)
+		{
+			return ImmutableList.of();
+		}
+		return listeners.stream()
+				.map(Object::toString)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	/**
 	 * Fire Document Validation. Call docValidate method of added validators

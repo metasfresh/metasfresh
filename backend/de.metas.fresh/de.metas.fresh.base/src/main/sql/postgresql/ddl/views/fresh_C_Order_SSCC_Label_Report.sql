@@ -40,7 +40,7 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
            WHEN inc.value = 'EXW'  THEN NULL::CHARACTER VARYING
            WHEN o.isdropship = 'Y' THEN (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
                                    ELSE
-               (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, bpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
+               (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(whbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, whl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
        END                                                   AS customer,
        bp.ad_language,
        NULL::NUMERIC                                                                                                                            AS m_hu_id,
@@ -53,11 +53,14 @@ FROM C_Order o
          JOIN M_Package package ON shippingPackage.m_package_id = package.m_package_id
          JOIN m_product p ON p.m_product_id = ol.m_product_id
          JOIN c_bpartner bp ON bp.c_bpartner_id = o.c_bpartner_id
+         JOIN M_Warehouse wh ON wh.m_Warehouse_ID = o.m_warehouse_ID
          LEFT JOIN c_bpartner dbp ON dbp.c_bpartner_id = o.dropship_bpartner_id
+         LEFT JOIN c_bpartner whbp ON whbp.c_bpartner_id = wh.c_bpartner_id
          LEFT JOIN M_HU_PI_Item_Product piip ON ol.m_product_id = piip.m_product_id AND ol.m_hu_pi_item_product_id = piip.m_hu_pi_item_product_id
          LEFT JOIN c_bpartner_location hol ON hol.c_bpartner_location_id = o.handover_location_id
          LEFT JOIN c_bpartner_location bpl ON bpl.c_bpartner_location_id = o.c_bpartner_location_id
          LEFT JOIN c_bpartner_location dbpl ON dbpl.c_bpartner_location_id = o.dropship_location_id
+         LEFT JOIN c_bpartner_location whl ON whl.c_bpartner_location_id = wh.c_bpartner_location_id
          LEFT JOIN C_BPartner_Product bp_product ON bp_product.c_bpartner_id = bp.c_bpartner_id AND bp_product.m_product_id = p.m_product_id
          LEFT JOIN m_product_trl pt ON p.m_product_id = pt.m_product_id AND bp.ad_language::TEXT = pt.ad_language::TEXT
          LEFT JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id

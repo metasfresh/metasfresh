@@ -518,12 +518,13 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, Access.READ))
+		final AdTableId adTableId = AdTableId.ofRepoId(AD_Table_ID);
+		if (!isTableAccess(adTableId, Access.READ))
 		{
 			return false;
 		}
 		//
-		return getTablePermissions().isCanReport(AD_Table_ID);
+		return getTablePermissions().isCanReport(adTableId);
 	}
 
 	@Override
@@ -534,7 +535,8 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, Access.READ))
+		final AdTableId adTableId = AdTableId.ofRepoId(AD_Table_ID);
+		if (!isTableAccess(adTableId, Access.READ))
 		{
 			return false;
 		}
@@ -543,21 +545,32 @@ class UserRolePermissions implements IUserRolePermissions
 			return false;
 		}
 		//
-		return tablePermissions.isCanExport(AD_Table_ID);
+		return tablePermissions.isCanExport(adTableId);
+	}
+
+	@Override
+	public boolean isCanCreateNewRecords(@NonNull final AdTableId adTableId)
+	{
+		// "WRITE exclusion includes no CREATE, but not the other way around": creating a record is a write,
+		// so removing WRITE (IsReadOnly='Y') also removes CREATE; removing CREATE alone (IsCanCreateNewRecords='N')
+		// leaves WRITE - and thus editing existing records - intact.
+		return isTableAccess(adTableId, Access.WRITE)
+				&& isTableAccess(adTableId, Access.CREATE);
 	}
 
 	/**
-	 * @return has RO/RW access to table
+	 * @return has RO/RW access to the table.
 	 */
 	@Override
-	public boolean isTableAccess(final int AD_Table_ID, @NonNull final Access access)
+	public boolean isTableAccess(@NonNull final AdTableId adTableId, @NonNull final Access access)
 	{
 		if (Access.WRITE.equals(access))
 		{
-			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
+			// WRITE additionally requires the table's UserLevel to be compatible with the role's.
+			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(adTableId);
 			if (roleAccessLevel == null)
 			{
-				logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
+				logger.debug("NO - No AccessLevel - adTableId={}", adTableId);
 				return false;
 			}
 
@@ -568,14 +581,13 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 		}
 
-		//
-		return tablePermissions.hasAccess(AD_Table_ID, access);
+		return tablePermissions.hasAccess(adTableId, access);
 	}
 
 	@Override
 	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final Access access)
 	{
-		if (!isTableAccess(AD_Table_ID, access))
+		if (!isTableAccess(AdTableId.ofRepoId(AD_Table_ID), access))
 		{
 			return false;
 		}
@@ -862,7 +874,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// Table Access
-		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, access))
+		if (missingAccesses.isEmpty() && !isTableAccess(AdTableId.ofRepoId(AD_Table_ID), access))
 		{
 			missingAccesses.add("table access");
 		}

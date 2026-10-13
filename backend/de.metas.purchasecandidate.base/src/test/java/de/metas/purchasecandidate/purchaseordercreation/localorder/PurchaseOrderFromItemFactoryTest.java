@@ -21,6 +21,7 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
@@ -252,6 +253,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.purchaseDatePromised(PURCHASE_DATE_PROMISED)

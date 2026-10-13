@@ -163,6 +163,7 @@ public class RefundInvoiceCandidateService
 				.builder()
 				.refundContract(refundContract)
 				.invoicableFrom(assignableCandidate.getInvoiceableFrom())
+				.soTrx(assignableCandidate.getSoTrx())
 				.build();
 
 		final List<RefundInvoiceCandidate> existingCandidates = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(refundCandidateQuery);

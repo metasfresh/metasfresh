@@ -251,6 +251,7 @@ class TableQuickInput extends PureComponent {
             dataId={docId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
+            description={item.description}
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
             propagateEnterKeyEvent={true} // make sure Enter key is propagated, so onSubmit is called
@@ -294,6 +295,9 @@ class TableQuickInput extends PureComponent {
   handleOnClick = () => this.setState({ hasFocus: true });
 
   render() {
+    // IMPORTANT: The <form> element is crucial for RawLookup.focusNextFieldInForm()
+    // to work. It finds the next focusable input by querying the parent <form>.
+    // Do NOT replace <form> with <div> or focus advance after Enter will break.
     return (
       <form
         onSubmit={this.onSubmit}

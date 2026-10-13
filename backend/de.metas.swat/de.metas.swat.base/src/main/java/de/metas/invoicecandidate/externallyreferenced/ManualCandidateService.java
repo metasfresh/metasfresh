@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -15,13 +16,19 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -49,16 +56,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 
 @Service
+@RequiredArgsConstructor
 public class ManualCandidateService
 {
-	private final BPartnerCompositeRepository bPartnerCompositeRepository;
+	@NonNull private final BPartnerCompositeRepository bPartnerCompositeRepository;
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	public ManualCandidateService(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository)
-	{
-		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
-	}
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
@@ -67,13 +73,10 @@ public class ManualCandidateService
 	{
 		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
 
-		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-
 		final BPartnerComposite bpartnerComp = bPartnerCompositeRepository.getById(newIC.getBillPartnerInfo().getBpartnerId());
 		final BPartnerLocation location = bpartnerComp.extractLocation(newIC.getBillPartnerInfo().getBpartnerLocationId()).get();
 		final CountryId countryId = countryDAO.getCountryIdByCountryCode(location.getCountryCode());
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						newIC.getOrgId(),
@@ -110,16 +113,41 @@ public class ManualCandidateService
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+		final Timestamp shipDate = TimeUtil.asTimestamp(newIC.getDateOrdered(), timeZone);
+		final WarehouseId warehouseId = newIC.getSoTrx().isSales()
+				? orgDAO.getOrgWarehouseId(newIC.getOrgId())
+				: orgDAO.getOrgPOWarehouseId(newIC.getOrgId());
+		final BPartnerLocationAndCaptureId billLocationId = newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId();
+
+		final TaxId taxId = taxBL.getTaxNotNull(
 				newIC,
 				pricingResult.getTaxCategoryId(),
 				newIC.getProductId().getRepoId(),
-				TimeUtil.asTimestamp(newIC.getDateOrdered(), timeZone), // shipDate
+				shipDate,
 				newIC.getOrgId(),
-				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
-				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
+				warehouseId,
+				billLocationId, // ship location id
 				newIC.getSoTrx());
 		candidate.taxId(taxId);
+
+		if (newIC.getTaxOverrideRate() != null)
+		{
+			final TaxQuery overrideQuery = taxBL
+					.buildTaxQuery(
+							newIC.getTaxOverrideCategoryId(),
+							shipDate,
+							newIC.getOrgId(),
+							warehouseId,
+							billLocationId, // ship location id
+							newIC.getSoTrx())
+					.toBuilder()
+					.rate(newIC.getTaxOverrideRate())
+					.build();
+
+			final Tax overrideTax = taxBL.getByIfPresent(overrideQuery)
+					.orElseThrow(() -> TaxNotFoundException.ofQuery(overrideQuery, newIC.getTaxOverrideCategoryIdentifier()));
+			candidate.taxOverrideId(overrideTax.getTaxId());
+		}
 
 		final BPartner bpartner = bpartnerComp.getBpartner();
 

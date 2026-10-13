@@ -2,7 +2,7 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
 @F00701
-@ghActions:run_on_executor3
+@ghActions:run_on_executor9
 Feature: Packing material invoice candidates: shipments
 ## F00701: Invoice Candidates
 

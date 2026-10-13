@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -20,6 +21,8 @@ class PickAttributes
 {
 	private final static AdMessageKey ERR_NegativeCatchWeight = AdMessageKey.of("de.metas.handlingunits.picking.job.NEGATIVE_CATCH_WEIGHT_ERROR_MSG");
 	private final static AdMessageKey ERR_LMQ_CatchWeightNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG");
+	// Shared by PickingJobPickCommand (authoritative count gate) + PickedHUAttributesUpdater (empty-set write guard).
+	static final AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
 
 	@Nullable Quantity catchWeight;
 
@@ -32,6 +35,9 @@ class PickAttributes
 	boolean isSetLotNo;
 	@Nullable String lotNo;
 
+	boolean isSetSerialNos;
+	@NonNull SerialNoSet serialNos;
+
 	@Builder(toBuilder = true)
 	private PickAttributes(
 			@Nullable final Quantity catchWeight,
@@ -40,7 +46,9 @@ class PickAttributes
 			final boolean isSetProductionDate,
 			@Nullable final LocalDate productionDate,
 			final boolean isSetLotNo,
-			@Nullable final String lotNo)
+			@Nullable final String lotNo,
+			final boolean isSetSerialNos,
+			@Nullable final SerialNoSet serialNos)
 	{
 		if (catchWeight != null && catchWeight.signum() <= 0)
 		{
@@ -57,6 +65,9 @@ class PickAttributes
 
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = StringUtils.trimBlankToNull(lotNo);
+
+		this.isSetSerialNos = isSetSerialNos;
+		this.serialNos = serialNos != null ? serialNos : SerialNoSet.EMPTY;
 	}
 
 	public static PickAttributes ofHUQRCode(@NonNull final IHUQRCode pickFromHUQRCode, @Nullable final UomId catchWeightUomId)
@@ -98,6 +109,11 @@ class PickAttributes
 		if (!isSetLotNo && fallback.isSetLotNo)
 		{
 			builder.isSetLotNo(true).lotNo(fallback.lotNo);
+			changed = true;
+		}
+		if (!isSetSerialNos && fallback.isSetSerialNos)
+		{
+			builder.isSetSerialNos(true).serialNos(fallback.serialNos);
 			changed = true;
 		}
 

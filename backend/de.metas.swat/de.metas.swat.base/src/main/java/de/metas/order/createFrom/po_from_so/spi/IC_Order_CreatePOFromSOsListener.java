@@ -1,5 +1,6 @@
 package de.metas.order.createFrom.po_from_so.spi;
 
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 /*
@@ -31,5 +32,6 @@ public interface IC_Order_CreatePOFromSOsListener
 	 */
 	void afterPurchaseOrderLineCreatedBeforeSave(
 			I_C_OrderLine purchaseOrderLine,
-			I_C_OrderLine salesOrderLine);
+			I_C_OrderLine salesOrderLine,
+			I_C_Order purchaseOrder);
 }

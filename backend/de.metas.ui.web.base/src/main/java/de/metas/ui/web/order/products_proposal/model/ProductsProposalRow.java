@@ -276,8 +276,39 @@ public class ProductsProposalRow implements IViewRow
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
 	{
+		// A row the user has already typed a quantity into is never hidden by the DELIVERY-HISTORY
+		// criterion, so that quantity can still be seen and corrected instead of vanishing. It gates on
+		// the same predicate OrderLinesFromProductProposalsProducer uses to decide which rows become
+		// order lines, so visibility and line production stay in lockstep - and it is not a substitute
+		// for creating those lines from the unfiltered rows
+		// (ProductsProposalRowsData#getAllRowsIncludingFilteredOut), which is what actually guarantees
+		// no typed quantity is lost.
+		//
+		// Because qty is editable, this is the first criterion whose outcome an edit can change. Row
+		// membership is recomputed only when a filter is applied (ProductsProposalRowsData#filter), NOT
+		// on every row change, so clearing a quantity back to zero while the filter is on leaves that
+		// row on screen until the filter is re-applied. That is deliberate: making a row vanish from
+		// under the cursor mid-edit is worse than showing one row too many, and nothing is lost either
+		// way - OrderLinesFromProductProposalsProducer gates on the same isQtySet() predicate, so a
+		// cleared row produces no order line however long it stays visible.
+		//
+		// The exemption deliberately does NOT cover the product-name search: that search is the only
+		// filter the "Andere Produkte" view offers, and this predicate is shared with it, so exempting
+		// typed-quantity rows from the name search would silently change that view's results - which
+		// this change must not do.
+		return isMatchingProductName(filter)
+				&& (isQtySet() || isMatchingOnlyDelivered(filter));
+	}
+
+	private boolean isMatchingProductName(@NonNull final ProductsProposalViewFilter filter)
+	{
 		return Check.isEmpty(filter.getProductName())
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
+	}
+
+	private boolean isMatchingOnlyDelivered(@NonNull final ProductsProposalViewFilter filter)
+	{
+		return !filter.isOnlyDelivered() || lastShipmentDays != null;
 	}
 
 	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)

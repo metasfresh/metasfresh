@@ -19,3 +19,15 @@ export const getJournalSummary = ({ posTerminalId }) => {
     .get(toUrl(`${apiBasePath}/pos/terminal/journal`, { posTerminalId }))
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getCashWithdrawalCategories = ({ posTerminalId }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/pos/cashWithdrawal/categories`, { posTerminalId }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const withdrawCash = ({ posTerminalId, chargeId, amount }) => {
+  return axios
+    .post(`${apiBasePath}/pos/cashWithdrawal`, { posTerminalId, chargeId, amount })
+    .then((response) => unboxAxiosResponse(response));
+};

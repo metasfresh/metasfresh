@@ -204,6 +204,14 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean vatIdSet;
 
+	@ApiModelProperty(position = 280, //
+			value = "Attention, door code or additional mandatory information for the shipping label (max. 30 characters)")
+	@Nullable
+	private String attention;
+
+	@ApiModelProperty(hidden = true)
+	private boolean attentionSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -347,5 +355,16 @@ public class JsonRequestLocation
 	{
 		this.vatId = vatId;
 		this.vatIdSet = true;
+	}
+
+	public void setAttention(@Nullable final String attention)
+	{
+		this.attention = attention;
+		this.attentionSet = true;
+	}
+
+	public boolean isAttentionSet()
+	{
+		return attentionSet;
 	}
 }

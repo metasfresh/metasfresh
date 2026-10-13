@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.callorder.CallOrderContractService;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupRepository;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -16,7 +17,6 @@ import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -38,7 +38,6 @@ import org.compiere.util.Env;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -196,11 +195,8 @@ public class FlatrateTermTestHelper
 		final IDocumentLocationBL documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
-				new OrderGroupRepository(
-						new GroupCompensationLineCreateRequestFactory(),
-						Optional.empty() // advisors
-				),
-				new GroupTemplateRepository(Optional.empty()),
+				OrderGroupRepository.newInstanceForUnitTesting(),
+				GroupTemplateRepository.newInstanceForUnitTesting(),
 				new FlatrateConditionsExcludedProductsRepository());
 
 		final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo = new InOutLinesWithMissingInvoiceCandidate();
@@ -211,7 +207,8 @@ public class FlatrateTermTestHelper
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
 				new CallOrderContractService(),
-				new GLCategoryRepository());
+				new GLCategoryRepository(),
+				new ContractCompensationGroupRepository());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

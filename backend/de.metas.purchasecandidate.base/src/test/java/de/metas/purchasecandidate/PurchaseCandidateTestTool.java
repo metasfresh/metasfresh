@@ -63,6 +63,7 @@ public final class PurchaseCandidateTestTool
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.source(PurchaseCandidateSource.SalesOrder)
 				.profitInfoOrNull(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(qtyToPurchase)

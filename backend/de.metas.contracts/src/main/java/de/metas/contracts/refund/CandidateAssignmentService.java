@@ -7,8 +7,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 
@@ -25,9 +29,11 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.refund.allqties.CandidateAssignServiceAllQties;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -66,6 +72,7 @@ public class CandidateAssignmentService
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private final RefundConfigChangeService refundConfigChangeService;
+	private final RefundPackagingFilter refundPackagingFilter;
 
 	public CandidateAssignmentService(
 			@NonNull final RefundContractRepository refundContractRepository,
@@ -73,7 +80,8 @@ public class CandidateAssignmentService
 			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
 			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
-			@NonNull final RefundConfigChangeService refundConfigChangeService)
+			@NonNull final RefundConfigChangeService refundConfigChangeService,
+			@NonNull final RefundPackagingFilter refundPackagingFilter)
 	{
 		this.refundContractRepository = refundContractRepository;
 		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
@@ -81,17 +89,25 @@ public class CandidateAssignmentService
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 		this.refundConfigChangeService = refundConfigChangeService;
+		this.refundPackagingFilter = refundPackagingFilter;
 	}
 
+	/**
+	 * Assigns the given candidate to <b>every</b> refund contract that matches it; each contract gets the candidate's full amount.
+	 * A contract whose conditions are restricted to some packaging options only matches a candidate whose order line is delivered in one of them.
+	 * The assignments to contracts that don't match anymore are removed.
+	 */
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
-		final RefundContractQuery refundContractQuery = RefundContractQuery.of(assignableCandidate);
-		final RefundContract refundContract = refundContractRepository
-				.getByQuery(refundContractQuery)
-				.orElse(null);
+		return updateAssignment(assignableCandidate, retrieveMatchingContracts(assignableCandidate));
+	}
 
-		if (refundContract == null)
+	private UpdateAssignmentResult updateAssignment(
+			@NonNull final AssignableInvoiceCandidate assignableCandidate,
+			@NonNull final List<RefundContract> refundContracts)
+	{
+		if (refundContracts.isEmpty())
 		{
 			if (!assignableCandidate.isAssigned())
 			{
@@ -105,6 +121,127 @@ public class CandidateAssignmentService
 					unassignResult.getAdditionalChangedCandidates());
 		}
 
+		unassignFromContractsThatDontMatchAnymore(assignableCandidate, refundContracts);
+
+		UpdateAssignmentResult result = null;
+		final ImmutableList.Builder<AssignableInvoiceCandidate> additionalChangedCandidates = ImmutableList.builder();
+		for (final RefundContract refundContract : refundContracts)
+		{
+			final UpdateAssignmentResult contractResult = updateAssignment(assignableCandidate, refundContract);
+			additionalChangedCandidates.addAll(contractResult.getAdditionalChangedCandidates());
+			result = result == null || contractResult.isUpdateWasDone() || !result.isUpdateWasDone()
+					? contractResult
+					: result;
+		}
+
+		// the result of the last contract has only that contract's assignments; return the candidate with all of them
+		final AssignableInvoiceCandidate candidateWithAllAssignments = assignableInvoiceCandidateRepository.getById(assignableCandidate.getId());
+		return new UpdateAssignmentResult(
+				result.isUpdateWasDone(),
+				candidateWithAllAssignments,
+				additionalChangedCandidates.build());
+	}
+
+	/**
+	 * The discount line of a contract-created compensation group matches no refund contract: the refund base is the goods value before that discount.
+	 */
+	private ImmutableList<RefundContract> retrieveMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
+	{
+		if (assignableCandidate.isContractCompensationLine())
+		{
+			return ImmutableList.of();
+		}
+		return refundContractRepository.getByQuery(RefundContractQuery.of(assignableCandidate))
+				.stream()
+				// the customer deducts that bonus at payment; it is booked at the payment allocation, not invoiced
+				.filter(contract -> !contract.isDeductedAtPayment())
+				.filter(contract -> refundPackagingFilter.isIncluded(contract.getConditionsId(), assignableCandidate.getHuPIItemProductId(), assignableCandidate.getBpartnerLocationId().getBpartnerId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Assigns the given candidate if it matches a refund contract that it is not assigned to yet, e.g. because the contract was completed afterwards.
+	 * The assignment only goes to the current open period of the contract or a later one: past periods get no refund retroactively.
+	 * Does nothing if the candidate is assigned to all contracts that match it.
+	 * The discount line of a contract-created compensation group is no refund base: its assignments are removed.
+	 */
+	public void assignToNewlyMatchingContracts(@NonNull final AssignableInvoiceCandidate assignableCandidate)
+	{
+		if (assignableCandidate.isContractCompensationLine())
+		{
+			// it became the discount line of a contract-created group (e.g. regrouped): no refund base, so a former assignment goes
+			if (assignableCandidate.isAssigned())
+			{
+				unassignCandidate(assignableCandidate);
+			}
+			return;
+		}
+
+		final ImmutableSet<FlatrateTermId> assignedContractIds = assignableCandidate.getAssignmentsToRefundCandidates().stream()
+				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final LocalDate today = SystemTime.asLocalDate();
+		final ImmutableList<RefundContract> contractsToAssignTo = retrieveMatchingContracts(assignableCandidate).stream()
+				// the contracts that the candidate already has stay as they are; the new ones count only if their period for the candidate is not over
+				.filter(contract -> assignedContractIds.contains(contract.getId())
+						|| isInCurrentOrLaterPeriod(contract, assignableCandidate.getInvoiceableFrom(), today))
+				.collect(ImmutableList.toImmutableList());
+		if (contractsToAssignTo.stream().allMatch(contract -> assignedContractIds.contains(contract.getId())))
+		{
+			return; // nothing new
+		}
+
+		updateAssignment(assignableCandidate, contractsToAssignTo);
+	}
+
+	private static boolean isInCurrentOrLaterPeriod(@NonNull final RefundContract contract, @NonNull final LocalDate invoiceableFrom, @NonNull final LocalDate today)
+	{
+		if (invoiceableFrom.isBefore(contract.getStartDate()) || invoiceableFrom.isAfter(contract.getEndDate()))
+		{
+			return false;
+		}
+		final LocalDate endOfCurrentPeriod = contract.computeNextInvoiceDate(today).getDateToInvoice();
+		return !contract.computeNextInvoiceDate(invoiceableFrom).getDateToInvoice().isBefore(endOfCurrentPeriod);
+	}
+
+	private void unassignFromContractsThatDontMatchAnymore(
+			@NonNull final AssignableInvoiceCandidate assignableCandidate,
+			@NonNull final List<RefundContract> matchingContracts)
+	{
+		final ImmutableSet<FlatrateTermId> matchingContractIds = matchingContracts.stream()
+				.map(RefundContract::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final AssignableInvoiceCandidate reloadedCandidate = assignableInvoiceCandidateRepository.getById(assignableCandidate.getId());
+
+		final ImmutableSet<FlatrateTermId> staleContractIds = reloadedCandidate.getAssignmentsToRefundCandidates().stream()
+				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.filter(contractId -> !matchingContractIds.contains(contractId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final FlatrateTermId staleContractId : staleContractIds)
+		{
+			unassignSingleCandidate(onlyAssignmentsToContract(reloadedCandidate, staleContractId), staleContractId);
+		}
+	}
+
+	private static AssignableInvoiceCandidate onlyAssignmentsToContract(
+			@NonNull final AssignableInvoiceCandidate candidate,
+			@NonNull final FlatrateTermId contractId)
+	{
+		return candidate.toBuilder()
+				.clearAssignmentsToRefundCandidates()
+				.assignmentsToRefundCandidates(candidate.getAssignmentsToRefundCandidates().stream()
+						.filter(assignment -> contractId.equals(assignment.getRefundInvoiceCandidate().getRefundContract().getId()))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private UpdateAssignmentResult updateAssignment(
+			@NonNull final AssignableInvoiceCandidate assignableCandidate,
+			@NonNull final RefundContract refundContract)
+	{
 		// retrieve or create refund candidates to which assignableCandidate shall be assigned
 		final List<RefundInvoiceCandidate> matchingRefundCandidates = //
 				refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
@@ -119,14 +256,16 @@ public class CandidateAssignmentService
 		final List<RefundInvoiceCandidate> refundCandidatesToAssign;
 
 		// reload from backend to find out if the assignableCandidate is already assigned or not
-		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
-				.getById(assignableCandidate.getId());
+		// only the assignments to the given contract count, the other contracts are handled on their own
+		final AssignableInvoiceCandidate reloadedAssignableCandidate = onlyAssignmentsToContract(
+				assignableInvoiceCandidateRepository.getById(assignableCandidate.getId()),
+				refundContract.getId());
 		if (reloadedAssignableCandidate.isAssigned())
 		{
 			// the refund candidate matching the given assignableCandidate might have changed;
 			// unassign (which also subtracts the assigned money),
 			// then collect the now unassigned refund candidates for reassignment.
-			final UnassignResult unassignResult = unassignSingleCandidate(reloadedAssignableCandidate);
+			final UnassignResult unassignResult = unassignSingleCandidate(reloadedAssignableCandidate, refundContract.getId());
 			refundCandidatesToAssign = unassignResult
 					.getUnassignedPairs()
 					.stream()
@@ -187,7 +326,36 @@ public class CandidateAssignmentService
 	 */
 	public UnassignResult unassignCandidate(@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
-		final UnassignResult result = unassignSingleCandidate(assignableInvoiceCandidate);
+		// each refund contract is handled on its own: it has its own refund candidates, configs and quantities
+		final ImmutableList<FlatrateTermId> contractIds = assignableInvoiceCandidate.getAssignmentsToRefundCandidates().stream()
+				.map(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		if (contractIds.isEmpty())
+		{
+			return unassignCandidate(assignableInvoiceCandidate, null); // fails, because there is nothing to unassign
+		}
+
+		final UnassignResultBuilder resultBuilder = UnassignResult.builder()
+				.assignableCandidate(assignableInvoiceCandidate.withoutRefundInvoiceCandidates());
+		for (final FlatrateTermId contractId : contractIds)
+		{
+			final UnassignResult contractResult = unassignCandidate(onlyAssignmentsToContract(assignableInvoiceCandidate, contractId), contractId);
+			resultBuilder.unassignedPairs(contractResult.getUnassignedPairs());
+			resultBuilder.additionalChangedCandidates(contractResult.getAdditionalChangedCandidates());
+		}
+		return resultBuilder.build();
+	}
+
+	/**
+	 * @param onlyContractId the refund contract whose assignments are removed; {@code null} to remove all of them.
+	 */
+	private UnassignResult unassignCandidate(
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@Nullable final FlatrateTermId onlyContractId)
+	{
+		final UnassignResult result = unassignSingleCandidate(assignableInvoiceCandidate, onlyContractId);
 
 		final List<UnassignedPairOfCandidates> unassignedPairs = result.getUnassignedPairs();
 
@@ -314,13 +482,23 @@ public class CandidateAssignmentService
 	UnassignResult unassignSingleCandidate(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
+		return unassignSingleCandidate(assignableInvoiceCandidate, null);
+	}
+
+	/**
+	 * @param onlyContractId if not {@code null}, then only the assignments to this contract are removed. The given candidate shall then only have assignments to this contract.
+	 */
+	private UnassignResult unassignSingleCandidate(
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@Nullable final FlatrateTermId onlyContractId)
+	{
 		final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates = Check
 				.assumeNotEmpty(
 						assignableInvoiceCandidate.getAssignmentsToRefundCandidates(),
 						"The given assignableInvoiceCandidate to unassign needs to have refundInvoiceCandidates",
 						assignableInvoiceCandidate);
 
-		deleteAssignmentIfExists(assignableInvoiceCandidate);
+		deleteAssignmentIfExists(assignableInvoiceCandidate, onlyContractId);
 
 		final AssignableInvoiceCandidate withoutRefundInvoiceCandidate = assignableInvoiceCandidate
 				.withoutRefundInvoiceCandidates();
@@ -371,11 +549,13 @@ public class CandidateAssignmentService
 	}
 
 	private void deleteAssignmentIfExists(
-			@NonNull final AssignableInvoiceCandidate invoiceCandidate)
+			@NonNull final AssignableInvoiceCandidate invoiceCandidate,
+			@Nullable final FlatrateTermId onlyContractId)
 	{
 		final DeleteAssignmentsRequest request = DeleteAssignmentsRequest
 				.builder()
 				.removeForAssignedCandidateId(invoiceCandidate.getId())
+				.flatrateTermId(onlyContractId)
 				.build();
 		assignmentToRefundCandidateRepository.deleteAssignments(request);
 	}

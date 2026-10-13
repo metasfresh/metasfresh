@@ -39,6 +39,9 @@ public class RawMaterialsIssueStep
 
 	@Nullable ScaleTolerance scaleTolerance;
 
+	@With
+	boolean isAllowEmptying;
+
 	public boolean isIssued()
 	{
 		return issued != null;

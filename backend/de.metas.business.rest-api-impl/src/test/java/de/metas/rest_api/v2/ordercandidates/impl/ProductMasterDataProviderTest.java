@@ -22,26 +22,34 @@
 
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.util.web.exception.MissingResourceException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link ProductMasterDataProvider}.
@@ -57,6 +65,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ProductMasterDataProviderTest
 {
+	/** Deliberately neither the CI zone (Europe/Berlin) nor UTC, so a provider that re-zones the date is caught. */
+	private static final ZoneId ORG_ZONE = ZoneId.of("Asia/Tokyo");
 	private ProductMasterDataProvider productMasterDataProvider;
 	private static final OrgId ANY_ORG = OrgId.ofRepoId(1);
 
@@ -134,7 +144,7 @@ class ProductMasterDataProviderTest
 
 		// when — pre-switch: date before NEW's ValidFrom → only OLD is valid
 		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 
 		// then — OLD row (Qty=9)
 		assertThat(infoBeforeSwitch.getProductId()).isEqualTo(productId);
@@ -144,7 +154,7 @@ class ProductMasterDataProviderTest
 
 		// when — on/after switch: date on NEW's ValidFrom → both valid, pick latest ValidFrom → NEW wins
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 
 		// then — NEW row (Qty=6)
 		assertThat(infoAfterSwitch.getProductId()).isEqualTo(productId);
@@ -194,15 +204,112 @@ class ProductMasterDataProviderTest
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
 
 		// Call beforeSwitch FIRST — populates cache for (identifier, orgId, beforeSwitch)
-		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch);
+		final ProductMasterDataProvider.ProductInfo infoBeforeSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, beforeSwitch, null);
 		assertThat(infoBeforeSwitch.getHupiItemProductId())
 				.as("first call (beforeSwitch): cache miss → resolve → OLD row")
 				.isEqualTo(oldRowId);
 
 		// Call afterSwitch SECOND — must NOT return the cached beforeSwitch result
-		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch);
+		final ProductMasterDataProvider.ProductInfo infoAfterSwitch = productMasterDataProvider.getProductInfo(identifier, ANY_ORG, afterSwitch, null);
 		assertThat(infoAfterSwitch.getHupiItemProductId())
 				.as("second call (afterSwitch): different date → separate cache entry → NEW row (if date is part of key)")
 				.isEqualTo(newRowId);
+	}
+
+	/**
+	 * Two partners each own a carton row with the same GTIN. Both requests go through the same provider
+	 * instance (shared cache); each partner must get its own packing instruction.
+	 */
+	@Test
+	void getProductInfo_is_cached_per_ordering_partner()
+	{
+		// given
+		final I_M_Product product = createProduct("feta-200g");
+		final BPartnerId partnerA = createBPartner("partnerA");
+		final BPartnerId partnerB = createBPartner("partnerB");
+		final HUPIItemProductId rowA = createPiip(product, "90000000001", partnerA);
+		final HUPIItemProductId rowB = createPiip(product, "90000000001", partnerB);
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-90000000001");
+
+		// when / then
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerA).getHupiItemProductId())
+				.as("partner A").isEqualTo(rowA);
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerB).getHupiItemProductId())
+				.as("partner B (must not get A's cached row)").isEqualTo(rowB);
+		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerA).getHupiItemProductId())
+				.as("partner A again").isEqualTo(rowA);
+	}
+
+	@Nested
+	class getProductInfoForOrderCandidate
+	{
+		private String existingText(final String identifier)
+		{
+			return "The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=" + identifier + " -  could not be found.";
+		}
+
+		@Test
+		void gtin_not_valid_on_date_explains()
+		{
+			final I_M_Product product = createProduct("gtin-explain");
+			final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+			piip.setM_Product_ID(product.getM_Product_ID());
+			piip.setGTIN("90000000101");
+			piip.setValidFrom(Timestamp.from(LocalDate.of(2022, 9, 1).atStartOfDay(ORG_ZONE).toInstant()));
+			piip.setIsActive(true);
+			InterfaceWrapperHelper.save(piip);
+			final ZonedDateTime date = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
+			assertThatThrownBy(() -> productMasterDataProvider.getProductInfoForOrderCandidate(ExternalIdentifier.of("gtin-90000000101"), ANY_ORG, date, null))
+					.isInstanceOf(OLCandProductNotFoundException.class)
+					.hasMessage(existingText("gtin-90000000101") + " "
+							+ "GTIN 90000000101 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+							+ "M_HU_PI_Item_Product_ID=" + piip.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01.");
+		}
+
+		@Test
+		void val_not_found_keeps_text()
+		{
+			assertThatThrownBy(() -> productMasterDataProvider.getProductInfoForOrderCandidate(ExternalIdentifier.of("val-unknown"), ANY_ORG, null, null))
+					.isInstanceOf(OLCandProductNotFoundException.class)
+					.hasMessage(existingText("val-unknown"));
+		}
+	}
+
+	@Test
+	void getProductInfo_unchanged_for_other_apis()
+	{
+		final I_M_Product product = createProduct("gtin-unchanged");
+		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		piip.setM_Product_ID(product.getM_Product_ID());
+		piip.setGTIN("90000000102");
+		piip.setValidFrom(TimeUtil.parseLocalDateAsTimestamp("2022-09-01"));
+		piip.setIsActive(true);
+		InterfaceWrapperHelper.save(piip);
+		final ZonedDateTime date = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
+		assertThatThrownBy(() -> productMasterDataProvider.getProductInfo(ExternalIdentifier.of("gtin-90000000102"), ANY_ORG, date, null))
+				.isInstanceOf(MissingResourceException.class)
+				.hasMessage("The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-90000000102 -  could not be found.");
+	}
+
+	private BPartnerId createBPartner(final String value)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartner.setValue(value);
+		bpartner.setName(value);
+		InterfaceWrapperHelper.save(bpartner);
+		return BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+	}
+
+	private HUPIItemProductId createPiip(final I_M_Product product, final String gtin, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		piip.setM_Product_ID(product.getM_Product_ID());
+		piip.setGTIN(gtin);
+		piip.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		piip.setIsActive(true);
+		InterfaceWrapperHelper.save(piip);
+		return HUPIItemProductId.ofRepoId(piip.getM_HU_PI_Item_Product_ID());
 	}
 }

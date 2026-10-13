@@ -29,7 +29,8 @@ CREATE FUNCTION sales_invoice_excel_report(p_DateInvoicedFrom date,
                 InvoiceDocumentNo character varying,
                 InvoicedQty       numeric,
                 LineNetAmt        numeric,
-                LineGrossAmt      numeric
+                LineGrossAmt      numeric,
+                CreditMemoReason  character varying
             )
     STABLE
     LANGUAGE sql
@@ -50,7 +51,8 @@ SELECT x.DocTypeName       AS DocTypeName,
        x.InvoiceDocumentNo AS InvoiceDocumentNo,
        x.InvoicedQty       AS InvoicedQty,
        x.LineNetAmt        AS LineNetAmt,
-       x.LineGrossAmt      AS LineGrossAmt
+       x.LineGrossAmt      AS LineGrossAmt,
+       x.CreditMemoReason  AS CreditMemoReason
 
 FROM rv_sales_invoice_report x
 WHERE (p_DateInvoicedFrom <= x.DateInvoiced)

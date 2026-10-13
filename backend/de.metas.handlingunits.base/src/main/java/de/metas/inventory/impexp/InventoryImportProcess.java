@@ -319,23 +319,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 
 		if (explicitCostPrice.isAuto())
 		{
-			if (costPrice != null && costPrice.signum() > 0)
-			{
-				inventoryLineRecord.setIsExplicitCostPrice(true);
-			}
-			else
-			{
-				inventoryLineRecord.setIsExplicitCostPrice(false);
-			}
-		}
-		else if (explicitCostPrice.isTrue())
-		{
-			inventoryLineRecord.setIsExplicitCostPrice(true);
+			inventoryLineRecord.setIsExplicitCostPrice(costPrice != null && costPrice.signum() > 0);
 		}
 		else
-		{
-			inventoryLineRecord.setIsExplicitCostPrice(false);
-		}
+			inventoryLineRecord.setIsExplicitCostPrice(explicitCostPrice.isTrue());
 
 		InterfaceWrapperHelper.saveRecord(inventoryLineRecord);
 		logger.trace("Insert inventory line - {}", inventoryLineRecord);
@@ -428,50 +415,50 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		if (!Check.isBlank(importRecord.getAttributeCode1()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode1().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString1());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString1());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode2()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode2().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString2());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString2());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode3()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode3().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString3());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString3());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode4()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode4().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString4());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString4());
 		}
 
 		//
 		// Lot
 		if (!Check.isBlank(importRecord.getLot()))
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_LotNumber, importRecord.getLot());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_LotNumber, importRecord.getLot());
 		}
 
 		//
 		// BestBeforeDate
 		if (importRecord.getHU_BestBeforeDate() != null)
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
 		}
 
 		//
 		// TE
 		if (!Check.isBlank(importRecord.getTE()))
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
 		}
 
 		//
 		// DateReceived
 		if (importRecord.getDateReceived() != null)
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
 		}
 
 		//

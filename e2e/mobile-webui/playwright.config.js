@@ -53,7 +53,9 @@ export default defineConfig({
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         //trace: 'on-first-retry',
-        trace: 'on',
+        // CI sets PLAYWRIGHT_TRACE=retain-on-failure (traces of passed tests were 93 % of the uploaded results);
+        // local runs record every trace, which the evidence-video captioner needs.
+        trace: process.env.PLAYWRIGHT_TRACE || 'on',
 
         react: true,  // Enables React component detection
 
@@ -70,7 +72,7 @@ export default defineConfig({
                 launchOptions: {
                     args: [
                         '--no-sandbox', // Avoids sandboxing issues inside Docker
-                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282', // Treats it as a secure origin
+                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile', // Treats these as secure origins so navigator.mediaDevices (secure-context-only) is defined at http://mobile — mirrors production HTTPS
                         '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
                         '--disable-site-isolation-trials', // Helps disable security sandboxing
                         '--disable-web-security', // Disables web security (CORS, mixed content, etc.)

@@ -74,8 +74,8 @@ Feature: Validate external reference is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier                 | OPT.Code      | Name          | OPT.CompanyName | OPT.Language |
-      | created_bpartner         | ext-Shopware6-BPartner_ER_25032022 | shopware6code | shopware6name | shopware6cmp    | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier                 | code          | name          | companyName     | language |
+      | created_bpartner         | ext-Shopware6-BPartner_ER_25032022 | shopware6code | shopware6name | shopware6cmp    | de       |
 
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference      | ExternalReferenceURL |
@@ -144,8 +144,8 @@ Feature: Validate external reference is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier                    | OPT.Code               | Name               | OPT.CompanyName   | OPT.Language |
-      | created_bpartner         | ext-Shopware6-BPartner_ER_S2_25032022 | shopware6code_25032022 | shopware6nameAudit | shopware6cmpAudit | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier                    | code                   | name               | companyName       | language |
+      | created_bpartner         | ext-Shopware6-BPartner_ER_S2_25032022 | shopware6code_25032022 | shopware6nameAudit | shopware6cmpAudit | de       |
 
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference         | ExternalReferenceURL |

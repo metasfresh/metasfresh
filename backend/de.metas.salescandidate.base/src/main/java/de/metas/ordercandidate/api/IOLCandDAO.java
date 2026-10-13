@@ -23,6 +23,7 @@ package de.metas.ordercandidate.api;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.OrderId;
@@ -75,7 +76,7 @@ public interface IOLCandDAO extends ISingletonService
 
 	I_C_OLCand retrieveByIds(OLCandId olCandId);
 	
-	Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(Set<OLCandId> olCandIds);
+	ImmutableSetMultimap<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(Set<OLCandId> olCandIds);
 
 	boolean isAnyRecordProcessed(@NonNull Set<OLCandId> olCandIds);
 

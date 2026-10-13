@@ -1,51 +1,29 @@
 package de.metas.contracts.refund;
 
-import static de.metas.contracts.refund.RefundTestTools.CONTRACT_END_DATE;
-import static de.metas.contracts.refund.RefundTestTools.CONTRACT_START_DATE;
-import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
-import static de.metas.util.collections.CollectionUtils.singleElement;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.DimensionService;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.cache.CacheMgt;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_RefundConfig_PackingOption;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -58,6 +36,41 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_InvoiceSchedule;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
+
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_END_DATE;
+import static de.metas.contracts.refund.RefundTestTools.CONTRACT_START_DATE;
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static de.metas.util.collections.CollectionUtils.singleElement;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /*
  * #%L
@@ -138,7 +151,8 @@ public class CandidateAssignmentServiceTest
 				assignableInvoiceCandidateRepository,
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
-				refundConfigChangeService);
+				refundConfigChangeService,
+				new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()));
 
 		refundTestTools = RefundTestTools.newInstance();
 
@@ -193,6 +207,339 @@ public class CandidateAssignmentServiceTest
 		// make
 		final I_C_Invoice_Candidate unAssignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
 		assertThat(unAssignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo("98");
+	}
+
+	/**
+	 * Two parallel contracts of the same partner: the candidate is assigned to both, each gets its full amount, and a further update doesn't change that.
+	 */
+	@Test
+	public void updateAssignment_assigns_to_every_matching_contract()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(contract1);
+		refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()));
+
+		final List<AssignmentToRefundCandidate> assignments = result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates();
+		assertThat(assignments).hasSize(2);
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactlyInAnyOrder(contract1.getId(), contract2.getId());
+		assertThat(assignments)
+				.allSatisfy(assignment -> {
+					assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the full 10
+					assertThat(assignment.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
+				});
+	}
+
+	/**
+	 * The discount line that a compensation-group contract put on the order is not part of any refund base:
+	 * the periodic refund is computed on the goods value before that on-invoice discount.
+	 */
+	@Test
+	public void updateAssignment_contractCompensationLine_isNotAssigned()
+	{
+		refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate compensationLineRecord = createCompensationLineRecord(createCompensationGroupContract());
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(compensationLineRecord));
+
+		assertThat(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(assignableInvoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(compensationLineRecord.getC_Invoice_Candidate_ID())).getAssignmentsToRefundCandidates()).isEmpty();
+	}
+
+	/**
+	 * A discount line of a group the user put together on the order (no contract) reduces what the customer pays, so it stays in the refund base.
+	 */
+	@Test
+	public void updateAssignment_manualCompensationLine_isAssigned()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final I_C_Invoice_Candidate compensationLineRecord = createCompensationLineRecord(null);
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(compensationLineRecord));
+
+		final AssignmentToRefundCandidate assignment = singleElement(result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates());
+		assertThat(assignment.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
+		assertThat(assignment.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2"); // 20% of the line's 10
+	}
+
+	/**
+	 * A contract discount line that was assigned to a refund contract before is unassigned with its next update, and the refund gives the amount back.
+	 */
+	@Test
+	public void updateAssignment_contractCompensationLine_staleAssignmentIsRemoved()
+	{
+		final AssignableInvoiceCandidate assignedCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+		assertThat(refundCandidate.getMoney().toBigDecimal()).isEqualByComparingTo("100"); // guard
+
+		final I_C_Invoice_Candidate record = load(assignedCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
+		turnIntoCompensationLine(record, createCompensationGroupContract());
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.ofRecord(record));
+
+		assertThat(result.getAssignableInvoiceCandidate().isAssigned()).isFalse();
+		assertThat(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()).getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("98");
+	}
+
+	/**
+	 * The invoice candidate update process (RefundInvoiceCandidateListener) also removes the refund assignment of a candidate that
+	 * became the discount line of a contract-created group, e.g. after its order line was regrouped.
+	 */
+	@Test
+	void assignToNewlyMatchingContracts_contractCompensationLine_staleAssignmentIsRemoved()
+	{
+		final AssignableInvoiceCandidate assignedCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
+		final I_C_Invoice_Candidate record = load(assignedCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
+		turnIntoCompensationLine(record, createCompensationGroupContract());
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()));
+
+		assertThat(assignableInvoiceCandidateRepository.getById(assignedCandidate.getId()).getAssignmentsToRefundCandidates()).isEmpty();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("98");
+	}
+
+	private static I_C_Flatrate_Term createCompensationGroupContract()
+	{
+		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
+		contractRecord.setType_Conditions(TypeConditions.COMPENSATION_GROUP.getCode());
+		saveRecord(contractRecord);
+		return contractRecord;
+	}
+
+	private I_C_Invoice_Candidate createCompensationLineRecord(@Nullable final I_C_Flatrate_Term compensationGroupContract)
+	{
+		final I_C_Invoice_Candidate record = refundTestTools.createAssignableInvoiceCandidateRecord(ONE);
+		turnIntoCompensationLine(record, compensationGroupContract);
+		return record;
+	}
+
+	/**
+	 * @param compensationGroupContract the contract that created the group; {@code null} for a group the user put together
+	 */
+	private static void turnIntoCompensationLine(@NonNull final I_C_Invoice_Candidate record, @Nullable final I_C_Flatrate_Term compensationGroupContract)
+	{
+		final I_C_Order orderRecord = newInstance(I_C_Order.class);
+		orderRecord.setC_BPartner_ID(record.getBill_BPartner_ID());
+		saveRecord(orderRecord);
+
+		final I_C_Order_CompensationGroup groupRecord = newInstance(I_C_Order_CompensationGroup.class);
+		groupRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+		if (compensationGroupContract != null)
+		{
+			groupRecord.setC_Flatrate_Term_ID(compensationGroupContract.getC_Flatrate_Term_ID());
+		}
+		saveRecord(groupRecord);
+
+		record.setC_Order_ID(orderRecord.getC_Order_ID());
+		record.setC_Order_CompensationGroup_ID(groupRecord.getC_Order_CompensationGroup_ID());
+		record.setIsGroupCompensationLine(true);
+		saveRecord(record);
+	}
+
+	/**
+	 * A contract whose conditions are restricted to packaging options does not get a candidate that has no packing material; the unrestricted contract does.
+	 */
+	@Test
+	public void updateAssignment_skipsTheContractWhosePackagingOptionsDontMatch()
+	{
+		final RefundContract unrestrictedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract restrictedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(unrestrictedContract);
+		refundTestTools.createRefundCandidate(restrictedContract);
+
+		final RefundConfigId restrictedConfigId = restrictedContract.getRefundConfigs().get(0).getId();
+		final I_C_Flatrate_RefundConfig restrictedConfig = load(restrictedConfigId, I_C_Flatrate_RefundConfig.class);
+		restrictedConfig.setIsPackingOptionFiltered(true);
+		saveRecord(restrictedConfig);
+		final I_C_Flatrate_RefundConfig_PackingOption packingOption = newInstance(I_C_Flatrate_RefundConfig_PackingOption.class);
+		packingOption.setC_Flatrate_Conditions_ID(restrictedContract.getConditionsId().getRepoId());
+		packingOption.setC_Flatrate_RefundConfig_ID(restrictedConfigId.getRepoId());
+		packingOption.setM_HU_PackingMaterial_ID(301);
+		saveRecord(packingOption);
+
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final List<AssignmentToRefundCandidate> assignments = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).getAssignmentsToRefundCandidates();
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactly(unrestrictedContract.getId());
+	}
+
+	/**
+	 * The customer deducts the bonus of a contract that is deducted at payment when paying the invoice; the refund engine leaves that contract alone.
+	 */
+	@Test
+	public void updateAssignment_skipsTheContractThatIsDeductedAtPayment()
+	{
+		final RefundContract invoicedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract deductedContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		refundTestTools.createRefundCandidate(invoicedContract);
+		refundTestTools.createRefundCandidate(deductedContract);
+
+		for (final RefundConfig config : deductedContract.getRefundConfigs())
+		{
+			final I_C_Flatrate_RefundConfig configRecord = load(config.getId(), I_C_Flatrate_RefundConfig.class);
+			configRecord.setIsDeductedAtPayment(true);
+			saveRecord(configRecord);
+		}
+
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		final List<AssignmentToRefundCandidate> assignments = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).getAssignmentsToRefundCandidates();
+		assertThat(assignments)
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactly(invoicedContract.getId());
+	}
+
+	/**
+	 * A candidate that matches a contract that it is not assigned to yet (e.g. because the contract was completed later) gets assigned in the current period, but not in a past one.
+	 */
+	@Test
+	public void assignToNewlyMatchingContracts_assignsOnlyFromTheCurrentPeriodOn()
+	{
+		final RefundContract contract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final AssignableInvoiceCandidate candidateInCurrentPeriod = refundTestTools.createAssignableCandidateStandlone();
+		final LocalDate invoiceableFrom = candidateInCurrentPeriod.getInvoiceableFrom();
+
+		// the contract's period of the candidate lies in the past
+		SystemTime.setFixedTimeSource(invoiceableFrom.plusYears(1).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(candidateInCurrentPeriod);
+			assertThat(assignableInvoiceCandidateRepository.getById(candidateInCurrentPeriod.getId()).isAssigned()).isFalse();
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		// the candidate's period is the current one
+		SystemTime.setFixedTimeSource(invoiceableFrom.atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(candidateInCurrentPeriod);
+			final AssignableInvoiceCandidate assigned = assignableInvoiceCandidateRepository.getById(candidateInCurrentPeriod.getId());
+			assertThat(assigned.getAssignmentsToRefundCandidates())
+					.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+					.containsExactly(contract.getId());
+
+			// already assigned to everything that matches: nothing to do
+			assertThat(invoiceCandidateAssignmentService.updateAssignment(assigned).getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates()).hasSize(1);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+
+	/**
+	 * Of two contracts that the candidate is not assigned to yet, only the one whose period for the candidate is still open gets it; the one whose period has passed does not.
+	 */
+	@Test
+	public void assignToNewlyMatchingContracts_skipsTheContractsWhosePeriodHasPassed()
+	{
+		final RefundContract monthlyContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract yearlyContract = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final I_C_InvoiceSchedule yearlySchedule = newInstance(I_C_InvoiceSchedule.class);
+		yearlySchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
+		yearlySchedule.setInvoiceDay(RefundTestTools.INVOICE_SCHEDULE_DAY_OF_MONTH);
+		yearlySchedule.setInvoiceDistance(12);
+		saveRecord(yearlySchedule);
+		final I_C_Flatrate_RefundConfig yearlyConfig = load(yearlyContract.getRefundConfigs().get(0).getId(), I_C_Flatrate_RefundConfig.class);
+		yearlyConfig.setC_InvoiceSchedule_ID(yearlySchedule.getC_InvoiceSchedule_ID());
+		saveRecord(yearlyConfig);
+
+		final AssignableInvoiceCandidate candidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// three months later: the candidate's month has passed, its year has not
+		SystemTime.setFixedTimeSource(candidate.getInvoiceableFrom().plusMonths(3).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			invoiceCandidateAssignmentService.assignToNewlyMatchingContracts(candidate);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		assertThat(assignableInvoiceCandidateRepository.getById(candidate.getId()).getAssignmentsToRefundCandidates())
+				.extracting(assignment -> assignment.getRefundInvoiceCandidate().getRefundContract().getId())
+				.containsExactly(yearlyContract.getId())
+				.doesNotContain(monthlyContract.getId());
+	}
+
+	/**
+	 * Unassigning a candidate that is assigned to two contracts removes both assignments
+	 * and takes back from each contract's refund candidate the amount of its own assignment.
+	 */
+	@Test
+	public void unassignCandidate_assignedToTwoContracts()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundInvoiceCandidate refundCandidate1 = refundTestTools.createRefundCandidate(contract1);
+		final RefundInvoiceCandidate refundCandidate2 = refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+		final AssignableInvoiceCandidate assignedCandidate = assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId());
+		assertThat(assignedCandidate.getAssignmentsToRefundCandidates()).hasSize(2); // guard
+
+		// invoke the method under test
+		final UnassignResult result = invoiceCandidateAssignmentService.unassignCandidate(assignedCandidate);
+
+		assertThat(result.getUnassignedPairs()).hasSize(2);
+		assertThat(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()).isAssigned()).isFalse();
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate1.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate2.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+	}
+
+	/**
+	 * A candidate that moves out of one contract's period loses only that contract's assignment.
+	 */
+	@Test
+	public void updateAssignment_candidateMovesOutOfOneContractsPeriod()
+	{
+		final RefundContract contract1 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundContract contract2 = refundTestTools.createRefundContract_APPLY_TO_ALL_QTIES();
+		final RefundInvoiceCandidate refundCandidate1 = refundTestTools.createRefundCandidate(contract1);
+		final RefundInvoiceCandidate refundCandidate2 = refundTestTools.createRefundCandidate(contract2);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+		invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		// contract1 ends before the candidate's invoiceable-from date
+		final I_C_Flatrate_Term contract1Record = InterfaceWrapperHelper.load(contract1.getId(), I_C_Flatrate_Term.class);
+		contract1Record.setStartDate(TimeUtil.asTimestamp(contract1.getStartDate().minusDays(10)));
+		contract1Record.setEndDate(TimeUtil.asTimestamp(contract1.getStartDate().minusDays(5)));
+		InterfaceWrapperHelper.saveRecord(contract1Record);
+		CacheMgt.get().reset(); // the repository caches the matching contracts
+
+		// invoke the method under test
+		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateRepository.getById(assignableInvoiceCandidate.getId()));
+
+		final List<AssignmentToRefundCandidate> assignments = result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates();
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.get(0).getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate2.getId());
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate1.getId()).getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+		assertThat(refundInvoiceCandidateRepository.getById(refundCandidate2.getId()).getMoney().toBigDecimal()).isEqualByComparingTo("102");
 	}
 
 	@Test

@@ -23,6 +23,7 @@
 package de.metas.product.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -82,6 +83,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,6 +103,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_Product, M_Product_Category, M_Product_SupplierApproval_Norm
+ * Repository Cluster: product master data
+ * <p>
+ * Also reads C_OrderLine / C_InvoiceLine / M_InOutLine / M_CostDetail, but only to answer
+ * {@link #isProductUsed(de.metas.product.ProductId)} — it owns none of those tables.
+ */
 public class ProductDAO implements IProductDAO
 {
 	final static int ONE_YEAR_DAYS = 365;
@@ -183,6 +192,13 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull final Set<ProductId> productIds)
+	{
+		return ImmutableList.copyOf(InterfaceWrapperHelper.loadByRepoIdAwares(productIds, I_M_Product.class));
 	}
 
 	@Override
@@ -471,6 +487,42 @@ public class ProductDAO implements IProductDAO
 	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
 	{
 		return getProductCategoryById(id).getName();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<ProductCategoryId> getProductCategoryIdAndAncestors(@NonNull final ProductCategoryId productCategoryId)
+	{
+		final ImmutableSet.Builder<ProductCategoryId> result = ImmutableSet.builder();
+
+		final Set<ProductCategoryId> seenIds = new HashSet<>();
+		ProductCategoryId currentId = productCategoryId;
+		while (currentId != null && seenIds.add(currentId))
+		{
+			result.add(currentId);
+
+			final I_M_Product_Category productCategory = getProductCategoryById(currentId);
+			currentId = ProductCategoryId.ofRepoIdOrNull(productCategory.getM_Product_Category_Parent_ID());
+		}
+
+		return result.build();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> getProductCategoryIdAndAncestorsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			result.put(productAndCategoryId.getProductId(), getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId()));
+		}
+		return result.build();
 	}
 
 	@Override

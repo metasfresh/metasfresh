@@ -1,6 +1,9 @@
 package de.metas.ui.web.window.controller;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
@@ -19,7 +22,9 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
@@ -54,6 +59,12 @@ public class DocumentPermissionsHelper
 {
 
 	private static final Logger logger = LogManager.getLogger(DocumentPermissionsHelper.class);
+
+	/** Generic refusal, carrying no explanation. Used where the window or the tab forbids creation. */
+	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed");
+
+	/** Refusal by the role's per-table create permission. {0} is the role name. */
+	public static final AdMessageKey MSG_ROLE_CREATE_NOT_ALLOWED = AdMessageKey.of("ERR_Role_CreateNewRecordsNotAllowed");
 
 	public static ElementPermission checkWindowAccess(@NonNull final DocumentEntityDescriptor entityDescriptor, final IUserRolePermissions permissions)
 	{
@@ -221,7 +232,12 @@ public class DocumentPermissionsHelper
 
 	private static int getAdTableId(final Document document)
 	{
-		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
+		return getAdTableId(document.getEntityDescriptor());
+	}
+
+	private static int getAdTableId(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
 		if (tableName == null)
 		{
 			// cannot apply security because this is not table based
@@ -243,18 +259,69 @@ public class DocumentPermissionsHelper
 		}
 	}
 
-	public static boolean isNewDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final UserSession userSession)
+	/** Restrictive only: the window and tab checks refuse without a reason as before, only the role's per-table restriction carries one. */
+	public static BooleanWithReason checkNewDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final UserSession userSession)
 	{
 		final AdWindowId adWindowId = entityDescriptor.getWindowId().toAdWindowIdOrNull();
-		if (adWindowId == null) {return true;}
+		if (adWindowId == null) {return BooleanWithReason.TRUE;}
 
 		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
-		if (!windowPermission.hasWriteAccess()) {return false;}
+		if (!windowPermission.hasWriteAccess()) {return BooleanWithReason.FALSE;}
 
 		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
 		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), IExpressionEvaluator.OnVariableNotFound.ReturnNoResult);
-		return allow.isTrue();
+		if (!allow.isTrue()) {return BooleanWithReason.FALSE;}
+
+		return checkRoleCanCreateNewRecords(entityDescriptor, permissions);
+	}
+
+	/**
+	 * The role's per-table create permission alone, with the refusal reason naming the role.
+	 * This is the single place the role-level answer is turned into a user-facing reason.
+	 */
+	public static BooleanWithReason checkRoleCanCreateNewRecords(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final IUserRolePermissions permissions)
+	{
+		return checkRoleCanCreateNewRecords(getAdTableIdOrNull(entityDescriptor.getTableNameOrNull()), permissions);
+	}
+
+	/**
+	 * The role's per-table create permission for a given table - the single place the role-level answer is
+	 * turned into a user-facing reason. A {@code null} table (not table-based, or a name that resolves to no
+	 * {@code AD_Table}) carries no restriction, so creation stays allowed. Callers that hold only a table name
+	 * (e.g. the BPartner quick input, whose document is a C_BPartner_QuickInput template but whose created
+	 * record is a C_BPartner) resolve it first via {@link #getAdTableIdOrNull(String)}.
+	 */
+	public static BooleanWithReason checkRoleCanCreateNewRecords(
+			@Nullable final AdTableId adTableId,
+			@NonNull final IUserRolePermissions permissions)
+	{
+		if (adTableId == null) {return BooleanWithReason.TRUE;}
+
+		return permissions.isCanCreateNewRecords(adTableId)
+				? BooleanWithReason.TRUE
+				: BooleanWithReason.falseBecause(roleCreateNotAllowedReason(permissions));
+	}
+
+	/**
+	 * Resolves a table name to its {@link AdTableId} via the in-memory {@link TableIdsCache} (O(1), no DB,
+	 * no service lookup); a {@code null} name or an unknown table yields {@code null}.
+	 */
+	@Nullable
+	private static AdTableId getAdTableIdOrNull(@Nullable final String tableName)
+	{
+		return tableName != null ? TableIdsCache.instance.getTableId(tableName).orElse(null) : null;
+	}
+
+	/**
+	 * States the role's create refusal in words, naming the role; it does not decide it.
+	 * Every payload which transmits the refusal takes its text from here, so all of them read alike.
+	 */
+	public static ITranslatableString roleCreateNotAllowedReason(@NonNull final IUserRolePermissions permissions)
+	{
+		return TranslatableStrings.adMessage(MSG_ROLE_CREATE_NOT_ALLOWED, permissions.getName());
 	}
 
 }

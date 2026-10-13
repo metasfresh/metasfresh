@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPattern": "/oauth/token.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "access_token": "mock-dhl-access-token-12345",
+      "token_type": "Bearer",
+      "expires_in": 3600
+    }
+  }
+}

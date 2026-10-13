@@ -18,7 +18,7 @@ public interface I_DATEV_ExportLine
 
 
 	/**
-	 * Set activityname.
+	 * Set Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_DATEV_ExportLine
 	void setActivityName (@Nullable java.lang.String ActivityName);
 
 	/**
-	 * Get activityname.
+	 * Get Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -49,6 +49,27 @@ public interface I_DATEV_ExportLine
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalDescription (@Nullable java.lang.String AdditionalDescription);
+
+	/**
+	 * Get Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditionalDescription();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_DATEV_ExportLine.class, "AdditionalDescription", null);
+	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
 
 	/**
 	 * Set Organisation.
@@ -117,6 +138,27 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_AmtSource = new ModelColumn<>(I_DATEV_ExportLine.class, "AmtSource", null);
 	String COLUMNNAME_AmtSource = "AmtSource";
+
+	/**
+	 * Set Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBP_Account_Place (@Nullable java.lang.String BP_Account_Place);
+
+	/**
+	 * Get Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBP_Account_Place();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_BP_Account_Place = new ModelColumn<>(I_DATEV_ExportLine.class, "BP_Account_Place", null);
+	String COLUMNNAME_BP_Account_Place = "BP_Account_Place";
 
 	/**
 	 * Set Name.
@@ -412,6 +454,27 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_Currency = "Currency";
 
 	/**
+	 * Set Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
+
+	/**
+	 * Get Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCurrencyRate();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_DATEV_ExportLine.class, "CurrencyRate", null);
+	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -613,6 +676,50 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DueDate = new ModelColumn<>(I_DATEV_ExportLine.class, "DueDate", null);
 	String COLUMNNAME_DueDate = "DueDate";
+
+	/**
+	 * Set Empty Column.
+	 * Field used as a structural placeholder to maintain the required DATEV CSV column sequence. It contains no data and is exported as an empty value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEmptyColumn (@Nullable java.lang.String EmptyColumn);
+
+	/**
+	 * Get Empty Column.
+	 * Field used as a structural placeholder to maintain the required DATEV CSV column sequence. It contains no data and is exported as an empty value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEmptyColumn();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_EmptyColumn = new ModelColumn<>(I_DATEV_ExportLine.class, "EmptyColumn", null);
+	String COLUMNNAME_EmptyColumn = "EmptyColumn";
+
+	/**
+	 * Set Brutto betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossAmt (BigDecimal GrossAmt);
+
+	/**
+	 * Get Brutto betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossAmt();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_GrossAmt = new ModelColumn<>(I_DATEV_ExportLine.class, "GrossAmt", null);
+	String COLUMNNAME_GrossAmt = "GrossAmt";
 
 	/**
 	 * Set Active.

@@ -51,6 +51,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
@@ -58,7 +59,6 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -96,6 +96,7 @@ public class M_ReceiptSchedule_StepDef
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -127,9 +128,6 @@ public class M_ReceiptSchedule_StepDef
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 		InterfaceWrapperHelper.refresh(receiptSchedule);
 
-		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(COLUMNNAME_C_Order_ID);
-		final I_C_Order order = orderTable.get(orderIdentifier);
-
 		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID);
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
@@ -156,7 +154,10 @@ public class M_ReceiptSchedule_StepDef
 		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
 		final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
-		softly.assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.map(orderTable::get)
+				.ifPresent(order -> softly.assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID()));
+
 		softly.assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		softly.assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		softly.assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
@@ -180,8 +181,20 @@ public class M_ReceiptSchedule_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
+		row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+				.ifPresent(qtyToMove -> softly.assertThat(receiptSchedule.getQtyToMove())
+						.as(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+						.isEqualByComparingTo(qtyToMove));
+
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
+				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isClosed()).as("IsClosed").isEqualTo(isClosed));
+
+		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> softly.assertThat(receiptSchedule.isDeliveryStop()).as("IsDeliveryStop").isEqualTo(isDeliveryStop));
+
 		row.getAsOptionalString(COLUMNNAME_ExternalHeaderId)
-						.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
+				.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
 
 		row.getAsOptionalString(COLUMNNAME_ExternalLineId)
 				.ifPresent(externalLineId -> softly.assertThat(receiptSchedule.getExternalLineId()).as(COLUMNNAME_ExternalLineId).isEqualTo(externalLineId));
@@ -207,6 +220,42 @@ public class M_ReceiptSchedule_StepDef
 		assertThat(purchaseOrderReceiptSchedules).isNull();
 	}
 
+	/**
+	 * Applies the operator's own overrides to an existing receipt schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ReceiptSchedule_ID</b> — (required, identifier-ref) the receipt schedule to update<br>
+	 *   <b>OPT.DatePromised_Override</b> — (optional) the date the operator promises instead of the one the
+	 *   order carries; it is what {@code DatePromised_Effective} resolves to from then on<br>
+	 *   <b>OPT.QtyMoved</b> — (optional) the quantity already received, i.e. a partial receipt stated directly -
+	 *   these scenarios drive no receipt process. Saving it recomputes {@code QtyToMove} as
+	 *   {@code QtyOrdered - QtyMoved} through the schedule's own interceptor, so the two figures diverge exactly
+	 *   as they would after a real partial receipt<br>
+	 * @cucumber.depends StepDefData: M_ReceiptSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_ReceiptSchedule:
+	 *   | M_ReceiptSchedule_ID | OPT.DatePromised_Override |
+	 *   | receiptSchedule      | 2023-03-15                |
+	 * </pre>
+	 */
+	@And("update M_ReceiptSchedule:")
+	public void update_M_ReceiptSchedule(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_ReceiptSchedule receiptSchedule = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID).lookupNotNullIn(receiptScheduleTable);
+
+			row.getAsOptionalLocalDateTimestamp(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
+					.ifPresent(receiptSchedule::setDatePromised_Override);
+
+			row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyMoved)
+					.ifPresent(receiptSchedule::setQtyMoved);
+
+			saveRecord(receiptSchedule);
+		});
+	}
+
 	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")
 	public void trigger_empties_process(@NonNull final String type, @NonNull final DataTable dataTable)
 	{
@@ -228,6 +277,15 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
+	/**
+	 * Closes or reopens the receipt schedule in one transaction, like the {@code M_ReceiptSchedule_Close} and
+	 * {@code M_ReceiptSchedule_ReOpen} processes do.
+	 * <p>
+	 * Without the transaction, every save commits on its own. Closing an invoice candidate first commits its
+	 * recompute record and only then its {@code Processed_Override}, so the async invoice candidate worker can
+	 * recompute the candidate in between, from the old {@code Processed_Override}. It then removes the recompute
+	 * record, so nothing recomputes the candidate again and {@code Processed} stays wrong.
+	 */
 	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
 	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
 	{
@@ -236,10 +294,16 @@ public class M_ReceiptSchedule_StepDef
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case closed:
-				receiptScheduleBL.close(receiptSchedule);
+				trxManager.runInNewTrx(() -> {
+					InterfaceWrapperHelper.setThreadInheritedTrxName(receiptSchedule);
+					receiptScheduleBL.close(receiptSchedule);
+				});
 				break;
 			case reactivated:
-				receiptScheduleBL.reopen(receiptSchedule);
+				trxManager.runInNewTrx(() -> {
+					InterfaceWrapperHelper.setThreadInheritedTrxName(receiptSchedule);
+					receiptScheduleBL.reopen(receiptSchedule);
+				});
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_ReceiptSchedule action")
@@ -263,14 +327,16 @@ public class M_ReceiptSchedule_StepDef
 		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		final OrderLineId purchaseOrderLineId = orderLineTable.getId(orderLineIdentifier);
 
-
-
-		 final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId);
 
 		// to prevent that we continue before updates are finished
 		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyOrdered).ifPresent(qtyOrdered -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered));
+		// IsDeliveryStop is updated asynchronously by the M_Shipment_Constraint interceptor — include it in the
+		// polling query so the load step waits for the expected value (gh#28631).
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop));
 
 		final I_M_ReceiptSchedule receiptSchedule = queryBuilder.create().firstOnly(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)

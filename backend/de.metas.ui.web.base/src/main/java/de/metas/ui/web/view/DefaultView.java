@@ -163,6 +163,11 @@ public final class DefaultView implements IEditableView
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
 	//
+	// Parameters
+	@Getter
+	private final ImmutableMap<String, Object> parameters;
+
+	//
 	// View refreshing on change events
 	private final boolean refreshViewOnChangeEvents;
 	private final ChangedRowIdsCollector changedRowIdsToCheck = new ChangedRowIdsCollector();
@@ -180,6 +185,10 @@ public final class DefaultView implements IEditableView
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
+
+		//
+		// Parameters
+		parameters = builder.getParameters();
 
 		//
 		// Filters
@@ -903,6 +912,8 @@ public final class DefaultView implements IEditableView
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
+		private LinkedHashMap<String, Object> parameters;
+
 		private boolean applySecurityRestrictions = true;
 
 		private Builder(@NonNull final SqlViewDataRepository viewDataRepository)
@@ -1099,6 +1110,36 @@ public final class DefaultView implements IEditableView
 		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
 		{
 			return viewInvalidationAdvisor;
+		}
+
+		public Builder setParameters(@NonNull final ImmutableMap<String, Object> parameters)
+		{
+			if (parameters.isEmpty())
+			{
+				this.parameters = null;
+			}
+			else
+			{
+				this.parameters = new LinkedHashMap<>(parameters);
+			}
+			return this;
+		}
+
+		private ImmutableMap<String, Object> getParameters()
+		{
+			if (parameters == null || parameters.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+			parameters.forEach((key, value) -> {
+				if (value != null)
+				{
+					builder.put(key, value);
+				}
+			});
+			return builder.build();
 		}
 
 		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)

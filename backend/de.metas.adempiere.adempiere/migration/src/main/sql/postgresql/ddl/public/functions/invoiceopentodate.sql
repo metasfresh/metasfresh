@@ -75,6 +75,102 @@ BEGIN
     END IF;
 
     --
+    -- Proforma early-return.
+    -- The financial branch below reads C_Invoice_v which filters out IsFinancial='N'
+    -- (i.e., proforma invoices). Proformas have no C_AllocationLine rows by design (no
+    -- accounting), so the allocation walk would always return GrandTotal regardless of
+    -- payment state. We instead detect "paid" via C_Payment.Proforma_Invoice_ID +
+    -- DocStatus IN ('CO','CL'). Reversal payments end at DocStatus='RE' (set by
+    -- reverseCorrectIt) and are excluded by the same DocStatus filter naturally.
+    DECLARE
+        v_inv_IsFinancial      char(1);
+        v_inv_DocBaseType      char(3);
+        v_inv_GrandTotal       numeric;
+        v_inv_Currency_ID      numeric;
+        v_inv_Date             timestamp WITH TIME ZONE;
+        v_inv_Client_ID        numeric;
+        v_inv_Org_ID           numeric;
+        v_inv_ConvType_ID      numeric;
+        v_pf_ResultCurrency_ID numeric;
+        v_pf_Precision         numeric;
+        v_pf_Min               numeric;
+        v_pf_PaidAmt           numeric := 0;
+        v_pf_OpenAmt           numeric;
+        v_pf_GrandTotalConv    numeric;
+        v_pf_Result            InvoiceOpenResult;
+    BEGIN
+        SELECT i.IsFinancial, dt.DocBaseType, i.GrandTotal, i.C_Currency_ID,
+               CASE WHEN p_DateType = 'A' THEN i.DateAcct ELSE i.DateInvoiced END,
+               i.AD_Client_ID, i.AD_Org_ID, i.C_ConversionType_ID
+          INTO v_inv_IsFinancial, v_inv_DocBaseType, v_inv_GrandTotal, v_inv_Currency_ID,
+               v_inv_Date, v_inv_Client_ID, v_inv_Org_ID, v_inv_ConvType_ID
+          FROM C_Invoice i
+                 INNER JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocType_ID
+         WHERE i.C_Invoice_ID = p_C_Invoice_ID
+           AND (CASE WHEN p_Date IS NULL   THEN TRUE
+                     WHEN p_DateType = 'T' THEN i.DateInvoiced <= p_Date
+                     WHEN p_DateType = 'A' THEN i.DateAcct <= p_Date
+                                           ELSE TRUE END);
+
+        IF v_inv_IsFinancial = 'N' THEN
+            -- Resolve result currency and precision-derived rounding.
+            IF p_Result_Currency_ID IS NOT NULL AND p_Result_Currency_ID > 0 AND p_Result_Currency_ID != v_inv_Currency_ID THEN
+                v_pf_ResultCurrency_ID := p_Result_Currency_ID;
+                v_pf_GrandTotalConv := currencyconvert(v_inv_GrandTotal, v_inv_Currency_ID, p_Result_Currency_ID, v_inv_Date, v_inv_ConvType_ID, v_inv_Client_ID, v_inv_Org_ID);
+            ELSE
+                v_pf_ResultCurrency_ID := v_inv_Currency_ID;
+                v_pf_GrandTotalConv := v_inv_GrandTotal;
+            END IF;
+            SELECT cy.StdPrecision, 1 / 10 ^ cy.StdPrecision
+              INTO v_pf_Precision, v_pf_Min
+              FROM C_Currency cy
+             WHERE cy.C_Currency_ID = v_pf_ResultCurrency_ID;
+
+            -- SUM(abs(PayAmt)) over completed-or-closed payments tagged with this proforma.
+            -- AC #16 (full-payment-only guard) ensures abs(PayAmt) = proforma.GrandTotal,
+            -- so the SUM lands on 0 (unpaid or post-reversal) or GrandTotal (paid). Both sides
+            -- of the subtraction below are in relative-value (always positive) regardless of
+            -- AP/AR direction — that's why the AP multiplier is NOT applied here, contrary to
+            -- the financial branch which works in signed-value space.
+            -- p_Exclude_Payment_IDs is honoured for parity with the financial branch.
+            SELECT COALESCE(SUM(
+                CASE WHEN p.C_Currency_ID = v_pf_ResultCurrency_ID THEN ABS(p.PayAmt)
+                     ELSE currencyconvert(ABS(p.PayAmt), p.C_Currency_ID, v_pf_ResultCurrency_ID, p.DateTrx, NULL, p.AD_Client_ID, p.AD_Org_ID)
+                END), 0)
+              INTO v_pf_PaidAmt
+              FROM C_Payment p
+             WHERE p.Proforma_Invoice_ID = p_C_Invoice_ID
+               AND p.DocStatus IN ('CO', 'CL')
+               AND p.IsActive = 'Y'
+               AND (v_Exclude_Payment_IDs IS NULL OR p.C_Payment_ID != ALL (v_Exclude_Payment_IDs));
+
+            v_pf_OpenAmt := v_pf_GrandTotalConv - v_pf_PaidAmt;
+            -- Snap rounding noise to zero using precision-derived tolerance.
+            IF v_pf_OpenAmt > -v_pf_Min AND v_pf_OpenAmt < v_pf_Min THEN
+                v_pf_OpenAmt := 0;
+            END IF;
+            v_pf_OpenAmt := ROUND(v_pf_OpenAmt, v_pf_Precision);
+
+            v_pf_Result.GrandTotal := v_pf_GrandTotalConv;
+            v_pf_Result.OpenAmt := v_pf_OpenAmt;
+            v_pf_Result.PaidAmt := v_pf_GrandTotalConv - v_pf_OpenAmt;
+            v_pf_Result.C_Currency_ID := v_pf_ResultCurrency_ID;
+            v_pf_Result.HasAllocations := 'N';
+            v_pf_Result.InvoiceDocBaseType := v_inv_DocBaseType;
+            RETURN v_pf_Result;
+        END IF;
+        -- Else: fall through to the existing financial branch below.
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF p_ReturnNullOnError = 'Y' THEN
+                RAISE DEBUG 'Error in proforma branch for C_Invoice_ID=% — %. Falling through.', p_C_Invoice_ID, SQLERRM;
+            ELSE
+                RAISE;
+            END IF;
+    END;
+    -- ── End Proforma block ──
+
+    --
     -- Get Invoice total, multipliers and currency informations
     BEGIN
         SELECT SUM(i.GrandTotal)

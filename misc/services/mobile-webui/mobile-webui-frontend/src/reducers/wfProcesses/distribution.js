@@ -129,6 +129,7 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.requireScanningProductCode = job.requireScanningProductCode;
   draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
   draftActivityDataStored.isNavigateToJobsListAfterPickFromComplete = job.navigateToJobsListAfterPickFromComplete;
+  draftActivityDataStored.canSwitchPickFromLocator = !!job.canSwitchPickFromLocator;
   draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 
   //

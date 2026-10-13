@@ -33,4 +33,18 @@ public interface ScriptedAdapterConstants
 	String PROPERTY_ENDPOINT_NAME = "endpointName";
 	String FIELD_ERROR_MESSAGE = "errors";
 	String EXCEPTION_PREFIX = "Exception - ";
+
+	/**
+	 * Exchange property holding the original (pre-transform) payload as raw bytes, captured before the
+	 * scripted transform runs, so it can be archived LOCALLY on both the success and the error path
+	 * (see {@code ScriptedImportConversionLocalArchiver}). Always a {@code byte[]} — a text-shaped
+	 * writer must encode explicitly (UTF-8) rather than rely on implicit type conversion. Shared between
+	 * the SFTP, LOCAL_FILE, and REST dynamic route builders.
+	 */
+	String PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD = "ScriptedImportConversion-originalPayload";
+
+	// Default LOCAL archive folders (container paths) used when the endpoint's own dir fields are unset.
+	// Mirrors the PROPERTY_SCRIPTING_REPO_BASE_DIR container-path convention (/app/scriptedadapter/repo).
+	String DEFAULT_LOCAL_PROCESSED_DIR = "/app/scriptedadapter/archive/processed";
+	String DEFAULT_LOCAL_ERROR_DIR = "/app/scriptedadapter/archive/error";
 }

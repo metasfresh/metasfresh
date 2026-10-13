@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -115734631L;
+	private static final long serialVersionUID = 999807227L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
@@ -33,6 +33,33 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_CompensationGroup_ContractSettings getC_CompensationGroup_ContractSettings()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_ContractSettings_ID, de.metas.contracts.model.I_C_CompensationGroup_ContractSettings.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_ContractSettings(final de.metas.contracts.model.I_C_CompensationGroup_ContractSettings C_CompensationGroup_ContractSettings)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_ContractSettings_ID, de.metas.contracts.model.I_C_CompensationGroup_ContractSettings.class, C_CompensationGroup_ContractSettings);
+	}
+
+	@Override
+	public void setC_CompensationGroup_ContractSettings_ID (final int C_CompensationGroup_ContractSettings_ID)
+	{
+		if (C_CompensationGroup_ContractSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_ContractSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_ContractSettings_ID, C_CompensationGroup_ContractSettings_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_ContractSettings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_ContractSettings_ID);
 	}
 
 	@Override
@@ -101,6 +128,21 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public int getC_Flatrate_Transition_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
+	}
+
+	@Override
+	public void setC_HierarchyCommissionSettings_ID (final int C_HierarchyCommissionSettings_ID)
+	{
+		if (C_HierarchyCommissionSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_HierarchyCommissionSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_HierarchyCommissionSettings_ID, C_HierarchyCommissionSettings_ID);
+	}
+
+	@Override
+	public int getC_HierarchyCommissionSettings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_HierarchyCommissionSettings_ID);
 	}
 
 	/** 
@@ -194,6 +236,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -301,6 +355,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_Manual = "M";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -484,6 +540,21 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setM_QualityInsp_LagerKonf_ID (final int M_QualityInsp_LagerKonf_ID)
+	{
+		if (M_QualityInsp_LagerKonf_ID < 1) 
+			set_Value (COLUMNNAME_M_QualityInsp_LagerKonf_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_QualityInsp_LagerKonf_ID, M_QualityInsp_LagerKonf_ID);
+	}
+
+	@Override
+	public int getM_QualityInsp_LagerKonf_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_QualityInsp_LagerKonf_ID);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -602,6 +673,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** CompensationGroup = CompensationGroup */
+	public static final String TYPE_CONDITIONS_CompensationGroup = "CompensationGroup";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{
@@ -636,5 +709,4 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
 	}
-	
 }

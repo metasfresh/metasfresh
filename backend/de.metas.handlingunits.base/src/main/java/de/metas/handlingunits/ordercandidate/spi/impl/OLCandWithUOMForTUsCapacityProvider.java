@@ -67,4 +67,10 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 		}
 		return Optional.of(uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId));
 	}
+
+	@Override
+	public boolean isInfiniteCapacityTU(@NonNull final I_C_OLCand olCand)
+	{
+		return huPackingAwareBL.isInfiniteCapacityTU(new OLCandHUPackingAware(olCand));
+	}
 }

@@ -74,7 +74,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	@NonNull private final CostingMethodHandlerUtils utils;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-
 	@Override
 	public CostingMethod getCostingMethod()
 	{
@@ -111,13 +110,13 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())
@@ -191,7 +190,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
 			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
 			// non-reversal receipt overwrites it.
-			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price, utils.getCostPriceUOMConverter());
 		}
 		else
 		{

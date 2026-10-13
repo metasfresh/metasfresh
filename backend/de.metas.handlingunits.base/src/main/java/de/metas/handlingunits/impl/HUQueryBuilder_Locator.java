@@ -89,7 +89,7 @@ final class HUQueryBuilder_Locator
 
 			if (!onlyInWarehouseIds.isEmpty())
 			{
-				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
+				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, onlyInWarehouseIds);
 			}
 			// Make sure _includeAfterPickingLocator and _excludeAfterPickingLocator are not both selected
 			Check.assume(!(includeAfterPickingLocator && excludeAfterPickingLocator), "Cannot both include and exclude AfterPickingLocator");

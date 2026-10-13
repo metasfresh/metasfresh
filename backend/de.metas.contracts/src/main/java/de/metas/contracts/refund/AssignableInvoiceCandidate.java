@@ -10,7 +10,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -55,6 +57,15 @@ public class AssignableInvoiceCandidate
 	InvoiceCandidateId id;
 
 	BPartnerLocationId bpartnerLocationId;
+
+	/** The packing instruction of the order line the candidate stems from; {@code null} if it has none. */
+	@Nullable
+	HUPIItemProductId huPIItemProductId;
+
+	/** The side the candidate is on, sales or purchase; it only goes into the refund candidates of the same side. */
+	@NonNull
+	SOTrx soTrx;
+
 	ProductId productId;
 	LocalDate invoiceableFrom;
 
@@ -69,6 +80,12 @@ public class AssignableInvoiceCandidate
 	/** Like {@link #getQuantity()}, but contains the old quantity, if the underlying record was just changed. */
 	Quantity quantityOld;
 
+	/**
+	 * {@code true} for the discount line of a compensation group that a contract created on the order.
+	 * Such a line is no refund base: a refund is computed on the goods value before that on-invoice discount.
+	 */
+	boolean contractCompensationLine;
+
 	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
@@ -76,22 +93,28 @@ public class AssignableInvoiceCandidate
 	private AssignableInvoiceCandidate(
 			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@Nullable final HUPIItemProductId huPIItemProductId,
+			@NonNull final SOTrx soTrx,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
 			final int precision,
 			@NonNull final Quantity quantity,
 			@Nullable final Quantity quantityOld,
+			final boolean contractCompensationLine,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
 		this.bpartnerLocationId = bpartnerLocationId;
+		this.huPIItemProductId = huPIItemProductId;
+		this.soTrx = soTrx;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;
 		this.precision = Check.assumeGreaterOrEqualToZero(precision, "precision");
 		this.quantity = quantity;
 		this.quantityOld = coalesce(quantityOld, quantity);
+		this.contractCompensationLine = contractCompensationLine;
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}

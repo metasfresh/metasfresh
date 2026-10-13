@@ -24,6 +24,7 @@ package de.metas.edi.api;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,6 +36,10 @@ import javax.annotation.Nullable;
 public class EDIBPartnerConfig
 {
 	@NonNull BPartnerId bPartnerId;
+	@Nullable BPartnerLocationId bpartnerLocationId;
+
+	int repoId;
+	int seqNo;
 
 	boolean isEdiDesadvRecipient;
 	@Nullable String ediDesadvRecipientGLN;

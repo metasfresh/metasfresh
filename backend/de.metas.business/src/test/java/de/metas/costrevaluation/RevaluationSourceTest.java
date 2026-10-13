@@ -33,7 +33,7 @@ public class RevaluationSourceTest
 	public void ofCode_returns_matching_enum_value()
 	{
 		assertThat(RevaluationSource.ofCode("CopyFromCostElement")).isSameAs(RevaluationSource.CopyFromCostElement);
-		assertThat(RevaluationSource.ofCode("Calculated")).isSameAs(RevaluationSource.Calculated);
+		assertThat(RevaluationSource.ofCode("Manual")).isSameAs(RevaluationSource.Manual);
 	}
 
 	@Test
@@ -71,14 +71,21 @@ public class RevaluationSourceTest
 	public void isCopyFromCostElement()
 	{
 		assertThat(RevaluationSource.CopyFromCostElement.isCopyFromCostElement()).isTrue();
-		assertThat(RevaluationSource.Calculated.isCopyFromCostElement()).isFalse();
+		assertThat(RevaluationSource.Manual.isCopyFromCostElement()).isFalse();
+	}
+
+	@Test
+	public void isManual()
+	{
+		assertThat(RevaluationSource.Manual.isManual()).isTrue();
+		assertThat(RevaluationSource.CopyFromCostElement.isManual()).isFalse();
 	}
 
 	@Test
 	public void equals_nullsafe()
 	{
 		assertThat(RevaluationSource.equals(null, null)).isTrue();
-		assertThat(RevaluationSource.equals(RevaluationSource.Calculated, RevaluationSource.Calculated)).isTrue();
-		assertThat(RevaluationSource.equals(RevaluationSource.Calculated, RevaluationSource.CopyFromCostElement)).isFalse();
+		assertThat(RevaluationSource.equals(RevaluationSource.Manual, RevaluationSource.Manual)).isTrue();
+		assertThat(RevaluationSource.equals(RevaluationSource.Manual, RevaluationSource.CopyFromCostElement)).isFalse();
 	}
 }

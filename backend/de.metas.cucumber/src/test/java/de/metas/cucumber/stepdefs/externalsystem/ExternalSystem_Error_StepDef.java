@@ -35,12 +35,16 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_M_InOut;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
+import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.io.IOException;
@@ -57,6 +61,9 @@ public class ExternalSystem_Error_StepDef
 	@NonNull private final M_InOut_StepDefData inoutTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
 	@And("the external system sends an error response for the shipment")
 	public void sendErrorResponseForShipments(@NonNull final DataTable dataTable)
 	{
@@ -67,15 +74,36 @@ public class ExternalSystem_Error_StepDef
 	{
 		final StepDefDataIdentifier inoutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 
-
 		final org.compiere.model.I_M_InOut inout = inoutTable.get(inoutIdentifier);
 		assertThat(inout).isNotNull();
 
+		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		InterfaceWrapperHelper.refresh(inout);
 		final I_M_InOut ediInout = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
-		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInout.getEDI_AD_PInstance_ID());
+		PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInout.getEDI_AD_PInstance_ID());
+
+		if (pInstanceId == null)
+		{
+			// Scripted-export conversion does not set EDI_AD_PInstance_ID on M_InOut.
+			// Instead, the pInstance is stored in ExternalSystem_ScriptedExportConversion_Status.
+			final int m_inout_table_id = tableDAO.retrieveTableId(org.compiere.model.I_M_InOut.Table_Name);
+			final I_ExternalSystem_ScriptedExportConversion_Status statusRow = queryBL
+					.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+					.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
+					.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, inout.getM_InOut_ID())
+					.addNotEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_PInstance_ID, 0)
+					.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
+					.create()
+					.first(I_ExternalSystem_ScriptedExportConversion_Status.class);
+
+			if (statusRow != null)
+			{
+				pInstanceId = PInstanceId.ofRepoIdOrNull(statusRow.getAD_PInstance_ID());
+			}
+		}
 
 		assertThat(pInstanceId)
-				.as("EDI_AD_PInstance_ID should be set on M_InOut %s", inoutIdentifier)
+				.as("No pInstance found for M_InOut %s (checked EDI_AD_PInstance_ID and ExternalSystem_ScriptedExportConversion_Status)", inoutIdentifier)
 				.isNotNull();
 
 		sendErrorResponse(row, pInstanceId);
@@ -88,7 +116,7 @@ public class ExternalSystem_Error_StepDef
 		final JsonError jsonError = JsonError.builder()
 				.error(JsonErrorItem.builder()
 						.message(errorMessage)
-						.errorContext(ExternalSystemErrorContext.EDI.getCode())
+						.errorContext(ExternalSystemInvocationContext.EDI.getCode())
 						.build())
 				.build();
 
@@ -140,6 +168,8 @@ public class ExternalSystem_Error_StepDef
 		final org.compiere.model.I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 		assertThat(invoice).isNotNull();
 
+		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		InterfaceWrapperHelper.refresh(invoice);
 		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInvoice.getEDI_AD_PInstance_ID());
 

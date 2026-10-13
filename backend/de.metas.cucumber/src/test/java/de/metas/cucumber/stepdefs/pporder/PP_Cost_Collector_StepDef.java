@@ -229,6 +229,31 @@ public class PP_Cost_Collector_StepDef
 		ppCostCollectorTable.put(reversalIdentifier, reversal);
 	}
 
+	/**
+	 * Asserts that the given PP_Cost_Collector's accounting posting was REJECTED with an error whose
+	 * message contains the given fragment — i.e. it reached {@code Posted='E'} rather than posting.
+	 * <p>
+	 * Used to verify the co-product cost-distribution guard: when the co-products' distribution percent sums to
+	 * more than 100% of the order's total inbound costs, the cost-collector posting throws (naming the offending
+	 * product(s) and the sum) instead of persisting a negative main-product cost. The document itself stays
+	 * completed (its physical receipt already happened); only its GL posting fails.
+	 *
+	 * @param identifier    identifier of a PP_Cost_Collector loaded earlier in the scenario
+	 * @param errorFragment a substring the posting error message must contain
+	 */
+	@And("^the PP_Cost_Collector identified by (.*) was rejected at posting with error containing (.*)$")
+	public void costCollector_rejected_at_posting(
+			@NonNull final String identifier,
+			@NonNull final String errorFragment)
+	{
+		final I_PP_Cost_Collector costCollector = ppCostCollectorTable.get(identifier);
+		final TableRecordReference recordRef = TableRecordReference.of(costCollector);
+
+		assertThatThrownBy(() -> AccountingCucumberHelper.waitUtilPosted(recordRef))
+				.as("posting of PP_Cost_Collector " + identifier + " must be rejected (Posted='E')")
+				.hasMessageContaining(errorFragment);
+	}
+
 	@And("validate I_PP_Cost_Collector")
 	public void validate_cost_collector(@NonNull final DataTable dataTable)
 	{

@@ -29,6 +29,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -147,6 +148,11 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	@Override
 	public List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice)
 	{
-		throw new UnsupportedOperationException();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
 	}
 }

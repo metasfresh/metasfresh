@@ -48,6 +48,33 @@ describe('TableFilter', () => {
     expect(html).toContain(`<div class="row filter-panel-buttons">`);
     expect(html).toContain(`<i class="meta-icon-fullscreen"></i>`);
   });
+
+  it('offers "Add new" only when the tab allows all new-record input methods', () => {
+    const renderWithInputMode = (newRecordInputMode) =>
+      mount(
+        <Provider store={store}>
+          <TableFilter
+            {...tableFilterProps}
+            newRecordInputMode={newRecordInputMode}
+            allowCreateNew={true}
+            quickInputSupport={{
+              openButtonCaption: 'Batch entry',
+              closeButtonCaption: 'Close batch entry',
+            }}
+            isBatchEntry={false}
+            handleBatchEntryToggle={jest.fn()}
+          />
+        </Provider>
+      );
+
+    const allMethods = renderWithInputMode('ALL_METHODS');
+    expect(allMethods.find('[data-testid="add-new-record"]').hostNodes()).toHaveLength(1);
+    expect(allMethods.find('[data-testid="batch-entry-toggle"]').hostNodes()).toHaveLength(1);
+
+    const quickInputOnly = renderWithInputMode('QUICK_INPUT_ONLY');
+    expect(quickInputOnly.find('[data-testid="add-new-record"]').hostNodes()).toHaveLength(0);
+    expect(quickInputOnly.find('[data-testid="batch-entry-toggle"]').hostNodes()).toHaveLength(1);
+  });
 });
 
 // TODO: add more tests for this

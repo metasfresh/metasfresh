@@ -24,7 +24,7 @@ package de.metas.edi.process;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.impl.EDIBPartnerConfigService;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
@@ -77,8 +77,8 @@ public class M_InOut_EnqueueForExport_ExternalSystem extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectWithInternalReason("InOut must be in Pending or Error status (current: " + exportStatus + ")");
 		}
 
-		final BPartnerId bPartnerId = inOutBL.getEffectiveDropshipPartnerId(inOut);
-		if (!ediBPartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId))
+		final BPartnerLocationId bpLocationId = inOutBL.getEffectiveDropshipLocationId(inOut);
+		if (!ediBPartnerConfigService.isDESADVExternalSystemRecipient(bpLocationId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("BPartner is not configured for ExternalSystem DESADV export");
 		}

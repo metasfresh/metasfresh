@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_CostRevaluationLine
  *  @author metasfresh (generated) 
@@ -72,10 +71,6 @@ public interface I_M_CostRevaluationLine
 	 */
 	int getC_AcctSchema_ID();
 
-	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
-
-	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
-
 	ModelColumn<I_M_CostRevaluationLine, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_M_CostRevaluationLine.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
@@ -100,28 +95,6 @@ public interface I_M_CostRevaluationLine
 	int getC_Currency_ID();
 
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Costing Level.
@@ -170,6 +143,28 @@ public interface I_M_CostRevaluationLine
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Current Cost Price.
@@ -265,6 +260,7 @@ public interface I_M_CostRevaluationLine
 
 	/**
 	 * Set Revaluated.
+	 * The line was already evaluated and its details are created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -274,6 +270,7 @@ public interface I_M_CostRevaluationLine
 
 	/**
 	 * Get Revaluated.
+	 * The line was already evaluated and its details are created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -304,10 +301,6 @@ public interface I_M_CostRevaluationLine
 	 */
 	int getM_AttributeSetInstance_ID();
 
-	org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
-
-	void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
-
 	ModelColumn<I_M_CostRevaluationLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_CostRevaluationLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
@@ -331,10 +324,6 @@ public interface I_M_CostRevaluationLine
 	 */
 	int getM_CostElement_ID();
 
-	org.compiere.model.I_M_CostElement getM_CostElement();
-
-	void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement);
-
 	ModelColumn<I_M_CostRevaluationLine, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_CostRevaluationLine.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
@@ -355,10 +344,6 @@ public interface I_M_CostRevaluationLine
 	 * <br>Virtual Column: false
 	 */
 	int getM_CostRevaluation_ID();
-
-	org.compiere.model.I_M_CostRevaluation getM_CostRevaluation();
-
-	void setM_CostRevaluation(org.compiere.model.I_M_CostRevaluation M_CostRevaluation);
 
 	ModelColumn<I_M_CostRevaluationLine, org.compiere.model.I_M_CostRevaluation> COLUMN_M_CostRevaluation_ID = new ModelColumn<>(I_M_CostRevaluationLine.class, "M_CostRevaluation_ID", org.compiere.model.I_M_CostRevaluation.class);
 	String COLUMNNAME_M_CostRevaluation_ID = "M_CostRevaluation_ID";
@@ -403,10 +388,6 @@ public interface I_M_CostRevaluationLine
 	 * <br>Virtual Column: false
 	 */
 	int getM_CostType_ID();
-
-	org.compiere.model.I_M_CostType getM_CostType();
-
-	void setM_CostType(org.compiere.model.I_M_CostType M_CostType);
 
 	ModelColumn<I_M_CostRevaluationLine, org.compiere.model.I_M_CostType> COLUMN_M_CostType_ID = new ModelColumn<>(I_M_CostRevaluationLine.class, "M_CostType_ID", org.compiere.model.I_M_CostType.class);
 	String COLUMNNAME_M_CostType_ID = "M_CostType_ID";

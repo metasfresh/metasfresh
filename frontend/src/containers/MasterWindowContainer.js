@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { forEach, get } from 'lodash';
 
 import { getRowsData, getTabRequest } from '../api';
 import { getTab } from '../utils';
+import { buildTabRowsDataUpdate } from '../utils/tableHelpers';
 
 import { getTableId } from '../reducers/tables';
 import { addNotification, updateLastBackPage } from '../actions/AppActions';
@@ -177,45 +177,12 @@ class MasterWindowContainer extends PureComponent {
       updateTabRowsData,
       params: { windowId, docId },
     } = this.props;
-    const {
-      data: { result, missingIds },
-    } = response;
-    const changedTabs = {};
-    let rowsById = null;
-    let removedRows = null;
 
-    if (missingIds && missingIds.length) {
-      removedRows = removedRows || {};
-      missingIds.forEach((rowId) => {
-        removedRows[rowId] = true;
-      });
-    }
-    if (result && result.length) {
-      rowsById = rowsById || {};
-      result.forEach((row) => {
-        rowsById[row.rowId] = { ...row };
-      });
-    }
-
-    changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
-
-    if (rowsById) {
-      changedTabs[tabId].changed = {
-        ...get(changedTabs, `${tabId}.changed`, {}),
-        ...rowsById,
-      };
-    }
-    if (removedRows) {
-      changedTabs[tabId].removed = {
-        ...get(changedTabs, `${tabId}.removed`, {}),
-        ...removedRows,
-      };
-    }
-
-    forEach(changedTabs, (rowsChanged, tabId) => {
-      const tableId = getTableId({ windowId: windowId, docId, tabId });
-      updateTabRowsData(tableId, rowsChanged);
-    });
+    // Build the { changed, removed } payload the tables reducer expects from the
+    // rows GET response (shared with MasterWindow.closeModalCallback).
+    const rowsChanged = buildTabRowsDataUpdate(response.data);
+    const tableId = getTableId({ windowId, docId, tabId });
+    updateTabRowsData(tableId, rowsChanged);
   }
 
   refreshActiveTab = () => {

@@ -13,4 +13,5 @@ public class LocatorInfo
 	@NonNull LocatorId locatorId;
 	@NonNull LocatorQRCode qrCode;
 	@NonNull String caption;
+	int priorityNo;
 }

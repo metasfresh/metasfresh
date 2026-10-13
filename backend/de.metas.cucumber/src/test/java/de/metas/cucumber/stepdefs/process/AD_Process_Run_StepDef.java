@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -38,10 +39,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,13 +79,16 @@ public class AD_Process_Run_StepDef
 	@When("the AD_Process with value {string} is run")
 	public void run_ad_process_by_value(@NonNull final String processValue)
 	{
-		runProcess(processValue, null, null);
+		executeProcess(newProcessInfoBuilder(processValue));
 	}
 
 	/**
-	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records as its user selection,
-	 * handed over as the process's where clause the way a WebUI view quick action does it. All identifiers must
-	 * resolve to the same table.
+	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records, resolving a single
+	 * identifier to a directly-addressed record ({@code setRecord}) and two or more to a where-clause selection
+	 * ({@code setTableName}/{@code setWhereClause}) -- because a process reading its target via {@code
+	 * JavaProcess#getRecord(Class)} (a window's single-record action) cannot see a where-clause selection and
+	 * would fail with {@code @NoSelection@}, while a process expecting a user selection (a WebUI view quick
+	 * action) needs the where clause. All identifiers must resolve to the same table.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -94,35 +97,86 @@ public class AD_Process_Run_StepDef
 	 * </pre>
 	 *
 	 * @param processValue the {@code AD_Process.Value}
-	 * @param commaSeparatedIdentifiers identifiers of the records forming the selection
+	 * @param commaSeparatedIdentifiers identifiers of the records the process runs against
 	 */
 	@When("the AD_Process with value {string} is run on the records identified by {string}")
 	public void run_ad_process_on_selection(
 			@NonNull final String processValue,
 			@NonNull final String commaSeparatedIdentifiers)
 	{
-		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
-		assertThat(recordRefs).as("records identified by `%s`", commaSeparatedIdentifiers).isNotEmpty();
+		final TableRecordReferenceSet recordRefSet = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		assertThat(recordRefSet).as("records identified by `%s`", commaSeparatedIdentifiers).isNotEmpty();
+		assertThat(recordRefSet.getTableNames()).as("all records of one selection must belong to the same table").hasSize(1);
 
-		final ImmutableSet<String> tableNames = recordRefs.stream().map(TableRecordReference::getTableName).collect(ImmutableSet.toImmutableSet());
-		assertThat(tableNames).as("all records of one selection must belong to the same table").hasSize(1);
-
-		final String tableName = tableNames.iterator().next();
-		final String recordIdsCSV = recordRefs.stream()
-				.map(recordRef -> String.valueOf(recordRef.getRecord_ID()))
-				.collect(Collectors.joining(","));
-
-		runProcess(processValue, tableName, tableName + "_ID IN (" + recordIdsCSV + ")");
+		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue);
+		if (recordRefSet.size() == 1)
+		{
+			processInfo.setRecord(recordRefSet.iterator().next());
+		}
+		else
+		{
+			final String tableName = recordRefSet.getSingleTableName();
+			processInfo.setTableName(tableName)
+					.setWhereClause(DB.buildSqlList(tableName + "_ID", recordRefSet.toIntSet()));
+		}
+		executeProcess(processInfo);
 	}
 
-	private void runProcess(
+	/**
+	 * Runs the {@code AD_Process} identified by its {@code Value} on a window record together with the rows
+	 * the user selected in one of its included tabs (e.g. a document and the selected lines of its line tab),
+	 * for a process reading them via {@code JavaProcess#getSelectedIncludedRecords(Class)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the AD_Process with value 'C_Order_CreateCompensationMultiGroups' is run on the record identified by 'order_1' with the selected included records 'ol_1,ol_2'
+	 * </pre>
+	 *
+	 * @param processValue the {@code AD_Process.Value}
+	 * @param recordIdentifier identifier of the window record the process runs against
+	 * @param commaSeparatedIncludedIdentifiers identifiers of the selected rows of the included tab
+	 */
+	@When("the AD_Process with value {string} is run on the record identified by {string} with the selected included records {string}")
+	public void run_ad_process_on_record_with_selected_included_records(
 			@NonNull final String processValue,
-			@Nullable final String tableName,
-			@Nullable final String whereClause)
+			@NonNull final String recordIdentifier,
+			@NonNull final String commaSeparatedIncludedIdentifiers)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+		final ImmutableSet<TableRecordReference> includedRecordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIncludedIdentifiers);
+		assertThat(includedRecordRefs).as("records identified by `%s`", commaSeparatedIncludedIdentifiers).isNotEmpty();
+
+		executeProcess(newProcessInfoBuilder(processValue)
+				.setRecord(recordRef)
+				.setSelectedIncludedRecords(includedRecordRefs));
+	}
+
+	/**
+	 * Builds the {@code ProcessInfo} common to both run-modes above: the {@code AD_Process} resolved by
+	 * {@code Value}, executed under the test's client context and the {@code WebUI} role. Callers add whichever
+	 * target the process needs -- nothing (no-selection), {@code setTableName}/{@code setWhereClause} (a
+	 * where-clause selection), or {@code setRecord} (a single directly-addressed record) -- and then hand the
+	 * result to {@link #executeProcess(ProcessInfo.ProcessInfoBuilder)}.
+	 * <p>
+	 * Gotcha: never call {@code setTableName(null)} on the returned builder for the no-selection case -- that is
+	 * NOT the same as never calling it: it pins {@code AD_Table_ID} to {@code -1} and kills the {@code
+	 * AD_PInstance} fallback the no-selection path relies on. Leave {@code setTableName}/{@code setWhereClause}
+	 * uncalled entirely when the process needs no target.
+	 */
+	private ProcessInfo.ProcessInfoBuilder newProcessInfoBuilder(@NonNull final String processValue)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
 		assertThat(processId).as("AD_Process with Value=%s must exist", processValue).isNotNull();
+		return newProcessInfoBuilder(processId);
+	}
 
+	/**
+	 * Same as {@link #newProcessInfoBuilder(String)} for an already resolved process, so other step-defs running a
+	 * process the way a user's session would (client context + {@code WebUI} role) share this one implementation.
+	 */
+	public ProcessInfo.ProcessInfoBuilder newProcessInfoBuilder(@NonNull final AdProcessId processId)
+	{
 		final ClientId clientId = Env.getClientId();
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
@@ -132,19 +186,15 @@ public class AD_Process_Run_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		final ProcessInfo.ProcessInfoBuilder processInfo = ProcessInfo.builder()
+		return ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
 				.setClientId(clientId)
 				.setRoleId(roleId)
 				.setCreateTemporaryCtx();
+	}
 
-		// setTableName(null) is NOT the same as never calling it: it pins AD_Table_ID to -1 and kills the
-		// AD_PInstance fallback the no-selection path relies on.
-		if (tableName != null)
-		{
-			processInfo.setTableName(tableName).setWhereClause(whereClause);
-		}
-
+	private void executeProcess(@NonNull final ProcessInfo.ProcessInfoBuilder processInfo)
+	{
 		processInfo.buildAndPrepareExecution()
 				.switchContextWhenRunning()
 				.executeSync()

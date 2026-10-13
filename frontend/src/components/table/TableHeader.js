@@ -2,8 +2,28 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
+import {
+  shouldRenderColumn,
+  getSizeClass,
+  getColumnMinWidthPx,
+} from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
+
+const MIN_COLUMN_WIDTH = 50;
+
+/**
+ * @method clampColumnWidth
+ * @param {object} params
+ * @param {string} params.widgetType
+ * @param {number} params.px - the candidate drag width
+ * @summary Manual drag-resize floor: a combobox (Lookup/List) column cannot be dragged
+ * narrower than the combobox minimum-usable width, so its open dropdown editor always stays
+ * within the cell; a price/amount column not narrower than its minimum width, so a typical price
+ * shows whole (`getColumnMinWidthPx`). Every other column keeps the flat `MIN_COLUMN_WIDTH` floor.
+ */
+export function clampColumnWidth({ widgetType, px }) {
+  return Math.max(getColumnMinWidthPx(widgetType) || MIN_COLUMN_WIDTH, px);
+}
 
 export default class TableHeader extends PureComponent {
   constructor(props) {
@@ -11,7 +31,10 @@ export default class TableHeader extends PureComponent {
 
     this.state = {
       fields: {},
+      resizing: null, // { index, startX, startWidth }
     };
+
+    this.thRefs = {};
   }
 
   static getDerivedStateFromProps(props) {
@@ -28,6 +51,11 @@ export default class TableHeader extends PureComponent {
     }
 
     return null;
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
   }
 
   handleClick = (field, sortable) => {
@@ -76,6 +104,66 @@ export default class TableHeader extends PureComponent {
     deselect();
   };
 
+  handleResizeStart = (e, fieldName, widgetType) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const th = this.thRefs[fieldName];
+    if (!th) return;
+
+    const startWidth = th.getBoundingClientRect().width;
+
+    this.setState({
+      resizing: { fieldName, widgetType, startX: e.clientX, startWidth },
+    });
+
+    document.addEventListener('mousemove', this.handleResizeMove);
+    document.addEventListener('mouseup', this.handleResizeEnd);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  handleResizeMove = (e) => {
+    const { resizing } = this.state;
+    if (!resizing) return;
+
+    const { onColumnResize } = this.props;
+    const diff = e.clientX - resizing.startX;
+    const newWidth = clampColumnWidth({
+      widgetType: resizing.widgetType,
+      px: resizing.startWidth + diff,
+    });
+
+    if (onColumnResize) {
+      onColumnResize(resizing.fieldName, newWidth);
+    }
+  };
+
+  handleResizeEnd = () => {
+    const { onColumnResizeEnd } = this.props;
+
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+
+    this.setState({ resizing: null });
+
+    if (onColumnResizeEnd) {
+      onColumnResizeEnd();
+    }
+  };
+
+  handleResizeDoubleClick = (e, fieldName) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const { onColumnResetWidth } = this.props;
+    if (onColumnResetWidth) {
+      onColumnResetWidth(fieldName);
+    }
+  };
+
   renderSorting = (field, caption, sortable, description) => {
     const { fields } = this.state;
     const fieldSorting = fields[field];
@@ -104,7 +192,8 @@ export default class TableHeader extends PureComponent {
   };
 
   renderCols = (cols) => {
-    const { onSortTable } = this.props;
+    const { onSortTable, columnWidths } = this.props;
+    const { resizing } = this.state;
 
     return (
       cols &&
@@ -114,11 +203,31 @@ export default class TableHeader extends PureComponent {
           const fieldName =
             item.fields && item.fields[0] ? item.fields[0].field : null;
           const dataTestId = fieldName ? `column-${fieldName}` : undefined;
+          const customWidth =
+            fieldName && columnWidths ? columnWidths[fieldName] : null;
+
+          const style = customWidth
+            ? {
+                width: `${customWidth}px`,
+                minWidth: `${customWidth}px`,
+                maxWidth: `${customWidth}px`,
+              }
+            : {};
 
           return (
             <th
               key={index}
-              className={getSizeClass(item)}
+              ref={(el) => {
+                if (fieldName) this.thRefs[fieldName] = el;
+              }}
+              className={classnames(
+                { [getSizeClass(item)]: !customWidth },
+                {
+                  'column-resizing':
+                    resizing && resizing.fieldName === fieldName,
+                }
+              )}
+              style={style}
               data-testid={dataTestId}
             >
               {onSortTable
@@ -129,6 +238,18 @@ export default class TableHeader extends PureComponent {
                     item.description
                   )
                 : item.caption}
+              {fieldName && (
+                <div
+                  className="column-resize-handle"
+                  data-testid={`resize-handle-${fieldName}`}
+                  onMouseDown={(e) =>
+                    this.handleResizeStart(e, fieldName, item.widgetType)
+                  }
+                  onDoubleClick={(e) =>
+                    this.handleResizeDoubleClick(e, fieldName)
+                  }
+                />
+              )}
             </th>
           );
         }
@@ -160,4 +281,8 @@ TableHeader.propTypes = {
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
+  columnWidths: PropTypes.object,
+  onColumnResize: PropTypes.func,
+  onColumnResizeEnd: PropTypes.func,
+  onColumnResetWidth: PropTypes.func,
 };

@@ -32,6 +32,7 @@ import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.common.HttpHeadersWrapper;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
+import de.metas.audit.apirequest.config.ApiCallOutcome;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
@@ -130,6 +131,9 @@ public class ApiAuditService
 
 	private static final AdMessageKey MSG_API_INVOCATION_FAILED =
 			AdMessageKey.of("de.metas.util.web.audit.invocation_failed");
+
+	private static final AdMessageKey MSG_API_INVOCATION_PARTIALLY_FAILED =
+			AdMessageKey.of("de.metas.util.web.audit.invocation_partially_failed");
 
 	private static final String CFG_INTERNAL_HOST_NAME = "de.metas.util.web.audit.AppServerInternalHostName";
 	/**
@@ -321,7 +325,7 @@ public class ApiAuditService
 
 		updateRequestStatus(requestStatus, apiRequestAudit);
 
-		notifyUserInCharge(apiAuditConfig, apiRequestAudit, !apiResponse.hasStatus2xx());
+		notifyUserInCharge(apiAuditConfig, apiRequestAudit, ApiCallOutcome.ofHttpStatus(apiResponse.getStatusCode()));
 
 		performDataExportAudit(apiRequestAudit, apiResponse);
 	}
@@ -338,12 +342,27 @@ public class ApiAuditService
 		return apiRequestAuditRepository.save(updateApiRequestAudit);
 	}
 
+	@NonNull
+	private static AdMessageKey getNotificationMessageKey(@NonNull final ApiCallOutcome outcome)
+	{
+		switch (outcome)
+		{
+			case ERROR:
+				return MSG_API_INVOCATION_FAILED;
+			case PARTIAL_ERROR:
+				return MSG_API_INVOCATION_PARTIALLY_FAILED;
+			case SUCCESS:
+			default:
+				return MSG_SUCCESSFUL_API_INVOCATION;
+		}
+	}
+
 	public void notifyUserInCharge(
 			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final ApiRequestAudit apiRequestAudit,
-			final boolean isError)
+			@NonNull final ApiCallOutcome outcome)
 	{
-		final Optional<UserGroupId> userGroupToNotify = apiAuditConfig.getUserGroupToNotify(isError);
+		final Optional<UserGroupId> userGroupToNotify = apiAuditConfig.getUserGroupToNotify(outcome);
 
 		if (!userGroupToNotify.isPresent())
 		{
@@ -353,7 +372,7 @@ public class ApiAuditService
 			return;
 		}
 
-		final AdMessageKey messageKey = isError ? MSG_API_INVOCATION_FAILED : MSG_SUCCESSFUL_API_INVOCATION;
+		final AdMessageKey messageKey = getNotificationMessageKey(outcome);
 
 		final TableRecordReference recordReference = TableRecordReference.of(I_API_Request_Audit.Table_Name, apiRequestAudit.getIdNotNull().getRepoId());
 
@@ -606,8 +625,8 @@ public class ApiAuditService
 			{
 				updateRequestStatus(Status.ERROR, completionContext.getApiRequestAudit());
 
-				final boolean isError = true;
-				notifyUserInCharge(completionContext.getApiAuditConfig(), completionContext.getApiRequestAudit(), isError);
+				// no response at all (routing failed) => treated as ERROR
+				notifyUserInCharge(completionContext.getApiAuditConfig(), completionContext.getApiRequestAudit(), ApiCallOutcome.ERROR);
 
 				Loggables.addLog("Error encountered while routing the request!", throwable);
 			}
