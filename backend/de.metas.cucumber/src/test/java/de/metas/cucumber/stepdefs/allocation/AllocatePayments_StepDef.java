@@ -113,10 +113,10 @@ public class AllocatePayments_StepDef
 {
 	private static final String WRITE_OFF_PROCESS = "WRITEOFF";
 	private static final String DISCOUNT_PROCESS = "DISCOUNT";
+	private static final DocBaseAndSubType PAYMENT_BONUS_CREDIT_MEMO = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
 	/**
 	 * Same message as the WebUI payment allocation ({@code PaymentsViewAllocateCommand}), which is not on this module's classpath.
 	 */
-	private static final DocBaseAndSubType PAYMENT_BONUS_CREDIT_MEMO = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
@@ -260,7 +260,7 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
-	 * Asserts that no completed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice.
+	 * Asserts that no completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice.
 	 * <pre>
 	 * And there is no payment bonus credit memo for invoice invoice
 	 * </pre>
@@ -275,7 +275,7 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
-	 * Asserts that exactly one completed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice, and that it is the one registered under {@code creditMemoIdentifier}:
+	 * Asserts that exactly one completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice, and that it is the one registered under {@code creditMemoIdentifier}:
 	 * the payment bonus of an invoice is booked once.
 	 * <pre>
 	 * And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
@@ -294,7 +294,7 @@ public class AllocatePayments_StepDef
 
 	/**
 	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
-	 * There has to be exactly one completed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
+	 * There has to be exactly one completed or closed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
 	 */
 	private void updatePaymentBonusCreditMemoIdentifier(@NonNull final DataTableRow row)
 	{
