@@ -63,11 +63,10 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -125,8 +124,8 @@ class BankStatementPaymentBLTest
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private IBankStatementListenerService bankStatementListenerService;
 	private BankStatementPaymentBL bankStatementPaymentBL;
-	private BankStatementBL bankStatementBL;
-	private MoneyService moneyService;
+	private PaymentBonusDeductionProvider paymentBonusDeductionProvider;
+	@Nullable private List<InvoiceToAllocate> invoicesToAllocate;
 	private BankRepository bankRepo;
 
 	@SuppressWarnings("FieldCanBeLocal")
@@ -143,7 +142,7 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		bankStatementBL = new BankStatementBL(
+		final BankStatementBL bankStatementBL = new BankStatementBL(
 				bankAccountService,
 				new MoneyService(new CurrencyRepository()))
 		{
@@ -157,16 +156,30 @@ class BankStatementPaymentBLTest
 		};
 
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		moneyService = new MoneyService(currencyRepository);
+		final MoneyService moneyService = new MoneyService(currencyRepository);
 		SpringContextHolder.registerJUnitBean(moneyService);
 
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
+		// the payment bonus and the open invoices of a test are set in paymentBonusDeductionProvider and invoicesToAllocate; none by default
+		paymentBonusDeductionProvider = invoiceId -> Optional.empty();
+		SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(
+				Optional.of(invoiceId -> paymentBonusDeductionProvider.computeForInvoice(invoiceId)),
+				new PaymentBonusCreditMemoService()));
+		invoicesToAllocate = null;
+		SpringContextHolder.registerJUnitBean(PaymentAllocationRepository.class, new PaymentAllocationRepository()
+		{
+			@Override
+			public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
+			{
+				// the open invoices are retrieved by a database function, so a test that needs them stubs them
+				return invoicesToAllocate != null ? invoicesToAllocate : super.retrieveInvoicesToAllocate(query);
+			}
+		});
 
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting()));
+				PaymentAllocationService.newInstanceForUnitTesting());
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
@@ -740,12 +753,10 @@ class BankStatementPaymentBLTest
 	class findOrCreateSinglePaymentAndLinkIfPossible_PaymentBonus
 	{
 		// open 166.50, Skonto 3.33, bonus 2.78 (2.60 net + 7 % VAT)
-		private BankStatementPaymentBL bankStatementPaymentBLWithBonus(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
+		private void setUpInvoiceWithBonus(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
 		{
-			final PaymentBonusOnPaymentService paymentBonusOnPaymentService = new PaymentBonusOnPaymentService(
-					Optional.of(id -> Optional.of(deduction(id, customerId))),
-					new PaymentBonusCreditMemoService());
-			final InvoiceToAllocate invoiceToAllocate = InvoiceToAllocate.builder()
+			paymentBonusDeductionProvider = id -> Optional.of(deduction(id, customerId));
+			invoicesToAllocate = ImmutableList.of(InvoiceToAllocate.builder()
 					.invoiceId(invoiceId)
 					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY))
 					.documentNo("1111")
@@ -761,23 +772,7 @@ class BankStatementPaymentBLTest
 					.discountAmountConverted(Amount.of("3.33", CurrencyCode.EUR))
 					.docTypeId(DocTypeId.ofRepoId(1))
 					.docBaseType(InvoiceDocBaseType.CustomerInvoice)
-					.build();
-
-			// the open invoices are retrieved by a database function, so they are stubbed here
-			final PaymentAllocationService paymentAllocationService = new PaymentAllocationService(
-					moneyService,
-					new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService),
-					new PaymentAllocationRepository(),
-					paymentBonusOnPaymentService)
-			{
-				@Override
-				public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
-				{
-					return ImmutableList.of(invoiceToAllocate);
-				}
-			};
-
-			return new BankStatementPaymentBL(bankStatementBL, moneyService, paymentAllocationService);
+					.build());
 		}
 
 		private PaymentBonusDeduction deduction(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
@@ -824,7 +819,8 @@ class BankStatementPaymentBLTest
 					.build();
 
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			bankStatementPaymentBLWithBonus(invoiceId, customerId).findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl, ImmutableSet.of());
+			setUpInvoiceWithBonus(invoiceId, customerId);
+			bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl, ImmutableSet.of());
 
 			assertThat(bsl.getC_Payment_ID()).as("C_Payment_ID").isGreaterThan(0);
 			final I_C_Payment payment = InterfaceWrapperHelper.load(bsl.getC_Payment_ID(), I_C_Payment.class);

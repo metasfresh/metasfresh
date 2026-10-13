@@ -35,6 +35,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -42,6 +43,7 @@ import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
 import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
@@ -60,6 +62,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -87,6 +91,29 @@ public class PaymentAllocationService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+	@VisibleForTesting
+	public static PaymentAllocationService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				PaymentAllocationService.class,
+				() -> {
+					// collaborators without a testing factory of their own: reuse the ones a test registered, else create and register them
+					final MoneyService moneyService = SpringContextHolder.getBeanOrSupply(
+							MoneyService.class,
+							() -> new MoneyService(CurrencyRepository.newInstanceForUnitTesting()));
+					//noinspection DataFlowIssue
+					return new PaymentAllocationService(
+							moneyService,
+							SpringContextHolder.getBeanOrSupply(
+									InvoiceProcessingServiceCompanyService.class,
+									() -> new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService)),
+							SpringContextHolder.getBeanOrSupply(PaymentAllocationRepository.class, PaymentAllocationRepository::new),
+							PaymentBonusOnPaymentService.newInstanceForUnitTesting());
+				});
+	}
 
 	@VisibleForTesting
 	public PaymentAllocationResult allocatePaymentForRemittanceAdvise(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)

@@ -26,7 +26,6 @@ import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -47,8 +46,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
@@ -147,6 +144,7 @@ public class PaymentAllocationServiceTest
 	private DocTypeId serviceInvoiceDocTypeId;
 	private ProductId serviceFeeProductId;
 	private BPartnerId feeCompanyId1;
+	private PaymentBonusDeductionProvider paymentBonusDeductionProvider;
 
 	@BeforeEach
 	public void beforeEach()
@@ -155,11 +153,13 @@ public class PaymentAllocationServiceTest
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+		// the payment bonus of a test is set in paymentBonusDeductionProvider; none by default
+		paymentBonusDeductionProvider = invoiceId -> Optional.empty();
+		SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(
+				Optional.of(invoiceId -> paymentBonusDeductionProvider.computeForInvoice(invoiceId)),
+				new PaymentBonusCreditMemoService()));
 
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
-
-		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository(), PaymentBonusOnPaymentService.newInstanceForUnitTesting());
+		paymentAllocationService = PaymentAllocationService.newInstanceForUnitTesting();
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
@@ -831,16 +831,11 @@ public class PaymentAllocationServiceTest
 
 		private PaymentAllocationService serviceWithBonus(final boolean withBonus)
 		{
-			final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-			final PaymentBonusDeductionProvider provider = invoiceId -> {
+			paymentBonusDeductionProvider = invoiceId -> {
 				bonusLookups.incrementAndGet();
 				return withBonus ? Optional.of(deduction()) : Optional.empty();
 			};
-			return new PaymentAllocationService(
-					moneyService,
-					new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService),
-					new PaymentAllocationRepository(),
-					new PaymentBonusOnPaymentService(Optional.of(provider), new PaymentBonusCreditMemoService()));
+			return PaymentAllocationService.newInstanceForUnitTesting();
 		}
 
 		// open 166.50, Skonto 3.33, bonus 2.78
