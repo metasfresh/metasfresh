@@ -22,6 +22,7 @@
 
 package de.metas.banking.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.acct.AcctSchemaTestHelper;
@@ -41,6 +42,8 @@ import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.Payment
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
@@ -53,23 +56,38 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceAmtMultiplier;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_ClientInfo;
@@ -77,6 +95,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trace;
@@ -88,8 +107,10 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -104,6 +125,8 @@ class BankStatementPaymentBLTest
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private IBankStatementListenerService bankStatementListenerService;
 	private BankStatementPaymentBL bankStatementPaymentBL;
+	private BankStatementBL bankStatementBL;
+	private MoneyService moneyService;
 	private BankRepository bankRepo;
 
 	@SuppressWarnings("FieldCanBeLocal")
@@ -120,7 +143,7 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		final BankStatementBL bankStatementBL = new BankStatementBL(
+		bankStatementBL = new BankStatementBL(
 				bankAccountService,
 				new MoneyService(new CurrencyRepository()))
 		{
@@ -134,7 +157,7 @@ class BankStatementPaymentBLTest
 		};
 
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		final MoneyService moneyService = new MoneyService(currencyRepository);
+		moneyService = new MoneyService(currencyRepository);
 		SpringContextHolder.registerJUnitBean(moneyService);
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
@@ -224,7 +247,8 @@ class BankStatementPaymentBLTest
 			final Money bankFeeAmt,
 			final boolean processed,
 			@Nullable final String statementDate,
-			@Nullable final String valutaDate)
+			@Nullable final String valutaDate,
+			@Nullable final InvoiceId invoiceId)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
 				.bankStatementId(bankStatementId)
@@ -236,6 +260,8 @@ class BankStatementPaymentBLTest
 				.statementAmt(stmtAmt)
 				.trxAmt(trxAmt != null ? trxAmt : stmtAmt)
 				.bankFeeAmt(bankFeeAmt)
+				.invoiceId(invoiceId)
+				.updateAmountsFromInvoice(invoiceId == null)
 				.build());
 
 		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
@@ -705,6 +731,149 @@ class BankStatementPaymentBLTest
 				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
 				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}
+		}
+	}
+
+	/**
+	 * A payment created for a bank statement line with a sales invoice gets the Skonto, the payment bonus or both, the one that the paid amount matches.
+	 */
+	@Nested
+	class findOrCreateSinglePaymentAndLinkIfPossible_PaymentBonus
+	{
+		// open 166.50, Skonto 3.33, bonus 2.78 (2.60 net + 7 % VAT)
+		private BankStatementPaymentBL bankStatementPaymentBLWithBonus(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
+		{
+			final PaymentBonusOnPaymentService paymentBonusOnPaymentService = new PaymentBonusOnPaymentService(
+					Optional.of(id -> Optional.of(deduction(id, customerId))),
+					new PaymentBonusCreditMemoService());
+			final InvoiceToAllocate invoiceToAllocate = InvoiceToAllocate.builder()
+					.invoiceId(invoiceId)
+					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY))
+					.documentNo("1111")
+					.bpartnerId(customerId)
+					.bpartnerName("customer")
+					.dateInvoiced(LocalDate.parse("2021-02-01"))
+					.dateAcct(LocalDate.parse("2021-02-01"))
+					.documentCurrencyCode(CurrencyCode.EUR)
+					.evaluationDate(defaultValutaDate.atStartOfDay(ZoneId.of("UTC")))
+					.multiplier(InvoiceAmtMultiplier.create(SOTrx.SALES, false, false))
+					.grandTotal(Amount.of("166.50", CurrencyCode.EUR))
+					.openAmountConverted(Amount.of("166.50", CurrencyCode.EUR))
+					.discountAmountConverted(Amount.of("3.33", CurrencyCode.EUR))
+					.docTypeId(DocTypeId.ofRepoId(1))
+					.docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.build();
+
+			// the open invoices are retrieved by a database function, so they are stubbed here
+			final PaymentAllocationService paymentAllocationService = new PaymentAllocationService(
+					moneyService,
+					new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService),
+					new PaymentAllocationRepository(),
+					paymentBonusOnPaymentService)
+			{
+				@Override
+				public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
+				{
+					return ImmutableList.of(invoiceToAllocate);
+				}
+			};
+
+			return new BankStatementPaymentBL(bankStatementBL, moneyService, paymentAllocationService, paymentBonusOnPaymentService);
+		}
+
+		private PaymentBonusDeduction deduction(@NonNull final InvoiceId invoiceId, @NonNull final BPartnerId customerId)
+		{
+			return PaymentBonusDeduction.builder()
+					.orgId(OrgId.ANY)
+					.invoiceId(invoiceId)
+					.customerId(customerId)
+					.currencyId(euroCurrencyId)
+					.precision(CurrencyPrecision.TWO)
+					.line(PaymentBonusDeductionLine.builder()
+							.bonusProductId(ProductId.ofRepoId(1))
+							.tax(Tax.builder()
+									.taxId(TaxId.ofRepoId(1))
+									.name("7 %")
+									.orgId(OrgId.ANY)
+									.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+									.taxCategoryId(TaxCategoryId.ofRepoId(1))
+									.rate(new BigDecimal("7"))
+									.isTaxExempt(false)
+									.requiresTaxCertificate(false)
+									.seqNo(10)
+									.build())
+							.netAmt(Money.of(new BigDecimal("2.60"), euroCurrencyId))
+							.build())
+					.build();
+		}
+
+		private I_C_Payment createPaymentForInvoice(@NonNull final String trxAmt)
+		{
+			final BPartnerId customerId = createCustomer();
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setC_BPartner_ID(customerId.getRepoId());
+			invoice.setIsSOTrx(true);
+			saveRecord(invoice);
+			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+			final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+					.bpartnerId(customerId)
+					.stmtAmt(Money.of(new BigDecimal(trxAmt), euroCurrencyId))
+					.invoiceId(invoiceId)
+					.build();
+
+			bankStatement.setDocStatus(DocStatus.Completed.getCode());
+			bankStatementPaymentBLWithBonus(invoiceId, customerId).findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl, ImmutableSet.of());
+
+			assertThat(bsl.getC_Payment_ID()).as("C_Payment_ID").isGreaterThan(0);
+			final I_C_Payment payment = InterfaceWrapperHelper.load(bsl.getC_Payment_ID(), I_C_Payment.class);
+			assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(invoiceId.getRepoId());
+			return payment;
+		}
+
+		@Test
+		void inbound_openMinusBonus_bonusOnly()
+		{
+			final I_C_Payment payment = createPaymentForInvoice("163.72");
+			assertThat(payment.isReceipt()).isTrue();
+			assertThat(payment.getPayAmt()).isEqualByComparingTo("163.72");
+			assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo("0");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("2.78");
+		}
+
+		@Test
+		void inbound_openMinusSkontoMinusBonus_both()
+		{
+			final I_C_Payment payment = createPaymentForInvoice("160.39");
+			assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo("3.33");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("2.78");
+		}
+
+		@Test
+		void inbound_openMinusSkonto_skontoOnly()
+		{
+			final I_C_Payment payment = createPaymentForInvoice("163.17");
+			assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo("3.33");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+		}
+
+		@Test
+		void inbound_amountMatchingNoRule_noDeduction()
+		{
+			final I_C_Payment payment = createPaymentForInvoice("160.00");
+			assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo("0");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+		}
+
+		@Test
+		void outbound_openMinusBonus_noPaymentBonus()
+		{
+			final I_C_Payment payment = createPaymentForInvoice("-163.72");
+			assertThat(payment.isReceipt()).isFalse();
+			assertThat(payment.getPayAmt()).isEqualByComparingTo("163.72");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt of an outbound payment").isEqualByComparingTo("0");
 		}
 	}
 

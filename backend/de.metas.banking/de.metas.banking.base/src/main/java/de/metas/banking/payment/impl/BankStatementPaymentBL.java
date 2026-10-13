@@ -215,7 +215,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			if (invoiceToAllocate != null)
 			{
 				// Skonto, or the payment bonus, or both: the one that the paid amount matches.
-				final boolean bonusAllowed = invoiceToAllocate.getDocBaseType().isSales();
+				// Like the CAMT matching, the payment bonus is only for money coming in for a sales invoice, never for a refund.
+				final boolean bonusAllowed = inboundPayment && invoiceToAllocate.getDocBaseType().isSales();
 				final Amount bonusGrossAmt = paymentBonusOnPaymentService
 						.computeDeductionGrossAmount(bonusAllowed, invoiceId, payAmount::getCurrencyId)
 						.map(gross -> gross.toAmount(moneyService::getCurrencyCodeByCurrencyId))
