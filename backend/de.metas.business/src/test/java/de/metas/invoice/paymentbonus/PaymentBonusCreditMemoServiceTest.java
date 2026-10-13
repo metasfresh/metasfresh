@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -101,6 +102,18 @@ class PaymentBonusCreditMemoServiceTest
 		assertThatThrownBy(() -> service.reverseCreditMemoIfNotReversed(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID())))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("is not a payment bonus credit memo");
+		refresh(salesInvoice);
+		assertThat(salesInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	/** An invoice without a document type is not a payment bonus credit memo either. */
+	@Test
+	void reverseCreditMemoIfNotReversed_noDocType_fails()
+	{
+		assertThatThrownBy(() -> service.reverseCreditMemoIfNotReversed(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID())))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("is not a payment bonus credit memo");
+		refresh(salesInvoice);
 		assertThat(salesInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 
