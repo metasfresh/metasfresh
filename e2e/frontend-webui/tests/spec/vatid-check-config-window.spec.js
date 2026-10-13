@@ -227,7 +227,8 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     await assertRecordIsValid(VATID_CONFIG_WINDOW_ID, recordId, 'seeded record opened');
 
     // Captured BEFORE anything is changed, so the finally block can put it all back.
-    originalValues = {
+    const capturedValues = {
+      IsActive: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsActive'),
       IsFormatCheckEnabled: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsFormatCheckEnabled'),
       IsVIESCheckEnabled: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsVIESCheckEnabled'),
       RestApiBaseURL: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RestApiBaseURL'),
@@ -236,7 +237,12 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
       RecheckAfterDays: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'RecheckAfterDays'),
       OnServiceUnavailable: await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'OnServiceUnavailable'),
     };
-    console.log(`[INFO] Captured original config for restore: ${JSON.stringify(originalValues)}`);
+    console.log(`[INFO] Captured original config for restore: ${JSON.stringify(capturedValues)}`);
+    // The seed migration ships the record active. An inactive one here means an earlier run left it
+    // that way; say so, instead of failing later on fields that are read-only because of it. Only
+    // published to the finally block once checked: nothing has been changed yet if this fails.
+    expect(capturedValues.IsActive, 'the seeded VATaxID_Config record must be active when the test starts').toBe(true);
+    originalValues = capturedValues;
 
     // === STEP 3: Every one of the 8 config fields is visible + not-readonly ===
     for (const { fieldName, widgetType } of CONFIG_FIELDS) {
@@ -279,9 +285,10 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
     };
 
     await test.step('Toggle IsActive off then on (proves the boolean widget is editable)', async () => {
-      await BooleanWidget.setFalse('IsActive');
+      // Each toggle waits for ITS OWN save before the next one: see setIsActiveAndAwaitSaved.
+      await setIsActiveAndAwaitSaved(page, recordId, false);
       expect(await BooleanWidget.getValue('IsActive')).toBe(false);
-      await BooleanWidget.setTrue('IsActive');
+      await setIsActiveAndAwaitSaved(page, recordId, true);
       expect(await BooleanWidget.getValue('IsActive')).toBe(true);
     });
 
@@ -377,9 +384,19 @@ Closes a mandatory Playwright-coverage gap for a newly created WebUI window
           await page.locator('.rotating, .indicator-pending')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
+          // IsActive FIRST. While the record is inactive the WebUI renders every other field
+          // read-only, so none of the restores below could land; and a record left inactive
+          // fails every later attempt of this test (and every spec that needs the active
+          // configuration) on fields that never become editable.
+          const isActiveNow = await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsActive').catch(() => null);
+          if (originalValues.IsActive === true && isActiveNow !== true) {
+            await setIsActiveAndAwaitSaved(page, recordId, true);
+          }
+
           // Verified + retried, for the same reason setup is: an unverified restore can
           // silently drop a field and leave this shared record altered for every later spec.
           await applyConfigFieldsVerified(page, recordId, {
+            IsActive: originalValues.IsActive === true,
             IsFormatCheckEnabled: originalValues.IsFormatCheckEnabled === true,
             IsVIESCheckEnabled: originalValues.IsVIESCheckEnabled === true,
             RestApiBaseURL: originalValues.RestApiBaseURL ?? '',
@@ -530,6 +547,60 @@ async function applyConfigFieldsVerified(page, recordId, fields) {
   }
 
   throw new Error(`VATaxID_Config ${recordId}: could not persist ${mismatches.join(', ')}`);
+}
+
+/**
+ * Flip IsActive through its real switch and return only once the server has answered THAT
+ * flip's PATCH and the record holds `value`.
+ *
+ * Why not just BooleanWidget.setTrue/setFalse: the switch saves through an immediate PATCH, and
+ * the widget's own save wait does not wait for that PATCH to be answered. Two flips in a row
+ * therefore put two PATCHes for the same field on the wire at once. A CI trace showed it: the
+ * `false` PATCH was sent first, the `true` PATCH ~100 ms later while `false` was still in
+ * flight, and the record ended up INACTIVE - the state of the slower, earlier-sent `false`
+ * PATCH. An inactive record renders every other field read-only (DocumentReadonly: "this
+ * document is not active => fields of this document shall be completely readonly, BUT NOT the
+ * IsActive flag"), so the next field edit waited on a disabled input until the test timed out.
+ *
+ * Waiting for this flip's own PATCH response before the next action is what a user does: they
+ * see the switch settle before touching it again.
+ */
+async function setIsActiveAndAwaitSaved(page, recordId, value) {
+  const valueBefore = await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsActive');
+  expect(valueBefore, `IsActive must not already be ${value}, or no PATCH is sent and nothing is proven`).not.toBe(value);
+
+  // BooleanWidget only clicks when the rendered switch differs from the target, so wait until the
+  // switch shows the record's current value; right after a navigation it can still be painting from
+  // the layout, and a click skipped as a no-op would send no PATCH at all.
+  const checkbox = WidgetCommon.getFieldContainer('IsActive').locator('input[type="checkbox"]').first();
+  await expect(checkbox, 'the IsActive switch must show the record\'s current value before it is flipped')
+    .toBeChecked({ checked: valueBefore === true, timeout: SLOW_ACTION_TIMEOUT });
+
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (candidate) =>
+        candidate.request().method() === 'PATCH' &&
+        candidate.url().includes(`/window/${VATID_CONFIG_WINDOW_ID}/${recordId}`) &&
+        isPatchSettingIsActiveTo(candidate.request().postData(), value),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    ),
+    value ? BooleanWidget.setTrue('IsActive') : BooleanWidget.setFalse('IsActive'),
+  ]);
+  expect(response.ok(), `PATCH IsActive=${value} must succeed (HTTP ${response.status()})`).toBe(true);
+
+  expect(await getRawFieldValue(VATID_CONFIG_WINDOW_ID, recordId, 'IsActive'), `the record must hold IsActive=${value} after its PATCH was answered`).toBe(value);
+}
+
+/**
+ * True when a WebUI PATCH body (a JSON array of `{ op, path, value }`) sets IsActive to `value`.
+ */
+function isPatchSettingIsActiveTo(postData, value) {
+  try {
+    const operations = JSON.parse(postData ?? '[]');
+    return Array.isArray(operations) && operations.some((op) => op.path === 'IsActive' && op.value === value);
+  } catch {
+    return false;
+  }
 }
 
 /**
