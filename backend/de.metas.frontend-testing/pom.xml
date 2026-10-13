@@ -13,7 +13,6 @@
 	<properties>
 		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 		<metasfresh.version>10.0.0</metasfresh.version>
-		<migration-sql-basedir/>
 	</properties>
 
 	<groupId>de.metas.frontend-testing</groupId>

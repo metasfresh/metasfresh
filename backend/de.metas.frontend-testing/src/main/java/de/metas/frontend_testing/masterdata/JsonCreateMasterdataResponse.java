@@ -16,8 +16,8 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> context;
 
 	/**
-	 * Sysconfig name to its value before the request; a sysconfig that did not exist before is present with a {@code null} value
-	 * (so the caller can tell "restore" from "delete").
+	 * Sysconfig name to its value before the request. A {@code null} value means the sysconfig did not exist before.
+	 * Deletion is not supported: to undo such a sysconfig, callers reset it to a neutral value.
 	 */
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
 }

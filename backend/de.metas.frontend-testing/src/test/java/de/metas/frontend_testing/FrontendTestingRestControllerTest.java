@@ -9,6 +9,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -56,7 +57,7 @@ class FrontendTestingRestControllerTest
 	{
 		assertThatThrownBy(() -> controller.createMasterdata(requestWithSysconfig()))
 				.isInstanceOf(PermissionNotGrantedException.class);
-		assertThat(sysConfigBL.getValue("x")).isNull();
+		assertThat(sysConfigBL.getValue("x", ClientAndOrgId.MAIN_ORG)).isNull();
 	}
 
 	@Test
@@ -65,7 +66,7 @@ class FrontendTestingRestControllerTest
 		setEnabled("N");
 		assertThatThrownBy(() -> controller.createMasterdata(requestWithSysconfig()))
 				.isInstanceOf(PermissionNotGrantedException.class);
-		assertThat(sysConfigBL.getValue("x")).isNull();
+		assertThat(sysConfigBL.getValue("x", ClientAndOrgId.MAIN_ORG)).isNull();
 	}
 
 	@Test
@@ -73,7 +74,7 @@ class FrontendTestingRestControllerTest
 	{
 		assertThatThrownBy(() -> controller.setSysconfigs(ImmutableMap.of("x", "1")))
 				.isInstanceOf(PermissionNotGrantedException.class);
-		assertThat(sysConfigBL.getValue("x")).isNull();
+		assertThat(sysConfigBL.getValue("x", ClientAndOrgId.MAIN_ORG)).isNull();
 	}
 
 	@Test
@@ -82,7 +83,7 @@ class FrontendTestingRestControllerTest
 		setEnabled("N");
 		assertThatThrownBy(() -> controller.setSysconfigs(ImmutableMap.of("x", "1")))
 				.isInstanceOf(PermissionNotGrantedException.class);
-		assertThat(sysConfigBL.getValue("x")).isNull();
+		assertThat(sysConfigBL.getValue("x", ClientAndOrgId.MAIN_ORG)).isNull();
 	}
 
 	@Test
@@ -104,6 +105,20 @@ class FrontendTestingRestControllerTest
 		expectedPrevious.put("existing", "old");
 		expectedPrevious.put("brandNew", null);
 		assertThat(response.getPreviousSysconfigs()).isEqualTo(expectedPrevious);
+	}
+
+	@Test
+	void setSysconfigs_nullValueRejected_andNothingWritten_whenSysconfigIsY()
+	{
+		setEnabled("Y");
+		final HashMap<String, String> sysconfigs = new HashMap<>();
+		sysconfigs.put("x", "1");
+		sysconfigs.put("y", null);
+
+		assertThatThrownBy(() -> controller.setSysconfigs(sysconfigs))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("`y`");
+		assertThat(sysConfigBL.getValue("x", ClientAndOrgId.MAIN_ORG)).isNull();
 	}
 
 	@Test

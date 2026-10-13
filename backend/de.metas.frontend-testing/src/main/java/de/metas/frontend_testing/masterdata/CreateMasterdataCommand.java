@@ -23,6 +23,7 @@ public class CreateMasterdataCommand
 		context.putFromJson(request.getContext());
 
 		final Map<String, String> previousSysconfigs = SysconfigCommand.builder()
+				.sysConfigBL(services.sysConfigBL)
 				.sysconfigs(request.getSysconfigs())
 				.build()
 				.execute();

@@ -106,6 +106,7 @@ public class FrontendTestingRestController
 		callInContext(() -> {
 			logger.warn("Frontend testing: setting sysconfigs {}", sysconfigs.keySet());
 			SysconfigCommand.builder()
+					.sysConfigBL(sysConfigBL)
 					.sysconfigs(sysconfigs)
 					.build()
 					.execute();
