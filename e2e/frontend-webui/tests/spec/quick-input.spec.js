@@ -15,40 +15,13 @@
  */
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import { SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../utils/common';
+import {
+  SLOW_ACTION_TIMEOUT,
+  FAST_ACTION_TIMEOUT,
+  loginAsMetasfresh,
+} from '../utils/common';
 
 const SALES_ORDER_WINDOW_ID = 143;
-
-async function loginAsMetasfresh(page) {
-  await page.goto('/logout', { waitUntil: 'load' });
-  await page.goto('/', { waitUntil: 'load' });
-
-  await page
-    .locator('.login-container')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-  await page.locator('input[name="username"]').fill('metasfresh');
-  await page.locator('input[name="password"]').fill('metasfresh');
-  await page.locator('.login-container .btn-meta-success').click();
-
-  // Click through role-selection screen if it appears.
-  try {
-    const roleSubmitBtn = page.locator(
-      '.login-container .btn-meta-success:visible'
-    );
-    await roleSubmitBtn.waitFor({
-      state: 'visible',
-      timeout: FAST_ACTION_TIMEOUT,
-    });
-    await roleSubmitBtn.click();
-  } catch {
-    // No role selection needed.
-  }
-
-  await page
-    .locator('.dashboard')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-}
 
 /**
  * Create a new Drafted Sales Order and fill the mandatory Business Partner

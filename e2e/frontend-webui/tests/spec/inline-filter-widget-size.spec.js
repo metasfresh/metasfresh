@@ -22,7 +22,7 @@
  */
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import { FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { loginAsMetasfresh, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { Backend } from '../utils/Backend';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
@@ -46,37 +46,6 @@ const NAME_FILLER =
 
 const FILLER_PARTNERS_COUNT = 20; // plus probe, 46, 52 and 106 = 24 partners
 const TARGET_TEXT_LENGTHS = { medium: 46, p99: 52, long: 106 };
-
-async function login(page) {
-  await page.goto('/logout', { waitUntil: 'load' });
-  await page.goto('/', { waitUntil: 'load' });
-
-  await page
-    .locator('.login-container')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-  await page.locator('input[name="username"]').fill('metasfresh');
-  await page.locator('input[name="password"]').fill('metasfresh');
-  await page.locator('.login-container .btn-meta-success').click();
-
-  // Click through role-selection screen if it appears.
-  try {
-    const roleSubmitBtn = page.locator(
-      '.login-container .btn-meta-success:visible'
-    );
-    await roleSubmitBtn.waitFor({
-      state: 'visible',
-      timeout: FAST_ACTION_TIMEOUT,
-    });
-    await roleSubmitBtn.click();
-  } catch {
-    // No role selection needed.
-  }
-
-  await page
-    .locator('.dashboard')
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-}
 
 async function setupInlineFilters() {
   await Backend.createMasterdata({
@@ -138,6 +107,10 @@ const dropdownFooter = (page) => page.locator('.input-dropdown-hasmore');
 const dropdownOptions = (page) =>
   page.locator('.input-dropdown-list .input-dropdown-list-option:not(.input-dropdown-list-header)');
 
+/** Record a measured value in the test report. */
+const measurement = (description) =>
+  test.info().annotations.push({ type: 'measurement', description });
+
 const widthOf = async (locator) =>
   await locator.evaluate((el) => el.getBoundingClientRect().width);
 
@@ -164,7 +137,7 @@ function nameForTextLength({ length, code, textOverhead }) {
 
 test.describe('Inline lookup filter takes the widget size of its field', () => {
   test.beforeEach(async ({ page }) => {
-    await login(page);
+    await loginAsMetasfresh(page);
     await setupInlineFilters();
   });
 
@@ -190,7 +163,7 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     const probeText = (await dropdownOptions(page).first().textContent()).trim();
     expect(probeText).toContain(probe.code);
     const textOverhead = probeText.length - (probe.code.length + 1 + probe.name.length);
-    console.log(`probe lookup text has ${probeText.length} characters (overhead ${textOverhead})`);
+    measurement(`probe lookup text has ${probeText.length} characters (overhead ${textOverhead})`);
 
     //
     // The other partners
@@ -223,7 +196,7 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     // The box is as wide as widget size L
     const boxWidth = await widthOf(filter.box);
     const inputWidth = await widthOf(filter.inputArea);
-    console.log(`box ${boxWidth} px, input ${inputWidth} px`);
+    measurement(`box ${boxWidth} px, input ${inputWidth} px`);
     expect(boxWidth).toBeGreaterThanOrEqual(L_BOX_WIDTH_PX - L_BOX_TOLERANCE_PX);
     expect(boxWidth).toBeLessThanOrEqual(L_BOX_WIDTH_PX + L_BOX_TOLERANCE_PX);
 
@@ -232,15 +205,21 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     await filter.input.click();
     const listWidths = [];
     for (const ch of runId) {
+      const typeahead = page.waitForResponse(
+        (r) => r.url().includes(`/filter/${SIZED_FILTER_ID}/`) && r.url().includes('/typeahead')
+      );
       await filter.input.press(ch);
+      await typeahead;
       await expect(dropdownList(page)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-      await page.waitForTimeout(300); // the lookup searches debounced; let the list update
+      await expect(page.locator('.input-dropdown-list .icon-rotate')).toHaveCount(0, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
       listWidths.push(await widthOf(dropdownList(page)));
       expect(await widthOf(filter.inputArea)).toBe(inputWidth);
     }
     await expect(dropdownFooter(page)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     const footerWidth = await widthOf(dropdownFooter(page));
-    console.log(`dropdown widths while typing ${listWidths.join(', ')} px, footer ${footerWidth} px`);
+    measurement(`dropdown widths while typing ${listWidths.join(', ')} px, footer ${footerWidth} px`);
     listWidths.forEach((w) => expect(w).toBe(inputWidth));
     expect(footerWidth).toBe(inputWidth);
 
@@ -262,7 +241,7 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     const p99Entry = await fits(partners.p99.code);
     const longEntry = await fits(partners.long.code);
     [shortEntry, mediumEntry, p99Entry, longEntry].forEach((e) =>
-      console.log(`${e.text.length} characters: scrollWidth ${e.scrollWidth}, clientWidth ${e.clientWidth}`)
+      measurement(`${e.text.length} characters: scrollWidth ${e.scrollWidth}, clientWidth ${e.clientWidth}`)
     );
 
     expect(mediumEntry.text.length).toBe(TARGET_TEXT_LENGTHS.medium);
@@ -296,7 +275,7 @@ test.describe('Inline lookup filter takes the widget size of its field', () => {
     // any query opens the dropdown (with results or with "no results")
     await search(page, filter.input, 'a');
     const listWidth = await widthOf(dropdownList(page));
-    console.log(`box ${boxWidth} px, input ${inputWidth} px, dropdown ${listWidth} px`);
+    measurement(`box ${boxWidth} px, input ${inputWidth} px, dropdown ${listWidth} px`);
 
     expect(Math.abs(boxWidth - DEFAULT_BOX_WIDTH_PX)).toBeLessThanOrEqual(DEFAULT_TOLERANCE_PX);
     expect(Math.abs(inputWidth - DEFAULT_INPUT_WIDTH_PX)).toBeLessThanOrEqual(DEFAULT_TOLERANCE_PX);
