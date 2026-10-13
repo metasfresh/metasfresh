@@ -46,8 +46,7 @@ describe('CostPrice component', () => {
       // The server sends monetary values already formatted with their precision,
       // e.g. "19.00" not "19". With type="text" + fieldValueToString, those
       // trailing zeros render in the input box. With type="number" they would
-      // be normalised away by the browser — that's the regression we explicitly
-      // moved away from in me03#27080 follow-up #1.
+      // be normalised away by the browser.
       const wrapper = shallow(
         <CostPrice {...defaultProps({ value: '19.00', precision: 2 })} />
       );

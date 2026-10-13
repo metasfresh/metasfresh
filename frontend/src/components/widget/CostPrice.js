@@ -52,22 +52,13 @@ export default class CostPrice extends PureComponent {
     }
   };
 
-  // Strip Swiss thousands separators (apostrophe + typographic apostrophe)
-  // and whitespace separators (space, non-breaking space) before the value
-  // flows upstream — the metasfresh backend's BigDecimal parser
-  // (DataTypes.convertToBigDecimal) rejects them with HTTP 500
-  // NumberFormatException. Verified by reproducing against ipshotfix:
-  //   PATCH … {"op":"replace","path":"PriceEntered","value":"1'500.00"}
-  //   → 500 java.lang.NumberFormatException: Character ' is neither …
-  // Keeping the keypress filter permissive (apostrophe allowed in the
-  // field) makes copy-paste from a price catalogue work; the strip here
-  // makes sure the cleaned value is what actually gets PATCHed.
-  //
-  // A decimal comma (DE/AT users) is accepted by the keypress filter, but the
-  // same backend parser rejects it ("77,5" -> NumberFormatException). So when
-  // the value contains a comma, the last "." or "," is the decimal separator
-  // and every other one is a thousands separator: "77,5" -> "77.5",
-  // "1.500,50" -> "1500.50", "1,500.50" -> "1500.50".
+  // Normalise the typed value to the backend format before it flows upstream;
+  // the backend BigDecimal parser accepts only digits, "-" and "." and fails
+  // with NumberFormatException otherwise:
+  // - strip thousands separators: apostrophes (' and ’), space, NBSP
+  // - if the value contains a comma (DE/AT decimal comma), the last "." or ","
+  //   is the decimal separator and every other one a thousands separator:
+  //   "77,5" -> "77.5", "1.500,50" -> "1500.50", "1,500.50" -> "1500.50"
   handleChange = (e) => {
     const { onChange } = this.props;
     const raw = e.target.value;
@@ -93,22 +84,11 @@ export default class CostPrice extends PureComponent {
     } = this.props;
     const { onKeyDown } = this.props;
 
-    // me03#27080 follow-up: previously this component swapped between a
-    // display <input type="text"> (formatted value, no real editing) and
-    // an edit <input type="number"> (real editing), toggled via an
-    // `editMode` state on focus/blur. The swap unmounted the focused
-    // input mid-Tab during PATCH-triggered re-renders, dropping focus
-    // to <body> and triggering the modal-wrapper safety net to grab
-    // focus into a tabindex=-1 scroll container (arrow-key scrolling
-    // instead of next-field navigation). We now render a single stable
-    // <input> at all times — never reconciled out from under the user.
-    // type="text" with inputMode="decimal" preserves the formatted value
-    // (so monetary trailing zeros render as "19.00", not "19" like a
-    // type="number" input would normalise), and on mobile still triggers
-    // the decimal numeric keyboard. ArrowUp / ArrowDown PATCH semantics
-    // continue to work because they are intercepted by
-    // RawWidget.handleKeyDown for the NumberWidgets list (CostPrice is
-    // in that list).
+    // Always render ONE stable <input>: swapping input elements on
+    // focus/blur unmounts the focused element mid-Tab and loses focus.
+    // type="text" keeps the formatted value (trailing zeros like "19.00");
+    // inputMode="decimal" gives the numeric keyboard on mobile. ArrowUp /
+    // ArrowDown PATCH is handled by RawWidget.handleKeyDown (NumberWidgets).
     return (
       <input
         ref={this.inputRef}
