@@ -168,17 +168,23 @@ Feature: Payment bonus on the payment, next to Skonto
     When the draft payment identified by payment is changed
       | PayAmt |
       | 163.72 |
+    # without an invoice, the payment header gets no payment bonus
     Then validate payments
-      | C_Payment_ID | PayAmt | WriteOffAmt | OverUnderAmt |
-      | payment      | 163.72 | 0           | 0            |
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | OverUnderAmt |
+      | payment      | 163.72 | 0               | 0           | 0            |
 
     And the payment identified by payment is completed
+    # the allocation view books the bonus 2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78 with a credit memo; the payment covers the rest
     And allocate payments to invoices
       | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
       | invoice      | payment      | bonusCreditMemo           |
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         | true   |
     And validate payments
-      | C_Payment_ID | WriteOffAmt | IsAllocated |
-      | payment      | 0           | true        |
+      | C_Payment_ID | PaymentBonusAmt | WriteOffAmt | IsAllocated |
+      | payment      | 0               | 0           | true        |
 
 
   # ##############################################################################################
