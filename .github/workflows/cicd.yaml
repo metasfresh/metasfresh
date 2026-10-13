@@ -249,6 +249,8 @@ jobs:
 
   frontend:
     runs-on: ${{ vars.RUNNER_HEAVY }}
+    permissions:
+      packages: write
     needs: init
     steps:
       - uses: actions/checkout@v6
@@ -288,6 +290,15 @@ jobs:
 #          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
 #          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
 #          .
+      - name: build-frontend-test
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.frontend.test \
+          --cache-to type=inline \
+          --cache-from ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
         uses: nick-fields/retry@v4
         with:
@@ -330,11 +341,26 @@ jobs:
 #          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
 #          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
 #          command: docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
+      - name: push-image ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}' >> "$GITHUB_STEP_SUMMARY"
 #          echo '* metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   test-frontend:
@@ -1396,10 +1422,178 @@ jobs:
 #          retention-days: 30
 
 
+  # =============================================================================
+  # Frontend WebUI Playwright tests (single shard)
+  # The db service of docker-builds/e2e-tests/compose.yml is a THROWAWAY container started from the
+  # preloaded DB image: the tests write data into it, including AD records (e.g. inline filters).
+  # =============================================================================
+  frontend_webui_test:
+    name: frontend webui test
+    timeout-minutes: 60
+    runs-on: ${{ vars.RUNNER_TEST }}
+    needs: [ init, backend, frontend, preloaded-db ]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: run test
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+      # Own step with `if: always()`: when `run test` is cancelled at the job-level
+      # `timeout-minutes`, only `always()` steps still run, so a capture chained behind the
+      # blocking `docker compose up` inside `run test` would be unreachable in exactly the case
+      # that needs it (a stack container going unresponsive mid-suite). The playwright container
+      # is not included - its stdout is already `playwright.log`.
+      - name: capture stack logs
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app webapi webui > infra.log 2>&1 || true
+      - name: commit post-test db image
+        run: |
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation: tear the stack down
+      # before report generation, the image push and the artifact uploads.
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: allure-results-frontend
+          path: docker-builds/e2e-tests/allure-results/
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+      - name: produce-summary
+        run: |
+          echo '#### images' >> "$GITHUB_STEP_SUMMARY"
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> "$GITHUB_STEP_SUMMARY"
+      - name: assert success
+        working-directory: docker-builds/e2e-tests/
+        run: |
+          if [ "$(cat playwright.exit-code)" != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      # `always()`, not `success() || failure()`: `failure()` is false on a job that concluded
+      # `cancelled` (job-level timeout), where `infra.log` may be the only remaining evidence.
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: playwright-frontend-report
+          path: |
+            docker-builds/e2e-tests/playwright-report-frontend/
+            docker-builds/e2e-tests/test-results-frontend/
+            docker-builds/e2e-tests/infra.log
+          # a cancelled run may not have flushed the playwright report; a missing path
+          # must warn, never fail the step
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Upload Playwright Frontend JUnit results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results-playwright-frontend
+          path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 30
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a cancelled
+      # job every conditional step shares one cancellation window, and an unresponsive container
+      # is what makes `docker compose down` slow, so teardown must not run ahead of the uploads.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
+
+  # =============================================================================
+  # Frontend Playwright Allure report
+  # =============================================================================
+  frontend_allure_report:
+    name: frontend allure report
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    needs: [ init, frontend_webui_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: allure-results-frontend*
+          path: allure-results-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-merged" ] && [ "$(ls -A allure-results-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+            echo "Found $(find allure-results-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate Allure Report for Frontend
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: allure-results-merged
+          output-dir: e2e/frontend-webui/allure-report
+          artifact-name: allure-report-frontend-webui
+          history-artifact-name: allure-history-frontend-webui
+          report-title: 'Playwright (Frontend WebUI)'
+      - name: Upload Frontend Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: e2e/frontend-webui/allure-report
+          report-type: allure/frontend-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-allure-report ]
+    needs: [ init, cucumber-allure-report, frontend_allure_report ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write       # trigger reports-cleanup workflow when disk space is low
