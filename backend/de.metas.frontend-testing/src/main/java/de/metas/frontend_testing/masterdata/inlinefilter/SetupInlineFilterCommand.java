@@ -63,11 +63,7 @@ public class SetupInlineFilterCommand
 			throw new AdempiereException("Invalid widgetSize `" + widgetSize + "`; it is not an active value of the WidgetSize reference list");
 		}
 
-		column = adTableDAO.retrieveColumnOrNull(request.getTableName(), request.getColumnName());
-		if (column == null)
-		{
-			throw new AdempiereException("Unknown column " + columnDisplayName());
-		}
+		column = adTableDAO.retrieveColumn(request.getTableName(), request.getColumnName());
 		element = resolveUIElement(column.getAD_Column_ID());
 		return this;
 	}
@@ -128,7 +124,7 @@ public class SetupInlineFilterCommand
 
 		final I_AD_Field field = adWindowDAO.retrieveFields(mainTab).stream()
 				.filter(I_AD_Field::isActive)
-				.filter(f -> f.getAD_Column_ID() == columnId)
+				.filter(candidate -> candidate.getAD_Column_ID() == columnId)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No active field for " + where));
 
