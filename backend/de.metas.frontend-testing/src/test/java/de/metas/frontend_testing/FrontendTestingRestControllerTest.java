@@ -7,6 +7,8 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.inlinefilter.AdMetadataCacheInvalidator;
+import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
@@ -44,7 +46,9 @@ class FrontendTestingRestControllerTest
 		controller = new FrontendTestingRestController(userAuthTokenFilterConfiguration, new CreateMasterdataCommandSupportingServices(
 				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes()),
 				new ExternalReferenceTypes(),
-				new ExternalSystems()));
+				new ExternalSystems(),
+				new InlineFilterRepository(),
+				new AdMetadataCacheInvalidator()));
 	}
 
 	private void setEnabled(final String value)

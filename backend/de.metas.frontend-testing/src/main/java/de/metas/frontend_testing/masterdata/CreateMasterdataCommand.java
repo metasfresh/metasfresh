@@ -5,10 +5,15 @@ import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.externalreference.CreateExternalReferenceCommand;
 import de.metas.frontend_testing.masterdata.externalreference.JsonCreateExternalReferenceRequest;
+import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterRequest;
+import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterResponse;
+import de.metas.frontend_testing.masterdata.inlinefilter.SetupInlineFilterCommand;
 import lombok.Builder;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,11 +40,13 @@ public class CreateMasterdataCommand
 
 		final Map<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		createExternalReferences();
+		final List<JsonSetupInlineFilterResponse> inlineFilters = setupInlineFilters();
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs)
 				.bpartners(bpartners)
+				.inlineFilters(inlineFilters)
 				.build();
 	}
 
@@ -80,5 +87,23 @@ public class CreateMasterdataCommand
 					.build()
 					.execute();
 		}
+	}
+
+	private List<JsonSetupInlineFilterResponse> setupInlineFilters()
+	{
+		final List<JsonSetupInlineFilterResponse> responses = new ArrayList<>();
+		if (request.getInlineFilters() != null)
+		{
+			for (final JsonSetupInlineFilterRequest inlineFilterRequest : request.getInlineFilters())
+			{
+				responses.add(SetupInlineFilterCommand.builder()
+						.repository(services.inlineFilterRepository)
+						.cacheInvalidator(services.adMetadataCacheInvalidator)
+						.request(inlineFilterRequest)
+						.build()
+						.execute());
+			}
+		}
+		return responses;
 	}
 }

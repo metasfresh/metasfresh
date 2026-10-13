@@ -14,6 +14,8 @@ import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.externalreference.JsonCreateExternalReferenceRequest;
+import de.metas.frontend_testing.masterdata.inlinefilter.AdMetadataCacheInvalidator;
+import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,7 +51,7 @@ class CreateMasterdataCommandBPartnerTest
 		queryBL = Services.get(IQueryBL.class);
 
 		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, new ExternalSystems(), new ExternalReferenceTypes());
-		services = new CreateMasterdataCommandSupportingServices(externalReferenceRepository, new ExternalReferenceTypes(), new ExternalSystems());
+		services = new CreateMasterdataCommandSupportingServices(externalReferenceRepository, new ExternalReferenceTypes(), new ExternalSystems(), new InlineFilterRepository(), new AdMetadataCacheInvalidator());
 
 		defaultGroupId = newBPGroup("Standard", true);
 		customGroupId = newBPGroup("Kunde", false);
