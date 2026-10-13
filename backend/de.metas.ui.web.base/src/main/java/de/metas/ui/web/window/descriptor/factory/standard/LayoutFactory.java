@@ -392,6 +392,8 @@ public class LayoutFactory
 				return null;
 			}
 
+			setFilterWidgetSizeOfMainField(uiElement);
+
 			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
 					.setInternalName(uiElement.toString())
 					.addElement(layoutElementBuilder);
@@ -404,6 +406,24 @@ public class LayoutFactory
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("AD_UI_Element", uiElement)
 					.setParameter("AD_Tab_ID", uiElement.getAD_Tab_ID());
+		}
+	}
+
+	/**
+	 * Remembers the widget size configured on a single-row layout element on its main field,
+	 * so that the field's filter parameter can render with the same size. The first single-row element of the field wins.
+	 */
+	private void setFilterWidgetSizeOfMainField(@NonNull final I_AD_UI_Element uiElement)
+	{
+		if (!LayoutElementType.Field.equals(LayoutElementType.ofCode(uiElement.getAD_UI_ElementType())))
+		{
+			return;
+		}
+
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
+		if (field != null && field.getFilterWidgetSize() == null)
+		{
+			field.setFilterWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()));
 		}
 	}
 
