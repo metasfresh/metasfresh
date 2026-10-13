@@ -34,10 +34,10 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value       | VATaxID     |
       | bp_vies1   | ViesTC1Test | DE136695976 |
-    # The save above schedules a check of its own (after-commit trigger). Wait for it here: run concurrently
-    # with the explicit check below, both find no conclusive result yet, both ask the service and both record
-    # an evidence row - one row more than this scenario asserts. Once it has completed, the explicit check
-    # finds its still-fresh result and records nothing new.
+    # The save above schedules a check of its own (after-commit trigger). Wait for it here: if it were still
+    # running while the explicit check below executes, both would find no conclusive result yet, both would ask
+    # the service and both would record an evidence row - one more than this scenario asserts. Once it has
+    # completed, the explicit check finds its still-fresh result and records nothing new.
     And the automatically scheduled VAT-ID check has completed
     When the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
@@ -60,10 +60,10 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value       | VATaxID     |
       | bp_vies2   | ViesTC2Test | ATU13585627 |
-    # The save above schedules a check of its own (after-commit trigger). Wait for it here: run concurrently
-    # with the explicit check below, both find no conclusive result yet, both ask the service and both record
-    # an evidence row - one row more than this scenario asserts. Once it has completed, the explicit check
-    # finds its still-fresh result and records nothing new.
+    # The save above schedules a check of its own (after-commit trigger). Wait for it here: if it were still
+    # running while the explicit check below executes, both would find no conclusive result yet, both would ask
+    # the service and both would record an evidence row - one more than this scenario asserts. Once it has
+    # completed, the explicit check finds its still-fresh result and records nothing new.
     And the automatically scheduled VAT-ID check has completed
     When the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
@@ -86,10 +86,10 @@ Feature: VAT-ID is checked against the online validation service
     And metasfresh contains C_BPartners:
       | Identifier | Value       | VATaxID          |
       | bp_vies3   | ViesTC4Test | CHE100155212MWST |
-    # The save above schedules a check of its own (after-commit trigger). Wait for it here: run concurrently
-    # with the explicit check below, both find no conclusive result yet, both ask the service and both record
-    # an evidence row - one row more than this scenario asserts. Once it has completed, the explicit check
-    # finds its still-fresh result and records nothing new.
+    # The save above schedules a check of its own (after-commit trigger). Wait for it here: if it were still
+    # running while the explicit check below executes, both would find no conclusive result yet, both would ask
+    # the service and both would record an evidence row - one more than this scenario asserts. Once it has
+    # completed, the explicit check finds its still-fresh result and records nothing new.
     And the automatically scheduled VAT-ID check has completed
     When the VAT-ID check runs for C_BPartner:
       | C_BPartner_ID |
