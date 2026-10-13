@@ -1,5 +1,6 @@
 import { test, testContext } from '../../playwright.config';
-import { getPage, WEBAPI_BASE_URL } from './common';
+import { getPage } from './common';
+import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
 /**
  * Backend API client for the /api/v2/frontendTesting endpoints (module de.metas.frontend-testing).
@@ -37,7 +38,15 @@ export const Backend = {
         }
       );
 
-      const responseBody = await response.json();
+      const responseText = await response.text();
+      let responseBody;
+      try {
+        responseBody = JSON.parse(responseText);
+      } catch (e) {
+        throw Error(
+          `Failed to create master data: HTTP ${response.status()} ${response.statusText()}: ${responseText.slice(0, 500)}`
+        );
+      }
       assertNoErrors({ responseBody });
       if (!response.ok()) {
         throw Error(

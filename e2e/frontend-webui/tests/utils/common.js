@@ -4,10 +4,6 @@ import { ErrorToast } from './components/ErrorToast';
 export const FRONTEND_BASE_URL =
   process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
 
-// WebAPI node (not the app-server), e.g. for its /cache/reset endpoints
-export const WEBAPI_BASE_URL =
-  process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
-
 export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1 second
 export const FAST_ACTION_TIMEOUT = 5000; // 5 seconds
 export const SLOW_ACTION_TIMEOUT = 20000; // 20 seconds
