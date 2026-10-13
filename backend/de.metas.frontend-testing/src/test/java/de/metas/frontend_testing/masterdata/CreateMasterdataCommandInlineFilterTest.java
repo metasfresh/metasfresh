@@ -6,7 +6,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.frontend_testing.masterdata.inlinefilter.AdMetadataCacheInvalidator;
 import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterRequest;
 import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterResponse;
@@ -27,8 +26,6 @@ import org.compiere.model.X_AD_UI_Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -38,7 +35,6 @@ class CreateMasterdataCommandInlineFilterTest
 	private static final String COLUMN = "C_BPartner_ID";
 
 	private CreateMasterdataCommandSupportingServices services;
-	private final AtomicInteger cacheInvalidations = new AtomicInteger();
 
 	private int windowId;
 	private int columnId;
@@ -57,12 +53,7 @@ class CreateMasterdataCommandInlineFilterTest
 				new ExternalReferenceRepository(queryBL, new ExternalSystems(), new ExternalReferenceTypes()),
 				new ExternalReferenceTypes(),
 				new ExternalSystems(),
-				new InlineFilterRepository(),
-				new AdMetadataCacheInvalidator()
-				{
-					@Override
-					public void invalidateWindowLayouts() {cacheInvalidations.incrementAndGet();}
-				});
+				new InlineFilterRepository());
 
 		for (final String size : new String[] { "S", "M", "L", "XL", "XXL" })
 		{
@@ -175,7 +166,6 @@ class CreateMasterdataCommandInlineFilterTest
 		assertThat(showInline(columnId)).isTrue();
 		assertThat(widgetSize(elementId)).isEqualTo("XXL");
 		assertThat(response.getInlineFilters()).containsExactly(JsonSetupInlineFilterResponse.builder().previousShowInline(false).previousWidgetSize("M").build());
-		assertThat(cacheInvalidations).hasValue(1);
 	}
 
 	@Test
@@ -208,7 +198,6 @@ class CreateMasterdataCommandInlineFilterTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(String.valueOf(windowId + 999));
 		assertThat(showInline(columnId)).isTrue();
-		assertThat(cacheInvalidations).hasValue(0);
 	}
 
 	@Test
@@ -267,7 +256,6 @@ class CreateMasterdataCommandInlineFilterTest
 
 		assertThat(showInline(columnId)).isFalse();
 		assertThat(widgetSize(elementId)).isEqualTo("M");
-		assertThat(cacheInvalidations).hasValue(0);
 	}
 
 	@Test

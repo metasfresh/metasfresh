@@ -17,21 +17,21 @@ import java.util.List;
  * The element is resolved strictly: window, then main tab, then the field of the column in that tab, then the UI element of that field.
  * Nothing is created: a missing field or element, or more than one element, is an error.
  * Everything is checked before the first write, so a rejected request changes nothing.
+ * <p>
+ * This only writes AD data. Other processes cache layouts (the webapi does), so the caller must reset the webapi caches
+ * ({@code GET /cache/reset}) afterwards, as the Playwright harness does after other metadata changes.
  */
 public class SetupInlineFilterCommand
 {
 	@NonNull private final InlineFilterRepository repository;
-	@NonNull private final AdMetadataCacheInvalidator cacheInvalidator;
 	@NonNull private final JsonSetupInlineFilterRequest request;
 
 	@Builder
 	private SetupInlineFilterCommand(
 			@NonNull final InlineFilterRepository repository,
-			@NonNull final AdMetadataCacheInvalidator cacheInvalidator,
 			@NonNull final JsonSetupInlineFilterRequest request)
 	{
 		this.repository = repository;
-		this.cacheInvalidator = cacheInvalidator;
 		this.request = request;
 	}
 
@@ -60,8 +60,6 @@ public class SetupInlineFilterCommand
 		{
 			repository.setWidgetSize(elementId, widgetSize);
 		}
-
-		cacheInvalidator.invalidateWindowLayouts();
 
 		return previousValues;
 	}

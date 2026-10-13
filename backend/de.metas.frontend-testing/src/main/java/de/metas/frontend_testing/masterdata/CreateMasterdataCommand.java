@@ -98,7 +98,6 @@ public class CreateMasterdataCommand
 			{
 				responses.add(SetupInlineFilterCommand.builder()
 						.repository(services.inlineFilterRepository)
-						.cacheInvalidator(services.adMetadataCacheInvalidator)
 						.request(inlineFilterRequest)
 						.build()
 						.execute());

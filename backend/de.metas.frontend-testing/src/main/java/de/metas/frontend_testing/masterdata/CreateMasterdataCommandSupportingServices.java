@@ -5,7 +5,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.frontend_testing.masterdata.inlinefilter.AdMetadataCacheInvalidator;
 import de.metas.frontend_testing.masterdata.inlinefilter.InlineFilterRepository;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -31,5 +30,4 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final ExternalReferenceTypes externalReferenceTypes;
 	@NonNull public final ExternalSystems externalSystems;
 	@NonNull public final InlineFilterRepository inlineFilterRepository;
-	@NonNull public final AdMetadataCacheInvalidator adMetadataCacheInvalidator;
 }

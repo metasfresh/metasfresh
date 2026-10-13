@@ -10,6 +10,11 @@ import javax.annotation.Nullable;
 /**
  * Switches the inline filter of one column on or off and optionally sets the widget size the filter box gets in the given window.
  * <p>
+ * {@code showInline} and {@code widgetSize}: {@code null} means unchanged. The response returns the previous values for information only;
+ * there is no restore path (CI databases are throwaway).
+ * <p>
+ * This only writes AD data: the caller must reset the webapi caches ({@code GET /cache/reset}) afterwards.
+ * <p>
  * Addition of this release line: there is no counterpart in the later (new_dawn-based) releases.
  */
 @Value
