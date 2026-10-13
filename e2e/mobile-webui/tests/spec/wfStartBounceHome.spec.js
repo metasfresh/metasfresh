@@ -230,7 +230,17 @@ test('Reload while a job is open: plain reload keeps the job; a re-hydrated stor
     // token lives in a cookie, so the session survives; only the persisted redux store is gone. On the
     // next reload the process is not loaded and the guard's (deferred) goHome must still redirect home
     // — not hang on a blank job frame.
-    await page.evaluate(() => window.localStorage.clear());
+    //
+    // Wipe the persisted store at the START of the next document, not from the live page. The app's
+    // `save()` middleware (redux-localstorage-simple, store/store.js, debounce 0) rewrites the whole
+    // store, wfProcesses included, on EVERY dispatched action, and the 3(a) boot's own requests
+    // (GET /userWorkflows/apps and /settings, ApplicationRoot.jsx) can still be in flight here. A
+    // response landing between a page-side localStorage.clear() and the unload re-persisted the
+    // process, so the "cold" boot re-hydrated it and the guard correctly kept the job: HOME never
+    // showed. An init script runs on the new document before any app script, after the old document
+    // is gone, so nothing can write in between. It stays registered for the rest of this test, which
+    // loads no further document (the redirect home is an in-app route change).
+    await page.addInitScript(() => window.localStorage.clear());
     await page.reload({ waitUntil: 'load' });
     await ApplicationsListScreen.expectVisible();
     await PickingJobScreen.expectNotDisplayed();
