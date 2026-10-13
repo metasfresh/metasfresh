@@ -11,6 +11,73 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 export const getPage = () => global.currentPage;
 
 /**
+ * Waits for the next animation frame plus one timer turn, then sends a marker request from the
+ * page and waits until Playwright reports it. Requests are reported in the order the page starts
+ * them, so every request started before the marker - synchronously by an event handler, or by a
+ * promise callback or zero-delay timer already queued, e.g. the PATCH a field sends when it is
+ * left - has been reported to `request` listeners by then.
+ *
+ * A request the UI starts only after waiting for a server answer can still come later, so a
+ * check that "no request was sent" must be paired with an observable outcome (editor closed,
+ * value shown, value after a reload).
+ */
+export async function flushPendingUiTasks(page) {
+  const marker = `ui-flush-barrier-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const markerSent = page.waitForRequest((request) => request.url().includes(marker), {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await page.evaluate(
+    (markerParam) =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() =>
+          setTimeout(() => {
+            // only the request matters, not its answer
+            fetch(`/favicon.ico?${markerParam}`, { method: 'HEAD' }).catch(() => {});
+            resolve();
+          }, 0)
+        );
+      }),
+    marker
+  );
+  await markerSent;
+}
+
+/**
+ * Waits until the page has finished loading every web font it has started to load. A text set in
+ * a font that arrives later is laid out again with the font's own metrics, so a geometry baseline
+ * must be measured after this.
+ */
+export async function waitForWebFonts(page) {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+}
+
+/**
+ * Resolves when a Lookup's typeahead answered a query: a GET with `?query=` for a document field,
+ * a POST with `{query}` for a view-filter parameter.
+ *
+ * @param {Page} page
+ * @param {string|function(string): boolean} expectedQuery - the exact query text, or a predicate
+ */
+export function waitForTypeaheadAnswer(page, expectedQuery) {
+  const isExpected =
+    typeof expectedQuery === 'function' ? expectedQuery : (query) => query === expectedQuery;
+  return page.waitForResponse(
+    (response) => {
+      if (!response.url().includes('/typeahead')) {
+        return false;
+      }
+      const request = response.request();
+      const query =
+        request.method() === 'POST'
+          ? (request.postDataJSON() || {}).query
+          : new URL(response.url()).searchParams.get('query');
+      return typeof query === 'string' && isExpected(query);
+    },
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+}
+
+/**
  * Collect uncaught page errors and console.error entries from `page` for a hard
  * zero-error assertion at the end of a scenario. Attach BEFORE navigating.
  */

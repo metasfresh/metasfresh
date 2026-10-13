@@ -21,8 +21,8 @@ const getCellProps = (overrideProps) => {
   }
 }
 
-const getPropsTdValue = ({ widgetData, item, isEdited, isGerman }) => {
-  return getTdValue({ widgetData, item, isEdited, isGerman });
+const getPropsTdValue = ({ widgetData, item, isGerman }) => {
+  return getTdValue({ widgetData, item, isGerman });
 };
 
 describe('TableCell', () => {
