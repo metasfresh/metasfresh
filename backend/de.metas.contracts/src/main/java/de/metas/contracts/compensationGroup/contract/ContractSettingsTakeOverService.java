@@ -88,9 +88,12 @@ public class ContractSettingsTakeOverService
 		final ImmutableList<ContractSettingsTakeOverMatch> matches = computeMatches(order, settings);
 
 		// Resolve the customer's payment-service fee once, keyed by the linked SALES order's invoice partner and date.
-		final ContractServiceFee fee = order.getInvoicePartnerId() != null && order.getSoDate() != null
+		final ContractServiceFee customerFee = order.getInvoicePartnerId() != null && order.getSoDate() != null
 				? feeService.resolveServiceFee(order.getInvoicePartnerId(), order.getSoDate())
 				: ContractServiceFee.ZERO;
+		// The fee is passed on only when the settings reference the very service company the customer's fee belongs to;
+		// otherwise it counts as zero (also before the take-over lookup, which would throw on an ambiguous take-over).
+		final ContractServiceFee fee = isFeeOfPassedOnServiceCompany(customerFee, settings) ? customerFee : ContractServiceFee.ZERO;
 		final ContractSettingsTakeOver feeTakeOver = fee.isGreaterThanZero() ? findTakeOverForServiceFeeOrNull(matches, order, settings, fee) : null;
 
 		// note: like every contract line, the fee line is skipped later when no purchase order line falls into its base category
@@ -110,6 +113,12 @@ public class ContractSettingsTakeOverService
 				.clearCompensationLines()
 				.compensationLines(lines)
 				.build();
+	}
+
+	private static boolean isFeeOfPassedOnServiceCompany(@NonNull final ContractServiceFee fee, @NonNull final ContractCompensationGroupSettings settings)
+	{
+		return settings.getPassOnServiceCompanyBPartnerId() != null
+				&& settings.getPassOnServiceCompanyBPartnerId().equals(fee.getServiceCompanyBPartnerId());
 	}
 
 	/**

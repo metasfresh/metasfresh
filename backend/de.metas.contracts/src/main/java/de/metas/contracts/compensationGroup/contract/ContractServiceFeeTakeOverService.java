@@ -57,7 +57,7 @@ public class ContractServiceFeeTakeOverService
 		// doc type deliberately null: resolve the customer's doc-type-null default fee assignment (see method Javadoc)
 		return invoiceProcessingServiceCompanyService.getByCustomerId(invoicePartnerId, soDate)
 				.flatMap(config -> config.getFeePercentageOfGrandTotalByBpartner(invoicePartnerId, null)
-						.map(percent -> ContractServiceFee.of(percent, config.getServiceFeeProductId())))
+						.map(percent -> ContractServiceFee.of(percent, config.getServiceFeeProductId(), config.getServiceCompanyBPartnerId())))
 				.orElse(ContractServiceFee.ZERO);
 	}
 }
