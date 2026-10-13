@@ -8,6 +8,7 @@ import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { test } from '../../../../playwright.config';
@@ -282,6 +283,7 @@ export const PickingJobScreen = {
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {
+        await waitForJobScreenToSettle();
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
@@ -289,6 +291,7 @@ export const PickingJobScreen = {
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
+        await waitForJobScreenToSettle();
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
@@ -437,6 +440,19 @@ const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 //
 //
 //
+
+// The job screen (and its line view) asks `has-closed-lu` every time it mounts; once an LU was closed
+// (and reopening is allowed) the answer adds "Reopen LU" ABOVE "Complete". Matches with or without the
+// `lineId` query string.
+const HAS_CLOSED_LU_QUERY = /\/picking\/job\/[^/]+\/has-closed-lu(\?|$)/;
+
+// Tapping "Complete" while that answer is still on its way loses the tap: the answer pushes the button
+// down between the tap's point and the click that follows the touch, so the click hits whatever moved
+// under the old point and the confirmation dialog never opens (flaky cases 58 / 95 / 103 / 175). An
+// operator sees the screen settle before reaching for the button; wait for the same.
+const waitForJobScreenToSettle = async () => await step(`${NAME} - Wait for the job screen to settle`, async () => {
+    await waitForNoInFlightXhr(page, { urlPattern: HAS_CLOSED_LU_QUERY, timeout: SLOW_ACTION_TIMEOUT });
+});
 
 const pickingSlotButton = () => {
     return page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
