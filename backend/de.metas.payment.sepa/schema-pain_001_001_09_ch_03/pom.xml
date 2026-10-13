@@ -58,6 +58,12 @@
 </dependencies>
 
 	<build>
+		<resources>
+			<!-- ship the XSD on the classpath, so the generated XML can be validated against it -->
+			<resource>
+				<directory>src/main/xsd</directory>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>

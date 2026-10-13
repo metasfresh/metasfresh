@@ -81,7 +81,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		}
 		else if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.equals(protocol))
 		{
-			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03();
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(exportContext, bankAccountService);
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{
