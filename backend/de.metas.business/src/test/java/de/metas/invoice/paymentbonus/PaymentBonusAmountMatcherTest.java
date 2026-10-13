@@ -2,11 +2,13 @@ package de.metas.invoice.paymentbonus;
 
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PaymentBonusAmountMatcherTest
 {
@@ -80,6 +82,20 @@ class PaymentBonusAmountMatcherTest
 		assertThat(skonto.get().getBonusAmt())
 				.as("bonusAllowed false, paid 97: no bonus is returned")
 				.isEqualByComparingTo(eur("0"));
+	}
+
+	@Test
+	void paidAmountInAnotherCurrency_noMatch()
+	{
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), Amount.of("97", CurrencyCode.CHF), true)).isEmpty();
+		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), Amount.of("90", CurrencyCode.CHF), true)).isEmpty();
+	}
+
+	@Test
+	void bonusInAnotherCurrency_fails()
+	{
+		assertThatThrownBy(() -> PaymentBonusAmountMatcher.match(eur("100"), eur("3"), Amount.of("10", CurrencyCode.CHF), eur("90"), true))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test

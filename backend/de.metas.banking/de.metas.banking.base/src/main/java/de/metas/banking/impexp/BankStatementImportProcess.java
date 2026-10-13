@@ -39,9 +39,9 @@ import de.metas.document.engine.DocStatus;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -69,6 +69,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
+	/**
+	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the bean cannot be injected.
+	 * Lazy, because it is only needed for a line that references an invoice.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
@@ -187,7 +192,8 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
-		// the lookup is a read-only query that runs for every line with a reference; the bonus gate decides whether its result is used
+		// the lookup is one read-only query per line with a reference (so N queries for N such lines), also for customers without a payment bonus;
+		// the bonus gate decides whether its result is used
 		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
 				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
 				.orElse(null);
@@ -251,7 +257,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	 */
 	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
 	{
-		return SpringContextHolder.instance.getBean(PaymentBonusOnPaymentService.class)
+		return paymentBonusOnPaymentService.get()
 				.computeDeduction(invoice.getInvoiceId(), lineCurrencyId)
 				.isPresent();
 	}

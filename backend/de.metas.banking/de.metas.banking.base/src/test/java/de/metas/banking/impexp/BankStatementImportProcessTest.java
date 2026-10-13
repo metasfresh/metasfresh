@@ -24,27 +24,17 @@ package de.metas.banking.impexp;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
-import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
-import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
-import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
-import de.metas.money.Money;
-import de.metas.product.ProductId;
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxId;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
 import de.metas.impexp.MockedImportRecordsAsyncExecutor;
@@ -55,9 +45,19 @@ import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.ImportSource;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -431,6 +431,33 @@ public class BankStatementImportProcessTest
 			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(customerId.getRepoId());
 			assertThat(line.isUpdateAmountsFromInvoice()).as("IsUpdateAmountsFromInvoice: the amounts are coming from the bank").isFalse();
 			assertThat(line.getTrxAmt()).as("TrxAmt").isEqualByComparingTo("163.72");
+		}
+
+		@Test
+		void aLineWithoutAReferencedInvoice_keepsUpdatingItsAmountsFromTheInvoiceTheUserPicksLater()
+		{
+			createSalesInvoice("100", BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("customer").getC_BPartner_ID()));
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(id -> Optional.of(deduction(id))), new PaymentBonusCreditMemoService()));
+
+			final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(OrgId.ANY)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.name("Bank Statement 1")
+					.statementDate(LocalDate.parse("2020-03-22"))
+					.build());
+
+			importRecords(record()
+					.bankStatementId(bankStatementId)
+					.statementLineDate("2020-03-22")
+					.currencyId(euroCurrencyId)
+					.trxAmt("163.72")
+					.invoiceDocumentNo("999") // no such invoice
+					.build());
+
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getC_Invoice_ID()).as("C_Invoice_ID").isLessThanOrEqualTo(0);
+			assertThat(lines.get(0).isUpdateAmountsFromInvoice()).as("IsUpdateAmountsFromInvoice").isTrue();
 		}
 	}
 
