@@ -11,6 +11,5 @@ import org.springframework.stereotype.Component;
 @Component
 public class CreateMasterdataCommandSupportingServices
 {
-	// ISysConfigBL is an ISingletonService (not a Spring bean), hence Services.get instead of constructor injection
 	@NonNull public final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 }
