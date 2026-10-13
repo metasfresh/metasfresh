@@ -130,7 +130,7 @@ public class ContractSettingsTakeOverService
 		}
 
 		final BPartnerId passOnServiceCompanyId = feeService.getServiceCompanyBPartnerId(passOnConfigId);
-		return passOnServiceCompanyId.equals(customerFee.getServiceCompanyBPartnerId()) ? customerFee : ContractServiceFee.ZERO;
+		return BPartnerId.equals(passOnServiceCompanyId, customerFee.getServiceCompanyBPartnerId()) ? customerFee : ContractServiceFee.ZERO;
 	}
 
 	/**

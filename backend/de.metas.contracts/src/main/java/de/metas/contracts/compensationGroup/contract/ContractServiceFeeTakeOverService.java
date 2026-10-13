@@ -37,6 +37,7 @@ public class ContractServiceFeeTakeOverService
 						new MoneyService(new CurrencyRepository()))));
 	}
 
+	/** The service company of the given config record, whether or not the record is active. */
 	@NonNull
 	public BPartnerId getServiceCompanyBPartnerId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
 	{
