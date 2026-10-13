@@ -89,6 +89,12 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
+	@NonNull
+	public BPartnerId getServiceCompanyBPartnerIdByConfigId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		return configRepository.getServiceCompanyBPartnerIdByConfigId(configId);
+	}
+
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
 	{
 		return configRepository.getByCustomerId(customerId, evaluationDate);

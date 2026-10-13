@@ -26,7 +26,9 @@ import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.invoiceProcessingService.InvoiceProcessingServiceCompany_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import io.cucumber.datatable.DataTable;
@@ -49,6 +51,7 @@ public class C_CompensationGroup_ContractSettings_StepDef
 	private final @NonNull C_CompensationGroup_ContractSettings_StepDefData settingsTable;
 	private final @NonNull C_CompensationGroup_Schema_StepDefData schemaTable;
 	private final @NonNull C_DocType_StepDefData docTypeTable;
+	private final @NonNull InvoiceProcessingServiceCompany_StepDefData invoiceProcessingServiceCompanyTable;
 
 	/**
 	 * Creates {@link I_C_CompensationGroup_ContractSettings} records.
@@ -59,11 +62,14 @@ public class C_CompensationGroup_ContractSettings_StepDef
 	 *     <li>{@code Name} (required) — name of the settings record</li>
 	 *     <li>{@code C_CompensationGroup_Schema_ID} (required, identifier-ref) — the compensation group schema
 	 *         to apply when a contract using these settings triggers</li>
+	 *     <li>{@code PassOn_InvoiceProcessingServiceCompany_ID} (optional, identifier-ref) — the payment-service company
+	 *         whose fee is passed on to the drop-ship purchase order; loaded beforehand via
+	 *         {@code metasfresh contains InvoiceProcessingServiceCompany}</li>
 	 * </ul>
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_ContractSettings:
-	 *   | Identifier      | Name             | C_CompensationGroup_Schema_ID.Identifier |
-	 *   | contractSchema1 | contract compGrp | compGroupSchema                          |
+	 *   | Identifier      | Name             | C_CompensationGroup_Schema_ID.Identifier | PassOn_InvoiceProcessingServiceCompany_ID.Identifier |
+	 *   | contractSchema1 | contract compGrp | compGroupSchema                          | serviceCompanyConfig                                 |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_CompensationGroup_ContractSettings:")
@@ -77,6 +83,11 @@ public class C_CompensationGroup_ContractSettings_StepDef
 			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			record.setName(row.getAsString(I_C_CompensationGroup_ContractSettings.COLUMNNAME_Name));
 			record.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+
+			row.getAsOptionalIdentifier(I_C_CompensationGroup_ContractSettings.COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.map(identifier -> identifier.lookupNotNullIn(invoiceProcessingServiceCompanyTable))
+					.ifPresent(config -> record.setPassOn_InvoiceProcessingServiceCompany_ID(config.getInvoiceProcessingServiceCompany_ID()));
 
 			saveRecord(record);
 

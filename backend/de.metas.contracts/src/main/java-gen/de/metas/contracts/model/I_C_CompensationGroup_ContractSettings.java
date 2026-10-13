@@ -122,6 +122,7 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -131,6 +132,7 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -166,6 +168,7 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -175,6 +178,7 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -184,6 +188,29 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	ModelColumn<I_C_CompensationGroup_ContractSettings, Object> COLUMN_Name = new ModelColumn<>(I_C_CompensationGroup_ContractSettings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Pass on service fee of.
+	 * Applies to purchase orders with drop shipment only. It has no effect on sales orders.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPassOn_InvoiceProcessingServiceCompany_ID (int PassOn_InvoiceProcessingServiceCompany_ID);
+
+	/**
+	 * Get Pass on service fee of.
+	 * Applies to purchase orders with drop shipment only. It has no effect on sales orders.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPassOn_InvoiceProcessingServiceCompany_ID();
+
+	ModelColumn<I_C_CompensationGroup_ContractSettings, org.compiere.model.I_InvoiceProcessingServiceCompany> COLUMN_PassOn_InvoiceProcessingServiceCompany_ID = new ModelColumn<>(I_C_CompensationGroup_ContractSettings.class, "PassOn_InvoiceProcessingServiceCompany_ID", org.compiere.model.I_InvoiceProcessingServiceCompany.class);
+	String COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID = "PassOn_InvoiceProcessingServiceCompany_ID";
 
 	/**
 	 * Get Updated.

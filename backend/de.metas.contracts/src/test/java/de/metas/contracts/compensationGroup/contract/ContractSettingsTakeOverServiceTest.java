@@ -30,6 +30,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -78,12 +79,15 @@ class ContractSettingsTakeOverServiceTest
 	private static final ProductId BONUS_VERPACKUNG_ID = ProductId.ofRepoId(203); // not a customer discount product
 	private static final ProductId OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID = ProductId.ofRepoId(204); // customer discount product, on no SO line
 
+	private static final BPartnerId SERVICE_COMPANY_ID = BPartnerId.ofRepoId(111); // the fee's service company
+	private static final BPartnerId OTHER_SERVICE_COMPANY_ID = BPartnerId.ofRepoId(112);
 	private static final ZoneId ZONE = ZoneId.of("UTC");
 	private static final BPartnerId CUSTOMER_ID = BPartnerId.ofRepoId(2); // the linked SO's invoice partner the fee is keyed by
 	private static final ZonedDateTime SO_DATE = LocalDate.parse("2026-05-10").atStartOfDay(ZONE);
 
 	private ContractCompensationGroupSettingsRepository settingsRepository;
 	private OrderGroupRepository orderGroupRepositorySpy;
+	private ContractServiceFeeTakeOverService feeServiceSpy;
 	private ContractSettingsTakeOverService service;
 	private UomId uomId;
 	private ProductId goodsProductId;
@@ -96,9 +100,9 @@ class ContractSettingsTakeOverServiceTest
 		// a spy delegates to the real methods, so it behaves like the real repository in every test
 		orderGroupRepositorySpy = Mockito.spy(OrderGroupRepository.newInstanceForUnitTesting());
 
-		final ContractServiceFeeTakeOverService feeService = ContractServiceFeeTakeOverService.newInstanceForUnitTesting();
+		feeServiceSpy = Mockito.spy(ContractServiceFeeTakeOverService.newInstanceForUnitTesting());
 
-		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeService);
+		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeServiceSpy);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -116,7 +120,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void dropShipPurchaseOrder_sumsOnlyCustomerDiscountProductsOfLinkedSalesOrder()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3.0"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7.0"));
@@ -132,7 +136,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void sumIsNominalArithmeticSum()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, "3"));
@@ -147,7 +151,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void takenOverProducts_areOnlyTheCustomerDiscountProductsActuallyOnTheSalesOrder()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7"));
@@ -162,7 +166,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void eachTakenOverContractLineKeepsItsOwnPercentage()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID, "1"));
@@ -182,7 +186,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void onlyPercentDiscountLinesOfContractCreatedGroupsAreTakenOver()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID, BONUS_VERPACKUNG_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID, BONUS_VERPACKUNG_ID, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3"),
 				new LineSpec(BONUS_VERPACKUNG_ID, X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount, X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_PriceAndQty, "0"),
@@ -200,7 +204,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void nonDropShipPurchaseOrder_returnsEmpty()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(false, OrderId.ofRepoId(salesOrder.getC_Order_ID()));
 
@@ -210,7 +214,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void dropShipSalesOrder_returnsEmpty()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
 		final I_C_Order linkedSalesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
 		final OrderDropShipInfo dropShipSalesOrder = OrderDropShipInfo.builder()
 				.soTrx(SOTrx.SALES)
@@ -224,7 +228,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void dropShipWithoutLinkedOrder_returnsEmpty()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
 		final OrderDropShipInfo purchaseOrder = purchaseOrder(true, null);
 
 		assertThat(service.computeMatches(purchaseOrder, settings)).isEmpty();
@@ -233,7 +237,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void settingsWithoutTakeOver_returnsEmptyWithoutReadingTheLinkedSalesOrder()
 	{
-		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord());
+		final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord(null));
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3.0"));
 
 		assertThat(service.computeMatches(purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)).isEmpty();
@@ -243,7 +247,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void recordWhoseCustomerDiscountProductsAreNotOnTheSalesOrder_isDropped()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, OTHER_CUSTOMER_DISCOUNT_PRODUCT_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(BONUS_WARE_ID, "3.0"),
 				new LineSpec(BONUS_VERPACKUNG_ID, "7.0"));
@@ -255,7 +259,7 @@ class ContractSettingsTakeOverServiceTest
 	@Test
 	void applyToSchema_nothingTakenOver_returnsTheSameSchema()
 	{
-		final ContractCompensationGroupSettings settings = createSettings(BONUS_WARE_ID);
+		final ContractCompensationGroupSettings settings = createSettings(null, BONUS_WARE_ID);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(BONUS_WARE_ID, "3"));
 		final GroupTemplate schema = schema(schemaLine(Percent.of(3), CATEGORY_ID, product("Bonus Vendor", null, null)));
 
@@ -329,7 +333,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareAId, bonusWareBId);
+		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(bonusWareAId, "3"),
 				new LineSpec(bonusWareBId, "1"));
@@ -346,7 +350,7 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_ownLineDescriptionNamesTheSameProductOncePerContractLine()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 		addContractGroupWithDiscountLine(salesOrder, new LineSpec(bonusWareId, "3"));
 
@@ -362,9 +366,9 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_singleMatchWithServiceFee_appendsTheFeeAsItsOwnLine()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+		final ContractCompensationGroupSettings settings = createSettings(feeConfig, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
 
 		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
 						schema(),
@@ -381,9 +385,9 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_noCustomerBonusWithServiceFee_appendsOnlyTheFeeLineOnTheOnlyTakeOver()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
+		final ContractCompensationGroupSettings settings = createSettings(feeConfig, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
-		createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
 
 		final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
 						schema(),
@@ -391,7 +395,7 @@ class ContractSettingsTakeOverServiceTest
 						settings)
 				.getCompensationLines();
 
-		assertThat(lines).containsExactly(expectedServiceFeeLine("2.15", "2.15% Markant Fee"));
+		assertThat(lines).containsExactly(expectedServiceFeeLine("2.15", "2.15% Service Fee B"));
 	}
 
 	@Test
@@ -399,9 +403,9 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(feeConfig, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
-		createFeeConfig(CUSTOMER_ID, "2.15", "Markant Fee");
 
 		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
 
@@ -413,7 +417,7 @@ class ContractSettingsTakeOverServiceTest
 	void applyToSchema_singleMatchWithoutServiceFee_leavesPercentageAndDescriptionUnchanged()
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 		// no fee assignment for CUSTOMER_ID
 
@@ -433,11 +437,11 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(feeConfig, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(bonusWareAId, "3"),
 				new LineSpec(bonusWareBId, "1"));
-		createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee");
 
 		final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
 
@@ -450,7 +454,7 @@ class ContractSettingsTakeOverServiceTest
 	{
 		final ProductId bonusWareAId = product("Bonus Ware A", null, null);
 		final ProductId bonusWareBId = product("Bonus Ware B", null, null);
-		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(bonusWareAId, bonusWareBId);
+		final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(null, bonusWareAId, bonusWareBId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(
 				new LineSpec(bonusWareAId, "3"),
 				new LineSpec(bonusWareBId, "1"));
@@ -467,11 +471,149 @@ class ContractSettingsTakeOverServiceTest
 				.containsExactlyInAnyOrder("3% Bonus Ware A", "1% Bonus Ware B");
 	}
 
+	@Nested
+	class applyToSchema
+	{
+		@Test
+		void passOnServiceCompanyEmpty_noFeeLine_takeOverLineUnchanged()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
+
+			assertThat(lines).containsExactly(expectedOwnLine());
+		}
+
+		@Test
+		void passOnServiceCompanyEmptyAndTwoTakeOvers_noFeeLine_noException()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(null, bonusWareAId, bonusWareBId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
+			createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
+			final OrderDropShipInfo purchaseOrder = purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
+
+			final GroupTemplate schema = schema();
+
+			assertThat(service.applyToSchema(schema, purchaseOrder, settings)).isSameAs(schema);
+		}
+
+		@Test
+		void passOnServiceCompanyIsAnotherCompany_noFeeLine()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
+			final ContractCompensationGroupSettings settings = createSettings(otherCompanyConfig, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
+
+			assertThat(lines).containsExactly(expectedOwnLine());
+		}
+
+		@Test
+		void passOnServiceCompanyReferencesOlderVersionOfTheCustomersCompany_feeLineWithNewerPercent()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			// older version of the company's config: ValidFrom 2025-01-01, record stays active, only the customer's assignment on it is deactivated;
+			// the settings reference it, but the fee is resolved from the version valid at SO_DATE (2026-01-01, active assignment)
+			final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", SERVICE_COMPANY_ID, LocalDate.parse("2025-01-01"), false);
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // newer version, active assignment
+			final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
+
+			assertThat(lines).containsExactly(
+					expectedOwnLine(),
+					expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
+		}
+
+		@Test
+		void passOnServiceCompanyEmpty_doesNotResolveTheCustomersFee()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId); // field empty
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+
+			service.applyToSchema(schema(), purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings);
+
+			Mockito.verify(feeServiceSpy, Mockito.never()).resolveServiceFee(any(), any());
+		}
+
+		@Test
+		void passOnServiceCompanyReferencesInactiveOlderVersion_stillMatchesByCompany()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final I_InvoiceProcessingServiceCompany olderVersion = createFeeConfig(CUSTOMER_ID, "2.00", "Old Fee", null, LocalDate.parse("2025-01-01"), true);
+			olderVersion.setIsActive(false); // the older version was deactivated when the newer one took over
+			saveRecord(olderVersion);
+			createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true); // active newer version of the same company
+			final ContractCompensationGroupSettings settings = createSettings(olderVersion, bonusWareId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(
+							schema(),
+							purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE),
+							settings)
+					.getCompensationLines();
+
+			assertThat(lines).containsExactly(
+					expectedOwnLine(),
+					expectedServiceFeeLine("2.60", "2.6% Payment Service Fee"));
+		}
+
+		@Test
+		void passOnServiceCompanySetButSettingsHaveNoTakeOver_schemaUnchanged()
+		{
+			final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.60", "Payment Service Fee", null, null, true);
+			final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(createSettingsRecord(feeConfig)); // no take-over row
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // the customer has no contract bonus
+			final GroupTemplate schema = schema();
+
+			assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
+					.isSameAs(schema);
+		}
+
+		@Test
+		void passOnServiceCompanyIsAnotherCompanyAndTwoTakeOvers_noFeeLine_noException()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final I_InvoiceProcessingServiceCompany otherCompanyConfig = createFeeConfig(BPartnerId.ofRepoId(3), "1.00", "Other Fee", OTHER_SERVICE_COMPANY_ID, null, true);
+			final ContractCompensationGroupSettings settings = createSettingsWithTwoTakeOvers(otherCompanyConfig, bonusWareAId, bonusWareBId);
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus -> candidates would be ambiguous if the fee counted
+			createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true); // the customer's fee belongs to SERVICE_COMPANY_ID
+			final GroupTemplate schema = schema();
+
+			assertThat(service.applyToSchema(schema, purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE), settings))
+					.isSameAs(schema);
+		}
+	}
+
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */
 	private List<GroupTemplateCompensationLine> applyBonusWareTakeOverOf3PercentTo(final GroupTemplateCompensationLine... schemaLines)
 	{
 		final ProductId bonusWareId = product("Bonus Ware", null, null);
-		final ContractCompensationGroupSettings settings = createSettings(bonusWareId);
+		final ContractCompensationGroupSettings settings = createSettings(null, bonusWareId);
 		final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
 
 		return service.applyToSchema(schema(schemaLines), purchaseOrder(true, OrderId.ofRepoId(salesOrder.getC_Order_ID())), settings)
@@ -536,17 +678,18 @@ class ContractSettingsTakeOverServiceTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private ContractCompensationGroupSettings createSettings(final ProductId... customerDiscountProductIds)
+	/** Settings with one take-over; {@code passOnConfig} is the passed-on service company ({@code null} = not set). */
+	private ContractCompensationGroupSettings createSettings(@Nullable final I_InvoiceProcessingServiceCompany passOnConfig, final ProductId... customerDiscountProductIds)
 	{
-		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord();
+		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord(passOnConfig);
 		addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, customerDiscountProductIds);
 		return settingsRepository.getBySettingsId(settingsId);
 	}
 
 	/** Settings with two take-overs, so that a drop-ship PO carrying both products yields two matches. */
-	private ContractCompensationGroupSettings createSettingsWithTwoTakeOvers(final ProductId takeOver1Product, final ProductId takeOver2Product)
+	private ContractCompensationGroupSettings createSettingsWithTwoTakeOvers(@Nullable final I_InvoiceProcessingServiceCompany passOnConfig, final ProductId takeOver1Product, final ProductId takeOver2Product)
 	{
-		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord();
+		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord(passOnConfig);
 		addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, takeOver1Product);
 		addTakeOver(settingsId, OTHER_CATEGORY_ID, OWN_PRODUCT_ID, takeOver2Product);
 		return settingsRepository.getBySettingsId(settingsId);
@@ -573,35 +716,51 @@ class ContractSettingsTakeOverServiceTest
 		}
 	}
 
-	/** An active, doc-type-null fee assignment for {@code customerId}, valid before {@link #SO_DATE}. @return the configured service-fee product. */
-	private ProductId createFeeConfig(final BPartnerId customerId, final String feePercent, final String feeProductName)
+	/**
+	 * An active service-company config record with {@code customerId}'s doc-type-null fee assignment.
+	 * {@code null} {@code serviceCompanyId} = {@link #SERVICE_COMPANY_ID}; {@code null} {@code validFrom} = 2026-01-01, before {@link #SO_DATE}.
+	 * {@code isAssignmentActive} only governs the customer's assignment on the config.
+	 *
+	 * @return the saved config record
+	 */
+	private I_InvoiceProcessingServiceCompany createFeeConfig(
+			final BPartnerId customerId,
+			final String feePercent,
+			final String feeProductName,
+			@Nullable final BPartnerId serviceCompanyId,
+			@Nullable final LocalDate validFrom,
+			final boolean isAssignmentActive)
 	{
 		final ProductId feeProductId = product(feeProductName, null, null);
 
 		final I_InvoiceProcessingServiceCompany config = newInstance(I_InvoiceProcessingServiceCompany.class);
 		config.setIsActive(true);
-		config.setServiceCompany_BPartner_ID(111);
+		config.setServiceCompany_BPartner_ID((serviceCompanyId != null ? serviceCompanyId : SERVICE_COMPANY_ID).getRepoId());
 		config.setServiceInvoice_DocType_ID(222);
 		config.setServiceFee_Product_ID(feeProductId.getRepoId());
-		config.setValidFrom(TimeUtil.asTimestamp(LocalDate.parse("2026-01-01").atStartOfDay(ZONE)));
+		config.setValidFrom(TimeUtil.asTimestamp((validFrom != null ? validFrom : LocalDate.parse("2026-01-01")).atStartOfDay(ZONE)));
 		saveRecord(config);
 
 		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignment = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
-		assignment.setIsActive(true);
+		assignment.setIsActive(isAssignmentActive);
 		assignment.setInvoiceProcessingServiceCompany_ID(config.getInvoiceProcessingServiceCompany_ID());
 		assignment.setC_BPartner_ID(customerId.getRepoId());
 		assignment.setFeePercentageOfGrandTotal(new BigDecimal(feePercent));
 		saveRecord(assignment);
 
-		return feeProductId;
+		return config;
 	}
 
-	private static ContractCompensationGroupSettingsId createSettingsRecord()
+	private static ContractCompensationGroupSettingsId createSettingsRecord(@Nullable final I_InvoiceProcessingServiceCompany passOnConfig)
 	{
 		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
 		saveRecord(schema);
 		final I_C_CompensationGroup_ContractSettings settings = newInstance(I_C_CompensationGroup_ContractSettings.class);
 		settings.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		if (passOnConfig != null)
+		{
+			settings.setPassOn_InvoiceProcessingServiceCompany_ID(passOnConfig.getInvoiceProcessingServiceCompany_ID());
+		}
 		saveRecord(settings);
 		return ContractCompensationGroupSettingsId.ofRepoId(settings.getC_CompensationGroup_ContractSettings_ID());
 	}

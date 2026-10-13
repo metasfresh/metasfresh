@@ -1,5 +1,6 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -33,21 +34,24 @@ import javax.annotation.Nullable;
 @Value
 public class ContractServiceFee
 {
-	public static final ContractServiceFee ZERO = new ContractServiceFee(Percent.ZERO, null);
+	public static final ContractServiceFee ZERO = new ContractServiceFee(Percent.ZERO, null, null);
 
 	@NonNull Percent percent;
 	/** The configured service-fee product, used only to label the fee; {@code null} iff {@link #percent} is zero. */
 	@Nullable ProductId feeProductId;
+	/** The service company the fee belongs to; {@code null} iff {@link #percent} is zero. */
+	@Nullable BPartnerId serviceCompanyBPartnerId;
 
-	public static ContractServiceFee of(@NonNull final Percent percent, @NonNull final ProductId feeProductId)
+	public static ContractServiceFee of(@NonNull final Percent percent, @NonNull final ProductId feeProductId, @NonNull final BPartnerId serviceCompanyBPartnerId)
 	{
-		return new ContractServiceFee(percent, feeProductId);
+		return percent.isZero() ? ZERO : new ContractServiceFee(percent, feeProductId, serviceCompanyBPartnerId);
 	}
 
-	private ContractServiceFee(@NonNull final Percent percent, @Nullable final ProductId feeProductId)
+	private ContractServiceFee(@NonNull final Percent percent, @Nullable final ProductId feeProductId, @Nullable final BPartnerId serviceCompanyBPartnerId)
 	{
 		this.percent = percent;
 		this.feeProductId = feeProductId;
+		this.serviceCompanyBPartnerId = serviceCompanyBPartnerId;
 	}
 
 	public boolean isGreaterThanZero()
