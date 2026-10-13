@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 999807227L;
+	private static final long serialVersionUID = -650515580L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
@@ -585,6 +585,29 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getOnFlatrateTermExtend() 
 	{
 		return get_ValueAsString(COLUMNNAME_OnFlatrateTermExtend);
+	}
+
+	@Override
+	public org.compiere.model.I_InvoiceProcessingServiceCompany getPassOn_InvoiceProcessingServiceCompany()
+	{
+		return get_ValueAsPO(COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID, org.compiere.model.I_InvoiceProcessingServiceCompany.class);
+	}
+
+	@Override
+	public void setPassOn_InvoiceProcessingServiceCompany(final org.compiere.model.I_InvoiceProcessingServiceCompany PassOn_InvoiceProcessingServiceCompany)
+	{
+		set_ValueFromPO(COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID, org.compiere.model.I_InvoiceProcessingServiceCompany.class, PassOn_InvoiceProcessingServiceCompany);
+	}
+
+	@Override
+	public void setPassOn_InvoiceProcessingServiceCompany_ID (final int PassOn_InvoiceProcessingServiceCompany_ID)
+	{
+		throw new IllegalArgumentException ("PassOn_InvoiceProcessingServiceCompany_ID is virtual column");	}
+
+	@Override
+	public int getPassOn_InvoiceProcessingServiceCompany_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID);
 	}
 
 	@Override
