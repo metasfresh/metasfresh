@@ -2006,7 +2006,6 @@ jobs:
           dbqualifier: preloaded
         run: |
           docker compose --profile mobile down
-      # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
