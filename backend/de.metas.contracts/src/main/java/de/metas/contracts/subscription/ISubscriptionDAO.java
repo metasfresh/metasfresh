@@ -93,21 +93,10 @@ public interface ISubscriptionDAO extends ISingletonService
 	}
 
 	/**
-	 * Loads all {@link I_C_SubscriptionProgress} records that have event type
-	 * {@link X_C_SubscriptionProgress#EVENTTYPE_Lieferung} and status {@link X_C_SubscriptionProgress#STATUS_Geplant}
-	 * or {@link X_C_SubscriptionProgress#STATUS_Verzoegert}, ordered by
-	 * {@link I_C_SubscriptionProgress#COLUMNNAME_EventDate} and {@link I_C_SubscriptionProgress#COLUMNNAME_SeqNo}.
-	 * 
-	 * @param date
-	 *            the records' event date is before or equal.
-	 * @param trxName
-	 * @return
-	 */
-	List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName);
-
-	/**
-	 * Same selection as {@link #retrievePlannedAndDelayedDeliveries(Properties, Timestamp, String)}, but only for entries
-	 * of terms whose product is of type Item (the product type is the only term-related filter; the term's {@code IsActive} is not considered),
+	 * Selects the {@link I_C_SubscriptionProgress} records that have event type
+	 * {@link X_C_SubscriptionProgress#EVENTTYPE_Delivery} and status {@link X_C_SubscriptionProgress#STATUS_Planned}
+	 * or {@link X_C_SubscriptionProgress#STATUS_Delayed}, whose event date is before or equal to {@code date},
+	 * but only for entries of terms whose product is of type Item (the product type is the only term-related filter; the term's {@code IsActive} is not considered),
 	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}. The query is a guaranteed iterator that reads {@code pageSize} records per page.
 	 * <p>
 	 * Only records of {@code ctx}'s client are selected. The returned query is already configured (guaranteed iterator, buffer size = {@code pageSize}); callers must not change its options.

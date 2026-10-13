@@ -181,26 +181,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public final List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
-			@NonNull final Properties ctx,
-			@NonNull final Timestamp date,
-			final String trxName)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
-				.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned, X_C_SubscriptionProgress.STATUS_Delayed)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, date)
-				.orderBy()
-				.addColumn(I_C_SubscriptionProgress.COLUMN_EventDate)
-				.addColumn(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID)
-				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
-				.create().list();
-	}
-
-	@Override
 	public final IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(
 			@NonNull final Properties ctx,
 			@NonNull final Timestamp date,

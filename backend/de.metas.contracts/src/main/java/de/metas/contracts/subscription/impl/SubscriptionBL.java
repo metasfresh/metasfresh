@@ -1,6 +1,9 @@
 package de.metas.contracts.subscription.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -35,7 +38,6 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
@@ -60,6 +62,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -71,7 +74,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -95,7 +97,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -703,53 +707,56 @@ public class SubscriptionBL implements ISubscriptionBL
 		return new Timestamp(cal.getTimeInMillis());
 	}
 
+	@VisibleForTesting
+	static final int EVAL_DELIVERIES_BATCH_SIZE = 500;
+
 	@Override
 	public void evalDeliveries(final Properties ctx)
 	{
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
-
-		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), ITrx.TRXNAME_ThreadInherited);
-
-		logger.debug("Going to add shipment schedule entries for {} subscription deliveries", deliveries.size());
-
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-		//
-		final Set<Integer> delayedControlIds = new HashSet<>();
-
-		for (final I_C_SubscriptionProgress sd : deliveries)
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+		try (final Stream<I_C_SubscriptionProgress> deliveries = subscriptionDAO.streamPlannedAndDelayedDeliveries(
+				ctx, SystemTime.asTimestamp(), ITrx.TRXNAME_ThreadInherited, EVAL_DELIVERIES_BATCH_SIZE))
 		{
-			final I_C_Flatrate_Term sc = sd.getC_Flatrate_Term();
+			evalDeliveries(deliveries, EVAL_DELIVERIES_BATCH_SIZE);
+		}
+	}
 
-			if (delayedControlIds.contains(sd.getC_Flatrate_Term_ID()))
+	@VisibleForTesting
+	void evalDeliveries(@NonNull final Stream<I_C_SubscriptionProgress> deliveries, final int batchSize)
+	{
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final int subscriptionProgressTableId = getTableId(I_C_SubscriptionProgress.class);
+		final Set<Integer> delayedTermIds = new HashSet<>(); // lives across batches
+
+		GuavaCollectors.batchAndStream(deliveries, batchSize).forEach(batch -> {
+			final ImmutableSet<Integer> idsWithOpenSchedule = shipmentSchedulePA.retrieveRecordIdsWithUnprocessedSchedules(
+					subscriptionProgressTableId,
+					batch.stream().map(I_C_SubscriptionProgress::getC_SubscriptionProgress_ID).collect(ImmutableList.toImmutableList()));
+
+			for (final I_C_SubscriptionProgress sd : batch)
 			{
-				logger.info("An earlier SP of {} is delayed => also delaying {}", sc, sd);
-				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				save(sd);
-				continue;
-			}
-
-			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(TableRecordReference.of(sd));
-
-			if (openScheds.isEmpty())
-			{
-				if (X_C_SubscriptionProgress.STATUS_Delayed.equals(sd.getStatus()))
+				final int termId = sd.getC_Flatrate_Term_ID();
+				if (delayedTermIds.contains(termId))
+				{
+					logger.info("An earlier SP of C_Flatrate_Term_ID={} is delayed => also delaying {}", termId, sd);
+					sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
+					save(sd);
+				}
+				else if (idsWithOpenSchedule.contains(sd.getC_SubscriptionProgress_ID()))
+				{
+					logger.debug("{} is delayed because there is at least one open shipment schedule", sd);
+					sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
+					save(sd);
+					delayedTermIds.add(termId);
+				}
+				else if (X_C_SubscriptionProgress.STATUS_Delayed.equals(sd.getStatus()))
 				{
 					logger.info("{} is not delayed anymore", sd);
 					sd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 					save(sd);
 				}
 			}
-			else
-			{
-				logger.debug("{} is deplayed because there is at least on open delivery", sd);
-				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				save(sd);
-
-				delayedControlIds.add(sd.getC_Flatrate_Term_ID());
-				continue;
-			}
-		}
+		});
 	}
 
 	@Override
