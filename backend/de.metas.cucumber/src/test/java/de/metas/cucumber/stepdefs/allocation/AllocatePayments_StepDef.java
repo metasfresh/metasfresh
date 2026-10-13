@@ -49,6 +49,9 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -60,6 +63,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingService
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
@@ -112,6 +116,7 @@ public class AllocatePayments_StepDef
 	/**
 	 * Same message as the WebUI payment allocation ({@code PaymentsViewAllocateCommand}), which is not on this module's classpath.
 	 */
+	private static final DocBaseAndSubType PAYMENT_BONUS_CREDIT_MEMO = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
@@ -124,6 +129,7 @@ public class AllocatePayments_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
@@ -263,7 +269,7 @@ public class AllocatePayments_StepDef
 	public void noPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier)
 	{
 		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
-		assertThat(PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId))
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
 				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
 				.isEmpty();
 	}
@@ -280,7 +286,7 @@ public class AllocatePayments_StepDef
 	{
 		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
 		final InvoiceId expectedCreditMemoId = invoiceTable.getId(StepDefDataIdentifier.ofString(creditMemoIdentifier));
-		assertThat(PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId))
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
 				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
 				.extracting(I_C_Invoice::getC_Invoice_ID)
 				.containsExactly(expectedCreditMemoId.getRepoId());
@@ -299,7 +305,7 @@ public class AllocatePayments_StepDef
 		}
 
 		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
-		final List<I_C_Invoice> creditMemos = PaymentBonusCreditMemoQueries.retrieveCompletedCreditMemos(invoiceId);
+		final List<? extends I_C_Invoice> creditMemos = retrievePaymentBonusCreditMemos(invoiceId);
 
 		if (creditMemoIdentifier.isNullPlaceholder())
 		{
@@ -309,6 +315,14 @@ public class AllocatePayments_StepDef
 
 		assertThat(creditMemos).as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId()).hasSize(1);
 		invoiceTable.putOrReplace(creditMemoIdentifier, creditMemos.get(0));
+	}
+
+	/**
+	 * @return the completed or closed payment bonus credit memos („Zahlungsbonus-Gutschrift“) that reference the given sales invoice
+	 */
+	private List<? extends I_C_Invoice> retrievePaymentBonusCreditMemos(@NonNull final InvoiceId salesInvoiceId)
+	{
+		return invoiceDAO.retrieveReferencingCompletedInvoices(salesInvoiceId, PAYMENT_BONUS_CREDIT_MEMO);
 	}
 
 	/**
