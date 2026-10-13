@@ -1057,11 +1057,9 @@ Feature: EDI DESADV export via postgREST
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier     | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
       | ssA1_S29231    | olA1_S29231    | N             | 10           |
-    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier     | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
       | ssA2_S29231    | olA2_S29231    | N             | 5            |
-    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier     | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
       | ssB1_S29231    | olB1_S29231    | N             | 7            |
