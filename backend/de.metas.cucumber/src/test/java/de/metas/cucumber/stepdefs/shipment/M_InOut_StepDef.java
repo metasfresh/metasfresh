@@ -93,6 +93,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -110,6 +111,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -158,6 +160,7 @@ public class M_InOut_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -421,7 +424,7 @@ public class M_InOut_StepDef
 	{
 		final I_M_InOut inout = inoutTable.get(identifier);
 		InterfaceWrapperHelper.refresh(inout);
-		documentBL.processEx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		processExInTrx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		final InOutId reversalId = InOutId.ofRepoId(inout.getReversal_ID());
 		final I_M_InOut reversal = inOutDAO.getById(reversalId);
@@ -441,29 +444,44 @@ public class M_InOut_StepDef
 		{
 			case completed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				processExInTrx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
 			case reactivated:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				processExInTrx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case reversed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				processExInTrx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case voided:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				processExInTrx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case closed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				processExInTrx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_InOut action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	/**
+	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
+	 * (it runs each document action within a transaction).
+	 * <p>
+	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
+	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
+	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
+	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the shipment as completed,
+	 * and the candidate keeps the pre-reactivation {@code QtyDelivered}.
+	 */
+	private void processExInTrx(@NonNull final I_M_InOut inout, @NonNull final String docAction, @Nullable final String expectedDocStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(inout, docAction, expectedDocStatus));
 	}
 
 	@And("load M_InOut:")
@@ -548,7 +566,7 @@ public class M_InOut_StepDef
 
 			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 
-			documentBL.processEx(shipment, docAction);
+			processExInTrx(shipment, docAction, null);
 		}
 	}
 
