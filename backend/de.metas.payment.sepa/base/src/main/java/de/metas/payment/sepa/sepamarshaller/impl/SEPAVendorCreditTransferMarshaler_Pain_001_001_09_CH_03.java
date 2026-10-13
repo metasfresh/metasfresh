@@ -1,9 +1,11 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -34,9 +36,13 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.ClearingSystemIdenti
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.ClearingSystemMemberIdentification2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.Contact4;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.CreditTransferTransaction34;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.CreditorReferenceInformation2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.CreditorReferenceType2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.CustomerCreditTransferInitiationV09;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.DateAndDateTime2Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.DocumentPain001Ch;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.DocumentType3Code;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.FinancialInstitutionIdentification18;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.GenericAccountIdentification1;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.GroupHeader85;
@@ -50,6 +56,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.PaymentTypeInformati
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.PostalAddress24;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.RemittanceInformation16;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.ServiceLevel8Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_09_ch_03.StructuredRemittanceInformation16;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -124,10 +131,13 @@ import static java.math.BigDecimal.ZERO;
  * <p>
  * Supported payment types (IG 3.15):
  * <ul>
- * <li>"D" (domestic) with an IBAN of the creditor (internally {@link #PAYMENT_TYPE_3})</li>
+ * <li>"D" (domestic) with an IBAN or QR-IBAN of the creditor (internally {@link #PAYMENT_TYPE_3})</li>
  * <li>"S" (SEPA) with an IBAN of the creditor (internally {@link #PAYMENT_TYPE_5})</li>
+ * <li>"X" (V1 foreign currency domestic, V2 cross-border; internally {@link #PAYMENT_TYPE_6})</li>
  * </ul>
- * QR-IBAN / QR reference payments, foreign ("X") payments and anything else are rejected with a {@link SepaMarshallerException} for now.
+ * ISR payments no longer exist in the IG and are rejected with a {@link SepaMarshallerException}.
+ * <p>
+ * Remittance information (IG 3.14.2, 4.3): QR reference ("QRR") with a QR-IBAN; ISO 11649 creditor reference ("SCOR") if the structured reference is one; otherwise unstructured.
  * <p>
  * Note on the JAXB types: the generated {@code *Pain001Ch} classes are the XSD's CH restrictions of the ISO base types. The XSD already binds each element to its CH restriction,
  * so we instantiate the ISO base types; using the {@code *Pain001Ch} subclasses would make JAXB emit superfluous {@code xsi:type} attributes. Only the root is a {@link DocumentPain001Ch}.
@@ -143,7 +153,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private static final String PAIN_001_001_09_CH_03_SCHEMALOCATION = PAIN_001_001_09_CH_03_NAMESPACE + " " + PAIN_001_001_09_CH_03 + ".xsd";
 
 	/**
-	 * Title: "ISR". Not supported by this format.
+	 * Title: "ISR". Not supported by this format (IG 3.15 has no ISR payment type anymore).
 	 */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
 
@@ -158,7 +168,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private static final String PAYMENT_TYPE_5 = "PAYMENT_TYPE_5";
 
 	/**
-	 * Title: "Foreign" (IG 3.15: payment type "X"). Not supported yet.
+	 * Title: "Foreign" (IG 3.15: payment type "X"; V1 foreign currency domestic, V2 cross-border)
 	 */
 	private static final String PAYMENT_TYPE_6 = "PAYMENT_TYPE_6";
 
@@ -171,6 +181,28 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	 * Fallback EndToEndId if the reference is used as EndToEndId but there is none.
 	 */
 	private static final String END_TO_END_ID_NOTPROVIDED = "NOTPROVIDED";
+
+	/**
+	 * IG 4.3 RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry: "QRR = QR reference (in association with QR-bill)"
+	 */
+	private static final String CREDITOR_REFERENCE_TYPE_QRR = "QRR";
+
+	/**
+	 * IG 4.3 RmtInf/Strd/CdtrRefInf/Tp/Issr: with "ISO", the SCOR reference is validated according to ISO 11649 for every payment type (IG 3.14.2)
+	 */
+	private static final String CREDITOR_REFERENCE_ISSUER_ISO = "ISO";
+
+	/**
+	 * IG 3.14.2: the QR reference has 26 digits plus one check digit
+	 */
+	private static final int QR_REFERENCE_LENGTH = 27;
+	private static final int[] QR_REFERENCE_CHECK_SEQUENCE = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
+
+	/**
+	 * IG 3.14.2: ISO 11649 creditor reference: "RF", two check digits, max. 25 characters
+	 */
+	private static final int CREDITOR_REFERENCE_MIN_LENGTH = 5;
+	private static final int CREDITOR_REFERENCE_MAX_LENGTH = 25;
 
 	/**
 	 * IG 3.2: restricted character set for MsgId, PmtInfId, InstrId and EndToEndId (also enforced by the XSD type Max35Text_pain001_ch).
@@ -195,6 +227,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
+	private final BankRepository bankRepository;
 	private final SEPAExportContext exportContext;
 	private final BankAccountService bankAccountService;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
@@ -208,6 +241,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private final Map<PaymentInstruction30, Integer> pmtInfNumbers = new IdentityHashMap<>();
 
 	public SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(
+			@NonNull final BankRepository bankRepository,
 			@NonNull final SEPAExportContext exportContext,
 			@NonNull final BankAccountService bankAccountService)
 	{
@@ -221,6 +255,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
+		this.bankRepository = bankRepository;
 		this.exportContext = exportContext;
 		this.bankAccountService = bankAccountService;
 	}
@@ -345,8 +380,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		groupHeader.setNbOfTxs(null);
 		groupHeader.setCtrlSum(ZERO);
 
+		// This name is also our Dbtr/Nm. IG 4.2: Dbtr is mandatory (1..1), and IG 3.4 forbids empty group elements; the name is the only Dbtr data we have
+		final String debtorName = truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME);
+		if (debtorName == null)
+		{
+			throw new SepaMarshallerException("SEPA_Export " + sepaDocument.getDocumentNo() + " has no SEPA_CreditorName (the name of the paying organisation, sent as debtor name)."
+					+ " It is taken from the name of the business partner linked to the organisation; please set that name and create the SEPA export again.");
+		}
+
 		final PartyIdentification135 initgPty = objectFactory.createPartyIdentification135();
-		initgPty.setNm(truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME)); // IG 3.4: no empty Nm
+		initgPty.setNm(debtorName);
 		initgPty.setCtctDtls(createSoftwareInformation());
 		groupHeader.setInitgPty(initgPty);
 
@@ -502,24 +545,26 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				.orElse(null);
 
 		// Creditor Agent (i.e. Bank)
-		cdtTrfTxInf.setCdtrAgt(createCreditorAgent(line, paymentType));
+		cdtTrfTxInf.setCdtrAgt(createCreditorAgent(line, bankAccount, paymentType));
 
 		// Creditor BPartner
 		cdtTrfTxInf.setCdtr(createCreditor(line, bankAccount, paymentType));
 
 		// creditor BPartner Account
 		{
-			final String iban = StringUtils.trimBlankToNull(line.getIBAN());
+			final String iban = extractCreditorIban(line, bankAccount);
 			final String otherAccountIdentification = CoalesceUtil.coalesceSuppliers(
 					() -> StringUtils.trimBlankToNull(line.getOtherAccountIdentification()),
 					() -> bankAccount != null ? bankAccount.getAccountNo() : null);
 			cdtTrfTxInf.setCdtrAcct(createCashAccount(iban, otherAccountIdentification));
 		}
 
-		final String reference = SepaUtils.replaceForbiddenChars(StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription));
-
-		// Remittance Info
-		cdtTrfTxInf.setRmtInf(createRemittanceInformation(line, bankAccount, reference));
+		// Remittance Info; a structured reference is also used (without whitespace) as EndToEndId if so configured
+		final CreditorReferenceInformation2 creditorReference = createCreditorReferenceOrNull(line, bankAccount);
+		final String reference = creditorReference != null
+				? creditorReference.getRef()
+				: SepaUtils.replaceForbiddenChars(StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription));
+		cdtTrfTxInf.setRmtInf(createRemittanceInformation(creditorReference, reference));
 
 		// Payment ID
 		// EndToEndId: A unique key, depending on process parameter generated by the system for each payment.
@@ -548,19 +593,56 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	/**
 	 * IG 3.12 and 4.3 CdtrAgt; unlike .03, we never send the placeholder BIC "NOTPROVIDED":
 	 * <ul>
-	 * <li>"D" with a CH/LI IBAN: IID taken from the IBAN as ClrSysMmbId with CHBCC (IG 3.12 option 2; "D: Must contain CHBCC").
+	 * <li>QR-IBAN: no CdtrAgt (IG 3.12 option 1; IG 4.3 "D: The Creditor Agent can be omitted if the IBAN/QR-IBAN (CH/LI) is provided"), so we don't send the QR-IID as if it was an IID.</li>
+	 * <li>"D" or "X" with a CH/LI IBAN: IID taken from the IBAN as ClrSysMmbId with CHBCC (IG 3.12 option 2; IG 4.3 "D: Must contain CHBCC", "X: (V1, domestic) - Must contain CHBCC").
 	 * If both IBAN and BIC are known, the agent is determined from the IBAN anyway, and BICFI and ClrSysMmbId must not be used together (IG 3.12 limitations).</li>
-	 * <li>"S" or "D" without a CH/LI IBAN: BICFI if known (IG 3.12 option 3), otherwise no CdtrAgt (IG 3.12 option 1, IG 4.3 "S: The indication of the Creditor Agent is optional").</li>
+	 * <li>otherwise BICFI if known (IG 3.12 option 3, "recommended for payment type X")</li>
+	 * <li>"S" without BIC: no CdtrAgt (IG 3.12 option 1, IG 4.3 "S: The indication of the Creditor Agent is optional")</li>
+	 * <li>"X" without BIC: name and address of the bank (IG 3.12 option 5; IG 4.3 CdtrAgt/FinInstnId/PstlAdr "X: Must be supplied when &lt;Name&gt; is used")</li>
 	 * </ul>
 	 */
 	@Nullable
 	private BranchAndFinancialInstitutionIdentification6 createCreditorAgent(
 			@NonNull final I_SEPA_Export_Line line,
+			@Nullable final BankAccount bankAccount,
 			@NonNull final String paymentType)
 	{
-		final String iidFromIban = PAYMENT_TYPE_3.equals(paymentType) ? extractIIDFromIban(line.getIBAN()) : null;
+		if (isQrIbanAccount(bankAccount))
+		{
+			return null;
+		}
+
+		final String iidFromIban = PAYMENT_TYPE_5.equals(paymentType) ? null : extractIIDFromIban(line.getIBAN());
 		final String bic = iidFromIban == null ? StringUtils.trimBlankToNull(line.getSwiftCode()) : null;
-		return createAgent(bic, iidFromIban);
+		final BranchAndFinancialInstitutionIdentification6 agent = createAgent(bic, iidFromIban);
+		if (agent != null || !PAYMENT_TYPE_6.equals(paymentType))
+		{
+			return agent;
+		}
+
+		return createCreditorAgentFromBankNameAndAddress(line, bankAccount);
+	}
+
+	private BranchAndFinancialInstitutionIdentification6 createCreditorAgentFromBankNameAndAddress(
+			@NonNull final I_SEPA_Export_Line line,
+			@Nullable final BankAccount bankAccount)
+	{
+		final Bank bank = bankAccount != null && bankAccount.getBankId() != null ? bankRepository.getById(bankAccount.getBankId()) : null;
+		final String bankName = bank != null ? truncate(SepaUtils.replaceForbiddenChars(bank.getBankName()), MAX_LENGTH_NAME) : null;
+		final PostalAddress24 bankAddress = bank != null && bank.getLocationId() != null ? createPstlAdr(null, locationDAO.getById(bank.getLocationId())) : null;
+		if (bankName == null || bankAddress == null || !isCompleteAddress(bankAddress))
+		{
+			throw new SepaMarshallerException("Foreign payment (payment type X) to a non-CH/LI account: the creditor's bank has neither a BIC nor a bank address (name, town and country)."
+					+ " Please set the BIC or the address of the bank; " + createInfo(line));
+		}
+
+		final FinancialInstitutionIdentification18 finInstnId = objectFactory.createFinancialInstitutionIdentification18();
+		finInstnId.setNm(bankName);
+		finInstnId.setPstlAdr(bankAddress);
+
+		final BranchAndFinancialInstitutionIdentification6 agent = objectFactory.createBranchAndFinancialInstitutionIdentification6();
+		agent.setFinInstnId(finInstnId);
+		return agent;
 	}
 
 	/**
@@ -615,16 +697,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		return cashAccount;
 	}
 
+	/**
+	 * IG 4.3 RmtInf: "Either structured or unstructured."
+	 */
 	@Nullable
 	private RemittanceInformation16 createRemittanceInformation(
-			@NonNull final I_SEPA_Export_Line line,
-			@Nullable final BankAccount bankAccount,
+			@Nullable final CreditorReferenceInformation2 creditorReference,
 			@Nullable final String reference)
 	{
-		if (bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN()))
+		final RemittanceInformation16 rmtInf = objectFactory.createRemittanceInformation16();
+		if (creditorReference != null)
 		{
-			// IG 4.3 RmtInf: with a QR-IBAN, Ustrd must not be used, but Strd/CdtrRefInf with a QR reference must
-			throw new SepaMarshallerException("QR-IBAN payments are not supported yet by " + PAIN_001_001_09_CH_03 + "; " + createInfo(line));
+			// IG 4.3 RmtInf/Strd: "Only one occurrence is allowed."
+			final StructuredRemittanceInformation16 strd = objectFactory.createStructuredRemittanceInformation16();
+			strd.setCdtrRefInf(creditorReference);
+			rmtInf.getStrd().add(strd);
+			return rmtInf;
 		}
 
 		// IG 4.3 RmtInf is optional and IG 3.4 forbids empty elements, so without a reference there is no RmtInf (.03 sent Ustrd=".")
@@ -634,9 +722,151 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 
 		// IG 4.3 RmtInf/Ustrd: only one occurrence, maximum 140 characters
-		final RemittanceInformation16 rmtInf = objectFactory.createRemittanceInformation16();
 		rmtInf.getUstrd().add(StringUtils.trunc(reference, 140, TruncateAt.STRING_START));
 		return rmtInf;
+	}
+
+	/**
+	 * IG 3.14.2 and 4.3 RmtInf/Strd/CdtrRefInf:
+	 * <ul>
+	 * <li>QR-IBAN: the structured reference must be a QR reference, sent with Prtry "QRR" (IG 4.3 Strd "D: This element must be used in combination with a QR-IBAN";
+	 * Ustrd "D: This element must not be supplied in combination with a QR-IBAN").</li>
+	 * <li>otherwise, if the structured reference is an ISO 11649 creditor reference: Cd "SCOR" with Issr "ISO" (IG 4.3 Tp/CdOrPrtry/Cd "Only the code SCOR is allowed"; IG 5.1 example).</li>
+	 * </ul>
+	 *
+	 * @return {@code null} if the reference shall be sent unstructured
+	 */
+	@Nullable
+	private CreditorReferenceInformation2 createCreditorReferenceOrNull(
+			@NonNull final I_SEPA_Export_Line line,
+			@Nullable final BankAccount bankAccount)
+	{
+		final String structuredReference = removeWhitespace(line.getStructuredRemittanceInfo());
+
+		final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+		final CreditorReferenceType2 tp = objectFactory.createCreditorReferenceType2();
+		tp.setCdOrPrtry(cdOrPrtry);
+		if (isQrIbanAccount(bankAccount))
+		{
+			if (!isValidQrReference(structuredReference))
+			{
+				throw new SepaMarshallerException("The bank account has a QR-IBAN, so the payment needs a valid QR reference (27 digits incl. check digit), but the reference is '"
+						+ structuredReference + "'; " + createInfo(line));
+			}
+			cdOrPrtry.setPrtry(CREDITOR_REFERENCE_TYPE_QRR);
+		}
+		else if (isValidCreditorReference(structuredReference))
+		{
+			cdOrPrtry.setCd(DocumentType3Code.SCOR);
+			tp.setIssr(CREDITOR_REFERENCE_ISSUER_ISO);
+		}
+		else
+		{
+			return null;
+		}
+
+		final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+		cdtrRefInf.setTp(tp);
+		cdtrRefInf.setRef(structuredReference);
+		return cdtrRefInf;
+	}
+
+	/**
+	 * IG 3.14.2: 26 digits plus one check digit (modulo 10, recursive).
+	 */
+	@VisibleForTesting
+	static boolean isValidQrReference(@Nullable final String reference)
+	{
+		if (reference == null || reference.length() != QR_REFERENCE_LENGTH)
+		{
+			return false;
+		}
+
+		int carryOver = 0;
+		for (int i = 0; i < QR_REFERENCE_LENGTH; i++)
+		{
+			final char c = reference.charAt(i);
+			if (c < '0' || c > '9')
+			{
+				return false;
+			}
+			if (i < QR_REFERENCE_LENGTH - 1)
+			{
+				carryOver = QR_REFERENCE_CHECK_SEQUENCE[(carryOver + (c - '0')) % 10];
+			}
+		}
+		final int checkDigit = reference.charAt(QR_REFERENCE_LENGTH - 1) - '0';
+		return checkDigit == (10 - carryOver) % 10;
+	}
+
+	/**
+	 * IG 3.14.2: ISO 11649 creditor reference: "RF" in positions 1-2, check digits in positions 3-4, max. 25 alphanumeric characters.
+	 * The check is ISO 7064 MOD 97-10 over the reference with its first four characters moved to the end, letters counting as 10..35.
+	 */
+	@VisibleForTesting
+	static boolean isValidCreditorReference(@Nullable final String reference)
+	{
+		if (reference == null
+				|| reference.length() < CREDITOR_REFERENCE_MIN_LENGTH
+				|| reference.length() > CREDITOR_REFERENCE_MAX_LENGTH
+				|| !reference.startsWith("RF")
+				|| !isDigit(reference.charAt(2))
+				|| !isDigit(reference.charAt(3)))
+		{
+			return false;
+		}
+
+		int remainder = 0;
+		for (int i = 0; i < reference.length(); i++)
+		{
+			final char c = reference.charAt((i + 4) % reference.length());
+			final int value = Character.digit(c, 36);
+			if (value < 0 || c > 'z')
+			{
+				return false; // not alphanumeric (also rejects non-ASCII digits)
+			}
+			remainder = ((value > 9 ? remainder * 100 : remainder * 10) + value) % 97;
+		}
+		return remainder == 1;
+	}
+
+	private static boolean isDigit(final char c)
+	{
+		return c >= '0' && c <= '9';
+	}
+
+	@Nullable
+	private static String removeWhitespace(@Nullable final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+		final StringBuilder sb = new StringBuilder(text.length());
+		for (int i = 0; i < text.length(); i++)
+		{
+			final char c = text.charAt(i);
+			if (!Character.isWhitespace(c))
+			{
+				sb.append(c);
+			}
+		}
+		return sb.length() == 0 ? null : sb.toString();
+	}
+
+	private static boolean isQrIbanAccount(@Nullable final BankAccount bankAccount)
+	{
+		return bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN());
+	}
+
+	/**
+	 * The export line's IBAN is the bank account's IBAN, or its QR-IBAN if it has no IBAN.
+	 * IG 3.14.2 / 4.3: the QR reference may only be used with a QR-IBAN in "Creditor Account/IBAN", so for a QR-IBAN account we always send the QR-IBAN.
+	 */
+	@Nullable
+	private static String extractCreditorIban(@NonNull final I_SEPA_Export_Line line, @Nullable final BankAccount bankAccount)
+	{
+		return isQrIbanAccount(bankAccount) ? bankAccount.getQR_IBAN().trim() : StringUtils.trimBlankToNull(line.getIBAN());
 	}
 
 	@SafeVarargs
@@ -668,6 +898,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 		final PartyIdentification135 cdtr = objectFactory.createPartyIdentification135();
 		cdtr.setNm(truncate(SepaUtils.replaceForbiddenChars(name), PAYMENT_TYPE_5.equals(paymentType) ? MAX_LENGTH_NAME_SEPA : MAX_LENGTH_NAME));
+		if (cdtr.getNm() == null)
+		{
+			// IG 4.3 Cdtr/Nm: "Must be supplied" (mandatory in the XSD, too)
+			throw new SepaMarshallerException("The payment has no creditor name. Please set the account holder name of the bank account or the name of the business partner; " + createInfo(line));
+		}
 
 		// Bank account is authoritative: when it carries any address data we use it
 		// verbatim and never consult the partner billing location. The partner
@@ -675,9 +910,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final boolean useBankAccount = bankAccount != null && !bankAccount.isAddressEmpty();
 
 		final I_C_Location location;
+		final String addressSource;
 		if (useBankAccount)
 		{
 			location = null;
+			addressSource = "address of the bank account " + CoalesceUtil.coalesce(bankAccount.getIBAN(), bankAccount.getQR_IBAN(), bankAccount.getAccountNo());
 		}
 		else
 		{
@@ -685,26 +922,52 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			final I_C_BPartner_Location billToLocation = partnerDAO.retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
 			if (billToLocation == null)
 			{
-				return cdtr;
+				return cdtr; // IG 4.3: Cdtr/PstlAdr is optional
 			}
 			location = locationDAO.getById(LocationId.ofRepoId(billToLocation.getC_Location_ID()));
+			addressSource = "location " + billToLocation.getName();
 		}
 
 		// IG 3.11: structured addresses for all payment types (.03 used AdrLine-only addresses for SEPA, which is no longer accepted)
-		cdtr.setPstlAdr(toCompletePstlAdrOrNull(createPstlAdr(bankAccount, location)));
+		final PostalAddress24 pstlAdr = createPstlAdr(bankAccount, location);
+		assertCompleteAddress(pstlAdr, line, addressSource);
+		cdtr.setPstlAdr(pstlAdr);
 
 		return cdtr;
 	}
 
 	/**
-	 * IG 3.11: if a postal address is sent, TwnNm and Ctry must always be supplied. For now an incomplete address is not sent at all.
-	 * This is the single place where the completeness of the creditor address is decided (to be turned into a validation error with the partner name).
+	 * IG 3.11: if a postal address is sent, the sub-elements TwnNm and Ctry "must always be supplied".
+	 * This is the single place where the completeness of the creditor address is decided.
 	 */
-	@Nullable
-	private static PostalAddress24 toCompletePstlAdrOrNull(@NonNull final PostalAddress24 pstlAdr)
+	private void assertCompleteAddress(
+			@NonNull final PostalAddress24 pstlAdr,
+			@NonNull final I_SEPA_Export_Line line,
+			@NonNull final String addressSource)
 	{
-		final boolean complete = Check.isNotBlank(pstlAdr.getTwnNm()) && Check.isNotBlank(pstlAdr.getCtry());
-		return complete ? pstlAdr : null;
+		if (isCompleteAddress(pstlAdr))
+		{
+			return;
+		}
+
+		final String missing;
+		if (Check.isBlank(pstlAdr.getTwnNm()))
+		{
+			missing = Check.isBlank(pstlAdr.getCtry()) ? "town and country" : "town";
+		}
+		else
+		{
+			missing = "country";
+		}
+		throw new AdempiereException("The address of business partner " + getBPartnerNameById(line.getC_BPartner_ID()) + " (" + addressSource + ") has no " + missing + "."
+				+ " " + PAIN_001_001_09_CH_03 + " requires town and country; please complete the address.")
+				.appendParametersToMessage()
+				.setParameter("SEPA_Export_Line", line);
+	}
+
+	private static boolean isCompleteAddress(@NonNull final PostalAddress24 pstlAdr)
+	{
+		return Check.isNotBlank(pstlAdr.getTwnNm()) && Check.isNotBlank(pstlAdr.getCtry());
 	}
 
 	/**
@@ -734,13 +997,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	{
 		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
-			SepaUtils.assertValidAccountCountry(bpBankAccount);
+			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
+			{
+				SepaUtils.assertValidAccountCountry(bpBankAccount); // a missing country is reported by assertCompleteAddress, together with the partner name
+			}
 
 			final PostalAddress24 pstlAdr = objectFactory.createPostalAddress24();
 			splitStreetAndNumber(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet()), pstlAdr);
 			pstlAdr.setPstCd(truncate(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountZip()), MAX_LENGTH_POST_CODE));
 			pstlAdr.setTwnNm(truncate(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountCity()), MAX_LENGTH_TOWN_NAME));
-			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
+			pstlAdr.setCtry(StringUtils.trimBlankToNull(bpBankAccount.getAccountCountry()));
 			return pstlAdr;
 		}
 
@@ -860,7 +1126,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	}
 
 	/**
-	 * Payment type detection as in the .03 marshaller (except for the ESR flag, see below), restricted to the payment types this marshaller supports.
+	 * Payment type detection as in the .03 marshaller (except for the ESR flag, QR-IBAN and foreign currencies, see below), restricted to the payment types this marshaller supports.
 	 */
 	@NonNull
 	private String extractPaymentType(@NonNull final I_SEPA_Export_Line line)
@@ -869,26 +1135,33 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				line.getC_BP_BankAccount(),
 				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 
+		final boolean qrIbanAccount = Check.isNotBlank(bPBankAccount.getQR_IBAN());
 		final String paymentType;
-		if (bPBankAccount.isEsrAccount() && Check.isNotBlank(line.getStructuredRemittanceInfo()) && Check.isBlank(bPBankAccount.getQR_IBAN()))
+		if (bPBankAccount.isEsrAccount()
+				&& Check.isNotBlank(line.getStructuredRemittanceInfo())
+				&& !qrIbanAccount
+				&& !isValidCreditorReference(removeWhitespace(line.getStructuredRemittanceInfo())))
 		{
+			// an ESR account with an ISO 11649 reference is a QR-bill with IBAN and SCOR reference (IG 3.16), not an ISR
 			paymentType = PAYMENT_TYPE_1;
 		}
 		else
 		{
 			final CurrencyCode currencyCode = extractCurrencyCode(line);
-			final String iban = line.getIBAN();
+			final String iban = qrIbanAccount ? bPBankAccount.getQR_IBAN() : line.getIBAN();
 
 			// IG 3.15 (figure 10): without SEPA service level, only a CH/LI IBAN makes it "D"; unlike .03, the ESR flag of the account no longer counts
 			if (isSwissIBAN(iban))
 			{
-				// "domestic" IBAN. it contains the IID and we will use it.
-				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
+				final boolean domesticCurrency = currencyCode.isEuro() || currencyCode.isCHF();
+				// IG 3.16: "The QR-IBAN and the QR reference are intended for billing in CHF" (EUR until November 2027)
+				Check.errorIf(qrIbanAccount && !domesticCurrency,
 							  SepaMarshallerException.class,
-							  "line {} has a swiss IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
+							  "line {} has a QR-IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
 							  createInfo(line), currencyCode);
 
-				paymentType = PAYMENT_TYPE_3;
+				// "domestic" IBAN; it contains the IID and we will use it. IG 3.15: in a currency other than CHF/EUR it is "X" (V1, foreign currency domestic)
+				paymentType = domesticCurrency ? PAYMENT_TYPE_3 : PAYMENT_TYPE_6;
 			}
 			else if (Check.isNotBlank(iban) && currencyCode.isEuro())
 			{
@@ -902,11 +1175,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 		if (PAYMENT_TYPE_1.equals(paymentType))
 		{
-			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments; only domestic (payment type D) and SEPA (payment type S) payments with an IBAN are supported; " + createInfo(line));
-		}
-		else if (PAYMENT_TYPE_6.equals(paymentType))
-		{
-			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support foreign (payment type X) payments yet; only domestic (payment type D) and SEPA (payment type S) payments with an IBAN are supported; " + createInfo(line));
+			// IG 3.15: the payment types are D, S, X and C; there is no ISR payment type anymore
+			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments (the ISR was replaced by the QR-bill); " + createInfo(line));
 		}
 		return paymentType;
 	}
