@@ -411,7 +411,8 @@ public class LayoutFactory
 
 	/**
 	 * Remembers the widget size configured on a single-row layout element on its main field,
-	 * so that the field's filter parameter can render with the same size. The first single-row element of the field wins.
+	 * so that the field's filter parameter can render with the same size.
+	 * The first single-row element of the field that has a widget size configured wins.
 	 */
 	private void setFilterWidgetSizeOfMainField(@NonNull final I_AD_UI_Element uiElement)
 	{
@@ -420,7 +421,13 @@ public class LayoutFactory
 			return;
 		}
 
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
+		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(uiElement.getAD_Field_ID());
+		if (adFieldId == null)
+		{
+			return;
+		}
+
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(adFieldId);
 		if (field != null && field.getFilterWidgetSize() == null)
 		{
 			field.setFilterWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()));
