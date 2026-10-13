@@ -23,9 +23,9 @@
 package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.acct.GLCategoryId;
+import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -35,6 +35,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -45,22 +46,30 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionProvider;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
@@ -107,6 +116,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
@@ -133,6 +144,7 @@ public class PaymentAllocationServiceTest
 	private DocTypeId serviceInvoiceDocTypeId;
 	private ProductId serviceFeeProductId;
 	private BPartnerId feeCompanyId1;
+	private PaymentBonusDeductionProvider paymentBonusDeductionProvider;
 
 	@BeforeEach
 	public void beforeEach()
@@ -141,11 +153,13 @@ public class PaymentAllocationServiceTest
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+		// the payment bonus of a test is set in paymentBonusDeductionProvider; none by default
+		paymentBonusDeductionProvider = invoiceId -> Optional.empty();
+		SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(
+				Optional.of(invoiceId -> paymentBonusDeductionProvider.computeForInvoice(invoiceId)),
+				new PaymentBonusCreditMemoService()));
 
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
-
-		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository());
+		paymentAllocationService = PaymentAllocationService.newInstanceForUnitTesting();
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
@@ -780,5 +794,141 @@ public class PaymentAllocationServiceTest
 					// the message names the invoice and the partner (not a raw id)
 					assertThat(ex.getMessage()).contains(invoice.getDocumentNo()).contains("Partner Without Service Company");
 				});
+	}
+
+	@Nested
+	public class IsOpenAmtWithDiscountMatching_PaymentBonus
+	{
+		private static final String NET_BONUS = "2.60"; // gross 2.78 with 7 % VAT
+
+		private PaymentBonusDeduction deduction()
+		{
+			return PaymentBonusDeduction.builder()
+					.orgId(adOrgId)
+					.invoiceId(InvoiceId.ofRepoId(1111))
+					.customerId(bpartnerId)
+					.currencyId(euroCurrencyId)
+					.precision(CurrencyPrecision.TWO)
+					.line(PaymentBonusDeductionLine.builder()
+							.bonusProductId(ProductId.ofRepoId(4444))
+							.tax(Tax.builder()
+									.taxId(TaxId.ofRepoId(7))
+									.name("7 %")
+									.orgId(OrgId.ANY)
+									.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+									.taxCategoryId(TaxCategoryId.ofRepoId(1))
+									.rate(new BigDecimal("7"))
+									.isTaxExempt(false)
+									.requiresTaxCertificate(false)
+									.seqNo(10)
+									.build())
+							.netAmt(Money.of(new BigDecimal(NET_BONUS), euroCurrencyId))
+							.build())
+					.build();
+		}
+
+		private final AtomicInteger bonusLookups = new AtomicInteger();
+
+		private PaymentAllocationService serviceWithBonus(final boolean withBonus)
+		{
+			paymentBonusDeductionProvider = invoiceId -> {
+				bonusLookups.incrementAndGet();
+				return withBonus ? Optional.of(deduction()) : Optional.empty();
+			};
+			return PaymentAllocationService.newInstanceForUnitTesting();
+		}
+
+		// open 166.50, Skonto 3.33, bonus 2.78
+		private InvoiceToAllocate invoice(final CurrencyCode currencyCode)
+		{
+			return invoice(currencyCode, CustomerInvoice);
+		}
+
+		private InvoiceToAllocate invoice(final CurrencyCode currencyCode, final InvoiceDocBaseType docBaseType)
+		{
+			return InvoiceToAllocate.builder()
+					.invoiceId(InvoiceId.ofRepoId(1111))
+					.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
+					.documentNo("1111")
+					.bpartnerId(bpartnerId)
+					.bpartnerName("customer")
+					.dateInvoiced(LocalDate.parse("2020-02-11"))
+					.dateAcct(LocalDate.parse("2020-02-11"))
+					.documentCurrencyCode(currencyCode)
+					.evaluationDate(LocalDate.parse("2020-02-12").atStartOfDay(ZoneId.of("UTC")))
+					.multiplier(InvoiceAmtMultiplier.create(SOTrx.SALES, false, false))
+					.grandTotal(Amount.of("166.50", currencyCode))
+					.openAmountConverted(Amount.of("166.50", currencyCode))
+					.discountAmountConverted(Amount.of("3.33", currencyCode))
+					.docTypeId(DocTypeId.ofRepoId(1))
+					.docBaseType(docBaseType)
+					.build();
+		}
+
+		@Test
+		void openMinusBonus_matches()
+		{
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).as("open - bonus matches").isTrue();
+		}
+
+		@Test
+		void openMinusSkontoMinusBonus_matches()
+		{
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.39", CurrencyCode.EUR))).as("open - Skonto - bonus matches").isTrue();
+		}
+
+		@Test
+		void amountMatchingNeitherSkontoNorBonusNorBoth_doesNotMatch()
+		{
+			assertThat(serviceWithBonus(true).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("160.00", CurrencyCode.EUR))).as("amount matching neither Skonto, bonus nor both").isFalse();
+		}
+
+		@Test
+		void withoutBonus_openMinusBonusDoesNotMatch()
+		{
+			assertThat(serviceWithBonus(false).isOpenAmtWithDiscountMatching(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR))).as("open - bonus without a bonus contract").isFalse();
+		}
+
+		@Test
+		void matchDeductions_openMinusSkontoMinusBonus_both()
+		{
+			final MatchedDeductions matched = serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("160.39", CurrencyCode.EUR), PaymentDirection.INBOUND).orElse(null);
+			assertThat(matched).isNotNull();
+			assertThat(matched.getDiscountAmt()).isEqualTo(Amount.of("3.33", CurrencyCode.EUR));
+			assertThat(matched.getBonusAmt()).isEqualTo(Amount.of("2.78", CurrencyCode.EUR));
+		}
+
+		@Test
+		void matchDeductions_skontoMatches_bonusIsNotLookedUp()
+		{
+			final MatchedDeductions matched = serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("163.17", CurrencyCode.EUR), PaymentDirection.INBOUND).orElse(null);
+			assertThat(matched).isNotNull();
+			assertThat(matched.getBonusAmt().signum()).isZero();
+			assertThat(bonusLookups).hasValue(0);
+		}
+
+		@Test
+		void matchDeductions_outboundPayment_noBonus_andBonusIsNotLookedUp()
+		{
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.OUTBOUND)).isEmpty();
+			assertThat(bonusLookups).hasValue(0);
+		}
+
+		@Test
+		void matchDeductions_purchaseInvoice_noBonus_andBonusIsNotLookedUp()
+		{
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR, VendorInvoice), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.OUTBOUND)).isEmpty();
+			assertThat(serviceWithBonus(true).matchDeductions(invoice(CurrencyCode.EUR, VendorInvoice), Amount.of("163.72", CurrencyCode.EUR), PaymentDirection.INBOUND)).isEmpty();
+			assertThat(bonusLookups).hasValue(0);
+		}
+
+		@Test
+		void foreignCurrency_bonusIsIgnored_legacySkontoRuleOnly()
+		{
+			PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD);
+			final PaymentAllocationService service = serviceWithBonus(true); // the bonus is in EUR
+			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.17", CurrencyCode.USD))).as("foreign currency: open - Skonto").isTrue(); // open - Skonto
+			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.72", CurrencyCode.USD))).as("foreign currency: open - bonus is not accepted").isFalse(); // open - bonus: not accepted
+		}
 	}
 }

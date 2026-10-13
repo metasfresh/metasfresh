@@ -597,6 +597,31 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			queryBuilder.filter(query.getAdditionalFilter());
 		}
 
+		if (query.getOnlyInvoiceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getOnlyInvoiceId());
+		}
+
+		if (query.getOnlyDocumentNos() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+		}
+
+		if (query.getOnlyOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, query.getOnlyOrgId());
+		}
+
+		if (query.getOnlyBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, query.getOnlyBPartnerId());
+		}
+
+		if (query.getOnlySOTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, query.getOnlySOTrx().toBoolean());
+		}
+
 		if (!query.getOnlyDocStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());

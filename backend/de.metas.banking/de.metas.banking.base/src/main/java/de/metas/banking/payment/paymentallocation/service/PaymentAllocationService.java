@@ -35,6 +35,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -42,7 +43,11 @@ import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher;
+import de.metas.invoice.paymentbonus.PaymentBonusAmountMatcher.MatchedDeductions;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -55,7 +60,10 @@ import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -69,27 +77,42 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentAllocationService
 {
 	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
 
-	private final MoneyService moneyService;
-	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
-	private final PaymentAllocationRepository paymentAllocationRepository;
+	@NonNull private final MoneyService moneyService;
+	@NonNull private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	@NonNull private final PaymentAllocationRepository paymentAllocationRepository;
+	@NonNull private final PaymentBonusOnPaymentService paymentBonusOnPaymentService;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-	public PaymentAllocationService(
-			@NonNull final MoneyService moneyService,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepository)
+	@VisibleForTesting
+	public static PaymentAllocationService newInstanceForUnitTesting()
 	{
-		this.moneyService = moneyService;
-		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
-		this.paymentAllocationRepository = paymentAllocationRepository;
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				PaymentAllocationService.class,
+				() -> {
+					// collaborators without a testing factory of their own: reuse the ones a test registered, else create and register them
+					final MoneyService moneyService = SpringContextHolder.getBeanOrSupply(
+							MoneyService.class,
+							() -> new MoneyService(CurrencyRepository.newInstanceForUnitTesting()));
+					//noinspection DataFlowIssue
+					return new PaymentAllocationService(
+							moneyService,
+							SpringContextHolder.getBeanOrSupply(
+									InvoiceProcessingServiceCompanyService.class,
+									() -> new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService)),
+							SpringContextHolder.getBeanOrSupply(PaymentAllocationRepository.class, PaymentAllocationRepository::new),
+							PaymentBonusOnPaymentService.newInstanceForUnitTesting());
+				});
 	}
 
 	@VisibleForTesting
@@ -278,7 +301,8 @@ public class PaymentAllocationService
 				.build();
 	}
 
-	private boolean isOpenAmtWithDiscountMatching(
+	@VisibleForTesting
+	boolean isOpenAmtWithDiscountMatching(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
 			@NonNull final Amount openAmountToMatch)
 	{
@@ -293,11 +317,44 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		if (isSoTrx)
 		{
-			return openAmountToMatch.equals(openAmtWithDiscount);
+			// the statement amount is matched as it is: only an amount coming in can match
+			return matchDeductions(invoiceToAllocate, openAmountToMatch, PaymentDirection.ofInboundPaymentFlag(openAmountToMatch.signum() >= 0)).isPresent();
 		}
 		else
 		{
 			return openAmountToMatch.abs().equals(openAmtWithDiscount);
 		}
+	}
+
+	/**
+	 * Decides which deductions explain that {@code paidAmt} is lower than the open amount of the invoice: Skonto, the payment bonus, or both; see {@link PaymentBonusAmountMatcher}.
+	 * The payment bonus is only deducted from an inbound payment for a sales invoice, in the currency of the bonus.
+	 * It is looked up only if the Skonto rule alone does not match, so an amount that the Skonto rule matches costs no lookup.
+	 *
+	 * @param paidAmt the paid amount, positive, in the currency of the invoice's converted amounts
+	 * @return the matched deductions, or empty if the paid amount matches none of the rules
+	 */
+	public Optional<MatchedDeductions> matchDeductions(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final Amount paidAmt,
+			@NonNull final PaymentDirection paymentDirection)
+	{
+		final Amount openAmt = invoiceToAllocate.getOpenAmountConverted();
+		final Amount discountAmt = invoiceToAllocate.getDiscountAmountConverted();
+
+		final Optional<MatchedDeductions> skontoOnly = PaymentBonusAmountMatcher.match(openAmt, discountAmt, null, paidAmt, false);
+		final InvoiceId invoiceId = invoiceToAllocate.getInvoiceId();
+		final boolean bonusAllowed = invoiceId != null && paymentDirection.isInboundPayment() && invoiceToAllocate.getDocBaseType().isSales();
+		if (skontoOnly.isPresent() || !bonusAllowed)
+		{
+			return skontoOnly;
+		}
+
+		final Amount bonusGrossAmt = paymentBonusOnPaymentService
+				.computeDeduction(invoiceId, moneyService.getCurrencyIdByCurrencyCode(paidAmt.getCurrencyCode()))
+				.map(deduction -> deduction.getGrossAmount().toAmount(moneyService::getCurrencyCodeByCurrencyId))
+				.orElse(null);
+
+		return PaymentBonusAmountMatcher.match(openAmt, discountAmt, bonusGrossAmt, paidAmt, true);
 	}
 }
