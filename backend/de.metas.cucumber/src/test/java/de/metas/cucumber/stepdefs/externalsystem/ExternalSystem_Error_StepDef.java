@@ -28,7 +28,9 @@ import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.api.APIRequest;
 import de.metas.cucumber.stepdefs.api.RESTUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -61,6 +63,8 @@ public class ExternalSystem_Error_StepDef
 	@NonNull private final M_InOut_StepDefData inoutTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
+	private static final int MAX_WAIT_SECONDS_FOR_PINSTANCE = 60;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
@@ -70,14 +74,30 @@ public class ExternalSystem_Error_StepDef
 		DataTableRows.of(dataTable).forEach(this::sendErrorResponseForShipment);
 	}
 
-	private void sendErrorResponseForShipment(@NonNull final DataTableRow row) throws IOException
+	private void sendErrorResponseForShipment(@NonNull final DataTableRow row) throws IOException, InterruptedException
 	{
 		final StepDefDataIdentifier inoutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 
 		final org.compiere.model.I_M_InOut inout = inoutTable.get(inoutIdentifier);
 		assertThat(inout).isNotNull();
 
-		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		// Both pInstance sources are written only after the export's RabbitMQ publish, which the preceding step already waits on:
+		// EDIWorkpackageProcessor saves EDI_AD_PInstance_ID in the workpackage trx, which commits after the publish, and
+		// ExternalSystemScriptedExportConversionService binds the pInstance to the status row after the publish returns.
+		// So wait for it; reading it once fails intermittently.
+		final PInstanceId pInstanceId = StepDefUtil.<PInstanceId>tryAndWaitForItem()
+				.worker(() -> retrievePInstanceIdForShipment(inout, inoutIdentifier))
+				.maxWaitSeconds(MAX_WAIT_SECONDS_FOR_PINSTANCE)
+				.execute();
+
+		sendErrorResponse(row, pInstanceId);
+	}
+
+	@NonNull
+	private ProviderResult<PInstanceId> retrievePInstanceIdForShipment(
+			@NonNull final org.compiere.model.I_M_InOut inout,
+			@NonNull final StepDefDataIdentifier inoutIdentifier)
+	{
 		InterfaceWrapperHelper.refresh(inout);
 		final I_M_InOut ediInout = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
 		PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInout.getEDI_AD_PInstance_ID());
@@ -102,11 +122,9 @@ public class ExternalSystem_Error_StepDef
 			}
 		}
 
-		assertThat(pInstanceId)
-				.as("No pInstance found for M_InOut %s (checked EDI_AD_PInstance_ID and ExternalSystem_ScriptedExportConversion_Status)", inoutIdentifier)
-				.isNotNull();
-
-		sendErrorResponse(row, pInstanceId);
+		return pInstanceId != null
+				? ProviderResult.resultWasFound(pInstanceId)
+				: ProviderResult.resultWasNotFound("No pInstance found for M_InOut " + inoutIdentifier + " (checked EDI_AD_PInstance_ID and ExternalSystem_ScriptedExportConversion_Status)");
 	}
 
 	private void sendErrorResponse(@NonNull final DataTableRow row, @NonNull final PInstanceId pInstanceId) throws IOException
@@ -160,23 +178,33 @@ public class ExternalSystem_Error_StepDef
 		DataTableRows.of(dataTable).forEach(this::sendErrorResponseForInvoice);
 	}
 
-	private void sendErrorResponseForInvoice(@NonNull final DataTableRow row) throws IOException
+	private void sendErrorResponseForInvoice(@NonNull final DataTableRow row) throws IOException, InterruptedException
 	{
 		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID);
-
 
 		final org.compiere.model.I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 		assertThat(invoice).isNotNull();
 
-		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		// Same as for the shipment: EDIWorkpackageProcessor saves EDI_AD_PInstance_ID in the workpackage trx, which commits after the RabbitMQ publish.
+		final PInstanceId pInstanceId = StepDefUtil.<PInstanceId>tryAndWaitForItem()
+				.worker(() -> retrievePInstanceIdForInvoice(invoice, invoiceIdentifier))
+				.maxWaitSeconds(MAX_WAIT_SECONDS_FOR_PINSTANCE)
+				.execute();
+
+		sendErrorResponse(row, pInstanceId);
+	}
+
+	@NonNull
+	private static ProviderResult<PInstanceId> retrievePInstanceIdForInvoice(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final StepDefDataIdentifier invoiceIdentifier)
+	{
 		InterfaceWrapperHelper.refresh(invoice);
 		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInvoice.getEDI_AD_PInstance_ID());
 
-		assertThat(pInstanceId)
-				.as("EDI_AD_PInstance_ID should be set on C_Invoice %s", invoiceIdentifier)
-				.isNotNull();
-
-		sendErrorResponse(row, pInstanceId);
+		return pInstanceId != null
+				? ProviderResult.resultWasFound(pInstanceId)
+				: ProviderResult.resultWasNotFound("EDI_AD_PInstance_ID should be set on C_Invoice " + invoiceIdentifier);
 	}
 }
