@@ -97,26 +97,26 @@ export async function openNewRecord(page, windowId) {
 }
 
 /**
- * Open a new record and wait until the window has settled; returns the new record's id.
- * A new record is shown twice: once under /NEW, then - after the first PATCH gave it an id - the window loads the record again
- * (only this second load fetches the layout and the rows of the included tabs) and moves the focus to the first field.
- * An action started in between can be lost to that reload, e.g. text typed into a lookup lands in the first field.
- * Only for windows with an included tab.
+ * Open a new record and wait until the window shows it under its id; returns the new record's id.
+ * After the first PATCH gave the record an id, the WebUI switches the URL to it and loads the record again (GET without query string),
+ * which moves the focus to the window's first field while that field is empty. An action started before that load is done can lose its focus.
+ * <p>
+ * The window may load the record once more later, when the backend reports the new record as changed over the websocket;
+ * that reload is not always sent, so it is not waited for here: {@link selectLookupByKey} copes with it.
  */
 export async function openNewRecordAndWaitUntilLoaded(page, windowId) {
-  const isIncludedTabRequest = (response, suffix) => {
-    const url = new URL(response.url());
-    // no query string: the first load also fetches the included tab's rows, but with ?orderBy=...; only the second load's request has none
-    return response.request().method() === 'GET' && url.search === '' && new RegExp(`/window/${windowId}/${suffix}$`).test(url.pathname);
-  };
-  const includedTabLayoutLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, 'AD_Tab-[^/]+/layout'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-  const includedTabRowsLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, '\\d+/AD_Tab-[^/]+/'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-  // handled here, so a failing openNewRecord below does not leave them as unhandled rejections; Promise.all still reports their own failure
-  includedTabLayoutLoaded.catch(() => {});
-  includedTabRowsLoaded.catch(() => {});
+  const recordLoaded = page.waitForResponse(
+    (response) => {
+      const url = new URL(response.url());
+      return response.request().method() === 'GET' && url.search === '' && new RegExp(`/window/${windowId}/\\d+/$`).test(url.pathname);
+    },
+    { timeout: VERY_SLOW_ACTION_TIMEOUT }
+  );
+  // handled here, so a failing openNewRecord below does not leave it as an unhandled rejection; the await below still reports its own failure
+  recordLoaded.catch(() => {});
   await openNewRecord(page, windowId);
   const recordId = await waitForNewRecordId(page, windowId);
-  await Promise.all([includedTabLayoutLoaded, includedTabRowsLoaded]);
+  await recordLoaded;
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   return recordId;
 }
@@ -241,18 +241,32 @@ export async function selectFirstListOption(page, scope, fieldName) {
   return lookupKey(change.value);
 }
 
-/** Type into a lookup field and wait until the typeahead result for the full search text has arrived. */
+/**
+ * Type into a lookup field and wait until its typeahead result for the full search text has arrived.
+ * A window reloads its document when the backend reports it as changed over the websocket (MasterWindowContainer.onWebsocketEvent),
+ * and that reload moves the focus to the window's first field while it is empty. If that happens while typing, the text does not end up
+ * in this field (or this field loses the focus before its typeahead is sent), and the text is typed again; at most 3 times.
+ */
 async function typeIntoLookup(page, scope, fieldName, searchText) {
   const input = scope.locator(`.form-field-${fieldName} input.input-field, .form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await input.click();
-  await input.fill('');
-  const typeaheadDone = page.waitForResponse(
-    (response) => response.url().includes(`/typeahead?query=${encodeURIComponent(searchText)}`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  await input.pressSequentially(searchText, { delay: 30 });
-  await typeaheadDone;
+  const maxAttempts = 3;
+  for (let attempt = 1; ; attempt++) {
+    await input.click();
+    await input.fill('');
+    const typeaheadDone = page.waitForResponse(
+      (response) => response.url().includes(`/field/${fieldName}/typeahead?query=${encodeURIComponent(searchText)}`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    typeaheadDone.catch(() => {});
+    await input.pressSequentially(searchText, { delay: 30 });
+    const landed = (await input.inputValue()) === searchText && (await input.evaluate((el) => el === document.activeElement));
+    if (landed || attempt >= maxAttempts) {
+      await typeaheadDone;
+      break;
+    }
+    console.log(`[INFO] ${fieldName}: the typed text did not stay in the field (attempt ${attempt}/${maxAttempts}), typing it again`);
+  }
   const dropdown = page.locator('.input-dropdown-list');
   await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   return dropdown;
