@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
+import { serverErrorMessage } from './RestResponse';
 
 /**
  * Add one line to the currently open document's included tab through batch entry (quick input).
@@ -109,14 +110,4 @@ const isQuickInputComplete = (response, tabId) => {
 const isQuickInputCreate = (response, tabId) => {
   const request = response.request();
   return request.method() === 'POST' && new URL(request.url()).pathname.endsWith(`/${tabId}/quickInput`);
-};
-
-/** The `message` of the WebUI's JSON error body (see WebuiExceptionHandler), else the raw body text. */
-const serverErrorMessage = async (response) => {
-  const text = await response.text().catch(() => '');
-  try {
-    return JSON.parse(text).message ?? text;
-  } catch {
-    return text;
-  }
 };
