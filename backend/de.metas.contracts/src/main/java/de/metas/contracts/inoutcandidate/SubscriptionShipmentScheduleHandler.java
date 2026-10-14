@@ -70,6 +70,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	// lazy: Spring bean, resolved on first use because this class can be constructed before the Spring context is available
 	@NonNull private final SpringContextHolder.Lazy<ShipmentScheduleSubscriptionReferenceProvider> referenceProvider = SpringContextHolder.lazyBean(ShipmentScheduleSubscriptionReferenceProvider.class);
 	// lazy: the handlingunits module replaces this service's implementation via Services.registerService at its init, which may run after this handler was constructed
 	@Nullable private IShipmentScheduleInvalidateBL _shipmentScheduleInvalidateBL; // null = not yet initialized
