@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
 import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from './WebAPIValidation';
 import { openRelatedDocument } from './DocumentReferences';
@@ -105,20 +105,32 @@ export async function openNewRecord(page, windowId) {
  * that reload is not always sent, so it is not waited for here: {@link selectLookupByKey} copes with it.
  */
 export async function openNewRecordAndWaitUntilLoaded(page, windowId) {
-  const recordLoaded = page.waitForResponse(
-    (response) => {
-      const url = new URL(response.url());
-      return response.request().method() === 'GET' && url.search === '' && new RegExp(`/window/${windowId}/\\d+/$`).test(url.pathname);
-    },
-    { timeout: VERY_SLOW_ACTION_TIMEOUT }
-  );
-  // handled here, so a failing openNewRecord below does not leave it as an unhandled rejection; the await below still reports its own failure
-  recordLoaded.catch(() => {});
-  await openNewRecord(page, windowId);
-  const recordId = await waitForNewRecordId(page, windowId);
-  await recordLoaded;
-  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  return recordId;
+  const recordGetPath = new RegExp(`/window/${windowId}/(\\d+)/$`);
+  const recordIdOfLoad = (response) => {
+    const url = new URL(response.url());
+    const match = response.request().method() === 'GET' && url.search === '' ? recordGetPath.exec(url.pathname) : null;
+    return match ? match[1] : null;
+  };
+  // collected from the start, because the load can complete before the new record's id is known
+  const loadedRecordIds = new Set();
+  const collectLoad = (response) => {
+    const recordId = recordIdOfLoad(response);
+    if (recordId) {
+      loadedRecordIds.add(recordId);
+    }
+  };
+  page.on('response', collectLoad);
+  try {
+    await openNewRecord(page, windowId);
+    const recordId = await waitForNewRecordId(page, windowId);
+    if (!loadedRecordIds.has(recordId)) {
+      await page.waitForResponse((response) => recordIdOfLoad(response) === recordId, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    return recordId;
+  } finally {
+    page.off('response', collectLoad);
+  }
 }
 
 export async function openRecord(page, windowId, recordId) {
@@ -242,34 +254,43 @@ export async function selectFirstListOption(page, scope, fieldName) {
 }
 
 /**
- * Type into a lookup field and wait until its typeahead result for the full search text has arrived.
+ * Type into a lookup field and wait until its typeahead result for the full search text has arrived and is shown.
  * A window reloads its document when the backend reports it as changed over the websocket (MasterWindowContainer.onWebsocketEvent),
- * and that reload moves the focus to the window's first field while it is empty. If that happens while typing, the text does not end up
- * in this field (or this field loses the focus before its typeahead is sent), and the text is typed again; at most 3 times.
+ * and that reload moves the focus to the window's first field while it is empty. If that happens, the text is no longer in this field
+ * (or this field no longer has the focus) and the text is typed again; after 3 tries the lookup fails.
+ * The typeahead is the field's own: /field/<name>/typeahead (document field), /edit/<name>/typeahead (modal or view row) or /attribute/<name>/typeahead.
  */
 async function typeIntoLookup(page, scope, fieldName, searchText) {
   const input = scope.locator(`.form-field-${fieldName} input.input-field, .form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const typeaheadUrlParts = ['field', 'edit', 'attribute'].map((segment) => `/${segment}/${fieldName}/typeahead?query=${encodeURIComponent(searchText)}`);
+  const textStayed = async () => (await input.inputValue()) === searchText && (await input.evaluate((el) => el === document.activeElement));
+  const dropdown = page.locator('.input-dropdown-list');
   const maxAttempts = 3;
-  for (let attempt = 1; ; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await input.click();
     await input.fill('');
-    const typeaheadDone = page.waitForResponse(
-      (response) => response.url().includes(`/field/${fieldName}/typeahead?query=${encodeURIComponent(searchText)}`),
-      { timeout: SLOW_ACTION_TIMEOUT }
-    );
+    const typeaheadDone = page.waitForResponse((response) => typeaheadUrlParts.some((part) => response.url().includes(part)), { timeout: SLOW_ACTION_TIMEOUT });
     typeaheadDone.catch(() => {});
     await input.pressSequentially(searchText, { delay: 30 });
-    const landed = (await input.inputValue()) === searchText && (await input.evaluate((el) => el === document.activeElement));
-    if (landed || attempt >= maxAttempts) {
-      await typeaheadDone;
-      break;
+    if (await textStayed()) {
+      try {
+        await typeaheadDone;
+        await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      } catch (error) {
+        if (await textStayed()) {
+          throw error; // the text is still there, so this is not the reload: a real failure
+        }
+      }
+      if (await textStayed()) {
+        return dropdown;
+      }
     }
-    console.log(`[INFO] ${fieldName}: the typed text did not stay in the field (attempt ${attempt}/${maxAttempts}), typing it again`);
+    const description = `${fieldName}: the typed text "${searchText}" did not stay in the field (attempt ${attempt}/${maxAttempts})`;
+    console.warn(`[WARN] ${description}`);
+    test.info().annotations.push({ type: 'lookup-retype', description });
   }
-  const dropdown = page.locator('.input-dropdown-list');
-  await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  return dropdown;
+  throw new Error(`lookup ${fieldName} lost its typed text ${maxAttempts}x`);
 }
 
 /** Search a lookup field and pick the option with the given key. */
