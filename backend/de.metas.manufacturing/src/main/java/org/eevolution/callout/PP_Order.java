@@ -122,6 +122,19 @@ public class PP_Order extends CalloutEngine
 		final ProductPlanning pp = findPP_Product_Planning(ppOrder);
 		ppOrder.setAD_Workflow_ID(PPRoutingId.toRepoId(pp.getWorkflowId()));
 
+		//
+		// Plant (Produktionsstätte) + WorkStation (Arbeitsstation): Product Planning takes precedence over the product-category fallback set above
+		final ResourceId planningPlantId = pp.getPlantId();
+		if (planningPlantId != null)
+		{
+			ppOrder.setS_Resource_ID(planningPlantId.getRepoId());
+		}
+		final ResourceId planningWorkStationId = pp.getWorkstationId();
+		if (planningWorkStationId != null)
+		{
+			ppOrder.setWorkStation_ID(planningWorkStationId.getRepoId());
+		}
+
 		final ProductBOMVersionsId productBOMVersionsId = Optional.ofNullable(pp.getBomVersionsId())
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
 

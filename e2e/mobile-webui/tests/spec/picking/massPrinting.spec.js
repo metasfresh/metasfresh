@@ -35,6 +35,7 @@ const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentP
             mobileConfig: {
                 picking: {
                     aggregationType: 'sales_order',
+                    allowCompletingPartialPickingJob: true,
                     allowPickingAnyCustomer: true,
                     allowPickingAnyHU: true,
                     createShipmentPolicy,

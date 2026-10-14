@@ -2,6 +2,7 @@
 import { defineConfig, devices, test as testOrig } from '@playwright/test';
 import { setCurrentPage, resetErrorWatchers } from "./tests/utils/common";
 import { installFakeCameraIfBrowserExposesNone } from "./tests/utils/fakeCamera";
+import { trackInFlightXhr } from "./tests/utils/inFlightXhr";
 import os from 'os';
 
 /**
@@ -99,6 +100,7 @@ export const test = testOrig.extend({
         resetErrorWatchers();
         Object.keys(testContext).forEach(key => delete testContext[key]);
         await installFakeCameraIfBrowserExposesNone(page);
+        await trackInFlightXhr(page);
 
         await use(page);
     },
