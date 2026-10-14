@@ -538,13 +538,16 @@ public class TaxDeclarationUStVAReport_StepDef
 		return s == null || s.trim().isEmpty();
 	}
 
-	@Nullable
-	/** compares like the function's {@code ORDER BY vatcode} (DB collation), not like {@link String#compareTo(String)} */
-	private static int compareInDB(final String a, final String b)
+	/**
+	 * Compares like the function's {@code ORDER BY vatcode} (DB collation), not like {@link String#compareTo(String)}.
+	 * Both keys must be non-null: a SQL comparison with NULL would fall through to the {@code ELSE} and pass silently.
+	 */
+	private static int compareInDB(@NonNull final String a, @NonNull final String b)
 	{
 		return DB.getSQLValueEx(null, "SELECT CASE WHEN ?::varchar < ?::varchar THEN -1 WHEN ?::varchar = ?::varchar THEN 0 ELSE 1 END", a, b, a, b);
 	}
 
+	@Nullable
 	private static String dbString(final String sql, final int id)
 	{
 		final String value = DB.getSQLValueStringEx(null, sql, id);
