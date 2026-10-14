@@ -3,10 +3,15 @@ import { test } from '../../../../playwright.config';
 import { ManufacturingJobScreen } from './ManufacturingJobScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
+import { captionStartsWithField } from '../../launcherCaption';
 
 const NAME = 'ManufacturingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFLaunchersScreen');
+// The caption starts with the documentNo (`<documentNo> | <product> | <qty> | <date>`); match it as that
+// leading field, never as a substring - see launcherCaption.js.
+/** @returns {import('@playwright/test').Locator} */
+const jobButton = ({ documentNo }) => page.locator('.wflauncher-button').filter({ hasText: captionStartsWithField(documentNo) });
 
 export const ManufacturingJobsListScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -24,8 +29,18 @@ export const ManufacturingJobsListScreen = {
         await ApplicationsListScreen.waitForScreen();
     }),
 
+    // Test-setup check: a launcher whose caption contains `text` anywhere (plain substring match) is listed exactly once.
+    expectJobButtonContainingText: async ({ text }) => await test.step(`${NAME} - Expect one job button containing '${text}'`, async () => {
+        await expect(page.locator('.wflauncher-button').filter({ hasText: text })).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Test-setup check: how many listed launchers contain `text` anywhere in their caption (plain substring match).
+    countJobButtonsContainingText: async ({ text }) => await test.step(`${NAME} - Count job buttons containing '${text}'`, async () => {
+        return await page.locator('.wflauncher-button').filter({ hasText: text }).count();
+    }),
+
     startJob: async ({ documentNo }) => await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
-        await page.locator('.wflauncher-button').filter({ hasText: documentNo }).tap();
+        await jobButton({ documentNo }).tap();
         await ManufacturingJobScreen.waitForScreen();
         return {
             jobId: await ManufacturingJobsListScreen.getJobId(),
