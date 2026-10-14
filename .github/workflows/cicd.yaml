@@ -21,6 +21,8 @@ jobs:
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       # Floating tag of the BASE branch this ref derives from (e.g. soft_panda_hotfix for soft_panda_hotfix_Foo).
       # Used as an additional --cache-from so a feature branch's FIRST build reuses the base image's already-published
       # layers and pushes only the small delta. For a base branch (or an unrecognised ref) this equals tag-floating,
@@ -60,8 +62,8 @@ jobs:
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: determine-base-refname
-        # In short: reuse the base branch's already-built image cache so a feature branch's first build stays fast.
-        # Resolve the BASE branch this ref derives from, for the base-tag-floating cache-from (see init outputs).
+        # Resolve the BASE branch this ref derives from. It selects the DB seed (init output base-refname) and the
+        # base-tag-floating cache-from, so a feature branch's first build reuses the base branch's image cache.
         # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
         # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
         # (base branches, merge-queue/merge-* branches, or anything unrecognised) -> base-tag == own tag, no-op.
@@ -77,7 +79,7 @@ jobs:
             fi
           done
           [ -z "$best" ] && best="$GIT_REF"
-          echo "Base branch resolved for cache-from: $best"
+          echo "Base branch resolved (DB seed, cache-from): $best"
           echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
@@ -759,7 +761,17 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: resolve-db-seed
+        # the base branch's DB seed if it comes from this commit's own history, else the 5.172 dump
+        id: db-seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
+        # Always on the 5.172 dump: customer repos build their DB FROM this image and apply core and
+        # customer scripts interleaved in script-number order. A DB with all core scripts already
+        # applied would run older customer scripts after newer core scripts (e.g. after a unique
+        # constraint they predate), so the seed must not go into this image.
         run: |
           docker buildx build \
           --progress=auto \
@@ -770,6 +782,16 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-db-init-seeded
+        # The same image on the per-branch DB seed; used only by db-apply-migrations of this repo.
+        run: |
+          docker buildx build \
+          --progress=auto \
+          --file docker-builds/Dockerfile.db-init \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded \
           .
       - name: build-db-migration-tool
         run: |
@@ -798,6 +820,14 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -818,6 +848,7 @@ jobs:
         run: |
           echo '#### db-images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded (for db-apply-migrations only)' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
@@ -844,7 +875,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }}-preloaded \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }}-seeded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
@@ -853,6 +884,15 @@ jobs:
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          # the committed data dir must be cleanly shut down, otherwise every DB started from it begins with crash recovery
+          state=$(docker run --rm --entrypoint sh metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+            -c '/usr/lib/postgresql/*/bin/pg_controldata /var/lib/postgresql/initdata' | grep 'Database cluster state' || true)
+          echo "${state}"
+          if ! echo "${state}" | grep -qE 'cluster state: +shut down$'; then
+            echo "::error::the preloaded DB was not shut down cleanly before docker commit: ${state:-pg_controldata reported no cluster state}"
+            if [ "$(cat migration.exit-code)" != 0 ]; then tail -1000 migration.log; fi
+            exit 1
+          fi
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
@@ -1636,23 +1676,39 @@ jobs:
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
-      - name: Install xmllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
       - name: assert success
         run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
 
+          # The JUnit attributes are read with the runner's preinstalled python3, not with xmllint:
+          # installing xmllint needed `apt-get update`, which exits 100 whenever ANY apt source baked
+          # into the runner image serves a bad index (e.g. a dl.google.com chrome "Hash Sum mismatch"),
+          # and that failure, sitting before this step, discarded the cucumber verdict.
+
+          # Prints the value of attribute $1 of the first <testsuite> element (document order, any depth)
+          # that has it -- the same value as `xmllint --xpath 'string(//testsuite/@<attr>)'`; prints nothing
+          # if no <testsuite> has it. Like xmllint, exits non-zero if the file is not well-formed XML, which
+          # fails this step (bash -e).
+          read_testsuite_attr() {
+            python3 -c '
+          import sys, xml.etree.ElementTree as ET
+          try:
+              root = ET.parse(sys.argv[1]).getroot()
+          except Exception as ex:
+              sys.exit(f"ERROR: cannot parse {sys.argv[1]}: {ex}")
+          print(next((e.get(sys.argv[2]) for e in root.iter("testsuite") if e.get(sys.argv[2]) is not None), ""), end="")
+          ' "$junit_xml_path" "$1"
+          }
+
           if [ -f "$junit_xml_path" ]; then
             echo "Parsing JUnit XML report at: $junit_xml_path"
 
-            # Extract failures and errors from the XML using xmllint.
+            # Extract failures and errors from the XML.
             # We explicitly check for 'testsuite' as the root element that holds 'failures' and 'errors'.
-            failures=$(xmllint --xpath 'string(//testsuite/@failures)' "$junit_xml_path" 2>/dev/null)
-            errors=$(xmllint --xpath 'string(//testsuite/@errors)' "$junit_xml_path" 2>/dev/null)
+            failures=$(read_testsuite_attr failures)
+            errors=$(read_testsuite_attr errors)
 
-            # Default to 0 if the attributes are not found or xmllint returns nothing.
+            # Default to 0 if the attributes are not found or the read returns nothing.
             failures=${failures:-0}
             errors=${errors:-0}
 
@@ -1886,17 +1942,23 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       fail-fast: false
       matrix:
-        shard: [ "1/3", "2/3", "3/3" ]
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
         include:
-          - shard: "1/3"
+          - shard: "1/6"
             shard_label: shard1
-          - shard: "2/3"
+          - shard: "2/6"
             shard_label: shard2
-          - shard: "3/3"
+          - shard: "3/6"
             shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -2024,17 +2086,23 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       fail-fast: false
       matrix:
-        shard: [ "1/3", "2/3", "3/3" ]
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
         include:
-          - shard: "1/3"
+          - shard: "1/6"
             shard_label: shard1
-          - shard: "2/3"
+          - shard: "2/6"
             shard_label: shard2
-          - shard: "3/3"
+          - shard: "3/6"
             shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -2562,55 +2630,7 @@ jobs:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os, shutil
-          from datetime import datetime, timezone
-
-          MAX_BUILDS_PER_BRANCH = 3
-
-          branch = sys.argv[1]
-          version = sys.argv[2]
-          metadata_dir = "/var/www/test-reports/_metadata"
-          metadata_file = os.path.join(metadata_dir, f"{branch}.json")
-          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
-
-          os.makedirs(metadata_dir, exist_ok=True)
-
-          # Read existing metadata or create new
-          if os.path.exists(metadata_file):
-              with open(metadata_file, "r") as f:
-                  try:
-                      data = json.load(f)
-                  except json.JSONDecodeError:
-                      data = {"branch": branch, "builds": []}
-          else:
-              data = {"branch": branch, "builds": []}
-
-          # Deduplicate: remove existing entry for this version
-          data["builds"] = [b for b in data["builds"] if b.get("version") != version]
-
-          # Prepend new build
-          data["builds"].insert(0, {
-              "version": version,
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          })
-
-          # Cap metadata and collect evicted versions
-          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
-          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
-
-          with open(metadata_file, "w") as f:
-              json.dump(data, f, indent=2)
-
-          # Delete build directories for evicted versions
-          for ver in evicted:
-              build_path = os.path.join(builds_dir, ver)
-              if os.path.isdir(build_path):
-                  shutil.rmtree(build_path)
-                  print(f"Pruned old build: {branch}/{ver}")
-
-          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
-          PYEOF
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" < .github/test-report-permalinks/update_branch_metadata.py
 
       - name: Generate feature/spec permalinks
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
