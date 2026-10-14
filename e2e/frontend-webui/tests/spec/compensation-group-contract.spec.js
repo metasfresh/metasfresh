@@ -130,10 +130,12 @@ const DE = {
   settingsSchema: 'Kompensationsgruppe Schema',
   settingsDescription: 'Beschreibung',
   settingsDocType: 'Belegart',
+  settingsPassOnServiceCompany: 'Servicegebühr von', // short enough to show uncut in the header
 
   transitionWindow: 'Vertrags-Übergang',
   conditionsWindow: 'Vertragsbedingungen',
   conditionsSettings: 'Einstellungen für Kompensationsgruppen-Verträge',
+  conditionsPassOnServiceCompany: 'Servicegebühr von',
 
   createContractEndDate: 'Enddatum',
 
@@ -309,6 +311,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectLabel(page, 'C_CompensationGroup_Schema_ID', DE.settingsSchema);
       await expectLabel(page, 'Description', DE.settingsDescription);
       await expectFieldsDirectlyInOrder(page, ['Name', 'C_CompensationGroup_Schema_ID', 'Description']);
+      await expectLabel(page, 'PassOn_InvoiceProcessingServiceCompany_ID', DE.settingsPassOnServiceCompany);
+      await expectLabelNotCutOff(page, 'PassOn_InvoiceProcessingServiceCompany_ID');
 
       await fillText(page, page, 'Name', settingsName);
       settingsId = await waitForNewRecordId(page, SETTINGS_WINDOW_ID);
@@ -386,6 +390,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(page.locator('.form-field-C_CompensationGroup_ContractSettings_ID')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expectLabel(page, 'C_CompensationGroup_ContractSettings_ID', DE.conditionsSettings);
       await expectFieldsDirectlyInOrder(page, ['Name', 'Type_Conditions', 'C_CompensationGroup_ContractSettings_ID']);
+      await expectLabel(page, 'PassOn_InvoiceProcessingServiceCompany_ID', DE.conditionsPassOnServiceCompany);
+      await expectLabelNotCutOff(page, 'PassOn_InvoiceProcessingServiceCompany_ID');
 
       await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
       expect(lookupKey((await getFieldData(CONDITIONS_WINDOW_ID, conditionsId, 'C_CompensationGroup_ContractSettings_ID')).value)).toBe(String(settingsId));
@@ -1259,6 +1265,16 @@ async function expectLabel(scope, fieldName, caption) {
   // because what is asserted is the caption the operator actually sees on the painted form.
   const label = scope.locator(`.form-field-${fieldName} > label.form-control-label`).first();
   await expect(label, `label of ${fieldName}`).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * Assert the label is painted in full: the label cuts overflowing text off with an ellipsis
+ * (overflow: hidden), so a cut-off label is wider (scrollWidth) than its visible box (clientWidth).
+ */
+async function expectLabelNotCutOff(scope, fieldName) {
+  const label = scope.locator(`.form-field-${fieldName} > label.form-control-label`).first();
+  const { scrollWidth, clientWidth } = await label.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
+  expect(scrollWidth, `label of ${fieldName} is cut off (text ${scrollWidth}px, visible ${clientWidth}px)`).toBeLessThanOrEqual(clientWidth);
 }
 
 /**

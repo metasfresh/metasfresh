@@ -106,6 +106,35 @@ class PaymentBonusOnPaymentServiceTest
 	}
 
 	/**
+	 * A payment that can no longer book its payment bonus gets it back into PayAmt, which had left it out.
+	 */
+	@Test
+	void dropPaymentBonus_addsBonusBackToPayAmt()
+	{
+		final I_C_Payment payment = newInstance(I_C_Payment.class);
+		payment.setPayAmt(new BigDecimal("88.10"));
+		payment.setPaymentBonusAmt(new BigDecimal("11.90"));
+
+		PaymentBonusOnPaymentService.newInstanceForUnitTesting().dropPaymentBonus(payment);
+
+		assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+		assertThat(payment.getPayAmt()).as("PayAmt = 88.10 + 11.90").isEqualByComparingTo("100.00");
+	}
+
+	@Test
+	void dropPaymentBonus_noBonus_leavesPayAmt()
+	{
+		final I_C_Payment payment = newInstance(I_C_Payment.class);
+		payment.setPayAmt(new BigDecimal("88.10"));
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+
+		PaymentBonusOnPaymentService.newInstanceForUnitTesting().dropPaymentBonus(payment);
+
+		assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+		assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("88.10");
+	}
+
+	/**
 	 * The payment, the credit memo and the allocation only agree if the credit memo books at most the payment's bonus.
 	 */
 	@Test

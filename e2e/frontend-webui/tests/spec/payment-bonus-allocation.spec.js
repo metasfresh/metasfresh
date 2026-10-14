@@ -16,14 +16,13 @@ import {
   getRefundConfigRows,
   lookupKey,
   openNewIncludedRow,
-  openNewRecord,
+  openNewRecordAndWaitUntilLoaded,
   openRecord,
   recordRejectedSaveReasons,
   REFUND_CONFIG_TAB_ID,
   selectFirstListOption,
   selectListByKey,
   selectLookupByKey,
-  waitForNewRecordId,
   withFieldCommit,
 } from '../utils/ContractWindowHelpers';
 import {
@@ -270,8 +269,7 @@ test.describe('Payment bonus: a refund deducted at payment, applied in the payme
 /** Zahlung (195): a completed receipt of the customer in EUR over the given amount. @returns the payment id */
 async function createReceipt(page, { customer, amountCents }) {
   return await test.step(`Zahlung: a receipt of ${amountCents / 100} EUR`, async () => {
-    await openNewRecord(page, PAYMENT_WINDOW_ID);
-    const paymentId = await waitForNewRecordId(page, PAYMENT_WINDOW_ID);
+    const paymentId = await openNewRecordAndWaitUntilLoaded(page, PAYMENT_WINDOW_ID);
     await selectListByKey(page, page, 'C_DocType_ID', DOCTYPE_AR_RECEIPT);
     await selectLookupByKey(page, page, 'C_BPartner_ID', customer.bpartnerCode, customer.id);
     await selectFirstListOption(page, page, 'C_BP_BankAccount_ID');

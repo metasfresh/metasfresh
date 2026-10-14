@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
 import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from './WebAPIValidation';
 import { openRelatedDocument } from './DocumentReferences';
@@ -94,6 +94,43 @@ export function recordRejectedSaveReasons(page, windowId) {
 export async function openNewRecord(page, windowId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/NEW`);
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * Open a new record and wait until the window shows it under its id; returns the new record's id.
+ * After the first PATCH gave the record an id, the WebUI switches the URL to it and loads the record again (GET without query string),
+ * which moves the focus to the window's first field while that field is empty. An action started before that load is done can lose its focus.
+ * <p>
+ * The window may load the record once more later, when the backend reports the new record as changed over the websocket;
+ * that reload is not always sent, so it is not waited for here: {@link selectLookupByKey} copes with it.
+ */
+export async function openNewRecordAndWaitUntilLoaded(page, windowId) {
+  const recordGetPath = new RegExp(`/window/${windowId}/(\\d+)/$`);
+  const recordIdOfLoad = (response) => {
+    const url = new URL(response.url());
+    const match = response.request().method() === 'GET' && url.search === '' ? recordGetPath.exec(url.pathname) : null;
+    return match ? match[1] : null;
+  };
+  // collected from the start, because the load can complete before the new record's id is known
+  const loadedRecordIds = new Set();
+  const collectLoad = (response) => {
+    const recordId = recordIdOfLoad(response);
+    if (recordId) {
+      loadedRecordIds.add(recordId);
+    }
+  };
+  page.on('response', collectLoad);
+  try {
+    await openNewRecord(page, windowId);
+    const recordId = await waitForNewRecordId(page, windowId);
+    if (!loadedRecordIds.has(recordId)) {
+      await page.waitForResponse((response) => recordIdOfLoad(response) === recordId, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    return recordId;
+  } finally {
+    page.off('response', collectLoad);
+  }
 }
 
 export async function openRecord(page, windowId, recordId) {
@@ -216,21 +253,54 @@ export async function selectFirstListOption(page, scope, fieldName) {
   return lookupKey(change.value);
 }
 
-/** Type into a lookup field and wait until the typeahead result for the full search text has arrived. */
+/**
+ * Type into a lookup field and wait until its typeahead result for the full search text has arrived and is shown.
+ * The typeahead is the field's own: /field/<name>/typeahead (document field), /edit/<name>/typeahead (modal or view row)
+ * or /attribute/<name>/typeahead, with exactly the search text as query.
+ * <p>
+ * Safety net: if the text did not stay in the field (or the field lost the focus), it is typed again, and after 3 tries the lookup fails.
+ * The cause seen so far, the first field taking the focus when the window reloads the document after a websocket "document changed"
+ * event, is fixed in RawLookup (it no longer takes the focus from another field); each retype is logged and added to the test's annotations.
+ */
 async function typeIntoLookup(page, scope, fieldName, searchText) {
   const input = scope.locator(`.form-field-${fieldName} input.input-field, .form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await input.click();
-  await input.fill('');
-  const typeaheadDone = page.waitForResponse(
-    (response) => response.url().includes(`/typeahead?query=${encodeURIComponent(searchText)}`),
-    { timeout: SLOW_ACTION_TIMEOUT }
-  );
-  await input.pressSequentially(searchText, { delay: 30 });
-  await typeaheadDone;
+  const typeaheadPathSuffixes = ['field', 'edit', 'attribute'].map((segment) => `/${segment}/${fieldName}/typeahead`);
+  const isOwnTypeahead = (response) => {
+    const url = new URL(response.url());
+    return typeaheadPathSuffixes.some((suffix) => url.pathname.endsWith(suffix)) && url.searchParams.get('query') === searchText;
+  };
+  const textStayed = async () => (await input.inputValue()) === searchText && (await input.evaluate((el) => el === document.activeElement));
   const dropdown = page.locator('.input-dropdown-list');
-  await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  return dropdown;
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    await input.click();
+    await input.fill('');
+    const typeaheadDone = page.waitForResponse(isOwnTypeahead, { timeout: SLOW_ACTION_TIMEOUT });
+    typeaheadDone.catch(() => {});
+    await input.pressSequentially(searchText, { delay: 30 });
+    if (await textStayed()) {
+      try {
+        await typeaheadDone;
+        await dropdown.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      } catch (error) {
+        if (await textStayed()) {
+          throw error; // the text is still there, so this is not the reload: a real failure
+        }
+      }
+      if (await textStayed()) {
+        return dropdown;
+      }
+    }
+    const description = `${fieldName}: the typed text "${searchText}" did not stay in the field (attempt ${attempt}/${maxAttempts})`;
+    console.warn(`[WARN] ${description}`);
+    try {
+      test.info().annotations.push({ type: 'lookup-retype', description });
+    } catch {
+      // not inside a running test (test.info() throws there): the console warning above is all there is
+    }
+  }
+  throw new Error(`lookup ${fieldName} lost its typed text ${maxAttempts}x`);
 }
 
 /** Search a lookup field and pick the option with the given key. */
