@@ -272,10 +272,9 @@ public class CalloutPayment extends CalloutEngine
 				paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
 			}
 		}
-		else if (payment.getPaymentBonusAmt().signum() != 0)
+		else
 		{
-			payment.setPayAmt(payment.getPayAmt().add(payment.getPaymentBonusAmt()));
-			payment.setPaymentBonusAmt(BigDecimal.ZERO);
+			paymentBonusOnPaymentService.get().dropPaymentBonus(payment);
 		}
 	}
 

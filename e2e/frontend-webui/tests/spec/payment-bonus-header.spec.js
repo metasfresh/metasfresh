@@ -146,6 +146,47 @@ test.describe('Payment bonus: the payment window pre-fills and books the bonus',
       }).toBe(true);
     });
   });
+
+  test('picking the invoice first, then Belegart, pre-fills Zahlungsbonus and the Zahlungsbetrag', async ({ page }) => {
+    allure.story('Payment window: pre-filled payment bonus when Rechnung is picked before Belegart');
+    test.setTimeout(10 * 60 * 1000);
+    const runId = Date.now();
+    const { masterdata, invoices } = await setUpCustomer(page, { orders: 1 });
+    const [invoice] = invoices;
+    const customer = masterdata.bpartners.CUSTOMER;
+    const bonus = masterdata.products.BONUS;
+    const { bonusCents } = await getExpectedBonus(invoice.id);
+    const openCents = invoice.grandTotalCents;
+
+    await createDeductedAtPaymentContract(page, { runId, customer, categoryId: masterdata.productCategories.GOODS_CATEGORY.id, bonus });
+
+    // a new payment has no Belegart, so it is no receipt yet when the invoice is picked; the payment cannot be saved without Belegart
+    let paymentId;
+    await test.step('Zahlung: a new payment, Rechnung picked first: no Zahlungsbonus yet, Zahlungsbetrag = open amount', async () => {
+      await openNewRecord(page, PAYMENT_WINDOW_ID);
+      paymentId = await waitForNewRecordId(page, PAYMENT_WINDOW_ID);
+      await selectLookupByKey(page, page, 'C_Invoice_ID', invoice.documentNo, invoice.id);
+
+      await expect.poll(async () => fieldCents(page, 'PayAmt'), { message: 'Zahlungsbetrag = open amount', timeout: SLOW_ACTION_TIMEOUT }).toBe(openCents);
+      await expect(page.locator('.form-field-PaymentBonusAmt'), 'no Zahlungsbonus before Belegart').toHaveCount(0);
+    });
+
+    await test.step('Belegart Zahlungseingang picked: Zahlungsbonus is pre-filled, Zahlungsbetrag = open - bonus', async () => {
+      await selectListByKey(page, page, 'C_DocType_ID', DOCTYPE_AR_RECEIPT);
+
+      await expect.poll(async () => fieldCents(page, 'PaymentBonusAmt'), { message: 'pre-filled Zahlungsbonus', timeout: SLOW_ACTION_TIMEOUT }).toBe(bonusCents);
+      await expect.poll(async () => fieldCents(page, 'PayAmt'), { message: 'Zahlungsbetrag = open - bonus', timeout: SLOW_ACTION_TIMEOUT }).toBe(openCents - bonusCents);
+      await evidenceStill(page, 'payment-header-3-rechnung-first-then-belegart-bonus-prefilled', ['PaymentBonusAmt', 'PayAmt']);
+    });
+
+    await test.step('the draft is saved with the pre-filled amounts', async () => {
+      await selectFirstListOption(page, page, 'C_BP_BankAccount_ID');
+      await waitForRecordSaved(PAYMENT_WINDOW_ID, paymentId, { maxRetries: 20, retryDelayMs: 500 });
+      expect(toCents((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'PaymentBonusAmt')).value)).toBe(bonusCents);
+      expect(toCents((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'PayAmt')).value)).toBe(openCents - bonusCents);
+      expect(lookupKey((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'C_BPartner_ID')).value), 'Geschäftspartner from the invoice').toBe(String(customer.id));
+    });
+  });
 });
 
 // ======================================================================
