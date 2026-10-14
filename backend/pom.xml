@@ -208,6 +208,7 @@
 
         <module>de.metas.picking.rest-api</module>
         <module>de.metas.distribution.rest-api</module>
+        <module>de.metas.frontend-testing</module>
 
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>

@@ -1,0 +1,10 @@
+# Test outputs (created during test runs)
+playwright-report-frontend/
+test-results-frontend/
+allure-results/
+playwright.log
+playwright.exit-code
+infra.log
+
+# local env overrides (mfregistry, mfversion, dbqualifier)
+.env
