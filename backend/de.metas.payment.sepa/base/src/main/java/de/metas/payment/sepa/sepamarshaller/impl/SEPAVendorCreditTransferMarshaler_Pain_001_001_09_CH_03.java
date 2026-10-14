@@ -15,6 +15,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -181,6 +182,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	 * Fallback EndToEndId if the reference is used as EndToEndId but there is none.
 	 */
 	private static final String END_TO_END_ID_NOTPROVIDED = "NOTPROVIDED";
+
+	/**
+	 * Same message as the .03 marshaller uses for an invalid QR reference.
+	 */
+	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
 	/**
 	 * IG 4.3 RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry: "QRR = QR reference (in association with QR-bill)"
@@ -381,7 +387,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		groupHeader.setCtrlSum(ZERO);
 
 		// This name is also our Dbtr/Nm. IG 4.2: Dbtr is mandatory (1..1), and IG 3.4 forbids empty group elements; the name is the only Dbtr data we have
-		final String debtorName = truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME);
+		// IG 4.1 InitgPty/Nm and 4.2 Dbtr/Nm: "S: max. 70 characters"; the group header applies to the whole message, so we use 70 for all payment types
+		final String debtorName = truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME_SEPA);
 		if (debtorName == null)
 		{
 			throw new SepaMarshallerException("SEPA_Export " + sepaDocument.getDocumentNo() + " has no SEPA_CreditorName (the name of the paying organisation, sent as debtor name)."
@@ -607,7 +614,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			@Nullable final BankAccount bankAccount,
 			@NonNull final String paymentType)
 	{
-		if (isQrIbanAccount(bankAccount))
+		if (isQrIbanPayment(line, bankAccount))
 		{
 			return null;
 		}
@@ -632,7 +639,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final PostalAddress24 bankAddress = bank != null && bank.getLocationId() != null ? createPstlAdr(null, locationDAO.getById(bank.getLocationId())) : null;
 		if (bankName == null || bankAddress == null || !isCompleteAddress(bankAddress))
 		{
-			throw new SepaMarshallerException("Foreign payment (payment type X) to a non-CH/LI account: the creditor's bank has neither a BIC nor a bank address (name, town and country)."
+			throw new SepaMarshallerException("Foreign payment (payment type X) and the creditor account is not a CH/LI IBAN: the creditor's bank has neither a BIC nor a bank address (name, town and country)."
 					+ " Please set the BIC or the address of the bank; " + createInfo(line));
 		}
 
@@ -746,12 +753,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
 		final CreditorReferenceType2 tp = objectFactory.createCreditorReferenceType2();
 		tp.setCdOrPrtry(cdOrPrtry);
-		if (isQrIbanAccount(bankAccount))
+		if (isQrIbanPayment(line, bankAccount))
 		{
 			if (!isValidQrReference(structuredReference))
 			{
-				throw new SepaMarshallerException("The bank account has a QR-IBAN, so the payment needs a valid QR reference (27 digits incl. check digit), but the reference is '"
-						+ structuredReference + "'; " + createInfo(line));
+				// only reached if the account has a QR-IBAN but no IBAN, so there is no other way to pay it
+				throw new AdempiereException(ERR_SEPA_Export_InvalidReference, createInfo(line))
+						.appendParametersToMessage()
+						.setParameter("structuredReference", structuredReference != null ? structuredReference : "no structured reference")
+						.setParameter("reason", "the bank account has only a QR-IBAN, so a valid QR reference (27 digits incl. check digit) is required");
 			}
 			cdOrPrtry.setPrtry(CREDITOR_REFERENCE_TYPE_QRR);
 		}
@@ -854,19 +864,32 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		return sb.length() == 0 ? null : sb.toString();
 	}
 
-	private static boolean isQrIbanAccount(@Nullable final BankAccount bankAccount)
+	private static boolean isQrIbanPayment(@NonNull final I_SEPA_Export_Line line, @Nullable final BankAccount bankAccount)
 	{
-		return bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN());
+		return bankAccount != null && isQrIbanPayment(bankAccount.getQR_IBAN(), bankAccount.getIBAN(), line.getStructuredRemittanceInfo());
+	}
+
+	/**
+	 * A payment goes to the QR-IBAN if the account has one and either the reference is a QR reference or the account has no (normal) IBAN.
+	 * IG 3.14.2 / 4.3: the QR reference is "only permitted and is required in connection with a QR-IBAN"; with any other reference, an account that also has an IBAN is paid to that IBAN (SCOR / Ustrd / X V1).
+	 */
+	private static boolean isQrIbanPayment(
+			@Nullable final String qrIban,
+			@Nullable final String iban,
+			@Nullable final String structuredRemittanceInfo)
+	{
+		return Check.isNotBlank(qrIban)
+				&& (Check.isBlank(iban) || isValidQrReference(removeWhitespace(structuredRemittanceInfo)));
 	}
 
 	/**
 	 * The export line's IBAN is the bank account's IBAN, or its QR-IBAN if it has no IBAN.
-	 * IG 3.14.2 / 4.3: the QR reference may only be used with a QR-IBAN in "Creditor Account/IBAN", so for a QR-IBAN account we always send the QR-IBAN.
+	 * IG 3.14.2 / 4.3: the QR reference may only be used with a QR-IBAN in "Creditor Account/IBAN", so for a QR-IBAN payment we always send the QR-IBAN.
 	 */
 	@Nullable
 	private static String extractCreditorIban(@NonNull final I_SEPA_Export_Line line, @Nullable final BankAccount bankAccount)
 	{
-		return isQrIbanAccount(bankAccount) ? bankAccount.getQR_IBAN().trim() : StringUtils.trimBlankToNull(line.getIBAN());
+		return isQrIbanPayment(line, bankAccount) ? bankAccount.getQR_IBAN().trim() : StringUtils.trimBlankToNull(line.getIBAN());
 	}
 
 	@SafeVarargs
@@ -1136,6 +1159,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 
 		final boolean qrIbanAccount = Check.isNotBlank(bPBankAccount.getQR_IBAN());
+		final boolean qrIbanPayment = isQrIbanPayment(bPBankAccount.getQR_IBAN(), bPBankAccount.getIBAN(), line.getStructuredRemittanceInfo());
 		final String paymentType;
 		if (bPBankAccount.isEsrAccount()
 				&& Check.isNotBlank(line.getStructuredRemittanceInfo())
@@ -1148,14 +1172,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		else
 		{
 			final CurrencyCode currencyCode = extractCurrencyCode(line);
-			final String iban = qrIbanAccount ? bPBankAccount.getQR_IBAN() : line.getIBAN();
+			final String iban = qrIbanPayment ? bPBankAccount.getQR_IBAN() : line.getIBAN();
 
 			// IG 3.15 (figure 10): without SEPA service level, only a CH/LI IBAN makes it "D"; unlike .03, the ESR flag of the account no longer counts
 			if (isSwissIBAN(iban))
 			{
 				final boolean domesticCurrency = currencyCode.isEuro() || currencyCode.isCHF();
 				// IG 3.16: "The QR-IBAN and the QR reference are intended for billing in CHF" (EUR until November 2027)
-				Check.errorIf(qrIbanAccount && !domesticCurrency,
+				Check.errorIf(qrIbanPayment && !domesticCurrency,
 							  SepaMarshallerException.class,
 							  "line {} has a QR-IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
 							  createInfo(line), currencyCode);
@@ -1176,7 +1200,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (PAYMENT_TYPE_1.equals(paymentType))
 		{
 			// IG 3.15: the payment types are D, S, X and C; there is no ISR payment type anymore
-			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments (the ISR was replaced by the QR-bill); " + createInfo(line));
+			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments (the ISR was replaced by the QR-bill)."
+					+ " Clear the ESR flag of the bank account, set a QR-IBAN, or use an ISO 11649 (RF) creditor reference; " + createInfo(line));
 		}
 		return paymentType;
 	}

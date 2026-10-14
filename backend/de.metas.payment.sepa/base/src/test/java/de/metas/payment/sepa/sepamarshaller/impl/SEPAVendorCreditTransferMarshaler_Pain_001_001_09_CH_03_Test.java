@@ -352,8 +352,76 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		final I_SEPA_Export sepaExport = createSEPAExport();
 		createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, "210000000003139471430009018"); // wrong check digit
 
+		// same AD_Message as the .03 marshaller
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("QR reference");
+				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining("210000000003139471430009018");
+	}
+
+	@Test
+	public void export_qrIbanOnlyWithoutReference_fails()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, " ");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining("no structured reference")
+				.hasMessageNotContaining("'null'");
+	}
+
+	@Test
+	public void createDocument_ibanAndQrIban_scorReference_usesIban() throws Exception
+	{
+		// the account has both an IBAN and a QR-IBAN; the invoice was paid with an RF reference, so it is a payment to the normal IBAN
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, CREDITOR_IBAN_CH, new BigDecimal("100"), chf, SCOR_REFERENCE_SEPA);
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo("CH5021977000004331346");
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAgt/FinInstnId/ClrSysMmbId/MmbId")).isEqualTo(CREDITOR_IID_FROM_IBAN_CH);
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Cd")).isEqualTo("SCOR");
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf/Ref")).isEqualTo(SCOR_REFERENCE_SEPA);
+	}
+
+	@Test
+	public void createDocument_ibanAndQrIban_foreignCurrency_isForeignOnIban() throws Exception
+	{
+		// the account has both an IBAN and a QR-IBAN; a USD payment without QR reference goes to the normal IBAN as X V1
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, CREDITOR_IBAN_CH, new BigDecimal("250"), usd, "Invoice 7");
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero();
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo("CH5021977000004331346");
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAgt/FinInstnId/ClrSysMmbId/ClrSysId/Cd")).isEqualTo("CHBCC");
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Ustrd")).isEqualTo("Invoice 7");
+	}
+
+	@Test
+	public void createDocument_longDebtorName_truncatedTo70() throws Exception
+	{
+		final String name80 = repeat("Debtor_XYZ", 8);
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setSEPA_CreditorName(name80);
+		save(sepaExport);
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		// IG 4.1 InitgPty/Nm and 4.2 Dbtr/Nm: "S: max. 70 characters"; the group header applies to the whole message
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/GrpHdr/InitgPty/Nm")).isEqualTo(name80.substring(0, 70));
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/Dbtr/Nm")).isEqualTo(name80.substring(0, 70));
 	}
 
 	@Test
@@ -464,7 +532,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		save(bankAccount);
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("does not support ISR payments");
+				.hasMessageContaining("does not support ISR payments")
+				.hasMessageContaining("Clear the ESR flag of the bank account, set a QR-IBAN, or use an ISO 11649 (RF) creditor reference");
 	}
 
 	@Test
@@ -474,6 +543,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, null, new BigDecimal("100"), chf, null);
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("creditor account is not a CH/LI IBAN")
 				.hasMessageContaining("neither a BIC nor a bank address");
 	}
 
@@ -541,6 +611,52 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 				.hasMessageContaining("Test Vendor GmbH")
 				.hasMessageContaining("bank account")
 				.hasMessageContaining("town");
+	}
+
+	@Test
+	public void createDocument_vendorLocationWithoutCountry_failsWithPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Bahnhofstrasse 5", "3000", "Bern", " ");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("Test Creditor AG")
+				.hasMessageContaining("Test Billing Location")
+				.hasMessageContaining("has no country");
+	}
+
+	@Test
+	public void export_bankAccountAddressWithoutCountry_failsWithPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_Country(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("Test Vendor GmbH")
+				.hasMessageContaining("bank account")
+				.hasMessageContaining("has no country");
+	}
+
+	@Test
+	public void export_bankAccountAddressWithoutTownAndCountry_failsWithPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_City(null);
+		bankAccount.setA_Country(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("Test Vendor GmbH")
+				.hasMessageContaining("has no town and country");
 	}
 
 	@Test
