@@ -157,4 +157,30 @@ public class PaymentBonusCreditMemoService
 
 		return InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID());
 	}
+
+	/**
+	 * Reverses the given payment bonus credit memo; its reversal first reverses its allocations, so the referenced invoice's open amount grows back by the bonus.
+	 * Does nothing if the credit memo is already reversed or voided. Any other status that cannot be reversed (e.g. closed) is refused by the document engine.
+	 *
+	 * @throws AdempiereException if the given invoice is not a payment bonus credit memo; it is then left as it is
+	 */
+	public void reverseCreditMemoIfNotReversed(@NonNull final InvoiceId creditMemoId)
+	{
+		final I_C_Invoice creditMemo = invoiceBL.getById(creditMemoId);
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(creditMemo.getC_DocType_ID());
+		if (docTypeId == null || !isPaymentBonusCreditMemo(docTypeDAO.getById(docTypeId)))
+		{
+			throw new AdempiereException("The invoice to reverse is not a payment bonus credit memo")
+					.appendParametersToMessage()
+					.setParameter("C_Invoice_ID", creditMemoId.getRepoId())
+					.setParameter("C_DocType_ID", creditMemo.getC_DocType_ID());
+		}
+
+		if (DocStatus.ofNullableCodeOrUnknown(creditMemo.getDocStatus()).isReversedOrVoided())
+		{
+			return;
+		}
+
+		documentBL.processEx(creditMemo, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+	}
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_CompensationGroup_ContractSettings extends org.compiere.model.PO implements I_C_CompensationGroup_ContractSettings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1740158899L;
+	private static final long serialVersionUID = -1803386447L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_ContractSettings (final Properties ctx, final int C_CompensationGroup_ContractSettings_ID, @Nullable final String trxName)
@@ -86,5 +86,20 @@ public class X_C_CompensationGroup_ContractSettings extends org.compiere.model.P
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPassOn_InvoiceProcessingServiceCompany_ID (final int PassOn_InvoiceProcessingServiceCompany_ID)
+	{
+		if (PassOn_InvoiceProcessingServiceCompany_ID < 1) 
+			set_Value (COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID, null);
+		else 
+			set_Value (COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID, PassOn_InvoiceProcessingServiceCompany_ID);
+	}
+
+	@Override
+	public int getPassOn_InvoiceProcessingServiceCompany_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID);
 	}
 }

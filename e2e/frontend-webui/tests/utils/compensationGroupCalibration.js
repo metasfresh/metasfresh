@@ -163,7 +163,7 @@ export async function addMenuThroughQuickInput(page, productCode, quantity, { ex
         { timeout: SLOW_ACTION_TIMEOUT, message: 'selected product shown in the quick input' }
     ).toContain(productCode);
 
-    const qtyField = page.locator('.quick-input-container').getByRole('spinbutton');
+    const qtyField = page.locator('.quick-input-container input[inputmode="decimal"]'); // the quantity is a text input with inputmode=decimal, not a number input
     await qtyField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await qtyField.click();
     await qtyField.fill(String(quantity));

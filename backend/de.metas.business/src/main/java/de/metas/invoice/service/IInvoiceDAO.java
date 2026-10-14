@@ -107,6 +107,11 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
+	/**
+	 * @return the completed or closed invoices of the given document type that reference ({@code Ref_Invoice_ID}) the given invoice, e.g. its payment bonus credit memos
+	 */
+	ImmutableList<I_C_Invoice> retrieveReferencingCompletedInvoices(@NonNull InvoiceId invoiceId, @NonNull DocBaseAndSubType targetDocType);
+
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	/**

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
@@ -573,6 +574,40 @@ public class CandidateAssignmentService
 			assignedQty = assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().toZero();
 		}
 		return assignedQty;
+	}
+
+	/**
+	 * Computes the open refunds of the given contract again, e.g. after the currency of its amount per unit was corrected:
+	 * the sales of every refund candidate that is not processed yet are unassigned, the candidate is deleted, and the sales are assigned again,
+	 * each to the refund candidate of its own period and in the contract's current refund currency.
+	 * Refund candidates that are processed or (also partly) invoiced keep their sales.
+	 */
+	public void reassignSalesOfOpenRefundCandidates(@NonNull final RefundContract refundContract)
+	{
+		final TreeSet<InvoiceCandidateId> salesIds = new TreeSet<>(Comparator.comparing(InvoiceCandidateId::getRepoId));
+		for (final InvoiceCandidateId openRefundCandidateId : refundInvoiceCandidateRepository.getOpenRefundCandidateIds(refundContract.getId()))
+		{
+			salesIds.addAll(assignmentToRefundCandidateRepository.getAssignedCandidateIds(openRefundCandidateId));
+
+			assignmentToRefundCandidateRepository.deleteAssignments(DeleteAssignmentsRequest.builder()
+					.removeForRefundCandidateId(openRefundCandidateId)
+					.onlyActive(false)
+					.build());
+			refundInvoiceCandidateRepository.delete(openRefundCandidateId);
+		}
+
+		// in the order of their creation, like the update run assigned them
+		for (final InvoiceCandidateId salesId : salesIds)
+		{
+			final AssignableInvoiceCandidate sale = assignableInvoiceCandidateRepository.getById(salesId);
+			// a sale that is still partly assigned to an invoiced refund candidate of the contract (a higher tier) keeps that refund; it is not assigned twice
+			final boolean stillAssignedToContract = !onlyAssignmentsToContract(sale, refundContract.getId()).getAssignmentsToRefundCandidates().isEmpty();
+			final boolean stillMatches = retrieveMatchingContracts(sale).stream().anyMatch(contract -> contract.getId().equals(refundContract.getId()));
+			if (stillMatches && !stillAssignedToContract)
+			{
+				updateAssignment(sale, refundContract);
+			}
+		}
 	}
 
 	public void removeAllAssignments(@NonNull final RefundInvoiceCandidate invoiceCandidate)

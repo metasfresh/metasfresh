@@ -1,103 +1,67 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Customer_Retention
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Customer_Retention extends org.compiere.model.PO implements I_C_Customer_Retention, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 45718785L;
+	private static final long serialVersionUID = -427290870L;
 
     /** Standard Constructor */
-    public X_C_Customer_Retention (Properties ctx, int C_Customer_Retention_ID, String trxName)
+    public X_C_Customer_Retention (final Properties ctx, final int C_Customer_Retention_ID, @Nullable final String trxName)
     {
       super (ctx, C_Customer_Retention_ID, trxName);
-      /** if (C_Customer_Retention_ID == 0)
-        {
-			setC_Customer_Retention_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Customer_Retention (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Customer_Retention (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set C_Customer_Retention_ID.
-		@param C_Customer_Retention_ID C_Customer_Retention_ID	  */
 	@Override
-	public void setC_Customer_Retention_ID (int C_Customer_Retention_ID)
+	public void setC_Customer_Retention_ID (final int C_Customer_Retention_ID)
 	{
 		if (C_Customer_Retention_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Customer_Retention_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Customer_Retention_ID, Integer.valueOf(C_Customer_Retention_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Customer_Retention_ID, C_Customer_Retention_ID);
 	}
 
-	/** Get C_Customer_Retention_ID.
-		@return C_Customer_Retention_ID	  */
 	@Override
-	public int getC_Customer_Retention_ID () 
+	public int getC_Customer_Retention_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customer_Retention_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Customer_Retention_ID);
 	}
 
 	/** 
@@ -109,20 +73,15 @@ public class X_C_Customer_Retention extends org.compiere.model.PO implements I_C
 	public static final String CUSTOMERRETENTION_Neukunde = "N";
 	/** Stammkunde = S */
 	public static final String CUSTOMERRETENTION_Stammkunde = "S";
-	/** Set Customer Retention.
-		@param CustomerRetention Customer Retention	  */
 	@Override
-	public void setCustomerRetention (java.lang.String CustomerRetention)
+	public void setCustomerRetention (final @Nullable java.lang.String CustomerRetention)
 	{
-
 		set_Value (COLUMNNAME_CustomerRetention, CustomerRetention);
 	}
 
-	/** Get Customer Retention.
-		@return Customer Retention	  */
 	@Override
-	public java.lang.String getCustomerRetention () 
+	public java.lang.String getCustomerRetention() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomerRetention);
+		return get_ValueAsString(COLUMNNAME_CustomerRetention);
 	}
 }
