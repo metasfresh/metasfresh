@@ -78,6 +78,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MNote;
@@ -135,6 +136,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final SpringContextHolder.Lazy<IOLCandBL> olCandBL = SpringContextHolder.lazyBean(IOLCandBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -398,9 +400,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_OLCand olCandRecord,
 			final boolean completeIt)
 	{
-		// not a field: OLCandBL is a Spring bean, which may not be available yet when this service is instantiated
-		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCandRecord);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCandRecord);
 
@@ -484,7 +483,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			newTerm.setM_PricingSystem_ID(olCandRecord.getM_PricingSystem_ID());
 		}
 
-		final IPricingResult pricingResult = olCandBL.computePriceActual(
+		final IPricingResult pricingResult = olCandBL.get().computePriceActual(
 				olCandRecord,
 				newTerm.getPlannedQtyPerUnit(),
 				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()),
