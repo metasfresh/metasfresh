@@ -611,8 +611,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
 	{
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
-
 		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
 				.term(term)
 				.eventDateNotBefore(currentDate)
@@ -620,7 +618,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				.excludedStatus(X_C_SubscriptionProgress.STATUS_Delivered)
 				.build();
 
-		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveFirstSubscriptionProgress(query);
+		final I_C_SubscriptionProgress sp = subscriptionDAO.retrieveFirstSubscriptionProgress(query);
 		if (sp != null)
 		{
 			return sp;

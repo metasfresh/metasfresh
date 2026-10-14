@@ -57,11 +57,12 @@ import lombok.NonNull;
 public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 {
 	private static final Logger logger = LogManager.getLogger(AbstractSubscriptionDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public final boolean existsTermForOl(final I_C_OrderLine ol)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class, ol)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, ol.getC_OrderLine_ID())
@@ -83,7 +84,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	private IQuery<I_C_SubscriptionProgress> createQuery(@NonNull final SubscriptionProgressQuery query)
 	{
-		final IQueryBuilder<I_C_SubscriptionProgress> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_SubscriptionProgress> queryBuilder = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class, query.getTerm())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, query.getTerm().getC_Flatrate_Term_ID());
@@ -135,7 +136,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	private void increaseSeqNosOfSuccessors(final I_C_SubscriptionProgress predecessor)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryUpdater<I_C_SubscriptionProgress> updater = queryBL.createCompositeQueryUpdater(I_C_SubscriptionProgress.class)
 				.addAddValueToColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, BigDecimal.ONE);
 
@@ -173,7 +173,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 			final int termId,
 			final int seqNo)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, termId)
@@ -204,7 +204,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryTermsWithItemProduct(ctx, trxName).create();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
@@ -223,7 +223,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	@Override
 	public final IQueryBuilder<I_C_Flatrate_Term> queryTermsWithItemProduct(@NonNull final Properties ctx, final String trxName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
 				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class);
 	}
