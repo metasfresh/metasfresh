@@ -13,6 +13,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
@@ -75,6 +76,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -100,7 +102,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -727,27 +728,26 @@ public class SubscriptionBL implements ISubscriptionBL
 	@VisibleForTesting
 	void evalDeliveries(@NonNull final Iterator<I_C_SubscriptionProgress> deliveries, final int batchSize)
 	{
-		final Set<Integer> delayedTermIds = new HashSet<>();
+		final Set<FlatrateTermId> delayedTermIds = new HashSet<>();
 		Iterators.partition(deliveries, batchSize).forEachRemaining(batch -> evalDeliveriesBatch(batch, delayedTermIds));
 	}
 
-	private void evalDeliveriesBatch(@NonNull final List<I_C_SubscriptionProgress> batch, @NonNull final Set<Integer> delayedTermIds)
+	private void evalDeliveriesBatch(@NonNull final List<I_C_SubscriptionProgress> batch, @NonNull final Set<FlatrateTermId> delayedTermIds)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final ImmutableSet<Integer> idsWithOpenSchedule = shipmentSchedulePA.retrieveRecordIdsWithUnprocessedSchedules(
-				getTableId(I_C_SubscriptionProgress.class),
-				batch.stream().map(I_C_SubscriptionProgress::getC_SubscriptionProgress_ID).collect(ImmutableList.toImmutableList()));
+		final ImmutableSet<TableRecordReference> entriesWithOpenSchedule = shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(
+				batch.stream().map(TableRecordReference::of).collect(ImmutableList.toImmutableList()));
 
 		for (final I_C_SubscriptionProgress sd : batch)
 		{
-			final int termId = sd.getC_Flatrate_Term_ID();
+			final FlatrateTermId termId = FlatrateTermId.ofRepoId(sd.getC_Flatrate_Term_ID());
 			if (delayedTermIds.contains(termId))
 			{
-				logger.info("An earlier SP of C_Flatrate_Term_ID={} is delayed => also delaying {}", termId, sd);
+				logger.info("An earlier SP of {} is delayed => also delaying {}", termId, sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				save(sd);
 			}
-			else if (idsWithOpenSchedule.contains(sd.getC_SubscriptionProgress_ID()))
+			else if (entriesWithOpenSchedule.contains(TableRecordReference.of(sd)))
 			{
 				logger.debug("{} is delayed because there is at least one open shipment schedule", sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);

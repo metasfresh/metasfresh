@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
@@ -270,10 +271,10 @@ public class SubscriptionBL_EvalDeliveries_Test
 		registerAndRecreateSubscriptionBL(new CountingShipmentSchedulePA()
 		{
 			@Override
-			public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, final Collection<Integer> recordIds)
+			public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
 			{
 				pulledAtLookup.add(pulled.get());
-				return super.retrieveRecordIdsWithUnprocessedSchedules(adTableId, recordIds);
+				return super.retrieveRecordsWithUnprocessedSchedules(recordRefs);
 			}
 		});
 
@@ -296,7 +297,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 		registerAndRecreateSubscriptionBL(new ShipmentSchedulePA()
 		{
 			@Override
-			public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, final Collection<Integer> recordIds)
+			public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
 			{
 				throw new AdempiereException("schedule lookup failed");
 			}
@@ -312,10 +313,10 @@ public class SubscriptionBL_EvalDeliveries_Test
 		final AtomicInteger lookupCount = new AtomicInteger();
 
 		@Override
-		public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, final Collection<Integer> recordIds)
+		public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
 		{
 			lookupCount.incrementAndGet();
-			return super.retrieveRecordIdsWithUnprocessedSchedules(adTableId, recordIds);
+			return super.retrieveRecordsWithUnprocessedSchedules(recordRefs);
 		}
 	}
 
