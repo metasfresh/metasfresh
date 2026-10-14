@@ -9,6 +9,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -61,6 +62,7 @@ public class DocumentFilterParamDescriptor
 	Class<?> valueClass;
 	ITranslatableString displayName;
 	boolean showIncrementDecrementButtons;
+	@Nullable WidgetSize widgetSize;
 
 	Operator operator;
 	Object defaultValue;
@@ -95,6 +97,7 @@ public class DocumentFilterParamDescriptor
 		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
 
 		showIncrementDecrementButtons = builder.showIncrementDecrementButtons;
+		widgetSize = builder.widgetSize;
 
 		operator = builder.operator;
 
@@ -194,6 +197,7 @@ public class DocumentFilterParamDescriptor
 		private Optional<LookupDescriptor> lookupDescriptor = Optional.empty();
 		private boolean mandatory = false;
 		private boolean showIncrementDecrementButtons;
+		@Nullable private WidgetSize widgetSize;
 
 		private Object autoFilterInitialValue;
 
@@ -315,6 +319,12 @@ public class DocumentFilterParamDescriptor
 		public Builder showIncrementDecrementButtons(final boolean showIncrementDecrementButtons)
 		{
 			this.showIncrementDecrementButtons = showIncrementDecrementButtons;
+			return this;
+		}
+
+		public Builder widgetSize(@Nullable final WidgetSize widgetSize)
+		{
+			this.widgetSize = widgetSize;
 			return this;
 		}
 

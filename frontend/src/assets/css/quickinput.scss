@@ -1,4 +1,5 @@
 @import './variables.scss';
+@import './_widgetsize.scss';
 
 .quick-input-container {
   display: flex;
@@ -50,16 +51,9 @@
     &.widgetType-Lookup,
     &.widgetType-List {
       max-width: 20em;
-
-      &.widgetSize-S {
-        max-width: 7em;
-      }
-
-      &.widgetSize-L {
-        min-width: 30em;
-        max-width: 40em;
-      }
     }
+
+    @include widget-size-rules;
 
     &.widgetType-Integer,
     &.widgetType-Number,
