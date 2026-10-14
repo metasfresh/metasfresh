@@ -465,6 +465,9 @@ public class PP_Order_StepDef
 			@NonNull final String errorCode)
 	{
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
+	}
+
+	/**
 	 * Runs {@link PP_Order_PostCalculation} on the given order. It is a plain {@code AD_Process}, not a document
 	 * action - but it closes the order as part of discharging the residual, so {@code DocStatus} ends up {@code CL}.
 	 */
