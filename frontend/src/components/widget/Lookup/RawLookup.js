@@ -86,6 +86,12 @@ const isEditableElement = (element) => {
 };
 
 /**
+ * @returns true if the dataId is the id of a saved document (not empty and not 'NEW')
+ */
+const isDocumentId = (dataId) =>
+  !!dataId && String(dataId).toUpperCase() !== 'NEW';
+
+/**
  * Simple lookup field, part of a composed lookup field (see Lookup.js).
  */
 export class RawLookup extends Component {
@@ -105,6 +111,8 @@ export class RawLookup extends Component {
 
     const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
     //this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
+
+    this.focusArmedBySwitchToAnotherDocument = false;
 
     this.typeaheadRequest = this.typeaheadRequest.bind(this);
     this.autocompleteSearchDebounced = debounce(
@@ -163,11 +171,21 @@ export class RawLookup extends Component {
       !shouldBeFocused &&
       !this.inputSearch.value
     ) {
+      // A switch from one document to another (Alt+N or "New" from an existing document) takes the
+      // focus even from a field of the previous document. The new document getting its id
+      // (NEW -> id) is the same document: there the user may already be typing in another field.
+      this.focusArmedBySwitchToAnotherDocument =
+        isDocumentId(prevProps.dataId) && isDocumentId(this.props.dataId);
       this.setState({ shouldBeFocused: true });
     }
 
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
-      this.focus({ onlyIfNoOtherFieldFocused: true });
+      // On mount, and when the same document arrives again (it got its id, or the window reloaded it
+      // after a websocket "document changed" event), do not take the focus from another field.
+      this.focus({
+        onlyIfNoOtherFieldFocused: !this.focusArmedBySwitchToAnotherDocument,
+      });
+      this.focusArmedBySwitchToAnotherDocument = false;
       this.setState({ shouldBeFocused: false });
     }
 
