@@ -950,10 +950,10 @@ export class ReceiptCandidatesPage {
             await rightClickTarget.click({ button: 'right' });
 
             try {
-              await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+              await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
               console.log('Context menu opened');
 
-              await zoomIntoItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+              await zoomIntoItem.waitFor({ state: 'visible', timeout: 5000 });
               isMenuReady = true;
               break;
             } catch (menuError) {
