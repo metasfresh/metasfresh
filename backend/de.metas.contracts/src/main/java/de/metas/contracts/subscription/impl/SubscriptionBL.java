@@ -138,6 +138,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@NonNull private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	// lazy: Spring beans, resolved on first use because this class can be constructed before the Spring context is available
 	@NonNull private final SpringContextHolder.Lazy<IOLCandBL> olCandBL = SpringContextHolder.lazyBean(IOLCandBL.class);
 	@NonNull private final SpringContextHolder.Lazy<ContractOrderService> contractOrderService = SpringContextHolder.lazyBean(ContractOrderService.class);
@@ -822,7 +823,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				bpLocationId,
 				SOTrx.SALES);
 
-		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpLocationId);
+		final CountryId countryId = bpartnerBL.getCountryId(bpLocationId);
 
 		final BigDecimal newPrice = productPA.retrievePriceStd(
 				OrgId.ofRepoId(ol.getAD_Org_ID()),

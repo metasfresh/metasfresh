@@ -71,8 +71,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	// lazy: ShipmentScheduleAllocDAO holds IShipmentSchedulePA as a field (cyclic dependency)
