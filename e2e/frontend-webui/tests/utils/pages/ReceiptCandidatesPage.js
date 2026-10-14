@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PdfDownloader } from '../PdfDownloader';
+import { serverErrorMessage } from '../RestResponse';
 
 /**
  * Page object for Material Receipt Candidates window (ID: 540196).
@@ -662,22 +663,35 @@ export class ReceiptCandidatesPage {
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
+
+      // Step 8: Wait until the backend has run "Create material receipt".
+      // The quick action creates a process instance (POST /process/{processId}) and, because the
+      // process has no parameters, starts it right away (GET /process/{processId}/{pinstanceId}/start).
+      // Both requests look up the HU Editor view by its id, and "Done" (Step 9) closes that view on the
+      // server (DELETE /documentView/husToReceive/{viewId}). If "Done" is clicked before the start request
+      // was answered, the process fails with "View not found", no receipt is created, and the later
+      // navigation to the Material Receipt finds no allocation row.
+      const processCreated = page.waitForResponse(isProcessCreate, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      processCreated.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+      const processStarted = page.waitForResponse(isProcessStart, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      processStarted.catch(() => {}); // not awaited if creating the process instance fails
       await createReceiptAction.click();
 
-      // Step 8: Wait for receipt creation to complete
-      // First wait for any spinners to disappear
-      await page
-        .locator('.rotating, .indicator-pending, .loader, .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Continue if no spinner visible
-        });
+      const createResponse = await processCreated;
+      const createError = createResponse.ok() ? '' : await serverErrorMessage(createResponse);
+      expect(
+        createResponse.ok(),
+        `Create material receipt: creating the process instance returned ${createResponse.status()}: ${createError}`
+      ).toBe(true);
 
-      // Then wait for network to settle (receipt creation involves backend processing)
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      const startResponse = await processStarted;
+      const startError = startResponse.ok() ? '' : await serverErrorMessage(startResponse);
+      expect(
+        startResponse.ok(),
+        `Create material receipt: starting the process returned ${startResponse.status()}: ${startError}`
+      ).toBe(true);
+      const startResult = await startResponse.json();
+      expect(startResult.error, `Create material receipt failed: ${startResult.summary}`).toBeFalsy();
 
       // Step 9: Click "Done" to close the HU Editor
       // Using data-testid for language-independent selection
@@ -1070,3 +1084,15 @@ export class ReceiptCandidatesPage {
     });
   }
 }
+
+/** True for `POST /process/{processId}`, which creates a process instance. */
+const isProcessCreate = (response) => {
+  const request = response.request();
+  return request.method() === 'POST' && /\/process\/[^/]+$/.test(new URL(request.url()).pathname);
+};
+
+/** True for `GET /process/{processId}/{pinstanceId}/start`, which runs a process instance. */
+const isProcessStart = (response) => {
+  const request = response.request();
+  return request.method() === 'GET' && /\/process\/[^/]+\/[^/]+\/start$/.test(new URL(request.url()).pathname);
+};
