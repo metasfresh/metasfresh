@@ -753,6 +753,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
+        # Always on the 5.172 dump: customer repos build their DB FROM this image and apply core and
+        # customer scripts interleaved in script-number order. A DB with all core scripts already
+        # applied would run older customer scripts after newer core scripts (e.g. after a unique
+        # constraint they predate), so the seed must not go into this image.
         run: |
           docker buildx build \
           --progress=auto \
@@ -761,9 +765,18 @@ jobs:
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-db-init-seeded
+        # The same image on the per-branch DB seed; used only by db-apply-migrations of this repo.
+        run: |
+          docker buildx build \
+          --progress=auto \
+          --file docker-builds/Dockerfile.db-init \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded \
           .
       - name: build-db-migration-tool
         run: |
@@ -792,6 +805,14 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -812,6 +833,7 @@ jobs:
         run: |
           echo '#### db-images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded (for db-apply-migrations only)' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
@@ -838,7 +860,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }}-preloaded \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }}-seeded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
