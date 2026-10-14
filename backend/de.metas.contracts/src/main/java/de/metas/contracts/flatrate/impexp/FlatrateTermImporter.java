@@ -8,7 +8,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -87,16 +89,27 @@ import java.util.Properties;
 
 	public I_C_Flatrate_Term importRecord(final I_I_Flatrate_Term importRecord)
 	{
-		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+		final I_C_Flatrate_Conditions conditions = importRecord.getC_Flatrate_Conditions();
+		final boolean isCompensationGroup = TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP;
+
+		final ProductId productId = isCompensationGroup ? null : ProductId.ofRepoId(importRecord.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = productId == null
+				? null
+				: Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
 			.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 			.context(PlainContextAware.newWithThreadInheritedTrx())
 			.bPartner(importRecord.getC_BPartner())
-			.conditions(importRecord.getC_Flatrate_Conditions())
+			.conditions(conditions)
 			.startDate(importRecord.getStartDate())
 			.productAndCategoryId(productAndCategoryId)
+			// the requested end date must reach createTerm before the first save, for every type: a duration-0
+			// transition never computes one, so without it the first save fails outright (checkEndDateNotNull).
+			// A duration>0 transition recomputes its own end date regardless of what is requested here; setEndDate
+			// below still re-applies the row's value afterwards, for a past-dated row whose explicit end date is
+			// shorter than the transition's normal duration.
+			.endDate(importRecord.getEndDate())
 			.completeIt(false)
 			.build();
 
@@ -111,14 +124,19 @@ import java.util.Properties;
 		setDropShipBPartner(importRecord, contract);
 		setDropShipUser(contract, getCtx());
 		setDropShipLocation(contract, getCtx());
-		contract.setM_Product_ID(productId.getRepoId());
-		setUOM(contract, productId);
-		contract.setPriceActual(importRecord.getPrice());
-		setPlannedQtyPerUnit(importRecord, contract);
-		setEndDate(importRecord, contract);
+
+		if (!isCompensationGroup)
+		{
+			contract.setM_Product_ID(productId.getRepoId());
+			setUOM(contract, productId);
+			contract.setPriceActual(importRecord.getPrice());
+			setPlannedQtyPerUnit(importRecord, contract);
+			setEndDate(importRecord, contract);
+			setTaxCategoryAndIsTaxIncluded(contract);
+		}
+
 		setMasterStartdDate(importRecord, contract);
 		setMasterEnddDate(importRecord, contract);
-		setTaxCategoryAndIsTaxIncluded(contract);
 		// important to ended if needed, before saving
 		endContractIfNeeded(importRecord, contract);
 		InterfaceWrapperHelper.save(contract);
@@ -126,6 +144,12 @@ import java.util.Properties;
 		if (!isEndedContract(importRecord))
 		{
 			flatrateBL.complete(contract);
+		}
+		else if (isCompensationGroup)
+		{
+			// a past-dated row is set completed above without running completion, so the overlap check that
+			// normally fires on complete() never runs for it; run it explicitly.
+			flatrateBL.assertNoOverlappingCompensationGroupTerm(contract);
 		}
 
 		logger.trace("Insert FlaterateTerm - {}", contract);

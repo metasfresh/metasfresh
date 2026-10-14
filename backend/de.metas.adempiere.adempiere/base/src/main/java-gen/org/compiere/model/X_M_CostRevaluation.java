@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_CostRevaluation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1081678187L;
+	private static final long serialVersionUID = 19338117L;
 
     /** Standard Constructor */
     public X_M_CostRevaluation (final Properties ctx, final int M_CostRevaluation_ID, @Nullable final String trxName)
@@ -289,8 +289,8 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	 * Reference name: M_CostRevaluation RevaluationSource
 	 */
 	public static final int REVALUATIONSOURCE_AD_Reference_ID=542117;
-	/** Calculated = Calculated */
-	public static final String REVALUATIONSOURCE_Calculated = "Calculated";
+	/** Manual = Manual */
+	public static final String REVALUATIONSOURCE_Manual = "Manual";
 	/** CopyFromCostElement = CopyFromCostElement */
 	public static final String REVALUATIONSOURCE_CopyFromCostElement = "CopyFromCostElement";
 	@Override

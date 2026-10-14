@@ -1,0 +1,2 @@
+Field <de.metas.dlm.Partition.nextInspectionDate> has raw type java.sql.Timestamp in (Partition.java:0)
+Field <de.metas.dlm.partitioner.process.DLM_Partition_Create_Async.dontReEnqueueAfter> has raw type java.sql.Timestamp in (DLM_Partition_Create_Async.java:0)

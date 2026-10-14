@@ -13,6 +13,7 @@ import {
   connectionError,
   setLanguages,
   setProcessSaved,
+  showAcknowledgeDialog,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api/login';
 // import PluginsRegistry from '../services/PluginsRegistry';
@@ -156,16 +157,7 @@ const App = () => {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
-            const errorMessenger = (code) => {
-              switch (code) {
-                case 500:
-                  return 'Server error';
-                case 400:
-                  return 'Client error';
-              }
-            };
-            const { data, status } = error.response;
-            const errorTitle = errorMessenger(status);
+            const { data } = error.response;
             const message = data.message ? data.message : '';
 
             // eslint-disable-next-line no-console
@@ -179,15 +171,26 @@ const App = () => {
             }
 
             if (data.userFriendlyError) {
-              dispatch(
-                addNotification(
-                  'Error: ' + message.split(' ', 4).join(' ') + '...',
-                  data.message,
-                  5000,
-                  'error',
-                  errorTitle
-                )
-              );
+              if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
+                // The server sends a translated userMessageTitle (a shared "Information" caption for this
+                // presentation mode) alongside the message; the '' fallback keeps an older backend (no title) rendering.
+                dispatch(
+                  showAcknowledgeDialog(
+                    data.userMessageTitle || '',
+                    data.message
+                  )
+                );
+              } else {
+                // A user-friendly error is shown as-is, never prefixed with the HTTP status (e.g. "Server error" for a 500)
+                dispatch(
+                  addNotification(
+                    'Error: ' + message.split(' ', 4).join(' ') + '...',
+                    data.message,
+                    5000,
+                    'error'
+                  )
+                );
+              }
             }
           }
         }

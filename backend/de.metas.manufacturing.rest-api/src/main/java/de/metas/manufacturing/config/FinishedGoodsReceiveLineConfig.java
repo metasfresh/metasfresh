@@ -11,4 +11,5 @@ public class FinishedGoodsReceiveLineConfig
 	boolean allowReceiveToTU;
 	boolean skipReceiveTargetStep;
 	boolean captureCatchWeight;
+	boolean allowReceiveWithoutPackingItem;
 }

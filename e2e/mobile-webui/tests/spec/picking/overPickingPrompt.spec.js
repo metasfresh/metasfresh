@@ -182,6 +182,10 @@ test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => 
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '48 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                tu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });
@@ -261,6 +265,10 @@ test('LU/TU: pick exact TU qty - prompt enabled - no prompt', async ({ page }) =
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '68 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                tu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });
@@ -309,6 +317,10 @@ test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '68 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                tu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });
@@ -355,6 +367,9 @@ test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => 
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '975 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });
@@ -434,6 +449,9 @@ test('LU/CU: pick exact CU qty - prompt enabled - no prompt', async ({ page }) =
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });
@@ -482,6 +500,9 @@ test('LU/CU: prompt disabled - regression guard', async ({ page }) => {
             },
             hus: {
                 HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
+                // Picked-target tree carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                vhu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
             },
         });
     });

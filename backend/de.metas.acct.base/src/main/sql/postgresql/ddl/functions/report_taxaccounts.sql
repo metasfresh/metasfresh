@@ -1,3 +1,7 @@
+-- Drop previous signature (added p_c_tax_id parameter)
+DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
+;
+
 /**
   p_level meaning:
   * Level '1' : data summed per vatcode; only sum amount are filled up
@@ -15,28 +19,65 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     nume
                                                             p_dateto        date,
                                                             p_isshowdetails character DEFAULT 'N'::bpchar,
                                                             p_level         character DEFAULT NULL::bpchar,
-                                                            p_ad_language   character varying DEFAULT 'de_DE'::bpchar)
+                                                            p_ad_language   character varying DEFAULT 'de_DE'::bpchar,
+                                                            p_c_tax_id      numeric DEFAULT NULL)
+    -- Return-column contract (KEEP IN SYNC with the SELECT at the bottom of this function).
+    -- Amount columns come in two currencies:
+    --   * Source currency (`source_currency`)    : the currency the document was captured in.
+    --   * Accounting currency (`currency`)       : the leading accounting-schema currency.
+    -- The distinction matters for multi-currency installations — non-RC gross (`TotalAmt`)
+    -- is only filled when source==accounting currency; otherwise NULL (we do not convert here).
     RETURNS TABLE
             (
+                -- '1'=per vatcode, '2'=per vatcode+account, '3'=per vatcode+account+tax,
+                -- '4'=detail row (per document+line), 'ReCap'=per vatcode+tax. See header comment.
                 Level               varchar,
+                -- VAT code (C_VAT_Code.vatcode) this row belongs to. NULL mapped to "NoTax" label.
                 vatcode             varchar,
+                -- Pre-formatted "<accountno> <accountname>" label for the GL account.
                 AccountName         text,
+                -- Tax name (C_Tax.Name) — German regulators expect the product-name / rate label.
                 Taxname             text,
+                -- Net amount aggregate for the current period, in `source_currency`.
+                -- Populated on sum rows (levels 1/2/3/ReCap); NULL on detail rows.
+                -- Detail-level net is in the `NetAmt` column below.
                 NetAmt_SUM          numeric,
+                -- Tax amount aggregate for the current period, in `source_currency`.
+                -- Populated on sum rows (levels 1/2/3/ReCap); NULL on detail rows.
                 TaxAmt_SUM          numeric,
+                -- Tax amount aggregate for the same period one year earlier, in `source_currency`.
+                -- Used for year-over-year reconciliation on sum rows only. Zero on detail rows.
                 TaxAmt_SUM_PrevYear numeric,
+                -- Accounting-schema (reporting) currency ISO code (e.g. 'EUR').
                 Currency            varchar,
+                -- Posting date (Fact_Acct.DateAcct). Detail rows only; NULL on sum rows.
                 DateAcct            timestamp,
+                -- Source document number (C_Invoice / SAP_GLJournal / …). Detail rows only.
                 DocumentNo          text,
+                -- Business partner name. Detail rows only.
                 BPartnerName        text,
+                -- Document total per row, in `source_currency`, only filled when source==accounting currency.
+                -- Non-RC: NetAmt + TaxAmt (the invoice gross contribution of this row).
+                -- RC: NetAmt only — the §13b tax doesn't move cash (recipient self-assesses both legs,
+                --     they cancel), so the true "total" is the net. See detail in this file near TotalAmt.
                 TotalAmt            numeric,
+                -- Net (tax base) amount at detail level, in `source_currency`. NULL on sum rows
+                -- (sum-level aggregate is in `NetAmt_SUM`).
                 NetAmt              numeric,
+                -- Source currency ISO code (e.g. 'EUR') — the currency the document was captured in.
                 source_currency     varchar,
+                -- Tax amount at detail level, in `source_currency`. NULL on sum rows
+                -- (sum-level aggregate is in `TaxAmt_SUM`).
                 TaxAmt              numeric,
+                -- Echo of the p_datefrom parameter (report start date). Same on every row.
                 param_startdate     date,
+                -- Echo of the p_dateto parameter (report end date). Same on every row.
                 param_enddate       date,
+                -- Echo of the p_account_id parameter rendered as "<value> - <name>" (NULL if not filtered).
                 param_konto         varchar,
+                -- Echo of the p_c_vat_code_id parameter rendered as the VAT code (NULL if not filtered).
                 param_vatcode       varchar,
+                -- Echo of the p_ad_org_id parameter rendered as AD_Org.Name (NULL if no org filter).
                 param_org           varchar
             )
     LANGUAGE plpgsql
@@ -113,6 +154,7 @@ BEGIN
              INNER JOIN vat_codes ON vat_codes.vatcode IS NOT DISTINCT FROM t.vatcode
     WHERE ad_org_id = p_ad_org_id
       AND (p_account_id IS NULL OR p_account_id = account_id)
+      AND (p_c_tax_id IS NULL OR c_tax_id = p_c_tax_id)
       AND (DateAcct >= v_periodInfo.period_PreviousYearStart_StartDate::date AND DateAcct <= v_periodInfo.period_LastYearEnd_EndDate::date)
     GROUP BY t.vatcode, accountno, accountname, taxname, currency, source_currency;
 
@@ -144,9 +186,28 @@ BEGIN
            taxamt,
            currency,
            taxbaseamt,
+           -- Dedup key: a §13b Reverse-Charge invoice posts two Fact_Acct rows
+           -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
+           -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
+           -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
+           -- (vatcode, ad_table_id, record_id, c_tax_id); subsequent rows contribute 0.
+           -- Partitioning by (ad_table_id, record_id) rather than documentno avoids collisions
+           -- when two invoices from different BPartners share the same DocumentNo.
+           ROW_NUMBER() OVER (PARTITION BY COALESCE(t.vatcode, v_notax), t.ad_table_id, t.record_id, c_tax_id
+                              ORDER BY accountno, accountname) AS row_in_doc_tax,
+           -- TotalAmt semantics (source currency, only filled when source==accounting currency):
+           -- Non-RC rows: taxbaseamt + taxamt = invoice gross for the tax portion (summed per invoice = invoice gross).
+           -- RC rows: the VAT doesn't move cash (recipient self-assesses both legs and they cancel), so the
+           -- invoice total IS the net (taxbaseamt). Including the tax summand would produce 1190 / 810 per leg,
+           -- neither of which is meaningful for the §13b declaration. The branch below preserves the non-RC
+           -- behaviour exactly and corrects only RC.
+           --
+           -- `isreversecharge` is projected on `tax_accounts_details_v` (the view we read from),
+           -- so no extra join against C_Tax is needed here.
            (CASE
-                WHEN c_currency_id = source_currency_id THEN (taxbaseamt + taxamt)
-                                                        ELSE NULL
+                WHEN c_currency_id = source_currency_id
+                    THEN taxbaseamt + CASE WHEN t.isreversecharge = 'Y' THEN 0 ELSE taxamt END
+                ELSE NULL
             END)                                   AS TotalAmt,
            source_currency,
            c_tax_id,
@@ -180,6 +241,7 @@ BEGIN
              INNER JOIN vat_codes ON vat_codes.vatcode IS NOT DISTINCT FROM t.vatcode
     WHERE ad_org_id = p_ad_org_id
       AND (p_account_id IS NULL OR p_account_id = account_id)
+      AND (p_c_tax_id IS NULL OR c_tax_id = p_c_tax_id)
       AND (DateAcct >= p_datefrom AND DateAcct <= p_dateto);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -230,7 +292,11 @@ BEGIN
                NULL::numeric            AS TotalAmt,
                NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               SUM(taxbaseamt)          AS NetAmt_SUM,
+               -- Reverse-Charge dedup: a §13b invoice posts two Fact_Acct rows (T_Credit + T_Due)
+               -- that both join the same C_InvoiceTax and carry the same taxbaseamt. Count the
+               -- base once per (vatcode, ad_table_id, record_id, c_tax_id) — only the first row
+               -- contributes to the grand-total; subsequent rows contribute 0. Non-RC is a no-op.
+               SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
                SUM(taxamt)              AS TaxAmt_SUM,
                0::numeric               AS TaxAmt_SUM_PrevYear,
@@ -284,7 +350,7 @@ BEGIN
                NULL::text               AS BPartnerName,
                taxname::text            AS Taxname,
                NULL::numeric            AS TotalAmt,
-               NULL::numeric            AS TaxAmt,
+               NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
                SUM(taxbaseamt)          AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
@@ -338,7 +404,8 @@ BEGIN
                NULL::numeric            AS TotalAmt,
                NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               SUM(taxbaseamt)          AS NetAmt_SUM,
+               -- Reverse-Charge dedup — see Level 1 above.
+               SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
                SUM(taxamt)              AS TaxAmt_SUM,
                0::numeric               AS TaxAmt_SUM_PrevYear,

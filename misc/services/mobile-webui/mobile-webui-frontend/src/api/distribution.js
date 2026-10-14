@@ -59,6 +59,12 @@ export const completeDistributionJob = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const switchDistributionPickFromLocatorToNext = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/distribution/job/${wfProcessId}/switchPickFromLocatorToNext`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const getNextEligiblePickFromLine = ({ wfProcessId, lineId, huQRCode, productScannedCode }) => {
   return axios
     .post(`${apiBasePath}/distribution/nextEligiblePickFromLine`, {

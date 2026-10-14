@@ -154,6 +154,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 	@Override
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
@@ -376,8 +377,24 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * <p>
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
-	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
+	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parametersIn)
 	{
+		// gh#28631: drop any delivery-stopped receipt schedules before doing any HU work.
+		// This is the central HU receipt entry point — gating here covers manual-run, async-run,
+		// and shipper-transportation callers.
+		final List<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> kept = parametersIn.getReceiptSchedules().stream()
+				.filter(rs -> !rs.isDeliveryStop())
+				.collect(Collectors.toList());
+
+		if (kept.isEmpty())
+		{
+			return inOutCandidateBL.createEmptyInOutGenerateResult(false);
+		}
+
+		final CreateReceiptsParameters parameters = kept.size() == parametersIn.getReceiptSchedules().size()
+				? parametersIn
+				: parametersIn.toBuilder().receiptSchedules(kept).build();
+
 		final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
 
 		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds() != null
@@ -552,7 +569,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		// Get the transaction to be used
 		final ITrx threadTrx;

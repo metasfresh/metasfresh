@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
+import de.metas.handlingunits.serialno.SerialNoSet;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -68,6 +69,19 @@ class PickAttributesTest
 			test(
 					PickAttributes.builder().isSetLotNo(true).lotNo("lot1").build(),
 					PickAttributes.builder().isSetLotNo(true).lotNo(null).build()
+			);
+		}
+
+		@Test
+		void serialNos()
+		{
+			test(
+					PickAttributes.builder().isSetSerialNos(true).serialNos(SerialNoSet.ofNullableCommaSeparated("serial1,serial2")).build(),
+					PickAttributes.builder().isSetSerialNos(true).serialNos(SerialNoSet.ofNullableCommaSeparated("serial3,serial4")).build()
+			);
+			test(
+					PickAttributes.builder().isSetSerialNos(true).serialNos(SerialNoSet.ofNullableCommaSeparated("serial1,serial2")).build(),
+					PickAttributes.builder().isSetSerialNos(true).serialNos(null).build()
 			);
 		}
 

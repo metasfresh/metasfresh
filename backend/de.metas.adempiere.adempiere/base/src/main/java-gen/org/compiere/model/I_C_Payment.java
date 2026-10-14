@@ -689,31 +689,6 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Order Payment Schedule.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_OrderPaySchedule_ID (int C_OrderPaySchedule_ID);
-
-	/**
-	 * Get Order Payment Schedule.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_OrderPaySchedule_ID();
-
-	@Nullable org.compiere.model.I_C_OrderPaySchedule getC_OrderPaySchedule();
-
-	void setC_OrderPaySchedule(@Nullable org.compiere.model.I_C_OrderPaySchedule C_OrderPaySchedule);
-
-	ModelColumn<I_C_Payment, org.compiere.model.I_C_OrderPaySchedule> COLUMN_C_OrderPaySchedule_ID = new ModelColumn<>(I_C_Payment.class, "C_OrderPaySchedule_ID", org.compiere.model.I_C_OrderPaySchedule.class);
-	String COLUMNNAME_C_OrderPaySchedule_ID = "C_OrderPaySchedule_ID";
-
-	/**
 	 * Set Payment Batch.
 	 * Payment batch for EFT
 	 *
@@ -1618,6 +1593,31 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_Processing = new ModelColumn<>(I_C_Payment.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Proforma Rechnung.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProforma_Invoice_ID (int Proforma_Invoice_ID);
+
+	/**
+	 * Get Proforma Rechnung.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getProforma_Invoice_ID();
+
+	@Nullable org.compiere.model.I_C_Invoice getProforma_Invoice();
+
+	void setProforma_Invoice(@Nullable org.compiere.model.I_C_Invoice Proforma_Invoice);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_C_Invoice> COLUMN_Proforma_Invoice_ID = new ModelColumn<>(I_C_Payment.class, "Proforma_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_Proforma_Invoice_ID = "Proforma_Invoice_ID";
 
 	/**
 	 * Set Authorization Code.

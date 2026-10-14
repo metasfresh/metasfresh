@@ -3,7 +3,6 @@ package de.metas.distribution.ddorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.engine.DocStatus;
-import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -31,6 +30,9 @@ public class DDOrderQuery
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
+	@Nullable InSetPredicate<LocatorId> locatorToIds;
+	/** Plain {@link Set} (not {@link InSetPredicate}) because the exclude filter uses a NOT-IN subquery via {@code DD_OrderLine}; there is no meaningful "exclude all" wildcard case. */
+	@Nullable Set<LocatorId> excludeLocatorToIds;
 
 	/**
 	 * Workplace visibility filter. When {@code workplaceWarehouseId} is set, matches orders that either
@@ -45,7 +47,6 @@ public class DDOrderQuery
 	 */
 	@Nullable WarehouseId workplaceWarehouseId;
 	@Nullable LocatorId workplacePickFromLocatorId;
-	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;
 	@Nullable Set<LocalDate> datesPromised;
 	@Nullable Set<ProductId> productIds;
@@ -66,6 +67,7 @@ public class DDOrderQuery
 	public enum OrderByField
 	{
 		PriorityRule,
+		LocatorPriority,
 		DatePromised,
 		SeqNo,
 	}

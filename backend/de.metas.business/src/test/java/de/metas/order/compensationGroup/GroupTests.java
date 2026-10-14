@@ -12,14 +12,20 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -148,6 +154,13 @@ public class GroupTests
 		return GroupRegularLine.builder().lineNetAmt(BigDecimal.valueOf(lineNetAmt));
 	}
 
+	private GroupRegularLine regularLine(final int lineNetAmt, @NonNull final ProductCategoryId... productCategoryIds)
+	{
+		return regularLine(lineNetAmt)
+				.productCategoryIds(ImmutableSet.copyOf(productCategoryIds))
+				.build();
+	}
+
 	private GroupCompensationLineBuilder percentageDiscountLine(final int discountPerc)
 	{
 		final int seqNo = nextSeqNo++;
@@ -171,5 +184,172 @@ public class GroupTests
 				.productId(productId)
 				.uomId(uomId)
 				.build();
+	}
+
+	private GroupCompensationLineCreateRequest newPercentageDiscountRequest(final double discountPerc, @Nullable final ProductCategoryId appliesToProductCategoryId)
+	{
+		return GroupCompensationLineCreateRequest.builder()
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.Percent)
+				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
+				.appliesToProductCategoryId(appliesToProductCategoryId)
+				// does not matter but needs to be filled
+				.productId(productId)
+				.uomId(uomId)
+				.build();
+	}
+
+	private GroupCompensationLineCreateRequest newFixedAmountRequest(
+			@NonNull final BigDecimal price,
+			@NonNull final BigDecimal qtyEntered,
+			@Nullable final ProductCategoryId appliesToProductCategoryId)
+	{
+		return GroupCompensationLineCreateRequest.builder()
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.PriceAndQty)
+				.price(price)
+				.qtyEntered(qtyEntered)
+				.appliesToProductCategoryId(appliesToProductCategoryId)
+				// does not matter but needs to be filled
+				.productId(productId)
+				.uomId(uomId)
+				.build();
+	}
+
+	@Test
+	void additive_twoLinesSameBase_eachOnBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.additive(true)
+				.regularLine(regularLine(1000, goods))
+				.regularLine(regularLine(200, ProductCategoryId.ofRepoId(20))) // Pfand, outside base
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(3.15, goods));
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.25, goods));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-31.50"), new BigDecimal("-2.50"));
+	}
+
+	@Test
+	void notAdditive_withoutBase_compoundsAsToday()
+	{
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000).build())
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, null));
+		group.addNewCompensationLine(newPercentageDiscountRequest(10, null));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-90.00"));
+	}
+
+	@Test
+	void base_includesSubCategory()
+	{
+		final ProductCategoryId parent = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId child = ProductCategoryId.ofRepoId(11);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, child, parent))
+				.build();
+
+		assertThat(group.getRegularLinesNetAmt(parent)).isEqualByComparingTo(BigDecimal.valueOf(1000));
+	}
+
+	@Test
+	void notAdditive_withBase_compoundsWithinBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, goods))
+				.regularLine(regularLine(200, ProductCategoryId.ofRepoId(20))) // Pfand, outside base
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(3.0, goods));
+
+		// provisional amount computed by addNewCompensationLine alone, before updateAllCompensationLines recomputes it —
+		// this is the value C_Order_AddDiscountCompensationLine persists right after adding the line
+		assertThat(group.getCompensationLines().get(0).getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-30.00"));
+
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, goods));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-30.00"), new BigDecimal("-5.82"));
+	}
+
+	@Test
+	void fixedAmount_underBase_unaffectedByBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, goods))
+				.build();
+
+		group.addNewCompensationLine(newFixedAmountRequest(new BigDecimal("-5.00"), BigDecimal.ONE, goods));
+
+		final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
+		assertThat(compensationLine.getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-5.00"));
+
+		// a base does not change a fixed-amount line's own value, whatever its baseAmt is
+		group.updateAllCompensationLines();
+		assertThat(compensationLine.getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-5.00"));
+	}
+
+	@Test
+	void base_excludesAncestorCategoryOfADifferentLine()
+	{
+		final ProductCategoryId parent = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId child = ProductCategoryId.ofRepoId(11);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, parent)) // only the parent category, not the child
+				.build();
+
+		assertThat(group.getRegularLinesNetAmt(child)).isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
+	@Test
+	void notAdditive_twoDifferentBases_eachOnOwnBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId packaging = ProductCategoryId.ofRepoId(30);
+		final ProductCategoryId pfandCategory = ProductCategoryId.ofRepoId(20);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, goods))
+				.regularLine(regularLine(500, packaging))
+				.regularLine(regularLine(200, pfandCategory)) // Pfand, in neither base
+				.build();
+		group.addNewCompensationLine(newPercentageDiscountRequest(3.0, goods));
+		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, packaging));
+		group.updateAllCompensationLines();
+
+		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
+				.containsExactly(new BigDecimal("-30.00"), new BigDecimal("-3.00"));
 	}
 }

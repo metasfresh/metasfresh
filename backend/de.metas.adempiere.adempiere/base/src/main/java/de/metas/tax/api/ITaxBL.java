@@ -57,7 +57,30 @@ public interface ITaxBL extends ISingletonService
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			SOTrx soTrx);
-	
+
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 */
+	@NonNull
+	TaxQuery buildTaxQuery(
+			@NonNull TaxCategoryId taxCategoryId,
+			@NonNull Timestamp shipDate,
+			@NonNull OrgId orgId,
+			@Nullable WarehouseId warehouseId,
+			@NonNull BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull SOTrx soTrx);
+
+	/**
+	 * Retrieves the {@code C_Tax} matching the given query.
+	 * If more than one {@code C_Tax} matches, the one with the lowest {@code SeqNo} wins; a tie on {@code SeqNo} is an error.
+	 *
+	 * @return the matching tax, or empty if there is none.
+	 */
+	@NonNull
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	/**
 	 * Calculate Tax - no rounding
 	 *
@@ -74,13 +97,33 @@ public interface ITaxBL extends ISingletonService
 	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
-	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.
+	 * Enforces the invariant that at most one of {@link I_C_Tax#isTaxExempt()},
+	 * {@link I_C_Tax#isReverseCharge()}, {@link I_C_Tax#isWholeTax()} may be {@code Y}.
+	 *
+	 * <p>Resolution strategy when more than one is {@code Y}:
+	 * <ol>
+	 *     <li>If exactly one of the Y-flags was just changed in the current save, that flag wins (respects the user's explicit edit).</li>
+	 *     <li>Otherwise (no flag changed, or multiple changed at once), fall back to the static priority
+	 *         {@code IsWholeTax > IsReverseCharge > IsTaxExempt} — the narrowest / most configured flag wins.</li>
+	 * </ol>
+	 * The non-winner flags are silently cleared.
+	 *
+	 * <p>When the winner is {@code IsWholeTax}, the method also applies its companion invariants:
+	 * {@code Rate=100}, {@code IsTaxExempt=false}, {@code IsReverseCharge=false}, {@code IsDocumentLevel=true}.
+	 *
+	 * <p>Called from the {@code BEFORE_NEW} / {@code BEFORE_CHANGE} model interceptor; callers normally don't need to invoke this directly.
 	 */
-	void setupIfIsWholeTax(final I_C_Tax tax);
+	void enforceExclusiveFlags(@NonNull I_C_Tax tax);
 
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	/**
+	 * @return the given tax category id, or empty if there is no {@code C_TaxCategory} record with that id, or if that record is inactive.
+	 */
+	@NonNull
+	Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull TaxCategoryId taxCategoryId);
 
 	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }

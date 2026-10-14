@@ -16,18 +16,6 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 {
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable PickingJobScheduleId jobScheduleId;
-	
-	@Nullable
-	public static ShipmentScheduleAndJobScheduleId ofRepoIdsOrNull(final int shipmentScheduleRepoId, final int pickingJobScheduleRepoId)
-	{
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentScheduleRepoId);
-		if (shipmentScheduleId == null)
-		{
-			return null;
-		}
-
-		return of(shipmentScheduleId, PickingJobScheduleId.ofRepoIdOrNull(pickingJobScheduleRepoId));
-	}
 
 	@NonNull
 	public static ShipmentScheduleAndJobScheduleId ofRepoIds(final int shipmentScheduleRepoId, final int pickingJobScheduleRepoId)
@@ -38,6 +26,18 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 			throw new AdempiereException("No " + ShipmentScheduleAndJobScheduleId.class + " found for shipmentScheduleRepoId=" + shipmentScheduleRepoId + " and pickingJobScheduleRepoId=" + pickingJobScheduleRepoId);
 		}
 		return id;
+	}
+
+	@Nullable
+	private static ShipmentScheduleAndJobScheduleId ofRepoIdsOrNull(final int shipmentScheduleRepoId, final int pickingJobScheduleRepoId)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentScheduleRepoId);
+		if (shipmentScheduleId == null)
+		{
+			return null;
+		}
+
+		return of(shipmentScheduleId, PickingJobScheduleId.ofRepoIdOrNull(pickingJobScheduleRepoId));
 	}
 
 	public static ShipmentScheduleAndJobScheduleId ofShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)

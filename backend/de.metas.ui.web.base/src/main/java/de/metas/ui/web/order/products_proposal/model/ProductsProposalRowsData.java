@@ -166,10 +166,36 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * Only the rows the current filter keeps - this is what the grid renders.
+	 *
+	 * <p>
+	 * A caller that turns rows into persistent records (creating the order lines, an export, a bulk
+	 * action) must NOT use this: a row the filter hides would be silently dropped. Use
+	 * {@link #getAllRowsIncludingFilteredOut()} there.
+	 */
 	@Override
 	public ImmutableList<ProductsProposalRow> getAllRows()
 	{
 		return getTopLevelRows();
+	}
+
+	/**
+	 * All rows, ignoring the current filter - i.e. built from {@code rowIdsOrdered} instead of
+	 * {@code rowIdsOrderedAndFiltered}.
+	 *
+	 * <p>
+	 * Needed because everything a user typed into a row has to survive filtering: a quantity entered
+	 * on a row that a later filter hides is still a quantity the user asked for. {@link #getAllRows()}
+	 * streams the filtered ids, so callers that turn rows into persistent records - notably creating
+	 * the order lines when the view is closed with DONE - must use this method, or the hidden rows are
+	 * silently dropped.
+	 */
+	public synchronized ImmutableList<ProductsProposalRow> getAllRowsIncludingFilteredOut()
+	{
+		return rowIdsOrdered.stream()
+				.map(rowsById::get)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -294,6 +320,12 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	private synchronized void addRow(final ProductsProposalRow row)
 	{
+		// Deliberately added to the FILTERED list too, without consulting the active filter: a product
+		// the user just picked from "Andere Produkte" must appear, or it would vanish on arrival (a
+		// freshly added row carries no quantity yet, so the delivery-history criterion alone would
+		// exclude it) and there would be no row to type a quantity into. It is dropped again the next
+		// time the filter is applied, which costs nothing: a row with no quantity produces no order
+		// line either way (OrderLinesFromProductProposalsProducer gates on isQtySet()).
 		rowIdsOrderedAndFiltered.add(0, row.getId()); // add first
 		rowIdsOrdered.add(0, row.getId()); // add first
 

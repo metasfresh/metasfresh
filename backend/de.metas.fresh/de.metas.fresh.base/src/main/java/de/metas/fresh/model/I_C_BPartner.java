@@ -71,4 +71,10 @@ public interface I_C_BPartner extends de.metas.interfaces.I_C_BPartner
 	public void setFresh_Produzentenabrechnung(boolean Fresh_Produzentenabrechnung);
 	public boolean isFresh_Produzentenabrechnung();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_GRAIRequired = "GRAIRequired";
+	public void setGRAIRequired(String GRAIRequired);
+	public String getGRAIRequired();
+	// @formatter:on
 }

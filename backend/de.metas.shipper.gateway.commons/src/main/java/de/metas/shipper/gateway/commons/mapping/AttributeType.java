@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -35,6 +36,9 @@ public enum AttributeType implements ReferenceListAwareEnum
 	// Keep in sync with de.metas.common.delivery.v1.json.DeliveryMappingConstants
 	SENDER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_SenderAttention),
 	RECEIVER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_ReceiverAttention),
+	// CustNo mapping targets (address CustNo of sender / receiver)
+	SENDER_CUSTNO(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_SenderCustNo),
+	RECEIVER_CUSTNO(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_ReceiverCustNo),
 	REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_Reference),
 	LINE_REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineReference),
 	LINE_DETAIL_GROUP(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineDetailGroup),
@@ -50,4 +54,7 @@ public enum AttributeType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	@JsonValue
+	public String toJson() {return getCode();}
 }

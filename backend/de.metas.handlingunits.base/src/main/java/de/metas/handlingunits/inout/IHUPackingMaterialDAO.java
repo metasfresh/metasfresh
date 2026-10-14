@@ -108,4 +108,6 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	List<HuPackingMaterial> retrieveBy(@NonNull final HuPackingMaterialQuery query);
 
 	Optional<HuPackingMaterial> getLUPIItemForHUPI(BPartnerId bpartnerId, @NonNull HuPackingInstructionsId luPIId);
+
+	void save(@NonNull I_M_HU_PackingMaterial packingMaterial);
 }

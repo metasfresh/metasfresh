@@ -29,6 +29,8 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
@@ -67,6 +69,8 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -94,6 +98,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -129,6 +134,7 @@ public class WindowRestController
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final UserSession userSession;
 	@NonNull private final DocumentCollection documentCollection;
 	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
@@ -150,13 +156,28 @@ public class WindowRestController
 	{
 		return JSONDocumentLayoutOptions.prepareFrom(userSession)
 				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
-				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider);
+				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider)
+				.roleETagFingerprint(layoutRoleETagFingerprint());
 	}
 
 	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
 	{
 		return JSONDocumentOptions.builder()
 				.userSession(userSession);
+	}
+
+	/**
+	 * ETag fingerprint for the role-dependent parts of a window layout (the lookup "new record" option is
+	 * gated per role in {@link de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField}). The
+	 * base layout ETag is role-independent, so it is folded in here: the role id makes it distinct per role
+	 * (no cross-role 304 reuse), and the permissions cache version - bumped whenever a role-dependent table
+	 * such as {@code AD_Table_Access} changes - makes a permission change take effect without an app restart.
+	 */
+	private String layoutRoleETagFingerprint()
+	{
+		final RoleId roleId = userSession.getUserRolePermissions().getRoleId();
+		final long permissionsVersion = userRolePermissionsDAO.getCacheVersion();
+		return roleId.getRepoId() + "-" + permissionsVersion;
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -173,6 +194,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
@@ -197,6 +219,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
@@ -916,13 +939,29 @@ public class WindowRestController
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+			final NewRecordDescriptor newRecordDescriptor = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor());
+
+			// Gate the role's per-table CREATE permission on the TARGET table (e.g. C_BPartner), not the
+			// quick-input template's own table (C_BPartner_QuickInput). The standard "New" path and the WebUI
+			// both enforce this, but this endpoint did not, so a replayed/direct POST created the record
+			// fail-open for a role with WRITE but IsCanCreateNewRecords='N'. checkCanCreateNewRecord (WRITE-only)
+			// stays untouched because it is shared with the REST path (PermissionService.assertCanCreateOrUpdate).
+			final AdTableId targetTableId = AdTableId.ofRepoIdOrNull(adTableDAO.retrieveTableId(newRecordDescriptor.getTableName()));
+			final BooleanWithReason roleCanCreateNewRecord = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(
+					targetTableId,
+					userSession.getUserRolePermissions());
+			if (roleCanCreateNewRecord.isFalse())
+			{
+				throw new AdempiereException(roleCanCreateNewRecord.getReason());
+			}
+
 			document.saveIfValidAndHasChanges();
 			if (document.hasChangesRecursivelly())
 			{
 				throw new AdempiereException("Not saved");
 			}
 
-			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+			return newRecordDescriptor
 					.getProcessor()
 					.processNewRecordDocument(ProcessNewRecordDocumentRequest.builder()
 							.document(document)

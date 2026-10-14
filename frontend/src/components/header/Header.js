@@ -29,7 +29,7 @@ import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
 import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
-import Subheader, { getStandardActions } from './SubHeader';
+import Subheader, { getEnabledStandardActions } from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -1070,7 +1070,10 @@ const mapStateToProps = (state, ownProps) => {
     indicator,
     saveStatus,
     selected,
-    standardActionsAllowed: getStandardActions({
+    // the actions which may actually be triggered: present in the payload and not marked disabled
+    // by the server. Both this component's action guard and the keyboard shortcuts read this one
+    // answer, so the permission is never derived a second time.
+    standardActionsAllowed: getEnabledStandardActions({
       state,
       windowId,
       documentId,

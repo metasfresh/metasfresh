@@ -71,6 +71,10 @@
 			</textField>
 		</band>
 	</pageHeader>
+	<!-- Runs the same Docs_Sales_OrderCheckup_Details query as report_details.jrxml, but this detail band has
+	     no istextline guard. It is currently unreachable (its only caller in report_details.jrxml sits
+	     behind printWhenExpression 1==2), so re-enabling that call without adding the guard here first would
+	     print a text row's NULL article fields on this band too. -->
 	<detail>
 		<band height="19" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="0.##" isBlankWhenNull="true">

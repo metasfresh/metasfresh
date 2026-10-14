@@ -72,6 +72,10 @@ FROM (
          -- (2) demand from open (Processed='N') shipment schedules. Look-ahead applies to the
          --     schedule's effective preparation date. No look-behind here: these rows previously
          --     had a NULL SalesOrderLastUpdated and were therefore always kept.
+         --     The s.IsActive='Y' predicate lets the planner reuse the existing partial index
+         --     m_shipmentschedule_m_product_id_catchuom_id (on (m_product_id, catch_uom_id)
+         --     WHERE isactive='Y' AND processed='N') instead of a wide index scan; output-neutral
+         --     since no inactive open shipment schedules exist.
          SELECT GenerateASIStorageAttributesKey(s.M_AttributeSetInstance_ID)  AS AttributesKey,
                 SUM(GREATEST(COALESCE(s.QtyReserved, 0), 0))                  AS QtyToBeShipped,
                 0                                                             AS QtyOnHandStock,
@@ -81,6 +85,7 @@ FROM (
                   JOIN M_ShipmentSchedule s ON s.M_Product_ID = p.M_Product_ID
          WHERE p.M_Product_ID = p_M_Product_ID
            AND s.Processed = 'N'
+           AND s.IsActive = 'Y'
            AND s.AD_Org_ID = p_AD_ORG_ID
            AND (s.PreparationDate_Override <= (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
                OR (s.PreparationDate_Override IS NULL

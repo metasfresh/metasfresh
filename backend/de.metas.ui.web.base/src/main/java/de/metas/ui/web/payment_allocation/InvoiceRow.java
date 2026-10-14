@@ -122,6 +122,9 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
 
+	@Getter
+	private final LocalDate dateAcct;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
 	@Builder(toBuilder = true)
@@ -133,6 +136,7 @@ public class InvoiceRow implements IViewRow
 			@NonNull final String documentNo,
 			@Nullable final String poReference,
 			@NonNull final LocalDate dateInvoiced,
+			@Nullable final LocalDate dateAcct,
 			@NonNull final LookupValue bpartner,
 			@NonNull final InvoiceDocBaseType docBaseType,
 			@NonNull final InvoiceAmtMultiplier invoiceAmtMultiplier,
@@ -148,6 +152,7 @@ public class InvoiceRow implements IViewRow
 		this.documentNo = documentNo;
 		this.poReference = poReference;
 		this.dateInvoiced = dateInvoiced;
+		this.dateAcct = dateAcct != null ? dateAcct : dateInvoiced;
 		this.bpartner = bpartner;
 		this.docBaseType = docBaseType;
 

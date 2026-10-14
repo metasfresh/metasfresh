@@ -32,6 +32,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
@@ -175,6 +176,7 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
@@ -215,6 +217,7 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice2.setDocumentNo("000120688");
 		invoice2.setAD_Org_ID(org.getAD_Org_ID());
 		invoice2.setC_DocType_ID(type.getC_DocType_ID());
+		invoice2.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(invoice2);
 
 		// create allocation over 100 (plus 20 writeoff)
@@ -757,7 +760,7 @@ public class ESRImportBLTest extends ESRTestBase
 		}
 
 		@Override
-		public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull org.compiere.model.I_C_Invoice invoice, Set<PaymentId> ignored)
+		public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull final org.compiere.model.I_C_Invoice invoice, final Set<PaymentId> ignored)
 		{
 			if (returnValues.size() < invocationCount + 1)
 			{
@@ -780,7 +783,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
 
-		I_C_Payment payment = newInstance(I_C_Payment.class);
+		final I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
 		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
 		payment.setDocumentNo("452432");
@@ -829,7 +832,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_ESR_ImportLine line1 = lines.get(0);
 
-		I_C_Payment payment = newInstance(I_C_Payment.class);
+		final I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
 		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
 		payment.setDocumentNo("452432");
@@ -875,7 +878,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
 
-		I_C_Payment payment = newInstance(I_C_Payment.class);
+		final I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
 		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
 		payment.setDocumentNo("452432");

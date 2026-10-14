@@ -24,11 +24,10 @@ package de.metas.externalsystem.grssignum.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -54,7 +53,7 @@ public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKee
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemConfigRepository externalSystemConfigDAO;
 	private final ExternalSystemRepository externalSystemRepository;
 
 	@Override

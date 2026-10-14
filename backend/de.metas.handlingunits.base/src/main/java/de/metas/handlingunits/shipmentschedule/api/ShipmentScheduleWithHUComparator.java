@@ -38,9 +38,13 @@ import lombok.NonNull;
  * Sort {@link IShipmentScheduleWithHU} records by
  * <ul>
  * <li>Shipment Schedule's header aggregation key ({@link I_M_ShipmentSchedule#getHeaderAggregationKey()})
- * <li>TU's M_HU_ID ({@link IShipmentScheduleWithHU#getM_TU_HU()})
  * <li>M_ShipmentSchedule_ID ({@link I_M_ShipmentSchedule#getM_ShipmentSchedule_ID()})
+ * <li>M_HU_ID (smaller first, no-HU last)
  * </ul>
+ *
+ * M_ShipmentSchedule_ID is sorted before M_HU_ID to group all candidates for the same
+ * product/order-line together, ensuring deterministic shipment line ordering regardless of
+ * which HUs happen to have lower IDs.
  *
  * @author tsa
  *
@@ -83,7 +87,19 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 		}
 
 		//
-		// Sort by M_HU_ID - instances a smaller M_HU_ID go first, but instances with no HU go last;
+		// Sort by M_ShipmentSchedule_ID first, to group all candidates for the same
+		// product/order-line together
+		{
+			final int shipmentScheduleId1 = getM_ShipmentSchedule_ID(o1);
+			final int shipmentScheduleId2 = getM_ShipmentSchedule_ID(o2);
+			if (shipmentScheduleId1 != shipmentScheduleId2)
+			{
+				return shipmentScheduleId1 - shipmentScheduleId2;
+			}
+		}
+
+		//
+		// Sort by M_HU_ID - instances with a smaller M_HU_ID go first, but instances with no HU go last;
 		// important because when we mix instances with and without HU, the ones with HU need to "take the lead"!
 		{
 			final int huId1 = getM_HU_ID(o1);
@@ -92,17 +108,6 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 			{
 				// o1 has a smaller M_HU_ID => result is < 0 => o1 is smaller and goes first
 				return huId1 - huId2;
-			}
-		}
-
-		//
-		// Sort by M_ShipmentSchedule_ID
-		{
-			final int shipmentScheduleId1 = getM_ShipmentSchedule_ID(o1);
-			final int shipmentScheduleId2 = getM_ShipmentSchedule_ID(o2);
-			if (shipmentScheduleId1 != shipmentScheduleId2)
-			{
-				return shipmentScheduleId1 - shipmentScheduleId2;
 			}
 		}
 

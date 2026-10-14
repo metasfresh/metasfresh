@@ -60,6 +60,7 @@ export default class CostPrice extends PureComponent {
         <input
           ref={this.inputRef}
           type={'number'}
+          step={'any'} // a price is fractional; the default step of 1 would make e.g. 12.35 invalid and block a form submit
           value={value}
           autoComplete={autoComplete}
           className={cx(className, rank ? `input-${rank}` : null)}

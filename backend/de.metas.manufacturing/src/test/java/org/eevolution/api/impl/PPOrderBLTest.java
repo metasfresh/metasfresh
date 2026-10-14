@@ -1,24 +1,29 @@
 package org.eevolution.api.impl;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.organization.OrgId;
-import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.Builder;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.quantity.Quantity;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.process.PInstanceId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -31,6 +36,8 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,6 +149,76 @@ public class PPOrderBLTest
 			assertThat(order.getCanBeExportedFrom()).isEqualTo(Env.MAX_DATE);
 		}
 
+	}
+
+	/**
+	 * The IsFixedProductionDate flag must stop the automatic overwrite of the
+	 * effective production date (DateDelivered) done by {@link PPOrderBL#addQty}.
+	 */
+	@Nested
+	public class addQty
+	{
+		private I_C_UOM uom;
+		private I_PP_Order order;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			uom = newInstance(I_C_UOM.class);
+			uom.setName("Each");
+			uom.setStdPrecision(0);
+			saveRecord(uom);
+
+			final I_M_Product product = newInstance(I_M_Product.class);
+			product.setName("ProductUnderTest");
+			product.setC_UOM_ID(uom.getC_UOM_ID());
+			saveRecord(product);
+
+			order = newInstance(I_PP_Order.class);
+			order.setM_Product_ID(product.getM_Product_ID());
+			order.setC_UOM_ID(uom.getC_UOM_ID());
+			order.setQtyOrdered(new BigDecimal("10"));
+			saveRecord(order);
+		}
+
+		private void reportReceipt(final ZonedDateTime date)
+		{
+			ppOrderBL.addQty(OrderQtyChangeRequest.builder()
+					.ppOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
+					.qtyReceivedToAdd(Quantity.of(new BigDecimal("2"), uom))
+					.date(date)
+					.build());
+		}
+
+		private I_PP_Order reload()
+		{
+			return ppOrderBL.getById(PPOrderId.ofRepoId(order.getPP_Order_ID()));
+		}
+
+		@Test
+		public void dateDelivered_isUpdatedToReceiptDate_whenNotFixedProductionDate()
+		{
+			order.setIsFixedProductionDate(false);
+			saveRecord(order);
+
+			final ZonedDateTime receiptDate = ZonedDateTime.parse("2026-06-15T10:00:00Z");
+			reportReceipt(receiptDate);
+
+			assertThat(reload().getDateDelivered()).isEqualTo(TimeUtil.asTimestamp(receiptDate));
+		}
+
+		@Test
+		public void dateDelivered_isPreserved_whenFixedProductionDate()
+		{
+			final Timestamp manualProdDate = TimeUtil.asTimestamp(ZonedDateTime.parse("2026-01-01T00:00:00Z"));
+			order.setIsFixedProductionDate(true);
+			order.setDateDelivered(manualProdDate);
+			saveRecord(order);
+
+			reportReceipt(ZonedDateTime.parse("2026-06-15T10:00:00Z"));
+
+			assertThat(reload().getDateDelivered()).isEqualTo(manualProdDate);
+		}
 	}
 
 	/**

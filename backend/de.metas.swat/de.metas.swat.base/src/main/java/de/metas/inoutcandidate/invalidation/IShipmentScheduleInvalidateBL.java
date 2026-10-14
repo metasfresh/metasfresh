@@ -104,4 +104,9 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * Notify the registered listeners that a a bunch of segments changed. Maybe they can gain a performance benefit from processing them all at once.
 	 */
 	void notifySegmentsChanged(Collection<IShipmentScheduleSegment> storageSegments);
+
+	/**
+	 * Deletes the schedule's {@code M_ShipmentSchedule_Recompute} markers, tagged included.
+	 */
+	void deleteRecomputeMarkers(ShipmentScheduleId shipmentScheduleId);
 }

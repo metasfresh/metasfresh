@@ -57,6 +57,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -87,6 +88,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 		void addNotifications(List<I_AD_Note> notifications);
 
+		/** Implementations which are able to notify a user shall do so from here. */
+		void addFailedCandidates(List<I_C_Invoice_Candidate> failedCandidates, Throwable error);
+
 		/**
 		 * @param ctx context (for translation)
 		 * @return result summary (using context language)
@@ -107,11 +111,24 @@ public interface IInvoiceCandBL extends ISingletonService
 	IInvoiceGenerator generateInvoices();
 
 	/**
+	 * Creates invoices from the given selection, with optional partial-invoice routing.
+	 * <p>
+	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
+	 *
+	 * @param isPartialInvoice {@code true} to generate partial invoices, {@code false} for final invoices,
+	 *                         or {@code null} to use the default behaviour.
+	 */
+	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, @Nullable Boolean isPartialInvoice, String trxName);
+
+	/**
 	 * Creates invoices from the given selection.
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 */
-	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName);
+	default IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName)
+	{
+		return generateInvoicesFromSelection(ctx, AD_PInstance_ID, ignoreInvoiceSchedule, null, trxName);
+	}
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.
@@ -128,6 +145,24 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
+
+	/**
+	 * Same as {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean)} but also accepts the
+	 * dedicated flag that controls whether {@link de.metas.order.InvoiceRule#Manual} candidates are included.
+	 *
+	 * @param isInvoiceManualRule when {@code true}, candidates whose effective rule is {@code Manual} are NOT skipped
+	 *                            (otherwise Manual candidates carry {@code DateToInvoice=NULL} and are always skipped
+	 *                            by the schedule gate, regardless of {@code ignoreInvoiceSchedule}).
+	 */
+	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
+
+	/**
+	 * Like {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean, boolean)}, but yields the reason.
+	 *
+	 * @return the translated skip reason, or {@code null} if the candidate is NOT skipped.
+	 */
+	@Nullable
+	String getInvoicingSkipReasonOrNull(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
@@ -358,6 +393,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
+	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
+	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
+
 	/**
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
@@ -410,6 +448,11 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
 
+	/**
+	 * @return the candidate's net amount invoiced as its invoice line allocations say right now, i.e. without waiting for its {@code NetAmtInvoiced} to be updated
+	 */
+	BigDecimal computeNetAmtInvoiced(I_C_Invoice_Candidate ic);
+
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
 	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
@@ -450,4 +493,25 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * (null, null) => null
 	 */
 	Optional<ProjectId> extractCommonProjectId(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
+	/**
+	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
+
+	/**
+	 * Retrieves the invoice candidates associated with the given inout line. Thin delegate to
+	 * {@code IInvoiceCandDAO#retrieveInvoiceCandidatesForInOutLine} so a caller that already collaborates with
+	 * {@link IInvoiceCandBL} routes through the BL instead of also injecting the DAO of the same aggregate.
+	 */
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(org.compiere.model.I_M_InOutLine inOutLine);
+
+	/** Saves the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#save} (see {@link #retrieveInvoiceCandidatesForInOutLine}). */
+	void save(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Flags the given invoice candidate for asynchronous recompute. Thin delegate to {@code IInvoiceCandDAO#invalidateCand}. */
+	void invalidateCand(I_C_Invoice_Candidate invoiceCandidate);
+
+	/** Retrieves the invoice lines generated from the given invoice candidate. Thin delegate to {@code IInvoiceCandDAO#retrieveIlForIc}. */
+	List<org.compiere.model.I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
 }

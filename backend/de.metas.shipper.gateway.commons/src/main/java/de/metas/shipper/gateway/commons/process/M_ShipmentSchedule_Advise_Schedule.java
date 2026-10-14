@@ -38,7 +38,8 @@ public class M_ShipmentSchedule_Advise_Schedule extends JavaProcess
 		helper.requestCarrierAdvises(ShipmentScheduleQuery.builder()
 				.fromCompleteOrderOrNullOrder(true)
 				.preparationDate(SystemTime.asLocalDate())
-				.includeWithQtyToDeliverZero(false)
+				// no QtyToDeliver-zero gate: advise is per-unit (qty-independent), so it must fire for open
+				// availability-gated schedules that currently have nothing on hand. Processed are still excluded.
 				.includeProcessed(false)
 				.orderByOrderId(true)
 				.build());

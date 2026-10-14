@@ -160,7 +160,7 @@ test('To a new TU, scanning L+M QR codes', async ({ page }) => {
         hus: {
             'tu1': {
                 storages: { 'BOM': '3 PCE' },
-                attributes: { 'WeightNet': '0.303' }
+                attributes: { 'WeightNet': '0.303', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }
             }
         }
     })
@@ -307,6 +307,7 @@ test('TO a new LU, scanning 2 x GTIN codes', async ({ page }) => {
             'lu1': {
                 huStatus: 'A',
                 storages: { 'BOM': '2 PCE' },
+                attributes: { 'Lot-Nummer': '04481124' },
                 // FIXME: atm we are loading in 2 separate TUs. We will have to fix this in future.
                 // tus: [
                 //     { storages: { 'BOM': '1 PCE' }, isAggregatedTU: false, qtyTUs: 1 },

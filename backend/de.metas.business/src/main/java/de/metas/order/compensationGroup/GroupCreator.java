@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
@@ -47,19 +48,23 @@ public final class GroupCreator
 
 	private final BigDecimal qty;
 
+	@Nullable private final FlatrateTermId flatrateTermId;
+
 	@Builder
 	private GroupCreator(
 			@NonNull final GroupRepository groupsRepo,
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			//
 			@NonNull final GroupTemplate groupTemplate,
-			@Nullable final BigDecimal qty)
+			@Nullable final BigDecimal qty,
+			@Nullable final FlatrateTermId flatrateTermId)
 	{
 		this.groupsRepo = groupsRepo;
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 
 		this.groupTemplate = groupTemplate;
 		this.qty = coalesceNotNull(qty, ONE);
+		this.flatrateTermId = flatrateTermId;
 	}
 
 	public static class GroupCreatorBuilder
@@ -90,6 +95,7 @@ public final class GroupCreator
 						.orderLineIds(lineIdsToGroup != null ? ImmutableSet.copyOf(lineIdsToGroup) : ImmutableSet.of())
 						.newGroupTemplate(groupTemplate)
 						.newContractConditionsId(contractConditionsId)
+						.newFlatrateTermId(flatrateTermId)
 						.qtyMultiplier(qty)
 						.build());
 

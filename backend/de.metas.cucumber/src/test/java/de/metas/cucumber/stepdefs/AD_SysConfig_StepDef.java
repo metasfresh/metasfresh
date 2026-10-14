@@ -23,33 +23,68 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product_Category;
+import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class AD_SysConfig_StepDef
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final AD_User_StepDefData userTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
-	{
-		this.userTable = userTable;
-	}
+	/**
+	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url} or
+	 * {@link #temporarily_set_sys_config_int_value}, mapped to their value from BEFORE the overwrite
+	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
+	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
+	 */
+	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
+	/**
+	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
+	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
+	 * Prefer {@link #temporarily_set_sys_config_boolean_value} instead whenever the override must not outlive this
+	 * scenario, per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given set sys config boolean value true for sys config de.metas.pos.Return.SomeFlag
+	 * </pre>
+	 */
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		switch (sysconfigType)
 		{
@@ -71,7 +106,101 @@ public class AD_SysConfig_StepDef
 						.setParameter("type:", sysconfigType);
 		}
 
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
+		resetSysConfigCache();
+	}
+
+	/**
+	 * Points a sysconfig holding a self-referencing servlet URL (e.g. the barcode servlet a Jasper report
+	 * embeds as a live image) at THIS cucumber JVM's own embedded Tomcat, instead of whatever fixed value the
+	 * scrambled test DB happens to carry (a stale port from wherever that dump's data originated).
+	 * <p>
+	 * The embedded server binds an ephemeral port per run ({@code CucumberLifeCycleSupport} starts
+	 * {@code ServerBoot} inline), so the URL cannot be a literal Gherkin value -- it is read from the
+	 * already-bound Spring {@code Environment} property {@code local.server.port}, which Spring Boot's
+	 * embedded servlet container sets once the port is actually bound.
+	 * <p>
+	 * The prior value is captured before the overwrite and restored by
+	 * {@link #restoreRepointedSysConfigsAfterScenario()}, so this run's now-dead ephemeral port does not
+	 * become the NEXT run's version of the exact "stale port" condition this step exists to compensate for.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And set sys config 'de.metas.adempiere.report.barcode.BarcodeServlet' to this instance's own URL at '/adempiereJasper/BarcodeServlet'
+	 * </pre>
+	 */
+	@And("set sys config {string} to this instance's own URL at {string}")
+	public void point_sysconfig_at_own_servlet_url(@NonNull final String sysConfigName, @NonNull final String servletPath)
+	{
+		final ApplicationContext applicationContext = SpringContextHolder.instance.getApplicationContext();
+		assertThat(applicationContext).as("Spring application context").isNotNull();
+
+		final String localServerPort = applicationContext.getEnvironment().getProperty("local.server.port");
+		assertThat(localServerPort).as("local.server.port (this instance's own embedded Tomcat port)").isNotBlank();
+
+		// captured once per sysconfig name per scenario: a second call in the same scenario (unlikely, but
+		// not forbidden) must not overwrite the ALREADY-captured original with this scenario's own first write
+		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+
+		final String ownServletUrl = "http://localhost:" + localServerPort + servletPath;
+		sysConfigBL.setValue(sysConfigName, ownServletUrl, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Sets a sys config to a scenario-local int value, capturing its PRIOR value (via
+	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
+	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
+	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config int value 3 for sys config 'de.metas.fresh.ordercheckup_barcode.Copies'
+	 * </pre>
+	 */
+	@And("temporarily set sys config int value {int} for sys config {string}")
+	public void temporarily_set_sys_config_int_value(final int value, @NonNull final String sysConfigName)
+	{
+		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+
+		setSysConfigIntValue(sysConfigName, value);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #point_sysconfig_at_own_servlet_url} and
+	 * {@link #temporarily_set_sys_config_int_value} -- an {@code @After} hook rather than a trailing Gherkin
+	 * step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
+	 * restore. A no-op for every scenario that never called either step.
+	 * <p>
+	 * If the sysconfig had no prior value (a fresh key, {@code null}), there is nothing to restore it TO --
+	 * {@link ISysConfigBL} exposes no delete, so this scenario's own written value is left in place. That
+	 * matches every other sysconfig write in this class (none of which restore either) and does not create a
+	 * new failure mode: the next run still overwrites it with ITS OWN ephemeral port before reading it.
+	 */
+	@After
+	public void restoreRepointedSysConfigsAfterScenario()
+	{
+		if (priorValueBySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		{
+			final String sysConfigName = entry.getKey();
+			@Nullable final String priorValue = entry.getValue();
+			if (priorValue == null)
+			{
+				continue;
+			}
+
+			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+		}
+
+		priorValueBySysConfigName.clear();
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -89,6 +218,35 @@ public class AD_SysConfig_StepDef
 		}
 	}
 
+	/**
+	 * Sets an AD_SysConfig value to a C_BPartner's repo id — for sysconfig keys that resolve a business
+	 * partner (e.g. the customer-return REST path's "unknown customer" fallback).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) business partner whose repo id is stored<br>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update AD_SysConfig with C_BPartner_ID:
+	 *   | Name                                      | C_BPartner_ID |
+	 *   | sysconfig.customerReturn.unknownBpartner  | bpartner_1    |
+	 * </pre>
+	 */
+	@And("update AD_SysConfig with C_BPartner_ID:")
+	public void set_sysConfig_bpartner(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String name = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final I_C_BPartner bpartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable);
+
+			setSysConfigIntValue(name, bpartner.getC_BPartner_ID());
+		});
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
 	@And("reset all cache")
 	public void reset_cache()
 	{
@@ -98,5 +256,117 @@ public class AD_SysConfig_StepDef
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+	}
+
+	/**
+	 * Sets a sys config to a boolean value ({@code true} or {@code false}) for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
+	 * @cucumber.depends (none)
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+	 * </pre>
+	 */
+	@And("temporarily set sys config boolean value {word} for sys config {string}")
+	public void temporarily_set_sys_config_boolean_value(@NonNull final String valueStr, @NonNull final String sysConfigName)
+	{
+		if (!"true".equals(valueStr) && !"false".equals(valueStr))
+		{
+			throw new AdempiereException("Expected true or false but got: " + valueStr);
+		}
+
+		rememberPriorValue(sysConfigName);
+		enable_sys_config("boolean", valueStr, sysConfigName);
+	}
+
+	/**
+	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name to point<br>
+	 *   <b>M_Product_Category_ID</b> — (required, identifier-ref) the product category whose repo id becomes the sysconfig's value<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData
+	 * @cucumber.example <pre>
+	 * Given temporarily set AD_SysConfig to M_Product_Category_ID:
+	 *   | Name                             | M_Product_Category_ID |
+	 *   | PackingMaterialProductCategoryID | pm_category           |
+	 * </pre>
+	 */
+	@And("temporarily set AD_SysConfig to M_Product_Category_ID:")
+	public void temporarily_set_sysConfig_to_product_category(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String sysConfigName = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final ProductCategoryId productCategoryId = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+					.lookupNotNullIdIn(productCategoryTable);
+
+			rememberPriorValue(sysConfigName);
+			setSysConfigIntValue(sysConfigName, productCategoryId.getRepoId());
+
+			resetSysConfigCache();
+		});
+	}
+
+	/**
+	 * Setting a value also fires a cache invalidation event, but that event may not be processed before the next step runs.
+	 */
+	private static void resetSysConfigCache()
+	{
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	private void deleteSystemSysConfig(@NonNull final String sysConfigName)
+	{
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM)
+				.create()
+				.delete();
+	}
+
+	/**
+	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
+	 * <p>
+	 * Remembers the value a sysconfig had before this scenario first changed it; {@code containsKey}, because {@code null} (no prior value) is a value too.
+	 */
+	private void rememberPriorValue(@NonNull final String sysConfigName)
+	{
+		if (!priorValueBySysConfigName.containsKey(sysConfigName))
+		{
+			priorValueBySysConfigName.put(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+		}
+	}
+
+	/**
+	 * An {@code @After} hook so the restore also runs when a step failed. A sysconfig without prior value is deleted again.
+	 */
+	@After
+	public void restoreTemporarySysConfigsAfterScenario()
+	{
+		if (priorValueBySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		{
+			final String sysConfigName = entry.getKey();
+			final String priorValue = entry.getValue();
+			if (priorValue == null)
+			{
+				deleteSystemSysConfig(sysConfigName);
+			}
+			else
+			{
+				sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			}
+		}
+
+		priorValueBySysConfigName.clear();
+		resetSysConfigCache();
 	}
 }

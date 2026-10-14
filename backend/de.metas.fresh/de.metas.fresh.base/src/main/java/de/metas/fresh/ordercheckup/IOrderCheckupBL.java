@@ -32,6 +32,13 @@ public interface IOrderCheckupBL extends ISingletonService
 	void voidReports(I_C_Order order);
 
 	/**
+	 * Generates and prints the reports. With {@code order.IsReprintOrderCheckup} unset, an order that already has
+	 * reports keeps them instead: the newest per report identity are reactivated, undoing the deactivation the
+	 * reactivate did.
+	 */
+	void generateReportsOnCompleteIfNeeded(I_C_Order order);
+
+	/**
 	 * Return the number of copies (2 will result in two printouts in sum) that shall be set to the given <code>C_Printing_Queue</code>.
 	 */
 	int getNumberOfCopies(I_C_Printing_Queue queueItem, I_AD_Archive printOut);

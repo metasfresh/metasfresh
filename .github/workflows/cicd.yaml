@@ -5,6 +5,7 @@ on:
       - '**'
     paths-ignore:
       - '**/README.md'
+      - '.mergify.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,6 +23,11 @@ jobs:
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
       # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
       base-refname: ${{ steps.base-refname.outputs.refname }}
+      # Floating tag of the BASE branch this ref derives from (e.g. soft_panda_hotfix for soft_panda_hotfix_Foo).
+      # Used as an additional --cache-from so a feature branch's FIRST build reuses the base image's already-published
+      # layers and pushes only the small delta. For a base branch (or an unrecognised ref) this equals tag-floating,
+      # so the extra cache-from is a harmless no-op.
+      base-tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -56,10 +62,11 @@ jobs:
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: determine-base-refname
-        # Resolve the BASE branch this ref derives from; selects the DB seed (see init output base-refname).
+        # Resolve the BASE branch this ref derives from. It selects the DB seed (init output base-refname) and the
+        # base-tag-floating cache-from, so a feature branch's first build reuses the base branch's image cache.
         # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
         # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
-        # (base branches, merge-queue/merge-* branches, or anything unrecognised).
+        # (base branches, merge-queue/merge-* branches, or anything unrecognised) -> base-tag == own tag, no-op.
         id: base-refname
         env:
           GIT_REF: ${{ github.ref_name }}
@@ -72,7 +79,7 @@ jobs:
             fi
           done
           [ -z "$best" ] && best="$GIT_REF"
-          echo "Base branch resolved for the DB seed: $best"
+          echo "Base branch resolved (DB seed, cache-from): $best"
           echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
@@ -124,6 +131,7 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo '* Allure test reports: https://test-reports.metasfresh.com/branches/${{ steps.sanitize-branch-gh-pages.outputs.value }}/builds/${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}/allure/' >> $GITHUB_STEP_SUMMARY
 
   # Fast migration CLI build - runs in parallel with java job
   # This enables db-images to start ~10 minutes earlier
@@ -152,7 +160,7 @@ jobs:
       - name: build-migration-cli
         run: |
           docker buildx build \
-            --progress=plain \
+            --progress=auto \
             --file docker-builds/Dockerfile.migration-cli \
             --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
             --output type=local,dest=./artifacts \
@@ -195,10 +203,11 @@ jobs:
       - name: build-commons
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
@@ -206,10 +215,11 @@ jobs:
       - name: build-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
@@ -233,10 +243,11 @@ jobs:
       - name: build-backend-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
@@ -245,10 +256,11 @@ jobs:
       - name: build-camel
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
@@ -257,10 +269,11 @@ jobs:
       - name: build-camel-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
@@ -357,9 +370,9 @@ jobs:
 
   frontend:
     runs-on: ${{ vars.RUNNER_HEAVY }}
-    needs: init
     permissions:
       packages: write
+    needs: init
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -374,40 +387,44 @@ jobs:
       - name: build-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-mobile
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-mobile-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.base-tag-floating }} \
           --tag ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-frontend-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.test \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.base-tag-floating }} \
           --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -418,7 +435,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -426,7 +443,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -434,7 +451,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -442,7 +459,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: push-image ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -492,7 +509,7 @@ jobs:
       - name: run-tests
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --target test \
           --tag metas-frontend:test \
@@ -506,7 +523,7 @@ jobs:
         with:
           name: junit-results-jest
           path: jest/frontend/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: Generate JUnit HTML for Jest
         if: always()
@@ -563,10 +580,11 @@ jobs:
       - name: build-api
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }} \
@@ -574,10 +592,11 @@ jobs:
       - name: build-app
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }} \
@@ -585,10 +604,11 @@ jobs:
       - name: build-externalsystems
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
           --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
@@ -596,10 +616,11 @@ jobs:
       - name: build-edi
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.edi \
           --cache-to type=inline \
           --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
@@ -612,7 +633,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -620,7 +641,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -628,7 +649,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -636,7 +657,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -644,7 +665,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -652,7 +673,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
       # NOTE: metas-db and metas-db-migration-tool push steps moved to db-images job
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
@@ -661,7 +682,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -669,7 +690,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
 
       - name: produce-summary
         run: |
@@ -717,6 +738,19 @@ jobs:
           # Aggregate SQL files directly from source code (no Maven dependency)
           # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
           # Use -print0/read -d '' to handle filenames with spaces
+          # A script must live one level deep, inside its module's NN-<module> folder:
+          # the find below matches ".../system/<folder>/<file>.sql" only, so a script placed
+          # directly in ".../system/" would be dropped WITHOUT any error and its migration
+          # would silently never reach the DB image. Fail loudly instead.
+          # `set -e` is on (Actions' bash default), so a bare $(find ...) that errors would
+          # abort the step with no message. Capture the status and say what broke instead.
+          STRAY=$(find backend -path "*/src/main/sql/postgresql/system/*.sql" -not -path "*/system/*/*") || {
+            echo "::error::could not scan for stray migration scripts (find exited $?)"; exit 1; }
+          if [ -n "$STRAY" ]; then
+            echo "::error::migration script(s) sit directly in src/main/sql/postgresql/system/ and would not be aggregated. Move each into its module's NN-<module> subfolder:"
+            echo "$STRAY"
+            exit 1
+          fi
           mkdir -p migration-sql
           find backend -path "*/src/main/sql/postgresql/system/*/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
             intermediate_folder=$(basename "$(dirname "$sql_file")")
@@ -740,10 +774,11 @@ jobs:
         # constraint they predate), so the seed must not go into this image.
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-init \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
@@ -761,10 +796,11 @@ jobs:
       - name: build-db-migration-tool
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-migration-tool-lite \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -775,7 +811,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -783,7 +819,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -791,7 +827,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -799,7 +835,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -807,7 +843,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### db-images' >> $GITHUB_STEP_SUMMARY
@@ -834,10 +870,11 @@ jobs:
       - name: build-db-preloaded
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.base-tag-floating }}-preloaded \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }}-seeded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
@@ -869,7 +906,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -877,7 +914,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
       - name: produce summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -910,10 +947,11 @@ jobs:
       - name: build-procurement-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
@@ -922,30 +960,33 @@ jobs:
       - name: build-procurement-nginx
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.nginx \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-procurement-rabbitmq
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.rabbitmq \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-procurement-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -956,7 +997,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -964,7 +1005,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -972,7 +1013,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -980,7 +1021,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -988,7 +1029,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -996,7 +1037,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1004,7 +1045,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
+          command: docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1012,7 +1053,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
+          command: docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -1024,7 +1065,11 @@ jobs:
 
   compatibility-images:
     runs-on: ${{ vars.RUNNER_HEAVY }}
-    needs: [ init, frontend, backend, db-apply-migrations ]
+    # Decoupled from db-apply-migrations: the db + migration-tool re-tags
+    # are produced by the `compatibility-images-db` job below so that the
+    # app/api/frontend/mobile/edi/externalsystems compat artifacts are not
+    # gated on the preloaded-db image push.
+    needs: [ init, frontend, backend ]
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1046,10 +1091,11 @@ jobs:
       - name: build-api-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.base-tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat \
@@ -1058,10 +1104,11 @@ jobs:
       - name: build-app-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.base-tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
@@ -1070,10 +1117,11 @@ jobs:
       - name: build-mobile-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.base-tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
@@ -1081,26 +1129,17 @@ jobs:
       - name: build-frontend-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.base-tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           --tag metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: tag images
-        run: |
-          docker image inspect metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded >/dev/null 2>&1 || docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
-          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
-
+      # Push built compat images BEFORE pulling more images to free disk space
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1108,7 +1147,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1116,7 +1155,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
+          command: docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1124,7 +1163,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1132,7 +1171,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          command: docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1140,7 +1179,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1148,7 +1187,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+          command: docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1156,7 +1195,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1164,7 +1203,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+          command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1172,7 +1211,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1180,7 +1219,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1188,23 +1227,32 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-      - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-        if: env.ACT != 'true'
-        uses: nick-fields/retry@v4
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-      - name: push-image metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-        if: env.ACT != 'true'
-        uses: nick-fields/retry@v4
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: cleanup-before-pulling-images
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing pushed compat images to free space ==="
+          docker image rm metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat || true
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: push-image metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1212,7 +1260,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -1220,7 +1268,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+          command: docker push metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
 
       - name: produce-summary
         run: |
@@ -1230,17 +1278,63 @@ jobs:
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo 'Database compat images (metasfresh-db, metasfresh-db-migration-tool) are produced by the `compatibility-images-db` job.' >> $GITHUB_STEP_SUMMARY
+
+  compatibility-images-db:
+    # DB + migration-tool re-tag, split out of `compatibility-images` so that
+    # the app-leg artifacts no longer wait on `db-apply-migrations`. This job
+    # is the only remaining consumer of the preloaded-db image on the
+    # critical path to `cicd-dispatch`.
+    runs-on: ${{ vars.RUNNER_HEAVY }}
+    needs: [ init, db-apply-migrations ]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: push-image metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: produce-summary
+        run: |
+          echo '#### database compat images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     name: test (java)
     runs-on: ${{ vars.RUNNER_TEST }}
-    needs: [ init, java ]
     permissions:
       packages: write
+    needs: [ init, java ]
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1264,23 +1358,35 @@ jobs:
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: cleanup-after-j8
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
       - name: run-junit-tests-j14
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
           --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }}-j14 \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
@@ -1308,7 +1414,7 @@ jobs:
           path: |
             junit/commons/**/*.xml
             junit/backend/**/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: upload camel junit results
         uses: actions/upload-artifact@v6
@@ -1316,7 +1422,7 @@ jobs:
         with:
           name: junit-results-camel
           path: junit/camel/**/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: Merge backend JUnit XML
         if: always()
@@ -1371,7 +1477,13 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
-          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
+          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then \
+            echo "----- ArchUnit violation detail (grepped from the full backend log; the tail below can miss it) -----"; \
+            grep -n -A 300 "ArchUnit found new architecture violations" junit/backend/junit.log || echo "(no ArchUnit violation block in backend log)"; \
+            echo "----- last 1000 lines of backend junit.log -----"; \
+            tail -1000 junit/backend/junit.log; \
+            exit 1; \
+          fi      # print ArchUnit detail + backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
       - uses: actions/upload-artifact@v6
         if: failure()
@@ -1408,8 +1520,11 @@ jobs:
       - name: build-cucumber
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.cucumber \
+          --cache-to type=inline \
+          --cache-from ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
@@ -1445,7 +1560,7 @@ jobs:
       max-parallel: 10
       fail-fast: false
       matrix:
-        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, flaky, catchall ]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, catchall ]
         include:
           - profile: profile1
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor1"
@@ -1463,8 +1578,6 @@ jobs:
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor7"
           - profile: report
             params: -DexcludedGroups="ignore,flaky" -Dgroups="report"
-          - profile: flaky
-            params: -DexcludedGroups="ignore" -Dgroups="flaky"
           - profile: catchall
             params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,report,flaky"
     steps:
@@ -1558,7 +1671,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -1645,7 +1758,8 @@ jobs:
           name: junit-results-cucumber-${{ matrix.profile }}
           path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
+      # Allure reports uploaded by publish-test-reports job
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
@@ -1864,10 +1978,43 @@ jobs:
           dbqualifier: preloaded
           PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
-          docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+      # Own step with `if: always()`: when `run test` is cancelled at the job-level
+      # `timeout-minutes`, only `always()` steps still run, so a capture chained behind the
+      # blocking `docker compose up` inside `run test` was unreachable in exactly the case
+      # that needs it - a stack container going unresponsive mid-suite, every remaining test
+      # burning its full timeout, and the job killed at the cap. `!cancelled()` cannot be
+      # used here: it is false on a cancelled job, which is the case being captured.
+      # `wiremock` is included (no `profiles:` key, so it starts in both profiles); the
+      # playwright container is not - its stdout is already `playwright.log`. Service
+      # prefixes are kept and `--timestamps` added so that a merged multi-service log stays
+      # attributable and correlatable with the test-side failure times.
+      - name: capture stack logs
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          timeout 120 docker compose --profile mobile logs --timestamps db rabbitmq search app wiremock mobile > infra.log 2>&1 || true
+      - name: commit post-test db image
+        run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3, once per parallel mobile shard, like the frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
           docker compose --profile mobile down
-
       # The merged mobile Allure report is built by the mobile_allure_report job from all shards
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
@@ -1885,7 +2032,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -1894,13 +2041,22 @@ jobs:
         working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      # `always()`, not `success() || failure()`: `failure()` is false on a job that
+      # concluded `cancelled` (job-level timeout), so the old guard skipped this upload
+      # precisely when `infra.log` was the only remaining evidence. Upload the artifact
+      # even on success too, because it can contain valuable information about how to
+      # improve, optimize etc.
       - uses: actions/upload-artifact@v6
-        if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
+        if: always()
         with:
           name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
+            docker-builds/e2e-tests/infra.log
+          # a cancelled run may not have flushed the playwright report; a missing path
+          # must warn, never fail the step
+          if-no-files-found: warn
           retention-days: 30
       - name: Upload Playwright Mobile JUnit results
         uses: actions/upload-artifact@v6
@@ -1909,7 +2065,20 @@ jobs:
           name: junit-results-playwright-mobile-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile mobile down
 
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
@@ -1953,11 +2122,43 @@ jobs:
           dbqualifier: preloaded
           PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
-          docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+      # Own step with `if: always()`: when `run test` is cancelled at the job-level
+      # `timeout-minutes`, only `always()` steps still run, so a capture chained behind the
+      # blocking `docker compose up` inside `run test` was unreachable in exactly the case
+      # that needs it - a stack container going unresponsive mid-suite, every remaining test
+      # burning its full timeout, and the job killed at the cap. `!cancelled()` cannot be
+      # used here: it is false on a cancelled job, which is the case being captured.
+      # `wiremock` is included (no `profiles:` key, so it starts in both profiles); the
+      # playwright container is not - its stdout is already `playwright.log`. Service
+      # prefixes are kept and `--timestamps` added so that a merged multi-service log stays
+      # attributable and correlatable with the test-side failure times.
+      - name: capture stack logs
+        if: always()
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          timeout 120 docker compose --profile frontend logs --timestamps db rabbitmq search app wiremock webapi webui > infra.log 2>&1 || true
+      - name: commit post-test db image
+        run: |
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+      # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
+      # stack is torn down as early as it was before this was a separate step, so the runner
+      # does not hold ~7 idle containers through report generation, the image push and the
+      # artifact uploads (and x3 for the parallel frontend shards).
+      - name: stop stack
+        if: ${{ !cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
           docker compose --profile frontend down
-
-      # The merged frontend Allure report is built by the frontend_allure_report job from all shards
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
         if: always()
@@ -1974,7 +2175,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -1983,13 +2184,20 @@ jobs:
         working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      # `always()`, not `success() || failure()`: `failure()` is false on a job that
+      # concluded `cancelled` (job-level timeout), so the old guard skipped this upload
+      # precisely when `infra.log` was the only remaining evidence.
       - uses: actions/upload-artifact@v6
-        if: success() || failure()
+        if: always()
         with:
           name: playwright-frontend-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
+            docker-builds/e2e-tests/infra.log
+          # a cancelled run may not have flushed the playwright report; a missing path
+          # must warn, never fail the step
+          if-no-files-found: warn
           retention-days: 30
       - name: Upload Playwright Frontend JUnit results
         uses: actions/upload-artifact@v6
@@ -1998,7 +2206,20 @@ jobs:
           name: junit-results-playwright-frontend-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
+      # The cancellation counterpart of `stop stack`, deliberately the LAST step: on a
+      # cancelled job every conditional step shares one 5-minute cancellation window, and an
+      # unresponsive container is exactly what makes `docker compose down` slow, so teardown
+      # must not run ahead of the evidence uploads it exists to protect.
+      - name: stop stack after cancellation
+        if: ${{ cancelled() }}
+        working-directory: docker-builds/e2e-tests/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
+        run: |
+          docker compose --profile frontend down
 
   # =============================================================================
   # Merge Frontend Playwright Allure Results from Sharded Runners
@@ -2107,28 +2328,8 @@ jobs:
 
 
   # =============================================================================
-  # TODO: Test Report Upload to HTTP Server
+  # Publish Allure HTML Reports to test-reports.metasfresh.com
   # =============================================================================
-  # Each test job above collects raw test data (JUnit XML, Allure results) and
-  # uploads them as GitHub artifacts. The plan is to upload these to our own
-  # HTTP report server. When implementing, either:
-  #
-  #   Option A: Add inline upload steps in each test job (see TODO markers above)
-  #   Option B: Create a post-workflow job that downloads all artifacts and uploads
-  #
-  # Available test artifacts per job:
-  #   test-frontend:        jest/frontend/*.xml                          (JUnit)
-  #   junit:                junit/backend/**/*.xml, junit/camel/**/*.xml (JUnit)
-  #   cucumber-run:         cucumber-allure-results/ (Allure), cucumber/ (JUnit)
-  #   mobile_test:          allure-results-mobile/ (Allure), junit/ (JUnit)
-  #   frontend_webui_test:  allure-results/ (Allure), junit/ (JUnit)
-  #
-  # Useful inputs from init job:
-  #   needs.init.outputs.branch-sanitized-gh-pages  (branch name for paths)
-  #   needs.init.outputs.tag-fixed                  (build version tag)
-  # =============================================================================
-
-
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
@@ -2444,7 +2645,66 @@ jobs:
           # deploy the static resolver (identical content per branch)
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
+          # server ROOT rather than per branch: it takes ?branch= and reads that branch's
+          # permalinks.json. Content is identical for every branch, so whichever build
+          # publishes last simply rewrites it with the same bytes.
+          # Ship ONE self-contained file. coverage.js stays a separate source file so node can
+          # unit-test it, but it is inlined here for two reasons:
+          #   1. this host serves .js as `public, immutable, max-age=604800` (verified 2026-09-12)
+          #      while .html carries no cache header -- so a separate script would freeze for a
+          #      week and could pair a stale script with a fresh page;
+          #   2. one file is one atomic rename. Two files have a window where the page and its
+          #      script disagree, which matters more here than for the per-branch resolver
+          #      because EVERY branch's build rewrites this root path.
+          # mktemp gives a unique name, so two branches publishing at once cannot collide on it.
+          # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
+          # and a fixed /tmp name would let two branches' builds clobber each other.
+          INLINED=$(mktemp)
+          python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
+          import re, sys, pathlib
+          d = pathlib.Path(sys.argv[1])
+          js = (d / "coverage.js").read_text(encoding="utf-8")
+          html = (d / "coverage.html").read_text(encoding="utf-8")
+          needle = '<script src="coverage.js"></script>'
+          if needle not in html:
+              sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
+          # No user data flows through here -- both files are repo content -- but a literal
+          # </script> inside the JS would still close the tag early.
+          # Escape anything the HTML tokenizer treats as ending or nesting a script
+          # element: </script in any case or with trailing space/slash, and <!-- / <script
+          # (which put the tokenizer in a state where a later </script> does NOT close).
+          safe = re.sub(r"(?i)<(/?script|!--)", r"<\\\g<1>", js)
+          sys.stdout.write(html.replace(needle, "<script>\n" + safe + "\n</script>"))
+          INLINEEOF
+          # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
+          # (this whole step is continue-on-error, so a half-write is silent). The age
+          # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
+          # `coverage.js` is removed because it was briefly deployed as a separate file
+          # and nothing references it any more; leaving it would serve week-cached dead code.
+          # The size check is the load-bearing guard, not the rename. `cat` cannot tell
+          # "stdin ended" from "stdin was cut": on a mid-transfer disconnect it exits 0,
+          # chmod succeeds, and the rename atomically publishes a TRUNCATED page --
+          # verified locally, a 4000-byte cut of a 12847-byte page published with the
+          # whole chain reporting success. Inlining makes that worse, because the cut
+          # now lands inside the page's own <script>. Compare byte counts before renaming.
+          SIZE=$(wc -c < "$INLINED")
+          ssh reports-server "
+            find /var/www/test-reports -maxdepth 1 -name '.coverage.*' -mmin +60 -delete 2>/dev/null
+            T=\$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+            cat > \"\$T\" && chmod 644 \"\$T\" &&
+            [ \"\$(wc -c < \"\$T\")\" -eq $SIZE ] &&
+            mv \"\$T\" /var/www/test-reports/coverage.html &&
+            rm -f /var/www/test-reports/coverage.js ||
+            { rm -f \"\$T\"; echo 'coverage deploy FAILED (incomplete transfer)' >&2; exit 1; }
+          " < "$INLINED" && COVERAGE_OK=1 || echo "::warning::coverage.html was not updated this build"
+          rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+          # Print the coverage URL only if the page actually got published. A banner
+          # that prints either way is a claim the step has not verified.
+          if [ -n "$COVERAGE_OK" ]; then
+            echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          fi
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2476,6 +2736,7 @@ jobs:
           <body>
               <div class="container">
                   <h1>📊 Test Reports</h1>
+                  <p><a href="coverage.html">Automated test coverage by feature</a> — which tests cover a feature on a given branch, and did they pass.</p>
                   <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
               <script>
@@ -2738,7 +2999,10 @@ jobs:
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, compatibility-images ]
+    # Wait for both compat legs. `compatibility-images-db` is still gated on
+    # `db-apply-migrations` — the critical-path saving comes from letting the
+    # app-leg finish in parallel with the db leg rather than serially after it.
+    needs: [ init, compatibility-images, compatibility-images-db ]
     steps:
       - name: dispatch-workflow
         env:
@@ -2752,7 +3016,7 @@ jobs:
           # Run the downstream workflow ON the target branch (via --ref) when
           # that branch exists in private-extensions, otherwise fall back to
           # running it on the PE default branch so its `check-branch` step can
-          # take the "branch doesn	 exist → dispatch directly to me03" path.
+          # take the "branch doesn't exist → dispatch directly to me03" path.
           #
           # Without --ref when the branch DOES exist, the workflow starts on
           # new_dawn_uat, does an in-process `git checkout ${SOURCE_BRANCH}`,

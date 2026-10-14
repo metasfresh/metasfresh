@@ -59,7 +59,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
@@ -76,7 +76,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
@@ -90,7 +90,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
@@ -108,7 +108,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request.getCostSegmentAndElement());
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
 
@@ -127,7 +127,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
 
 		//
-		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCostForUpdate(outboundSegmentAndElement);
 		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice outboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = utils.convertToUOM(request.getQtyToMove().negate(), outboundCurrentCosts.getUomId(), request.getProductId());
@@ -149,7 +149,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
 		final CurrentCost inboundCurrentCosts = Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement)
 				? outboundCurrentCosts
-				: utils.getCurrentCost(inboundSegmentAndElement);
+				: utils.getCurrentCostForUpdate(inboundSegmentAndElement);
 		final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
 
 		final CostPrice inboundCurrentCostPrice = outboundCurrentCosts.getCostPrice();

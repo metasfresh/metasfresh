@@ -276,6 +276,13 @@ export function deleteTopActions({ windowId, tabId, docId }) {
  */
 export function fetchTopActions({ windowId, tabId, docId }) {
   return (dispatch) => {
+    // Without a document there are no top actions to fetch, and the id would reach the backend as the
+    // literal string it stringifies to — `undefined` for an unset route param, or the `notfound`
+    // sentinel — which cannot address a record.
+    if (!windowId || !docId || docId === 'notfound') {
+      return Promise.resolve([]);
+    }
+
     dispatch({
       type: TOP_ACTIONS_LOADING,
       payload: { windowId, tabId, docId },

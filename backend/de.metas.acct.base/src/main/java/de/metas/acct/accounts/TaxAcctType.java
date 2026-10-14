@@ -48,16 +48,10 @@ public enum TaxAcctType implements AccountConceptualNameAware
 		this.accountConceptualName = AccountConceptualName.ofString(accountConceptualName);
 	}
 
-	/**
-	 * @return AP tax type (Credit or Expense)
-	 */
-	public static TaxAcctType getAPTaxType(final boolean isSalesTax) {return isSalesTax ? TaxExpense : TaxCredit;}
-
 	public static boolean isInvoiceTax(final AccountConceptualName accountConceptualName)
 	{
-		return TaxDue.accountConceptualName.equals(accountConceptualName) // sales invoice
-				|| TaxCredit.accountConceptualName.equals(accountConceptualName) // purchase invoice, VAT (not sales tax)
-				|| TaxExpense.accountConceptualName.equals(accountConceptualName) // purchase invoice, sales tax
+		return TaxDue.accountConceptualName.equals(accountConceptualName)     // sales invoice tax line
+				|| TaxCredit.accountConceptualName.equals(accountConceptualName) // purchase invoice tax line (deductible input tax)
 				;
 	}
 }

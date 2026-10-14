@@ -27,11 +27,13 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JsonAttachmentRequestTest
 {
@@ -76,5 +78,64 @@ public class JsonAttachmentRequestTest
 		final JsonAttachmentRequest result = mapper.readValue(string, JsonAttachmentRequest.class);
 
 		assertThat(result).isEqualTo(attachmentRequest);
+	}
+
+	@Test
+	public void serializeDeserialize_referencesWithoutOrgCode() throws IOException
+	{
+		final JsonAttachment attachment = JsonAttachment.builder()
+				.fileName("fileName")
+				.mimeType("mimeType")
+				.data("data")
+				.build();
+
+		final JsonTableRecordReference reference = JsonTableRecordReference.builder()
+				.adTableId(540123)
+				.recordId(JsonMetasfreshId.of(1))
+				.build();
+
+		final JsonAttachmentRequest attachmentRequest = JsonAttachmentRequest.builder()
+				.attachment(attachment)
+				.reference(reference)
+				.build();
+
+		assertThat(attachmentRequest.getOrgCode()).isNull();
+
+		final String string = mapper.writeValueAsString(attachmentRequest);
+
+		final JsonAttachmentRequest result = mapper.readValue(string, JsonAttachmentRequest.class);
+
+		assertThat(result).isEqualTo(attachmentRequest);
+		assertThat(result.getOrgCode()).isNull();
+		assertThat(result.getReferences()).containsExactly(reference);
+	}
+
+	@Test
+	public void build_withNeitherTargetsNorReferences_isRejected()
+	{
+		final JsonAttachment attachment = JsonAttachment.builder()
+				.fileName("fileName")
+				.mimeType("mimeType")
+				.data("data")
+				.build();
+
+		final JsonAttachmentRequest.JsonAttachmentRequestBuilder builder = JsonAttachmentRequest.builder()
+				.orgCode("orgCode")
+				.attachment(attachment);
+
+		assertThatThrownBy(builder::build)
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("At least one must be provided");
+	}
+
+	@Test
+	public void deserialize_withNeitherTargetsNorReferences_isRejected()
+	{
+		// the real-life path: a request body that names neither the records to attach to nor the
+		// external targets to resolve them from.
+		final String json = "{\"orgCode\":\"orgCode\",\"attachment\":{\"fileName\":\"fileName\",\"mimeType\":\"mimeType\",\"data\":\"data\"}}";
+
+		assertThatThrownBy(() -> mapper.readValue(json, JsonAttachmentRequest.class))
+				.hasMessageContaining("At least one must be provided");
 	}
 }

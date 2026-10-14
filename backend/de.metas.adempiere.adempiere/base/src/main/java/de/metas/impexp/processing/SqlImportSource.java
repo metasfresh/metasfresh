@@ -25,6 +25,7 @@ import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -130,7 +131,9 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 					.create()
 					.setOrderBy(sqlOrderBy)
 					.setLimit(limit)
-					.createSelection();
+					.createSelection()
+					.map(CreateSelectionResponse::getSelectionId)
+					.orElse(null);
 			if (batchSelectionId == null)
 			{
 				return mainSelection.withEmpty(true);

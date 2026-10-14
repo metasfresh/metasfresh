@@ -109,6 +109,12 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 			return;
 		}
 
+		// invalidateAll, NOT invalidateSelection: this refreshes the VALUES of the rows the user is looking at
+		// and deliberately leaves membership alone. An ambient invalidation is triggered by anyone's write, so
+		// growing an open view's selection here would silently sweep in rows the user never asked for -- and a
+		// process run over "all rows" would then act on them. Membership is recomputed only where the user's
+		// own action changed it (see IView#invalidateSelection). It is also the cheap path: forgetting the
+		// selection makes the next fetch re-materialize the whole view.
 		view.invalidateAll();
 
 		ViewChangesCollector.getCurrentOrAutoflush()

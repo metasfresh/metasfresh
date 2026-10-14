@@ -31,6 +31,7 @@ import org.compiere.model.I_AD_Note;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Accessor;
 import de.metas.util.Services;
 
@@ -44,6 +45,7 @@ import de.metas.util.Services;
 
 	private final boolean storeInvoices;
 	private int invoiceCount = 0;
+	private int failedCandidateCount = 0;
 
 	/**
 	 * 
@@ -107,6 +109,16 @@ import de.metas.util.Services;
 			this.notifications.addAll(list);
 			this.notificationsWhereClause = null;
 		}
+	}
+
+	@Override
+	public void addFailedCandidates(final List<I_C_Invoice_Candidate> failedCandidates, final Throwable error)
+	{
+		if (failedCandidates == null || failedCandidates.isEmpty())
+		{
+			return;
+		}
+		this.failedCandidateCount += failedCandidates.size();
 	}
 
 	@Override
@@ -209,6 +221,10 @@ import de.metas.util.Services;
 		if (notifications != null && !notifications.isEmpty())
 		{
 			sb.append(", notifications=").append(notifications);
+		}
+		if (failedCandidateCount > 0)
+		{
+			sb.append(", failedCandidateCount=").append(failedCandidateCount);
 		}
 		sb.append("]");
 

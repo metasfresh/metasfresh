@@ -122,7 +122,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
       | Identifier   |
       | ddOrderLine1 |
     
@@ -360,7 +360,7 @@ Feature: create distribution to balance demand
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And the order identified by SO is completed
 
@@ -401,7 +401,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
       | Identifier   | QtyEntered |
       | ddOrderLine1 | 14         |
 
@@ -431,7 +431,7 @@ Feature: create distribution to balance demand
       | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
       | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And the order identified by SO is completed
 

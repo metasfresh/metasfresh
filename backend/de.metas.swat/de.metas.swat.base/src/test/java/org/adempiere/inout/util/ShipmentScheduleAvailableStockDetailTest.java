@@ -1,14 +1,14 @@
 package org.adempiere.inout.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
 import org.adempiere.inout.util.ChristmasPackTestData.ChristmasPackTestDataBuilder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -61,7 +61,7 @@ public class ShipmentScheduleAvailableStockDetailTest
 						.socks_qtyOnHand(4)
 						.build()
 						.getChristmasPackStockDetail();
-				assertThat(christmasPack.getQtyAvailable()).isEqualByComparingTo("1");
+				assertThat(christmasPack.getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("1");
 			}
 
 			@Test
@@ -72,7 +72,7 @@ public class ShipmentScheduleAvailableStockDetailTest
 						.socks_qtyOnHand(6)
 						.build()
 						.getChristmasPackStockDetail();
-				assertThat(christmasPack.getQtyAvailable()).isEqualByComparingTo("2");
+				assertThat(christmasPack.getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("2");
 			}
 
 			@Test
@@ -84,7 +84,7 @@ public class ShipmentScheduleAvailableStockDetailTest
 						.christmasPack_qtyOnHand(100)
 						.build()
 						.getChristmasPackStockDetail();
-				assertThat(christmasPack.getQtyAvailable()).isEqualByComparingTo("102");
+				assertThat(christmasPack.getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("102");
 			}
 		}
 
@@ -101,9 +101,9 @@ public class ShipmentScheduleAvailableStockDetailTest
 
 				testData.getChristmasPackStockDetail().subtractQtyOnHand(new BigDecimal("1"));
 
-				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable()).isEqualByComparingTo("0");
-				assertThat(testData.getChocolateStockDetail().getQtyAvailable()).isEqualByComparingTo("7");
-				assertThat(testData.getSocksStockDetail().getQtyAvailable()).isEqualByComparingTo("1");
+				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("0");
+				assertThat(testData.getChocolateStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("7");
+				assertThat(testData.getSocksStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("1");
 			}
 
 			@Test
@@ -117,9 +117,9 @@ public class ShipmentScheduleAvailableStockDetailTest
 
 				testData.getChristmasPackStockDetail().subtractQtyOnHand(new BigDecimal("2"));
 
-				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable()).isEqualByComparingTo("0");
-				assertThat(testData.getChocolateStockDetail().getQtyAvailable()).isEqualByComparingTo("7");
-				assertThat(testData.getSocksStockDetail().getQtyAvailable()).isEqualByComparingTo("1");
+				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("0");
+				assertThat(testData.getChocolateStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("7");
+				assertThat(testData.getSocksStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("1");
 			}
 
 			@Test
@@ -133,9 +133,9 @@ public class ShipmentScheduleAvailableStockDetailTest
 
 				testData.getChristmasPackStockDetail().subtractQtyOnHand(new BigDecimal("3"));
 
-				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable()).isEqualByComparingTo("-1");
-				assertThat(testData.getChocolateStockDetail().getQtyAvailable()).isEqualByComparingTo("7");
-				assertThat(testData.getSocksStockDetail().getQtyAvailable()).isEqualByComparingTo("1");
+				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("-1");
+				assertThat(testData.getChocolateStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("7");
+				assertThat(testData.getSocksStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("1");
 			}
 
 			@Test
@@ -149,9 +149,9 @@ public class ShipmentScheduleAvailableStockDetailTest
 
 				testData.getChristmasPackStockDetail().subtractQtyOnHand(new BigDecimal("2"));
 
-				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable()).isEqualByComparingTo("98");
-				assertThat(testData.getChocolateStockDetail().getQtyAvailable()).isEqualByComparingTo("0");
-				assertThat(testData.getSocksStockDetail().getQtyAvailable()).isEqualByComparingTo("0");
+				assertThat(testData.getChristmasPackStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("98");
+				assertThat(testData.getChocolateStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("0");
+				assertThat(testData.getSocksStockDetail().getQtyAvailable(ReservationKey.NO_KEY)).isEqualByComparingTo("0");
 			}
 		}
 	}

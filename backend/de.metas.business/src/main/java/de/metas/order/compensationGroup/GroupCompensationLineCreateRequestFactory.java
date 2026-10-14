@@ -79,6 +79,7 @@ public class GroupCompensationLineCreateRequestFactory
 				.qtyEntered(BigDecimal.ZERO)
 				.price(BigDecimal.ZERO)
 				.groupTemplateLineId(templateLine.getId())
+				.appliesToProductCategoryId(templateLine.getAppliesToProductCategoryId())
 				.build();
 	}
 

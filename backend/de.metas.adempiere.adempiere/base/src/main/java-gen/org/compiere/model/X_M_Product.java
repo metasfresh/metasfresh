@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -369998932L;
+	private static final long serialVersionUID = -786884977L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -192,6 +192,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setCoProductCostDistributionPercent (final @Nullable BigDecimal CoProductCostDistributionPercent)
+	{
+		set_Value (COLUMNNAME_CoProductCostDistributionPercent, CoProductCostDistributionPercent);
+	}
+
+	@Override
+	public BigDecimal getCoProductCostDistributionPercent() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CoProductCostDistributionPercent);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_RevenueRecognition getC_RevenueRecognition()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_RevenueRecognition_ID, org.compiere.model.I_C_RevenueRecognition.class);
@@ -243,6 +256,27 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getCustomerLabelName() 
 	{
 		return get_ValueAsString(COLUMNNAME_CustomerLabelName);
+	}
+
+	/** 
+	 * DepositType AD_Reference_ID=542089
+	 * Reference name: Pfandart
+	 */
+	public static final int DEPOSITTYPE_AD_Reference_ID=542089;
+	/** Einwegpfand = NRC */
+	public static final String DEPOSITTYPE_Einwegpfand = "NRC";
+	/** Mehrwegpfand = RC */
+	public static final String DEPOSITTYPE_Mehrwegpfand = "RC";
+	@Override
+	public void setDepositType (final @Nullable java.lang.String DepositType)
+	{
+		set_Value (COLUMNNAME_DepositType, DepositType);
+	}
+
+	@Override
+	public java.lang.String getDepositType() 
+	{
+		return get_ValueAsString(COLUMNNAME_DepositType);
 	}
 
 	@Override
@@ -829,6 +863,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setIsSerialNoPicked (final boolean IsSerialNoPicked)
+	{
+		set_Value (COLUMNNAME_IsSerialNoPicked, IsSerialNoPicked);
+	}
+
+	@Override
+	public boolean isSerialNoPicked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSerialNoPicked);
+	}
+
+	@Override
 	public void setIsSold (final boolean IsSold)
 	{
 		set_Value (COLUMNNAME_IsSold, IsSold);
@@ -1140,6 +1186,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsInt(COLUMNNAME_M_CustomsTariff_ID);
 	}
 
+	/** 
+	 * MedicalDeviceType AD_Reference_ID=542113
+	 * Reference name: Medizinprodukt-Typ
+	 */
+	public static final int MEDICALDEVICETYPE_AD_Reference_ID=542113;
+	/** MD = MD */
+	public static final String MEDICALDEVICETYPE_MD = "MD";
+	/** Z = Z */
+	public static final String MEDICALDEVICETYPE_Z = "Z";
+	/** N = N */
+	public static final String MEDICALDEVICETYPE_N = "N";
+	@Override
+	public void setMedicalDeviceType (final @Nullable java.lang.String MedicalDeviceType)
+	{
+		set_Value (COLUMNNAME_MedicalDeviceType, MedicalDeviceType);
+	}
+
+	@Override
+	public java.lang.String getMedicalDeviceType() 
+	{
+		return get_ValueAsString(COLUMNNAME_MedicalDeviceType);
+	}
+
 	@Override
 	public org.compiere.model.I_M_FreightCategory getM_FreightCategory()
 	{
@@ -1362,6 +1431,27 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_PostControl);
 	}
 
+	/** 
+	 * PreferentialOrigin AD_Reference_ID=542112
+	 * Reference name: PreferentialOrigin
+	 */
+	public static final int PREFERENTIALORIGIN_AD_Reference_ID=542112;
+	/** DL = DL */
+	public static final String PREFERENTIALORIGIN_DL = "DL";
+	/** EU = EU */
+	public static final String PREFERENTIALORIGIN_EU = "EU";
+	@Override
+	public void setPreferentialOrigin (final @Nullable java.lang.String PreferentialOrigin)
+	{
+		set_Value (COLUMNNAME_PreferentialOrigin, PreferentialOrigin);
+	}
+
+	@Override
+	public java.lang.String getPreferentialOrigin() 
+	{
+		return get_ValueAsString(COLUMNNAME_PreferentialOrigin);
+	}
+
 	@Override
 	public void setPreparation (final @Nullable java.lang.String Preparation)
 	{
@@ -1407,6 +1497,31 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getProcurementStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProcurementStatus);
+	}
+
+	/** 
+	 * ProductLifeCycleStatus AD_Reference_ID=542123
+	 * Reference name: Produktlebenszyklus-Status
+	 */
+	public static final int PRODUCTLIFECYCLESTATUS_AD_Reference_ID=542123;
+	/** OK = O */
+	public static final String PRODUCTLIFECYCLESTATUS_OK = "O";
+	/** PhaseOut = A */
+	public static final String PRODUCTLIFECYCLESTATUS_PhaseOut = "A";
+	/** Blocked = G */
+	public static final String PRODUCTLIFECYCLESTATUS_Blocked = "G";
+	/** DeliveryStop = N */
+	public static final String PRODUCTLIFECYCLESTATUS_DeliveryStop = "N";
+	@Override
+	public void setProductLifeCycleStatus (final java.lang.String ProductLifeCycleStatus)
+	{
+		set_Value (COLUMNNAME_ProductLifeCycleStatus, ProductLifeCycleStatus);
+	}
+
+	@Override
+	public java.lang.String getProductLifeCycleStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductLifeCycleStatus);
 	}
 
 	/** 
@@ -1577,6 +1692,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getSalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	@Override
+	public void setSeedCost (final @Nullable BigDecimal SeedCost)
+	{
+		set_Value (COLUMNNAME_SeedCost, SeedCost);
+	}
+
+	@Override
+	public BigDecimal getSeedCost() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SeedCost);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1855,21 +1983,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setWeight_UOM_ID (final int Weight_UOM_ID)
-	{
-		if (Weight_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Weight_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Weight_UOM_ID, Weight_UOM_ID);
-	}
-
-	@Override
-	public int getWeight_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
 	}
 
 	@Override
