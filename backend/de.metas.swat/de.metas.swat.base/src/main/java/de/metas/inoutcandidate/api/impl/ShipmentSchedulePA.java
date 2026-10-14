@@ -63,9 +63,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOf
 public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	// lazy: ShipmentScheduleAllocDAO holds IShipmentSchedulePA as a field (cyclic dependency)
 	@Nullable private IShipmentScheduleAllocDAO _shipmentScheduleAllocDAO; // null = not yet initialized
 

@@ -57,7 +57,7 @@ import lombok.NonNull;
 public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 {
 	private static final Logger logger = LogManager.getLogger(AbstractSubscriptionDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public final boolean existsTermForOl(final I_C_OrderLine ol)
