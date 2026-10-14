@@ -202,14 +202,9 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	{
 		Check.assumeGreaterThanZero(pageSize, "pageSize");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryTermsWithItemProduct(ctx, trxName).create();
 
-		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
-				.create();
-
-		return queryBL.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
@@ -223,5 +218,13 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, pageSize);
+	}
+
+	@Override
+	public final IQueryBuilder<I_C_Flatrate_Term> queryTermsWithItemProduct(@NonNull final Properties ctx, final String trxName)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, trxName)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class);
 	}
 }

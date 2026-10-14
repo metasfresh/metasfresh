@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
+
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -97,6 +99,11 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * The caller must close the iterator.
 	 */
 	Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
+
+	/**
+	 * @return query builder for the terms whose product is an Item
+	 */
+	IQueryBuilder<I_C_Flatrate_Term> queryTermsWithItemProduct(Properties ctx, String trxName);
 
 	/**
 	 * 

@@ -52,6 +52,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
 	private I_M_Product secondProduct;
+	private I_C_Flatrate_Term secondTerm;
 
 	@BeforeEach
 	public void init()
@@ -77,7 +78,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(secondProduct);
 
-		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
+		secondTerm = newInstance(I_C_Flatrate_Term.class);
 		secondTerm.setM_Product_ID(secondProduct.getM_Product_ID());
 		save(secondTerm);
 
@@ -126,6 +127,19 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);
 		save(secondProduct);
+
+		assertOnlyFirstRecordIsReturned();
+	}
+
+	@Test
+	public void retrieveModelsWithMissingCandidates_Inactive_Term()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
+		assertBothRecordsAreReturned(); // guard
+
+		secondTerm.setIsActive(false);
+		save(secondTerm);
 
 		assertOnlyFirstRecordIsReturned();
 	}

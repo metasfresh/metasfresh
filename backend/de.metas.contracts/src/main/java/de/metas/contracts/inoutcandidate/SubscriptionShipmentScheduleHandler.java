@@ -8,6 +8,7 @@ import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -26,6 +27,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -38,8 +40,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -153,9 +153,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
+		final IQuery<I_C_Flatrate_Term> itemProductQuery = Services.get(ISubscriptionDAO.class)
+				.queryTermsWithItemProduct(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
