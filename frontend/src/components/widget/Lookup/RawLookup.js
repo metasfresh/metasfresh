@@ -191,6 +191,7 @@ export class RawLookup extends Component {
       !this.props.isModal &&
       this.props.subentity !== 'quickInput' &&
       prevProps.dataId !== this.props.dataId &&
+      !!this.props.dataId && // no document yet (e.g. briefly while the window reloads): nothing to arm for
       !shouldBeFocused &&
       !this.inputSearch.value
     ) {

@@ -244,6 +244,19 @@ describe('RawLookup component', () => {
         wrapper.detach();
       });
 
+      it('does not take the focus from another field when a saved document briefly has no id', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: '1000001' });
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: undefined });
+        jest.runOnlyPendingTimers();
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
       it('takes the focus from a read-only field when the new document gets its id', () => {
         const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: 'NEW' });
         otherInput.readOnly = true;
