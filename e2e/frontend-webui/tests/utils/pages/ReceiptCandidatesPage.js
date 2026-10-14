@@ -672,9 +672,9 @@ export class ReceiptCandidatesPage {
       // was answered, the process fails with "View not found", no receipt is created, and the later
       // navigation to the Material Receipt finds no allocation row.
       const processCreated = page.waitForResponse(isProcessCreate, { timeout: VERY_SLOW_ACTION_TIMEOUT });
-      processCreated.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+      processCreated.catch(() => {}); // keeps processCreated from rejecting unhandled if the click throws; awaited below
       const processStarted = page.waitForResponse(isProcessStart, { timeout: VERY_SLOW_ACTION_TIMEOUT });
-      processStarted.catch(() => {}); // not awaited if creating the process instance fails
+      processStarted.catch(() => {}); // keeps processStarted from rejecting unhandled if it is never awaited (create failed)
       await createReceiptAction.click();
 
       const createResponse = await processCreated;
@@ -683,8 +683,13 @@ export class ReceiptCandidatesPage {
         createResponse.ok(),
         `Create material receipt: creating the process instance returned ${createResponse.status()}: ${createError}`
       ).toBe(true);
+      const { pinstanceId } = await createResponse.json();
 
       const startResponse = await processStarted;
+      expect(
+        new URL(startResponse.url()).pathname,
+        'Create material receipt: the start request does not belong to the created process instance'
+      ).toContain(`/${pinstanceId}/start`);
       const startError = startResponse.ok() ? '' : await serverErrorMessage(startResponse);
       expect(
         startResponse.ok(),
