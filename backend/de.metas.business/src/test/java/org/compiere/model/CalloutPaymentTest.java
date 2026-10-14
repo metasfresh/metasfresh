@@ -26,6 +26,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.api.impl.MockedCalloutField;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,8 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
  */
 class CalloutPaymentTest
 {
+	private static final int WINDOW_NO = 7;
+
 	private CurrencyId eur;
 	private I_C_Invoice invoice;
 	private CalloutPayment callout;
@@ -127,6 +130,117 @@ class CalloutPaymentTest
 	}
 
 	/**
+	 * A saved draft whose „Belegart“ is changed keeps the amounts the user entered: only a payment that was never saved gets the bonus pre-filled when it becomes a receipt.
+	 */
+	@Test
+	void savedDraft_becomesReceipt_keepsUserAmounts()
+	{
+		final I_C_Payment payment = newPayment();
+		payment.setC_DocType_ID(docType(DocBaseType.PurchasePayment.getCode(), false).getC_DocType_ID());
+		payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		payment.setC_Currency_ID(invoice.getC_Currency_ID());
+		payment.setPayAmt(new BigDecimal("50.00"));
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+		saveRecord(payment);
+
+		pickDocType(payment, docType(DocBaseType.ARReceipt.getCode(), true));
+
+		assertSoftly(softly -> {
+			softly.assertThat(payment.isReceipt()).as("IsReceipt follows the receipt document type").isTrue();
+			softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			softly.assertThat(payment.getPayAmt()).as("PayAmt as entered by the user").isEqualByComparingTo("50.00");
+		});
+	}
+
+	/**
+	 * A receipt that becomes a vendor payment loses its payment bonus: it goes back into PayAmt, which a payment with a bonus had left out.
+	 */
+	@Test
+	void receiptWithBonus_becomesVendorPayment_dropsBonus()
+	{
+		final I_C_Payment payment = newPayment();
+		pickDocType(payment, docType(DocBaseType.ARReceipt.getCode(), true));
+		pickInvoice(payment);
+		assertThat(payment.getPaymentBonusAmt()).as("pre-filled bonus").isEqualByComparingTo("11.90");
+
+		// the user clears „Rechnung“ (the invoice callout does nothing then), so the vendor payment document type is valid for the payment
+		payment.setC_Invoice_ID(0);
+		pickDocType(payment, docType(DocBaseType.PurchasePayment.getCode(), false));
+
+		assertSoftly(softly -> {
+			softly.assertThat(payment.isReceipt()).as("IsReceipt follows the vendor payment document type").isFalse();
+			softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			softly.assertThat(payment.getPayAmt()).as("PayAmt = 88.10 + the dropped bonus 11.90").isEqualByComparingTo("100.00");
+		});
+	}
+
+	/**
+	 * Like picking „Rechnung“, „Belegart“ does not pre-fill the bonus of a payment entered for an invoice payment schedule: its PayAmt is the schedule's, not the invoice's open amount.
+	 */
+	@Test
+	void invoicePaySchedule_rechnungThenBelegart_noBonus()
+	{
+		final I_C_Payment payment = newPayment();
+		pickInvoice(payment);
+		payment.setPayAmt(new BigDecimal("40.00")); // the schedule's due amount
+		Env.setContext(Env.getCtx(), WINDOW_NO, Env.TAB_INFO, "C_Invoice_ID", String.valueOf(invoice.getC_Invoice_ID()));
+		Env.setContext(Env.getCtx(), WINDOW_NO, Env.TAB_INFO, "C_InvoicePaySchedule_ID", "123");
+
+		pickDocType(payment, docType(DocBaseType.ARReceipt.getCode(), true));
+
+		assertSoftly(softly -> {
+			softly.assertThat(payment.isReceipt()).as("IsReceipt follows the receipt document type").isTrue();
+			softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			softly.assertThat(payment.getPayAmt()).as("PayAmt of the schedule").isEqualByComparingTo("40.00");
+		});
+	}
+
+	/**
+	 * A receipt whose „Belegart“ is changed to another receipt document type stays as it is: PayAmt as entered, no new pre-fill.
+	 */
+	@Test
+	void receipt_otherReceiptDocType_keepsAmounts()
+	{
+		final I_C_Payment payment = newPayment();
+		pickDocType(payment, docType(DocBaseType.ARReceipt.getCode(), true));
+		pickInvoice(payment);
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+		payment.setPayAmt(new BigDecimal("70.00"));
+
+		pickDocType(payment, docType(DocBaseType.ARReceipt.getCode(), true));
+
+		assertSoftly(softly -> {
+			softly.assertThat(payment.isReceipt()).as("IsReceipt").isTrue();
+			softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			softly.assertThat(payment.getPayAmt()).as("PayAmt as entered by the user").isEqualByComparingTo("70.00");
+		});
+	}
+
+	/**
+	 * Without a document type (C_DocType_ID=0) the docType callout loads the placeholder document type of a new record, which is IsSOTrx=Y;
+	 * that does not make the payment a receipt.
+	 */
+	@Test
+	void placeholderDocType_isReceiptUntouched()
+	{
+		final I_C_DocType placeholder = newInstance(I_C_DocType.class);
+		placeholder.setName("** New **");
+		placeholder.setIsSOTrx(true);
+		placeholder.setC_DocType_ID(0);
+		saveRecord(placeholder);
+		assertThat(placeholder.getC_DocType_ID()).as("placeholder document type ID").isZero();
+
+		final I_C_Payment payment = newPayment();
+		pickInvoice(payment);
+		callout.docType(calloutField(payment, I_C_Payment.COLUMNNAME_C_Invoice_ID));
+
+		assertSoftly(softly -> {
+			softly.assertThat(payment.isReceipt()).as("IsReceipt").isFalse();
+			softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+		});
+	}
+
+	/**
 	 * A new payment of the window: drafted, {@code IsReceipt=N}, not saved.
 	 */
 	private I_C_Payment newPayment()
@@ -170,6 +284,7 @@ class CalloutPaymentTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField(I_C_Payment.Table_Name, columnName);
 		field.setModel(payment);
+		field.setWindowNo(WINDOW_NO);
 		return field;
 	}
 

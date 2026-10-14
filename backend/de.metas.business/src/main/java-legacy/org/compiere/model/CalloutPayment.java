@@ -240,14 +240,19 @@ public class CalloutPayment extends CalloutEngine
 	/**
 	 * Lets „Eingang“ ({@code IsReceipt}) follow the document type as soon as „Belegart“ changes, like {@link MPayment#beforeSave(boolean)} does on save.
 	 * Until then a new payment keeps {@code IsReceipt=N}, so the payment bonus would not be pre-filled when „Rechnung“ is picked before the payment is saved.
-	 * A payment that becomes a receipt only now (because „Rechnung“ was picked first) gets the payment bonus pre-filled here, as picking „Rechnung“ would have done.
+	 * <ul>
+	 * <li>A payment that was never saved and becomes a receipt only now (because „Rechnung“ was picked first) gets the payment bonus pre-filled, as picking „Rechnung“ would have done.
+	 * A saved draft keeps the amounts the user entered.</li>
+	 * <li>A payment that is no longer a receipt loses its payment bonus, which goes back into {@code PayAmt}: only a receipt can book a payment bonus.</li>
+	 * </ul>
 	 */
 	private void updateIsReceiptFromDocType(
 			@NonNull final ICalloutField calloutField,
 			@NonNull final I_C_Payment payment,
 			@Nullable final I_C_DocType docType)
 	{
-		// C_DocType_ID=0 loads the placeholder document type of a new record, which says nothing about the payment
+		// C_DocType_ID=0 loads the placeholder document type of a new record, which says nothing about the payment;
+		// docType is null when C_DocType_ID points to a record that cannot be loaded
 		if (payment.getC_DocType_ID() <= 0 || docType == null)
 		{
 			return;
@@ -260,9 +265,17 @@ public class CalloutPayment extends CalloutEngine
 		}
 		payment.setIsReceipt(isReceipt);
 
-		if (isReceipt && getInvoicePayScheduleId(calloutField, payment.getC_Invoice_ID()) <= 0)
+		if (isReceipt)
 		{
-			paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+			if (InterfaceWrapperHelper.isNew(payment) && getInvoicePayScheduleId(calloutField, payment.getC_Invoice_ID()) <= 0)
+			{
+				paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+			}
+		}
+		else if (payment.getPaymentBonusAmt().signum() != 0)
+		{
+			payment.setPayAmt(payment.getPayAmt().add(payment.getPaymentBonusAmt()));
+			payment.setPaymentBonusAmt(BigDecimal.ZERO);
 		}
 	}
 
