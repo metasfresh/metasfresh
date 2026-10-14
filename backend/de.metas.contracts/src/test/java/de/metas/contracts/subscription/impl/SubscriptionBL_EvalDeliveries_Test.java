@@ -5,19 +5,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.Closeable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.impl.PlainSubscriptionDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -48,6 +49,15 @@ public class SubscriptionBL_EvalDeliveries_Test
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		subscriptionBL = new SubscriptionBL();
+	}
+
+	/**
+	 * {@link SubscriptionBL} gets its services when constructed, so register the replacement first.
+	 */
+	private void registerAndRecreateSubscriptionBL(final IShipmentSchedulePA shipmentSchedulePA)
+	{
+		Services.registerService(IShipmentSchedulePA.class, shipmentSchedulePA);
 		subscriptionBL = new SubscriptionBL();
 	}
 
@@ -95,16 +105,16 @@ public class SubscriptionBL_EvalDeliveries_Test
 		return entry.getStatus();
 	}
 
-	private Stream<I_C_SubscriptionProgress> stream(final int pageSize)
+	private Iterator<I_C_SubscriptionProgress> deliveries(final int pageSize)
 	{
 		return Services.get(ISubscriptionDAO.class)
-				.streamPlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, pageSize);
+				.retrievePlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, pageSize);
 	}
 
-	// ------------------------------------------------------------------------------------------
-	// fixtures shared by the "via evalDeliveries(ctx)" and the "across batches" variants
-
-	private List<I_C_SubscriptionProgress> tc2Fixture_contractAEntries_thenContractB_b1()
+	/**
+	 * @return term A's entries A1, A2, A3 (open schedule on A1), then term B's entry B1
+	 */
+	private List<I_C_SubscriptionProgress> termAWithOpenScheduleOnFirstEntry_andTermB()
 	{
 		final I_C_Flatrate_Term termA = itemTerm();
 		final I_C_Flatrate_Term termB = itemTerm();
@@ -116,7 +126,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 		return ImmutableList.of(a1, a2, a3, b1);
 	}
 
-	private void assertTc2(final List<I_C_SubscriptionProgress> entries)
+	private void assertTermAEntriesDelayed_termBEntryPlanned(final List<I_C_SubscriptionProgress> entries)
 	{
 		assertThat(statusOf(entries.get(0))).isEqualTo(X_C_SubscriptionProgress.STATUS_Delayed);
 		assertThat(statusOf(entries.get(1))).isEqualTo(X_C_SubscriptionProgress.STATUS_Delayed);
@@ -124,12 +134,22 @@ public class SubscriptionBL_EvalDeliveries_Test
 		assertThat(statusOf(entries.get(3))).isEqualTo(X_C_SubscriptionProgress.STATUS_Planned);
 	}
 
-	private List<I_C_SubscriptionProgress> tc4Fixture_fiveDelayedEntriesWithoutSchedules()
+	private List<I_C_SubscriptionProgress> fiveDelayedEntriesWithoutSchedules()
+	{
+		return fiveEntries(X_C_SubscriptionProgress.STATUS_Delayed);
+	}
+
+	private List<I_C_SubscriptionProgress> fivePlannedEntries()
+	{
+		return fiveEntries(X_C_SubscriptionProgress.STATUS_Planned);
+	}
+
+	private List<I_C_SubscriptionProgress> fiveEntries(final String status)
 	{
 		final List<I_C_SubscriptionProgress> entries = new ArrayList<>();
 		for (int i = 0; i < 5; i++)
 		{
-			entries.add(entry(itemTerm(), X_C_SubscriptionProgress.STATUS_Delayed, -1, 1));
+			entries.add(entry(itemTerm(), status, -1, 1));
 		}
 		return entries;
 	}
@@ -142,20 +162,17 @@ public class SubscriptionBL_EvalDeliveries_Test
 		}
 	}
 
-	// ------------------------------------------------------------------------------------------
-	// characterisation (green on the old code too)
-
-	@Test // TC2
+	@Test
 	public void openSchedule_delaysEntryAndLaterEntriesOfContract()
 	{
-		final List<I_C_SubscriptionProgress> entries = tc2Fixture_contractAEntries_thenContractB_b1();
+		final List<I_C_SubscriptionProgress> entries = termAWithOpenScheduleOnFirstEntry_andTermB();
 
 		subscriptionBL.evalDeliveries(Env.getCtx());
 
-		assertTc2(entries);
+		assertTermAEntriesDelayed_termBEntryPlanned(entries);
 	}
 
-	@Test // TC3
+	@Test
 	public void delayedWithoutOpenSchedule_backToPlanned()
 	{
 		final I_C_SubscriptionProgress entry = entry(itemTerm(), X_C_SubscriptionProgress.STATUS_Delayed, -1, 1);
@@ -166,20 +183,17 @@ public class SubscriptionBL_EvalDeliveries_Test
 		assertThat(statusOf(entry)).isEqualTo(X_C_SubscriptionProgress.STATUS_Planned);
 	}
 
-	@Test // TC4
-	public void allEntriesProcessed()
+	@Test
+	public void delayedWithoutSchedules_allBackToPlanned()
 	{
-		final List<I_C_SubscriptionProgress> entries = tc4Fixture_fiveDelayedEntriesWithoutSchedules();
+		final List<I_C_SubscriptionProgress> entries = fiveDelayedEntriesWithoutSchedules();
 
 		subscriptionBL.evalDeliveries(Env.getCtx());
 
 		assertAllPlanned(entries);
 	}
 
-	// ------------------------------------------------------------------------------------------
-	// new behavior
-
-	@Test // TC1
+	@Test
 	public void serviceProductEntries_untouched()
 	{
 		final I_C_Flatrate_Term serviceTerm = term(X_M_Product.PRODUCTTYPE_Service);
@@ -196,43 +210,40 @@ public class SubscriptionBL_EvalDeliveries_Test
 		assertThat(statusOf(delayed)).isEqualTo(X_C_SubscriptionProgress.STATUS_Delayed);
 	}
 
-	@Test // TC2 across batches (Review Focus 1)
+	@Test
 	public void openSchedule_delaysEntryAndLaterEntriesOfContract_acrossBatches()
 	{
-		final List<I_C_SubscriptionProgress> entries = tc2Fixture_contractAEntries_thenContractB_b1();
+		final List<I_C_SubscriptionProgress> entries = termAWithOpenScheduleOnFirstEntry_andTermB();
 
-		subscriptionBL.evalDeliveries(stream(2), 2); // order: A1, A2 | B1, A3 => A3 is in a later batch than A1
+		subscriptionBL.evalDeliveries(deliveries(2), 2); // batches [A1, A2], [B1, A3]
 
-		assertTc2(entries);
+		assertTermAEntriesDelayed_termBEntryPlanned(entries);
 	}
 
-	@Test // TC4 across batches, last partial batch (Review Focus 2)
-	public void allEntriesProcessed_acrossBatches()
+	@Test
+	public void delayedWithoutSchedules_allBackToPlanned_acrossBatches()
 	{
-		final List<I_C_SubscriptionProgress> entries = tc4Fixture_fiveDelayedEntriesWithoutSchedules();
+		final List<I_C_SubscriptionProgress> entries = fiveDelayedEntriesWithoutSchedules();
 
-		subscriptionBL.evalDeliveries(stream(2), 2); // 2 + 2 + 1
+		subscriptionBL.evalDeliveries(deliveries(2), 2); // 2 + 2 + 1
 
 		assertAllPlanned(entries);
 	}
 
-	@Test // TC6
+	@Test
 	public void oneScheduleLookupPerBatch()
 	{
 		final CountingShipmentSchedulePA countingPA = new CountingShipmentSchedulePA();
-		Services.registerService(IShipmentSchedulePA.class, countingPA);
+		registerAndRecreateSubscriptionBL(countingPA);
 		final List<I_C_SubscriptionProgress> entries = fivePlannedEntries();
 
-		subscriptionBL.evalDeliveries(stream(2), 2);
+		subscriptionBL.evalDeliveries(deliveries(2), 2);
 
 		assertThat(countingPA.lookupCount.get()).isEqualTo(3);
-		for (final I_C_SubscriptionProgress entry : entries)
-		{
-			assertThat(statusOf(entry)).isEqualTo(X_C_SubscriptionProgress.STATUS_Planned);
-		}
+		assertAllPlanned(entries);
 	}
 
-	@Test // TC7(a): the step does not collect the stream into a list
+	@Test
 	public void holdsAtMostOneBatch()
 	{
 		final List<I_C_SubscriptionProgress> entries = fivePlannedEntries();
@@ -256,7 +267,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 		};
 
 		final List<Integer> pulledAtLookup = new ArrayList<>();
-		Services.registerService(IShipmentSchedulePA.class, new CountingShipmentSchedulePA()
+		registerAndRecreateSubscriptionBL(new CountingShipmentSchedulePA()
 		{
 			@Override
 			public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, final Collection<Integer> recordIds)
@@ -266,9 +277,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 			}
 		});
 
-		final Stream<I_C_SubscriptionProgress> stream = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(countingIterator, Spliterator.ORDERED), false);
-		subscriptionBL.evalDeliveries(stream, 2);
+		subscriptionBL.evalDeliveries(countingIterator, 2);
 
 		assertThat(pulledAtLookup).hasSize(3);
 		for (int k = 1; k <= pulledAtLookup.size(); k++)
@@ -278,14 +287,24 @@ public class SubscriptionBL_EvalDeliveries_Test
 		assertThat(pulled.get()).isEqualTo(5);
 	}
 
-	private List<I_C_SubscriptionProgress> fivePlannedEntries()
+	@Test
+	public void processingFails_deliveriesIteratorIsClosed()
 	{
-		final List<I_C_SubscriptionProgress> entries = new ArrayList<>();
-		for (int i = 0; i < 5; i++)
+		fivePlannedEntries();
+		final CloseTrackingSubscriptionDAO subscriptionDAO = new CloseTrackingSubscriptionDAO();
+		Services.registerService(ISubscriptionDAO.class, subscriptionDAO);
+		registerAndRecreateSubscriptionBL(new ShipmentSchedulePA()
 		{
-			entries.add(entry(itemTerm(), X_C_SubscriptionProgress.STATUS_Planned, -1, 1));
-		}
-		return entries;
+			@Override
+			public ImmutableSet<Integer> retrieveRecordIdsWithUnprocessedSchedules(final int adTableId, final Collection<Integer> recordIds)
+			{
+				throw new AdempiereException("schedule lookup failed");
+			}
+		});
+
+		assertThatThrownBy(() -> subscriptionBL.evalDeliveries(Env.getCtx()))
+				.hasMessageContaining("schedule lookup failed");
+		assertThat(subscriptionDAO.closeCount.get()).isEqualTo(1);
 	}
 
 	private static class CountingShipmentSchedulePA extends ShipmentSchedulePA
@@ -297,6 +316,47 @@ public class SubscriptionBL_EvalDeliveries_Test
 		{
 			lookupCount.incrementAndGet();
 			return super.retrieveRecordIdsWithUnprocessedSchedules(adTableId, recordIds);
+		}
+	}
+
+	private static class CloseTrackingSubscriptionDAO extends PlainSubscriptionDAO
+	{
+		final AtomicInteger closeCount = new AtomicInteger();
+
+		@Override
+		public Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(final Properties ctx, final Timestamp date, final String trxName, final int pageSize)
+		{
+			return new CloseTrackingIterator(super.retrievePlannedAndDelayedDeliveries(ctx, date, trxName, pageSize), closeCount);
+		}
+	}
+
+	private static class CloseTrackingIterator implements Iterator<I_C_SubscriptionProgress>, Closeable
+	{
+		private final Iterator<I_C_SubscriptionProgress> delegate;
+		private final AtomicInteger closeCount;
+
+		CloseTrackingIterator(final Iterator<I_C_SubscriptionProgress> delegate, final AtomicInteger closeCount)
+		{
+			this.delegate = delegate;
+			this.closeCount = closeCount;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return delegate.hasNext();
+		}
+
+		@Override
+		public I_C_SubscriptionProgress next()
+		{
+			return delegate.next();
+		}
+
+		@Override
+		public void close()
+		{
+			closeCount.incrementAndGet();
 		}
 	}
 }

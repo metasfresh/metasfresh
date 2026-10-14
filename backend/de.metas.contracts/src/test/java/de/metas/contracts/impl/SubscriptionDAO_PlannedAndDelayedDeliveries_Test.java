@@ -1,8 +1,9 @@
-package de.metas.contracts.subscription.impl;
+package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -18,22 +19,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.ISubscriptionDAO;
-import de.metas.util.Services;
 
 public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 {
 	private final Timestamp now = SystemTime.asTimestamp();
+	private AbstractSubscriptionDAO subscriptionDAO;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		subscriptionDAO = new PlainSubscriptionDAO();
 	}
 
 	private I_C_Flatrate_Term term(final String productType, final boolean termActive)
@@ -65,15 +67,14 @@ public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 		return sp;
 	}
 
-	private List<Integer> streamIds()
+	private List<Integer> retrieveIds()
 	{
-		return Services.get(ISubscriptionDAO.class)
-				.streamPlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, 2)
+		return Streams.stream(subscriptionDAO.retrievePlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, 2))
 				.map(I_C_SubscriptionProgress::getC_SubscriptionProgress_ID)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Test // TC1 read side: service-product entries are not read
+	@Test
 	public void serviceProductEntries_notRead()
 	{
 		final I_C_Flatrate_Term serviceTerm = term(X_M_Product.PRODUCTTYPE_Service, true);
@@ -81,29 +82,35 @@ public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 		entry(serviceTerm, X_C_SubscriptionProgress.STATUS_Delayed);
 		final I_C_SubscriptionProgress itemEntry = entry(term(X_M_Product.PRODUCTTYPE_Item, true), X_C_SubscriptionProgress.STATUS_Planned);
 
-		assertThat(streamIds()).containsExactly(itemEntry.getC_SubscriptionProgress_ID());
+		assertThat(retrieveIds()).containsExactly(itemEntry.getC_SubscriptionProgress_ID());
 	}
 
-	@Test // REQUIREMENTS 3.1: product-type filter only, no term-active filter
+	@Test
 	public void inactiveTermWithItemProduct_stillRead()
 	{
 		final I_C_SubscriptionProgress itemEntry = entry(term(X_M_Product.PRODUCTTYPE_Item, false), X_C_SubscriptionProgress.STATUS_Delayed);
 
-		assertThat(streamIds()).containsExactly(itemEntry.getC_SubscriptionProgress_ID());
+		assertThat(retrieveIds()).containsExactly(itemEntry.getC_SubscriptionProgress_ID());
 	}
 
-	@Test // TC7(b): paged guaranteed iterator, page size as given
+	@Test
 	public void query_isPagedGuaranteedIterator()
 	{
-		final IQuery<I_C_SubscriptionProgress> query = Services.get(ISubscriptionDAO.class)
-				.createPlannedAndDelayedDeliveriesQuery(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, 7);
+		final IQuery<I_C_SubscriptionProgress> query = subscriptionDAO.createPlannedAndDelayedDeliveriesQuery(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, 7);
 
 		assertThat(query.<Boolean> getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
 		assertThat(query.<Integer> getOption(IQuery.OPTION_IteratorBufferSize)).isEqualTo(7);
 	}
 
-	@Test // multi-row streaming over several pages, in ORDER BY EventDate, C_Flatrate_Term_ID, SeqNo
-	public void stream_returnsAllRowsInQueryOrder()
+	@Test
+	public void nonPositivePageSize_isRejected()
+	{
+		assertThatThrownBy(() -> subscriptionDAO.retrievePlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, 0))
+				.hasMessageContaining("pageSize");
+	}
+
+	@Test
+	public void retrieve_returnsAllRowsOrderedByEventDateTermSeqNo()
 	{
 		final I_C_Flatrate_Term termA = term(X_M_Product.PRODUCTTYPE_Item, true);
 		final I_C_Flatrate_Term termB = term(X_M_Product.PRODUCTTYPE_Item, true);
@@ -114,7 +121,7 @@ public class SubscriptionDAO_PlannedAndDelayedDeliveries_Test
 		final I_C_SubscriptionProgress oldest = entry(termB, X_C_SubscriptionProgress.STATUS_Planned, -3, 1);
 		final I_C_SubscriptionProgress midASeq1 = entry(termA, X_C_SubscriptionProgress.STATUS_Planned, -2, 1);
 
-		assertThat(streamIds()).containsExactly(
+		assertThat(retrieveIds()).containsExactly(
 				oldest.getC_SubscriptionProgress_ID(),
 				midASeq1.getC_SubscriptionProgress_ID(),
 				midASeq2.getC_SubscriptionProgress_ID(),

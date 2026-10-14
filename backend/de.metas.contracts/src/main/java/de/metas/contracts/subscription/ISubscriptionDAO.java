@@ -23,11 +23,9 @@ package de.metas.contracts.subscription;
  */
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.compiere.model.IQuery;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -93,25 +91,12 @@ public interface ISubscriptionDAO extends ISingletonService
 	}
 
 	/**
-	 * Selects the {@link I_C_SubscriptionProgress} records that have event type
-	 * {@link X_C_SubscriptionProgress#EVENTTYPE_Delivery} and status {@link X_C_SubscriptionProgress#STATUS_Planned}
-	 * or {@link X_C_SubscriptionProgress#STATUS_Delayed}, whose event date is before or equal to {@code date},
-	 * but only for entries of terms whose product is of type Item (the product type is the only term-related filter; the term's {@code IsActive} is not considered),
-	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}. The query is a guaranteed iterator that reads {@code pageSize} records per page.
-	 * <p>
-	 * Only records of {@code ctx}'s client are selected. The returned query is already configured (guaranteed iterator, buffer size = {@code pageSize}); callers must not change its options.
+	 * Iterates the delivery {@link I_C_SubscriptionProgress} records of {@code ctx}'s client with status {@link X_C_SubscriptionProgress#STATUS_Planned}
+	 * or {@link X_C_SubscriptionProgress#STATUS_Delayed} and an event date before or equal to {@code date}, of terms whose product is an Item,
+	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}, loading {@code pageSize} records at a time.
+	 * The caller must close the iterator.
 	 */
-	IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(Properties ctx, Timestamp date, String trxName, int pageSize);
-
-	/**
-	 * Streams the result of {@link #createPlannedAndDelayedDeliveriesQuery(Properties, Timestamp, String, int)} page by page.
-	 * Never collect the returned stream into a list: the point is to keep only one page in memory.
-	 * <p>
-	 * Only records of {@code ctx}'s client are selected. The pages are loaded lazily, in {@code trxName}, while the stream is consumed;
-	 * so the caller must consume the stream completely inside that transaction (not after it ended).
-	 * The stream holds no resource of its own (no {@code onClose} handler), so closing it is not required.
-	 */
-	Stream<I_C_SubscriptionProgress> streamPlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
+	Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
 
 	/**
 	 * 

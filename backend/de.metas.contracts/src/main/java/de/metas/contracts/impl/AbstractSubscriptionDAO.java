@@ -5,9 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -20,12 +20,15 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -181,15 +184,26 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public final IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(
+	public Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			@NonNull final Properties ctx,
 			@NonNull final Timestamp date,
 			final String trxName,
 			final int pageSize)
 	{
+		return createPlannedAndDelayedDeliveriesQuery(ctx, date, trxName, pageSize).iterate(I_C_SubscriptionProgress.class);
+	}
+
+	@VisibleForTesting
+	final IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(
+			@NonNull final Properties ctx,
+			@NonNull final Timestamp date,
+			final String trxName,
+			final int pageSize)
+	{
+		Check.assumeGreaterThanZero(pageSize, "pageSize");
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		// product type only; deliberately no term IsActive filter (unlike SubscriptionShipmentScheduleHandler)
 		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
 				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
@@ -209,15 +223,5 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, pageSize);
-	}
-
-	@Override
-	public final Stream<I_C_SubscriptionProgress> streamPlannedAndDelayedDeliveries(
-			@NonNull final Properties ctx,
-			@NonNull final Timestamp date,
-			final String trxName,
-			final int pageSize)
-	{
-		return createPlannedAndDelayedDeliveriesQuery(ctx, date, trxName, pageSize).iterateAndStream();
 	}
 }
