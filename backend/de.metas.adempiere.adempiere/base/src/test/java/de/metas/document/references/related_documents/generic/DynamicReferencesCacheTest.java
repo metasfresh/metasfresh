@@ -25,6 +25,25 @@ class DynamicReferencesCacheTest
 	void changeLog_isNeverAnsweredFromTheCachedReferenceSet()
 	{
 		// the cached reference set of AD_ChangeLog was loaded before C_Doc_Outbound_Config had any change-log row
+		givenCachedReferenceSetIsEmpty();
+
+		final OptionalBoolean hasReferences = new DynamicReferencesCache().hasReferences("AD_ChangeLog", "C_Doc_Outbound_Config");
+
+		assertThat(hasReferences).isEqualTo(OptionalBoolean.UNKNOWN);
+	}
+
+	@Test
+	void otherTable_isStillAnsweredFromTheCachedReferenceSet()
+	{
+		givenCachedReferenceSetIsEmpty();
+
+		final OptionalBoolean hasReferences = new DynamicReferencesCache().hasReferences("C_Order", "C_Doc_Outbound_Config");
+
+		assertThat(hasReferences).isEqualTo(OptionalBoolean.FALSE);
+	}
+
+	private static void givenCachedReferenceSetIsEmpty()
+	{
 		Services.registerService(ITableRecordIdDAO.class, new ITableRecordIdDAO()
 		{
 			@Override
@@ -33,9 +52,5 @@ class DynamicReferencesCacheTest
 			@Override
 			public List<TableRecordIdDescriptor> retrieveAllTableRecordIdReferences() { return ImmutableList.of(); }
 		});
-
-		final OptionalBoolean hasReferences = new DynamicReferencesCache().hasReferences("AD_ChangeLog", "C_Doc_Outbound_Config");
-
-		assertThat(hasReferences).isEqualTo(OptionalBoolean.UNKNOWN);
 	}
 }
