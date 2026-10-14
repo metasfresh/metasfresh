@@ -62,6 +62,16 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private final static transient Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
 
+	private final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
@@ -117,16 +127,12 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(segment);
 
 	}
 
 	private ImmutableShipmentScheduleSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(InterfaceWrapperHelper.load(subscriptionLine.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
@@ -148,12 +154,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 			final Properties ctx,
 			final String trxName)
 	{
-		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final int daysInAdvance = sysConfigBL.getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQuery<I_C_Flatrate_Term> itemProductQuery = Services.get(ISubscriptionDAO.class)
+		// not ctx: callers may pass a work-package ctx, while this subquery always used Env.getCtx() and the thread-inherited trx
+		final IQuery<I_C_Flatrate_Term> itemProductQuery = subscriptionDAO
 				.queryTermsWithItemProduct(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.create();
@@ -224,13 +229,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
 
 		shipmentSchedule.setM_Product_ID(term.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(term, shipmentSchedule);
+		attributeSetInstanceBL.cloneASI(term, shipmentSchedule);
 
 		shipmentSchedule.setProductDescription(null);
 
 		updateNewSchedWithValuesFromReferencedLine(shipmentSchedule);
 
-		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
+		final I_C_DocType doctypeForTerm = flatrateBL.getDocTypeFor(term);
 		shipmentSchedule.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
 		shipmentSchedule.setDocSubType(doctypeForTerm.getDocSubType());
 
@@ -266,7 +271,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		// only display item products
 		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
-		final boolean display = Services.get(IProductBL.class).getProductType(ProductId.ofRepoId(term.getM_Product_ID())).isItem();
+		final boolean display = productBL.getProductType(ProductId.ofRepoId(term.getM_Product_ID())).isItem();
 		shipmentSchedule.setIsDisplayed(display);
 	}
 }
