@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,7 +16,11 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -23,6 +28,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,11 +57,12 @@ import lombok.NonNull;
 public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 {
 	private static final Logger logger = LogManager.getLogger(AbstractSubscriptionDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public final boolean existsTermForOl(final I_C_OrderLine ol)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class, ol)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, ol.getC_OrderLine_ID())
@@ -77,7 +84,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	private IQuery<I_C_SubscriptionProgress> createQuery(@NonNull final SubscriptionProgressQuery query)
 	{
-		final IQueryBuilder<I_C_SubscriptionProgress> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_SubscriptionProgress> queryBuilder = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class, query.getTerm())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, query.getTerm().getC_Flatrate_Term_ID());
@@ -129,7 +136,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	private void increaseSeqNosOfSuccessors(final I_C_SubscriptionProgress predecessor)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryUpdater<I_C_SubscriptionProgress> updater = queryBL.createCompositeQueryUpdater(I_C_SubscriptionProgress.class)
 				.addAddValueToColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, BigDecimal.ONE);
 
@@ -167,7 +173,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 			final int termId,
 			final int seqNo)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, termId)
@@ -178,22 +184,47 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public final List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
+	public final Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			@NonNull final Properties ctx,
 			@NonNull final Timestamp date,
-			final String trxName)
+			final String trxName,
+			final int pageSize)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
+		return createPlannedAndDelayedDeliveriesQuery(ctx, date, trxName, pageSize).iterate(I_C_SubscriptionProgress.class);
+	}
+
+	@VisibleForTesting
+	final IQuery<I_C_SubscriptionProgress> createPlannedAndDelayedDeliveriesQuery(
+			@NonNull final Properties ctx,
+			@NonNull final Timestamp date,
+			final String trxName,
+			final int pageSize)
+	{
+		Check.assumeGreaterThanZero(pageSize, "pageSize");
+
+		final IQuery<I_C_Flatrate_Term> itemProductTermsQuery = queryTermsWithItemProduct(ctx, trxName).create();
+
+		return queryBL.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned, X_C_SubscriptionProgress.STATUS_Delayed)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, date)
+				.addInSubQueryFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, itemProductTermsQuery)
 				.orderBy()
 				.addColumn(I_C_SubscriptionProgress.COLUMN_EventDate)
 				.addColumn(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID)
 				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
-				.create().list();
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, pageSize);
+	}
+
+	@Override
+	public final IQueryBuilder<I_C_Flatrate_Term> queryTermsWithItemProduct(@NonNull final Properties ctx, final String trxName)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class);
 	}
 }
