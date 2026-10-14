@@ -1,0 +1,16 @@
+{
+ "spec/bp-print-format-config-fields.spec.js": 13.4,
+ "spec/business-partner.spec.js": 6.6,
+ "spec/cost-revaluation-copyfrom-field.spec.js": 6.4,
+ "spec/cost-revaluation-posted-status-field.spec.js": 6,
+ "spec/hu-label-config-create.spec.js": 3.7,
+ "spec/login.spec.js": 3.8,
+ "spec/mfg-config-translations.spec.js": 6.5,
+ "spec/mfg-cost-imbalance-monitor.spec.js": 22.6,
+ "spec/picking-profile-shelflife-field.spec.js": 7.3,
+ "spec/product.spec.js": 7.2,
+ "spec/receipt-candidates.spec.js": 80.5,
+ "spec/replenishment-window.spec.js": 7.2,
+ "spec/sales-order-default-packing-instruction.spec.js": 37.3,
+ "spec/shipment-schedule.spec.js": 196.7
+}
