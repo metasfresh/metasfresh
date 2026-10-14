@@ -140,9 +140,4 @@ public interface IADWindowDAO extends ISingletonService
 	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
 
 	Optional<QuickInputConfigLayout> getQuickInputConfigLayout(AdTabId adTabId);
-
-	/**
-	 * Saves the given UI element, e.g. after changing its {@code WidgetSize}.
-	 */
-	void saveUIElement(@NonNull I_AD_UI_Element uiElement);
 }

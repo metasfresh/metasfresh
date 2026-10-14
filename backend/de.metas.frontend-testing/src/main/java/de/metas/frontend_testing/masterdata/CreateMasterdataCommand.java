@@ -5,15 +5,10 @@ import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.externalreference.CreateExternalReferenceCommand;
 import de.metas.frontend_testing.masterdata.externalreference.JsonCreateExternalReferenceRequest;
-import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterRequest;
-import de.metas.frontend_testing.masterdata.inlinefilter.JsonSetupInlineFilterResponse;
-import de.metas.frontend_testing.masterdata.inlinefilter.SetupInlineFilterCommand;
 import lombok.Builder;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,13 +35,11 @@ public class CreateMasterdataCommand
 
 		final Map<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		createExternalReferences();
-		final List<JsonSetupInlineFilterResponse> inlineFilters = setupInlineFilters();
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs)
 				.bpartners(bpartners)
-				.inlineFilters(inlineFilters)
 				.build();
 	}
 
@@ -87,30 +80,5 @@ public class CreateMasterdataCommand
 					.build()
 					.execute();
 		}
-	}
-
-	private List<JsonSetupInlineFilterResponse> setupInlineFilters()
-	{
-		if (request.getInlineFilters() == null)
-		{
-			return new ArrayList<>();
-		}
-
-		// resolve and validate all entries before the first write, so that one bad entry writes nothing
-		final List<SetupInlineFilterCommand> commands = new ArrayList<>();
-		for (final JsonSetupInlineFilterRequest inlineFilterRequest : request.getInlineFilters())
-		{
-			commands.add(SetupInlineFilterCommand.builder()
-					.adTableDAO(services.adTableDAO)
-					.adWindowDAO(services.adWindowDAO)
-					.adReferenceService(services.adReferenceService)
-					.request(inlineFilterRequest)
-					.build()
-					.validate());
-		}
-
-		final List<JsonSetupInlineFilterResponse> responses = new ArrayList<>();
-		commands.forEach(command -> responses.add(command.execute()));
-		return responses;
 	}
 }

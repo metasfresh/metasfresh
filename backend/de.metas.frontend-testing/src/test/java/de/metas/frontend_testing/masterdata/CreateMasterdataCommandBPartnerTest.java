@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -50,7 +49,7 @@ class CreateMasterdataCommandBPartnerTest
 		queryBL = Services.get(IQueryBL.class);
 
 		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, new ExternalSystems(), new ExternalReferenceTypes());
-		services = new CreateMasterdataCommandSupportingServices(externalReferenceRepository, new ExternalReferenceTypes(), new ExternalSystems(), ADReferenceService.newMocked());
+		services = new CreateMasterdataCommandSupportingServices(externalReferenceRepository, new ExternalReferenceTypes(), new ExternalSystems());
 
 		defaultGroupId = newBPGroup("Standard", true);
 		customGroupId = newBPGroup("Kunde", false);

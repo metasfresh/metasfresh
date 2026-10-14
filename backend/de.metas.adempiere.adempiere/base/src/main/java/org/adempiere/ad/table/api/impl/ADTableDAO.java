@@ -58,7 +58,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -123,12 +122,6 @@ public class ADTableDAO implements IADTableDAO
 			throw new AdempiereException("@NotFound@ @AD_Column_ID@ " + columnName + " (@AD_Table_ID@=" + tableName + ")");
 		}
 		return column;
-	}
-
-	@Override
-	public void saveColumn(@NonNull final I_AD_Column column)
-	{
-		InterfaceWrapperHelper.saveRecord(column);
 	}
 
 	@Override

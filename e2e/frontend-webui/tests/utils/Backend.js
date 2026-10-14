@@ -14,7 +14,7 @@ export const Backend = {
    * @param {string} options.authToken - Optional auth token
    * @param {string} options.language - Optional language (en_US, de_DE, etc.)
    * @param {Object} options.request - Master data request object
-   *   (sections: context, sysconfigs, bpartners, externalReferences, inlineFilters)
+   *   (sections: context, sysconfigs, bpartners, externalReferences)
    * @returns {Promise<Object>} Response body with created master data
    */
   createMasterdata: async ({ authToken, language, request } = {}) =>
@@ -99,8 +99,7 @@ export const Backend = {
   /**
    * Force the webapi node (8080) to drop ALL caches (global cacheMgt.reset()).
    *
-   * Needed after creating AD metadata (e.g. the `inlineFilters` section of
-   * createMasterdata), which the webapi node may have cached before the app node wrote it.
+   * Needed after the app node changed data the webapi node may have cached.
    * The caller must be logged in.
    */
   resetWebApiCaches: async () =>

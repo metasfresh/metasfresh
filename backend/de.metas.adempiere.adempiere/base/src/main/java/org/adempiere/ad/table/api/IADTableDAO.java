@@ -212,9 +212,4 @@ public interface IADTableDAO extends ISingletonService
 			@Nullable String newColumnName);
 
 	List<ViewSourceDescriptor> retrieveViewSourceDescriptors();
-
-	/**
-	 * Saves the given column, e.g. after changing its {@code IsShowFilterInline}.
-	 */
-	void saveColumn(@NonNull I_AD_Column column);
 }

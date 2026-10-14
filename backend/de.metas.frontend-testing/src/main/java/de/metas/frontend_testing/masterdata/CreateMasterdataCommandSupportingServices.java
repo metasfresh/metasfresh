@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.masterdata;
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -11,8 +10,6 @@ import de.metas.location.ILocationDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +28,4 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final ExternalReferenceRepository externalReferenceRepository;
 	@NonNull public final ExternalReferenceTypes externalReferenceTypes;
 	@NonNull public final ExternalSystems externalSystems;
-	@NonNull public final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	@NonNull public final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-	@NonNull public final ADReferenceService adReferenceService;
 }

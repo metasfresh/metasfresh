@@ -1,7 +1,6 @@
 package de.metas.frontend_testing;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -45,8 +44,7 @@ class FrontendTestingRestControllerTest
 		controller = new FrontendTestingRestController(userAuthTokenFilterConfiguration, new CreateMasterdataCommandSupportingServices(
 				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes()),
 				new ExternalReferenceTypes(),
-				new ExternalSystems(),
-				ADReferenceService.newMocked()));
+				new ExternalSystems()));
 	}
 
 	private void setEnabled(final String value)
