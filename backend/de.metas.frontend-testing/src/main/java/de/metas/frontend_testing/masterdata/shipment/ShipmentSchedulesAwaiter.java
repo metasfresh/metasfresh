@@ -85,8 +85,7 @@ class ShipmentSchedulesAwaiter
 	@Nullable
 	private String getNotReadyReason(@NonNull final List<I_M_ShipmentSchedule> schedules)
 	{
-		// Not every order line gets a schedule (e.g. not the lines of a service product), so we don't wait for one per line.
-		// The sales order seed already waited for the schedules of the lines it created.
+		// We don't wait for one schedule per order line: an order line of a service product never gets one.
 		if (schedules.isEmpty())
 		{
 			return "no shipment schedules yet";
