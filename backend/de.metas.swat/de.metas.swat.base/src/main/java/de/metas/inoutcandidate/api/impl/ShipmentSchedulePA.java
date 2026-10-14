@@ -1,9 +1,10 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -38,7 +39,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MOrderLine;
@@ -218,20 +218,20 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(@NonNull final Collection<TableRecordReference> recordRefs)
 	{
-		final ListMultimap<AdTableId, Integer> tableId2RecordIds = TableRecordReferenceSet.of(recordRefs).extractTableId2RecordIds();
-		return tableId2RecordIds.keySet()
+		final ImmutableListMultimap<AdTableId, TableRecordReference> recordRefsByTableId = Multimaps.index(recordRefs, TableRecordReference::getAdTableId);
+		return recordRefsByTableId.keySet()
 				.stream()
-				.flatMap(adTableId -> streamRecordsWithUnprocessedSchedules(adTableId, tableId2RecordIds.get(adTableId)))
+				.flatMap(adTableId -> streamRecordsWithUnprocessedSchedules(adTableId, recordRefsByTableId.get(adTableId)))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private Stream<TableRecordReference> streamRecordsWithUnprocessedSchedules(@NonNull final AdTableId adTableId, @NonNull final Collection<Integer> recordIds)
+	private Stream<TableRecordReference> streamRecordsWithUnprocessedSchedules(@NonNull final AdTableId adTableId, @NonNull final Collection<TableRecordReference> recordRefs)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, adTableId)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, recordIds)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, recordRefs.stream().map(TableRecordReference::getRecord_ID).collect(ImmutableSet.toImmutableSet()))
 				.create()
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, Integer.class)
 				.stream()
