@@ -9,13 +9,11 @@ import {
   completeDocument,
   expectDocStatus,
   lookupKey,
-  openNewRecord,
   openNewRecordAndWaitUntilLoaded,
   openRecord,
   selectFirstListOption,
   selectListByKey,
   selectLookupByKey,
-  waitForNewRecordId,
 } from '../utils/ContractWindowHelpers';
 import {
   createDeductedAtPaymentContract,
@@ -76,8 +74,7 @@ test.describe('Payment bonus: the payment window pre-fills and books the bonus',
     // so nothing but the document type tells that it is a receipt when the invoice is picked
     let paymentId;
     await test.step('Zahlung: a new payment, Belegart Zahlungseingang', async () => {
-      await openNewRecord(page, PAYMENT_WINDOW_ID);
-      paymentId = await waitForNewRecordId(page, PAYMENT_WINDOW_ID);
+      paymentId = await openNewRecordAndWaitUntilLoaded(page, PAYMENT_WINDOW_ID);
       await selectListByKey(page, page, 'C_DocType_ID', DOCTYPE_AR_RECEIPT);
       await expect(page.locator('.form-field-PaymentBonusAmt'), 'no Zahlungsbonus without Rechnung').toHaveCount(0);
     });
