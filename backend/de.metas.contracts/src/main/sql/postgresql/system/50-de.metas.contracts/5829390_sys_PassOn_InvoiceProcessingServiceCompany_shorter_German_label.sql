@@ -10,14 +10,14 @@
 --     AD_Field.AD_Name_ID of field 785685 (window 540113)
 --   No process parameter, menu, tab, window, print format item or KPI field uses either element.
 --
--- Description/Help unchanged. en_US label 'Pass on service fee of' unchanged.
+-- This script leaves Description/Help and the en_US label as they are (both are changed by 5829420).
 -- fr_CH only holds the untranslated German copy; it gets the new German text, still IsTranslated='N'.
 
 -- AD_Element 585538
-UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:00.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585538 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:00.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585538 AND AD_Language='de_DE'
 ;
 
-UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:01.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585538 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:01.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585538 AND AD_Language='de_CH'
 ;
 
 UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:02.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585538 AND AD_Language='fr_CH' AND IsTranslated='N'
@@ -33,10 +33,10 @@ UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr v
 ;
 
 -- AD_Element 585539
-UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:03.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585539 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:03.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585539 AND AD_Language='de_DE'
 ;
 
-UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:04.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585539 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:04.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585539 AND AD_Language='de_CH'
 ;
 
 UPDATE AD_Element_Trl SET Name='Servicegebühr von', PrintName='Servicegebühr von', Updated=TO_TIMESTAMP('2026-10-14 10:00:05.000', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy=100 WHERE AD_Element_ID=585539 AND AD_Language='fr_CH' AND IsTranslated='N'
