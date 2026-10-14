@@ -10,13 +10,13 @@
 --   AD_MigrationScript 5829430 (file name prefix)
 
 UPDATE AD_Process_Para
-SET Name='Zu stornierende Menge', Updated=TO_TIMESTAMP('2026-10-14 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET Name='Zu stornierende Menge', Updated=TO_TIMESTAMP('2026-10-14 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=0
 WHERE AD_Process_Para_ID=543346;
 
 UPDATE AD_Process_Para_Trl
-SET Name='Zu stornierende Menge', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET Name='Zu stornierende Menge', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=0
 WHERE AD_Process_Para_ID=543346 AND AD_Language IN ('de_DE', 'de_CH');
 
 UPDATE AD_Process_Para_Trl
-SET Name='Qty to reverse', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET Name='Qty to reverse', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-14 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=0
 WHERE AD_Process_Para_ID=543346 AND AD_Language='en_US';
