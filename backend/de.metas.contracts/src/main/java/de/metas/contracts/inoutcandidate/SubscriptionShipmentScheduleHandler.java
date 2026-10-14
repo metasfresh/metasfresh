@@ -83,6 +83,18 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		return _shipmentScheduleInvalidateBL;
 	}
 
+	// lazy: FlatrateBL needs Spring beans when it is constructed, and this handler is constructed when MainValidator registers it
+	@Nullable private IFlatrateBL _flatrateBL;
+
+	private IFlatrateBL flatrateBL()
+	{
+		if (_flatrateBL == null)
+		{
+			_flatrateBL = Services.get(IFlatrateBL.class);
+		}
+		return _flatrateBL;
+	}
+
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
@@ -244,8 +256,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateNewSchedWithValuesFromReferencedLine(shipmentSchedule);
 
-		// IFlatrateBL is looked up here, not held as a field: on this branch FlatrateBL gets Spring beans when constructed, and this handler is constructed when MainValidator registers it
-		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
+		final I_C_DocType doctypeForTerm = flatrateBL().getDocTypeFor(term);
 		shipmentSchedule.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
 		shipmentSchedule.setDocSubType(doctypeForTerm.getDocSubType());
 
