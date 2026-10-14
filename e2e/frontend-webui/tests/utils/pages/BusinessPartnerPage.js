@@ -379,6 +379,8 @@ export class BusinessPartnerPage {
         (response) => isFieldSave(response, COLUMN_FIELDS.PO_PAYMENT_TERM),
         { timeout: SLOW_ACTION_TIMEOUT }
       );
+      // A failing click below must not leave this promise rejected and unhandled.
+      saveResponsePromise.catch(() => {});
       await paymentTermOption.first().click();
       console.log(`Clicked payment term option: ${paymentTermName}`);
       const saveResponse = await saveResponsePromise;
