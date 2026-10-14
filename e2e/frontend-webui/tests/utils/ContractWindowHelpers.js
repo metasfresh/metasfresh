@@ -255,22 +255,28 @@ export async function selectFirstListOption(page, scope, fieldName) {
 
 /**
  * Type into a lookup field and wait until its typeahead result for the full search text has arrived and is shown.
- * A window reloads its document when the backend reports it as changed over the websocket (MasterWindowContainer.onWebsocketEvent),
- * and that reload moves the focus to the window's first field while it is empty. If that happens, the text is no longer in this field
- * (or this field no longer has the focus) and the text is typed again; after 3 tries the lookup fails.
- * The typeahead is the field's own: /field/<name>/typeahead (document field), /edit/<name>/typeahead (modal or view row) or /attribute/<name>/typeahead.
+ * The typeahead is the field's own: /field/<name>/typeahead (document field), /edit/<name>/typeahead (modal or view row)
+ * or /attribute/<name>/typeahead, with exactly the search text as query.
+ * <p>
+ * Safety net: if the text did not stay in the field (or the field lost the focus), it is typed again, and after 3 tries the lookup fails.
+ * The cause seen so far, the first field taking the focus when the window reloads the document after a websocket "document changed"
+ * event, is fixed in RawLookup (it no longer takes the focus from another field); each retype is logged and added to the test's annotations.
  */
 async function typeIntoLookup(page, scope, fieldName, searchText) {
   const input = scope.locator(`.form-field-${fieldName} input.input-field, .form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  const typeaheadUrlParts = ['field', 'edit', 'attribute'].map((segment) => `/${segment}/${fieldName}/typeahead?query=${encodeURIComponent(searchText)}`);
+  const typeaheadPathSuffixes = ['field', 'edit', 'attribute'].map((segment) => `/${segment}/${fieldName}/typeahead`);
+  const isOwnTypeahead = (response) => {
+    const url = new URL(response.url());
+    return typeaheadPathSuffixes.some((suffix) => url.pathname.endsWith(suffix)) && url.searchParams.get('query') === searchText;
+  };
   const textStayed = async () => (await input.inputValue()) === searchText && (await input.evaluate((el) => el === document.activeElement));
   const dropdown = page.locator('.input-dropdown-list');
   const maxAttempts = 3;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await input.click();
     await input.fill('');
-    const typeaheadDone = page.waitForResponse((response) => typeaheadUrlParts.some((part) => response.url().includes(part)), { timeout: SLOW_ACTION_TIMEOUT });
+    const typeaheadDone = page.waitForResponse(isOwnTypeahead, { timeout: SLOW_ACTION_TIMEOUT });
     typeaheadDone.catch(() => {});
     await input.pressSequentially(searchText, { delay: 30 });
     if (await textStayed()) {
@@ -288,7 +294,11 @@ async function typeIntoLookup(page, scope, fieldName, searchText) {
     }
     const description = `${fieldName}: the typed text "${searchText}" did not stay in the field (attempt ${attempt}/${maxAttempts})`;
     console.warn(`[WARN] ${description}`);
-    test.info().annotations.push({ type: 'lookup-retype', description });
+    try {
+      test.info().annotations.push({ type: 'lookup-retype', description });
+    } catch (error) {
+      // not inside a running test (test.info() throws there): the console warning above is all there is
+    }
   }
   throw new Error(`lookup ${fieldName} lost its typed text ${maxAttempts}x`);
 }
