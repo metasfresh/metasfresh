@@ -754,11 +754,12 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private void evalDeliveriesBatch(@NonNull final List<I_C_SubscriptionProgress> batch, @NonNull final Set<FlatrateTermId> delayedTermIds)
 	{
-		final ImmutableSet<TableRecordReference> entriesWithOpenSchedule = shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(
-				batch.stream().map(TableRecordReference::of).collect(ImmutableList.toImmutableList()));
+		final ImmutableList<TableRecordReference> entryRefs = batch.stream().map(TableRecordReference::of).collect(ImmutableList.toImmutableList());
+		final ImmutableSet<TableRecordReference> entriesWithOpenSchedule = shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(entryRefs);
 
-		for (final I_C_SubscriptionProgress sd : batch)
+		for (int i = 0; i < batch.size(); i++)
 		{
+			final I_C_SubscriptionProgress sd = batch.get(i);
 			final FlatrateTermId termId = FlatrateTermId.ofRepoId(sd.getC_Flatrate_Term_ID());
 			if (delayedTermIds.contains(termId))
 			{
@@ -766,7 +767,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				save(sd);
 			}
-			else if (entriesWithOpenSchedule.contains(TableRecordReference.of(sd)))
+			else if (entriesWithOpenSchedule.contains(entryRefs.get(i)))
 			{
 				logger.debug("{} is delayed because there is at least one open shipment schedule", sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
