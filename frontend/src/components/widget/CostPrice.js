@@ -39,7 +39,9 @@ export default class CostPrice extends PureComponent {
   // The parent patches the input's text on blur, Tab, Enter and ArrowUp/Down, so it gets the whole text normalised.
   // Normalising the whole text (and not keystroke by keystroke) keeps "1,500.50" one number.
   // The event is derived with Object.create, not copied with a spread: a spread drops the event's methods
-  // (preventDefault, which RawWidget calls on Enter).
+  // (preventDefault, which RawWidget calls on Enter). Its target is a plain object that carries only `value`
+  // (the consumers read nothing else of it), and flags set through it (isDefaultPrevented, isPropagationStopped)
+  // land on the derived event, not on React's.
   withNormalizedValue = (e) => {
     const raw = e.target.value;
     const normalized = normalizeNumberInput(raw);

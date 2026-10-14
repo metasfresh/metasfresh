@@ -9,6 +9,8 @@ const LOGIN_PASSWORD = 'metasfresh';
 // Payment Term (C_PaymentTerm): its header field "Discount" is a Number field, which renders the CostPrice widget
 const PAYMENT_TERM_WINDOW_ID = 141;
 const FIELD = 'Discount';
+// its "Schedule" tab (C_PaySchedule) shows "Percentage", also a Number field, as a grid column
+const GRID_PERCENTAGE_CELL = '.table-flex-wrapper [data-cy="cell-Percentage"]';
 
 /**
  * Number / CostPrice fields — a decimal comma is sent to the backend as a decimal point.
@@ -173,5 +175,58 @@ test.describe('Number field - decimal comma', () => {
     for (const entry of ENTRIES) {
       await enterAndExpectStored(page, entry);
     }
+  });
+
+  test('a decimal comma typed into a grid cell (Number column) is stored as a decimal point', async ({ page }) => {
+    await createNewPaymentTerm(page);
+
+    await test.step('add a schedule line with percentage 100', async () => {
+      await page.locator('.filter-panel-buttons button:not(.close-batch-entry)').first().click(); // "Add new"
+      const percentageInput = page.locator('.panel-modal .form-field-Percentage input');
+      await percentageInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const percentagePatched = page.waitForResponse((resp) => isPatchOf('Percentage')(resp.request()), {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await percentageInput.click();
+      await percentageInput.press('ControlOrMeta+a');
+      await percentageInput.pressSequentially('100');
+      await percentageInput.press('Tab');
+      await percentagePatched;
+      await page.keyboard.press('Alt+Enter'); // "Done"
+      await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+      await page.reload(); // the grid shows the new line after a reload
+      await page.locator(GRID_PERCENTAGE_CELL).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    await test.step('type 2,5 into the percentage cell + Enter: sent and stored as 2.5', async () => {
+      const cell = page.locator(GRID_PERCENTAGE_CELL).first();
+      await showCaption(page, 'Schedule line, Percentage cell: type "2,5" + Enter -> expected 2.5');
+      await cell.click(); // select the row
+      await cell.dblclick(); // on a selected row, a double click opens the in-row editor
+      const input = cell.locator('input');
+      await expect(input).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      await input.press('ControlOrMeta+a');
+      await input.pressSequentially('2,5', { delay: 150 }); // slow enough to follow on the test video
+      await expect(input, 'text in the cell editor after typing').toHaveValue('2,5');
+
+      const patchRequested = page.waitForRequest(isPatchOf('Percentage'), { timeout: SLOW_ACTION_TIMEOUT });
+      const patchResponded = page.waitForResponse((resp) => isPatchOf('Percentage')(resp.request()), {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await input.press('Enter');
+
+      expect(JSON.parse((await patchRequested).postData()), 'PATCH sent for Percentage').toContainEqual(
+        expect.objectContaining({ path: 'Percentage', value: '2.5' })
+      );
+      const patchResponse = await patchResponded;
+      expect(patchResponse.status(), 'PATCH response status').toBe(200);
+      const line = await patchedDocument(patchResponse);
+      expect(Number(line?.fieldsByName?.Percentage?.value), 'Percentage stored by the server').toBe(2.5);
+
+      // the server's answer replaces the typed text: the cell holds the stored number, not "2,5"
+      await expect(input, 'text in the cell editor after the server answered').toHaveValue('2.5');
+      await showCaption(page, `Schedule line, Percentage cell: type "2,5" + Enter -> stored by the server: ${line.fieldsByName.Percentage.value}`);
+      await page.waitForTimeout(1500); // hold the stored value on the test video
+    });
   });
 });
