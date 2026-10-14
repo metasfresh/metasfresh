@@ -934,6 +934,8 @@ export class ReceiptCandidatesPage {
 
           // Set up listener for the popup BEFORE clicking
           const popupPromise = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+          // A failing click below must not leave this promise rejected and unhandled.
+          popupPromise.catch(() => {});
 
           await zoomIntoItem.click();
           console.log('Clicked Zoom Into');
@@ -980,16 +982,6 @@ export class ReceiptCandidatesPage {
 
           if (attempt < maxRetries) {
             await page.waitForTimeout(2000 * attempt);
-
-            // Defensive: reload the Receipt Candidate detail view before retrying, so the next
-            // attempt starts from freshly fetched tabs. No failure that this reload fixes has been
-            // observed.
-            if (page.url().match(/\/window\/540196\/\d+/)) {
-              await page.reload({ timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-              await page
-                .waitForLoadState('domcontentloaded', { timeout: SLOW_ACTION_TIMEOUT })
-                .catch(() => {});
-            }
           }
         }
       }
