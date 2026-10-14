@@ -296,7 +296,7 @@ async function typeIntoLookup(page, scope, fieldName, searchText) {
     console.warn(`[WARN] ${description}`);
     try {
       test.info().annotations.push({ type: 'lookup-retype', description });
-    } catch (error) {
+    } catch {
       // not inside a running test (test.info() throws there): the console warning above is all there is
     }
   }
