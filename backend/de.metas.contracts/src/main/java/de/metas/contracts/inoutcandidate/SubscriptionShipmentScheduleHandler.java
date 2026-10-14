@@ -158,7 +158,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final int daysInAdvance = sysConfigBL.getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
-		// not ctx: callers may pass a work-package ctx, while this subquery always used Env.getCtx() and the thread-inherited trx
+		// Env.getCtx() and the thread-inherited trx like the main query below, not the given ctx, which may be a work-package ctx
 		final IQuery<I_C_Flatrate_Term> itemProductQuery = subscriptionDAO
 				.queryTermsWithItemProduct(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
