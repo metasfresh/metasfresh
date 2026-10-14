@@ -3,6 +3,9 @@ package de.metas.inoutcandidate.api.impl;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.QueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
@@ -12,19 +15,28 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ShipmentSchedulePA_RecordsWithUnprocessedSchedules_Test
 {
+	private ScheduleQueryCountingQueryBL queryBL;
 	private IShipmentSchedulePA shipmentSchedulePA;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
+		// ShipmentSchedulePA gets its IQueryBL when constructed, so register the replacement first
+		queryBL = new ScheduleQueryCountingQueryBL();
+		Services.registerService(IQueryBL.class, queryBL);
+		shipmentSchedulePA = new ShipmentSchedulePA();
 	}
 
 	private static TableRecordReference orderLine(final int recordId)
@@ -69,6 +81,7 @@ public class ShipmentSchedulePA_RecordsWithUnprocessedSchedules_Test
 
 		assertThat(shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(ImmutableList.of(orderLine(1), order(1), order(2))))
 				.containsExactlyInAnyOrder(orderLine(1), order(1));
+		assertThat(queryBL.scheduleQueryCount.get()).as("one query per table").isEqualTo(2);
 	}
 
 	@Test
@@ -82,8 +95,27 @@ public class ShipmentSchedulePA_RecordsWithUnprocessedSchedules_Test
 	}
 
 	@Test
-	public void emptyInput_returnsEmpty()
+	public void emptyInput_returnsEmptyWithoutQuerying()
 	{
 		assertThat(shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(ImmutableList.of())).isEmpty();
+		assertThat(queryBL.scheduleQueryCount.get()).as("no query").isZero();
+	}
+
+	/**
+	 * Counts the {@link I_M_ShipmentSchedule} query builders it creates.
+	 */
+	private static class ScheduleQueryCountingQueryBL extends QueryBL
+	{
+		final AtomicInteger scheduleQueryCount = new AtomicInteger();
+
+		@Override
+		public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, @Nullable final String trxName)
+		{
+			if (I_M_ShipmentSchedule.class.equals(modelClass))
+			{
+				scheduleQueryCount.incrementAndGet();
+			}
+			return super.createQueryBuilder(modelClass, ctx, trxName);
+		}
 	}
 }
