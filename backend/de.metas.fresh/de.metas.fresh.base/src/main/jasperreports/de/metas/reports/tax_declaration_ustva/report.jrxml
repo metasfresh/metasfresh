@@ -119,7 +119,9 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 					<textFieldExpression><![CDATA[$R{kz} + " " + ($F{vatcode} != null ? $F{vatcode} : "") + " - " + ("N".equals($F{amount_type}) ? $R{net} : "T".equals($F{amount_type}) ? $R{tax} : $R{typeUnknown})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ContainerHeight" x="0" y="16" width="50" height="14" uuid="46e9da8b-5ee6-4b84-9d42-9859e582c5c8"/>
+					<reportElement stretchType="ContainerHeight" x="0" y="16" width="55" height="14" uuid="46e9da8b-5ee6-4b84-9d42-9859e582c5c8">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<box>
 						<bottomPen lineWidth="0.5"/>
 					</box>
@@ -129,7 +131,10 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 					<textFieldExpression><![CDATA[$R{postingDate}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ContainerHeight" x="50" y="16" width="70" height="14" uuid="fb0e2b66-024d-4bb6-a094-144506c263fc"/>
+					<reportElement stretchType="ContainerHeight" x="55" y="16" width="65" height="14" uuid="fb0e2b66-024d-4bb6-a094-144506c263fc">
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<box>
 						<bottomPen lineWidth="0.5"/>
 					</box>
@@ -179,7 +184,9 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 					<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ContainerHeight" x="360" y="16" width="95" height="14" uuid="2d40b8d9-7076-4be8-b4cf-09ae8eb3d309"/>
+					<reportElement stretchType="ContainerHeight" x="360" y="16" width="105" height="14" uuid="2d40b8d9-7076-4be8-b4cf-09ae8eb3d309">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<box>
 						<bottomPen lineWidth="0.5"/>
 					</box>
@@ -189,7 +196,10 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ContainerHeight" x="455" y="16" width="80" height="14" uuid="f705dd79-3a37-4e3a-b60a-6c35d58da7bf"/>
+					<reportElement stretchType="ContainerHeight" x="465" y="16" width="70" height="14" uuid="f705dd79-3a37-4e3a-b60a-6c35d58da7bf">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					</reportElement>
 					<box>
 						<bottomPen lineWidth="0.5"/>
 					</box>
@@ -444,7 +454,8 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 				<textFieldExpression><![CDATA[$F{balance_amt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="0" y="0" width="50" height="14" uuid="a6597bbf-6f43-499b-9cb6-bdf3fcf0514f">
+				<reportElement stretchType="ContainerHeight" x="0" y="0" width="55" height="14" uuid="a6597bbf-6f43-499b-9cb6-bdf3fcf0514f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -453,7 +464,9 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 				<textFieldExpression><![CDATA[$F{posting_date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="50" y="0" width="70" height="14" uuid="78a8ec91-f927-4164-be06-2d085bb5b8aa">
+				<reportElement stretchType="ContainerHeight" x="55" y="0" width="65" height="14" uuid="78a8ec91-f927-4164-be06-2d085bb5b8aa">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -498,7 +511,8 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="360" y="0" width="95" height="14" uuid="96180aaf-5e08-479a-8d61-d737b23e78a1">
+				<reportElement stretchType="ContainerHeight" x="360" y="0" width="105" height="14" uuid="96180aaf-5e08-479a-8d61-d737b23e78a1">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -507,7 +521,9 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="455" y="0" width="80" height="14" uuid="2b1f8131-b401-4ab8-9f6c-12cfac6d80e8">
+				<reportElement stretchType="ContainerHeight" x="465" y="0" width="70" height="14" uuid="2b1f8131-b401-4ab8-9f6c-12cfac6d80e8">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<printWhenExpression><![CDATA["DETAIL".equals($F{report_level})]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
