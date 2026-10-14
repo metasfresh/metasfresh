@@ -245,6 +245,22 @@ public class PaymentBonusOnPaymentService
 		return true;
 	}
 
+	/**
+	 * Drops the payment bonus of a payment that can no longer book one (e.g. it is no longer a receipt): {@code PaymentBonusAmt} becomes 0 and goes back into {@code PayAmt}, which had left it out.
+	 * A payment without a bonus is left as it is.
+	 */
+	public void dropPaymentBonus(@NonNull final I_C_Payment payment)
+	{
+		final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
+		if (paymentBonusAmt.signum() == 0)
+		{
+			return;
+		}
+
+		payment.setPayAmt(payment.getPayAmt().add(paymentBonusAmt));
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
+	}
+
 	private Optional<PaymentBonusDeduction> computeDeduction(@NonNull final I_C_Payment payment)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(payment.getC_Invoice_ID());
