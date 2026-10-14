@@ -96,6 +96,27 @@ export async function openNewRecord(page, windowId) {
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 }
 
+/**
+ * Open a new record and wait until the window has settled; returns the new record's id.
+ * A new record is shown twice: once under /NEW, then - after the first PATCH gave it an id - the window loads the record again
+ * (only this second load fetches the layout and the rows of the included tabs) and moves the focus to the first field.
+ * An action started in between can be lost to that reload, e.g. text typed into a lookup lands in the first field.
+ * Only for windows with an included tab.
+ */
+export async function openNewRecordAndWaitUntilLoaded(page, windowId) {
+  const isIncludedTabRequest = (response, suffix) => {
+    const url = new URL(response.url());
+    return response.request().method() === 'GET' && url.search === '' && new RegExp(`/window/${windowId}/${suffix}$`).test(url.pathname);
+  };
+  const includedTabLayoutLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, 'AD_Tab-[^/]+/layout'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+  const includedTabRowsLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, '\\d+/AD_Tab-[^/]+/'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+  await openNewRecord(page, windowId);
+  const recordId = await waitForNewRecordId(page, windowId);
+  await Promise.all([includedTabLayoutLoaded, includedTabRowsLoaded]);
+  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  return recordId;
+}
+
 export async function openRecord(page, windowId, recordId) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}/${recordId}`);
   await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });

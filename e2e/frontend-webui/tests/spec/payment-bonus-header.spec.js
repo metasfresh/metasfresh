@@ -10,6 +10,7 @@ import {
   expectDocStatus,
   lookupKey,
   openNewRecord,
+  openNewRecordAndWaitUntilLoaded,
   openRecord,
   selectFirstListOption,
   selectListByKey,
@@ -163,8 +164,7 @@ test.describe('Payment bonus: the payment window pre-fills and books the bonus',
     // a new payment has no Belegart, so it is no receipt yet when the invoice is picked; the payment cannot be saved without Belegart
     let paymentId;
     await test.step('Zahlung: a new payment, Rechnung picked first: no Zahlungsbonus yet, Zahlungsbetrag = open amount', async () => {
-      await openNewRecord(page, PAYMENT_WINDOW_ID);
-      paymentId = await waitForNewRecordId(page, PAYMENT_WINDOW_ID);
+      paymentId = await openNewRecordAndWaitUntilLoaded(page, PAYMENT_WINDOW_ID);
       await selectLookupByKey(page, page, 'C_Invoice_ID', invoice.documentNo, invoice.id);
 
       await expect.poll(async () => fieldCents(page, 'PayAmt'), { message: 'Zahlungsbetrag = open amount', timeout: SLOW_ACTION_TIMEOUT }).toBe(openCents);
