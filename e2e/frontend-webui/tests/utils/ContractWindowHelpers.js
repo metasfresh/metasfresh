@@ -106,10 +106,14 @@ export async function openNewRecord(page, windowId) {
 export async function openNewRecordAndWaitUntilLoaded(page, windowId) {
   const isIncludedTabRequest = (response, suffix) => {
     const url = new URL(response.url());
+    // no query string: the first load also fetches the included tab's rows, but with ?orderBy=...; only the second load's request has none
     return response.request().method() === 'GET' && url.search === '' && new RegExp(`/window/${windowId}/${suffix}$`).test(url.pathname);
   };
   const includedTabLayoutLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, 'AD_Tab-[^/]+/layout'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
   const includedTabRowsLoaded = page.waitForResponse((r) => isIncludedTabRequest(r, '\\d+/AD_Tab-[^/]+/'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+  // handled here, so a failing openNewRecord below does not leave them as unhandled rejections; Promise.all still reports their own failure
+  includedTabLayoutLoaded.catch(() => {});
+  includedTabRowsLoaded.catch(() => {});
   await openNewRecord(page, windowId);
   const recordId = await waitForNewRecordId(page, windowId);
   await Promise.all([includedTabLayoutLoaded, includedTabRowsLoaded]);
