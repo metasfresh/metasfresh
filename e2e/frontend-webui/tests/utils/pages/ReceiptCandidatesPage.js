@@ -891,28 +891,51 @@ export class ReceiptCandidatesPage {
           const rowCount = await allTabRows.count();
           console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
 
-          // Step 3: First left-click to select the row, then right-click for context menu
-          await tabTableRow.click();
-          await tabTableRow.click({ button: 'right' });
+          // Step 3: Select the row, then right-click a zoom-capable cell. The context menu offers
+          // "Zoom Into" only for a right-clicked cell whose field supports zoom-into
+          // (TableContextMenu.js); M_InOut_ID references the receipt, so its cell does.
+          await tabTableRow.scrollIntoViewIfNeeded().catch(() => {});
+          await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-          // Wait for context menu to appear
+          // Grid cells expose data-cy="cell-<ColumnName>". The M_InOut_ID column is part of the
+          // Allocated tab's grid layout, so a missing cell is a real failure, not a reason to fall
+          // back to the row: a row right-click lands on whatever column is at the row centre.
+          const zoomCell = tabTableRow.locator('[data-cy="cell-M_InOut_ID"]').first();
+          try {
+            await zoomCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+          } catch (cellError) {
+            throw new Error(
+              `Allocation row has no visible M_InOut_ID cell to right-click for Zoom Into: ${cellError.message}`
+            );
+          }
+
           const contextMenu = page.locator('.context-menu');
-          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
 
-          console.log('Context menu opened');
-
-          // Step 4: Click "Zoom Into" option
-          // LANGUAGE-INDEPENDENT: Use icon class 'meta-icon-share' instead of text
-          // The menu item has icon="meta-icon-share" which is stable across languages
-          // IMPORTANT: Zoom Into opens in a NEW TAB (window.open with _blank)
+          // Step 4 target: the "Zoom Into" menu item.
+          // LANGUAGE-INDEPENDENT: filter by icon class 'meta-icon-share' (stable across
+          // languages). IMPORTANT: Zoom Into opens the Material Receipt in a NEW TAB
+          // (window.open with _blank).
           const zoomIntoItem = contextMenu.locator('.context-menu-item').filter({
             has: page.locator('.meta-icon-share'),
           }).first();
+
+          // Select the row first and require the selection to register (row gains
+          // 'row-selected'): the Zoom Into action works on the selected row.
+          await tabTableRow.click();
+          await expect(tabTableRow).toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT });
+
+          await zoomCell.scrollIntoViewIfNeeded().catch(() => {});
+          await zoomCell.click({ button: 'right' });
+
+          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
+          console.log('Context menu opened');
 
           await zoomIntoItem.waitFor({ state: 'visible', timeout: 5000 });
 
           // Set up listener for the popup BEFORE clicking
           const popupPromise = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+          // A failing click below must not leave this promise rejected and unhandled.
+          popupPromise.catch(() => {});
 
           await zoomIntoItem.click();
           console.log('Clicked Zoom Into');
@@ -920,6 +943,10 @@ export class ReceiptCandidatesPage {
           // Step 5: Wait for new tab to open
           const newPage = await popupPromise;
           console.log('New tab opened:', newPage.url());
+
+          // The popup may open blank and navigate to the target window a moment later;
+          // wait for the Material Receipt URL (best-effort) before verifying it.
+          await newPage.waitForURL(/\/window\/184\//, { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
           // Wait for the new page to load
           await newPage.waitForLoadState('networkidle', {
@@ -946,9 +973,12 @@ export class ReceiptCandidatesPage {
           lastError = error;
           console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
 
-          // Press Escape to close any open menus before retrying
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(200);
+          // Reliably dismiss any stale/half-open context menu before retrying,
+          // waiting until it is actually gone rather than a fixed short pause.
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.locator('.context-menu')
+            .waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
 
           if (attempt < maxRetries) {
             await page.waitForTimeout(2000 * attempt);
