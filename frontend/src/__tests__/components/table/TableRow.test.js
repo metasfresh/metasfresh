@@ -5,6 +5,7 @@ import renderer from 'react-test-renderer';
 import fixtures from '../../../../test_setup/fixtures/table/table_item_props.json';
 
 import { getTableId } from '../../../reducers/tables';
+import { createAmount } from '../../../utils/tableHelpers';
 import TableRow from '../../../components/table/TableRow';
 
 function createInitProps(propsSeed = fixtures.oldProps1, customProps) {
@@ -63,9 +64,10 @@ describe('Table row (TableRow)', () => {
     // a decimal number cell (Amount, Quantity, Number, CostPrice) is a text input, so in German its editor holds
     // e.g. '12,50'; the row in the store must get 12.50 - the cell renders it through parseFloat, which reads '12,50'
     // as 12
-    const createRow = (updatePropertyValue) => {
+    const createRow = (updatePropertyValue, customProps) => {
       const props = createInitProps(fixtures.oldProps1, {
         updatePropertyValue,
+        ...customProps,
       });
       return shallow(<TableRow {...props} />);
     };
@@ -74,6 +76,18 @@ describe('Table row (TableRow)', () => {
       target: { value },
       stopPropagation: jest.fn(),
       persist: jest.fn(),
+    });
+
+    it('the fixture cells are decimal number, text and lookup cells', () => {
+      const { fieldsByName } = fixtures.oldProps1;
+      expect(fieldsByName.PriceEntered.widgetType).toBe('CostPrice');
+      expect(fieldsByName.QtyEntered.widgetType).toBe('Quantity');
+      expect(fieldsByName.Description.widgetType).toBe('LongText');
+      expect(fieldsByName.M_Product_ID.widgetType).toBe('Lookup');
+    });
+
+    it('the written dot-decimal number is shown as 12,50 in German', () => {
+      expect(createAmount('12.50', 2, true)).toBe('12,50');
     });
 
     it('on Tab', () => {
@@ -107,23 +121,31 @@ describe('Table row (TableRow)', () => {
       );
     });
 
-    it('on Escape, restoring the value taken from the rendered cell', () => {
+    it('on Escape, restoring the stored value - never the grouped text the cell shows', () => {
       const updatePropertyValue = jest.fn();
-      const wrapper = createRow(updatePropertyValue);
-      // e.g. a double click takes the value before editing from the rendered cell, which shows '12,50' in German
-      wrapper.setState({
-        edited: 'PriceEntered',
-        valueBeforeEditing: '12,50',
-        activeCell: { focus: jest.fn() },
+      const wrapper = createRow(updatePropertyValue, {
+        fieldsByName: {
+          ...fixtures.oldProps1.fieldsByName,
+          PriceEntered: {
+            ...fixtures.oldProps1.fieldsByName.PriceEntered,
+            value: '1234',
+          },
+        },
       });
+      wrapper.setState({ activeCell: { focus: jest.fn() } });
+      const row = wrapper.instance();
 
-      wrapper.instance().handleKeyDown({
+      // a double click opens the editor; the cell shows 1234 with a thousands separator (format '0,0...'), which
+      // can not be told apart from a decimal number
+      row.handleDoubleClick({ target: { textContent: '1.234' } });
+      row.handleEditProperty({ property: 'PriceEntered', readonly: false });
+      row.handleKeyDown({
         event: keyEvent('Escape', '99,99'),
         property: 'PriceEntered',
       });
 
       expect(updatePropertyValue).toHaveBeenCalledWith(
-        expect.objectContaining({ property: 'PriceEntered', value: '12.50' })
+        expect.objectContaining({ property: 'PriceEntered', value: '1234' })
       );
     });
 
@@ -140,6 +162,35 @@ describe('Table row (TableRow)', () => {
       expect(updatePropertyValue).toHaveBeenCalledWith(
         expect.objectContaining({ property: 'Description', value: '12,50' })
       );
+    });
+
+    it('and writes nothing for a lookup cell, whose value is a {key, caption} object', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(updatePropertyValue);
+      wrapper.setState({ edited: 'M_Product_ID' });
+
+      wrapper.instance().handleKeyDown({
+        event: keyEvent('Tab', 'Test'),
+        property: 'M_Product_ID',
+      });
+
+      expect(updatePropertyValue).not.toHaveBeenCalled();
+    });
+
+    it('and writes nothing when Enter opens the editor of a cell', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(updatePropertyValue);
+
+      wrapper.instance().handleKeyDown({
+        event: {
+          ...keyEvent('Enter', undefined),
+          target: { textContent: '3,00' },
+        },
+        property: 'PriceEntered',
+        readonly: false,
+      });
+
+      expect(updatePropertyValue).not.toHaveBeenCalled();
     });
   });
 });

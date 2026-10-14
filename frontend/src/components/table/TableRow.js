@@ -20,6 +20,14 @@ import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
+// widgets whose value is a {key, caption} object; leaving the cell never writes a text into them
+const OBJECT_VALUED_WIDGET_TYPES = [
+  'List',
+  'Lookup',
+  'ProductAttributes',
+  'Address',
+];
+
 /**
  * @file Class based component.
  * @module TableRow
@@ -95,17 +103,26 @@ class TableRow extends PureComponent {
    * @method updateCellValue
    * @summary Writes the value a cell is left with into the row in the store. A decimal number cell is a text input,
    *          so it holds the number the way the user typed it (e.g. '12,50' in German); the row gets it as the
-   *          dot-decimal number the cell renders ('12.50'), else the cell would show 12,00.
+   *          dot-decimal text the cell renders ('12.50', the precision is not trimmed), else the cell would show
+   *          12,00. Writes nothing when there is no value (the key event did not come from an input) or when the
+   *          field's value is a {key, caption} object (Lookup, List, attribute widgets).
    * @param {string} property - field name
-   * @param {*} value - the value of the cell's input, or the value it had before editing
+   * @param {*} value - the value of the cell's input, or the stored value it had before editing
    */
   updateCellValue = ({ property, value }) => {
-    const { cols, rowId, tabId, entity, modalVisible, tableId } = this.props;
-    const col = cols.find((item) => item.fields[0].field === property);
+    const { fieldsByName, rowId, tabId, entity, modalVisible, tableId } =
+      this.props;
+    const widgetType = fieldsByName?.[property]?.widgetType;
+    if (
+      value === undefined ||
+      OBJECT_VALUED_WIDGET_TYPES.includes(widgetType)
+    ) {
+      return false;
+    }
 
     this.props.updatePropertyValue({
       property,
-      value: isDecimalNumberField(col?.widgetType)
+      value: isDecimalNumberField(widgetType)
         ? normalizeDecimalNumberString(value)
         : value,
       tabId,
@@ -114,6 +131,7 @@ class TableRow extends PureComponent {
       entity,
       tableId,
     });
+    return true;
   };
 
   /**
@@ -160,10 +178,8 @@ class TableRow extends PureComponent {
     this.handleEditProperty({ event });
   };
 
-  handleDoubleClick = (e) => {
+  handleDoubleClick = () => {
     const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
-    this.setState({ valueBeforeEditing: e.target.textContent });
 
     if (supportOpenRecord) {
       onDoubleClick && onDoubleClick(rowId);
@@ -210,30 +226,25 @@ class TableRow extends PureComponent {
     }
 
     const { edited } = this.state;
-    const inputContent = event.target.value;
 
-    // here `edited` controls if on {enter} we should edit a widget, or only submit it.
-    // if true - property will be edited. Otherwise just saved.
-    // If widget is not active - use the textContent as the initial value
-    let fieldValue = event.target.value;
-
+    // Enter on a cell that is not being edited opens its editor, which shows the stored value;
+    // nothing is written. Enter in an open editor saves the editor's value.
     if (!edited) {
-      fieldValue = event.target.textContent;
       this.handleEditProperty({
         event,
         property,
         focus: true,
         readonly,
       });
+      return;
     }
 
+    const inputContent = event.target.value;
     this.setState(
       {
-        valueBeforeEditing: fieldValue,
+        valueBeforeEditing: inputContent,
       },
-      () => {
-        this.updateCellValue({ property, value: inputContent });
-      }
+      () => this.updateCellValue({ property, value: inputContent })
     );
   };
 
@@ -262,12 +273,12 @@ class TableRow extends PureComponent {
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      this.updateCellValue({ property, value: valueBeforeEditing });
+      if (this.updateCellValue({ property, value: valueBeforeEditing })) {
+        // reset the field value to the previous one, so that we won't
+        // overwrite it
+        event.target.value = valueBeforeEditing;
+      }
       event.stopPropagation();
-
-      // reset the field value to the previous one, so that we won't
-      // overwrite it
-      event.target.value = valueBeforeEditing;
 
       // we need to store the active cell to focus it after deactivating widget
       const activeCellElement = activeCell;
@@ -334,6 +345,15 @@ class TableRow extends PureComponent {
     const isEditable = typeof readonly !== undefined ? !readonly : true;
     if (isEditable) {
       if (this.state.edited === property && event) event.persist();
+
+      // Entering edit mode on a cell: remember its STORED value so Escape can restore it. The text
+      // the cell shows is no substitute: it is formatted with a thousands separator ('1,234'),
+      // which can not be told apart from a decimal number.
+      if (property && this.state.edited !== property) {
+        this.setState({
+          valueBeforeEditing: this.getFieldValue(property) ?? '',
+        });
+      }
 
       // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
