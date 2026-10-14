@@ -20,10 +20,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +34,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.SubscriptionProgressTestHelper;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -44,50 +43,32 @@ import de.metas.util.Services;
 public class SubscriptionBL_EvalDeliveries_Test
 {
 	private final Timestamp now = SystemTime.asTimestamp();
+	private SubscriptionProgressTestHelper helper;
+	private RecordingShipmentSchedulePA shipmentSchedulePA;
+	private ISubscriptionDAO subscriptionDAO;
 	private SubscriptionBL subscriptionBL;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		subscriptionBL = new SubscriptionBL();
-	}
+		helper = new SubscriptionProgressTestHelper(now);
 
-	/**
-	 * {@link SubscriptionBL} gets its services when constructed, so register the replacement first.
-	 */
-	private void registerAndRecreateSubscriptionBL(final IShipmentSchedulePA shipmentSchedulePA)
-	{
+		// SubscriptionBL gets its services when constructed, so register the replacement first
+		shipmentSchedulePA = new RecordingShipmentSchedulePA();
 		Services.registerService(IShipmentSchedulePA.class, shipmentSchedulePA);
+		subscriptionDAO = Services.get(ISubscriptionDAO.class);
 		subscriptionBL = new SubscriptionBL();
-	}
-
-	private I_C_Flatrate_Term term(final String productType)
-	{
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setProductType(productType);
-		saveRecord(product);
-		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
-		term.setM_Product_ID(product.getM_Product_ID());
-		saveRecord(term);
-		return term;
 	}
 
 	private I_C_Flatrate_Term itemTerm()
 	{
-		return term(X_M_Product.PRODUCTTYPE_Item);
+		return helper.term(X_M_Product.PRODUCTTYPE_Item);
 	}
 
 	private I_C_SubscriptionProgress entry(final I_C_Flatrate_Term term, final String status, final int eventDateDaysFromNow, final int seqNo)
 	{
-		final I_C_SubscriptionProgress sp = newInstance(I_C_SubscriptionProgress.class);
-		sp.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
-		sp.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
-		sp.setStatus(status);
-		sp.setEventDate(TimeUtil.addDays(now, eventDateDaysFromNow));
-		sp.setSeqNo(seqNo);
-		saveRecord(sp);
-		return sp;
+		return helper.entry(term, status, eventDateDaysFromNow, seqNo);
 	}
 
 	private I_M_ShipmentSchedule schedule(final I_C_SubscriptionProgress entry, final boolean processed)
@@ -108,8 +89,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 
 	private Iterator<I_C_SubscriptionProgress> deliveries(final int pageSize)
 	{
-		return Services.get(ISubscriptionDAO.class)
-				.retrievePlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, pageSize);
+		return subscriptionDAO.retrievePlannedAndDelayedDeliveries(Env.getCtx(), now, ITrx.TRXNAME_ThreadInherited, pageSize);
 	}
 
 	/**
@@ -197,7 +177,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 	@Test
 	public void serviceProductEntries_untouched()
 	{
-		final I_C_Flatrate_Term serviceTerm = term(X_M_Product.PRODUCTTYPE_Service);
+		final I_C_Flatrate_Term serviceTerm = helper.term(X_M_Product.PRODUCTTYPE_Service);
 		final I_C_SubscriptionProgress p1 = entry(serviceTerm, X_C_SubscriptionProgress.STATUS_Planned, -4, 1);
 		final I_C_SubscriptionProgress p2 = entry(serviceTerm, X_C_SubscriptionProgress.STATUS_Planned, -3, 2);
 		final I_C_SubscriptionProgress p3 = entry(serviceTerm, X_C_SubscriptionProgress.STATUS_Planned, -2, 3);
@@ -234,13 +214,11 @@ public class SubscriptionBL_EvalDeliveries_Test
 	@Test
 	public void oneScheduleLookupPerBatch()
 	{
-		final CountingShipmentSchedulePA countingPA = new CountingShipmentSchedulePA();
-		registerAndRecreateSubscriptionBL(countingPA);
 		final List<I_C_SubscriptionProgress> entries = fivePlannedEntries();
 
 		subscriptionBL.evalDeliveries(deliveries(2), 2);
 
-		assertThat(countingPA.lookupCount.get()).isEqualTo(3);
+		assertThat(shipmentSchedulePA.lookupCount.get()).isEqualTo(3);
 		assertAllPlanned(entries);
 	}
 
@@ -268,15 +246,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 		};
 
 		final List<Integer> pulledAtLookup = new ArrayList<>();
-		registerAndRecreateSubscriptionBL(new CountingShipmentSchedulePA()
-		{
-			@Override
-			public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
-			{
-				pulledAtLookup.add(pulled.get());
-				return super.retrieveRecordsWithUnprocessedSchedules(recordRefs);
-			}
-		});
+		shipmentSchedulePA.onLookup = () -> pulledAtLookup.add(pulled.get());
 
 		subscriptionBL.evalDeliveries(countingIterator, 2);
 
@@ -292,30 +262,31 @@ public class SubscriptionBL_EvalDeliveries_Test
 	public void processingFails_deliveriesIteratorIsClosed()
 	{
 		fivePlannedEntries();
-		final CloseTrackingSubscriptionDAO subscriptionDAO = new CloseTrackingSubscriptionDAO();
-		Services.registerService(ISubscriptionDAO.class, subscriptionDAO);
-		registerAndRecreateSubscriptionBL(new ShipmentSchedulePA()
-		{
-			@Override
-			public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
-			{
-				throw new AdempiereException("schedule lookup failed");
-			}
-		});
+		final CloseTrackingSubscriptionDAO closeTrackingSubscriptionDAO = new CloseTrackingSubscriptionDAO();
+		Services.registerService(ISubscriptionDAO.class, closeTrackingSubscriptionDAO);
+		subscriptionBL = new SubscriptionBL();
+		shipmentSchedulePA.onLookup = () -> {
+			throw new AdempiereException("schedule lookup failed");
+		};
 
 		assertThatThrownBy(() -> subscriptionBL.evalDeliveries(Env.getCtx()))
 				.hasMessageContaining("schedule lookup failed");
-		assertThat(subscriptionDAO.closeCount.get()).isEqualTo(1);
+		assertThat(closeTrackingSubscriptionDAO.closeCount.get()).isEqualTo(1);
 	}
 
-	private static class CountingShipmentSchedulePA extends ShipmentSchedulePA
+	/**
+	 * Counts the schedule lookups and runs {@link #onLookup} before each, then delegates to the real lookup.
+	 */
+	private static class RecordingShipmentSchedulePA extends ShipmentSchedulePA
 	{
 		final AtomicInteger lookupCount = new AtomicInteger();
+		Runnable onLookup = () -> {};
 
 		@Override
 		public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(final Collection<TableRecordReference> recordRefs)
 		{
 			lookupCount.incrementAndGet();
+			onLookup.run();
 			return super.retrieveRecordsWithUnprocessedSchedules(recordRefs);
 		}
 	}
