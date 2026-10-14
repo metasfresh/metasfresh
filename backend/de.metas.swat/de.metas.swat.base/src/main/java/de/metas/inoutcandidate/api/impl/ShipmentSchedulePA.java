@@ -64,6 +64,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -244,7 +246,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId)
 	{
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
 		// Mark the M_ShipmentSchedule_Recompute records that point to the scheds which we will work with
 		// This allows us to distinguish them from records created later
@@ -278,8 +279,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(ShipmentSchedulePA::extractOrderAndLineId)
 				.filter(Objects::nonNull)
@@ -404,7 +403,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// Invalidate the inout candidates which we updated
 		if (invalidate)
 		{
-			final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 			invalidSchedulesRepo.invalidateSchedulesForSelection(selectionToUpdateId);
 		}
 	}
@@ -542,6 +540,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final Map<Integer, I_M_ShipmentSchedule> schedules = new LinkedHashMap<>();
 
 		// add all the shipment schedules from the QtyPicked entries
+		// not a field: ShipmentScheduleAllocDAO holds this service as a field (initialization loop)
 		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = Services.get(IShipmentScheduleAllocDAO.class).retrieveSchedulesForInOutLineQuery(inoutLine)
 				.create()
 				.mapById(I_M_ShipmentSchedule.class);
