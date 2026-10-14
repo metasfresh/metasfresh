@@ -117,6 +117,24 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IMonitoringBL monitoringBL = Services.get(IMonitoringBL.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IProductPA productPA = Services.get(IProductPA.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
+	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -176,7 +194,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 
 		newTerm.setM_Product_ID(ol.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
+		attributeSetInstanceBL.cloneASI(ol, newTerm);
 
 		newTerm.setPriceActual(ol.getPriceActual());
 		newTerm.setC_Currency_ID(ol.getC_Currency_ID());
@@ -193,7 +211,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		if (completeIt)
 		{
-			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+			documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 
 		return newTerm;
@@ -201,7 +219,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private I_C_Flatrate_Data fetchFlatrateData(final I_C_OrderLine ol, final I_C_Order order)
 	{
-		final I_C_Flatrate_Data existingData = Services.get(IQueryBL.class)
+		final I_C_Flatrate_Data existingData = queryBL
 				.createQueryBuilder(I_C_Flatrate_Data.class, ol)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, order.getBill_BPartner_ID())
@@ -282,7 +300,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			final PInstanceId AD_PInstance_ID,
 			final String trxName)
 	{
-		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+		final I_AD_InputDataSource dataDest = inputDataSourceDAO.retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
 
 		final String wc = I_C_OLCand.COLUMNNAME_AD_DataDestination_ID + "=? AND " +
 				I_C_OLCand.COLUMNNAME_IsActive + "=" + DB.TO_STRING("Y") + " AND " +
@@ -305,14 +323,14 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				final Throwable[] t = new Throwable[1];
 
-				Services.get(ITrxManager.class).run(
+				trxManager.run(
 						trxName, new TrxRunnable2()
 						{
 							@Override
 							public void run(final String trxName) throws Exception
 							{
 								createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
-								Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
+								monitoringBL.createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
 							}
 
 							@Override
@@ -323,7 +341,7 @@ public class SubscriptionBL implements ISubscriptionBL
 									return;
 								}
 
-								org.compiere.model.I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
+								org.compiere.model.I_AD_User userInCharge = bpartnerOrgBL.retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
 								if (userInCharge == null)
 								{
 									userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
@@ -380,7 +398,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_OLCand olCandRecord,
 			final boolean completeIt)
 	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+		// not a field: OLCandBL is a Spring bean, which may not be available yet when this service is instantiated
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCandRecord);
@@ -389,7 +407,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_Flatrate_Conditions cond = olCandRecord.getC_Flatrate_Conditions();
 
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCandRecord);
-		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryId productAndCategoryId = productDAO.retrieveProductAndCategoryIdByProductId(productId);
 
 		final I_C_Flatrate_Matching matching = retrieveMatching(
 				ctx,
@@ -438,11 +456,11 @@ public class SubscriptionBL implements ISubscriptionBL
 				.dropShipLocationAdapter(newTerm)
 				.setFrom(shipToPartnerInfo);
 
-		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retrieveOrCreateFlatrateData(bill_BPartner);
+		final I_C_Flatrate_Data existingData = flatrateDAO.retrieveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 
-		final org.compiere.model.I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCandRecord.getAD_Org_ID(), trxName);
+		final org.compiere.model.I_AD_User userInCharge = bpartnerOrgBL.retrieveUserInChargeOrNull(ctx, olCandRecord.getAD_Org_ID(), trxName);
 		if (userInCharge != null)
 		{
 			newTerm.setAD_User_InCharge_ID(userInCharge.getAD_User_ID());
@@ -454,7 +472,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 
 		newTerm.setM_Product_ID(ProductId.toRepoId(productId));
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCandRecord, newTerm);
+		attributeSetInstanceBL.cloneASI(olCandRecord, newTerm);
 
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
@@ -484,7 +502,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		if (completeIt)
 		{
-			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+			documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 
 		return newTerm;
@@ -523,7 +541,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private Timestamp getEventDate(@NonNull final I_C_Flatrate_Term term)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final int daysInPast = sysConfigBL.getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
 		final Timestamp minimumEventDate = TimeUtil.addDays(de.metas.common.util.time.SystemTime.asDayTimestamp(), -daysInPast);
 		final Timestamp eventDate = term.getStartDate();
@@ -624,7 +642,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			return sp;
 		}
 
-		try (final IAutoCloseable c = Services.get(IShipmentScheduleBL.class).postponeMissingSchedsCreationUntilClose())
+		try (final IAutoCloseable c = shipmentScheduleBL.postponeMissingSchedsCreationUntilClose())
 		{
 			logger.info("Creating initial SPs for term={}", term);
 			return createSubscriptionEntries(term);
@@ -792,13 +810,11 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureId();
 
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				bpLocationId,
 				SOTrx.SALES);
 
-		final IProductPA productPA = Services.get(IProductPA.class);
 		final BigDecimal newPrice = productPA.retrievePriceStd(
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),
@@ -834,7 +850,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final int flatrateConditionsId = term.getC_Flatrate_Conditions_ID();
 		final ProductId productId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
-		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryId productAndCategoryId = productDAO.retrieveProductAndCategoryIdByProductId(productId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
@@ -867,7 +883,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final ProductAndCategoryId productAndCategoryId,
 			final String trxName)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
@@ -960,10 +975,11 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			// found inconsistency
 			olCand.setIsError(true);
-			olCand.setErrorMsg(Services.get(IMsgBL.class).translate(ctx, "@Missing@ @C_Flatrate_Conditions_ID@"));
+			olCand.setErrorMsg(msgBL.translate(ctx, "@Missing@ @C_Flatrate_Conditions_ID@"));
 			return null;
 		}
 
+		// not a field: a field initializer would recursively instantiate this service (initialization loop)
 		final I_C_Flatrate_Term newTerm = Services.get(ISubscriptionBL.class).createSubscriptionTerm(olCand, completeIt);
 
 		final I_C_Contract_Term_Alloc alloc = InterfaceWrapperHelper.create(ctx, I_C_Contract_Term_Alloc.class, trxName);
@@ -975,7 +991,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		olCand.setProcessed(true);
 		save(olCand);
 
-		Services.get(IWFExecutionFactory.class).notifyActivityPerformed(olCand, newTerm); // 03745
+		wfExecutionFactory.notifyActivityPerformed(olCand, newTerm); // 03745
 
 		return newTerm;
 	}
@@ -992,7 +1008,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			return null;
 		}
 
-		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
@@ -1016,7 +1031,6 @@ public class SubscriptionBL implements ISubscriptionBL
 	public I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(@NonNull final de.metas.contracts.order.model.I_C_Order order)
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
 		return orderTerms.isEmpty() ? null : orderTerms.get(0);
@@ -1039,10 +1053,8 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final SOTrx soTrx,
 			final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 	{
+		// not a field: a field initializer would recursively instantiate this service (initialization loop)
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
@@ -1067,7 +1079,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final Properties ctx = Env.getCtx();
 		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
-		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryId productAndCategoryId = productDAO.retrieveProductAndCategoryIdByProductId(productId);
 		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
 				ctx,
 				ol.getC_Flatrate_Conditions_ID(),
