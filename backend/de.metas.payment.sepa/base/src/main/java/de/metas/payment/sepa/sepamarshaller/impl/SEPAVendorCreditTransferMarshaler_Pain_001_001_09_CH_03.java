@@ -18,6 +18,7 @@ import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
+import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
@@ -221,6 +222,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
+	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 
 	private static final String encoding = "UTF-8";
 
@@ -310,7 +314,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		creditTransferInitiation.setGrpHdr(createGroupHeader(sepaDocument));
 
 		// Payment Informations
-		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = sepaDocumentDAO.retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw new AdempiereException("The given SEPA_Export record has no lines with active=Y and error=N")
@@ -433,7 +437,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private CurrencyCode extractCurrencyCode(final I_SEPA_Export_Line sepaLine)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(sepaLine.getC_Currency_ID());
-		return Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+		return currencyDAO.getCurrencyCodeById(currencyId);
 	}
 
 	private PaymentInstruction30 createAndAddPmtInf(
@@ -471,7 +475,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 
 		// IG 4.2 ReqdExctnDt: now a choice of Dt / DtTm; we deliver the date
-		final Date dueDate = Services.get(ISEPADocumentBL.class).getDueDate(sepaLine);
+		final Date dueDate = sepaDocumentBL.getDueDate(sepaLine);
 		final DateAndDateTime2Choice reqdExctnDt = objectFactory.createDateAndDateTime2Choice();
 		reqdExctnDt.setDt(SepaUtils.toXMLGregorianCalendarDate(datatypeFactory, dueDate));
 		pmtInf.setReqdExctnDt(reqdExctnDt);
@@ -509,7 +513,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		// Amount/Currency
 		{
 			final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
-			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
+			final Currency currency = currencyDAO.getById(currencyId);
 			final CurrencyCode currencyIsoCode = currency.getCurrencyCode();
 
 			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
@@ -1092,9 +1096,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	@NonNull
 	private String extractPaymentType(@NonNull final I_SEPA_Export_Line line)
 	{
-		final de.metas.payment.esr.model.I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(
-				line.getC_BP_BankAccount(),
-				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
 		final boolean qrIbanAccount = Check.isNotBlank(bPBankAccount.getQR_IBAN());
 		final boolean qrIbanPayment = isQrIbanPayment(bPBankAccount.getQR_IBAN(), bPBankAccount.getIBAN(), line.getStructuredRemittanceInfo());
