@@ -71,6 +71,18 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final SpringContextHolder.Lazy<ShipmentScheduleSubscriptionReferenceProvider> referenceProvider = SpringContextHolder.lazyBean(ShipmentScheduleSubscriptionReferenceProvider.class);
+	// lazy: the handlingunits module replaces this service's implementation via Services.registerService at its init, which may run after this handler was constructed
+	@Nullable private IShipmentScheduleInvalidateBL _shipmentScheduleInvalidateBL; // null = not yet initialized
+
+	private IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL()
+	{
+		IShipmentScheduleInvalidateBL result = _shipmentScheduleInvalidateBL;
+		if (result == null)
+		{
+			result = _shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+		}
+		return result;
+	}
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -125,9 +137,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
-		// not a field: the handlingunits module replaces this service's implementation at startup, possibly after this handler was constructed
-		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(segment);
+		shipmentScheduleInvalidateBL().flagForRecomputeStorageSegment(segment);
 
 	}
 
