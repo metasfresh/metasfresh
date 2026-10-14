@@ -21,7 +21,7 @@ import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
 // widgets whose value is a {key, caption} object or a list of them; leaving the cell never writes a text
-// into them. MultiListValue and Labels are missing from new_dawn_uat's list.
+// into them
 const OBJECT_VALUED_WIDGET_TYPES = [
   'List',
   'Lookup',
