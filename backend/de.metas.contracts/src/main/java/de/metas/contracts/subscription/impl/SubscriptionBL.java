@@ -983,8 +983,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			return null;
 		}
 
-		// not a field: a field initializer would recursively instantiate this service (initialization loop)
-		final I_C_Flatrate_Term newTerm = Services.get(ISubscriptionBL.class).createSubscriptionTerm(olCand, completeIt);
+		final I_C_Flatrate_Term newTerm = createSubscriptionTerm(olCand, completeIt);
 
 		final I_C_Contract_Term_Alloc alloc = InterfaceWrapperHelper.create(ctx, I_C_Contract_Term_Alloc.class, trxName);
 		alloc.setC_OLCand_ID(olCand.getC_OLCand_ID());
@@ -1057,9 +1056,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final SOTrx soTrx,
 			final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 	{
-		// not a field: a field initializer would recursively instantiate this service (initialization loop)
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
 
@@ -1079,12 +1075,12 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final PriceListId subscriptionPLId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSysytemId, bpLocationId, soTrx);
 
-		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
+		final int numberOfRuns = computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
 		final Properties ctx = Env.getCtx();
 		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
 		final ProductAndCategoryId productAndCategoryId = productDAO.retrieveProductAndCategoryIdByProductId(productId);
-		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
+		final I_C_Flatrate_Matching matching = retrieveMatching(
 				ctx,
 				ol.getC_Flatrate_Conditions_ID(),
 				productAndCategoryId,
