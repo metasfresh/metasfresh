@@ -15,7 +15,7 @@
     "allure:serve": "npx allure serve allure-results"
   },
   "devDependencies": {
-    "@playwright/test": "^1.50.1",
+    "@playwright/test": "^1.56.1",
     "allure-playwright": "^3.4.3"
   },
   "engines": {

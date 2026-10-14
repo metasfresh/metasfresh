@@ -1,0 +1,19 @@
+/*
+ * Width rules for the widget sizes "S" and "L" of Lookup and List widgets.
+ * Include inside a selector that contains the RawWidget root (.form-group).
+ * Shared by the quick input and the inline filters. The default width (when no size is set)
+ * is intentionally NOT part of this mixin, each caller decides it for itself.
+ */
+@mixin widget-size-rules {
+  &.widgetType-Lookup,
+  &.widgetType-List {
+    &.widgetSize-S {
+      max-width: 7em;
+    }
+
+    &.widgetSize-L {
+      min-width: 30em;
+      max-width: 40em;
+    }
+  }
+}

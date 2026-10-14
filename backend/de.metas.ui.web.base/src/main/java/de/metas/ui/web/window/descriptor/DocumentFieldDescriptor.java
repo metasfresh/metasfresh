@@ -104,6 +104,8 @@ public final class DocumentFieldDescriptor
 	private final BarcodeScannerType barcodeScannerType;
 
 	private final WidgetSize widgetSize;
+	/** Widget size of the layout element this field is shown in (single-row layout); used only for filter parameters */
+	@Nullable private final WidgetSize filterWidgetSize;
 
 	private final Class<?> valueClass;
 
@@ -172,6 +174,7 @@ public final class DocumentFieldDescriptor
 		fieldMaxLength = builder.getFieldMaxLength();
 
 		widgetSize = builder.getWidgetSize();
+		filterWidgetSize = builder.getFilterWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
 		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
@@ -276,6 +279,12 @@ public final class DocumentFieldDescriptor
 	public WidgetSize getWidgetSize()
 	{
 		return widgetSize;
+	}
+
+	@Nullable
+	public WidgetSize getFilterWidgetSize()
+	{
+		return filterWidgetSize;
 	}
 
 	public boolean isAllowShowPassword()
@@ -439,6 +448,7 @@ public final class DocumentFieldDescriptor
 
 		private DocumentFieldWidgetType _widgetType;
 		private WidgetSize _widgetSize;
+		@Nullable private WidgetSize _filterWidgetSize;
 		private int _fieldMaxLength;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
@@ -696,6 +706,18 @@ public final class DocumentFieldDescriptor
 		public WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
+		}
+
+		public Builder setFilterWidgetSize(@Nullable final WidgetSize filterWidgetSize)
+		{
+			this._filterWidgetSize = filterWidgetSize;
+			return this;
+		}
+
+		@Nullable
+		public WidgetSize getFilterWidgetSize()
+		{
+			return _filterWidgetSize;
 		}
 
 		public Builder setFieldMaxLength(final int fieldMaxLength)
