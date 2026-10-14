@@ -139,14 +139,108 @@ describe('Table row (TableRow)', () => {
       // can not be told apart from a decimal number
       row.handleDoubleClick({ target: { textContent: '1.234' } });
       row.handleEditProperty({ property: 'PriceEntered', readonly: false });
-      row.handleKeyDown({
-        event: keyEvent('Escape', '99,99'),
-        property: 'PriceEntered',
-      });
+      const escapeEvent = keyEvent('Escape', '99,99');
+      row.handleKeyDown({ event: escapeEvent, property: 'PriceEntered' });
 
       expect(updatePropertyValue).toHaveBeenCalledWith(
         expect.objectContaining({ property: 'PriceEntered', value: '1234' })
       );
+      expect(escapeEvent.target.value).toBe('1234');
+    });
+
+    const fieldsWith = (fieldName, field) => ({
+      fieldsByName: {
+        ...fixtures.oldProps1.fieldsByName,
+        [fieldName]: {
+          ...fixtures.oldProps1.fieldsByName[fieldName],
+          ...field,
+        },
+      },
+    });
+    const editAndEscape = (wrapper, property, typedValue) => {
+      wrapper.setState({ activeCell: { focus: jest.fn() } });
+      wrapper.instance().handleEditProperty({ property, readonly: false });
+      const escapeEvent = keyEvent('Escape', typedValue);
+      wrapper.instance().handleKeyDown({ event: escapeEvent, property });
+      return escapeEvent;
+    };
+
+    it('on Escape, restoring an empty stored value as an empty text', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(
+        updatePropertyValue,
+        fieldsWith('PriceEntered', { value: null })
+      );
+
+      const escapeEvent = editAndEscape(wrapper, 'PriceEntered', '99,99');
+
+      expect(updatePropertyValue).toHaveBeenCalledWith(
+        expect.objectContaining({ property: 'PriceEntered', value: '' })
+      );
+      expect(escapeEvent.target.value).toBe('');
+    });
+
+    it('on Escape after typing into a cell, restoring its stored value', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(updatePropertyValue);
+      wrapper.setState({ activeCell: { focus: jest.fn() } });
+
+      // typing a digit on a selected cell opens its editor
+      wrapper.instance().handleKeyDown({
+        event: { key: '1', keyCode: 49, target: {}, persist: jest.fn() },
+        property: 'PriceEntered',
+        readonly: false,
+      });
+      wrapper.instance().handleKeyDown({
+        event: keyEvent('Escape', '19,99'),
+        property: 'PriceEntered',
+      });
+
+      expect(updatePropertyValue).toHaveBeenCalledWith(
+        expect.objectContaining({ property: 'PriceEntered', value: '3.00' })
+      );
+    });
+
+    it('on Escape after the editor was opened programmatically, restoring its stored value', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(updatePropertyValue);
+      wrapper.setState({ activeCell: { focus: jest.fn() } });
+
+      wrapper.instance().initPropertyEditor({ fieldName: 'PriceEntered' });
+      wrapper.instance().handleKeyDown({
+        event: keyEvent('Escape', '19,99'),
+        property: 'PriceEntered',
+      });
+
+      expect(updatePropertyValue).toHaveBeenCalledWith(
+        expect.objectContaining({ property: 'PriceEntered', value: '3.00' })
+      );
+    });
+
+    it('on Escape, writing nothing back into a lookup cell', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(updatePropertyValue);
+
+      const escapeEvent = editAndEscape(wrapper, 'M_Product_ID', 'Test');
+
+      expect(updatePropertyValue).not.toHaveBeenCalled();
+      expect(escapeEvent.target.value).toBe('Test');
+    });
+
+    it('on Escape, writing nothing back into a multi list cell', () => {
+      const updatePropertyValue = jest.fn();
+      const wrapper = createRow(
+        updatePropertyValue,
+        fieldsWith('Description', {
+          widgetType: 'MultiListValue',
+          value: [{ key: '1', caption: 'One' }],
+        })
+      );
+
+      const escapeEvent = editAndEscape(wrapper, 'Description', 'One');
+
+      expect(updatePropertyValue).not.toHaveBeenCalled();
+      expect(escapeEvent.target.value).toBe('One');
     });
 
     it('but leaves the text of a field which is no decimal number as typed', () => {

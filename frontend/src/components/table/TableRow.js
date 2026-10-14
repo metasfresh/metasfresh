@@ -20,12 +20,15 @@ import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
-// widgets whose value is a {key, caption} object; leaving the cell never writes a text into them
+// widgets whose value is a {key, caption} object or a list of them; leaving the cell never writes a text
+// into them. MultiListValue and Labels are missing from new_dawn_uat's list.
 const OBJECT_VALUED_WIDGET_TYPES = [
   'List',
   'Lookup',
   'ProductAttributes',
   'Address',
+  'MultiListValue',
+  'Labels',
 ];
 
 /**
@@ -149,10 +152,6 @@ class TableRow extends PureComponent {
         if (property === fieldName) {
           const widgetData = prepareWidgetData(item, fieldsByName);
           if (widgetData) {
-            this.setState({
-              valueBeforeEditing: this.getFieldValue(fieldName) ?? '',
-            });
-
             this.handleEditProperty({
               event: null,
               property,
@@ -256,12 +255,9 @@ class TableRow extends PureComponent {
       return;
     }
 
-    // this test is for a case when user is navigating around the table
-    // without activating the field. Then there's no widget (input), so the value
-    // is undefined and we don't have to worry about it
-    if (typeof event.target.value !== 'undefined') {
-      this.updateCellValue({ property, value: event.target.value });
-    }
+    // when the user is navigating around the table without activating the field,
+    // there's no widget (input), so the value is undefined and nothing is written
+    this.updateCellValue({ property, value: event.target.value });
     if (edited === property) {
       event.stopPropagation();
       this.handleEditProperty({ event });
@@ -291,15 +287,6 @@ class TableRow extends PureComponent {
   };
 
   handleKeyDown_RegularChar = ({ event, property, readonly }) => {
-    const { valueBeforeEditing } = this.state;
-    if (valueBeforeEditing === null) {
-      // for disabled fields/fields without value, we don't get the field data from the backend
-      const fieldValue = this.getFieldValue(property);
-      if (fieldValue !== undefined) {
-        this.setState({ valueBeforeEditing: fieldValue });
-      }
-    }
-
     this.handleEditProperty({
       event,
       property,
