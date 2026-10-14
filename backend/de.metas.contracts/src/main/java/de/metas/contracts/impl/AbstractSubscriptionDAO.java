@@ -184,7 +184,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
+	public final Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			@NonNull final Properties ctx,
 			@NonNull final Timestamp date,
 			final String trxName,

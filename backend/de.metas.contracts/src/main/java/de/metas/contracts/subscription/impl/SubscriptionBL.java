@@ -732,21 +732,24 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final Iterator<I_C_SubscriptionProgress> deliveries = subscriptionDAO.retrievePlannedAndDelayedDeliveries(
 				ctx, SystemTime.asTimestamp(), ITrx.TRXNAME_ThreadInherited, EVAL_DELIVERIES_BATCH_SIZE);
+		evalDeliveries(deliveries, EVAL_DELIVERIES_BATCH_SIZE);
+	}
+
+	/**
+	 * Evaluates the given deliveries {@code batchSize} at a time and closes the iterator when done, also on failure.
+	 */
+	@VisibleForTesting
+	void evalDeliveries(@NonNull final Iterator<I_C_SubscriptionProgress> deliveries, final int batchSize)
+	{
 		try
 		{
-			evalDeliveries(deliveries, EVAL_DELIVERIES_BATCH_SIZE);
+			final Set<FlatrateTermId> delayedTermIds = new HashSet<>();
+			Iterators.partition(deliveries, batchSize).forEachRemaining(batch -> evalDeliveriesBatch(batch, delayedTermIds));
 		}
 		finally
 		{
 			IteratorUtils.close(deliveries);
 		}
-	}
-
-	@VisibleForTesting
-	void evalDeliveries(@NonNull final Iterator<I_C_SubscriptionProgress> deliveries, final int batchSize)
-	{
-		final Set<FlatrateTermId> delayedTermIds = new HashSet<>();
-		Iterators.partition(deliveries, batchSize).forEachRemaining(batch -> evalDeliveriesBatch(batch, delayedTermIds));
 	}
 
 	private void evalDeliveriesBatch(@NonNull final List<I_C_SubscriptionProgress> batch, @NonNull final Set<FlatrateTermId> delayedTermIds)

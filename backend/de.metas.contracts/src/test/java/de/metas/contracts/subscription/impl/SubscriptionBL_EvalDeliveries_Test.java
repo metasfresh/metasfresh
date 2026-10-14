@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -29,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.impl.PlainSubscriptionDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -39,6 +37,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 
 public class SubscriptionBL_EvalDeliveries_Test
 {
@@ -259,19 +258,28 @@ public class SubscriptionBL_EvalDeliveries_Test
 	}
 
 	@Test
+	public void processingSucceeds_deliveriesIteratorIsClosedOnce()
+	{
+		fivePlannedEntries();
+		final CloseTrackingIterator deliveries = new CloseTrackingIterator(deliveries(2));
+
+		subscriptionBL.evalDeliveries(deliveries, 2);
+
+		assertThat(deliveries.closeCount.get()).isEqualTo(1);
+	}
+
+	@Test
 	public void processingFails_deliveriesIteratorIsClosed()
 	{
 		fivePlannedEntries();
-		final CloseTrackingSubscriptionDAO closeTrackingSubscriptionDAO = new CloseTrackingSubscriptionDAO();
-		Services.registerService(ISubscriptionDAO.class, closeTrackingSubscriptionDAO);
-		subscriptionBL = new SubscriptionBL();
+		final CloseTrackingIterator deliveries = new CloseTrackingIterator(deliveries(2));
 		shipmentSchedulePA.onLookup = () -> {
 			throw new AdempiereException("schedule lookup failed");
 		};
 
-		assertThatThrownBy(() -> subscriptionBL.evalDeliveries(Env.getCtx()))
+		assertThatThrownBy(() -> subscriptionBL.evalDeliveries(deliveries, 2))
 				.hasMessageContaining("schedule lookup failed");
-		assertThat(closeTrackingSubscriptionDAO.closeCount.get()).isEqualTo(1);
+		assertThat(deliveries.closeCount.get()).isEqualTo(1);
 	}
 
 	/**
@@ -291,26 +299,14 @@ public class SubscriptionBL_EvalDeliveries_Test
 		}
 	}
 
-	private static class CloseTrackingSubscriptionDAO extends PlainSubscriptionDAO
-	{
-		final AtomicInteger closeCount = new AtomicInteger();
-
-		@Override
-		public Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(final Properties ctx, final Timestamp date, final String trxName, final int pageSize)
-		{
-			return new CloseTrackingIterator(super.retrievePlannedAndDelayedDeliveries(ctx, date, trxName, pageSize), closeCount);
-		}
-	}
-
 	private static class CloseTrackingIterator implements Iterator<I_C_SubscriptionProgress>, Closeable
 	{
 		private final Iterator<I_C_SubscriptionProgress> delegate;
-		private final AtomicInteger closeCount;
+		final AtomicInteger closeCount = new AtomicInteger();
 
-		CloseTrackingIterator(final Iterator<I_C_SubscriptionProgress> delegate, final AtomicInteger closeCount)
+		CloseTrackingIterator(final Iterator<I_C_SubscriptionProgress> delegate)
 		{
 			this.delegate = delegate;
-			this.closeCount = closeCount;
 		}
 
 		@Override
@@ -329,6 +325,7 @@ public class SubscriptionBL_EvalDeliveries_Test
 		public void close()
 		{
 			closeCount.incrementAndGet();
+			IteratorUtils.close(delegate);
 		}
 	}
 }
