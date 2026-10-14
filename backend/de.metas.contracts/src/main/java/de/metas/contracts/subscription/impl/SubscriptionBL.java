@@ -77,7 +77,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -137,6 +136,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final SpringContextHolder.Lazy<IOLCandBL> olCandBL = SpringContextHolder.lazyBean(IOLCandBL.class);
+	@NonNull private final SpringContextHolder.Lazy<ContractOrderService> contractOrderService = SpringContextHolder.lazyBean(ContractOrderService.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -1002,8 +1002,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
-		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-		final OrderId orderId = contractOrderService.retrieveLinkedFollowUpContractOrder(currentOrderId);
+		final OrderId orderId = contractOrderService.get().retrieveLinkedFollowUpContractOrder(currentOrderId);
 
 		if (orderId == null)
 		{
@@ -1024,7 +1023,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			return null;
 		}
 
-		final I_C_Flatrate_Term topTerm = contractOrderService.retrieveTopExtendedTerm(suitableTerm);
+		final I_C_Flatrate_Term topTerm = contractOrderService.get().retrieveTopExtendedTerm(suitableTerm);
 
 		return topTerm == null ? suitableTerm : topTerm;
 	}
