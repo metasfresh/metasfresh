@@ -23,30 +23,49 @@
 package de.metas.cucumber.stepdefs.tax_declaration;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.tax.TaxDeclarationId;
+import de.metas.acct.tax.TaxDeclarationService;
+import de.metas.acct.vatcode.VATCodeAmountType;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -63,7 +82,7 @@ import java.util.Set;
  * <p>The function returns one flat set of rows, discriminated by {@code report_level}:
  * <ul>
  *     <li>{@code HEADER} — exactly one row</li>
- *     <li>{@code SUMMARY} — one row per VAT code of the declaration, ordered by {@code vatcode}</li>
+ *     <li>{@code SUMMARY} — one row per VAT code of the declaration (+ one "type unknown" row per code with such lines), ordered by {@code vatcode}</li>
  *     <li>{@code BALANCE} — exactly one row</li>
  *     <li>{@code DETAIL} — one row per non-zero {@code C_TaxDeclarationAcct} row</li>
  * </ul>
@@ -93,24 +112,7 @@ import java.util.Set;
  * asserted as: (a) the function's own consistency ({@code balance = - sum(tax_amt of ALL SUMMARY rows) }) and
  * (b) the expected value against the in-scope rows only.
  *
- * <p><b>Gherkin usage example</b>:
- * <pre>{@code
- * Then the UStVA report for tax declaration "td1" returns:
- *   | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
- *   | SUMMARY      | kz81          | 20      | -       |             |
- *   | SUMMARY      | kz66          | -       | 16.44   |             |
- *   | BALANCE      |               |         |         | -16.44      |
- * }</pre>
- *
- * <p><b>Cell conventions</b>: blank = "don't care"; {@code -} = must be NULL (for text: NULL or empty).
- * <p><b>Columns</b>: {@code report_level} (required); {@code C_VAT_Code_ID} (identifier, SUMMARY/DETAIL);
- * {@code AmountType} (DETAIL); {@code description}; {@code net_amt}; {@code tax_amt}; {@code balance_amt}; {@code amount};
- * {@code Record_ID} (identifier of the source document: C_Invoice / C_AllocationHdr / SAP_GLJournal; {@code -} = no source document found);
- * {@code posting_date}; {@code doc_date}; {@code C_BPartner_ID} (identifier; the partner name is compared); {@code bpartner_vatid};
- * HEADER only: {@code docstatus}, {@code is_correction}, {@code org_tax_id}, {@code org_vat_id}, {@code Original_ID} (identifier of the original declaration;
- * its document no. is expected in {@code original_documentno}, {@code -} = none).
- * Organisation name, tax number, VAT ID, accounting schema, period, document no. and currency of the HEADER are always asserted
- * against the values stored in the database for the declaration; {@code print_date} must be present.
+ * <p>Expected values are read through DAOs / services; the only raw SQL is the call of the report function itself.
  */
 @RequiredArgsConstructor
 public class TaxDeclarationUStVAReport_StepDef
@@ -121,12 +123,56 @@ public class TaxDeclarationUStVAReport_StepDef
 	private static final String AMOUNT_TYPE_UNKNOWN = "U";
 	private static final String LEVEL_BALANCE = "BALANCE";
 	private static final String LEVEL_DETAIL = "DETAIL";
+	/** document no. column of the source documents (C_Invoice, C_AllocationHdr, SAP_GLJournal, ...) */
+	private static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	@NonNull private final C_TaxDeclaration_StepDefData taxDeclarationTable;
 	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 
+	@NonNull private final TaxDeclarationService taxDeclarationService = SpringContextHolder.instance.getBean(TaxDeclarationService.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Runs the UStVA report function for the declaration and asserts its rows against the expected rows (one row per expected report row).
+	 * <p>Cell conventions: blank = "don't care"; {@code -} = must be NULL (for text: NULL or empty).
+	 * <p>Always asserted, whatever the table lists: exactly one HEADER and one BALANCE row; HEADER {@code print_date} present;
+	 * HEADER organisation name, tax number and VAT ID (the organisation's active business partner), accounting schema name,
+	 * period from/to, document no. and currency equal the declaration's records; BALANCE = - sum of the declared tax;
+	 * the DETAIL rows of each in-scope code add up to its SUMMARY row.
+	 * <p>SUMMARY order: when the table lists SUMMARY rows, the report's SUMMARY rows of the scenario's own codes must come in
+	 * exactly the order of the expected SUMMARY rows (position by position, VAT code + amount type; a row without
+	 * {@code AmountType} is the code's regular row, which comes before its "type unknown" row). The report orders by VAT code,
+	 * and the codes of one {@code metasfresh contains C_VAT_Codes:} table sort in table order, so list the expected SUMMARY rows in that order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>report_level</b> — (required) HEADER / SUMMARY / BALANCE / DETAIL<br>
+	 *   <b>C_VAT_Code_ID</b> — (optional, identifier-ref) VAT code of a SUMMARY / DETAIL row<br>
+	 *   <b>AmountType</b> — (optional) N / T / U ("type unknown"); SUMMARY: only U, empty = the code's regular row<br>
+	 *   <b>description</b>, <b>net_amt</b>, <b>tax_amt</b>, <b>balance_amt</b>, <b>amount</b> — (optional) expected values<br>
+	 *   <b>Record_ID</b> — (optional, identifier-ref) source document of a DETAIL row (C_Invoice / C_AllocationHdr / SAP_GLJournal); {@code -} = no source document found<br>
+	 *   <b>posting_date</b>, <b>doc_date</b> — (optional) {@code YYYY-MM-DD}<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) partner of a DETAIL row; its name is compared<br>
+	 *   <b>bpartner_vatid</b> — (optional) partner VAT ID of a DETAIL row<br>
+	 *   <b>docstatus</b>, <b>is_correction</b>, <b>org_tax_id</b>, <b>org_vat_id</b> — (optional) HEADER only<br>
+	 *   <b>Original_ID</b> — (optional, identifier-ref, null-allowed as {@code -}) HEADER only: original declaration, whose document no. is expected in {@code original_documentno}<br>
+	 * @cucumber.depends StepDefData: C_TaxDeclaration_StepDefData, C_VAT_Code_StepDefData, C_BPartner_StepDefData; IdentifiersResolver (Record_ID)
+	 * @cucumber.example
+	 * <pre>
+	 * Then the UStVA report for tax declaration "td" returns:
+	 *   | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
+	 *   | SUMMARY      | v81N          | 20      | 3.80    |             |
+	 *   | SUMMARY      | v66T          | -       | 16.44   |             |
+	 *   | BALANCE      |               |         |         | -12.64      |
+	 * </pre>
+	 */
 	@Then("the UStVA report for tax declaration {string} returns:")
 	public void expect_ustva_report(
 			@NonNull final String declarationIdentifier,
@@ -144,7 +190,6 @@ public class TaxDeclarationUStVAReport_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		assertHeaderAlwaysChecks(softly, ctx, declarationId, actualRows, dump);
-		assertSummaryOrdering(softly, ctx, actualRows, dump);
 		assertBalanceConsistency(softly, ctx, declarationId, actualRows, dump);
 		assertDetailSumsEqualSummary(softly, ctx, actualRows, scopeVatCodes, dump);
 
@@ -175,6 +220,11 @@ public class TaxDeclarationUStVAReport_StepDef
 				{
 					candidates.add(actual);
 				}
+			}
+
+			if (LEVEL_SUMMARY.equals(level))
+			{
+				assertSummaryOrder(softly, ctx, expectedOfLevel, ImmutableList.copyOf(candidates), dump);
 			}
 
 			for (final DataTableRow expected : expectedOfLevel)
@@ -226,47 +276,86 @@ public class TaxDeclarationUStVAReport_StepDef
 			return;
 		}
 		final UStVAReportRow h = headers.get(0);
+		final I_C_TaxDeclaration declaration = taxDeclarationService.getById(TaxDeclarationId.ofRepoId(declarationId));
+		final OrgId orgId = OrgId.ofRepoId(declaration.getAD_Org_ID());
+		final AcctSchema acctSchema = acctSchemaDAO.getById(AcctSchemaId.ofRepoId(declaration.getC_AcctSchema_ID()));
+		// tax number and VAT ID come only from the organisation's active business partner (C_BPartner.AD_OrgBP_ID; at most one is active)
+		final I_C_BPartner orgBPartner = orgId.isRegular()
+				? bpartnerOrgBL.retrieveLinkedBPartnerId(orgId).map(bpartnerDAO::getByIdOutOfTrx).orElse(null)
+				: null;
+		final I_C_Period period = declaration.getC_Period_ID() > 0
+				? InterfaceWrapperHelper.loadOutOfTrx(declaration.getC_Period_ID(), I_C_Period.class)
+				: null;
 
 		softly.assertThat(h.getPrintDate()).as("%s: HEADER print_date", ctx).isNotNull();
-		softly.assertThat(h.getOrgName()).as("%s: HEADER org_name", ctx).isEqualTo(dbString(
-				"SELECT o.Name FROM C_TaxDeclaration td JOIN AD_Org o ON o.AD_Org_ID=td.AD_Org_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		// tax number and VAT ID come only from the organisation's active business partner (C_BPartner.AD_OrgBP_ID; at most one is active)
-		softly.assertThat(h.getOrgTaxId()).as("%s: HEADER org_tax_id", ctx).isEqualTo(dbString(
-				"SELECT bp.TaxID FROM C_TaxDeclaration td JOIN C_BPartner bp ON bp.AD_OrgBP_ID=td.AD_Org_ID AND bp.IsActive='Y' WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getOrgVatId()).as("%s: HEADER org_vat_id", ctx).isEqualTo(dbString(
-				"SELECT bp.VATaxID FROM C_TaxDeclaration td JOIN C_BPartner bp ON bp.AD_OrgBP_ID=td.AD_Org_ID AND bp.IsActive='Y' WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getAcctSchemaName()).as("%s: HEADER acctschema_name", ctx).isEqualTo(dbString(
-				"SELECT s.Name FROM C_TaxDeclaration td JOIN C_AcctSchema s ON s.C_AcctSchema_ID=td.C_AcctSchema_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getPeriodFrom()).as("%s: HEADER period_from", ctx).isEqualTo(dbString(
-				"SELECT to_char(p.StartDate,'YYYY-MM-DD') FROM C_TaxDeclaration td JOIN C_Period p ON p.C_Period_ID=td.C_Period_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getPeriodTo()).as("%s: HEADER period_to", ctx).isEqualTo(dbString(
-				"SELECT to_char(p.EndDate,'YYYY-MM-DD') FROM C_TaxDeclaration td JOIN C_Period p ON p.C_Period_ID=td.C_Period_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getDocumentNo()).as("%s: HEADER documentno", ctx).isEqualTo(dbString(
-				"SELECT td.DocumentNo FROM C_TaxDeclaration td WHERE td.C_TaxDeclaration_ID=?", declarationId));
-		softly.assertThat(h.getCurrency()).as("%s: HEADER currency (accounting schema currency)", ctx).isEqualTo(dbString(
-				"SELECT c.ISO_Code FROM C_TaxDeclaration td JOIN C_AcctSchema s ON s.C_AcctSchema_ID=td.C_AcctSchema_ID JOIN C_Currency c ON c.C_Currency_ID=s.C_Currency_ID WHERE td.C_TaxDeclaration_ID=?", declarationId));
+		softly.assertThat(h.getOrgName()).as("%s: HEADER org_name", ctx).isEqualTo(blankToNull(orgDAO.getOrgName(orgId)));
+		softly.assertThat(h.getOrgTaxId()).as("%s: HEADER org_tax_id", ctx).isEqualTo(orgBPartner != null ? blankToNull(orgBPartner.getTaxID()) : null);
+		softly.assertThat(h.getOrgVatId()).as("%s: HEADER org_vat_id", ctx).isEqualTo(orgBPartner != null ? blankToNull(orgBPartner.getVATaxID()) : null);
+		softly.assertThat(h.getAcctSchemaName()).as("%s: HEADER acctschema_name", ctx).isEqualTo(blankToNull(acctSchema.getName()));
+		softly.assertThat(h.getPeriodFrom()).as("%s: HEADER period_from", ctx).isEqualTo(period != null ? toIsoDate(period.getStartDate()) : null);
+		softly.assertThat(h.getPeriodTo()).as("%s: HEADER period_to", ctx).isEqualTo(period != null ? toIsoDate(period.getEndDate()) : null);
+		softly.assertThat(h.getDocumentNo()).as("%s: HEADER documentno", ctx).isEqualTo(blankToNull(declaration.getDocumentNo()));
+		softly.assertThat(h.getCurrency()).as("%s: HEADER currency (accounting schema currency)", ctx)
+				.isEqualTo(currencyDAO.getCurrencyCodeById(acctSchema.getCurrencyId()).toThreeLetterCode());
 	}
 
-	private void assertSummaryOrdering(
-			final SoftAssertions softly, final String ctx, final List<UStVAReportRow> actualRows, final String dump)
+	/**
+	 * The SUMMARY rows of the scenario's own codes must come in the order of the expected SUMMARY rows, position by position
+	 * (VAT code + amount type; an expected row without amount type is the code's regular row, so it must come before the code's "type unknown" row).
+	 * The VAT codes of one {@code C_VAT_Codes} data table sort in table order, so the feature lists the expected rows in that order.
+	 */
+	private void assertSummaryOrder(
+			final SoftAssertions softly, final String ctx,
+			final List<DataTableRow> expectedSummaries, final List<UStVAReportRow> actualSummariesInScope, final String dump)
 	{
-		// ordered by vatcode; within a code, the regular row comes before the "type unknown" row
-		UStVAReportRow previous = null;
-		for (final UStVAReportRow row : rowsOfLevel(actualRows, LEVEL_SUMMARY))
+		final List<SummaryKey> expectedKeys = new ArrayList<>();
+		for (final DataTableRow expected : expectedSummaries)
 		{
-			if (previous != null)
-			{
-				final int byCode = compareInDB(row.getVatCode(), previous.getVatCode());
-				final boolean unknownAfterRegular = byCode == 0
-						&& AMOUNT_TYPE_UNKNOWN.equals(row.getAmountType())
-						&& !AMOUNT_TYPE_UNKNOWN.equals(previous.getAmountType());
-				softly.assertThat(byCode > 0 || unknownAfterRegular)
-						.as("%s: SUMMARY rows ordered by vatcode, regular row before \"type unknown\" (%s/%s after %s/%s)\n%s",
-							ctx, row.getVatCode(), row.getAmountType(), previous.getVatCode(), previous.getAmountType(), dump)
-						.isTrue();
-			}
-			previous = row;
+			expectedKeys.add(SummaryKey.builder()
+					.vatCode(cell(expected, "C_VAT_Code_ID").map(c -> vatCodeTable.get(StepDefDataIdentifier.ofString(c)).getCode()).orElse(null))
+					.amountType(cell(expected, "AmountType").orElse(null))
+					.build());
 		}
+		softly.assertThat(summaryOrderViolations(expectedKeys, actualSummariesInScope))
+				.as("%s: SUMMARY rows (in scope) in the order of the expected SUMMARY rows\n%s", ctx, dump)
+				.isEmpty();
+	}
+
+	/**
+	 * Compares the actual SUMMARY rows with the expected ones position by position; returns one message per mismatch (empty = same order).
+	 * An expected row without amount type is a regular row, i.e. its actual amount type must not be "type unknown".
+	 */
+	static List<String> summaryOrderViolations(final List<SummaryKey> expected, final List<UStVAReportRow> actual)
+	{
+		final List<String> violations = new ArrayList<>();
+		if (expected.size() != actual.size())
+		{
+			violations.add("expected " + expected.size() + " SUMMARY rows but got " + actual.size());
+		}
+		for (int i = 0; i < Math.min(expected.size(), actual.size()); i++)
+		{
+			final SummaryKey e = expected.get(i);
+			final UStVAReportRow a = actual.get(i);
+			final boolean sameCode = e.getVatCode() == null || e.getVatCode().equals(a.getVatCode());
+			final boolean sameAmountType = e.getAmountType() != null
+					? e.getAmountType().equals(a.getAmountType())
+					: !AMOUNT_TYPE_UNKNOWN.equals(a.getAmountType());
+			if (!sameCode || !sameAmountType)
+			{
+				violations.add("position " + i + ": expected vatcode=" + e.getVatCode() + " amount_type=" + e.getAmountType()
+						+ " but got vatcode=" + a.getVatCode() + " amount_type=" + a.getAmountType());
+			}
+		}
+		return violations;
+	}
+
+	/** Expected position of a SUMMARY row: VAT code ({@code null} = any) and amount type ({@code null} = the code's regular row). */
+	@Value
+	@Builder
+	static class SummaryKey
+	{
+		@Nullable String vatCode;
+		@Nullable String amountType;
 	}
 
 	/** The function's own formula: balance = - sum of all declared tax amounts (all SUMMARY rows, in scope or not). */
@@ -289,9 +378,10 @@ public class TaxDeclarationUStVAReport_StepDef
 	 * Printed amounts carry the display sign: -1 when every C_VAT_Code row of the code and amount type on the declaration's
 	 * accounting schema is a sales code (IsSOTrx='Y'), else +1. The declared amount (debit - credit) is the printed one times that sign.
 	 */
-	private static BigDecimal sumDeclaredTaxNegated(
+	private BigDecimal sumDeclaredTaxNegated(
 			final List<UStVAReportRow> actualRows, final int declarationId, @Nullable final Set<String> scope)
 	{
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(taxDeclarationService.getById(TaxDeclarationId.ofRepoId(declarationId)).getC_AcctSchema_ID());
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final UStVAReportRow summary : rowsOfLevel(actualRows, LEVEL_SUMMARY))
 		{
@@ -299,13 +389,23 @@ public class TaxDeclarationUStVAReport_StepDef
 			{
 				continue;
 			}
-			final String sales = dbString("SELECT CASE WHEN COUNT(*) > 0 AND COUNT(*) = COUNT(CASE WHEN v.IsSOTrx='Y' THEN 1 END) THEN 'Y' ELSE 'N' END"
-					+ " FROM C_VAT_Code v JOIN C_TaxDeclaration td ON td.C_AcctSchema_ID=v.C_AcctSchema_ID"
-					+ " WHERE td.C_TaxDeclaration_ID=? AND v.IsActive='Y' AND v.AmountType='T' AND v.VATCode='" + summary.getVatCode().replace("'", "''") + "'", declarationId);
-			final BigDecimal declared = "Y".equals(sales) ? summary.getTaxAmt().negate() : summary.getTaxAmt();
+			final BigDecimal declared = isSalesOnlyTaxCode(acctSchemaId, summary.getVatCode()) ? summary.getTaxAmt().negate() : summary.getTaxAmt();
 			sum = sum.add(declared);
 		}
 		return sum.negate();
+	}
+
+	/** {@code true} when the code has at least one active Tax row on the schema and every such row is a sales row ({@code IsSOTrx='Y'}; NULL applies to both sides). */
+	private boolean isSalesOnlyTaxCode(@NonNull final AcctSchemaId acctSchemaId, @Nullable final String vatCode)
+	{
+		final List<I_C_VAT_Code> taxRows = queryBL.createQueryBuilderOutOfTrx(I_C_VAT_Code.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_AmountType, VATCodeAmountType.Tax.getCode())
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+				.create()
+				.list();
+		return !taxRows.isEmpty() && taxRows.stream().allMatch(row -> "Y".equals(row.getIsSOTrx()));
 	}
 
 	/** Detail rows of a code add up to the summary: Net rows to the cut-off net, Tax rows to the tax. */
@@ -463,8 +563,9 @@ public class TaxDeclarationUStVAReport_StepDef
 			return isBlankStr(actual.getDocumentNo());
 		}
 		final TableRecordReference ref = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(c));
-		final String keyColumn = InterfaceWrapperHelper.getKeyColumnName(ref.getTableName());
-		final String documentNo = dbString("SELECT DocumentNo FROM " + ref.getTableName() + " WHERE " + keyColumn + "=?", ref.getRecord_ID());
+		// any document table (C_Invoice, C_AllocationHdr, SAP_GLJournal, ...): load the record fresh and read its DocumentNo column
+		final Object sourceDocument = InterfaceWrapperHelper.create(Env.getCtx(), ref.getTableName(), ref.getRecord_ID(), Object.class, ITrx.TRXNAME_None);
+		final String documentNo = sourceDocument != null ? blankToNull(InterfaceWrapperHelper.getValueOrNull(sourceDocument, COLUMNNAME_DocumentNo)) : null;
 		return Objects.equals(documentNo, actual.getDocumentNo());
 	}
 
@@ -479,9 +580,9 @@ public class TaxDeclarationUStVAReport_StepDef
 		{
 			return isBlankStr(actual.getOriginalDocumentNo());
 		}
-		final I_C_TaxDeclaration original = taxDeclarationTable.get(StepDefDataIdentifier.ofString(c));
-		final String originalDocumentNo = dbString("SELECT DocumentNo FROM C_TaxDeclaration WHERE C_TaxDeclaration_ID=?", original.getC_TaxDeclaration_ID());
-		return Objects.equals(originalDocumentNo, actual.getOriginalDocumentNo());
+		final I_C_TaxDeclaration originalRef = taxDeclarationTable.get(StepDefDataIdentifier.ofString(c));
+		final I_C_TaxDeclaration original = taxDeclarationService.getById(TaxDeclarationId.ofRepoId(originalRef.getC_TaxDeclaration_ID()));
+		return Objects.equals(blankToNull(original.getDocumentNo()), actual.getOriginalDocumentNo());
 	}
 
 	private static boolean matchText(final DataTableRow expected, final String column, @Nullable final String actual)
@@ -538,20 +639,18 @@ public class TaxDeclarationUStVAReport_StepDef
 		return s == null || s.trim().isEmpty();
 	}
 
-	/**
-	 * Compares like the function's {@code ORDER BY vatcode} (DB collation), not like {@link String#compareTo(String)}.
-	 * Both keys must be non-null: a SQL comparison with NULL would fall through to the {@code ELSE} and pass silently.
-	 */
-	private static int compareInDB(@NonNull final String a, @NonNull final String b)
+	@Nullable
+	private static String blankToNull(@Nullable final Object value)
 	{
-		return DB.getSQLValueEx(null, "SELECT CASE WHEN ?::varchar < ?::varchar THEN -1 WHEN ?::varchar = ?::varchar THEN 0 ELSE 1 END", a, b, a, b);
+		final String str = value != null ? value.toString() : null;
+		return isBlankStr(str) ? null : str;
 	}
 
+	/** Same wall-clock date as the report's {@code ::date} cast (formatted {@code YYYY-MM-DD}). */
 	@Nullable
-	private static String dbString(final String sql, final int id)
+	private static String toIsoDate(@Nullable final Timestamp timestamp)
 	{
-		final String value = DB.getSQLValueStringEx(null, sql, id);
-		return isBlankStr(value) ? null : value;
+		return timestamp != null ? timestamp.toLocalDateTime().toLocalDate().toString() : null;
 	}
 
 	private static List<UStVAReportRow> rowsOfLevel(final List<UStVAReportRow> rows, final String level)
@@ -581,7 +680,7 @@ public class TaxDeclarationUStVAReport_StepDef
 		return sb.toString();
 	}
 
-	/** Raw SQL is unavoidable: the report is a PostgreSQL {@code RETURNS TABLE} function. */
+	/** The only raw SQL of this step definition: the report is a PostgreSQL {@code RETURNS TABLE} function, there is no DAO for it. */
 	private static ImmutableList<UStVAReportRow> retrieveReportRows(final int declarationId)
 	{
 		final String sql = "SELECT report_level, vatcode, amount_type, description, net_amt, tax_amt, balance_amt,"

@@ -10,6 +10,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 ## - The report lists whatever VAT codes the declaration holds: one SUMMARY row per code, ordered by code.
 ## - Figures come from the declaration only (never from live Fact_Acct amounts).
 ## - Each scenario creates its own VAT codes; the report step looks only at those codes.
+## - The codes of one C_VAT_Codes table sort in table order: expected SUMMARY rows are listed in that order, and the report must return them so.
 ##   Rows of codes of other scenarios in the same period are ignored.
 ## - The posting of invoices and allocations is real; the declaration is built by the real build function.
 
@@ -652,8 +653,8 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # output tax 20.00 * 19 % = 3.80 (credit, printed positive); input tax 86.55 * 19 % = 16.44; balance = -(-3.80 + 16.44) = -12.64 (refund)
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | v66T          | -       | 16.44   |             |
       | SUMMARY      | v81N          | 20      | 3.80    |             |
+      | SUMMARY      | v66T          | -       | 16.44   |             |
       | BALANCE      |               |         |         | -12.64      |
 
 
