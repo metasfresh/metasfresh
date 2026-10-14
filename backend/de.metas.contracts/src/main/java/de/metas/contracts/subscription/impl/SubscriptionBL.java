@@ -116,6 +116,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
@@ -734,7 +735,6 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private void evalDeliveriesBatch(@NonNull final List<I_C_SubscriptionProgress> batch, @NonNull final Set<FlatrateTermId> delayedTermIds)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final ImmutableSet<TableRecordReference> entriesWithOpenSchedule = shipmentSchedulePA.retrieveRecordsWithUnprocessedSchedules(
 				batch.stream().map(TableRecordReference::of).collect(ImmutableList.toImmutableList()));
 
