@@ -68,7 +68,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	// lazy: Spring bean, resolved on first use because this class can be constructed before the Spring context is available
 	@NonNull private final SpringContextHolder.Lazy<ShipmentScheduleSubscriptionReferenceProvider> referenceProvider = SpringContextHolder.lazyBean(ShipmentScheduleSubscriptionReferenceProvider.class);
@@ -245,7 +244,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateNewSchedWithValuesFromReferencedLine(shipmentSchedule);
 
-		final I_C_DocType doctypeForTerm = flatrateBL.getDocTypeFor(term);
+		// IFlatrateBL is looked up here, not held as a field: on this branch FlatrateBL gets Spring beans when constructed, and this handler is constructed when MainValidator registers it
+		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
 		shipmentSchedule.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
 		shipmentSchedule.setDocSubType(doctypeForTerm.getDocSubType());
 

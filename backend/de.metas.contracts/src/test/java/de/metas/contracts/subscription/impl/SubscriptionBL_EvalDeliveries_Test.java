@@ -19,6 +19,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -52,6 +55,10 @@ public class SubscriptionBL_EvalDeliveries_Test
 	{
 		AdempiereTestHelper.get().init();
 		helper = new SubscriptionProgressTestHelper(now);
+
+		// SubscriptionBL holds an IFlatrateBL, and FlatrateBL gets these Spring beans when constructed
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 
 		// SubscriptionBL gets its services when constructed, so register the replacement first
 		shipmentSchedulePA = new RecordingShipmentSchedulePA();
