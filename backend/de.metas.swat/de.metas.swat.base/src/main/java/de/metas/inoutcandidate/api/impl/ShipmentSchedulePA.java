@@ -71,12 +71,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private IShipmentScheduleAllocDAO shipmentScheduleAllocDAO()
 	{
-		IShipmentScheduleAllocDAO result = _shipmentScheduleAllocDAO;
-		if (result == null)
+		if (_shipmentScheduleAllocDAO == null)
 		{
-			result = _shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			_shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 		}
-		return result;
+		return _shipmentScheduleAllocDAO;
 	}
 
 	/**

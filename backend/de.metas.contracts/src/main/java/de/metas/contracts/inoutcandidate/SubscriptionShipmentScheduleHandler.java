@@ -76,12 +76,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL()
 	{
-		IShipmentScheduleInvalidateBL result = _shipmentScheduleInvalidateBL;
-		if (result == null)
+		if (_shipmentScheduleInvalidateBL == null)
 		{
-			result = _shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+			_shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 		}
-		return result;
+		return _shipmentScheduleInvalidateBL;
 	}
 
 	@Override
