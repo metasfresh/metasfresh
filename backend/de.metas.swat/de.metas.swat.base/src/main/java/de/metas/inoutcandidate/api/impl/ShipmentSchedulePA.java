@@ -73,9 +73,19 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	@NonNull private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	// lazy: ShipmentScheduleInvalidateRepository needs the Spring context on construction, but this service is created while Spring is still starting up
+	@Nullable private IShipmentScheduleInvalidateRepository _invalidSchedulesRepo; // null = not yet initialized
+
+	private IShipmentScheduleInvalidateRepository invalidSchedulesRepo()
+	{
+		if (_invalidSchedulesRepo == null)
+		{
+			_invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		}
+		return _invalidSchedulesRepo;
+	}
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -310,14 +320,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
+		invalidSchedulesRepo().markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
 		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.filter(invalidSchedulesRepo.createInvalidShipmentSchedulesQueryFilter(pinstanceId))
+				.filter(invalidSchedulesRepo().createInvalidShipmentSchedulesQueryFilter(pinstanceId))
 				.create()
 				.setOrderBy(queryBL.createSqlQueryOrderBy(ORDER_CLAUSE))
 				.list();
@@ -499,7 +509,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// Invalidate the inout candidates which we updated
 		if (invalidate)
 		{
-			invalidSchedulesRepo.invalidateSchedulesForSelection(selectionToUpdateId);
+			invalidSchedulesRepo().invalidateSchedulesForSelection(selectionToUpdateId);
 		}
 	}
 

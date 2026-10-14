@@ -769,20 +769,20 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				logger.info("An earlier SP of {} is delayed => also delaying {}", termId, sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				save(sd);
+				subscriptionDAO.save(sd);
 			}
 			else if (entriesWithOpenSchedule.contains(entryRefs.get(i)))
 			{
 				logger.debug("{} is delayed because there is at least one open shipment schedule", sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				save(sd);
+				subscriptionDAO.save(sd);
 				delayedTermIds.add(termId);
 			}
 			else if (X_C_SubscriptionProgress.STATUS_Delayed.equals(sd.getStatus()))
 			{
 				logger.info("{} is not delayed anymore", sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
-				save(sd);
+				subscriptionDAO.save(sd);
 			}
 		}
 	}

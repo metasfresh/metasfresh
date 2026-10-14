@@ -133,5 +133,7 @@ public interface ISubscriptionDAO extends ISingletonService
 	 */
 	I_C_SubscriptionProgress insertNewDelivery(I_C_SubscriptionProgress predecessor);
 
+	void save(I_C_SubscriptionProgress subscriptionProgress);
+
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_Flatrate_Term term, Class<T> clazz);
 }

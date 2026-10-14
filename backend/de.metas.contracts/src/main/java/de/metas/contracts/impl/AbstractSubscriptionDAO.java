@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
@@ -132,6 +132,12 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 		final I_C_SubscriptionProgress sdNew = insertNewRecordAfter(predecessor);
 		return sdNew;
+	}
+
+	@Override
+	public void save(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+	{
+		InterfaceWrapperHelper.save(subscriptionProgress);
 	}
 
 	private void increaseSeqNosOfSuccessors(final I_C_SubscriptionProgress predecessor)
