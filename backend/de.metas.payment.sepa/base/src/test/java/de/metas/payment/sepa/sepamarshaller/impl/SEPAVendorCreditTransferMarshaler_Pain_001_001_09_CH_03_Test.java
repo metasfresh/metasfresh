@@ -12,6 +12,7 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Services;
@@ -210,11 +211,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	@Test
 	public void referenceCheckDigits()
 	{
-		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidQrReference(QR_REFERENCE)).isTrue();
-		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidQrReference("210000000003139471430009018")).isFalse(); // check digit
-		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidQrReference("21000000000313947143000901")).isFalse(); // length
-		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidQrReference("21000000000313947143000901A")).isFalse();
-		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidQrReference(null)).isFalse();
+		assertThat(SepaUtils.isValidQrReference(QR_REFERENCE)).isTrue();
+		assertThat(SepaUtils.isValidQrReference("210000000003139471430009018")).isFalse(); // check digit
+		assertThat(SepaUtils.isValidQrReference("21000000000313947143000901")).isFalse(); // length
+		assertThat(SepaUtils.isValidQrReference("21000000000313947143000901A")).isFalse();
+		assertThat(SepaUtils.isValidQrReference(null)).isFalse();
 
 		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidCreditorReference(SCOR_REFERENCE_SEPA)).isTrue();
 		assertThat(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.isValidCreditorReference(SCOR_REFERENCE_FOREIGN)).isTrue();
