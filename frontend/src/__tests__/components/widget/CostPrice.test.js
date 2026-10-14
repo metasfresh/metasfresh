@@ -46,8 +46,7 @@ describe('CostPrice component', () => {
       // The server sends monetary values already formatted with their precision,
       // e.g. "19.00" not "19". With type="text" + fieldValueToString, those
       // trailing zeros render in the input box. With type="number" they would
-      // be normalised away by the browser — that's the regression we explicitly
-      // moved away from in me03#27080 follow-up #1.
+      // be normalised away by the browser.
       const wrapper = shallow(
         <CostPrice {...defaultProps({ value: '19.00', precision: 2 })} />
       );
@@ -153,7 +152,7 @@ describe('CostPrice component', () => {
     });
   });
 
-  describe('handleChange — Swiss-format strip', () => {
+  describe('handleChange — Swiss-format strip + decimal comma', () => {
     // Helper: shallow-mount, invoke handleChange, return the value the
     // parent's onChange callback was invoked with.
     const valueFlowingUpstream = (typedOrPasted) => {
@@ -199,8 +198,50 @@ describe('CostPrice component', () => {
       expect(valueFlowingUpstream("-1'500.00")).toBe('-1500.00');
     });
 
-    it("preserves a decimal comma while stripping separators (DE/AT users)", () => {
-      expect(valueFlowingUpstream("1'500,50")).toBe('1500,50');
+    it("converts a decimal comma while stripping separators (DE/AT users)", () => {
+      expect(valueFlowingUpstream("1'500,50")).toBe('1500.50');
+    });
+
+    describe('decimal comma — the backend BigDecimal parser accepts only "."', () => {
+      it('converts a decimal comma to a decimal point', () => {
+        expect(valueFlowingUpstream('77,5')).toBe('77.5');
+      });
+
+      it('converts a trailing comma while typing', () => {
+        expect(valueFlowingUpstream('77,')).toBe('77.');
+      });
+
+      it('converts a leading comma', () => {
+        expect(valueFlowingUpstream(',5')).toBe('.5');
+      });
+
+      it('preserves a leading minus sign', () => {
+        expect(valueFlowingUpstream('-12,35')).toBe('-12.35');
+      });
+
+      it('treats the last separator as decimal and drops dot thousands separators (DE format)', () => {
+        expect(valueFlowingUpstream('1.500,50')).toBe('1500.50');
+      });
+
+      it('treats the last separator as decimal and drops comma thousands separators (EN format)', () => {
+        expect(valueFlowingUpstream('1,500.50')).toBe('1500.50');
+      });
+
+      it('drops multiple thousands separators', () => {
+        expect(valueFlowingUpstream('1.200.000,50')).toBe('1200000.50');
+      });
+
+      it('converts a lone comma (first keystroke)', () => {
+        expect(valueFlowingUpstream(',')).toBe('.');
+      });
+
+      it('converts "-0,5" (negative fraction)', () => {
+        expect(valueFlowingUpstream('-0,5')).toBe('-0.5');
+      });
+
+      it('reads a single comma as decimal even in an EN grouping like "1,500" (accepted DE/AT trade-off)', () => {
+        expect(valueFlowingUpstream('1,500')).toBe('1.500');
+      });
     });
 
     it('calls the parent onChange with an event whose target.value is the cleaned string', () => {

@@ -3,16 +3,65 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { fieldValueToString } from '../../utils/tableHelpers';
 
+// Normalises a typed / pasted number to the backend format; the backend
+// BigDecimal parser accepts only digits, "-" and "." and fails with
+// NumberFormatException otherwise:
+// - strip thousands separators: apostrophes (' and ’), space, NBSP
+// - if the value contains a comma (DE/AT decimal comma), the last "." or ","
+//   is the decimal separator and every other one a thousands separator:
+//   "77,5" -> "77.5", "1.500,50" -> "1500.50", "1,500.50" -> "1500.50"
+const normalizeNumberInput = (value) => {
+  const withoutGrouping = value.replace(/['\u2019 \u00A0]/g, '');
+  if (!withoutGrouping.includes(',')) {
+    return withoutGrouping;
+  }
+
+  const decimalSeparatorIndex = Math.max(
+    withoutGrouping.lastIndexOf('.'),
+    withoutGrouping.lastIndexOf(',')
+  );
+  const integerPart = withoutGrouping
+    .substring(0, decimalSeparatorIndex)
+    .replace(/[.,]/g, '');
+  const fractionPart = withoutGrouping.substring(decimalSeparatorIndex + 1);
+  return `${integerPart}.${fractionPart}`;
+};
+
 // NOTE: we cannot convert to functional component because we need callers need a ref to this object in order to call the focus() function.
 export default class CostPrice extends PureComponent {
   constructor(props) {
     super(props);
     this.inputRef = React.createRef();
+    // what the user typed while the field is edited; null = show the formatted value
+    this.state = { editText: null };
   }
+
+  // The parent patches the input's text on blur, Tab, Enter and ArrowUp/Down, so it gets the whole text normalised.
+  // Normalising the whole text (and not keystroke by keystroke) keeps "1,500.50" one number.
+  // The event is derived with Object.create, not copied with a spread: a spread drops the event's methods
+  // (preventDefault, which RawWidget calls on Enter). Its target is a plain object that carries only `value`
+  // (the consumers read nothing else of it), and flags set through it (isDefaultPrevented, isPropagationStopped)
+  // land on the derived event, not on React's.
+  withNormalizedValue = (e) => {
+    const raw = e.target.value;
+    const normalized = normalizeNumberInput(raw);
+    return normalized === raw
+      ? e
+      : Object.create(e, {
+          target: { value: { ...e.target, value: normalized } },
+        });
+  };
 
   handleBlur = (e) => {
     const { onBlur } = this.props;
-    onBlur?.(e);
+    const normalizedEvent = this.withNormalizedValue(e);
+    this.setState({ editText: null });
+    onBlur?.(normalizedEvent);
+  };
+
+  handleKeyDown = (e) => {
+    const { onKeyDown } = this.props;
+    onKeyDown?.(this.withNormalizedValue(e));
   };
 
   focus = () => {
@@ -36,25 +85,25 @@ export default class CostPrice extends PureComponent {
     }
   };
 
-  // Strip Swiss thousands separators (apostrophe + typographic apostrophe)
-  // and whitespace separators (space, non-breaking space) before the value
-  // flows upstream — the metasfresh backend's BigDecimal parser
-  // (DataTypes.convertToBigDecimal) rejects them with HTTP 500
-  // NumberFormatException. Verified by reproducing against ipshotfix:
-  //   PATCH … {"op":"replace","path":"PriceEntered","value":"1'500.00"}
-  //   → 500 java.lang.NumberFormatException: Character ' is neither …
-  // Keeping the keypress filter permissive (apostrophe allowed in the
-  // field) makes copy-paste from a price catalogue work; the strip here
-  // makes sure the cleaned value is what actually gets PATCHed.
+  // A value set from outside while the user edits (e.g. the server's answer to an Enter, or Escape restoring the
+  // old value) replaces what was typed
+  componentDidUpdate(prevProps) {
+    const { value } = this.props;
+    const { editText } = this.state;
+    if (
+      editText !== null &&
+      value !== prevProps.value &&
+      value !== normalizeNumberInput(editText)
+    ) {
+      this.setState({ editText: null });
+    }
+  }
+
+  // The input keeps what the user typed; the parent gets it normalised
   handleChange = (e) => {
     const { onChange } = this.props;
-    const raw = e.target.value;
-    const cleaned = raw.replace(/['\u2019 \u00A0]/g, '');
-    if (cleaned !== raw) {
-      onChange({ ...e, target: { ...e.target, value: cleaned } });
-    } else {
-      onChange(e);
-    }
+    this.setState({ editText: e.target.value });
+    onChange(this.withNormalizedValue(e));
   };
 
   render() {
@@ -69,30 +118,20 @@ export default class CostPrice extends PureComponent {
       value,
       precision,
     } = this.props;
-    const { onKeyDown } = this.props;
+    const { editText } = this.state;
 
-    // me03#27080 follow-up: previously this component swapped between a
-    // display <input type="text"> (formatted value, no real editing) and
-    // an edit <input type="number"> (real editing), toggled via an
-    // `editMode` state on focus/blur. The swap unmounted the focused
-    // input mid-Tab during PATCH-triggered re-renders, dropping focus
-    // to <body> and triggering the modal-wrapper safety net to grab
-    // focus into a tabindex=-1 scroll container (arrow-key scrolling
-    // instead of next-field navigation). We now render a single stable
-    // <input> at all times — never reconciled out from under the user.
-    // type="text" with inputMode="decimal" preserves the formatted value
-    // (so monetary trailing zeros render as "19.00", not "19" like a
-    // type="number" input would normalise), and on mobile still triggers
-    // the decimal numeric keyboard. ArrowUp / ArrowDown PATCH semantics
-    // continue to work because they are intercepted by
-    // RawWidget.handleKeyDown for the NumberWidgets list (CostPrice is
-    // in that list).
+    // Always render ONE stable <input>: swapping input elements on
+    // focus/blur unmounts the focused element mid-Tab and loses focus.
+    // type="text" keeps the formatted value (trailing zeros like "19.00") and,
+    // while editing, exactly what the user typed (e.g. "2,5");
+    // inputMode="decimal" gives the numeric keyboard on mobile. ArrowUp /
+    // ArrowDown PATCH is handled by RawWidget.handleKeyDown (NumberWidgets).
     return (
       <input
         ref={this.inputRef}
         type="text"
         inputMode="decimal"
-        value={fieldValueToString({ fieldValue: value, precision })}
+        value={editText ?? fieldValueToString({ fieldValue: value, precision })}
         autoComplete={autoComplete}
         className={cx(className, rank ? `input-${rank}` : null)}
         disabled={disabled}
@@ -104,7 +143,7 @@ export default class CostPrice extends PureComponent {
         onChange={this.handleChange}
         onFocus={this.focus}
         onBlur={this.handleBlur}
-        onKeyDown={onKeyDown}
+        onKeyDown={this.handleKeyDown}
       />
     );
   }
