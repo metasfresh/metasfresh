@@ -70,6 +70,22 @@ const playBeep = () => {
 };
 
 /**
+ * @returns true if the element is a field the user can type in (input, textarea, select or contenteditable)
+ */
+const isEditableElement = (element) => {
+  if (!element) {
+    return false;
+  }
+  const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+  return (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    !!element.isContentEditable
+  );
+};
+
+/**
  * Simple lookup field, part of a composed lookup field (see Lookup.js).
  */
 export class RawLookup extends Component {
@@ -110,7 +126,7 @@ export class RawLookup extends Component {
       this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
     }
     if (initialFocus && !this.inputSearch.value) {
-      this.focus();
+      this.focus({ onlyIfNoOtherFieldFocused: true });
     }
   }
 
@@ -151,7 +167,7 @@ export class RawLookup extends Component {
     }
 
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
-      this.focus();
+      this.focus({ onlyIfNoOtherFieldFocused: true });
       this.setState({ shouldBeFocused: false });
     }
 
@@ -886,11 +902,26 @@ export class RawLookup extends Component {
   /**
    * @method focus
    * @summary this is a method called from a top level component to focus the widget field
+   * @param {boolean} [onlyIfNoOtherFieldFocused] for the automatic focus of a first field (on mount, or when the document
+   *   changes, e.g. a new document gets its id or is reloaded after a websocket "document changed" event): do not take the
+   *   focus from another field the user is already typing in
    */
-  focus = () => {
+  focus = ({ onlyIfNoOtherFieldFocused = false } = {}) => {
     // Because we want to make sure the focus() function is called after the component is rendered and displayed,
     // we just enqueue a request to be executed after this one
-    setTimeout(() => this.inputSearch && this.inputSearch.focus(), 0);
+    setTimeout(() => {
+      if (!this.inputSearch) {
+        return;
+      }
+      if (
+        onlyIfNoOtherFieldFocused &&
+        isEditableElement(document.activeElement) &&
+        document.activeElement !== this.inputSearch
+      ) {
+        return;
+      }
+      this.inputSearch.focus();
+    }, 0);
   };
 
   render() {
