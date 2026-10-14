@@ -123,6 +123,60 @@ public class ShipmentSchedulesAwaiterTest
 	}
 
 	@Test
+	public void aLineWithNothingToDeliverDoesNotBlockTheOthers()
+	{
+		final OrderLineId orderLineId1 = OrderLineId.ofRepoId(10);
+		final OrderLineId orderLineId2 = OrderLineId.ofRepoId(20);
+		createSchedule(orderLineId1, new BigDecimal("10"));
+		createSchedule(orderLineId2, BigDecimal.ZERO);
+
+		final List<I_M_ShipmentSchedule> schedules = awaiter(ImmutableSet.of(orderLineId1, orderLineId2), true, TIMEOUT, sleep -> {}).await();
+
+		assertThat(schedules).hasSize(2);
+		assertThat(sleeps).isEmpty();
+	}
+
+	@Test
+	public void aProcessedScheduleDoesNotCountAsSomethingToDeliver()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);
+		final I_M_ShipmentSchedule schedule = createSchedule(orderLineId, new BigDecimal("10"));
+		schedule.setProcessed(true);
+		saveRecord(schedule);
+
+		assertThatThrownBy(() -> awaiter(ImmutableSet.of(orderLineId), true, Duration.ZERO, sleep -> {}).await())
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("QtyToDeliver");
+	}
+
+	@Test
+	public void theQtyToDeliverOverrideCounts()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);
+		final I_M_ShipmentSchedule schedule = createSchedule(orderLineId, BigDecimal.ZERO);
+		schedule.setQtyToDeliver_Override(new BigDecimal("3"));
+		saveRecord(schedule);
+
+		final List<I_M_ShipmentSchedule> schedules = awaiter(ImmutableSet.of(orderLineId), true, TIMEOUT, sleep -> {}).await();
+
+		assertThat(schedules).hasSize(1);
+		assertThat(sleeps).isEmpty();
+	}
+
+	@Test
+	public void aZeroQtyToDeliverOverrideIsNothingToDeliver()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);
+		final I_M_ShipmentSchedule schedule = createSchedule(orderLineId, new BigDecimal("10"));
+		schedule.setQtyToDeliver_Override(BigDecimal.ZERO);
+		saveRecord(schedule);
+
+		assertThatThrownBy(() -> awaiter(ImmutableSet.of(orderLineId), true, Duration.ZERO, sleep -> {}).await())
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("QtyToDeliver");
+	}
+
+	@Test
 	public void aZeroQtyToDeliverIsFineWhenItIsNotWhatIsShipped()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);

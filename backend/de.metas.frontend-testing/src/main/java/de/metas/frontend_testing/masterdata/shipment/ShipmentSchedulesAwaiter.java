@@ -17,13 +17,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Waits (bounded) until the shipment schedules of a sales order can be shipped: they exist, none is flagged for recompute and, if the QtyToDeliver is what is shipped, every schedule's recomputed QtyToDeliver is committed.
+ * Waits (bounded) until the shipment schedules of a sales order can be shipped: they exist, none is flagged for recompute and, if the QtyToDeliver is what is shipped,
+ * at least one unprocessed schedule has a positive effective QtyToDeliver (i.e. its recompute is committed).
  * <p>
  * Schedules are created and recomputed by async workpackages after the order was completed.
  */
@@ -58,7 +58,7 @@ class ShipmentSchedulesAwaiter
 		this.sleeper = sleeper;
 	}
 
-	public List<I_M_ShipmentSchedule> await()
+	List<I_M_ShipmentSchedule> await()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -102,16 +102,17 @@ class ShipmentSchedulesAwaiter
 
 		// The recompute deletes a schedule's M_ShipmentSchedule_Recompute marker in its own, already committed transaction
 		// (ShipmentScheduleUpdater -> deleteRecomputeMarkersOutOfTrx), while the recomputed QtyToDeliver is committed a moment
-		// later, with the recompute's batch. So a schedule without a marker can still have the QtyToDeliver it was created with.
+		// later, with the recompute's batch. So a schedule without a marker can still have the QtyToDeliver it was created with (0).
+		// We wait for at least one schedule to deliver, not for all: a line may legitimately have nothing to deliver, and shipping
+		// only needs one candidate. The schedules of one order are normally recomputed in the same batch, so they become visible together.
 		if (requirePositiveQtyToDeliver)
 		{
-			final long withoutQtyToDeliver = schedules.stream()
+			final boolean anythingToDeliver = schedules.stream()
 					.filter(schedule -> !schedule.isProcessed())
-					.filter(schedule -> shipmentScheduleEffectiveBL.getQtyToDeliverBD(schedule).signum() <= 0)
-					.count();
-			if (withoutQtyToDeliver > 0)
+					.anyMatch(schedule -> shipmentScheduleEffectiveBL.getQtyToDeliverBD(schedule).signum() > 0);
+			if (!anythingToDeliver)
 			{
-				return withoutQtyToDeliver + " shipment schedules have no QtyToDeliver (yet)";
+				return "no unprocessed shipment schedule has an effective QtyToDeliver > 0 (yet)";
 			}
 		}
 
