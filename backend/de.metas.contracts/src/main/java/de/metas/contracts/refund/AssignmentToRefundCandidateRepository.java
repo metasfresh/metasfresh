@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,11 +18,13 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
@@ -60,6 +63,10 @@ import lombok.Value;
 @Repository
 public class AssignmentToRefundCandidateRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
@@ -71,8 +78,6 @@ public class AssignmentToRefundCandidateRepository
 
 	public List<AssignmentToRefundCandidate> getAssignmentsByAssignableCandidateId(@NonNull final InvoiceCandidateId assignableCandidateId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
 				.addOnlyActiveRecordsFilter()
@@ -96,9 +101,6 @@ public class AssignmentToRefundCandidateRepository
 
 	public AssignmentToRefundCandidate ofRecordOrNull(@NonNull final I_C_Invoice_Candidate_Assignment assignmentRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
-
 		final I_C_Invoice_Candidate refundRecord = load(
 				assignmentRecord.getC_Invoice_Candidate_Term_ID(),
 				I_C_Invoice_Candidate.class);
@@ -109,9 +111,11 @@ public class AssignmentToRefundCandidateRepository
 			return null;
 		}
 
+		// the base is in the currency of the assigned sales, which may differ from the refund's currency (an amount per unit is refunded in the config's currency)
+		final I_C_Invoice_Candidate assignedRecord = load(assignmentRecord.getC_Invoice_Candidate_Assigned_ID(), I_C_Invoice_Candidate.class);
 		final Money baseMoney = Money.of(
 				assignmentRecord.getBaseMoneyAmount(),
-				refundCandidate.get().getMoney().getCurrencyId());
+				CurrencyId.ofRepoId(assignedRecord.getC_Currency_ID()));
 
 		final Money assignedMoney = Money.of(
 				assignmentRecord.getAssignedMoneyAmount(),
@@ -131,6 +135,35 @@ public class AssignmentToRefundCandidateRepository
 				assignedQuantity,
 				assignmentRecord.isAssignedQuantityIncludedInSum());
 		return assignmentToRefundCandidate;
+	}
+
+	/**
+	 * @return {@code true} if the given config has issued a refund: it has an active assignment to a refund candidate that is invoiced, also partly ({@code QtyInvoiced <> 0}).
+	 * A reversed credit memo takes the invoiced quantity back, so the config has then issued no refund.
+	 */
+	public boolean hasInvoicedRefund(@NonNull final RefundConfigId refundConfigId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Flatrate_RefundConfig_ID, refundConfigId)
+				.andCollect(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Invoice_Candidate_Term_ID, I_C_Invoice_Candidate.class)
+				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced) // the column has no default
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
+	}
+
+	/** @return the sales that are assigned to the given refund candidate */
+	public ImmutableSet<InvoiceCandidateId> getAssignedCandidateIds(@NonNull final InvoiceCandidateId refundCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Invoice_Candidate_Term_ID, refundCandidateId)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate_Assignment.COLUMNNAME_C_Invoice_Candidate_Assigned_ID, Integer.class)
+				.stream()
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public AssignmentToRefundCandidate save(@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
@@ -155,8 +188,6 @@ public class AssignmentToRefundCandidateRepository
 
 	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_C_Invoice_Candidate_Assignment> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class);
 

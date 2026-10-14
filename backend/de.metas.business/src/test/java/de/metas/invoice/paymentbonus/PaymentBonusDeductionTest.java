@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -121,5 +122,114 @@ class PaymentBonusDeductionTest
 
 		final PaymentBonusDeduction tiny = deduction.withGrossAmount(Money.of(new BigDecimal("0.03"), EUR));
 		assertThat(tiny.getGrossAmount().subtract(Money.of(new BigDecimal("0.03"), EUR)).abs().toBigDecimal()).isLessThanOrEqualTo(new BigDecimal("0.01"));
+	}
+
+	private static Money eur(final String amount)
+	{
+		return Money.of(new BigDecimal(amount), EUR);
+	}
+
+	private static BigDecimal grossOf(final Optional<PaymentBonusDeduction> deduction)
+	{
+		return deduction.map(PaymentBonusDeduction::getGrossAmount).map(Money::toBigDecimal).orElse(BigDecimal.ZERO);
+	}
+
+	/** A limit at or above the deduction's own gross amount gives the deduction itself, never more. */
+	@Test
+	void withLargestReachableGrossAmountNotAbove_limitAboveTheDeduction_deductionItself()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+
+		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("20.00"))).containsSame(deduction);
+		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("11.90"))).containsSame(deduction);
+	}
+
+	/** A reachable limit is reached exactly, e.g. a 2.78 bonus capped to the 0.22 or 1.50 that a payment leaves open. */
+	@Test
+	void withLargestReachableGrossAmountNotAbove_reachableLimit_limit()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60")); // gross 2.78
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountNotAbove(eur("0.22")))).isEqualByComparingTo("0.22");
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountNotAbove(eur("1.50")))).isEqualByComparingTo("1.50");
+	}
+
+	/** {@link PaymentBonusDeduction#withGrossAmount(Money)} overshoots 0.03 to 0.04 (19 % VAT); the largest reachable amount not above 0.03 is 0.02. */
+	@Test
+	void withLargestReachableGrossAmountNotAbove_overshootingLimit_nextLowerReachable()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+		assertThat(deduction.withGrossAmount(eur("0.03")).getGrossAmount().toBigDecimal()).isEqualByComparingTo("0.04"); // precondition: the overshoot
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountNotAbove(eur("0.03")))).isEqualByComparingTo("0.02");
+	}
+
+	/**
+	 * With lines of two taxes, the gross amount that a scaling reached is not always reached again when scaling the original deduction to it:
+	 * here 6.72 is reached by asking for 6.73, but asking for 6.72 gives 6.73. So the scaled deduction itself is returned, never only its gross amount.
+	 */
+	@Test
+	void withLargestReachableGrossAmountNotAbove_twoTaxes_returnsTheScaledDeductionThatStaysBelowTheLimit()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "10.40"), line(2, TAX_19, "1.60")); // gross 11.13 + 1.90 = 13.03
+		assertThat(deduction.withGrossAmount(eur("6.72")).getGrossAmount().toBigDecimal()).isEqualByComparingTo("6.73"); // precondition: scaling again to 6.72 would overshoot
+
+		final PaymentBonusDeduction capped = deduction.withLargestReachableGrossAmountNotAbove(eur("6.72")).orElseThrow(AssertionError::new);
+
+		assertThat(capped.getGrossAmount().toBigDecimal()).isEqualByComparingTo("6.72");
+		assertThat(capped.getLines()).hasSize(2);
+	}
+
+	@Test
+	void withLargestReachableGrossAmountNotAbove_limitNotPositive_empty()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60"));
+
+		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("0"))).isEmpty();
+		assertThat(deduction.withLargestReachableGrossAmountNotAbove(eur("-1.00"))).isEmpty();
+	}
+
+	/** Unlike {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)}, an amount above the deduction's own gross amount scales the deduction up: the customer deducted more than computed. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_amountAboveTheDeduction_scaledUp()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60")); // gross 2.78
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("3.00")))).isEqualByComparingTo("3.00");
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("2.78"))).containsSame(deduction);
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("1.50")))).isEqualByComparingTo("1.50");
+	}
+
+	/** {@link PaymentBonusDeduction#withGrossAmount(Money)} overshoots 0.03 to 0.04 (19 % VAT); so the cent-down gives 0.02, also above the deduction: 11.93 overshoots to 11.94 and gives 11.92. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_overshootingAmount_nextLowerReachable()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_19, "10.00")); // gross 11.90
+		assertThat(deduction.withGrossAmount(eur("11.93")).getGrossAmount().toBigDecimal()).isEqualByComparingTo("11.94"); // precondition: the overshoot
+
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("0.03")))).isEqualByComparingTo("0.02");
+		assertThat(grossOf(deduction.withLargestReachableGrossAmountUpTo(eur("11.93")))).isEqualByComparingTo("11.92");
+	}
+
+	/** With lines of two taxes, an amount above the deduction is reached by scaling all lines up, keeping both taxes. */
+	@Test
+	void withLargestReachableGrossAmountUpTo_twoTaxes_scaledUp()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "10.40"), line(2, TAX_19, "1.60")); // gross 11.13 + 1.90 = 13.03
+
+		final PaymentBonusDeduction scaled = deduction.withLargestReachableGrossAmountUpTo(eur("20.00")).orElseThrow(AssertionError::new);
+
+		assertThat(scaled.getGrossAmount().toBigDecimal()).isLessThanOrEqualTo(new BigDecimal("20.00")).isGreaterThanOrEqualTo(new BigDecimal("19.99"));
+		assertThat(scaled.getLines()).hasSize(2);
+		assertThat(scaled.getNetAmount().toBigDecimal()).isGreaterThan(deduction.getNetAmount().toBigDecimal());
+	}
+
+	@Test
+	void withLargestReachableGrossAmountUpTo_amountNotPositive_empty()
+	{
+		final PaymentBonusDeduction deduction = deduction(line(1, TAX_7, "2.60"));
+
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("0"))).isEmpty();
+		assertThat(deduction.withLargestReachableGrossAmountUpTo(eur("-1.00"))).isEmpty();
 	}
 }

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
@@ -15,6 +16,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -27,10 +29,12 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -69,6 +73,8 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 @Repository
 public class RefundInvoiceCandidateRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@VisibleForTesting
 	@Getter
 	private final RefundContractRepository refundContractRepository;
@@ -181,9 +187,7 @@ public class RefundInvoiceCandidateRepository
 		final RefundContract refundContract = query.getRefundContract();
 		final LocalDate invoicableFrom = query.getInvoicableFrom();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services
-				.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class);
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class);
 
 		if (invoicableFrom.isBefore(refundContract.getStartDate()) || invoicableFrom.isAfter(refundContract.getEndDate()))
 		{
@@ -200,6 +204,7 @@ public class RefundInvoiceCandidateRepository
 				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
 		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+		queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
 
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
@@ -216,12 +221,54 @@ public class RefundInvoiceCandidateRepository
 				.create();
 	}
 
+	/**
+	 * @return the refund candidates of the given contract, of all its periods, that have issued no refund yet: not processed and not invoiced, also not partly
+	 * (the same notion as {@link AssignmentToRefundCandidateRepository#hasInvoicedRefund})
+	 */
+	public ImmutableList<InvoiceCandidateId> getOpenRefundCandidateIds(@NonNull final FlatrateTermId contractId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, contractId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.filter(queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+						.setJoinOr()
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, null)
+						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, BigDecimal.ZERO))
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.listIds(InvoiceCandidateId::ofRepoId);
+	}
+
+	/** Deletes the given refund candidate; its assignments are removed by the caller (or by the invoice candidate's delete interceptor). */
+	public void delete(@NonNull final InvoiceCandidateId refundCandidateId)
+	{
+		InterfaceWrapperHelper.delete(load(refundCandidateId, I_C_Invoice_Candidate.class));
+	}
+
+	/**
+	 * The sales or purchase invoice candidates of the contract's partner, from the start of the current open period (not before the contract's start) to the contract's end.
+	 */
+	public IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesOfCurrentPeriodQuery(
+			@NonNull final RefundContract refundContract,
+			@NonNull final LocalDate today)
+	{
+		// only the current open period is picked up retroactively; the periods before it get no refund
+		final LocalDate firstDay = refundContract.computeCurrentPeriodStart(today);
+
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, refundContract.getBPartnerId())
+				.filter(createDateToInvoiceEffectiveFilter(asTimestamp(firstDay), asTimestamp(refundContract.getEndDate())))
+				.create();
+	}
+
 	public IQueryFilter<I_C_Invoice_Candidate> createDateToInvoiceEffectiveFilter(
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryFilter<I_C_Invoice_Candidate> normalFilter = queryBL
 				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_DateToInvoice_Override, null)
@@ -301,13 +348,19 @@ public class RefundInvoiceCandidateRepository
 		@NonNull
 		SOTrx soTrx;
 
-		@Builder
+		/** Only the refund candidates in the currency of the sales match. */
+		@NonNull
+		CurrencyId currencyId;
+
+		@Builder(toBuilder = true)
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
 				@NonNull final LocalDate invoicableFrom,
-				@NonNull final SOTrx soTrx)
+				@NonNull final SOTrx soTrx,
+				@NonNull final CurrencyId currencyId)
 		{
 			this.soTrx = soTrx;
+			this.currencyId = currencyId;
 			this.refundContract = refundContract;
 			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}

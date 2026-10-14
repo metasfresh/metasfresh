@@ -338,7 +338,7 @@ export class SalesOrderPage {
     return await test.step(`SalesOrderPage - Submit quick-entry line qty ${quantity}`, async () => {
       const page = getPage();
 
-      await page.getByRole('spinbutton').fill(quantity.toString());
+      await page.locator('.quick-input-container input[inputmode="decimal"]').fill(quantity.toString());
       await page.keyboard.press('Enter');
       await page.waitForTimeout(500);
 

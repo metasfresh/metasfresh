@@ -335,9 +335,17 @@ public class RefundTestTools
 
 	public AssignableInvoiceCandidate createAssignableCandidateStandlone(@NonNull final BigDecimal quantityAsBigDecimal)
 	{
-		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord(quantityAsBigDecimal);
+		return createAssignableCandidateStandlone(quantityAsBigDecimal, getCurrencyId());
+	}
 
-		final Money money = Money.of(TEN, getCurrencyId());
+	/** A sale of the given quantity, worth 10 in the given currency. */
+	public AssignableInvoiceCandidate createAssignableCandidateStandlone(@NonNull final BigDecimal quantityAsBigDecimal, @NonNull final CurrencyId currencyId)
+	{
+		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord(quantityAsBigDecimal);
+		invoiceCandidateRecord.setC_Currency_ID(currencyId.getRepoId());
+		saveRecord(invoiceCandidateRecord);
+
+		final Money money = Money.of(TEN, currencyId);
 
 		return AssignableInvoiceCandidate
 				.builder()

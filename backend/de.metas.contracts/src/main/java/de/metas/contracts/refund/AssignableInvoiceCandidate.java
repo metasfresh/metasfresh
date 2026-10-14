@@ -13,6 +13,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -124,6 +125,11 @@ public class AssignableInvoiceCandidate
 		return toBuilder()
 				.clearAssignmentsToRefundCandidates()
 				.build();
+	}
+
+	public CurrencyId getCurrencyId()
+	{
+		return money.getCurrencyId();
 	}
 
 	public boolean isAssigned()

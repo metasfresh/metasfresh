@@ -56,6 +56,11 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -71,12 +76,14 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -119,12 +126,18 @@ public class C_Flatrate_Term_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 	/**
 	 * The {@code AD_Process} (class {@code C_Flatrate_Term_Extend_And_Notify_User}, not bound to a table) that the scheduler runs.
 	 * The same class also backs the manual, record-bound "extend contract" process.
 	 */
 	private static final String SCHEDULED_CONTRACT_EXTENSION_PROCESS_VALUE = "C_Flatrate_Term_ProcessNoticeDates";
+
+	/**
+	 * The {@code AD_Process} that the scheduler runs daily to update the contract status of completed compensation-group contracts.
+	 */
+	private static final String COMPENSATION_GROUP_CONTRACT_STATUS_UPDATE_PROCESS_VALUE = "C_Flatrate_Term_CompensationGroup_UpdateContractStatus";
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -605,6 +618,74 @@ public class C_Flatrate_Term_StepDef
 				.create()
 				.listIds();
 		assertThat(otherTermIds).as("Other C_Flatrate_Terms of the same invoice partner and conditions").isEmpty();
+	}
+
+	/**
+	 * Asserts the contract status and the contract dates of the given term, freshly loaded.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ContractStatus</b> — (optional) expected contract status code (e.g. {@code Wa}, {@code Ru}, {@code Ec}, {@code Qu})<br>
+	 *   <b>DateContracted</b> — (optional) expected contract date<br>
+	 *   <b>MasterStartDate</b> — (optional) expected master start date<br>
+	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 has the contract status and dates:
+	 *   | ContractStatus | DateContracted | MasterStartDate |
+	 *   | Wa             | 2026-07-01     | 2026-08-01      |
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) has the contract status and dates:$")
+	public void the_C_Flatrate_Term_has_contract_status_and_dates(@NonNull final String identifier, @NonNull final DataTable dataTable)
+	{
+		final I_C_Flatrate_Term term = loadFresh(identifier);
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		row.getAsOptionalString(I_C_Flatrate_Term.COLUMNNAME_ContractStatus)
+				.ifPresent(contractStatus -> assertThat(term.getContractStatus()).as("ContractStatus of C_Flatrate_Term %s", identifier).isEqualTo(contractStatus));
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_DateContracted)
+				.ifPresent(dateContracted -> assertThat(TimeUtil.asLocalDate(term.getDateContracted())).as("DateContracted of C_Flatrate_Term %s", identifier).isEqualTo(dateContracted));
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate)
+				.ifPresent(masterStartDate -> assertThat(TimeUtil.asLocalDate(term.getMasterStartDate())).as("MasterStartDate of C_Flatrate_Term %s", identifier).isEqualTo(masterStartDate));
+	}
+
+	/**
+	 * Runs the daily contract status update of compensation-group contracts (process
+	 * {@code C_Flatrate_Term_CompensationGroup_UpdateContractStatus}) the way its scheduler does: without a record selection,
+	 * in the context of the standard client and the logged-in user's WebUI role. It updates every completed compensation-group
+	 * term of that client, as in production. The step fails if the process fails.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the daily contract status update of compensation-group contracts runs
+	 * </pre>
+	 */
+	@And("^the daily contract status update of compensation-group contracts runs$")
+	public void the_daily_contract_status_update_of_compensation_group_contracts_runs()
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(COMPENSATION_GROUP_CONTRACT_STATUS_UPDATE_PROCESS_VALUE);
+
+		// the default cucumber ctx (System client/role) would match no terms of the standard client
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(role -> "WebUI".equals(role.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(StepDefConstants.CLIENT_ID)
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
 	}
 
 	private I_C_Flatrate_Term loadFresh(@NonNull final String identifier)

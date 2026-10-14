@@ -44,7 +44,7 @@ export const addLineViaBatchEntry = async ({ tabId, product, quantity }) => {
   const productPatch = await productPatched;
   expect(productPatch.ok(), `Batch entry: setting product "${product}" returned ${productPatch.status()}`).toBe(true);
 
-  const quantityInput = quickInput.getByRole('spinbutton');
+  const quantityInput = quickInput.locator('input[inputmode="decimal"]'); // the quantity is a text input with inputmode=decimal, not a number input
   await quantityInput.click();
   await quantityInput.fill(String(quantity));
 

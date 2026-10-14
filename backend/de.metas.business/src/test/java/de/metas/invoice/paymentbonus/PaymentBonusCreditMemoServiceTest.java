@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -87,6 +88,47 @@ class PaymentBonusCreditMemoServiceTest
 		assertThatThrownBy(() -> generateCreditMemo(deduction(EUR)))
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentBonusCreditMemoService.MSG_NO_PAYMENT_BONUS_CREDIT_MEMO_DOC_TYPE.toAD_Message()));
+	}
+
+	/** Only a payment bonus credit memo is reversed with the payment; any other document (e.g. the sales invoice itself) is refused and stays as it is. */
+	@Test
+	void reverseCreditMemoIfNotReversed_notAPaymentBonusCreditMemo_fails()
+	{
+		final I_C_DocType salesInvoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
+		saveRecord(salesInvoiceDocType);
+		salesInvoice.setC_DocType_ID(salesInvoiceDocType.getC_DocType_ID());
+		saveRecord(salesInvoice);
+
+		assertThatThrownBy(() -> service.reverseCreditMemoIfNotReversed(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID())))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("is not a payment bonus credit memo");
+		refresh(salesInvoice);
+		assertThat(salesInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	/** An invoice without a document type is not a payment bonus credit memo either. */
+	@Test
+	void reverseCreditMemoIfNotReversed_noDocType_fails()
+	{
+		assertThatThrownBy(() -> service.reverseCreditMemoIfNotReversed(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID())))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("is not a payment bonus credit memo");
+		refresh(salesInvoice);
+		assertThat(salesInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	/** A payment bonus credit memo that is already reversed is left as it is. */
+	@Test
+	void reverseCreditMemoIfNotReversed_alreadyReversed_nothingToDo()
+	{
+		final I_C_Invoice creditMemo = newInstance(I_C_Invoice.class);
+		creditMemo.setC_DocType_ID(createPaymentBonusCreditMemoDocType().getC_DocType_ID());
+		creditMemo.setDocStatus(DocStatus.Reversed.getCode());
+		saveRecord(creditMemo);
+
+		service.reverseCreditMemoIfNotReversed(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID()));
+
+		assertThat(creditMemo.getDocStatus()).isEqualTo(DocStatus.Reversed.getCode());
 	}
 
 	@Test

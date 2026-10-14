@@ -38,16 +38,21 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.refund.paymentdeduction.PaymentBonusDeductionService;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
-import de.metas.document.engine.DocStatus;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
@@ -58,6 +63,7 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingService
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
@@ -78,10 +84,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -91,6 +95,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
@@ -108,6 +113,11 @@ public class AllocatePayments_StepDef
 {
 	private static final String WRITE_OFF_PROCESS = "WRITEOFF";
 	private static final String DISCOUNT_PROCESS = "DISCOUNT";
+	private static final DocBaseAndSubType PAYMENT_BONUS_CREDIT_MEMO = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
+	/**
+	 * Same message as the WebUI payment allocation ({@code PaymentsViewAllocateCommand}), which is not on this module's classpath.
+	 */
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
@@ -119,6 +129,8 @@ public class AllocatePayments_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
@@ -171,6 +183,26 @@ public class AllocatePayments_StepDef
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
 	{
+		allocatePaymentsToInvoices(table);
+	}
+
+	/**
+	 * Same as {@code allocate payments to invoices}, but asserts that the allocation is refused with the given {@code AD_Message.ErrorCode}
+	 * e.g. when the payment's partner is not configured as invoice-processing service company.
+	 * <pre>
+	 * When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG:
+	 *   | C_Invoice_ID | C_Payment_ID |
+	 *   | inv1         | pay1         |
+	 * </pre>
+	 */
+	@And("^allocate payments to invoices expecting error code (.*):$")
+	public void allocate_payment_to_invoice_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable table)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> allocatePaymentsToInvoices(table));
+	}
+
+	private void allocatePaymentsToInvoices(@NonNull final DataTable table)
+	{
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
@@ -206,8 +238,63 @@ public class AllocatePayments_StepDef
 	}
 
 	/**
+	 * Asserts that no service fee invoice (i.e. no purchase invoice referencing the sales invoice, in any document status) was created for the row's invoice.
+	 * <pre>
+	 * And there is no service fee invoice for invoice
+	 *   | C_Invoice_ID |
+	 *   | inv1         |
+	 * </pre>
+	 */
+	@And("there is no service fee invoice for invoice")
+	public void noServiceFeeInvoice(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+			final List<I_C_Invoice> serviceFeeInvoices = queryBL.createQueryBuilder(I_C_Invoice.class)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, false)
+					.create()
+					.list();
+			assertThat(serviceFeeInvoices).as("service fee invoices of C_Invoice_ID=%s", invoiceId.getRepoId()).isEmpty();
+		});
+	}
+
+	/**
+	 * Asserts that no completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice.
+	 * <pre>
+	 * And there is no payment bonus credit memo for invoice invoice
+	 * </pre>
+	 */
+	@And("^there is no payment bonus credit memo for invoice (.*)$")
+	public void noPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.isEmpty();
+	}
+
+	/**
+	 * Asserts that exactly one completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice, and that it is the one registered under {@code creditMemoIdentifier}:
+	 * the payment bonus of an invoice is booked once.
+	 * <pre>
+	 * And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+	 * </pre>
+	 */
+	@And("^the only payment bonus credit memo for invoice (.*) is (.*)$")
+	public void onlyPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier, @NonNull final String creditMemoIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		final InvoiceId expectedCreditMemoId = invoiceTable.getId(StepDefDataIdentifier.ofString(creditMemoIdentifier));
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.extracting(I_C_Invoice::getC_Invoice_ID)
+				.containsExactly(expectedCreditMemoId.getRepoId());
+	}
+
+	/**
 	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
-	 * There has to be exactly one completed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
+	 * There has to be exactly one completed or closed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
 	 */
 	private void updatePaymentBonusCreditMemoIdentifier(@NonNull final DataTableRow row)
 	{
@@ -218,17 +305,7 @@ public class AllocatePayments_StepDef
 		}
 
 		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
-		final List<I_C_Invoice> creditMemos = queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
-				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID,
-						I_C_DocType.COLUMNNAME_C_DocType_ID,
-						queryBL.createQueryBuilder(I_C_DocType.class)
-								.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_ARCreditMemo)
-								.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo)
-								.create())
-				.create()
-				.list();
+		final List<? extends I_C_Invoice> creditMemos = retrievePaymentBonusCreditMemos(invoiceId);
 
 		if (creditMemoIdentifier.isNullPlaceholder())
 		{
@@ -238,6 +315,14 @@ public class AllocatePayments_StepDef
 
 		assertThat(creditMemos).as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId()).hasSize(1);
 		invoiceTable.putOrReplace(creditMemoIdentifier, creditMemos.get(0));
+	}
+
+	/**
+	 * @return the completed or closed payment bonus credit memos („Zahlungsbonus-Gutschrift“) that reference the given sales invoice
+	 */
+	private List<? extends I_C_Invoice> retrievePaymentBonusCreditMemos(@NonNull final InvoiceId salesInvoiceId)
+	{
+		return invoiceDAO.retrieveReferencingCompletedInvoices(salesInvoiceId, PAYMENT_BONUS_CREDIT_MEMO);
 	}
 
 	/**
@@ -538,7 +623,15 @@ public class AllocatePayments_StepDef
 						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())
 						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
 						.build())
-				.orElseThrow(() -> new AdempiereException("Cannot find service company " + serviceCompanyBPartnerId + " for customer " + invoiceToAllocate.getBpartnerId())));
+				// mirrors PaymentsViewAllocateCommand.java:193-199 (pinned by PaymentsViewAllocateCommandTest:685-705)
+				.orElseThrow(() -> new AdempiereException(
+						MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
+						invoiceToAllocate.getDocumentNo(),
+						paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
+						bpartnerBL.getBPartnerName(serviceCompanyBPartnerId))
+						.markAsUserValidationError()
+						.setParameter("C_Invoice_ID", invoiceToAllocate.getInvoiceId().getRepoId())
+						.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId())));
 	}
 
 	@NonNull

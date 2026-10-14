@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -154,6 +155,17 @@ public class RefundConfig
 
 		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
 				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
+	}
+
+	public boolean isAmountPerUnit()
+	{
+		return RefundBase.AMOUNT_PER_UNIT.equals(refundBase);
+	}
+
+	/** The currency of the amount per unit, which is also the currency that this config's refund is issued in. */
+	public CurrencyId getAmountCurrencyId()
+	{
+		return Check.assumeNotNull(amount, "Only a config with an amount per unit has a currency; this={}", this).getCurrencyId();
 	}
 
 	public boolean isZeroConfig()

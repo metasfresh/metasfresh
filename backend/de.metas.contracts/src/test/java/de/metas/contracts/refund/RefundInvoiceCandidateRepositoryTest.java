@@ -26,6 +26,8 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -128,6 +130,7 @@ public class RefundInvoiceCandidateRepositoryTest
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(refundCandidate.getInvoiceableFrom())
 				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test
@@ -151,12 +154,26 @@ public class RefundInvoiceCandidateRepositoryTest
 		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.PURCHASE))).isEmpty();
 	}
 
+	/**
+	 * A refund candidate keeps the currency of its sales: the refund of sales in another currency is another candidate.
+	 */
+	@Test
+	public void getRefundInvoiceCandidates_respectsCurrency()
+	{
+		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES))).hasSize(1);
+		assertThat(refundInvoiceCandidateRepository.getRefundInvoiceCandidates(queryOf(refundCandidate, SOTrx.SALES).toBuilder().currencyId(chf).build())).isEmpty();
+	}
+
 	private static RefundInvoiceCandidateQuery queryOf(final RefundInvoiceCandidate refundCandidate, @NonNull final SOTrx soTrx)
 	{
 		return RefundInvoiceCandidateQuery.builder()
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(refundCandidate.getInvoiceableFrom())
 				.soTrx(soTrx)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 	}
 
@@ -173,6 +190,7 @@ public class RefundInvoiceCandidateRepositoryTest
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
 				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test
@@ -195,6 +213,7 @@ public class RefundInvoiceCandidateRepositoryTest
 				.refundContract(refundCandidate.getRefundContract())
 				.invoicableFrom(earlierInvoiceableFrom)
 				.soTrx(SOTrx.SALES)
+				.currencyId(refundCandidate.getMoney().getCurrencyId())
 				.build();
 
 		// invoke the method under test

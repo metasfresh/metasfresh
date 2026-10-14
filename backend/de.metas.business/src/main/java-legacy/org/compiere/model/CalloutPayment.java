@@ -19,11 +19,14 @@ package org.compiere.model;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
@@ -45,6 +48,8 @@ import java.sql.Timestamp;
 public class CalloutPayment extends CalloutEngine
 {
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	// looked up when needed, because CalloutPayment is not a Spring bean and can be used before the application context is complete
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Payment_Invoice. when Invoice selected - set C_Currency_ID -
@@ -73,6 +78,7 @@ public class CalloutPayment extends CalloutEngine
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setIsOverUnderPayment(false);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
+		payment.setPaymentBonusAmt(BigDecimal.ZERO);
 		int C_InvoicePaySchedule_ID = 0;
 		if (calloutField.getTabInfoContextAsInt("C_Invoice_ID") == invoice.getC_Invoice_ID()
 				&& calloutField.getTabInfoContextAsInt("C_InvoicePaySchedule_ID") > 0)
@@ -140,6 +146,11 @@ public class CalloutPayment extends CalloutEngine
 				//
 				payment.setPayAmt(payAmt);
 				payment.setDiscountAmt(DiscountAmt);
+				// a PayAmt taken from a payment schedule is not the whole invoice's open amount, which the pre-fill would set; so no bonus there, as before
+				if (C_InvoicePaySchedule_ID <= 0)
+				{
+					paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
+				}
 			}
 		}
 		catch (SQLException e)

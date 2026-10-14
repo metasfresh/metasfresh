@@ -3,6 +3,7 @@ package de.metas.contracts.compensationGroup.contract;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
@@ -36,6 +37,13 @@ public class ContractServiceFeeTakeOverService
 						new MoneyService(new CurrencyRepository()))));
 	}
 
+	/** The service company of the given config record, whether or not the record is active. */
+	@NonNull
+	public BPartnerId getServiceCompanyBPartnerId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		return invoiceProcessingServiceCompanyService.getServiceCompanyBPartnerIdByConfigId(configId);
+	}
+
 	/**
 	 * @return the fee percent of the active assignment valid at {@code soDate}; {@link Percent#ZERO} if there is none. Never {@code null}.
 	 * The doc type is deliberately {@code null}: only the assignment without a doc type is considered.
@@ -57,7 +65,7 @@ public class ContractServiceFeeTakeOverService
 		// doc type deliberately null: resolve the customer's doc-type-null default fee assignment (see method Javadoc)
 		return invoiceProcessingServiceCompanyService.getByCustomerId(invoicePartnerId, soDate)
 				.flatMap(config -> config.getFeePercentageOfGrandTotalByBpartner(invoicePartnerId, null)
-						.map(percent -> ContractServiceFee.of(percent, config.getServiceFeeProductId())))
+						.map(percent -> ContractServiceFee.of(percent, config.getServiceFeeProductId(), config.getServiceCompanyBPartnerId())))
 				.orElse(ContractServiceFee.ZERO);
 	}
 }

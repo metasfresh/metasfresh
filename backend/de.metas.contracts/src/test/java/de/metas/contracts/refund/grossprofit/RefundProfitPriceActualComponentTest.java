@@ -16,6 +16,7 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.money.CurrencyId;
@@ -140,6 +141,54 @@ public class RefundProfitPriceActualComponentTest
 		assertThat(applyToInput(Money.of(100, currencyId), CRATE_PI).toBigDecimal()).isEqualByComparingTo("90");
 		assertThat(applyToInput(Money.of(100, currencyId), PI_WITHOUT_PACKING_MATERIAL).toBigDecimal()).isEqualByComparingTo("90");
 		assertThat(applyToInput(Money.of(100, currencyId), (HUPIItemProductId)null).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
+	@Test
+	public void applyToInput_subtractsTheAmountPerUnit()
+	{
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), currencyId);
+
+		assertThat(applyToInput(Money.of(100, currencyId)).toBigDecimal()).isEqualByComparingTo("98");
+	}
+
+	/**
+	 * An amount per unit in another currency than the order line is converted to the order line's currency at the date of the price calculation:
+	 * 100 EUR - 10% - 2 CHF at 1.10 EUR/CHF = 87.80 EUR.
+	 */
+	@Test
+	public void applyToInput_convertsTheAmountPerUnitInAnotherCurrency()
+	{
+		final CurrencyId chf = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId();
+		((PlainCurrencyDAO)Services.get(ICurrencyDAO.class)).setRate(chf, currencyId, new BigDecimal("1.10"));
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), chf);
+
+		final Money result = applyToInput(Money.of(100, currencyId));
+
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("87.80");
+	}
+
+	/**
+	 * Without a conversion rate, the amount per unit in another currency is left out of the profit price, instead of failing the order line.
+	 */
+	@Test
+	public void applyToInput_amountPerUnitInAnotherCurrencyWithoutRate_isLeftOut()
+	{
+		createTermWithPercentageConfig(new BigDecimal("10"), true);
+		createTermWithAmountPerUnitConfig(new BigDecimal("2"), PlainCurrencyDAO.createCurrency(CurrencyCode.CHF).getId());
+
+		assertThat(applyToInput(Money.of(100, currencyId)).toBigDecimal()).isEqualByComparingTo("90");
+	}
+
+	private void createTermWithAmountPerUnitConfig(@NonNull final BigDecimal amount, @NonNull final CurrencyId amountCurrencyId)
+	{
+		final I_C_Flatrate_RefundConfig config = retrieveConfig(createTermWithPercentageConfig(BPARTNER_ID, BigDecimal.ONE, true));
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+		config.setRefundPercent(null);
+		config.setRefundAmt(amount);
+		config.setC_Currency_ID(amountCurrencyId.getRepoId());
+		saveRecord(config);
 	}
 
 	private static I_C_Flatrate_RefundConfig retrieveConfig(@NonNull final ConditionsId conditionsId)

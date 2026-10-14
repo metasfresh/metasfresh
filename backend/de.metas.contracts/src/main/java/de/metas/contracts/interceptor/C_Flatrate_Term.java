@@ -256,10 +256,11 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				final I_C_Period firstPeriodOfTerm = periodsOfTerm.get(0);
+				if (firstPeriodOfTerm.getStartDate().after(term.getStartDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-											new Object[] { term.getStartDate(), invoicingCal.getName() }));
+											new Object[] { firstPeriodOfTerm.getStartDate(), invoicingCal.getName() }));
 				}
 				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
 				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))

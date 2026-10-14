@@ -67,6 +67,7 @@ Feature: service company fee at payment allocation
       | config1                            | customer1     | 2.6                       |
       | config2                            | customer2     | 1.5                       |
 
+# ######################################################################################################################
   @from:cucumber
   @allure.label.epic:E0220_Financial
   @allure.label.feature:F01200
@@ -109,3 +110,72 @@ Feature: service company fee at payment allocation
       # ----------------------------------------------------------------------------------
       | B_UnallocatedCash_Acct | 97.40 EUR   |             | serviceCompany1 | alloc_payment |
       | C_Receivable_Acct      |             | 97.40 EUR   | customer1       | alloc_payment |
+
+# ######################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0220_Financial
+  @allure.label.feature:F01200
+  Scenario: a payment whose partner is not a service company is refused for an invoice with service fee
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_2      | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invl_2     | inv_2        | goodsProduct | 1 PCE       |
+    And the invoice identified by inv_2 is completed
+    # the customer pays the full invoice itself, i.e. not via its service company
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment_2  | customer1     | 100.00 EUR | true      | org_EUR_account     |
+    And the payment identified by payment_2 is completed
+
+    When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG:
+      | C_Invoice_ID | C_Payment_ID |
+      | inv_2        | payment_2    |
+
+    Then validate created invoices
+      | C_Invoice_ID | C_BPartner_ID | GrandTotal | DocBaseType | IsPaid |
+      | inv_2        | customer1     | 100.00 EUR | ARI         | false  |
+    And validate payments
+      | C_Payment_ID | IsAllocated |
+      | payment_2    | false       |
+    # neither the payment nor a service fee invoice is allocated against the invoice
+    And there are no allocation lines for invoice
+      | C_Invoice_ID |
+      | inv_2        |
+
+# ######################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0220_Financial
+  @allure.label.feature:F01200
+  Scenario: a service company paying an invoice of a customer assigned to another service company is refused
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_3      | customer2     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invl_3     | inv_3        | goodsProduct | 1 PCE       |
+    And the invoice identified by inv_3 is completed
+    # customer2 is assigned to serviceCompany2 (fee 1.5% = 1.50), but serviceCompany1 pays its invoice
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID   | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | payment_3  | serviceCompany1 | 98.50 EUR | true      | org_EUR_account     |
+    And the payment identified by payment_3 is completed
+
+    When allocate payments to invoices expecting error code SERVICE_FEE_CUSTOMER_NOT_ASSIGNED:
+      | C_Invoice_ID | C_Payment_ID |
+      | inv_3        | payment_3    |
+
+    Then validate created invoices
+      | C_Invoice_ID | C_BPartner_ID | GrandTotal | DocBaseType | IsPaid |
+      | inv_3        | customer2     | 100.00 EUR | ARI         | false  |
+    And validate payments
+      | C_Payment_ID | IsAllocated |
+      | payment_3    | false       |
+    # neither the payment nor a service fee is allocated against the invoice, and serviceCompany1 is not billed a service fee
+    And there are no allocation lines for invoice
+      | C_Invoice_ID |
+      | inv_3        |
+    And there is no service fee invoice for invoice
+      | C_Invoice_ID |
+      | inv_3        |

@@ -24,27 +24,26 @@ package de.metas.cucumber.stepdefs.doctype;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
@@ -65,14 +64,32 @@ public class C_DocType_StepDef
 		this.docTypeTable = docTypeTable;
 	}
 
+	/**
+	 * {@code C_DocType_ID} -> the {@code IsActive} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreIsActive()} can put it back.
+	 */
+	private final Map<Integer, Boolean> isActiveBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * Updates existing {@code C_DocType}s that were registered before, e.g. with {@code load C_DocType:}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_DocType_ID</b> — (required) identifier of the doc type<br>
+	 *   <b>C_DocTypeInvoice_ID</b> — (optional) identifier of the doc type's invoice doc type; {@code null} removes it<br>
+	 *   <b>C_DocType_Invoicing_Pool_ID</b> — (optional) identifier of the doc type's invoicing pool; {@code null} removes it<br>
+	 *   <b>IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData, C_DocType_Invoicing_Pool_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_DocType:
+	 *   | C_DocType_ID        | IsActive |
+	 *   | paymentBonusDocType | false    |
+	 * </pre>
+	 */
 	@And("update C_DocType:")
 	public void update_C_DocType(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateDocType(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateDocType);
 	}
 
 	/**
@@ -119,51 +136,48 @@ public class C_DocType_StepDef
 		tableRow.getAsIdentifier(COLUMNNAME_C_DocType_ID).put(docTypeTable, docTypeRecord);
 	}
 
-	private void updateDocType(@NonNull final Map<String, String> tableRow)
+	private void updateDocType(@NonNull final DataTableRow tableRow)
 	{
-		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-		assertThat(docTypeRecord).isNotNull();
+		final StepDefDataIdentifier docTypeIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_DocType_ID);
+		final I_C_DocType docTypeRecord = docTypeIdentifier.lookupNotNullIn(docTypeTable);
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_DocTypeInvoice_ID)
+				.ifPresent(invoiceDocTypeIdentifier -> {
+					final I_C_DocType invoiceDocTypeRecord = invoiceDocTypeIdentifier.lookupIn(docTypeTable);
+					docTypeRecord.setC_DocTypeInvoice_ID(invoiceDocTypeRecord != null ? invoiceDocTypeRecord.getC_DocType_ID() : 0);
+				});
 
-		final String invoiceDocTypeIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID+ "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoiceDocTypeIdentifier))
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_DocType_Invoicing_Pool_ID)
+				.ifPresent(invoicingPoolIdentifier -> {
+					final I_C_DocType_Invoicing_Pool invoicingPoolRecord = invoicingPoolIdentifier.lookupIn(invoicingPoolTable);
+					docTypeRecord.setC_DocType_Invoicing_Pool_ID(invoicingPoolRecord != null ? invoicingPoolRecord.getC_DocType_Invoicing_Pool_ID() : 0);
+				});
 
-		{
-			final String invoiceDocTypeIdentifierValue = DataTableUtil.nullToken2Null(invoiceDocTypeIdentifier);
-			if (invoiceDocTypeIdentifierValue != null)
-			{
-				final I_C_DocType invoiceDocTypeRecord = docTypeTable.get(invoiceDocTypeIdentifier);
-				assertThat(invoiceDocTypeRecord).isNotNull();
-
-				docTypeRecord.setC_DocTypeInvoice_ID(invoiceDocTypeRecord.getC_DocType_ID());
-			}
-			else
-			{
-				docTypeRecord.setC_DocTypeInvoice_ID(0);
-			}
-		}
-
-
-		final String invoicingPoolIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocType_Invoicing_Pool_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(invoicingPoolIdentifier))
-		{
-			final String invoicingPoolIdentifierValue = DataTableUtil.nullToken2Null(invoicingPoolIdentifier);
-			if (invoicingPoolIdentifierValue != null)
-			{
-				final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord = invoicingPoolTable.get(invoicingPoolIdentifier);
-				assertThat(docTypeInvoicingPoolRecord).isNotNull();
-
-				docTypeRecord.setC_DocType_Invoicing_Pool_ID(docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID());
-			}
-			else
-			{
-				docTypeRecord.setC_DocType_Invoicing_Pool_ID(0);
-			}
-		}
+		tableRow.getAsOptionalBoolean(I_C_DocType.COLUMNNAME_IsActive)
+				.ifPresent(isActive -> {
+					isActiveBeforeScenario.putIfAbsent(docTypeRecord.getC_DocType_ID(), docTypeRecord.isActive());
+					docTypeRecord.setIsActive(isActive);
+				});
 
 		saveRecord(docTypeRecord);
 
 		docTypeTable.putOrReplace(docTypeIdentifier, docTypeRecord);
+	}
+
+	/**
+	 * Sets back the {@code IsActive} of every doc type that {@link #update_C_DocType(DataTable)} changed.
+	 * <p>
+	 * Doc types are shared by every scenario on the executor, so a doc type left inactive would break whatever runs next;
+	 * an {@code @After} hook also runs when a step failed, a trailing Gherkin step would not.
+	 */
+	@After
+	public void restoreIsActive()
+	{
+		isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
+			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+			docTypeRecord.setIsActive(isActive);
+			saveRecord(docTypeRecord);
+		});
+		isActiveBeforeScenario.clear();
 	}
 }

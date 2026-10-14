@@ -20,6 +20,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -120,6 +121,28 @@ public class RefundContract
 
 		Check.fail("This contract has no config with id={}; this={}", refundConfigId, this);
 		return null;
+	}
+
+	/**
+	 * @return the currency that the refund of sales in the given currency is issued in: an amount per unit is refunded in the currency of the contract's configs,
+	 * whatever the currency of the sales; a percentage is refunded in the currency of the sales.
+	 */
+	public CurrencyId getRefundCurrencyId(@NonNull final CurrencyId salesCurrencyId)
+	{
+		return getAmountPerUnitCurrencyId().orElse(salesCurrencyId);
+	}
+
+	/**
+	 * @return the one currency of the contract's amounts per unit (see {@link RefundConfigs#assertValid(List)}); empty for a percentage contract.
+	 * A contract's configs all have the same refund base.
+	 */
+	public Optional<CurrencyId> getAmountPerUnitCurrencyId()
+	{
+		if (!CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::isAmountPerUnit))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getAmountCurrencyId));
 	}
 
 	public ConditionsId getConditionsId()

@@ -69,6 +69,8 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 	private I_C_Invoice_Candidate assignableIcRecord;
 	private I_C_Invoice_Candidate_Assignment assignmentRecord;
+	private I_C_Invoice_Candidate refundContractIcRecord;
+	private I_C_Flatrate_RefundConfig refundConfigRecord;
 	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 
 	@BeforeEach
@@ -123,7 +125,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		invoiceSchedule.setInvoiceDistance(1);
 		saveRecord(invoiceSchedule);
 
-		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions_ID(conditionsRecord.getC_Flatrate_Conditions_ID());
 		refundConfigRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
@@ -143,7 +145,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
 
-		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
+		refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
 		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		refundContractIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
 		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -192,5 +194,29 @@ public class AssignmentToRefundCandidateRepositoryTest
 		// invoke the method under test
 		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultAfterDeletion).isEmpty();
+	}
+
+	/**
+	 * A refund config has issued a refund once one of the refund candidates that it is assigned to is invoiced (also partly); a reversal of that invoice takes it back.
+	 */
+	@Test
+	public void hasInvoicedRefund()
+	{
+		final RefundConfigId refundConfigId = RefundConfigId.ofRepoId(refundConfigRecord.getC_Flatrate_RefundConfig_ID());
+		assertThat(assignmentToRefundCandidateRepository.hasInvoicedRefund(refundConfigId)).isFalse();
+
+		refundContractIcRecord.setQtyInvoiced(ONE);
+		save(refundContractIcRecord);
+		assertThat(assignmentToRefundCandidateRepository.hasInvoicedRefund(refundConfigId)).isTrue();
+
+		// the assignment of another config does not count
+		final I_C_Flatrate_RefundConfig otherConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		saveRecord(otherConfigRecord);
+		assertThat(assignmentToRefundCandidateRepository.hasInvoicedRefund(RefundConfigId.ofRepoId(otherConfigRecord.getC_Flatrate_RefundConfig_ID()))).isFalse();
+
+		// reversed: the refund candidate is not invoiced anymore
+		refundContractIcRecord.setQtyInvoiced(BigDecimal.ZERO);
+		save(refundContractIcRecord);
+		assertThat(assignmentToRefundCandidateRepository.hasInvoicedRefund(refundConfigId)).isFalse();
 	}
 }

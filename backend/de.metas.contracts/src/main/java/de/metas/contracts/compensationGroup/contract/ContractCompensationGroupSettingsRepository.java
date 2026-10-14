@@ -8,6 +8,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,7 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * {@code Repository Tables:} line for them; {@code C_Flatrate_Conditions} is only read here, via
  * its plain {@code C_CompensationGroup_ContractSettings_ID} column).
  * <p>
- * Loads a {@code C_CompensationGroup_ContractSettings} record and resolves the settings id a
+ * Loads a {@code C_CompensationGroup_ContractSettings} record, including the id of its pass-on
+ * {@code InvoiceProcessingServiceCompany} (not loaded here), and resolves the settings id a
  * {@code C_Flatrate_Conditions} record points to.
  */
 @Repository
@@ -91,6 +93,7 @@ public class ContractCompensationGroupSettingsRepository
 				.settingsId(settingsId)
 				.schemaId(schemaId)
 				.docTypeIds(docTypeIds)
+				.passOnServiceCompanyConfigId(InvoiceProcessingServiceCompanyConfigId.ofRepoIdOrNull(settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID()))
 				.build();
 	}
 
