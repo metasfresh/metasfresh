@@ -6,12 +6,15 @@
 -- Only AD_Process_Para 543342 (QtyTU) is changed. The WebUI caption comes from AD_Process_Para.Name/_Trl,
 -- so the shared AD_Element 542490 ("TU Anzahl") and the make overlay parameter 543136 (process 585588)
 -- are deliberately left untouched.
+-- 543342 is additionally decoupled from the shared AD_Element (AD_Element_ID = NULL), like the other
+-- parameters of this feature (e.g. 543346, QtyToReserve/QtyToUnreserve): a later translation propagation
+-- from AD_Element 542490 would otherwise revert the new label back to "TU Anzahl".
 --
 -- IDs allocated from the central ID server (idserver.metas.de) on 2026-10-14:
 --   AD_MigrationScript 5829440 (file name prefix)
 
 UPDATE AD_Process_Para
-SET Name='Zu stornierende TU Menge', Updated=TO_TIMESTAMP('2026-10-14 10:10:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET Name='Zu stornierende TU Menge', AD_Element_ID=NULL, Updated=TO_TIMESTAMP('2026-10-14 10:10:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Process_Para_ID=543342;
 
 UPDATE AD_Process_Para_Trl
