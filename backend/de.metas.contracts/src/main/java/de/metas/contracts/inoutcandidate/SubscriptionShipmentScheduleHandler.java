@@ -70,6 +70,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final SpringContextHolder.Lazy<ShipmentScheduleSubscriptionReferenceProvider> referenceProvider = SpringContextHolder.lazyBean(ShipmentScheduleSubscriptionReferenceProvider.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -101,9 +102,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
-		final ShipmentScheduleReferencedLine subscriptionFromProgressInfos = SpringContextHolder.instance
-				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
-				.provideFor(newSched);
+		final ShipmentScheduleReferencedLine subscriptionFromProgressInfos = referenceProvider.get().provideFor(newSched);
 
 		newSched.setM_Warehouse_ID(subscriptionFromProgressInfos.getWarehouseId().getRepoId());
 		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromProgressInfos.getPreparationDate()));
