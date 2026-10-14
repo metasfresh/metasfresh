@@ -66,6 +66,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	// lazy: ShipmentScheduleAllocDAO holds IShipmentSchedulePA as a field (cyclic dependency)
+	@Nullable private IShipmentScheduleAllocDAO _shipmentScheduleAllocDAO; // null = not yet initialized
+
+	private IShipmentScheduleAllocDAO shipmentScheduleAllocDAO()
+	{
+		IShipmentScheduleAllocDAO result = _shipmentScheduleAllocDAO;
+		if (result == null)
+		{
+			result = _shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+		}
+		return result;
+	}
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -540,8 +552,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final Map<Integer, I_M_ShipmentSchedule> schedules = new LinkedHashMap<>();
 
 		// add all the shipment schedules from the QtyPicked entries
-		// not a field: ShipmentScheduleAllocDAO holds this service as a field (initialization loop)
-		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = Services.get(IShipmentScheduleAllocDAO.class).retrieveSchedulesForInOutLineQuery(inoutLine)
+		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = shipmentScheduleAllocDAO().retrieveSchedulesForInOutLineQuery(inoutLine)
 				.create()
 				.mapById(I_M_ShipmentSchedule.class);
 		schedules.putAll(schedulesForInOutLine);
