@@ -1424,7 +1424,7 @@ jobs:
 
   # =============================================================================
   # Frontend WebUI Playwright tests (single shard)
-  # The db service of docker-builds/e2e-tests/compose.yml is a THROWAWAY container started from the
+  # preloaded DB image: the tests write data into it (e.g. master data created via /api/v2/frontendTesting).
   # preloaded DB image: the tests write data into it, including AD records (e.g. inline filters).
   # =============================================================================
   frontend_webui_test:
