@@ -2,8 +2,12 @@ import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
+import { addLineViaBatchEntry } from '../BatchEntry';
 import { PdfDownloader } from '../PdfDownloader';
 import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
+
+/** Included tab of the order lines, as used in the REST path. */
+const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -195,7 +199,8 @@ export class SalesOrderPage {
   }
 
   /**
-   * Add an order line using batch entry.
+   * Add an order line using batch entry, exactly once (no retry; see `addLineViaBatchEntry`).
+   * Fails right away if the backend rejects the line, and otherwise waits until the grid shows it.
    * IMPORTANT: Parent record must be saved before calling this method.
    * Use waitForTabAllowsNew() or call selectCustomer() first which waits for save.
    *
@@ -204,133 +209,21 @@ export class SalesOrderPage {
    * @param {string|number} params.quantity - Quantity to order
    * @param {string} params.recordId - Optional record ID (will extract from URL if not provided)
    */
-  static async addOrderLine({ product, quantity, recordId, maxAttempts = 3 }) {
+  static async addOrderLine({ product, quantity, recordId }) {
     return await test.step(`SalesOrderPage - Add order line: ${product} x ${quantity}`, async () => {
-      const page = getPage();
-
       // Get record ID if not provided
       const effectiveRecordId = recordId || this.getRecordId();
 
       // Wait for tab to allow creating new records
       // Tab ID for Sales Order Lines: AD_Tab-187
-      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, SALES_ORDER_LINES_TAB_ID, {
         maxRetries: 15,
         retryDelayMs: 1000,
       });
 
       console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
 
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
-
-        // Scroll to batch entry button (may be below the fold in single-section layout)
-        const batchEntryButton = page.getByTestId('batch-entry-toggle');
-        await batchEntryButton.scrollIntoViewIfNeeded();
-        await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-        // Click batch entry toggle
-        await batchEntryButton.click();
-        await page.waitForTimeout(500);
-
-        // Wait for batch entry form
-        const quickInputVisible = await page
-          .locator('.quick-input-container')
-          .waitFor({ state: 'visible', timeout: 5000 })
-          .then(() => true)
-          .catch(() => false);
-
-        if (!quickInputVisible) {
-          console.log(`Quick input container not visible on attempt ${attempt}, retrying...`);
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(1000);
-          continue;
-        }
-
-        const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-        await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await productInput.click();
-
-        // Wait for initial loading spinner to disappear (product list being loaded)
-        await page
-          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-
-        await page.waitForTimeout(300);
-
-        // Fill the product code/name
-        await productInput.fill(product);
-        await page.waitForTimeout(1000);
-
-        // Wait for any search spinner to disappear
-        await page
-          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-
-        await page.waitForTimeout(500);
-
-        // Click the option by text - check it's visible first
-        const dropdownOption = page.locator('.input-dropdown-list-option').getByText(product).first();
-        const optionVisible = await dropdownOption
-          .waitFor({ state: 'visible', timeout: 5000 })
-          .then(() => true)
-          .catch(() => false);
-
-        if (!optionVisible) {
-          console.log(`Product dropdown option not visible on attempt ${attempt}, retrying...`);
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(500);
-          await batchEntryButton.click().catch(() => {});
-          await page.waitForTimeout(1000);
-          await page.keyboard.press('F5');
-          await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-          await page.waitForTimeout(2000);
-          continue;
-        }
-
-        await dropdownOption.click();
-        await page.waitForTimeout(500);
-
-        // Fill quantity — scope to .quick-input-container to avoid matching other spinbuttons
-        const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
-        await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-        await quantityInput.click();
-        await quantityInput.fill(quantity.toString());
-        await page.waitForTimeout(300);
-
-        // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
-        await page.keyboard.press('Enter');
-        await page.waitForTimeout(2000);
-
-        // Wait for spinners
-        await page
-          .locator('.rotating, .indicator-pending')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-
-        // Close the batch entry modal (only if still open)
-        const isStillOpen = await page.locator('.quick-input-container').isVisible().catch(() => false);
-        if (isStillOpen) {
-          await page.getByTestId('batch-entry-toggle').click();
-          await page.waitForTimeout(1000);
-        }
-
-        // Verify that at least one order line was added
-        const gridRows = page.locator('table tbody tr');
-        const rowCount = await gridRows.count();
-        if (rowCount > 0) {
-          console.log(`Order line added successfully on attempt ${attempt} (${rowCount} row(s))`);
-          return;
-        }
-
-        console.log(`No order lines found after attempt ${attempt}, reloading page...`);
-        await page.keyboard.press('F5');
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(2000);
-      }
-
-      throw new Error(`Failed to add order line after ${maxAttempts} attempts`);
+      await addLineViaBatchEntry({ tabId: SALES_ORDER_LINES_TAB_ID, product, quantity });
     });
   }
 
