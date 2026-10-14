@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../utils/common';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 const LOGIN_USERNAME = 'metasfresh';
 const LOGIN_PASSWORD = 'metasfresh';
@@ -41,15 +42,44 @@ async function loginAsMetasfresh(page) {
   await page.locator('.dashboard').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
 
-/** Creates a new payment term (ALT+N) and returns its record id */
+const isPatchOf = (fieldName) => (req) =>
+  req.method() === 'PATCH' && (req.postData() || '').includes(`"${fieldName}"`);
+
+/** The document of a PATCH response: the changed fields and whether the document is saved */
+const patchedDocument = async (patchResponse) => (await patchResponse.json()).documents?.[0];
+
+const recordIdOf = (page) => page.url().match(new RegExp(`/window/${PAYMENT_TERM_WINDOW_ID}/(\\d+)`))[1];
+
+/** Reads the payment term from the webapi, with its save status */
+async function loadDocument(page, recordId) {
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${PAYMENT_TERM_WINDOW_ID}/${recordId}`);
+  expect(response.status(), 'status of reading the payment term').toBe(200);
+  const body = await response.json();
+  return Array.isArray(body) ? body[0] : body.documents?.[0] ?? body;
+}
+
+/**
+ * Creates a new payment term (ALT+N) and fills its only mandatory field without a default (Name), so that every
+ * later change is saved
+ */
 async function createNewPaymentTerm(page) {
-  await page.goto(`/window/${PAYMENT_TERM_WINDOW_ID}`, { waitUntil: 'load' });
-  await page.locator('.document-list-wrapper').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await page.waitForTimeout(1000); // let the shortcut handlers register after navigation
-  await page.keyboard.press('Alt+n');
-  await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
-  await page.locator(`.form-field-${FIELD} input`).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  return page.url().match(new RegExp(`/window/${PAYMENT_TERM_WINDOW_ID}/(\\d+)`))[1];
+  await test.step('create a new payment term with a name', async () => {
+    await page.goto(`/window/${PAYMENT_TERM_WINDOW_ID}`, { waitUntil: 'load' });
+    await page.locator('.document-list-wrapper').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await page.waitForTimeout(1000); // let the shortcut handlers register after navigation
+    await page.keyboard.press('Alt+n');
+    await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+
+    const nameInput = page.locator('.form-field-Name input');
+    await nameInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const namePatched = page.waitForResponse((resp) => isPatchOf('Name')(resp.request()), {
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+    await nameInput.fill(`decimal comma ${Date.now()}`);
+    await nameInput.press('Tab'); // leaving the field patches it
+    const document = await patchedDocument(await namePatched);
+    expect(document.saveStatus?.saved, `payment term saved (${document.saveStatus?.reason})`).toBe(true);
+  });
 }
 
 /**
@@ -71,17 +101,16 @@ async function showCaption(page, text) {
   }, text);
 }
 
-const isFieldPatch = (req) =>
-  req.method() === 'PATCH' && (req.postData() || '').includes(`"${FIELD}"`);
+const isFieldPatch = isPatchOf(FIELD);
 
 /**
  * Types (key by key) or pastes (one input event, like the browser's paste) a value into the field, leaves it and
  * asserts what is sent and what the server stored
  */
-async function enterAndExpectStored(page, { entered, how, shown, patched }) {
-  await test.step(`${how} ${entered}: sent and stored as ${patched}`, async () => {
+async function enterAndExpectStored(page, { entered, how, patched, confirmKey = 'Tab' }) {
+  await test.step(`${how} ${entered} + ${confirmKey}: sent and stored as ${patched}`, async () => {
     const input = page.locator(`.form-field-${FIELD} input`);
-    await showCaption(page, `${FIELD}: ${how} "${entered}" -> expected ${patched}`);
+    await showCaption(page, `${FIELD}: ${how} "${entered}" + ${confirmKey} -> expected ${patched}`);
     await input.scrollIntoViewIfNeeded();
     await input.click();
     await input.press('ControlOrMeta+a');
@@ -90,38 +119,47 @@ async function enterAndExpectStored(page, { entered, how, shown, patched }) {
     } else {
       await input.pressSequentially(entered, { delay: 150 }); // slow enough to follow on the test video
     }
-    await expect(input, 'text in the field after entering').toHaveValue(shown);
+    // the field keeps what the user entered; it is converted only when it is sent
+    await expect(input, 'text in the field after entering').toHaveValue(entered);
 
     const patchRequested = page.waitForRequest(isFieldPatch, { timeout: SLOW_ACTION_TIMEOUT });
     const patchResponded = page.waitForResponse((resp) => isFieldPatch(resp.request()), {
       timeout: SLOW_ACTION_TIMEOUT,
     });
-    await input.press('Tab'); // leaving the field patches it
+    await input.press(confirmKey); // Tab (leaving the field) and Enter both patch it
 
     expect(JSON.parse((await patchRequested).postData()), `PATCH sent for ${FIELD}`).toContainEqual(
       expect.objectContaining({ path: FIELD, value: patched })
     );
     const patchResponse = await patchResponded;
     expect(patchResponse.status(), 'PATCH response status').toBe(200);
-    const body = await patchResponse.json();
-    const storedField = body.documents?.[0]?.fieldsByName?.[FIELD];
+    const document = await patchedDocument(patchResponse);
+    const storedField = document?.fieldsByName?.[FIELD];
     expect(storedField, `${FIELD} in the PATCH response`).toBeDefined();
     expect(storedField.widgetType, `widget type of ${FIELD}`).toBe('Number');
-    expect(Number(storedField.value), `${FIELD} stored by the server`).toBe(Number(patched));
-    await showCaption(page, `${FIELD}: ${how} "${entered}" -> stored by the server: ${storedField.value}`);
+    expect(Number(storedField.value), `${FIELD} in the PATCH response`).toBe(Number(patched));
+
+    // the PATCH response carries only what changed; the document read back says whether it is saved
+    const saved = await loadDocument(page, recordIdOf(page));
+    expect(saved.saveStatus?.saved, `payment term saved (${saved.saveStatus?.reason})`).toBe(true);
+    expect(saved.saveStatus?.hasChanges, 'unsaved changes of the payment term').toBe(false);
+    expect(Number(saved.fieldsByName?.[FIELD]?.value), `${FIELD} stored by the server`).toBe(Number(patched));
+    await showCaption(page, `${FIELD}: ${how} "${entered}" + ${confirmKey} -> stored by the server: ${storedField.value}`);
     await page.waitForTimeout(1500); // hold the stored value on the test video
   });
 }
 
-// what the user enters -> what the field shows -> what is patched; the field normalises while the user types,
-// so a typed value is shown with a decimal point. Consecutive values differ: an unchanged value is not patched.
+// what the user enters (typed key by key or pasted) -> what is patched. Consecutive values differ: an unchanged value
+// is not patched.
 const ENTRIES = [
-  { entered: '2,5', how: 'type', shown: '2.5', patched: '2.5' }, // DE/AT decimal comma
-  { entered: '-12,35', how: 'type', shown: '-12.35', patched: '-12.35' }, // with a minus sign
-  { entered: '1.500,50', how: 'type', shown: '1500.50', patched: '1500.50' }, // DE thousands dot + decimal comma
-  { entered: "1'250,75", how: 'type', shown: '1250.75', patched: '1250.75' }, // CH thousands apostrophe + decimal comma
-  { entered: '1,500.50', how: 'paste', shown: '1500.50', patched: '1500.50' }, // EN thousands comma + decimal point
-  { entered: '3.75', how: 'type', shown: '3.75', patched: '3.75' }, // a decimal point still works
+  { entered: '2,5', how: 'type', patched: '2.5' }, // DE/AT decimal comma
+  { entered: '-12,35', how: 'type', patched: '-12.35' }, // with a minus sign
+  { entered: '1.500,50', how: 'type', patched: '1500.50' }, // DE thousands dot + decimal comma
+  { entered: "1'250,75", how: 'type', patched: '1250.75' }, // CH thousands apostrophe + decimal comma
+  { entered: '1,500.50', how: 'type', patched: '1500.50' }, // EN thousands comma + decimal point
+  { entered: '2,000.25', how: 'paste', patched: '2000.25' }, // the same, pasted
+  { entered: '7,25', how: 'type', patched: '7.25', confirmKey: 'Enter' }, // confirmed with Enter instead of Tab
+  { entered: '3.75', how: 'type', patched: '3.75' }, // a decimal point still works
 ];
 
 test.describe('Number field - decimal comma', () => {

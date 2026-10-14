@@ -32,11 +32,34 @@ export default class CostPrice extends PureComponent {
   constructor(props) {
     super(props);
     this.inputRef = React.createRef();
+    // what the user typed while the field is edited; null = show the formatted value
+    this.state = { editText: null };
   }
+
+  // The parent patches the input's text on blur, Tab, Enter and ArrowUp/Down, so it gets the whole text normalised.
+  // Normalising the whole text (and not keystroke by keystroke) keeps "1,500.50" one number.
+  // The event is derived with Object.create, not copied with a spread: a spread drops the event's methods
+  // (preventDefault, which RawWidget calls on Enter).
+  withNormalizedValue = (e) => {
+    const raw = e.target.value;
+    const normalized = normalizeNumberInput(raw);
+    return normalized === raw
+      ? e
+      : Object.create(e, {
+          target: { value: { ...e.target, value: normalized } },
+        });
+  };
 
   handleBlur = (e) => {
     const { onBlur } = this.props;
-    onBlur?.(e);
+    const normalizedEvent = this.withNormalizedValue(e);
+    this.setState({ editText: null });
+    onBlur?.(normalizedEvent);
+  };
+
+  handleKeyDown = (e) => {
+    const { onKeyDown } = this.props;
+    onKeyDown?.(this.withNormalizedValue(e));
   };
 
   focus = () => {
@@ -60,15 +83,25 @@ export default class CostPrice extends PureComponent {
     }
   };
 
+  // A value set from outside while the user edits (e.g. the server's answer to an Enter, or Escape restoring the
+  // old value) replaces what was typed
+  componentDidUpdate(prevProps) {
+    const { value } = this.props;
+    const { editText } = this.state;
+    if (
+      editText !== null &&
+      value !== prevProps.value &&
+      value !== normalizeNumberInput(editText)
+    ) {
+      this.setState({ editText: null });
+    }
+  }
+
+  // The input keeps what the user typed; the parent gets it normalised
   handleChange = (e) => {
     const { onChange } = this.props;
-    const raw = e.target.value;
-    const cleaned = normalizeNumberInput(raw);
-    if (cleaned !== raw) {
-      onChange({ ...e, target: { ...e.target, value: cleaned } });
-    } else {
-      onChange(e);
-    }
+    this.setState({ editText: e.target.value });
+    onChange(this.withNormalizedValue(e));
   };
 
   render() {
@@ -83,11 +116,12 @@ export default class CostPrice extends PureComponent {
       value,
       precision,
     } = this.props;
-    const { onKeyDown } = this.props;
+    const { editText } = this.state;
 
     // Always render ONE stable <input>: swapping input elements on
     // focus/blur unmounts the focused element mid-Tab and loses focus.
-    // type="text" keeps the formatted value (trailing zeros like "19.00");
+    // type="text" keeps the formatted value (trailing zeros like "19.00") and,
+    // while editing, exactly what the user typed (e.g. "2,5");
     // inputMode="decimal" gives the numeric keyboard on mobile. ArrowUp /
     // ArrowDown PATCH is handled by RawWidget.handleKeyDown (NumberWidgets).
     return (
@@ -95,7 +129,7 @@ export default class CostPrice extends PureComponent {
         ref={this.inputRef}
         type="text"
         inputMode="decimal"
-        value={fieldValueToString({ fieldValue: value, precision })}
+        value={editText ?? fieldValueToString({ fieldValue: value, precision })}
         autoComplete={autoComplete}
         className={cx(className, rank ? `input-${rank}` : null)}
         disabled={disabled}
@@ -107,7 +141,7 @@ export default class CostPrice extends PureComponent {
         onChange={this.handleChange}
         onFocus={this.focus}
         onBlur={this.handleBlur}
-        onKeyDown={onKeyDown}
+        onKeyDown={this.handleKeyDown}
       />
     );
   }
