@@ -758,12 +758,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			if (!isValidQrReference(structuredReference))
 			{
 				// only reached if the account has a QR-IBAN but no IBAN, so there is no other way to pay it
-				throw new AdempiereException(ERR_SEPA_Export_InvalidReference, createInfo(line))
-						.appendParametersToMessage()
-						.setParameter("structuredReference", structuredReference != null ? structuredReference : "no structured reference")
-						.setParameter("reason", "the bank account has only a QR-IBAN, so a valid QR reference (27 digits incl. check digit) is required");
+				throw newInvalidQrReferenceException(line, structuredReference, "the bank account has only a QR-IBAN, so a valid QR reference (27 digits incl. check digit) is required");
 			}
 			cdOrPrtry.setPrtry(CREDITOR_REFERENCE_TYPE_QRR);
+		}
+		else if (bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN()) && isQrReferenceShaped(structuredReference))
+		{
+			// IBAN + QR-IBAN account and a reference that looks like a QR reference, but fails the check digit: most likely a typo of the QR-bill reference.
+			// Sending it to the normal IBAN as Ustrd would break the creditor's automatic matching, so we stop here.
+			throw newInvalidQrReferenceException(line, structuredReference, "the reference has the format of a QR reference (27 digits), but its check digit is wrong");
 		}
 		else if (isValidCreditorReference(structuredReference))
 		{
@@ -779,6 +782,36 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		cdtrRefInf.setTp(tp);
 		cdtrRefInf.setRef(structuredReference);
 		return cdtrRefInf;
+	}
+
+	private AdempiereException newInvalidQrReferenceException(
+			@NonNull final I_SEPA_Export_Line line,
+			@Nullable final String structuredReference,
+			@NonNull final String reason)
+	{
+		return new AdempiereException(ERR_SEPA_Export_InvalidReference, createInfo(line))
+				.appendParametersToMessage()
+				.setParameter("structuredReference", structuredReference != null ? structuredReference : "no structured reference")
+				.setParameter("reason", reason);
+	}
+
+	/**
+	 * @return {@code true} if the given text has the format of a QR reference (27 digits), regardless of its check digit
+	 */
+	private static boolean isQrReferenceShaped(@Nullable final String reference)
+	{
+		if (reference == null || reference.length() != QR_REFERENCE_LENGTH)
+		{
+			return false;
+		}
+		for (int i = 0; i < QR_REFERENCE_LENGTH; i++)
+		{
+			if (!isDigit(reference.charAt(i)))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

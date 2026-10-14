@@ -359,6 +359,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void export_ibanAndQrIban_mistypedQrReference_fails()
+	{
+		// looks like a QR reference (27 digits) but the check digit is wrong: a typo, not a reference for the normal IBAN
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, CREDITOR_IBAN_CH, new BigDecimal("100"), chf, "210000000003139471430009018");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining("210000000003139471430009018");
+	}
+
+	@Test
 	public void export_qrIbanOnlyWithoutReference_fails()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
