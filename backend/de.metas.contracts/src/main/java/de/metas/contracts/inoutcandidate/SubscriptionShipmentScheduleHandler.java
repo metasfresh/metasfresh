@@ -62,7 +62,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private final static transient Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -127,6 +126,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
+		// not a field: the handlingunits module replaces this service's implementation at startup, possibly after this handler was constructed
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(segment);
 
 	}
