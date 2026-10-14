@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PAYMENT_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 import { DOCTYPE_AR_RECEIPT } from '../utils/DocTypeIds';
-import { getFieldData, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
+import { getFieldData, getSaveStatus, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
 import {
   completeDocument,
   expectDocStatus,
@@ -71,21 +71,22 @@ test.describe('Payment bonus: the payment window pre-fills and books the bonus',
 
     await createDeductedAtPaymentContract(page, { runId, customer, categoryId: masterdata.productCategories.GOODS_CATEGORY.id, bonus });
 
+    // the user's path: a new payment, „Belegart“ Zahlungseingang, then straight „Rechnung“ - the payment is not saved in between,
+    // so nothing but the document type tells that it is a receipt when the invoice is picked
     let paymentId;
-    await test.step('Zahlung: a new receipt of the customer', async () => {
+    await test.step('Zahlung: a new payment, Belegart Zahlungseingang, not saved yet', async () => {
       await openNewRecord(page, PAYMENT_WINDOW_ID);
       paymentId = await waitForNewRecordId(page, PAYMENT_WINDOW_ID);
       await selectListByKey(page, page, 'C_DocType_ID', DOCTYPE_AR_RECEIPT);
-      await selectLookupByKey(page, page, 'C_BPartner_ID', customer.bpartnerCode, customer.id);
-      await selectFirstListOption(page, page, 'C_BP_BankAccount_ID');
-      await selectListByKey(page, page, 'C_Currency_ID', CURRENCY_EUR_ID);
-      await waitForRecordSaved(PAYMENT_WINDOW_ID, paymentId, { maxRetries: 20, retryDelayMs: 500 });
+      expect((await getSaveStatus(PAYMENT_WINDOW_ID, paymentId)).saved, 'the new payment is not saved before Rechnung is picked').toBeFalsy();
       await expect(page.locator('.form-field-PaymentBonusAmt'), 'no Zahlungsbonus without Rechnung').toHaveCount(0);
     });
 
     await test.step('Rechnung picked: Zahlungsbonus is pre-filled, Zahlungsbetrag = open - bonus, Abschreibung Rechnung 0', async () => {
       await selectLookupByKey(page, page, 'C_Invoice_ID', invoice.documentNo, invoice.id);
 
+      expect(lookupKey((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'C_BPartner_ID')).value), 'Geschäftspartner from the invoice').toBe(String(customer.id));
+      expect(lookupKey((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'C_Currency_ID')).value), 'Währung from the invoice').toBe(String(CURRENCY_EUR_ID));
       await expect.poll(async () => fieldCents(page, 'PaymentBonusAmt'), { message: 'pre-filled Zahlungsbonus', timeout: SLOW_ACTION_TIMEOUT }).toBe(bonusCents);
       await expect.poll(async () => fieldCents(page, 'PayAmt'), { message: 'Zahlungsbetrag = open - bonus', timeout: SLOW_ACTION_TIMEOUT }).toBe(openCents - bonusCents);
       expect(await fieldCents(page, 'DiscountAmt'), 'Skonto').toBe(0);
@@ -101,6 +102,7 @@ test.describe('Payment bonus: the payment window pre-fills and books the bonus',
     });
 
     await test.step('the draft is saved with the pre-filled amounts', async () => {
+      await selectFirstListOption(page, page, 'C_BP_BankAccount_ID');
       await waitForRecordSaved(PAYMENT_WINDOW_ID, paymentId, { maxRetries: 20, retryDelayMs: 500 });
       expect(toCents((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'PaymentBonusAmt')).value)).toBe(bonusCents);
       expect(toCents((await getFieldData(PAYMENT_WINDOW_ID, paymentId, 'PayAmt')).value)).toBe(openCents - bonusCents);
