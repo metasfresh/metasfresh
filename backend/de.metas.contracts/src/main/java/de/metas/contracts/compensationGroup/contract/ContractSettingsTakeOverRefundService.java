@@ -150,8 +150,8 @@ public class ContractSettingsTakeOverRefundService
 	/**
 	 * @param activeConfigs    all active refund settings of one refund condition
 	 * @param packingRestricted whether a setting of the condition is restricted to packing options that it lists
-	 * @return the setting's percentage if the condition has exactly one active setting with no product, RefundBase=percentage, MinQty=0
-	 * and no packing-option restriction; empty otherwise
+	 * @return the setting's percentage if the condition has exactly one active setting with no product, RefundBase=percentage, MinQty=0,
+	 * a non-zero percentage and no packing-option restriction; empty otherwise
 	 */
 	@VisibleForTesting
 	static Optional<Percent> extractQualifyingPercent(@NonNull final List<RefundConfig> activeConfigs, final boolean packingRestricted)
@@ -163,7 +163,8 @@ public class ContractSettingsTakeOverRefundService
 		final RefundConfig config = activeConfigs.get(0);
 		if (config.getProductId() != null
 				|| config.getRefundBase() != RefundConfig.RefundBase.PERCENTAGE
-				|| config.getMinQty().signum() != 0)
+				|| config.getMinQty().signum() != 0
+				|| config.getPercent().isZero())
 		{
 			return Optional.empty();
 		}

@@ -332,6 +332,16 @@ class ContractSettingsTakeOverRefundServiceTest
 	}
 
 	@Test
+	void zeroPercentSetting_doesNotCount()
+	{
+		final ConditionsId conditionsId = conditions("RV 0 %");
+		setting().conditionsId(conditionsId).refundPercent("0").create();
+		term().conditionsId(conditionsId).create();
+
+		assertThat(find(conditionsId).entries()).isEmpty();
+	}
+
+	@Test
 	void amountBased_doesNotCount()
 	{
 		final ConditionsId conditionsId = conditions("RV amount per unit");
