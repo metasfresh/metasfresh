@@ -108,9 +108,11 @@ class ContractSettingsTakeOverRefundServiceTest
 			final int productId,
 			final int productCategoryId,
 			final boolean deductedAtPayment,
-			final boolean packingOptionFiltered)
+			final boolean packingOptionFiltered,
+			@Nullable final Boolean active)
 	{
 		final I_C_Flatrate_RefundConfig record = newInstance(I_C_Flatrate_RefundConfig.class);
+		record.setIsActive(active == null || active);
 		record.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
 		record.setC_InvoiceSchedule_ID(invoiceSchedule.getC_InvoiceSchedule_ID());
 		record.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
@@ -145,11 +147,14 @@ class ContractSettingsTakeOverRefundServiceTest
 			@Nullable final FlatrateTermStatus contractStatus,
 			@Nullable final LocalDate startDate,
 			@Nullable final LocalDate endDate,
-			final int productId)
+			final int productId,
+			@Nullable final TypeConditions typeConditions,
+			@Nullable final Boolean active)
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		term.setIsActive(active == null || active);
 		term.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
-		term.setType_Conditions(TypeConditions.REFUND.getCode());
+		term.setType_Conditions((typeConditions != null ? typeConditions : TypeConditions.REFUND).getCode());
 		term.setBill_BPartner_ID((billPartnerId != null ? billPartnerId : INVOICE_PARTNER_ID).getRepoId());
 		term.setDocStatus((docStatus != null ? docStatus : DocStatus.Completed).getCode());
 		term.setContractStatus((contractStatus != null ? contractStatus : FlatrateTermStatus.Running).getCode());
@@ -263,6 +268,26 @@ class ContractSettingsTakeOverRefundServiceTest
 	}
 
 	@Test
+	void nonRefundTypeTerm_doesNotCount()
+	{
+		final ConditionsId conditionsId = conditions("RV term of another contract type");
+		setting().conditionsId(conditionsId).create();
+		term().conditionsId(conditionsId).typeConditions(TypeConditions.REFUNDABLE).create();
+
+		assertThat(find(conditionsId).entries()).isEmpty();
+	}
+
+	@Test
+	void inactiveTerm_doesNotCount()
+	{
+		final ConditionsId conditionsId = conditions("RV inactive term");
+		setting().conditionsId(conditionsId).create();
+		term().conditionsId(conditionsId).active(false).create();
+
+		assertThat(find(conditionsId).entries()).isEmpty();
+	}
+
+	@Test
 	void termWithProduct_doesNotCount()
 	{
 		final ConditionsId conditionsId = conditions("RV term with product");
@@ -281,6 +306,19 @@ class ContractSettingsTakeOverRefundServiceTest
 		term().conditionsId(conditionsId).create();
 
 		assertThat(find(conditionsId).entries()).isEmpty();
+	}
+
+	@Test
+	void inactiveSecondSetting_stillCounts()
+	{
+		final ConditionsId conditionsId = conditions("RV one active and one inactive setting");
+		setting().conditionsId(conditionsId).refundPercent("1").create();
+		setting().conditionsId(conditionsId).refundPercent("2").minQty("100").active(false).create();
+		term().conditionsId(conditionsId).create();
+
+		assertThat(find(conditionsId).get(conditionsId))
+				.extracting(TakenOverRefund::getPercent)
+				.containsExactly(Percent.of(1));
 	}
 
 	@Test
