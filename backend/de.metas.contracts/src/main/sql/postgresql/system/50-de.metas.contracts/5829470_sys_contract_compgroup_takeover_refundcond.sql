@@ -250,7 +250,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        IsAllowLogging, PersonalDataCategory)
 VALUES (593746 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-10-15 10:00:27', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-10-15 10:00:28', 'YYYY-MM-DD HH24:MI:SS'), 100,
         0, 'de.metas.contracts', 'C_CompensationGroup_ContractSettings_TakeOver_RefundCond_ID', 542656, 585541, 13, NULL,
-        10, 'Übernahme Rückvergütungsbedingung', NULL, NULL,
+        10, 'Übernahme Rückvergütungsbedingung', 'Rückvergütungsbedingung, deren Rückvergütungs-% bei einer Übernahme-Einstellung eines Kompensationsgruppen-Vertrags in die Bestellung übernommen wird.', NULL,
         'Y', 'N', 'N', NULL, NULL, NULL,
         'Y', 'N', 'N', 'N', 'N', 'N',
         'Y', 'NP')
@@ -344,7 +344,7 @@ VALUES (0, 545929 /*From ID Server*/, 0, TO_TIMESTAMP('2026-10-15 10:00:34', 'YY
         'Die Rückvergütungsbedingung {0} ist bereits in einem anderen Übernahme-Datensatz dieser Einstellungen eingetragen.', 'E', TO_TIMESTAMP('2026-10-15 10:00:34', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'ContractCompensationGroup_TakeOverRefundCondNotUnique')
 ;
-UPDATE AD_Message SET ErrorCode = 'CompGroup_TakeOverRefundCondNotUnique', Updated = TO_TIMESTAMP('2026-10-15 10:00:35', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100 WHERE AD_Message_ID = 545929
+UPDATE AD_Message SET ErrorCode = 'ContractCompGroup_TakeOverRefundCondDup', Updated = TO_TIMESTAMP('2026-10-15 10:00:35', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100 WHERE AD_Message_ID = 545929
 ;
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, t.AD_Message_ID, t.MsgText, t.MsgTip, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
