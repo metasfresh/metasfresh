@@ -884,6 +884,114 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void createDocument_qrIban_bankAccountAddressWithoutCity_omitsAddressAndWarns() throws Exception
+	{
+		// payment type D via the QR-IBAN branch of the payment type detection
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, QR_REFERENCE);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_City(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero(); // payment type D
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry")).isEqualTo("QRR");
+		assertThat(count(doc, cdtTrfTxInf + "/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_VENDOR)
+				.contains(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_QR_IBAN)
+				.contains(MSG_MISSING_TOWN);
+	}
+
+	@Test
+	public void createDocument_domestic_bankAccountAddressWithoutCountry_omitsAddressAndWarns() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_Country(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero(); // payment type D
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_VENDOR)
+				.contains(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_CH)
+				.contains(MSG_MISSING_COUNTRY);
+	}
+
+	@Test
+	public void createDocument_sepa_bankAccountAddressWithoutCountry_omitsAddressAndWarns() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_Country(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf/SvcLvl/Cd")).isEqualTo("SEPA");
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_VENDOR)
+				.contains(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_DE)
+				.contains(MSG_MISSING_COUNTRY);
+	}
+
+	@Test
+	public void createDocument_twoPartnersWithTheSameIncompleteAddress_warnsForEach() throws Exception
+	{
+		// the same missing part and the same location name, but two partners: the user must be told about both
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line1 = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, "Invoice 1");
+		clearAddress(bankAccountOf(line1));
+		setBillToLocation(line1, "Bahnhofstrasse 5", "3000", " ", "CH");
+		final I_SEPA_Export_Line line2 = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("30"), chf, "Invoice 2");
+		clearAddress(bankAccountOf(line2));
+		setBillToLocation(line2, "Bahnhofstrasse 7", "3000", " ", "CH");
+		final I_C_BPartner otherPartner = InterfaceWrapperHelper.load(line2.getC_BPartner_ID(), I_C_BPartner.class);
+		otherPartner.setValue("OtherCreditor");
+		otherPartner.setName("Other Creditor AG");
+		save(otherPartner);
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(result.getWarnings()).hasSize(2);
+		assertThat(warnings.getSingleMessages())
+				.hasSize(2)
+				.anySatisfy(warning -> assertThat(warning).contains(PARTNER_TEST_CREDITOR))
+				.anySatisfy(warning -> assertThat(warning).contains("OtherCreditor (Other Creditor AG)"));
+	}
+
+	@Test
 	public void createDocument_samePartnerAndIncompleteAddressOnTwoLines_warnsOnce() throws Exception
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
