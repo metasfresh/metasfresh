@@ -1004,8 +1004,7 @@ class ContractSettingsTakeOverServiceTest
 		return settingsRepository.getBySettingsId(settingsId);
 	}
 
-	/** A drop-ship purchase order whose linked sales order is keyed by {@link #CUSTOMER_ID} and {@link #SO_DATE}. */
-	/** A drop-ship purchase order whose linked sales order is completed, so its refunds may be taken over. */
+	/** A drop-ship purchase order whose linked sales order is keyed by {@link #CUSTOMER_ID} and {@link #SO_DATE} and is completed, so its refunds may be taken over. */
 	private static OrderDropShipInfo dropShipPO(final I_C_Order salesOrder)
 	{
 		return purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE)
