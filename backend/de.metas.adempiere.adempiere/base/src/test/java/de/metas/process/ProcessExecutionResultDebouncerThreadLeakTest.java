@@ -34,10 +34,11 @@ class ProcessExecutionResultDebouncerThreadLeakTest
 {
 	private static final String DEBOUNCER_THREAD_PREFIX = ProcessExecutionResult.class.getName() + ".Debouncer-";
 	private static final int RUNS = 5;
-	private static final long MAX_WAIT_AFTER_LAST_RUN_MS = 5_000; // Debouncer delay is 1 s; idle timeout (60 s) must NOT be what saves us
+	private static final long MAX_WAIT_AFTER_LAST_RUN_MS = 10_000; // Debouncer delay is 1 s (margin for loaded CI hosts); idle timeout (60 s) must NOT be what saves us
 
 	/**
 	 * ids of Debouncer threads alive before the test started — excluded from all assertions (other tests in the same JVM).
+	 * Assumes no other test starts Debouncer threads concurrently in this JVM (surefire runs test classes sequentially here).
 	 */
 	private static Set<Long> preExistingThreadIds = ImmutableSet.of();
 	/**
