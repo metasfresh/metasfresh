@@ -9,7 +9,8 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { SALES_ORDER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
+import { openDocumentStatusMenu } from '../utils/DocumentStatus';
 
 /**
  * XRechnung invalid-invoice E2E test (F00751 e-Invoicing Germany).
@@ -168,19 +169,24 @@ testCases.forEach(({ language, label }) => {
             await InvoicePage.expectVisible();
             await InvoicePage.openDetailView();
 
-            // Evidence: the invoice generated from the candidate is a DRAFT (not auto-completed).
-            const statusText = await page.getByTestId('status-button').innerText().catch(() => '(no status-button)');
-            console.log(`[${language}] Invoice document status before completing:`, statusText);
+            const invoiceRecordId = page.url().split('/').pop();
+            expect(invoiceRecordId, 'invoice detail URL ends with the record id').toMatch(/^\d+$/);
 
-            // Attempt to COMPLETE the invalid invoice. Completion is vetoed (AFTER_COMPLETE) and the
-            // enriched error is shown in the WebUI ERROR NOTIFICATION (not a toast); the long
-            // per-assertion detail sits behind "(read more)".
-            await page.getByTestId('status-button').click();
+            // Precondition (asserted, not just logged): the invoice generated from the candidate is a
+            // DRAFT that offers Complete — i.e. IsCompleteInvoices=N really left it un-completed.
+            const actionsBefore = await openDocumentStatusMenu({ windowId: SALES_INVOICE_WINDOW_ID, documentId: invoiceRecordId });
+            console.log(`[${language}] Invoice DocActions before completing:`, actionsBefore.join(','));
+            expect(actionsBefore, 'the generated invoice is a draft that offers Complete').toContain('CO');
+
+            // Complete the invalid invoice (the status menu is already open from openDocumentStatusMenu).
+            // Completion is vetoed (AFTER_COMPLETE); the enriched error is shown in the WebUI ERROR
+            // NOTIFICATION (not a toast), the long per-assertion detail behind "(read more)".
             await page.getByTestId('status-CO').click();
 
             const errorNotification = page.locator('.notification-handler .notification-item.error').last();
             await errorNotification.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             const readMore = errorNotification.locator('.notification-content u.pointer');
+            await readMore.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
             if (await readMore.isVisible().catch(() => false)) {
                 await readMore.click();
             }
@@ -199,6 +205,13 @@ testCases.forEach(({ language, label }) => {
             await expect(notificationContent, 'error must carry the assertion message (BT-10)').toContainText('BT-10');
             await expect(notificationContent, 'error must carry the assertion message (Buyer reference)').toContainText('Buyer reference');
             await expect(notificationContent, 'error must carry the CII XPath location').toContainText('CrossIndustryInvoice');
+
+            // End result: completion was VETOED — the invoice stayed a draft. It still offers Complete
+            // and is NOT completed (a completed invoice would offer Reactivate instead).
+            const actionsAfter = await openDocumentStatusMenu({ windowId: SALES_INVOICE_WINDOW_ID, documentId: invoiceRecordId });
+            console.log(`[${language}] Invoice DocActions after vetoed completion:`, actionsAfter.join(','));
+            expect(actionsAfter, 'completion was vetoed: the invoice is still a completable draft').toContain('CO');
+            expect(actionsAfter, 'completion was vetoed: the invoice is NOT completed (no Reactivate)').not.toContain('RE');
         });
     });
 });
