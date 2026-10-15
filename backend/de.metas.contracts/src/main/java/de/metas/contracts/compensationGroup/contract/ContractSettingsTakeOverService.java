@@ -2,7 +2,10 @@ package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -20,14 +23,15 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -53,7 +57,7 @@ import java.util.stream.Collectors;
 
 /**
  * Takes over, onto a drop-ship purchase order's compensation group schema, the percentages of the linked sales order's
- * contract discount lines that the vendor's take-overs list.
+ * contract discount lines and of the invoice partner's qualifying refund contracts that the vendor's take-overs list.
  */
 @Service
 @RequiredArgsConstructor
@@ -62,6 +66,7 @@ public class ContractSettingsTakeOverService
 	@NonNull private final ContractSettingsTakeOverRepository takeOverRepository;
 	@NonNull private final OrderGroupRepository orderGroupRepository;
 	@NonNull private final ContractServiceFeeTakeOverService feeService;
+	@NonNull private final ContractSettingsTakeOverRefundService refundService;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@VisibleForTesting
@@ -74,7 +79,8 @@ public class ContractSettingsTakeOverService
 				() -> new ContractSettingsTakeOverService(
 						ContractSettingsTakeOverRepository.newInstanceForUnitTesting(),
 						OrderGroupRepository.newInstanceForUnitTesting(),
-						ContractServiceFeeTakeOverService.newInstanceForUnitTesting()));
+						ContractServiceFeeTakeOverService.newInstanceForUnitTesting(),
+						ContractSettingsTakeOverRefundService.newInstanceForUnitTesting()));
 	}
 
 	/**
@@ -134,7 +140,7 @@ public class ContractSettingsTakeOverService
 	}
 
 	/**
-	 * The fee line takes its discount product and base from the take-over row that took over the customer's bonus or,
+	 * The fee line takes its discount product and base from the take-over row that took over the customer's bonus or refund or,
 	 * when no bonus was taken over, from the settings' only take-over row.
 	 *
 	 * @return {@code null} when the settings have no take-over row (the vendor passes nothing on)
@@ -169,7 +175,7 @@ public class ContractSettingsTakeOverService
 	{
 		final ContractSettingsTakeOver takeOver = match.getTakeOver();
 		return newOwnLine(takeOver)
-				.percentage(match.getSummedPercent())
+				.percentage(match.getRoundedSummedPercent())
 				.description(createTakeOverLineDescription(match))
 				.build();
 	}
@@ -193,15 +199,18 @@ public class ContractSettingsTakeOverService
 	}
 
 	/**
-	 * e.g. {@code "3% Bonus Ware A + 1% Bonus Ware B"}, one entry per taken-over contract discount line
+	 * e.g. {@code "3% Bonus Ware + 1% RV Ware 1 % vierteljährlich + 0.125% RV Ware 0,125 % jährlich"}: one entry per taken-over
+	 * contract discount line, then one per taken-over refund contract (with its condition's name), in the refund lookup's order
 	 */
 	private String createTakeOverLineDescription(@NonNull final ContractSettingsTakeOverMatch match)
 	{
 		final Map<ProductId, String> productNames = productBL.getProductNames(match.getTakenOverProductIds());
-		return match.getTakenOverPercentages()
-				.stream()
-				.map(takenOver -> formatPercent(takenOver.getPercent()) + " " + productNames.get(takenOver.getCustomerDiscountProductId()))
-				.collect(Collectors.joining(" + "));
+		final List<String> parts = new ArrayList<>();
+		match.getTakenOverPercentages()
+				.forEach(takenOver -> parts.add(formatPercent(takenOver.getPercent()) + " " + productNames.get(takenOver.getCustomerDiscountProductId())));
+		match.getTakenOverRefunds()
+				.forEach(refund -> parts.add(formatPercent(refund.getPercent()) + " " + refund.getConditionsName()));
+		return String.join(" + ", parts);
 	}
 
 	static String formatPercent(@NonNull final Percent percent)
@@ -211,7 +220,8 @@ public class ContractSettingsTakeOverService
 
 	/**
 	 * @return one match per take-over whose customer discount products are on the percentage discount lines of the linked
-	 * sales order's contract-created groups, with the nominal percentage of each such line; take-overs without such a line are dropped
+	 * sales order's contract-created groups (with the nominal percentage of each such line) and/or whose listed refund conditions
+	 * have qualifying refund contracts of the linked sales order's invoice partner at its date; take-overs with neither are dropped
 	 */
 	@VisibleForTesting
 	ImmutableList<ContractSettingsTakeOverMatch> computeMatches(
@@ -236,21 +246,57 @@ public class ContractSettingsTakeOverService
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
 				.collect(ImmutableList.toImmutableList());
 
+		final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId = findTakenOverRefunds(order, takeOvers);
+
 		return takeOvers.stream()
-				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines))
+				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines, refundsByConditionsId))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * One lookup for the refund conditions of all take-overs; none when no take-over lists a refund condition
+	 * or the linked sales order's invoice partner or date is unknown.
+	 */
+	private ImmutableListMultimap<ConditionsId, TakenOverRefund> findTakenOverRefunds(
+			@NonNull final OrderDropShipInfo order,
+			@NonNull final ImmutableList<ContractSettingsTakeOver> takeOvers)
+	{
+		final BPartnerId invoicePartnerId = order.getInvoicePartnerId();
+		final ZonedDateTime soDate = order.getSoDate();
+		final ImmutableSet<ConditionsId> conditionsIds = takeOvers.stream()
+				.flatMap(takeOver -> takeOver.getRefundConditionsIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+		if (invoicePartnerId == null || soDate == null || conditionsIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		// the SO's DateOrdered as a date in the same (system) zone in which the refund lookup compares it with the terms' StartDate/EndDate
+		return refundService.findTakenOverRefunds(invoicePartnerId, TimeUtil.asLocalDateNonNull(TimeUtil.asTimestampNotNull(soDate)), conditionsIds);
+	}
+
+	/**
+	 * Every qualifying refund contract of a listed condition counts, also two contracts of the same condition
+	 * (REQUIREMENTS: every configured bonus reaches the purchase order).
+	 */
 	@Nullable
 	private static ContractSettingsTakeOverMatch computeMatchOrNull(
 			@NonNull final ContractSettingsTakeOver takeOver,
-			@NonNull final List<GroupCompensationLine> salesOrderDiscountLines)
+			@NonNull final List<GroupCompensationLine> salesOrderDiscountLines,
+			@NonNull final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId)
 	{
 		final ImmutableList<ContractSettingsTakeOverMatch.TakenOverPercentage> takenOverPercentages = salesOrderDiscountLines.stream()
 				.filter(line -> takeOver.getCustomerDiscountProductIds().contains(line.getProductId()) && !line.getPercentage().isZero())
 				.map(line -> ContractSettingsTakeOverMatch.TakenOverPercentage.of(line.getProductId(), line.getPercentage()))
 				.collect(ImmutableList.toImmutableList());
-		return takenOverPercentages.isEmpty() ? null : new ContractSettingsTakeOverMatch(takeOver, takenOverPercentages);
+		final ImmutableList<TakenOverRefund> takenOverRefunds = refundsByConditionsId.entries()
+				.stream()
+				.filter(entry -> takeOver.getRefundConditionsIds().contains(entry.getKey()))
+				.map(Map.Entry::getValue)
+				.collect(ImmutableList.toImmutableList());
+		return takenOverPercentages.isEmpty() && takenOverRefunds.isEmpty()
+				? null
+				: new ContractSettingsTakeOverMatch(takeOver, takenOverPercentages, takenOverRefunds);
 	}
 }

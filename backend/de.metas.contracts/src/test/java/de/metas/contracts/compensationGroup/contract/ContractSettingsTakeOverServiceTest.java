@@ -1,11 +1,15 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupCompensationType;
@@ -40,12 +44,14 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 
 /*
  * #%L
@@ -88,6 +94,10 @@ class ContractSettingsTakeOverServiceTest
 	private ContractCompensationGroupSettingsRepository settingsRepository;
 	private OrderGroupRepository orderGroupRepositorySpy;
 	private ContractServiceFeeTakeOverService feeServiceSpy;
+	private ContractSettingsTakeOverRefundService refundServiceMock;
+	/** the qualifying refund contracts the stubbed refund lookup knows, in lookup (= term) order */
+	private ImmutableListMultimap.Builder<ConditionsId, TakenOverRefund> preparedRefunds;
+	private int nextRefundTermRepoId;
 	private ContractSettingsTakeOverService service;
 	private UomId uomId;
 	private ProductId goodsProductId;
@@ -102,7 +112,20 @@ class ContractSettingsTakeOverServiceTest
 
 		feeServiceSpy = Mockito.spy(ContractServiceFeeTakeOverService.newInstanceForUnitTesting());
 
-		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeServiceSpy);
+		// the refund lookup returns, like the real one, only the prepared refunds of the requested conditions, in lookup order
+		preparedRefunds = ImmutableListMultimap.builder();
+		nextRefundTermRepoId = 900;
+		refundServiceMock = Mockito.mock(ContractSettingsTakeOverRefundService.class);
+		Mockito.when(refundServiceMock.findTakenOverRefunds(any(), any(), any())).thenAnswer(invocation -> {
+			final Set<ConditionsId> requested = invocation.getArgument(2);
+			final ImmutableListMultimap.Builder<ConditionsId, TakenOverRefund> result = ImmutableListMultimap.builder();
+			preparedRefunds.build().entries().stream()
+					.filter(entry -> requested.contains(entry.getKey()))
+					.forEach(entry -> result.put(entry.getKey(), entry.getValue()));
+			return result.build();
+		});
+
+		service = new ContractSettingsTakeOverService(ContractSettingsTakeOverRepository.newInstanceForUnitTesting(), orderGroupRepositorySpy, feeServiceSpy, refundServiceMock);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -609,6 +632,209 @@ class ContractSettingsTakeOverServiceTest
 		}
 	}
 
+	/** Refund contracts of the listed refund conditions are added to the take-over line, whose sum is rounded to the record's decimals. */
+	@Nested
+	class refunds
+	{
+		private final ConditionsId RV_WARE_1 = ConditionsId.ofRepoId(301);
+		private final ConditionsId RV_WARE_0125 = ConditionsId.ofRepoId(302);
+		private final ConditionsId RV_OTHER = ConditionsId.ofRepoId(303);
+
+		@Test
+		void contractBonusAndRefunds_summedAndRoundedToTwoDecimals()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1, RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("4.13"); // 3 + 1 + 0.125 = 4.125 -> half up
+			Mockito.verify(refundServiceMock).findTakenOverRefunds(CUSTOMER_ID, LocalDate.parse("2026-05-10"), ImmutableSet.of(RV_WARE_1, RV_WARE_0125));
+		}
+
+		@Test
+		void precisionThree_keeps4_125()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 3, ImmutableList.of(RV_WARE_1, RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("4.125");
+		}
+
+		@Test
+		void refundOnly_createsTakeOverLine()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus on the SO
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).containsExactly(GroupTemplateCompensationLine.builder()
+					.productId(OWN_PRODUCT_ID)
+					.compensationType(GroupCompensationType.Discount)
+					.percentage(Percent.of(1))
+					.appliesToProductCategoryId(CATEGORY_ID)
+					.isOwnBase(true)
+					.description("1% RV Ware 1 % vierteljährlich")
+					.build());
+		}
+
+		@Test
+		void neitherBonusNorRefund_noTakeOverLine()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1), bonusWareId);
+			// no qualifying refund contract of RV_WARE_1, no contract bonus on the SO
+			final I_C_Order salesOrder = createSalesOrderWithLines();
+			final GroupTemplate schema = schema();
+
+			assertThat(service.computeMatches(dropShipPO(salesOrder), settings)).isEmpty();
+			assertThat(service.applyToSchema(schema, dropShipPO(salesOrder), settings)).isSameAs(schema);
+		}
+
+		@Test
+		void refundsOfConditionListedOnOtherRecord_countOnlyThere()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final ContractCompensationGroupSettingsId settingsId = createSettingsRecord(null);
+			addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, 2, ImmutableList.of(RV_WARE_1), bonusWareAId);
+			addTakeOver(settingsId, OTHER_CATEGORY_ID, OWN_PRODUCT_ID, 2, ImmutableList.of(RV_WARE_0125), bonusWareBId);
+			final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(settingsId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareAId, "3"), new LineSpec(bonusWareBId, "2"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(2);
+			assertThat(lines.get(0).getAppliesToProductCategoryId()).isEqualTo(CATEGORY_ID);
+			assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("4");
+			assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware A + 1% RV Ware 1 % vierteljährlich");
+			assertThat(lines.get(1).getAppliesToProductCategoryId()).isEqualTo(OTHER_CATEGORY_ID);
+			assertThat(lines.get(1).getPercentage().toBigDecimal()).isEqualByComparingTo("2.13");
+			assertThat(lines.get(1).getDescription()).isEqualTo("2% Bonus Ware B + 0.125% RV Ware 0,125 % jährlich");
+			// one lookup for the union of both records' conditions
+			Mockito.verify(refundServiceMock, Mockito.times(1)).findTakenOverRefunds(any(), any(), any());
+		}
+
+		@Test
+		void description_namesBonusThenRefunds()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1, RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 1% RV Ware 1 % vierteljährlich + 0.125% RV Ware 0,125 % jährlich");
+		}
+
+		@Test
+		void twoTermsSameCondition_eachCounts()
+		{
+			// every qualifying refund contract reaches the PO (REQUIREMENTS § 3 "Several bonuses per customer all reach the purchase order");
+			// two valid terms of one condition are two contracts, so both count (they would also be settled twice)
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(1);
+			assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("5");
+			assertThat(lines.get(0).getDescription()).isEqualTo("3% Bonus Ware + 1% RV Ware 1 % vierteljährlich + 1% RV Ware 1 % vierteljährlich");
+		}
+
+		@Test
+		void noRefundConditionsListed_noRefundLookup()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(), bonusWareId);
+			prepareRefund(RV_OTHER, "RV Other", "5"); // a qualifying refund contract of a condition no record lists
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).containsExactly(expectedOwnLine());
+			Mockito.verify(refundServiceMock, Mockito.never()).findTakenOverRefunds(any(), any(), argThat(conditionsIds -> !conditionsIds.isEmpty()));
+		}
+
+		@Test
+		void feeLine_isNotRounded()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.125", "Payment Service Fee", null, null, true);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(feeConfig, 2, ImmutableList.of(RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(2);
+			assertThat(lines.get(0).getPercentage().toBigDecimal()).isEqualByComparingTo("3.13"); // take-over line rounded
+			assertThat(lines.get(1)).isEqualTo(expectedServiceFeeLine("2.125", "2.125% Payment Service Fee")); // fee line unrounded
+		}
+
+		@Test
+		void refundOnlyMatch_isTheFeeLinesRecord()
+		{
+			final ProductId bonusWareAId = product("Bonus Ware A", null, null);
+			final ProductId bonusWareBId = product("Bonus Ware B", null, null);
+			final I_InvoiceProcessingServiceCompany feeConfig = createFeeConfig(CUSTOMER_ID, "2.15", "Service Fee B", null, null, true);
+			final ContractCompensationGroupSettingsId settingsId = createSettingsRecord(feeConfig);
+			addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, 2, ImmutableList.of(), bonusWareAId);
+			addTakeOver(settingsId, OTHER_CATEGORY_ID, OWN_PRODUCT_ID, 2, ImmutableList.of(RV_WARE_1), bonusWareBId);
+			final ContractCompensationGroupSettings settings = settingsRepository.getBySettingsId(settingsId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			final I_C_Order salesOrder = createSalesOrderWithLines(); // no contract bonus: only the second record matches, by its refund
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(2);
+			assertThat(lines.get(0).getAppliesToProductCategoryId()).isEqualTo(OTHER_CATEGORY_ID);
+			assertThat(lines.get(0).getDescription()).isEqualTo("1% RV Ware 1 % vierteljährlich");
+			assertThat(lines.get(1).getAppliesToProductCategoryId()).isEqualTo(OTHER_CATEGORY_ID); // the fee line goes to the refund-only match's record
+			assertThat(lines.get(1).getPercentage().toBigDecimal()).isEqualByComparingTo("2.15");
+		}
+
+		@Test
+		void vendorLine_unchanged()
+		{
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			final GroupTemplateCompensationLine vendorLine = schemaLine(Percent.of("2.125"), CATEGORY_ID, product("Bonus Vendor", null, null))
+					.toBuilder()
+					.description("2.125% Bonus Vendor")
+					.build();
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(vendorLine), dropShipPO(salesOrder), settings).getCompensationLines();
+
+			assertThat(lines).hasSize(2);
+			assertThat(lines.get(0)).isSameAs(vendorLine); // not rounded
+			assertThat(lines.get(1).getPercentage().toBigDecimal()).isEqualByComparingTo("3.13");
+		}
+	}
+
 	/** A drop-ship purchase order whose linked sales order carries a 3% "Bonus Ware" contract discount line that the take-over lists. */
 	private List<GroupTemplateCompensationLine> applyBonusWareTakeOverOf3PercentTo(final GroupTemplateCompensationLine... schemaLines)
 	{
@@ -695,17 +921,38 @@ class ContractSettingsTakeOverServiceTest
 		return settingsRepository.getBySettingsId(settingsId);
 	}
 
-	private static void addTakeOver(
+	/** A take-over with the AD default of 2 decimals (unit tests have no DB default, so it is set explicitly). */
+	private static I_C_CompensationGroup_ContractSettings_TakeOver addTakeOver(
 			final ContractCompensationGroupSettingsId settingsId,
 			final ProductCategoryId categoryId,
 			final ProductId ownProductId,
+			final ProductId... customerDiscountProductIds)
+	{
+		return addTakeOver(settingsId, categoryId, ownProductId, 2, ImmutableList.of(), customerDiscountProductIds);
+	}
+
+	private static I_C_CompensationGroup_ContractSettings_TakeOver addTakeOver(
+			final ContractCompensationGroupSettingsId settingsId,
+			final ProductCategoryId categoryId,
+			final ProductId ownProductId,
+			final int percentagePrecision,
+			final List<ConditionsId> refundConditionsIds,
 			final ProductId... customerDiscountProductIds)
 	{
 		final I_C_CompensationGroup_ContractSettings_TakeOver takeOver = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 		takeOver.setC_CompensationGroup_ContractSettings_ID(settingsId.getRepoId());
 		takeOver.setM_Product_Category_ID(categoryId.getRepoId());
 		takeOver.setM_Product_ID(ownProductId.getRepoId());
+		takeOver.setPercentagePrecision(percentagePrecision);
 		saveRecord(takeOver);
+
+		for (final ConditionsId conditionsId : refundConditionsIds)
+		{
+			final I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond refundCond = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.class);
+			refundCond.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOver.getC_CompensationGroup_ContractSettings_TakeOver_ID());
+			refundCond.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+			saveRecord(refundCond);
+		}
 
 		for (final ProductId productId : customerDiscountProductIds)
 		{
@@ -714,6 +961,36 @@ class ContractSettingsTakeOverServiceTest
 			takeOverProduct.setM_Product_ID(productId.getRepoId());
 			saveRecord(takeOverProduct);
 		}
+		return takeOver;
+	}
+
+	/** One qualifying refund contract of {@code conditionsId} that the stubbed refund lookup returns. */
+	private void prepareRefund(final ConditionsId conditionsId, final String conditionsName, final String percent)
+	{
+		preparedRefunds.put(conditionsId, TakenOverRefund.builder()
+				.termId(FlatrateTermId.ofRepoId(nextRefundTermRepoId++))
+				.conditionsId(conditionsId)
+				.conditionsName(conditionsName)
+				.percent(Percent.of(percent))
+				.build());
+	}
+
+	/** Settings with one take-over of {@link #CATEGORY_ID} listing {@code refundConditionsIds}, with {@code percentagePrecision} decimals. */
+	private ContractCompensationGroupSettings createSettingsWithRefunds(
+			@Nullable final I_InvoiceProcessingServiceCompany passOnConfig,
+			final int percentagePrecision,
+			final List<ConditionsId> refundConditionsIds,
+			final ProductId... customerDiscountProductIds)
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettingsRecord(passOnConfig);
+		addTakeOver(settingsId, CATEGORY_ID, OWN_PRODUCT_ID, percentagePrecision, refundConditionsIds, customerDiscountProductIds);
+		return settingsRepository.getBySettingsId(settingsId);
+	}
+
+	/** A drop-ship purchase order whose linked sales order is keyed by {@link #CUSTOMER_ID} and {@link #SO_DATE}. */
+	private static OrderDropShipInfo dropShipPO(final I_C_Order salesOrder)
+	{
+		return purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
 	}
 
 	/**
