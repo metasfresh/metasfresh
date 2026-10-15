@@ -68,10 +68,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785686
 ;
 -- ============================================================================
 -- 4) AD_Field: labels selector on the hidden labels tab = refund condition (C_Flatrate_Conditions_ID of the junction;
---    its column carries the "Type_Conditions = Refund" validation rule). No AD_UI_Element -- the Labels element of section 6 references it.
+--    its column carries the "Type_Conditions = Refund" validation rule; per-field label element 585542 via AD_Name_ID). No AD_UI_Element -- the Labels element of section 6 references it.
 -- ============================================================================
-INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength, EntityType, IsActive, IsDisplayed, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
-VALUES (0, 593748, 785687 /*From ID Server*/, 0, 549519, TO_TIMESTAMP('2026-10-15 11:00:05', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'de.metas.contracts', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Vertragsbedingungen', TO_TIMESTAMP('2026-10-15 11:00:05', 'YYYY-MM-DD HH24:MI:SS'), 100)
+INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Name_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength, EntityType, IsActive, IsDisplayed, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
+VALUES (0, 593748, 785687 /*From ID Server*/, 585542, 0, 549519, TO_TIMESTAMP('2026-10-15 11:00:05', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'de.metas.contracts', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Rückvergütungsbedingungen (Kunde)', TO_TIMESTAMP('2026-10-15 11:00:05', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
@@ -79,7 +79,7 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 785687
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
 ;
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(541423 /*C_Flatrate_Conditions_ID element*/)
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(585542 /*customer refund conditions label element (AD_Name_ID)*/)
 ;
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785687
 ;
@@ -105,7 +105,7 @@ WHERE AD_Element_ID = 585540 AND AD_Language = 'en_US'
 --    10 category, 20 own-line discount product, 25 PercentagePrecision (new), 30 customer discount products,
 --    35 customer refund conditions (new), 40 IsActive
 -- ============================================================================
--- UI Element: PercentagePrecision (SeqNo=25, SeqNoGrid=25 -- between the own-line discount product (20) and IsActive (30))
+-- UI Element: PercentagePrecision (SeqNo=25, SeqNoGrid=25 -- between the own-line discount product (20) and IsActive (40; SeqNoGrid 30))
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
 VALUES (0, 785686, 0, 549509, 555798, 655044 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-10-15 11:00:08', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Nachkommastellen der Summe', 25, 25, 0, TO_TIMESTAMP('2026-10-15 11:00:08', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
