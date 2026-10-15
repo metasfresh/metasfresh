@@ -271,5 +271,74 @@ describe('RawList component', () => {
         expect(onBlurSpy).toHaveBeenCalled();
       });
     });
+
+    // A composed lookup (e.g. Business Partner -> Location -> Contact) can hand the focus to a
+    // sub-list that is still disabled because the partner is empty. Its `isFocused` then stays
+    // true (nothing clears it without a click-outside / Tab / select), so it must never pull the
+    // caret onto itself on a later re-render while it is disabled.
+    describe('a disabled list with isFocused', () => {
+      let container;
+      let otherInput;
+
+      beforeEach(() => {
+        container = document.createElement('div');
+        document.body.appendChild(container);
+        otherInput = document.createElement('input');
+        document.body.appendChild(otherInput);
+      });
+
+      afterEach(() => {
+        document.body.removeChild(container);
+        document.body.removeChild(otherInput);
+      });
+
+      const mountAttached = (props) =>
+        mount(
+          <RawListBare
+            {...createDummyProps(
+              {
+                ...fixtures.data1.widgetProps,
+                isToggled: false,
+                tabIndex: 0,
+                ...props,
+              },
+              fixtures.data1.listData
+            )}
+          />,
+          { attachTo: container }
+        );
+
+      it('does not take the focus when it is handed the focus while disabled', () => {
+        const wrapper = mountAttached({ isFocused: false, readonly: true });
+        otherInput.focus();
+
+        wrapper.setProps({ isFocused: true });
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('does not take the focus back from another field on a later re-render', () => {
+        const wrapper = mountAttached({ isFocused: true, readonly: true });
+        otherInput.focus();
+
+        wrapper.setProps({ listHash: uuidv4() });
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('takes the focus again once it is enabled', () => {
+        const wrapper = mountAttached({ isFocused: true, readonly: true });
+        otherInput.focus();
+
+        wrapper.setProps({ readonly: false });
+
+        expect(document.activeElement).toBe(
+          wrapper.find('.input-dropdown-container').getDOMNode()
+        );
+        wrapper.detach();
+      });
+    });
   });
 });

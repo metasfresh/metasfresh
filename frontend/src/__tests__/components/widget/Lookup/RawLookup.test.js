@@ -281,6 +281,54 @@ describe('RawLookup component', () => {
         wrapper.detach();
       });
 
+      // On a fresh page load the document data can arrive before the first field mounts, so no
+      // update ever reaches it: the mount itself must take the focus. It takes it from a
+      // non-text element such as a disabled composed-lookup sub-list that grabbed the caret first.
+      it('takes the focus when mounted with autoFocus and no update follows', () => {
+        const disabledSubList = document.createElement('div');
+        disabledSubList.tabIndex = 0;
+        document.body.appendChild(disabledSubList);
+        disabledSubList.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+        document.body.removeChild(disabledSubList);
+      });
+
+      it('focuses only once when mounted with autoFocus and then updated', () => {
+        const focusSpy = jest.spyOn(HTMLElement.prototype, 'focus');
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        wrapper.setProps({ readonly: false });
+        jest.runOnlyPendingTimers();
+
+        const input = wrapper.find('input').getDOMNode();
+        expect(document.activeElement).toBe(input);
+        expect(focusSpy.mock.instances.filter((element) => element === input)).toHaveLength(1);
+        focusSpy.mockRestore();
+        wrapper.detach();
+      });
+
+      it('does not take the focus when mounted with autoFocus and a value', () => {
+        const wrapper = mount(
+          <RawLookup
+            {...createDummyProps({
+              autoFocus: true,
+              dataId: '1000001',
+              defaultValue: { caption: 'Some partner', key: '2005577' },
+            })}
+          />,
+          { attachTo: container }
+        );
+        document.activeElement.blur();
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(document.body);
+        wrapper.detach();
+      });
+
       it('in a modal, takes the focus from the field that opened it when mounted with initialFocus', () => {
         otherInput.focus();
 
