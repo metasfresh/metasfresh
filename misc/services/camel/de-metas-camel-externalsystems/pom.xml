@@ -44,7 +44,7 @@
         <camel.version>4.10.6</camel.version>
         <guava.version>33.4.5-jre</guava.version>
 
-        <assertj.version>3.27.3</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <jackson.version>2.18.3</jackson.version>
     </properties>
