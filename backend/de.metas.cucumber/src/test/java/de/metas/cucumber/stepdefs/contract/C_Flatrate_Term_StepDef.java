@@ -628,12 +628,13 @@ public class C_Flatrate_Term_StepDef
 	 *   <b>ContractStatus</b> — (optional) expected contract status code (e.g. {@code Wa}, {@code Ru}, {@code Ec}, {@code Qu})<br>
 	 *   <b>DateContracted</b> — (optional) expected contract date<br>
 	 *   <b>MasterStartDate</b> — (optional) expected master start date<br>
+	 *   <b>EndDate</b> — (optional) expected end date (e.g. the change date a cancellation moved it to)<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then the C_Flatrate_Term identified by contract_1 has the contract status and dates:
-	 *   | ContractStatus | DateContracted | MasterStartDate |
-	 *   | Wa             | 2026-07-01     | 2026-08-01      |
+	 *   | ContractStatus | DateContracted | MasterStartDate | EndDate    |
+	 *   | Wa             | 2026-07-01     | 2026-08-01      | 2027-07-31 |
 	 * </pre>
 	 */
 	@And("^the C_Flatrate_Term identified by (.*) has the contract status and dates:$")
@@ -648,6 +649,8 @@ public class C_Flatrate_Term_StepDef
 				.ifPresent(dateContracted -> assertThat(TimeUtil.asLocalDate(term.getDateContracted())).as("DateContracted of C_Flatrate_Term %s", identifier).isEqualTo(dateContracted));
 		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate)
 				.ifPresent(masterStartDate -> assertThat(TimeUtil.asLocalDate(term.getMasterStartDate())).as("MasterStartDate of C_Flatrate_Term %s", identifier).isEqualTo(masterStartDate));
+		row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_EndDate)
+				.ifPresent(endDate -> assertThat(TimeUtil.asLocalDate(term.getEndDate())).as("EndDate of C_Flatrate_Term %s", identifier).isEqualTo(endDate));
 	}
 
 	/**
