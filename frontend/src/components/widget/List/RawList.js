@@ -74,8 +74,8 @@ export class RawList0 extends PureComponent {
     window.addEventListener('keydown', this.handleTab);
 
     //
-    // On initial focus gained when component was created first time
-    if (this.props.isFocused) {
+    // On initial focus gained when component was created first time (not while disabled, see componentDidUpdate)
+    if (this.props.isFocused && !this.props.readonly) {
       this.focus();
     }
   }

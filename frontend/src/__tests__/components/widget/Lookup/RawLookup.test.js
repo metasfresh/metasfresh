@@ -311,6 +311,48 @@ describe('RawLookup component', () => {
         wrapper.detach();
       });
 
+      it('does not take the focus from another field when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('in a quick-input row, takes the focus from another field when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, subentity: 'quickInput' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('in a modal, takes the focus from the field that opened it when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, isModal: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('focuses once on mount when both initialFocus and autoFocus are set', () => {
+        const focusSpy = jest.spyOn(HTMLElement.prototype, 'focus');
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, initialFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        const input = wrapper.find('input').getDOMNode();
+        expect(document.activeElement).toBe(input);
+        expect(focusSpy.mock.instances.filter((element) => element === input)).toHaveLength(1);
+        focusSpy.mockRestore();
+        wrapper.detach();
+      });
+
       it('does not take the focus when mounted with autoFocus and a value', () => {
         const wrapper = mount(
           <RawLookup

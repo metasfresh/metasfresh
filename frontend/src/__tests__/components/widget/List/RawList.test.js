@@ -328,6 +328,16 @@ describe('RawList component', () => {
         wrapper.detach();
       });
 
+      it('does not take the focus when mounted focused while disabled', () => {
+        otherInput.focus();
+
+        const wrapper = mountAttached({ isFocused: true, readonly: true });
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      // Intended: e.g. the contact sub-list gets the caret once a business partner is chosen and enables it.
       it('takes the focus again once it is enabled', () => {
         const wrapper = mountAttached({ isFocused: true, readonly: true });
         otherInput.focus();
