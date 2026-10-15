@@ -115,7 +115,7 @@ WITH td AS (SELECT td.c_taxdeclaration_id,
                          WHERE v.c_acctschema_id = td.c_acctschema_id
                            AND v.vatcode = c.vatcode
                            AND v.isactive = 'Y')::varchar                                           AS description,
-                        TRUNC(SUM(CASE WHEN c.amounttype IN ('N', 'U') THEN c.declared_amt * c.sgn END), 0) AS net_amt,
+                        COALESCE(SUM(CASE WHEN c.amounttype IN ('N', 'U') THEN c.declared_amt * c.sgn END), 0)::numeric AS net_amt,
                         SUM(CASE WHEN c.amounttype = 'T' THEN c.declared_amt * c.sgn END)           AS tax_amt
                  FROM signed c,
                       td

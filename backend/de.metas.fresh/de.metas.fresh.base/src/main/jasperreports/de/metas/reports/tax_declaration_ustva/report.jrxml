@@ -411,7 +411,7 @@ ORDER BY level_order, vatcode, amount_type NULLS FIRST, posting_date, documentno
 				</textElement>
 				<textFieldExpression><![CDATA["U".equals($F{amount_type}) ? ($F{description} != null ? $F{description} + " - " : "") + $R{typeUnknown} : $F{description}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="285" y="0" width="125" height="14" uuid="dd9c0f87-496a-4ba6-ab43-2c639de0fa83">
 					<printWhenExpression><![CDATA["SUMMARY".equals($F{report_level})]]></printWhenExpression>
 				</reportElement>
