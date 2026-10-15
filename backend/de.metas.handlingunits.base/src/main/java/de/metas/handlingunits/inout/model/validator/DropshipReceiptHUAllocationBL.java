@@ -65,7 +65,7 @@ import java.util.List;
  * then registers each assigned top-level HU as picked.
  *
  * <p>Errors within per-line processing are caught and logged so they never abort
- * the receipt completion.
+ * the receipt completion, except the alloc-count invariant check, which aborts the receipt.
  */
 @Service
 public class DropshipReceiptHUAllocationBL
@@ -118,10 +118,10 @@ public class DropshipReceiptHUAllocationBL
 				continue;
 			}
 
-			// Invariant: createDropshipPOForSO produces a 1:1 SO-line → PO-line mapping via the aggregator,
-			// so each PO line has exactly one C_PO_OrderLine_Alloc to one SO line. If multiple allocs ever
-			// appear, the per-HU CatchWeightHelper.extractQtys logic would allocate the FULL HU qty to each
-			// SO schedule (not split), so we fail loudly rather than silently double-allocate.
+			// Invariant: drop-ship POs are created with purchase type Dropship, whose line key is one PO line per
+			// SO line (CreatePOLineFromSOLinesAggregationKeyBuilder.forPurchaseType), so each PO line has at most
+			// one C_PO_OrderLine_Alloc. With more than one, the per-HU CatchWeightHelper.extractQtys logic would
+			// book the FULL HU qty onto every SO schedule (not split), so we fail loudly.
 			Check.assume(allocRecords.size() <= 1,
 					"Expected at most 1 C_PO_OrderLine_Alloc per PO line but got {} for C_PO_OrderLine_ID={}",
 					allocRecords.size(), poOrderLineId);
