@@ -35,21 +35,18 @@ import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.assertValidAgainstXsd;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.count;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.parse;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.readXsdTargetNamespace;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.text;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.texts;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,8 +59,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 {
-	private static final String XSD_RESOURCE = "/pain.001.001.09.ch.03.xsd";
-
 	private static final String DEBTOR_IBAN = "CH72 8000 5000 0888 7776 6";
 	private static final String DEBTOR_BIC = "RAIFCH22005";
 
@@ -1134,99 +1129,5 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 			sb.append(text);
 		}
 		return sb.toString();
-	}
-
-	private static List<String> texts(final Document doc, final String path) throws Exception
-	{
-		final NodeList nodes = (NodeList)XPathFactory.newInstance().newXPath().evaluate(toXPath(path), doc, XPathConstants.NODESET);
-		final List<String> result = new ArrayList<>();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			result.add(nodes.item(i).getTextContent());
-		}
-		return result;
-	}
-
-	private static void assertValidAgainstXsd(final byte[] xml) throws Exception
-	{
-		final URL xsd = SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test.class.getResource(XSD_RESOURCE);
-		assertThat(xsd).as("XSD %s on the classpath", XSD_RESOURCE).isNotNull();
-
-		SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-				.newSchema(xsd)
-				.newValidator()
-				.validate(new StreamSource(new ByteArrayInputStream(xml))); // throws SAXParseException with line/column if invalid
-	}
-
-	private static String readXsdTargetNamespace() throws Exception
-	{
-		try (final InputStream xsd = SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test.class.getResourceAsStream(XSD_RESOURCE))
-		{
-			assertThat(xsd).as("XSD %s on the classpath", XSD_RESOURCE).isNotNull();
-			final String targetNamespace = newDocumentBuilderFactory().newDocumentBuilder().parse(xsd).getDocumentElement().getAttribute("targetNamespace");
-			assertThat(targetNamespace).isNotBlank();
-			return targetNamespace;
-		}
-	}
-
-	private static Document parse(final byte[] xml) throws Exception
-	{
-		return newDocumentBuilderFactory().newDocumentBuilder().parse(new ByteArrayInputStream(xml));
-	}
-
-	private static DocumentBuilderFactory newDocumentBuilderFactory()
-	{
-		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		return factory;
-	}
-
-	/**
-	 * @return text of the first node matching the given namespace-agnostic path, e.g. {@code Document/CstmrCdtTrfInitn/GrpHdr/NbOfTxs}
-	 */
-	private static String text(final Document doc, final String path) throws Exception
-	{
-		assertThat(count(doc, path)).as("nodes at %s", path).isPositive();
-		return XPathFactory.newInstance().newXPath().evaluate(toXPath(path), doc);
-	}
-
-	private static int count(final Document doc, final String path) throws Exception
-	{
-		final NodeList nodes = (NodeList)XPathFactory.newInstance().newXPath().evaluate(toXPath(path), doc, XPathConstants.NODESET);
-		return nodes.getLength();
-	}
-
-	/**
-	 * Turns {@code A/B[C/@x='y']/D} into a namespace-agnostic XPath ({@code /*[local-name()='A']/...}); predicates are converted the same way.
-	 */
-	private static String toXPath(final String path)
-	{
-		return "/" + toRelativeXPath(path);
-	}
-
-	private static String toRelativeXPath(final String path)
-	{
-		return Arrays.stream(path.split("/(?![^\\[]*\\])"))
-				.map(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test::toXPathStep)
-				.collect(Collectors.joining("/"));
-	}
-
-	private static String toXPathStep(final String step)
-	{
-		if (step.startsWith("@"))
-		{
-			return step;
-		}
-		final int predicateStart = step.indexOf('[');
-		if (predicateStart < 0)
-		{
-			return "*[local-name()='" + step + "']";
-		}
-		final String name = step.substring(0, predicateStart);
-		final String predicate = step.substring(predicateStart + 1, step.length() - 1);
-		final int eq = predicate.indexOf('=');
-		final String predicatePath = eq < 0 ? predicate : predicate.substring(0, eq);
-		final String predicateValue = eq < 0 ? "" : predicate.substring(eq);
-		return "*[local-name()='" + name + "'][" + toRelativeXPath(predicatePath) + predicateValue + "]";
 	}
 }

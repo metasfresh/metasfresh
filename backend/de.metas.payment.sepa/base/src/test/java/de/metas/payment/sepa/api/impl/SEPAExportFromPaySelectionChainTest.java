@@ -31,18 +31,14 @@ import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import javax.annotation.Nullable;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.sql.Timestamp;
 import java.util.List;
 
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.assertValidAgainstXsd;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.parse;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.readXsdTargetNamespace;
+import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.text;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +53,7 @@ public class SEPAExportFromPaySelectionChainTest
 {
 	private static final int ORG_ID = 1000000;
 
-	private static final String XSD_PAIN_001_001_09_CH_03 = "/pain.001.001.09.ch.03.xsd";
+	private static final String NAMESPACE_PAIN_001_001_09 = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.09";
 	private static final String NAMESPACE_PAIN_001_001_03_CH_02 = "http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd";
 	private static final String NAMESPACE_PAIN_008_003_02 = "urn:iso:std:iso:20022:tech:xsd:pain.008.003.02";
 
@@ -99,15 +95,16 @@ public class SEPAExportFromPaySelectionChainTest
 		final byte[] xml = exportAsProcessDoes(paySelection, null);
 
 		final String targetNamespace = readXsdTargetNamespace();
+		assertThat(targetNamespace).isEqualTo(NAMESPACE_PAIN_001_001_09);
 		assertThat(rootNamespace(xml)).isEqualTo(targetNamespace);
-		assertValidAgainstPain001_001_09_ch_03_Xsd(xml);
+		assertValidAgainstXsd(xml);
 
 		final Document doc = parse(xml);
-		final String cdtTrfTxInf = "/*[local-name()='Document']/*[local-name()='CstmrCdtTrfInitn']/*[local-name()='PmtInf']/*[local-name()='CdtTrfTxInf']";
-		assertThat(xpath(doc, cdtTrfTxInf + "/*[local-name()='CdtrAcct']/*[local-name()='Id']/*[local-name()='IBAN']")).isEqualTo("CH5021977000004331346");
-		assertThat(xpath(doc, cdtTrfTxInf + "/*[local-name()='Cdtr']/*[local-name()='Nm']")).isEqualTo("Test Creditor AG");
-		assertThat(xpath(doc, cdtTrfTxInf + "/*[local-name()='Cdtr']/*[local-name()='PstlAdr']/*[local-name()='TwnNm']")).isEqualTo("Zuerich");
-		assertThat(xpath(doc, cdtTrfTxInf + "/*[local-name()='RmtInf']/*[local-name()='Ustrd']")).isEqualTo("Invoice 1001");
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo("CH5021977000004331346");
+		assertThat(text(doc, cdtTrfTxInf + "/Cdtr/Nm")).isEqualTo("Test Creditor AG");
+		assertThat(text(doc, cdtTrfTxInf + "/Cdtr/PstlAdr/TwnNm")).isEqualTo("Zuerich");
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Ustrd")).isEqualTo("Invoice 1001");
 	}
 
 	@Test
@@ -148,13 +145,13 @@ public class SEPAExportFromPaySelectionChainTest
 
 		final byte[] xml = exportXml(sepaExport);
 
-		assertValidAgainstPain001_001_09_ch_03_Xsd(xml);
+		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
-		final String cdtTrfTxInf = "/*[local-name()='Document']/*[local-name()='CstmrCdtTrfInitn']/*[local-name()='PmtInf']/*[local-name()='CdtTrfTxInf']";
-		assertThat(xpath(doc, cdtTrfTxInf + "/*[local-name()='CdtrAcct']/*[local-name()='Id']/*[local-name()='IBAN']")).isEqualTo("CH4431999123000889012");
-		final String cdtrRefInf = cdtTrfTxInf + "/*[local-name()='RmtInf']/*[local-name()='Strd']/*[local-name()='CdtrRefInf']";
-		assertThat(xpath(doc, cdtrRefInf + "/*[local-name()='Tp']/*[local-name()='CdOrPrtry']/*[local-name()='Prtry']")).isEqualTo("QRR");
-		assertThat(xpath(doc, cdtrRefInf + "/*[local-name()='Ref']")).isEqualTo(QR_REFERENCE);
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo("CH4431999123000889012");
+		final String cdtrRefInf = cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf";
+		assertThat(text(doc, cdtrRefInf + "/Tp/CdOrPrtry/Prtry")).isEqualTo("QRR");
+		assertThat(text(doc, cdtrRefInf + "/Ref")).isEqualTo(QR_REFERENCE);
 	}
 
 	/**
@@ -294,42 +291,4 @@ public class SEPAExportFromPaySelectionChainTest
 		}
 	}
 
-	private static void assertValidAgainstPain001_001_09_ch_03_Xsd(final byte[] xml) throws Exception
-	{
-		final URL xsd = SEPAExportFromPaySelectionChainTest.class.getResource(XSD_PAIN_001_001_09_CH_03);
-		assertThat(xsd).as("XSD %s on the classpath", XSD_PAIN_001_001_09_CH_03).isNotNull();
-
-		SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-				.newSchema(xsd)
-				.newValidator()
-				.validate(new StreamSource(new ByteArrayInputStream(xml))); // throws SAXParseException with line/column if invalid
-	}
-
-	private static String readXsdTargetNamespace() throws Exception
-	{
-		try (final InputStream xsd = SEPAExportFromPaySelectionChainTest.class.getResourceAsStream(XSD_PAIN_001_001_09_CH_03))
-		{
-			assertThat(xsd).as("XSD %s on the classpath", XSD_PAIN_001_001_09_CH_03).isNotNull();
-			final String targetNamespace = newDocumentBuilderFactory().newDocumentBuilder().parse(xsd).getDocumentElement().getAttribute("targetNamespace");
-			assertThat(targetNamespace).isEqualTo("urn:iso:std:iso:20022:tech:xsd:pain.001.001.09");
-			return targetNamespace;
-		}
-	}
-
-	private static Document parse(final byte[] xml) throws Exception
-	{
-		return newDocumentBuilderFactory().newDocumentBuilder().parse(new ByteArrayInputStream(xml));
-	}
-
-	private static DocumentBuilderFactory newDocumentBuilderFactory()
-	{
-		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		return factory;
-	}
-
-	private static String xpath(final Document doc, final String xpath) throws Exception
-	{
-		return XPathFactory.newInstance().newXPath().evaluate(xpath, doc);
-	}
 }
