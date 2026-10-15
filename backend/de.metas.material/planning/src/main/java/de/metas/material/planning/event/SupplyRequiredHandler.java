@@ -9,15 +9,18 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
+import de.metas.quantity.Quantity;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -43,12 +46,25 @@ import java.util.List;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
-@RequiredArgsConstructor
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
 	@NonNull private final PostMaterialEventService postMaterialEventService;
-	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
+	@NonNull private final ImmutableList<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 	@NonNull private final SupplyRequiredHandlerHelper helper;
+
+	public SupplyRequiredHandler(
+			@NonNull final PostMaterialEventService postMaterialEventService,
+			@NonNull final List<SupplyRequiredAdvisor> supplyRequiredAdvisors,
+			@NonNull final SupplyRequiredHandlerHelper helper)
+	{
+		this.postMaterialEventService = postMaterialEventService;
+		// Sort advisors by PlanningUsage declaration order so the dispatch below always runs
+		// distribution -> manufacturing -> purchasing, independent of Spring bean discovery order.
+		this.supplyRequiredAdvisors = supplyRequiredAdvisors.stream()
+				.sorted(Comparator.comparing(a -> a.getPlanningUsage().ordinal()))
+				.collect(ImmutableList.toImmutableList());
+		this.helper = helper;
+	}
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
@@ -66,13 +82,24 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	{
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
-		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
-		if (context != null)
+		final Map<PlanningUsage, MaterialPlanningContext> contextsByUsage = helper.createContextsByUsage(descriptor);
+
+		Quantity remainingQty = SupplyRequiredHandlerUtils.extractQtyToSupply(descriptor);
+		for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
 		{
-			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
+			if (remainingQty.signum() <= 0)
 			{
-				events.addAll(advisor.createAdvisedEvents(descriptor, context));
+				break;
 			}
+			final MaterialPlanningContext context = contextsByUsage.get(advisor.getPlanningUsage());
+			if (context == null)
+			{
+				continue;
+			}
+
+			final SupplyAdvice advice = advisor.createAdvisedEvents(descriptor, context, remainingQty);
+			events.addAll(advice.getEvents());
+			remainingQty = remainingQty.subtract(advice.getConsumedQty());
 		}
 
 		if (events.isEmpty())
