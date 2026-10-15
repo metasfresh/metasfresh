@@ -7,8 +7,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigRepository;
@@ -19,7 +19,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
@@ -61,6 +60,7 @@ import java.util.Set;
 public class ContractSettingsTakeOverRefundService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	@NonNull private final RefundConfigRepository refundConfigRepository;
 
 	public ContractSettingsTakeOverRefundService(@NonNull final RefundConfigRepository refundConfigRepository)
@@ -128,7 +128,7 @@ public class ContractSettingsTakeOverRefundService
 			result.put(conditionsId, TakenOverRefund.builder()
 					.termId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 					.conditionsId(conditionsId)
-					.conditionsName(nameByConditions.computeIfAbsent(conditionsId, ContractSettingsTakeOverRefundService::retrieveConditionsName))
+					.conditionsName(nameByConditions.computeIfAbsent(conditionsId, this::retrieveConditionsName))
 					.percent(percent.get())
 					.build());
 		}
@@ -142,9 +142,9 @@ public class ContractSettingsTakeOverRefundService
 				!refundConfigRepository.retrievePackingMaterialIdsOfPackingOptionFilteredConfigs(conditionsId).isEmpty());
 	}
 
-	private static String retrieveConditionsName(@NonNull final ConditionsId conditionsId)
+	private String retrieveConditionsName(@NonNull final ConditionsId conditionsId)
 	{
-		return InterfaceWrapperHelper.load(conditionsId, I_C_Flatrate_Conditions.class).getName();
+		return flatrateDAO.getConditionsById(conditionsId).getName();
 	}
 
 	/**
