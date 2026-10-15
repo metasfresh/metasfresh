@@ -122,6 +122,9 @@ public class DropshipReceiptHUAllocationBL
 			// SO line (CreatePOLineFromSOLinesAggregationKeyBuilder.forPurchaseType), so each PO line has at most
 			// one C_PO_OrderLine_Alloc. With more than one, the per-HU CatchWeightHelper.extractQtys logic would
 			// book the FULL HU qty onto every SO schedule (not split), so we fail loudly.
+			// Mediated purchase orders may also be drop-ship (CreatePOFromSOsAggregator) and keep merged lines,
+			// but they get no receipt schedules (C_Order_ReceiptSchedule.isEligibleForReceiptSchedule),
+			// so they never reach this point.
 			Check.assume(allocRecords.size() <= 1,
 					"Expected at most 1 C_PO_OrderLine_Alloc per PO line but got {} for C_PO_OrderLine_ID={}",
 					allocRecords.size(), poOrderLineId);
