@@ -46,8 +46,8 @@ public class ContractSettingsTakeOver
 	/** the discount product of the purchase order's own take-over line */
 	@NonNull ProductId ownLineProductId;
 	@NonNull @Singular ImmutableSet<ProductId> customerDiscountProductIds;
-	/** decimals of the take-over line's summed percentage */
-	int percentagePrecision;
+	/** decimals of the take-over line's summed percentage; defaults to 2, the AD default of the column PercentagePrecision */
+	@Builder.Default int percentagePrecision = 2;
 	/** the refund conditions whose qualifying refund contracts are taken over */
 	@NonNull @Singular ImmutableSet<ConditionsId> refundConditionsIds;
 }

@@ -89,6 +89,7 @@ class ContractSettingsTakeOverRepositoryTest
 				.productCategoryId(CATEGORY_ID)
 				.ownLineProductId(PRODUCT_P_ID)
 				.customerDiscountProductIds(ImmutableSet.of(PRODUCT_Q_ID))
+				.percentagePrecision(0) // the record's value as stored; the unit-test record has no AD default
 				.build());
 	}
 
