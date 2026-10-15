@@ -120,8 +120,8 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | po_1           | so_1                     | false   | POO         | CO            | true           |
-    # The first Elstar line is received before the second one is loaded:
-    # with merged purchase-order lines, receiving fails here, before two sales-order lines map to one purchase-order line.
+    # Only sol_e1 is loaded here: sol_e1 and sol_e2 have the same product and attributes and must stay two purchase-order lines;
+    # if they shared one, the e1 receipt below is where it must fail.
     And load C_OrderLines allocated to sales order lines:
       | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
       | sol_e1            | pol_e1            | po_1           |
@@ -135,6 +135,7 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
       | lutu_e1                               | hus_e1 | 1                  | pol_e1         | N               | 0     | N               | 1     | N               | 924         | 101                                |
+    # Fails if one purchase-order line carries allocations to several sales-order lines.
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e1 | pol_e1         | receipt_e1            |
