@@ -35,7 +35,7 @@ import java.util.Optional;
 
 /** The drop-ship facts of an order that decide whether it takes over the contract discounts of a linked sales order. */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class OrderDropShipInfo
 {
 	@NonNull SOTrx soTrx;
@@ -53,6 +53,13 @@ public class OrderDropShipInfo
 	 * {@code null} when there is no linked sales order. NOT this (purchase) order's date.
 	 */
 	@Nullable ZonedDateTime soDate;
+
+	/**
+	 * Whether the linked sales order's refund percentages may be taken over: the linked sales order is completed/closed,
+	 * or this purchase order is completed inside its completion. A reactivated sales order takes over no refund percentage
+	 * (its contract discounts still are taken over). {@code false} when there is no linked sales order.
+	 */
+	boolean refundTakeOverAllowed;
 
 	/** @return the linked sales order, if this is a drop-ship purchase order */
 	public Optional<OrderId> getDropShipLinkedSalesOrderId()

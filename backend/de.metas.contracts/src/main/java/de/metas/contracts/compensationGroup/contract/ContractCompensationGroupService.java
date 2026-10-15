@@ -8,6 +8,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
@@ -26,6 +27,7 @@ import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -174,7 +176,11 @@ public class ContractCompensationGroupService
 		{
 			final I_C_Order linkedSalesOrder = orderDAO.getById(linkedOrderId);
 			builder.invoicePartnerId(BPartnerId.ofRepoId(linkedSalesOrder.getBill_BPartner_ID()))
-					.soDate(TimeUtil.asZonedDateTime(linkedSalesOrder.getDateOrdered(), OrgId.ofRepoId(linkedSalesOrder.getAD_Org_ID())));
+					.soDate(TimeUtil.asZonedDateTime(linkedSalesOrder.getDateOrdered(), OrgId.ofRepoId(linkedSalesOrder.getAD_Org_ID())))
+					// while the sales order completes (and creates + completes this PO) it is not yet completed, just like a reactivated one;
+					// only the call-context flag tells the two apart
+					.refundTakeOverAllowed(DropshipPOFromSOService.isCompletedWithinSalesOrderCompletion(order)
+							|| DocStatus.ofNullableCodeOrUnknown(linkedSalesOrder.getDocStatus()).isCompletedOrClosed());
 		}
 
 		return builder.build();

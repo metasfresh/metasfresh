@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.order;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -187,6 +188,8 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
+	private static final String COLUMNNAME_Exclude_C_Order_ID = "Exclude_" + COLUMNNAME_C_Order_ID;
+
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -862,11 +865,17 @@ public class C_Order_StepDef
 	 * <b>DocStatus</b> — (optional) expected doc status<br>
 	 * <b>IsDropShip</b> — (optional, default false) expected dropship flag<br>
 	 * <b>DropShip_BPartner_ID</b> — (optional, identifier-ref) expected dropship partner<br>
+	 * <b>Exclude_C_Order_ID</b> — (optional, comma-separated identifier-refs) already registered orders that are not candidates, to tell apart
+	 * several linked orders with the same partner and DocStatus (e.g. the PO created when an SO is completed again after reactivation,
+	 * while the PO of its first completion stays completed)<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData
 	 * @cucumber.example <pre>
 	 * Then the order is created:
 	 *   | Identifier | Link_Order_ID | C_BPartner_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
 	 *   | po_1       | so            | vendor_1      | false   | POO         | CO        | true       |
+	 * And the order is created:
+	 *   | Identifier | Link_Order_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip | Exclude_C_Order_ID |
+	 *   | po_2       | so            | false   | POO         | CO        | true       | po_1               |
 	 * </pre>
 	 */
 	@Then("the order is created:")
@@ -889,10 +898,18 @@ public class C_Order_StepDef
 		// and several POs share the same Link_Order_ID with different DocStatus values (e.g. VO for the old PO, CO for the new one)
 		final String docStatusFilter = row.getAsOptionalString(COLUMNNAME_DocStatus).orElse(null);
 
+		// Optional disambiguation by already registered orders: needed when several linked orders share partner and DocStatus
+		// (e.g. the SO is completed, reactivated and completed again, and the PO of the first completion stays completed)
+		final ImmutableSet<OrderId> excludedOrderIds = row.getAsIdentifierList(COLUMNNAME_Exclude_C_Order_ID)
+				.stream()
+				.map(identifier -> identifier.lookupNotNullIdIn(orderTable))
+				.collect(ImmutableSet.toImmutableSet());
+
 		final List<I_C_Order> purchaseOrders = orderBL.getByLinkOrderId(linkedOrderId)
 				.stream()
 				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
 				.filter(order -> docStatusFilter == null || docStatusFilter.equals(order.getDocStatus()))
+				.filter(order -> !excludedOrderIds.contains(OrderId.ofRepoId(order.getC_Order_ID())))
 				.collect(ImmutableList.toImmutableList());
 		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
 		final I_C_Order purchaseOrder = purchaseOrders.get(0);
@@ -1500,6 +1517,57 @@ public class C_Order_StepDef
 			assertThat(proposalReloaded.getRef_Order_ID()).as("Ref_Order_ID of proposal %s", proposal.getC_Order_ID()).isPositive();
 			orderTable.putOrReplace(row.getAsIdentifier("SalesOrder.C_Order_ID"), orderBL.getById(OrderId.ofRepoId(proposalReloaded.getRef_Order_ID())));
 		});
+	}
+
+	/**
+	 * Runs the sales order window's "void with related documents and recreate" action ({@code C_Order_VoidWithRelatedDocsAndRecreate})
+	 * on a completed order: the order is voided under a prefixed document number, and a copy carrying the original document number is
+	 * created. The copy is registered under {@code recreatedOrderIdentifier}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the completed order "order" is voided with related documents and recreated as "orderRecreated"
+	 * </pre>
+	 */
+	@When("the completed order {string} is voided with related documents and recreated as {string}")
+	public void voidWithRelatedDocsAndRecreate(@NonNull final String orderIdentifier, @NonNull final String recreatedOrderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		InterfaceWrapperHelper.refresh(order);
+		final String originalDocumentNo = order.getDocumentNo();
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("C_Order_VoidWithRelatedDocsAndRecreate");
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(ClientId.ofRepoId(order.getAD_Client_ID()))
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.setRecord(I_C_Order.Table_Name, order.getC_Order_ID())
+				.addParameter("VoidedOrderDocumentNoPrefix", "Voided")
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
+
+		InterfaceWrapperHelper.refresh(order);
+		final I_C_Order recreatedOrder = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(COLUMNNAME_DocumentNo, originalDocumentNo)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, order.getC_BPartner_ID())
+				.addNotEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.firstOnlyNotNull(I_C_Order.class);
+		orderTable.putOrReplace(recreatedOrderIdentifier, recreatedOrder);
 	}
 
 	@When("C_Order is cloned")
