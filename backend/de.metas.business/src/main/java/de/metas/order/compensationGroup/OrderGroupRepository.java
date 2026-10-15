@@ -1139,6 +1139,32 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
+	/** @return true if the given {@code C_Order_CompensationGroup} header was created by a contract, see {@link #createContractCreatedGroupsQueryBuilder()} */
+	public boolean isContractCreatedGroup(final int orderCompensationGroupId)
+	{
+		return orderCompensationGroupId > 0
+				&& createContractCreatedGroupsQueryBuilder()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupId)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Copies the given {@code C_Order_CompensationGroup} header to the given order, without its quotation BOM (the target order gets another one).
+	 *
+	 * @return the ID of the copy
+	 */
+	public int createCopyOfGroupHeader(final int orderCompensationGroupId, @NonNull final OrderId toOrderId)
+	{
+		final I_C_Order_CompensationGroup orderCompensationGroup = load(orderCompensationGroupId, I_C_Order_CompensationGroup.class);
+		final I_C_Order_CompensationGroup orderCompensationGroupNew = newInstance(I_C_Order_CompensationGroup.class);
+		InterfaceWrapperHelper.copyValues(orderCompensationGroup, orderCompensationGroupNew);
+		orderCompensationGroupNew.setC_Order_ID(toOrderId.getRepoId());
+		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
+		save(orderCompensationGroupNew);
+		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
+	}
+
 	/**
 	 * Batched check of which of the given {@link GroupId}s were created by a contract, i.e. their
 	 * {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
