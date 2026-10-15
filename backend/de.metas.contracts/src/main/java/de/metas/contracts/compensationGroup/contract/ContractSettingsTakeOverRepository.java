@@ -106,7 +106,7 @@ public class ContractSettingsTakeOverRepository
 	/**
 	 * Deliberately uncached: the interceptor must see the current transaction's records.
 	 *
-	 * @return whether the refund conditions are listed on an active take-over refund-condition record of any active take-over
+	 * @return whether the refund condition is listed on an active take-over refund-condition record of any active take-over
 	 * record of the given take-over record's settings, other than {@code excludeTakeOverRefundCondId}
 	 */
 	public boolean isRefundConditionOfSameSettings(
