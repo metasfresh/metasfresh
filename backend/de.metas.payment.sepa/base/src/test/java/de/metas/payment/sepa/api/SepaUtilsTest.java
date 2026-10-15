@@ -57,6 +57,25 @@ class SepaUtilsTest
 	}
 
 	@Test
+	void isSepaSchemeCountryIban()
+	{
+		assertThat(SepaUtils.isSepaSchemeCountryIban("DE62007620110623852957")).isTrue();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("NL31INGB0000000044")).isTrue();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("CH50 2197 7000 0043 3134 6")).isTrue();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("LI21 0881 0000 2324 013A A")).isTrue();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("GB29 NWBK 6016 1331 9268 19")).isTrue(); // non-EEA SEPA country
+		assertThat(SepaUtils.isSepaSchemeCountryIban("ME25505000012345678951")).isTrue(); // non-EEA SEPA country since v7.0 of the list
+		assertThat(SepaUtils.isSepaSchemeCountryIban("RS35260005601001611379")).isTrue(); // non-EEA SEPA country since v8.0 of the list
+		assertThat(SepaUtils.isSepaSchemeCountryIban("de62007620110623852957")).isTrue(); // lower case
+		assertThat(SepaUtils.isSepaSchemeCountryIban("TR330006100519786457841326")).isFalse();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("AE070331234567890123456")).isFalse();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("US")).isFalse();
+		assertThat(SepaUtils.isSepaSchemeCountryIban("D")).isFalse();
+		assertThat(SepaUtils.isSepaSchemeCountryIban(" ")).isFalse();
+		assertThat(SepaUtils.isSepaSchemeCountryIban(null)).isFalse();
+	}
+
+	@Test
 	void getFirstNonEmpty()
 	{
 		assertThat(SepaUtils.getFirstNonEmpty(() -> null, () -> " ", () -> " name ", () -> "other")).isEqualTo("name");

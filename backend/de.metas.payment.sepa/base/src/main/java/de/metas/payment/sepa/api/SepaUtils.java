@@ -22,6 +22,7 @@
 
 package de.metas.payment.sepa.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccount;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -32,6 +33,7 @@ import de.metas.payment.esr.api.impl.ESRCheckDigitBuilder;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -79,6 +81,15 @@ public class SepaUtils
 	 * ({@code "CH"}), which would otherwise produce schema-invalid SEPA XML.
 	 */
 	private static final Pattern ISO_3166_ALPHA2 = Pattern.compile("^[A-Z]{2}$");
+
+	/**
+	 * The IBAN country codes of the countries and territories in the geographical scope of the SEPA payment schemes,
+	 * taken from the column "IBAN" of chapter 5 of "EPC List of Countries in the SEPA Schemes' Geographical Scope", EPC409-09 version 8.0 of 24 December 2025 (European Payments Council).
+	 * Territories without IBAN country code of their own use the one of their country, e.g. FR for Guadeloupe and GB for Jersey.
+	 */
+	private static final ImmutableSet<String> SEPA_SCHEME_IBAN_COUNTRY_CODES = ImmutableSet.of(
+			"AD", "AL", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GI", "GR", "HR", "HU", "IE", "IS",
+			"IT", "LI", "LT", "LU", "LV", "MC", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SE", "SI", "SK", "SM", "VA");
 
 	private final static Map<String, String> SEPA_REPLACEMENT_MAP = new HashMap<>();
 
@@ -190,6 +201,19 @@ public class SepaUtils
 		}
 		final String ibanToUse = iban.replaceAll(" ", "");
 		return ibanToUse.startsWith("CH") || ibanToUse.startsWith("LI");
+	}
+
+	/**
+	 * @return {@code true} if the given IBAN's country code (its first two characters, case-insensitive) is one of {@link #SEPA_SCHEME_IBAN_COUNTRY_CODES}
+	 */
+	public static boolean isSepaSchemeCountryIban(@Nullable final String iban)
+	{
+		final String ibanNorm = StringUtils.trimBlankToNull(iban);
+		if (ibanNorm == null || ibanNorm.length() < 2)
+		{
+			return false;
+		}
+		return SEPA_SCHEME_IBAN_COUNTRY_CODES.contains(ibanNorm.substring(0, 2).toUpperCase());
 	}
 
 	/**

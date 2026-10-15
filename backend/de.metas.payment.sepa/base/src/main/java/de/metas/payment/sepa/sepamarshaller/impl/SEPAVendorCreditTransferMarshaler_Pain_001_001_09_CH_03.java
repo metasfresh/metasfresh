@@ -141,7 +141,7 @@ import static java.math.BigDecimal.ZERO;
  * Supported payment types (IG 3.15):
  * <ul>
  * <li>"D" (domestic) with an IBAN or QR-IBAN of the creditor (internally {@link #PAYMENT_TYPE_3})</li>
- * <li>"S" (SEPA) with an IBAN of the creditor (internally {@link #PAYMENT_TYPE_5})</li>
+ * <li>"S" (SEPA) in EUR with an IBAN of the creditor in a SEPA scheme country (internally {@link #PAYMENT_TYPE_5})</li>
  * <li>"X" (V1 foreign currency domestic, V2 cross-border; internally {@link #PAYMENT_TYPE_6})</li>
  * </ul>
  * ISR payments no longer exist in the IG and are rejected with a {@link SepaMarshallerException}.
@@ -1181,8 +1181,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				// "domestic" IBAN; it contains the IID and we will use it. IG 3.15: in a currency other than CHF/EUR it is "X" (V1, foreign currency domestic)
 				paymentType = domesticCurrency ? PAYMENT_TYPE_3 : PAYMENT_TYPE_6;
 			}
-			else if (Check.isNotBlank(iban) && currencyCode.isEuro())
+			else if (currencyCode.isEuro() && SepaUtils.isSepaSchemeCountryIban(iban))
 			{
+				// IG 3.15: "S" needs the creditor's IBAN in a SEPA scheme country; EUR to any other IBAN is "X" (V2, cross-border)
 				paymentType = PAYMENT_TYPE_5;
 			}
 			else

@@ -69,6 +69,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	private static final String CREDITOR_BIC_DE = "UBSWDEFF";
 	private static final String CREDITOR_IBAN_NL = "NL31INGB0000000044";
 	private static final String CREDITOR_QR_IBAN = "CH44 3199 9123 0008 8901 2";
+	/**
+	 * Example IBANs of the IBAN registry (SWIFT) and well-known BICs: TR is no SEPA scheme country, GB is a non-EEA SEPA scheme country (EPC409-09).
+	 */
+	private static final String CREDITOR_IBAN_TR = "TR330006100519786457841326";
+	private static final String CREDITOR_BIC_TR = "TCZBTR2A";
+	private static final String CREDITOR_IBAN_GB = "GB29NWBK60161331926819";
+	private static final String CREDITOR_BIC_GB = "NWBKGB2L";
 
 	/**
 	 * QR reference and ISO 11649 creditor references of the IG examples (chapter 5.1 / 5.2); all with valid check digits.
@@ -259,6 +266,55 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		// IG 3.15: no CH/LI IBAN and EUR => payment type "S", regardless of the ESR flag
 		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf/SvcLvl/Cd")).isEqualTo("SEPA");
 		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI")).isEqualTo(CREDITOR_BIC_DE);
+	}
+
+	@Test
+	public void createDocument_eurToNonSepaCountryIban_isForeign() throws Exception
+	{
+		// TR is not in the EPC list of SEPA scheme countries, so a EUR payment to a TR IBAN cannot be "S"
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		// payment type X: no service level SEPA
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero();
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo(CREDITOR_IBAN_TR);
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAgt/FinInstnId/BICFI")).isEqualTo(CREDITOR_BIC_TR);
+		assertStructuredCreditorAddress(doc, cdtTrfTxInf);
+	}
+
+	@Test
+	public void export_eurToNonSepaCountryIban_vendorWithoutTown_fails()
+	{
+		// payment type X (not S), so an incomplete address is not left out but fails the export
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "TR");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_CREDITOR)
+				.hasMessageContaining(MSG_MISSING_TOWN);
+	}
+
+	@Test
+	public void createDocument_eurToNonEeaSepaCountryIban_isSepa() throws Exception
+	{
+		// GB is a non-EEA country in the EPC list of SEPA scheme countries
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_GB, CREDITOR_BIC_GB, new BigDecimal("100"), eur, null);
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf/SvcLvl/Cd")).isEqualTo("SEPA");
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/CdtrAcct/Id/IBAN")).isEqualTo(CREDITOR_IBAN_GB);
 	}
 
 	@Test
