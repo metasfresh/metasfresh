@@ -86,7 +86,7 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 	 */
 	private int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)
 	{
-		if (orderCompensationGroupId <= 0 || isContractCreatedGroup(orderCompensationGroupId))
+		if (orderCompensationGroupId <= 0)
 		{
 			return -1;
 		}
@@ -100,8 +100,10 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 		}
 
 		final int toOrderId = toOrder.getC_Order_ID();
-		final int orderCompensationGroupIdNew = orderCompensationGroupIdsMap.computeIfAbsent(orderCompensationGroupId, k -> cloneOrderCompensationGroup(orderCompensationGroupId, toOrderId));
-		return orderCompensationGroupIdNew;
+		// -1 is remembered for a contract-created group, so that its check runs once per group, not once per line
+		return orderCompensationGroupIdsMap.computeIfAbsent(
+				orderCompensationGroupId,
+				k -> isContractCreatedGroup(orderCompensationGroupId) ? -1 : cloneOrderCompensationGroup(orderCompensationGroupId, toOrderId));
 	}
 
 	private static boolean isContractCreatedGroup(final int orderCompensationGroupId)
