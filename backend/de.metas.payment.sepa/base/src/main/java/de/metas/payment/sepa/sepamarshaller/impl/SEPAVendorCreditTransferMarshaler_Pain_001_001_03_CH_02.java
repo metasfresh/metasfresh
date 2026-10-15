@@ -20,7 +20,6 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.api.SepaUtils;
@@ -300,7 +299,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 
 		// Payment Informations: create one PaymentInstructionInformationSDD for each line
-		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw new AdempiereException("The given SEPA_Export record has no lines with active=Y and error=N")

@@ -4,6 +4,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -14,6 +15,7 @@ import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03;
 import de.metas.util.FileUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -24,10 +26,12 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
-	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
+	@NonNull private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
+	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
 
 	@Override
 	public I_SEPA_Export createSEPAExportFromPaySelection(@NonNull final I_C_PaySelection from, @Nullable final SEPAProtocol chosenCreditTransferProtocol)
@@ -48,6 +52,12 @@ public class SEPADocumentBL implements ISEPADocumentBL
 			return SystemTime.asTimestamp();
 		}
 		return paymentDate;
+	}
+
+	@Override
+	public List<I_SEPA_Export_Line> retrieveLines(@NonNull final I_SEPA_Export sepaExport)
+	{
+		return sepaDocumentDAO.retrieveLines(sepaExport);
 	}
 
 	@Override

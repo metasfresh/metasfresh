@@ -11,7 +11,6 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -143,7 +142,7 @@ public class SEPAExportFromPaySelectionChainTest
 		createPaySelectionLine(paySelection, createVendorBankAccount(null, CREDITOR_QR_IBAN), QR_REFERENCE);
 
 		final I_SEPA_Export sepaExport = createSEPAExport(paySelection, null);
-		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaExport);
+		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaExport);
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getIBAN).containsExactly("CH4431999123000889012");
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getStructuredRemittanceInfo).containsExactly(QR_REFERENCE);
 

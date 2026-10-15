@@ -29,6 +29,7 @@ import org.compiere.model.I_C_PaySelection;
 
 import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.List;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
@@ -38,6 +39,11 @@ public interface ISEPADocumentBL extends ISingletonService
 	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from, @Nullable SEPAProtocol chosenCreditTransferProtocol);
 
 	Date getDueDate(I_SEPA_Export_Line line);
+
+	/**
+	 * @return the lines of the given export that are to be exported (active and without error)
+	 */
+	List<I_SEPA_Export_Line> retrieveLines(I_SEPA_Export sepaExport);
 
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.

@@ -24,7 +24,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.api.SepaUtils;
@@ -224,16 +223,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
-	private final BankRepository bankRepository;
-	private final SEPAExportContext exportContext;
-	private final BankAccountService bankAccountService;
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
-	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final BankRepository bankRepository;
+	@NonNull private final SEPAExportContext exportContext;
+	@NonNull private final BankAccountService bankAccountService;
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	private static final Logger logger = LogManager.getLogger(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.class);
 
@@ -326,7 +324,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		creditTransferInitiation.setGrpHdr(createGroupHeader(sepaDocument));
 
 		// Payment Informations
-		final List<I_SEPA_Export_Line> sepaDocumentLines = sepaDocumentDAO.retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = sepaDocumentBL.retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw new AdempiereException("The given SEPA_Export record has no lines with active=Y and error=N")
