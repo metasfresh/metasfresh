@@ -870,6 +870,9 @@ public class C_Order_StepDef
 	 * Then the order is created:
 	 *   | Identifier | Link_Order_ID | C_BPartner_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
 	 *   | po_1       | so            | vendor_1      | false   | POO         | CO        | true       |
+	 * And the order is created:
+	 *   | Identifier | Link_Order_ID | IsSOTrx | DocBaseType | DocStatus | IsDropShip | Exclude_C_Order_ID |
+	 *   | po_2       | so            | false   | POO         | CO        | true       | po_1               |
 	 * </pre>
 	 */
 	@Then("the order is created:")

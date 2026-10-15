@@ -72,27 +72,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | quarterlySchedule | 31         | 3               |
       | yearlySchedule    | 31         | 12              |
 
-
-  # ##############################################################################################
-  # Real-world case (Netto Maxhuette, sample invoice 186957): the store orders, the head office is billed and holds
-  # the on-invoice 3% "Bonus Ware" contract plus three periodic refund contracts, one per periodic bonus:
-  # "RV Ware 1 % vierteljaehrlich", "RV Ware 0,125 % jaehrlich" (goods) and "RV Verpackung 0,3 % vierteljaehrlich" (packaging),
-  # each with one untiered percentage setting on the goods category.
-  # The drop-ship vendor has its own 3% "Ware" contract plus a take-over record on "Ware" listing "Bonus Ware"
-  # and the two goods refund conditions (never the packaging one).
-  # SO completes -> drop-ship PO: the vendor's own 3% line (-64.66) AND the take-over line 3 + 1 + 0.125 = 4.125% -> 4.13%
-  # (2 decimals, half up) = -89.01 (4.13% of 2155.20 = 89.010), together 7.13% / -153.67 on 2155.20 goods; no discount on the 2 Pfand lines;
-  # the purchase invoice carries both discount lines.
-  # ##############################################################################################
-
-  @from:cucumber
-  @allure.label.epic:E0170_Contract_Management
-  @allure.label.feature:F2070_Compensation_Group_Contract
-  @Id:S32357_TS1
-  Scenario: Drop-ship PO takes over the head office's 3% contract bonus plus its listed 1% and 0.125% goods refund contracts as one 4.13% take-over line next to the vendor's own 3% line
-    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
-    And documents are accounted immediately
-
+    # vendor-side setup shared by all scenarios
+    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
     # categories unique per run: the discount product's accounts are copied from its category only at
     # product creation, so the override must be applied to a fresh category before the product exists
     And metasfresh contains M_Product_Categories:
@@ -117,58 +98,102 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
       | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
       | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-      | bonusRvPack         | Bonus RV Pack | discountCategory                     | Y      | Y           |
 
     # purchase price = sales price
     And metasfresh contains M_ProductPrices
-      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1       | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2       | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala          | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1        | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2        | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare     | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare   | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvPack   | soPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1       | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2       | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala          | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1        | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2        | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare     | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare   | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvPack   | poPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
 
+    # the drop-ship vendor's own 3% "Bonus Vendor" contract on the goods category
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier     | Name         | OPT.IsAdditive |
-      | customerSchema | Bonus Ware   | true           |
-      | vendorSchema   | Bonus Vendor | true           |
+      | Identifier   | Name         | OPT.IsAdditive |
+      | vendorSchema | Bonus Vendor | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
+      | vendorSettings | Vendor settings | vendorSchema                             |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | vendorSettings                                     | docTypePurchaseOrder    |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
+    # open-ended vendor term: the drop-ship PO's DateOrdered is the real wall clock, not the simulated date
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by vendorTerm is completed
+
+    And metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | dropshipWarehouse | Y                   |
+
+
+  # ##############################################################################################
+  # Real-world case (Netto Maxhuette, sample invoice 186957): the store orders, the head office is billed and holds
+  # the on-invoice 3% "Bonus Ware" contract plus three periodic refund contracts, one per periodic bonus:
+  # "RV Ware 1 % vierteljaehrlich", "RV Ware 0,125 % jaehrlich" (goods) and "RV Verpackung 0,3 % vierteljaehrlich" (packaging),
+  # each with one untiered percentage setting on the goods category.
+  # The drop-ship vendor has its own 3% "Ware" contract plus a take-over record on "Ware" listing "Bonus Ware"
+  # and the two goods refund conditions (never the packaging one).
+  # SO completes -> drop-ship PO: the vendor's own 3% line (-64.66) AND the take-over line 3 + 1 + 0.125 = 4.125% -> 4.13%
+  # (2 decimals, half up) = -89.01 (4.13% of 2155.20 = 89.010), together 7.13% / -153.67 on 2155.20 goods; no discount on the 2 Pfand lines;
+  # the purchase invoice carries both discount lines.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32357_TS1
+  Scenario: Drop-ship PO takes over the head office's 3% contract bonus plus its listed 1% and 0.125% goods refund contracts as one 4.13% take-over line next to the vendor's own 3% line
+    Given documents are accounted immediately
+
+    # the packaging refund contract's bonus product (the other products are created in the Background)
+    And metasfresh contains M_Products:
+      | Identifier  | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusRvPack | Bonus RV Pack | discountCategory                     | Y      | Y           |
+    And metasfresh contains M_ProductPrices
+      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_bonusRvPack | soPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusRvPack | poPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+
+    # the head office's on-invoice 3% "Bonus Ware" contract on the goods category
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name       | OPT.IsAdditive |
+      | customerSchema | Bonus Ware | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
-      | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
       | customerSettings | Customer settings | customerSchema                           |
-      | vendorSettings   | Vendor settings   | vendorSchema                             |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | customerSettings                                   | docTypeSalesOrder       |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
-      | vendorConditions   | Vendor conditions   | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the auto-created PO's DateOrdered is the real wall clock, not the simulated date
     And metasfresh contains C_Flatrate_Terms:
       | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
-      | vendorTerm   | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by customerTerm is completed
-    And the C_Flatrate_Term identified by vendorTerm is completed
 
     # the head office's periodic bonuses: one refund contract per bonus, each with one untiered percentage setting on the goods category
     # (names unique per scenario: conditions are upserted by name)
@@ -203,10 +228,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
       | takeOver                                         | rvWare0125               |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, as on the sample invoice
     When metasfresh contains C_Orders:
@@ -311,85 +332,37 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @allure.label.feature:F2070_Compensation_Group_Contract
   @Id:S32357_TS1b
   Scenario: A take-over record with 3 decimals keeps the take-over line's summed 4.125% unrounded
-    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
-    And documents are accounted immediately
+    Given documents are accounted immediately
 
-    # categories unique per run: the discount product's accounts are copied from its category only at
-    # product creation, so the override must be applied to a fresh category before the product exists
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains C_ElementValues:
-      | Identifier          | Value |
-      | discountRevenueAcct | 4750  |
-      | discountExpenseAcct | 5751  |
-    And metasfresh contains M_Product_Category_Acct overrides:
-      | M_Product_Category_ID | OPT.P_Revenue_Acct  | OPT.P_Expense_Acct  |
-      | discountCategory      | discountRevenueAcct | discountExpenseAcct |
-
+    # the packaging refund contract's bonus product (the other products are created in the Background)
     And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-      | bonusRvPack         | Bonus RV Pack | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
+      | Identifier  | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusRvPack | Bonus RV Pack | discountCategory                     | Y      | Y           |
     And metasfresh contains M_ProductPrices
-      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1       | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2       | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala          | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1        | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2        | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare     | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare   | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvPack   | soPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1       | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2       | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala          | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1        | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2        | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare     | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare   | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvPack   | poPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_bonusRvPack | soPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusRvPack | poPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
 
+    # the head office's on-invoice 3% "Bonus Ware" contract on the goods category
     And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier     | Name         | OPT.IsAdditive |
-      | customerSchema | Bonus Ware   | true           |
-      | vendorSchema   | Bonus Vendor | true           |
+      | Identifier     | Name       | OPT.IsAdditive |
+      | customerSchema | Bonus Ware | true           |
     And metasfresh contains C_CompensationGroup_SchemaLine:
       | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
       | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
-      | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
     And metasfresh contains C_CompensationGroup_ContractSettings:
       | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
       | customerSettings | Customer settings | customerSchema                           |
-      | vendorSettings   | Vendor settings   | vendorSchema                             |
     And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
       | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
       | customerSettings                                   | docTypeSalesOrder       |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
       | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
-      | vendorConditions   | Vendor conditions   | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the auto-created PO's DateOrdered is the real wall clock, not the simulated date
     And metasfresh contains C_Flatrate_Terms:
       | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
-      | vendorTerm   | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by customerTerm is completed
-    And the C_Flatrate_Term identified by vendorTerm is completed
 
     # the head office's periodic bonuses: one refund contract per bonus, each with one untiered percentage setting on the goods category
     # (names unique per scenario: conditions are upserted by name)
@@ -425,10 +398,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
       | takeOver                                         | rvWare0125               |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, as on the sample invoice
     When metasfresh contains C_Orders:
@@ -500,65 +469,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_reactivatedSO_draftPO
   Scenario: A drop-ship PO completed while its sales order is reactivated takes over no refund percentage
     Given temporarily set sys config boolean value false for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the head office's two goods refund contracts (names unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier | Name                                    | Type_Conditions |
@@ -586,10 +498,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
       | takeOver                                         | rvWare0125               |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines
     When metasfresh contains C_Orders:
@@ -633,65 +541,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_completedSO_draftPO
   Scenario: A drop-ship PO completed later while its sales order is still completed takes over the refund percentages
     Given temporarily set sys config boolean value false for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the head office's two goods refund contracts (names unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier | Name                                    | Type_Conditions |
@@ -719,10 +570,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
       | takeOver                                         | rvWare0125               |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines
     When metasfresh contains C_Orders:
@@ -777,70 +624,13 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_defaultPath
   Scenario: A drop-ship PO re-completed while its sales order is reactivated loses the taken-over refund percentages
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the head office's two goods refund contracts (names unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier | Name                                    | Type_Conditions |
-      | rvWare1    | RV Ware 1 % vierteljährlich S32357_TS2d | Refund          |
-      | rvWare0125 | RV Ware 0,125 % jährlich S32357_TS2d    | Refund          |
+      | Identifier | Name                                               | Type_Conditions |
+      | rvWare1    | RV Ware 1 % vierteljährlich S32357_TS2_defaultPath | Refund          |
+      | rvWare0125 | RV Ware 0,125 % jährlich S32357_TS2_defaultPath    | Refund          |
     And metasfresh contains C_Flatrate_RefundConfigs:
       | Identifier  | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
       | cfgWare1    | rvWare1                  | quarterlySchedule    | 1             | goodsCategory         | bonusRvWare      |
@@ -863,10 +653,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
       | takeOver                                         | rvWare0125               |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -899,9 +685,9 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And the order identified by poDropship has 7 order lines
     # 1% + 0.125% = 1.125% -> 1.13% of 2155.20 = 24.354 -> -24.35
     And validate C_OrderLine:
-      | C_OrderLine_ID           | OPT.GroupCompensationPercentage | OPT.LineNetAmt | OPT.Description                                                                          |
-      | ol_poBonusVendorDropship | 3                               | -64.66         | 3% Bonus Vendor                                                                          |
-      | ol_poTakeOver            | 1.13                            | -24.35         | 1% RV Ware 1 % vierteljährlich S32357_TS2d + 0.125% RV Ware 0,125 % jährlich S32357_TS2d |
+      | C_OrderLine_ID           | OPT.GroupCompensationPercentage | OPT.LineNetAmt | OPT.Description                                                                                                |
+      | ol_poBonusVendorDropship | 3                               | -64.66         | 3% Bonus Vendor                                                                                                |
+      | ol_poTakeOver            | 1.13                            | -24.35         | 1% RV Ware 1 % vierteljährlich S32357_TS2_defaultPath + 0.125% RV Ware 0,125 % jährlich S32357_TS2_defaultPath |
 
     # the SO is reactivated while its drop-ship PO is completed; then the PO is reactivated and completed again
     When the order identified by orderDropship is reactivated
@@ -919,7 +705,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And the order identified by poDropship has 6 order lines
 
 
-
   # ##############################################################################################
   # AC3: only a valid refund term of the SO's invoice partner is taken over: DocStatus completed or closed, not voided,
   # SO date (2026-07-01) within StartDate..EndDate. Refund-only customer with one listed goods refund contract (1%):
@@ -933,66 +718,10 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_closed
   Scenario: A closed refund term of the invoice partner is taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
-    # the refund term is closed
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
+    # the refund term is inserted already closed (DocStatus CL): no step closes a refund term; its empty ContractStatus
+    # is irrelevant, the take-over only excludes ContractStatus Vo
     # the head office's goods refund contract (name unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier | Name                                          | Type_Conditions |
@@ -1014,10 +743,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1061,65 +786,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_drafted
   Scenario: A drafted refund term of the invoice partner is not taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the refund term is left drafted (never completed)
     # the head office's goods refund contract (name unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
@@ -1142,10 +810,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1184,65 +848,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_voided
   Scenario: A refund term voided by its cancellation before its start date is not taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # cancelling a contract needs a status-change rule ("Gekuendigt") on its conditions' transition
     And metasfresh contains C_Contract_Change:
       | Identifier         | C_Flatrate_Transition_ID.Identifier | Action | ContractStatus | DeadLine | DeadLineUnit |
@@ -1259,11 +866,11 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | termWare1  | rvWare1                             | customerHeadOffice          | 2026-07-01 | 2027-06-30 | DR            | false         |
     And the C_Flatrate_Term identified by termWare1 is completed
-    # cancelled with a change date before its start date: the term becomes voided
+    # cancelled with a change date before its start date: the term becomes voided, its end date collapses to its start date
     And the C_Flatrate_Term identified by termWare1 is cancelled with change date 2026-06-01
     And the C_Flatrate_Term identified by termWare1 has the contract status and dates:
-      | ContractStatus |
-      | Vo             |
+      | ContractStatus | EndDate    |
+      | Vo             | 2026-07-01 |
 
     # VendorDropship's take-over record on "Ware" lists "Bonus Ware" and the goods refund condition
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
@@ -1275,10 +882,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1317,65 +920,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_cancelledBeforeSODate
   Scenario: A refund term cancelled with a change date before the SO date is not taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # cancelling a contract needs a status-change rule ("Gekuendigt") on its conditions' transition
     And metasfresh contains C_Contract_Change:
       | Identifier         | C_Flatrate_Transition_ID.Identifier | Action | ContractStatus | DeadLine | DeadLineUnit |
@@ -1395,8 +941,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     # cancelled as of 2026-06-20, before the SO date 2026-07-01: the term ends on 2026-06-20
     And the C_Flatrate_Term identified by termWare1 is cancelled with change date 2026-06-20
     And the C_Flatrate_Term identified by termWare1 has the contract status and dates:
-      | ContractStatus |
-      | Qu             |
+      | ContractStatus | EndDate    |
+      | Qu             | 2026-06-20 |
 
     # VendorDropship's take-over record on "Ware" lists "Bonus Ware" and the goods refund condition
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
@@ -1408,10 +954,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1450,65 +992,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_cancelledAfterSODate
   Scenario: A refund term cancelled with a change date after the SO date is still taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # cancelling a contract needs a status-change rule ("Gekuendigt") on its conditions' transition
     And metasfresh contains C_Contract_Change:
       | Identifier         | C_Flatrate_Transition_ID.Identifier | Action | ContractStatus | DeadLine | DeadLineUnit |
@@ -1528,8 +1013,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     # cancelled as of 2026-09-30, after the SO date 2026-07-01: the term still runs on the SO date
     And the C_Flatrate_Term identified by termWare1 is cancelled with change date 2026-09-30
     And the C_Flatrate_Term identified by termWare1 has the contract status and dates:
-      | ContractStatus |
-      | Qu             |
+      | ContractStatus | EndDate    |
+      | Qu             | 2026-09-30 |
 
     # VendorDropship's take-over record on "Ware" lists "Bonus Ware" and the goods refund condition
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
@@ -1541,10 +1026,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1588,65 +1069,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_soDateOutside
   Scenario: A refund term that starts after the SO date is not taken over
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the refund term runs 2027-01-01..2027-12-31, the SO date 2026-07-01 lies outside
     # the head office's goods refund contract (name unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
@@ -1670,10 +1094,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
@@ -1707,7 +1127,7 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
 
 
   # ##############################################################################################
-  # AC7b: a re-completed SO takes over again. Refund-only customer (one listed goods refund contract, 1%):
+  # TS2 (re-completion clause; complements AC7b): a re-completed SO takes over again. Refund-only customer (one listed goods refund contract, 1%):
   # the SO is completed, reactivated and completed again; the drop-ship PO completed inside the re-completion
   # carries the take-over line 1% (-21.55). The first PO is only registered to tell it apart; its lines and the
   # PO count are not asserted (existing behaviour, out of scope).
@@ -1719,65 +1139,8 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
   @Id:S32357_TS2_reCompletedSO
   Scenario: The drop-ship PO completed inside a re-completion of its sales order takes over the refund percentage
     Given temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO"
-    And temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
 
-    And metasfresh contains M_Product_Categories:
-      | Identifier       |
-      | pfandCategory    |
-      | discountCategory |
-    And metasfresh contains M_Products:
-      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
-      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
-      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
-      | gala                | Gala          | goodsCategory                        | Y      | Y           |
-      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
-      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
-      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
-      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
-      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
-
-    # purchase price = sales price
-    And metasfresh contains M_ProductPrices
-      | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
-      | pp_so_elstar1     | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_so_elstar2     | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_so_gala        | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_so_pfand1      | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_so_pfand2      | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_so_bonusWare   | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusVendor | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_so_bonusRvWare | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-      | pp_po_elstar1     | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
-      | pp_po_elstar2     | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
-      | pp_po_gala        | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
-      | pp_po_pfand1      | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
-      | pp_po_pfand2      | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
-      | pp_po_bonusWare   | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusVendor | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
-      | pp_po_bonusRvWare | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
-
-    # only the vendor has a compensation-group contract; the head office has no "Bonus Ware" contract, only refund contracts
-    And metasfresh contains C_CompensationGroup_Schema:
-      | Identifier   | Name         | OPT.IsAdditive |
-      | vendorSchema | Bonus Vendor | true           |
-    And metasfresh contains C_CompensationGroup_SchemaLine:
-      | Identifier       | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
-      | vendorSchemaLine | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
-    And metasfresh contains C_CompensationGroup_ContractSettings:
-      | Identifier     | Name            | C_CompensationGroup_Schema_ID.Identifier |
-      | vendorSettings | Vendor settings | vendorSchema                             |
-    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
-      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
-      | vendorSettings                                     | docTypePurchaseOrder    |
-    And metasfresh contains C_Flatrate_Conditions:
-      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
-      | vendorConditions | Vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
-    # open-ended vendor term: the PO's DateOrdered is the real wall clock, not the simulated date
-    And metasfresh contains C_Flatrate_Terms:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
-    And the C_Flatrate_Term identified by vendorTerm is completed
-
+    # refund-only customer: the head office has no "Bonus Ware" contract, only refund contracts
     # the head office's goods refund contract (name unique per scenario: conditions are upserted by name)
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier | Name                                                 | Type_Conditions |
@@ -1800,10 +1163,6 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
       | takeOver                                         | rvWare1                  |
-
-    And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
 
     # SO: 3 goods lines (2155.20) + 2 Pfand lines, ordered on 2026-07-01
     When metasfresh contains C_Orders:
