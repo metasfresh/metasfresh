@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.order;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -185,6 +186,8 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
+	private static final String COLUMNNAME_Exclude_C_Order_ID = "Exclude_" + COLUMNNAME_C_Order_ID;
+
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -859,6 +862,9 @@ public class C_Order_StepDef
 	 * <b>DocStatus</b> — (optional) expected doc status<br>
 	 * <b>IsDropShip</b> — (optional, default false) expected dropship flag<br>
 	 * <b>DropShip_BPartner_ID</b> — (optional, identifier-ref) expected dropship partner<br>
+	 * <b>Exclude_C_Order_ID</b> — (optional, comma-separated identifier-refs) already registered orders that are not candidates, to tell apart
+	 * several linked orders with the same partner and DocStatus (e.g. the PO created when an SO is completed again after reactivation,
+	 * while the PO of its first completion stays completed)<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData
 	 * @cucumber.example <pre>
 	 * Then the order is created:
@@ -886,10 +892,18 @@ public class C_Order_StepDef
 		// and several POs share the same Link_Order_ID with different DocStatus values (e.g. VO for the old PO, CO for the new one)
 		final String docStatusFilter = row.getAsOptionalString(COLUMNNAME_DocStatus).orElse(null);
 
+		// Optional disambiguation by already registered orders: needed when several linked orders share partner and DocStatus
+		// (e.g. the SO is completed, reactivated and completed again, and the PO of the first completion stays completed)
+		final ImmutableSet<OrderId> excludedOrderIds = row.getAsIdentifierList(COLUMNNAME_Exclude_C_Order_ID)
+				.stream()
+				.map(identifier -> identifier.lookupNotNullIdIn(orderTable))
+				.collect(ImmutableSet.toImmutableSet());
+
 		final List<I_C_Order> purchaseOrders = orderBL.getByLinkOrderId(linkedOrderId)
 				.stream()
 				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
 				.filter(order -> docStatusFilter == null || docStatusFilter.equals(order.getDocStatus()))
+				.filter(order -> !excludedOrderIds.contains(OrderId.ofRepoId(order.getC_Order_ID())))
 				.collect(ImmutableList.toImmutableList());
 		assertThat(purchaseOrders).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).hasSize(1);
 		final I_C_Order purchaseOrder = purchaseOrders.get(0);
