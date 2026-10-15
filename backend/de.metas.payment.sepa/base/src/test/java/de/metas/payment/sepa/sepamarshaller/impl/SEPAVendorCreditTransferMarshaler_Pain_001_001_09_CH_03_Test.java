@@ -15,10 +15,13 @@ import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.Loggables;
+import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Bank;
@@ -596,10 +599,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
-	public void createDocument_vendorWithoutTownOrCountry_failsWithPartnerName()
+	public void export_foreign_vendorWithoutTownOrCountry_failsWithPartnerName()
 	{
+		// payment type X (V2, cross-border): a CHF payment to a DE IBAN
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), chf, null);
 		clearAddress(bankAccountOf(line));
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "CH");
 
@@ -611,10 +615,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
-	public void export_bankAccountAddressWithoutCity_failsWithPartnerName()
+	public void export_foreign_bankAccountAddressWithoutCity_failsWithPartnerName()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), chf, null);
 		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
 		bankAccount.setA_City(null);
 		save(bankAccount);
@@ -627,10 +631,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
-	public void createDocument_vendorLocationWithoutCountry_failsWithPartnerName()
+	public void export_foreign_vendorLocationWithoutCountry_failsWithPartnerName()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), chf, null);
 		clearAddress(bankAccountOf(line));
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", "Bern", " ");
 
@@ -641,10 +645,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
-	public void export_bankAccountAddressWithoutCountry_failsWithPartnerName()
+	public void export_foreign_bankAccountAddressWithoutCountry_failsWithPartnerName()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), chf, null);
 		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
 		bankAccount.setA_Country(null);
 		save(bankAccount);
@@ -657,10 +661,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
-	public void export_bankAccountAddressWithoutTownAndCountry_failsWithPartnerName()
+	public void export_foreign_bankAccountAddressWithoutTownAndCountry_failsWithPartnerName()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), chf, null);
 		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
 		bankAccount.setA_City(null);
 		bankAccount.setA_Country(null);
@@ -670,6 +674,156 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining("Test Vendor GmbH")
 				.hasMessageContaining("has no town and country");
+	}
+
+	@Test
+	public void export_foreignCurrencyDomestic_vendorWithoutTown_failsWithPartnerName()
+	{
+		// payment type X (V1, foreign currency domestic): a USD payment to a CH IBAN
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), usd, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "CH");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("Test Creditor AG")
+				.hasMessageContaining("Test Billing Location")
+				.hasMessageContaining("has no town");
+	}
+
+	@Test
+	public void createDocument_domestic_billToLocationWithoutTown_omitsAddressAndWarns() throws Exception
+	{
+		// payment type D; IG 3.11: an address without TwnNm is not allowed, but Cdtr/PstlAdr itself is optional (IG 4.3)
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "CH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero(); // payment type D
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/Nm")).isEqualTo("Test Creditor AG");
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(warnings))
+				.contains("TestCreditor")
+				.contains("Test Creditor AG")
+				.contains("Test Billing Location")
+				.contains("has no town")
+				.contains("left out");
+	}
+
+	@Test
+	public void createDocument_sepa_billToLocationWithoutCountry_omitsAddressAndWarns() throws Exception
+	{
+		// payment type S
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Bahnhofstrasse 5", "3000", "Bern", " ");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf/SvcLvl/Cd")).isEqualTo("SEPA");
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(warnings))
+				.contains("TestCreditor")
+				.contains("Test Creditor AG")
+				.contains("Test Billing Location")
+				.contains("has no country")
+				.contains("left out");
+	}
+
+	@Test
+	public void createDocument_domestic_bankAccountAddressWithoutCity_omitsAddressAndWarns() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_City(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(warnings))
+				.contains("TestCreditor")
+				.contains("Test Vendor GmbH")
+				.contains("bank account")
+				.contains("has no town")
+				.contains("left out");
+	}
+
+	@Test
+	public void createDocument_sepa_bankAccountAddressWithoutTownAndCountry_omitsAddressAndWarns() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+		final I_C_BP_BankAccount bankAccount = bankAccountOf(line);
+		bankAccount.setA_City(null);
+		bankAccount.setA_Country(null);
+		save(bankAccount);
+		setBPartner(line, "Test Vendor GmbH");
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(singleWarning(warnings))
+				.contains("Test Vendor GmbH")
+				.contains("bank account")
+				.contains("has no town and country");
+	}
+
+	@Test
+	public void createDocument_samePartnerAndIncompleteAddressOnTwoLines_warnsOnce() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line1 = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, "Invoice 1");
+		clearAddress(bankAccountOf(line1));
+		setBillToLocation(line1, "Bahnhofstrasse 5", "3000", " ", "CH");
+		final I_SEPA_Export_Line line2 = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("30"), chf, "Invoice 2");
+		clearAddress(bankAccountOf(line2));
+		line2.setC_BPartner_ID(line1.getC_BPartner_ID());
+		save(line2);
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf")).isEqualTo(2);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(warnings.getSingleMessages()).hasSize(1);
+	}
+
+	@Test
+	public void createDocument_vendorWithoutAnyAddress_omitsAddressWithoutWarning() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_CH, null, new BigDecimal("100"), chf, null);
+		clearAddress(bankAccountOf(line));
+		setBPartner(line, "Test Vendor GmbH"); // no bill-to location
+
+		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
+		final byte[] xml = exportXml(sepaExport, warnings);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
+		assertThat(warnings.isEmpty()).isTrue();
 	}
 
 	@Test
@@ -854,6 +1008,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	{
 		final SEPAExportContext exportContext = SEPAExportContext.builder().referenceAsEndToEndId(referenceAsEndToEndId).build();
 		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(sepaExport, exportContext).getContent();
+	}
+
+	/**
+	 * Exports with the given loggable as the thread's loggable, like the SEPA export process does (JavaProcess registers itself as the thread's loggable).
+	 */
+	private static byte[] exportXml(@NonNull final I_SEPA_Export sepaExport, @NonNull final PlainStringLoggable processLog)
+	{
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(processLog))
+		{
+			return exportXml(sepaExport);
+		}
+	}
+
+	private static String singleWarning(@NonNull final PlainStringLoggable processLog)
+	{
+		assertThat(processLog.getSingleMessages()).hasSize(1);
+		return processLog.getSingleMessages().get(0);
 	}
 
 	private static I_C_BP_BankAccount bankAccountOf(@NonNull final I_SEPA_Export_Line line)
