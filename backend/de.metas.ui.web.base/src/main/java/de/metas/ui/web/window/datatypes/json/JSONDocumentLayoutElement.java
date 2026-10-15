@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.process.ProcessId;
@@ -91,6 +92,10 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
+	@JsonProperty("help")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String help;
+
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
 
@@ -173,7 +178,8 @@ public final class JSONDocumentLayoutElement
 			this.caption = caption;
 		}
 
-		description = element.getDescription(adLanguage);
+		description = Strings.emptyToNull(element.getDescription(adLanguage));
+		help = Strings.emptyToNull(element.getHelp(adLanguage));
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		maxLength = element.getMaxLength() > 0 ? element.getMaxLength() : null;
@@ -224,6 +230,7 @@ public final class JSONDocumentLayoutElement
 	{
 		caption = fieldName;
 		description = null;
+		help = null;
 
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
 		allowShowPassword = null;
