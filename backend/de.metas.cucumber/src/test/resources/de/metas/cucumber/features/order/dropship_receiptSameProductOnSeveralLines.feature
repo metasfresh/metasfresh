@@ -225,3 +225,178 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | pol_e1         | 924         |
       | pol_e2         | 671         |
       | pol_g          | 561         |
+
+
+  # ##############################################################################################
+  # Elstar is ordered on three sales-order lines (924, 671 and 561 PCE, 84 / 61 / 51 TU of 11 PCE).
+  # The drop-ship purchase order has three Elstar lines plus one packing line.
+  # The 84 / 61 / 51 TU of 11 PCE is the order packing; the goods are received as plain CU handling units.
+  # ##############################################################################################
+
+  Scenario: Three drop-ship order lines of one product: the drop-ship PO has three lines and each is received and picked with its own quantity
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | DateOrdered | PreparationDate      | M_Warehouse_ID.Identifier |
+      | so_3       | true    | customerStore            | customerHeadOffice              | 2026-07-01  | 2026-06-30T22:00:00Z | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID.Identifier | C_BPartner_Vendor_ID.Identifier |
+      | sol_3a     | so_3                  | elstar                  | 924        | tu11_elstar                        | vendor                          |
+      | sol_3b     | so_3                  | elstar                  | 671        | tu11_elstar                        | vendor                          |
+      | sol_3c     | so_3                  | elstar                  | 561        | tu11_elstar                        | vendor                          |
+    When the order identified by so_3 is completed
+
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_3           | so_3                     | false   | POO         | CO            | true           |
+    And load C_OrderLines allocated to sales order lines:
+      | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+      | sol_3a            | pol_3a            | po_3           |
+      | sol_3b            | pol_3b            | po_3           |
+      | sol_3c            | pol_3c            | po_3           |
+    # three goods lines plus one packing line: the three Elstar lines are not merged
+    And the order identified by po_3 has 4 order lines
+    And validate C_OrderLine:
+      | C_OrderLine_ID | QtyOrdered |
+      | pol_3a         | 924        |
+      | pol_3b         | 671        |
+      | pol_3c         | 561        |
+
+    # one receipt schedule per purchase-order line, each with the quantity of its own sales-order line
+    # the receipt schedules are in the organisation's drop-ship warehouse
+    And load M_Warehouse:
+      | M_Warehouse_ID         | Value             |
+      | warehouse_org_dropship | DropshipWarehouse |
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | rs_3a                           | po_3                  | pol_3a                    | vendor                   | vendor_loc                        | elstar                  | 924        | warehouse_org_dropship    |
+      | rs_3b                           | po_3                  | pol_3b                    | vendor                   | vendor_loc                        | elstar                  | 671        | warehouse_org_dropship    |
+      | rs_3c                           | po_3                  | pol_3c                    | vendor                   | vendor_loc                        | elstar                  | 561        | warehouse_org_dropship    |
+    # the goods are received as CU handling units (No Packing Item, ID 101), as the WebUI action WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam ("Receive CU with Qty") creates them
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | HUList  | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | lutu_3a                               | hus_3a  | 1                  | pol_3a         | N               | 0     | N               | 1     | N               | 924         | 101                                |
+      | lutu_3b                               | hus_3b  | 1                  | pol_3b         | N               | 0     | N               | 1     | N               | 671         | 101                                |
+      | lutu_3c                               | hus_3c  | 1                  | pol_3c         | N               | 0     | N               | 1     | N               | 561         | 101                                |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
+      | hus_3a | pol_3a         | receipt_3a            |
+      | hus_3b | pol_3b         | receipt_3b            |
+      | hus_3c | pol_3c         | receipt_3c            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | QtyOrdered | qtydelivered |
+      | pol_3a         | 924        | 924          |
+      | pol_3b         | 671        | 671          |
+      | pol_3c         | 561        | 561          |
+
+    # each sales-order line is picked with exactly its own quantity
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_3a      | sol_3a                    | N             |
+      | ss_3b      | sol_3b                    | N             |
+      | ss_3c      | sol_3c                    | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | ss_3a                 | 924             |
+      | ss_3b                 | 671             |
+      | ss_3c                 | 561             |
+
+
+  # ##############################################################################################
+  # One product is ordered on two sales-order lines with different attribute values (attribute
+  # "Marke (ADR)", values 02 and 03). The purchase order keeps two lines, each with the attribute value of its own
+  # sales-order line.
+  # ##############################################################################################
+
+  Scenario: Same product with different attributes on two drop-ship order lines: each drop-ship PO line keeps the attributes of its own sales-order line
+    Given load M_AttributeSet:
+      | Identifier      | Name               |
+      | attributeSet_ds | Convenience Salate |
+    And load M_Attribute:
+      | M_Attribute_ID.Identifier | Value   |
+      | attr_brand                | 1000015 |
+    And metasfresh contains M_Product_Categories:
+      | Identifier    | M_AttributeSet_ID |
+      | attr_category | attributeSet_ds   |
+    And metasfresh contains M_Products:
+      | Identifier | M_Product_Category_ID |
+      | braeburn   | attr_category         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_sales              | braeburn     | 1.0      | PCE      | taxCategory      |
+      | plv_purch              | braeburn     | 1.0      | PCE      | taxCategory      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID |
+      | tu11_braeburn | huPIItem_crate  | 11  | braeburn     |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_brand02":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"1000015",
+          "valueStr":"02"
+        }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_brand03":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"1000015",
+          "valueStr":"03"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | DateOrdered | PreparationDate      | M_Warehouse_ID.Identifier |
+      | so_10      | true    | customerStore            | customerHeadOffice              | 2026-07-01  | 2026-06-30T22:00:00Z | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID.Identifier | C_BPartner_Vendor_ID.Identifier | M_AttributeSetInstance_ID |
+      | sol_10a    | so_10                 | braeburn                | 110        | tu11_braeburn                      | vendor                          | asi_brand02               |
+      | sol_10b    | so_10                 | braeburn                | 66         | tu11_braeburn                      | vendor                          | asi_brand03               |
+    When the order identified by so_10 is completed
+
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_10          | so_10                    | false   | POO         | CO            | true           |
+    And load C_OrderLines allocated to sales order lines:
+      | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+      | sol_10a           | pol_10a           | po_10          |
+      | sol_10b           | pol_10b           | po_10          |
+    # two goods lines plus one packing line
+    And the order identified by po_10 has 3 order lines
+    # the PO line gets a copy of the sales-order line's attribute set instance: the attribute values are compared, not the ids
+    And validate C_OrderLine:
+      | C_OrderLine_ID | QtyOrdered | attribute:attr_brand |
+      | pol_10a        | 110        | 02                   |
+      | pol_10b        | 66         | 03                   |
+
+    And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
+      | C_OrderLine_ID | M_ReceiptSchedule_ID |
+      | pol_10a        | rs_10a               |
+      | pol_10b        | rs_10b               |
+    # the goods are received as CU handling units (No Packing Item, ID 101), as the WebUI action WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam ("Receive CU with Qty") creates them
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | HUList  | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | lutu_10a                              | hus_10a | 1                  | pol_10a        | N               | 0     | N               | 1     | N               | 110         | 101                                |
+      | lutu_10b                              | hus_10b | 1                  | pol_10b        | N               | 0     | N               | 1     | N               | 66          | 101                                |
+    And create material receipt
+      | HUList  | C_OrderLine_ID | M_InOut_ID.Identifier |
+      | hus_10a | pol_10a        | receipt_10a           |
+      | hus_10b | pol_10b        | receipt_10b           |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | QtyOrdered | qtydelivered |
+      | pol_10a        | 110        | 110          |
+      | pol_10b        | 66         | 66           |
+
+    # each sales-order line is picked with exactly its own quantity
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_10a     | sol_10a                   | N             |
+      | ss_10b     | sol_10b                   | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | ss_10a                | 110             |
+      | ss_10b                | 66              |
