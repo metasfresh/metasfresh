@@ -131,10 +131,10 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
       | C_OrderLine_ID | M_ReceiptSchedule_ID |
       | pol_e1         | rs_e1                |
-    # one HU per receipt schedule: 84 / 61 / 51 TU of 11 PCE
+    # the goods are received as CU handling units (No Packing Item, ID 101), as the WebUI action WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam ("Receive CU with Qty") creates them
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | lutu_e1                               | hus_e1 | 84                 | pol_e1         | N               | 0     | N               | 84    | N               | 11          | tu11_elstar                        |
+      | lutu_e1                               | hus_e1 | 1                  | pol_e1         | N               | 0     | N               | 1     | N               | 924         | 101                                |
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e1 | pol_e1         | receipt_e1            |
@@ -149,8 +149,8 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | pol_g          | rs_g                 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | lutu_e2                               | hus_e2 | 61                 | pol_e2         | N               | 0     | N               | 61    | N               | 11          | tu11_elstar                        |
-      | lutu_g                                | hus_g  | 51                 | pol_g          | N               | 0     | N               | 51    | N               | 11          | tu11_gala                          |
+      | lutu_e2                               | hus_e2 | 1                  | pol_e2         | N               | 0     | N               | 1     | N               | 671         | 101                                |
+      | lutu_g                                | hus_g  | 1                  | pol_g          | N               | 0     | N               | 1     | N               | 561         | 101                                |
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e2 | pol_e2         | receipt_e2            |
