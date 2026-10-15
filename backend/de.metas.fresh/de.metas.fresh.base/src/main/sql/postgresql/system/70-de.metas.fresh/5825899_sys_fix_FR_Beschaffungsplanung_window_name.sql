@@ -3,7 +3,7 @@
 -- 5825900 assigns the French name 'Planification des achats' to AD_Element 574315
 -- (window "Bestelldisposition Neu", C_PurchaseCandidate). That French name is already held by
 -- AD_Element 574280 ("Procurement Planning" / Beschaffungsplanung, window 540285), set by the
--- earlier FR import. On a DB where window 540285 carries it (e.g. soft_panda_uat), applying 5825900
+-- earlier FR import. On a DB where window 540285 already carries that French name, applying 5825900
 -- makes a second window take the same name, and the unique index ad_window_trl_name_uc
 -- (Name, AD_Language) rejects two windows with the same French name at COMMIT, aborting the run.
 --
