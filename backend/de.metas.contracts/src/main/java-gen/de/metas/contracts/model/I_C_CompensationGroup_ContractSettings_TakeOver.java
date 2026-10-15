@@ -190,7 +190,7 @@ public interface I_C_CompensationGroup_ContractSettings_TakeOver
 
 	/**
 	 * Set Decimals of the summed percentage.
-	 * Number of decimals to which the summed percentage of the take-over line is rounded half up.
+	 * Number of decimals to which the summed percentage of the take-over line is rounded half up (default 2). The vendor's own line and the payment-service fee line are not rounded.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -200,7 +200,7 @@ public interface I_C_CompensationGroup_ContractSettings_TakeOver
 
 	/**
 	 * Get Decimals of the summed percentage.
-	 * Number of decimals to which the summed percentage of the take-over line is rounded half up.
+	 * Number of decimals to which the summed percentage of the take-over line is rounded half up (default 2). The vendor's own line and the payment-service fee line are not rounded.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
