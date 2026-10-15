@@ -4,8 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -97,6 +99,36 @@ public class ContractSettingsTakeOverRepository
 		if (excludeTakeOverProductId != null)
 		{
 			queryBuilder.addNotEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_Product.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_Product_ID, excludeTakeOverProductId);
+		}
+		return queryBuilder.create().anyMatch();
+	}
+
+	/**
+	 * Deliberately uncached: the interceptor must see the current transaction's records.
+	 *
+	 * @return whether the refund conditions are listed on an active take-over refund-condition record of any active take-over
+	 * record of the given take-over record's settings, other than {@code excludeTakeOverRefundCondId}
+	 */
+	public boolean isRefundConditionOfSameSettings(
+			@NonNull final ContractSettingsTakeOverId takeOverId,
+			@NonNull final ConditionsId conditionsId,
+			@Nullable final ContractSettingsTakeOverRefundCondId excludeTakeOverRefundCondId)
+	{
+		final IQuery<I_C_CompensationGroup_ContractSettings_TakeOver> settingsOfTakeOver = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverId)
+				.create();
+		final IQuery<I_C_CompensationGroup_ContractSettings_TakeOver> takeOversOfSettings = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_ID, settingsOfTakeOver)
+				.create();
+
+		final IQueryBuilder<I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond> queryBuilder = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
+				.addInSubQueryFilter(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOversOfSettings);
+		if (excludeTakeOverRefundCondId != null)
+		{
+			queryBuilder.addNotEqualsFilter(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_RefundCond_ID, excludeTakeOverRefundCondId);
 		}
 		return queryBuilder.create().anyMatch();
 	}
