@@ -73,6 +73,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import de.metas.adempiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
@@ -234,6 +235,11 @@ public class AssertExpectationsCommandServices
 	public List<I_C_Order_CompensationGroup> getOrderCompensationGroups(@NonNull final OrderId orderId)
 	{
 		return orderGroupRepository.retrieveGroupRecordsByOrderId(orderId);
+	}
+
+	public List<I_C_OrderLine> getOrderLines(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveOrderLines(orderId, I_C_OrderLine.class);
 	}
 
 	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)

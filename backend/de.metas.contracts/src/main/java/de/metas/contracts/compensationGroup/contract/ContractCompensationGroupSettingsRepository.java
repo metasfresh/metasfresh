@@ -1,15 +1,20 @@
 package de.metas.contracts.compensationGroup.contract;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_DocType;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -45,7 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * {@code Repository Tables:} line for them; {@code C_Flatrate_Conditions} is only read here, via
  * its plain {@code C_CompensationGroup_ContractSettings_ID} column).
  * <p>
- * Loads a {@code C_CompensationGroup_ContractSettings} record and resolves the settings id a
+ * Loads a {@code C_CompensationGroup_ContractSettings} record, including the id of its pass-on
+ * {@code InvoiceProcessingServiceCompany} (not loaded here), and resolves the settings id a
  * {@code C_Flatrate_Conditions} record points to.
  */
 @Repository
@@ -53,7 +59,29 @@ public class ContractCompensationGroupSettingsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings> settingsById = CCache.<ContractCompensationGroupSettingsId, ContractCompensationGroupSettings>builder()
+			.tableName(I_C_CompensationGroup_ContractSettings.Table_Name)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_DocType.Table_Name)
+			.initialCapacity(10)
+			.maximumSize(100)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
+	@VisibleForTesting
+	public static ContractCompensationGroupSettingsRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ContractCompensationGroupSettingsRepository.class, ContractCompensationGroupSettingsRepository::new);
+	}
+
 	public ContractCompensationGroupSettings getBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
+	{
+		return settingsById.getOrLoad(settingsId, this::retrieveBySettingsId);
+	}
+
+	private ContractCompensationGroupSettings retrieveBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		final I_C_CompensationGroup_ContractSettings settingsRecord = load(settingsId, I_C_CompensationGroup_ContractSettings.class);
 
@@ -62,8 +90,10 @@ public class ContractCompensationGroupSettingsRepository
 		final ImmutableSet<DocTypeId> docTypeIds = retrieveDocTypeIds(settingsId);
 
 		return ContractCompensationGroupSettings.builder()
+				.settingsId(settingsId)
 				.schemaId(schemaId)
 				.docTypeIds(docTypeIds)
+				.passOnServiceCompanyConfigId(InvoiceProcessingServiceCompanyConfigId.ofRepoIdOrNull(settingsRecord.getPassOn_InvoiceProcessingServiceCompany_ID()))
 				.build();
 	}
 

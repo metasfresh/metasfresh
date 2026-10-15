@@ -26,4 +26,9 @@ public class JsonCompensationGroupSchemaRequest
 	 * Template (regular) lines that will be added to every group instantiated from this schema.
 	 */
 	@Nullable List<JsonCompensationGroupSchemaTemplateLine> templateLines;
+
+	/**
+	 * Compensation (e.g. percent discount) lines added to every group instantiated from this schema.
+	 */
+	@Nullable List<JsonCompensationGroupSchemaCompensationLine> compensationLines;
 }

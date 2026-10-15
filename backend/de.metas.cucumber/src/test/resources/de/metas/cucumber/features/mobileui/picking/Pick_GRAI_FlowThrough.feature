@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profile — atomic pick event
 # Scenario 1: SALES_ORDER aggregation — atomic pick with graiCodes; asserts picked TUs carry the scanned GRAIs.
 # Scenario 2: completion guard — fewer GRAIs than TUs in the atomic pick event blocks completion.

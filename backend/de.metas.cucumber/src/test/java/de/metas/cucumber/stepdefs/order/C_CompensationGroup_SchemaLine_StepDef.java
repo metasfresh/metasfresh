@@ -71,6 +71,7 @@ public class C_CompensationGroup_SchemaLine_StepDef
 	 *     <li>{@code OPT.Type} (optional) — matcher type; leave unset for an always-matching line</li>
 	 *     <li>{@code OPT.M_Product_Category_ID.Identifier} (optional) — restricts this compensation line to
 	 *         order lines whose product is in the given category</li>
+	 *     <li>{@code OPT.M_Product_Category_PackingMaterial_ID.Identifier} (optional) — counts only order lines whose packing instruction's packing material has a product in this category or a sub-category</li>
 	 * </ul>
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_SchemaLine:
@@ -103,6 +104,10 @@ public class C_CompensationGroup_SchemaLine_StepDef
 					.map(identifier -> identifier.lookupNotNullIn(productCategoryTable))
 					.map(I_M_Product_Category::getM_Product_Category_ID)
 					.ifPresent(record::setM_Product_Category_ID);
+			row.getAsOptionalIdentifier(I_C_CompensationGroup_SchemaLine.COLUMNNAME_M_Product_Category_PackingMaterial_ID)
+					.map(identifier -> identifier.lookupNotNullIn(productCategoryTable))
+					.map(I_M_Product_Category::getM_Product_Category_ID)
+					.ifPresent(record::setM_Product_Category_PackingMaterial_ID);
 
 			saveRecord(record);
 

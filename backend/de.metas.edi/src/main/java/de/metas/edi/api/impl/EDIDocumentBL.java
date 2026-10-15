@@ -55,6 +55,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -165,7 +166,9 @@ public class EDIDocumentBL
 			// Invoices have no dropship concept — use the raw location directly.
 			final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 
-			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true, bpl))
+			// a payment-bonus credit memo is an internal settlement document of the payment allocation; it is not sent to the customer
+			final boolean isDocumentEligibleForEDI = !isPaymentBonusCreditMemo(invoice);
+			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, isDocumentEligibleForEDI, bpl))
 			{
 				return;
 			}
@@ -185,6 +188,16 @@ public class EDIDocumentBL
 				invoice.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 			}
 		}
+	}
+
+	private boolean isPaymentBonusCreditMemo(@NonNull final I_C_Invoice invoice)
+	{
+		final int docTypeRepoId = invoice.getC_DocType_ID() > 0 ? invoice.getC_DocType_ID() : invoice.getC_DocTypeTarget_ID();
+		if (docTypeRepoId <= 0)
+		{
+			return false;
+		}
+		return PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docTypeDAO.getById(docTypeRepoId));
 	}
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,

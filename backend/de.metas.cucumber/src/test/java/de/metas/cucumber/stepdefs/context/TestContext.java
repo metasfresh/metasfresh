@@ -27,10 +27,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.api.APIResponse;
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -119,6 +123,21 @@ public class TestContext
 	public void setStringVariableFromRow(@NonNull final DataTableRow row, @NonNull final Supplier<String> valueSupplier)
 	{
 		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> setVariable(restVariableName, valueSupplier.get()));
+	}
+
+	/**
+	 * Replaces each {@code @name@} token of the given string with the value of the context variable of that name;
+	 * a token without such a variable is left as it is.
+	 */
+	@Nullable
+	public String resolveVariables(@Nullable final String string)
+	{
+		if (Check.isBlank(string) || variables.isEmpty())
+		{
+			return string;
+		}
+
+		return StringExpressionCompiler.instance.compile(string).evaluate(Evaluatees.ofMap(variables), OnVariableNotFound.Preserve);
 	}
 
 	public void setVariable(@NonNull final String name, final int valueInt)

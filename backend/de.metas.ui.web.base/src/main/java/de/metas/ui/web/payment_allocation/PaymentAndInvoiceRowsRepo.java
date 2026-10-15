@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.PaymentToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.refund.paymentdeduction.PaymentBonusDeductionService;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -40,6 +41,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -52,8 +55,10 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -63,21 +68,26 @@ import java.util.Set;
 @Repository
 public class PaymentAndInvoiceRowsRepo
 {
+	private static final Logger logger = LogManager.getLogger(PaymentAndInvoiceRowsRepo.class);
+
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currenciesRepo;
 	private final PaymentAllocationRepository paymentAllocationRepo;
 	private final LookupDataSource bpartnersLookup;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService;
+	private final PaymentBonusDeductionService paymentBonusDeductionService;
 
 	public PaymentAndInvoiceRowsRepo(
 			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final PaymentAllocationRepository paymentAllocationRepo,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService,
+			@NonNull final PaymentBonusDeductionService paymentBonusDeductionService,
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.currenciesRepo = currenciesRepo;
 		this.paymentAllocationRepo = paymentAllocationRepo;
 		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
+		this.paymentBonusDeductionService = paymentBonusDeductionService;
 		this.bpartnersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
@@ -162,10 +172,20 @@ public class PaymentAndInvoiceRowsRepo
 			return ImmutableList.of();
 		}
 
-		final InvoiceRowLoadingContext loadingContext = InvoiceRowLoadingContext.builder()
+		final InvoiceRowLoadingContext.InvoiceRowLoadingContextBuilder loadingContextBuilder = InvoiceRowLoadingContext.builder()
 				.evaluationDate(evaluationDate)
-				.invoiceIdsWithServiceInvoiceAlreadyGenetated(extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(invoicesToAllocate))
-				.build();
+				.invoiceIdsWithServiceInvoiceAlreadyGenetated(extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(invoicesToAllocate));
+		try
+		{
+			loadingContextBuilder.paymentBonusCalculator(newPaymentBonusCalculator(invoicesToAllocate));
+		}
+		catch (final RuntimeException ex)
+		{
+			// e.g. an invalid contract: the invoices are shown without bonus, with a note why, and can still be allocated
+			logger.warn("Could not load the payment bonus contracts; showing the invoices without payment bonus", ex);
+			loadingContextBuilder.paymentBonusCalculatorError(ex);
+		}
+		final InvoiceRowLoadingContext loadingContext = loadingContextBuilder.build();
 
 		return invoicesToAllocate.stream()
 				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, loadingContext))
@@ -179,6 +199,19 @@ public class PaymentAndInvoiceRowsRepo
 				.collect(ImmutableSet.toImmutableSet());
 
 		return invoiceProcessorServiceCompanyService.retainIfServiceInvoiceWasAlreadyGenerated(invoiceIds);
+	}
+
+	/**
+	 * Loads the refund contracts of all the sales invoices' partners at once; see {@link #computePaymentBonus(InvoiceToAllocate, InvoiceRowLoadingContext)}.
+	 */
+	private PaymentBonusDeductionService.Calculator newPaymentBonusCalculator(final @NonNull List<InvoiceToAllocate> invoicesToAllocate)
+	{
+		final ImmutableSet<InvoiceId> salesInvoiceIds = invoicesToAllocate.stream()
+				.filter(invoiceToAllocate -> invoiceToAllocate.getDocBaseType().isSales())
+				.map(InvoiceToAllocate::getInvoiceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return paymentBonusDeductionService.newCalculator(salesInvoiceIds);
 	}
 
 	private PaymentRow toPaymentRow(final PaymentToAllocate paymentToAllocate)
@@ -230,6 +263,7 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
 		final Optional<Amount> serviceFeeAmount = computeServiceFee(invoiceToAllocate, loadingContext).map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax);
+		final PaymentBonusRowValues paymentBonus = computePaymentBonus(invoiceToAllocate, serviceFeeAmount.orElse(null), loadingContext);
 
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -246,8 +280,50 @@ public class PaymentAndInvoiceRowsRepo
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
 				.serviceFeeAmt(serviceFeeAmount.orElse(null))
+				.paymentBonusAmt(paymentBonus.getPaymentBonusAmt())
+				.paymentBonusDeduction(paymentBonus.getPaymentBonusDeduction())
+				.paymentBonusNote(paymentBonus.getPaymentBonusNote())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	/**
+	 * @return the bonus that the customer may deduct when paying the given sales invoice, pre-filled unless it is bigger than the open amount
+	 */
+	private PaymentBonusRowValues computePaymentBonus(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@Nullable final Amount serviceFeeAmt,
+			@NonNull final InvoiceRowLoadingContext loadingContext)
+	{
+		if (!invoiceToAllocate.getDocBaseType().isSales())
+		{
+			return PaymentBonusRowValues.builder().build();
+		}
+
+		final PaymentBonusDeductionService.Calculator paymentBonusCalculator = loadingContext.getPaymentBonusCalculator();
+		if (paymentBonusCalculator == null)
+		{
+			return PaymentBonusRowValues.notComputed(Check.assumeNotNull(loadingContext.getPaymentBonusCalculatorError(), "error of {}", loadingContext));
+		}
+
+		final PaymentBonusDeduction paymentBonusDeduction;
+		try
+		{
+			paymentBonusDeduction = paymentBonusCalculator.computeForInvoice(invoiceToAllocate.getInvoiceId()).orElse(null);
+		}
+		catch (final RuntimeException ex)
+		{
+			// e.g. a bonus product without price: the invoice is shown without the bonus, with a note why, and the other invoices can still be allocated
+			logger.warn("Could not compute the payment bonus of C_Invoice_ID={}; showing the invoice without it", invoiceToAllocate.getInvoiceId().getRepoId(), ex);
+			return PaymentBonusRowValues.notComputed(ex);
+		}
+
+		return PaymentBonusRowValues.prefill(
+				paymentBonusDeduction,
+				invoiceToAllocate.getDocumentCurrencyCode(),
+				invoiceToAllocate.getOpenAmountConverted(),
+				invoiceToAllocate.getDiscountAmountConverted(),
+				serviceFeeAmt);
 	}
 
 	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(
@@ -356,6 +432,9 @@ public class PaymentAndInvoiceRowsRepo
 	{
 		@NonNull ZonedDateTime evaluationDate;
 		@NonNull ImmutableSet<InvoiceId> invoiceIdsWithServiceInvoiceAlreadyGenetated;
+		/** {@code null} if it could not be loaded, see {@link #paymentBonusCalculatorError} */
+		@Nullable PaymentBonusDeductionService.Calculator paymentBonusCalculator;
+		@Nullable RuntimeException paymentBonusCalculatorError;
 
 		public boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceId invoiceId)
 		{

@@ -108,10 +108,8 @@ that guarantee is pinned directly by ProductsProposalRowsDataTest.)
     // === FIXTURE: deliver Product1; Product3 never ===
     // Only ONE delivered product is needed here: this spec is about a quantity typed on a
     // NEVER-delivered product, so a single product with delivery history is enough to make the filter
-    // meaningful. Deliberately not adding a second line - each extra addOrderLine call on the same
-    // order is a further chance for the shared quick-input helper to fail (measured: it occasionally
-    // cannot add a second line at all, three retries included), and a fixture step that the assertions
-    // do not need is pure flakiness surface. The sibling spec that asserts the row COUNT narrowing
+    // meaningful. Deliberately not adding a second line - a fixture step that the assertions do not
+    // need is pure flakiness surface. The sibling spec that asserts the row COUNT narrowing
     // does keep two delivered products, because there the second one is load-bearing.
     await test.step('Fixture - deliver Product1 to the partner (Product2, Product3 never)', async () => {
       await SalesOrderPage.goto();

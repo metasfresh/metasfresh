@@ -82,6 +82,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -826,6 +827,7 @@ public final class AggregationEngine
 		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 		final InvoiceDocBaseType docBaseType;
+		boolean isRefundDocType = false;
 
 		//
 		// Case: Invoice DocType was preset
@@ -835,7 +837,12 @@ public final class AggregationEngine
 
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 
-			docBaseType = flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
+			// A refund candidate carries the positive refund amount and its refund document type already says that this is a credit memo.
+			// Neither the sign of its amount may change that type, nor does a credit memo of it need negated amounts.
+			isRefundDocType = isRefundDocType(invoiceDocType);
+			docBaseType = isRefundDocType
+					? invoiceDocBaseType
+					: flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
 		}
 		//
 		// Case: no invoice DocType was set
@@ -870,13 +877,27 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amounts are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (docBaseType.isCreditMemo() && !isRefundDocType)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	/**
+	 * A refund document type (invoice or credit memo) is the type of the refund engine's candidates.
+	 * They carry the refund amount as a positive amount, so such a document type keeps its credit memo base type and its amounts as they are,
+	 * whatever the sign. A negative refund therefore stays a credit memo with a negative amount, which means that the customer owes.
+	 * <p>
+	 * The sub type is compared as a plain string, so that a sub type that the code does not know does not break invoicing.
+	 */
+	private static boolean isRefundDocType(@NonNull final I_C_DocType docType)
+	{
+		final String docSubType = docType.getDocSubType();
+		return X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift.equals(docSubType);
 	}
 
 	@NonNull

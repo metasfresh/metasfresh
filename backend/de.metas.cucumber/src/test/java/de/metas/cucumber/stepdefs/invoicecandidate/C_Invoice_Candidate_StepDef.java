@@ -406,6 +406,23 @@ public class C_Invoice_Candidate_StepDef
 		Assertions.assertThat(invoiceCandidates).isEmpty();
 	}
 
+	/**
+	 * Deletes an open invoice candidate, like a user does it in the invoice candidates window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice candidate identified by salesIC is deleted
+	 * </pre>
+	 */
+	@And("^the invoice candidate identified by (.*) is deleted$")
+	public void invoice_candidate_is_deleted(@NonNull final String identifier)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(identifier);
+		assertThat(invoiceCandidate.isProcessed()).as("only an open invoice candidate can be deleted").isFalse();
+		InterfaceWrapperHelper.delete(invoiceCandidate);
+	}
+
 	@And("recompute invoice candidates if required")
 	public void recompute_invoice_candidates_if_required(@NonNull final DataTable dataTable)
 	{

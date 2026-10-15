@@ -465,6 +465,25 @@ public class InvoiceCandBLTest
 		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord)).isEqualByComparingTo(expectedQtyDelivered_Effective);
 	}
 
+	/**
+	 * A split candidate is a new record that has to pass the same checks as a candidate that a handler creates,
+	 * so it needs the unit of measure and the payment term of the candidate it is split from.
+	 */
+	@Test
+	public void splitCandidate_copiesUomAndPaymentTerm()
+	{
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
+		ic.setC_UOM_ID(123);
+		ic.setC_PaymentTerm_ID(456);
+		save(ic);
+
+		final I_C_Invoice_Candidate splitCandidate = invoiceCandBL.splitCandidate(ic);
+
+		assertThat(splitCandidate.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(123);
+		assertThat(splitCandidate.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(456);
+	}
+
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)
 	{
 		return Percent.of(discount).subtractFromBase(baseAmount, precision.toInt());

@@ -1265,6 +1265,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		splitCand.setM_PricingSystem_ID(ic.getM_PricingSystem_ID());
 		splitCand.setM_Product_ID(ic.getM_Product_ID());
+		splitCand.setC_UOM_ID(ic.getC_UOM_ID()); // mandatory for the price-actual checks of a new candidate
+		splitCand.setC_PaymentTerm_ID(ic.getC_PaymentTerm_ID()); // mandatory column
 		splitCand.setIsPackagingMaterial(ic.isPackagingMaterial());
 		splitCand.setC_Charge_ID(ic.getC_Charge_ID());
 

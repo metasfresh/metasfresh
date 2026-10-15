@@ -31,7 +31,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
@@ -41,10 +40,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.model.I_AD_Role;
-import org.compiere.util.Evaluatees;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -118,18 +114,7 @@ public class REST_API_StepDef
 
 	private String resolveContextVariables(final String string)
 	{
-		if (Check.isBlank(string))
-		{
-			return string;
-		}
-
-		final HashMap<String, String> variables = testContext.getVariables();
-		if (variables == null || variables.isEmpty())
-		{
-			return string;
-		}
-
-		return StringExpressionCompiler.instance.compile(string).evaluate(Evaluatees.ofMap(variables), OnVariableNotFound.Preserve);
+		return testContext.resolveVariables(string);
 	}
 
 	public void performHTTPRequest(final APIRequest request) throws IOException

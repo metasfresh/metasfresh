@@ -672,7 +672,19 @@ public class MD_Candidate_StepDef
 			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
-		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		final ImmutableList<MaterialDispoDataItem> items;
+		try
+		{
+			items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		}
+		catch (final RuntimeException ex)
+		{
+			// getAllBy() loads the candidates, then each one's STOCK candidate and detail with separate statements; a material event committing
+			// in between (e.g. a StockEstimateDeletedEvent deleting a candidate with its STOCK candidate) makes it see a candidate whose related
+			// records are already gone. That torn read is not a settled state => retry; if the error persists, the timeout reports it.
+			logger.warn("Failed loading MD_Candidates for {}; will retry: {}", candidatesQuery, ex.toString());
+			return ProviderResult.resultWasNotFound(ex.toString());
+		}
 		return newValidator().findValidItem(items, row, candidateIdsToExclude);
 	}
 

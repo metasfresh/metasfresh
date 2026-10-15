@@ -77,12 +77,24 @@ public class FlatrateTermImportTableSqlUpdater
 		markAsError("Flatrate conditions not found", I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID + " IS NULL"
 				+ "\n AND " + sqlImportWhereClause);
 		// CompensationGroup-type rows are product-less by design; they never get a "Product not found" error.
-		final String sqlNotCompensationGroup = "NOT EXISTS (SELECT 1 FROM " + I_C_Flatrate_Conditions.Table_Name + " fc"
+		final String sqlNotCompensationGroup = sqlNotOfType(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
+		// Refund-type rows are based on a product category or a bonus product, so they need no product either.
+		// But a product key that was given and matches no product is still an error.
+		final String sqlRefundWithoutProductKey = "(EXISTS (SELECT 1 FROM " + I_C_Flatrate_Conditions.Table_Name + " fc"
 				+ " WHERE fc." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID
-				+ " AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + "='" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup + "')";
+				+ " AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + "='" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund + "')"
+				+ " AND COALESCE(TRIM(i." + I_I_Flatrate_Term.COLUMNNAME_ProductValue + "), '')='')";
 		markAsError("Product not found", I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL"
 				+ "\n AND " + sqlNotCompensationGroup
+				+ "\n AND NOT " + sqlRefundWithoutProductKey
 				+ "\n AND " + sqlImportWhereClause);
+	}
+
+	private static String sqlNotOfType(@NonNull final String typeConditions)
+	{
+		return "NOT EXISTS (SELECT 1 FROM " + I_C_Flatrate_Conditions.Table_Name + " fc"
+				+ " WHERE fc." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID
+				+ " AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + "='" + typeConditions + "')";
 	}
 
 	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)

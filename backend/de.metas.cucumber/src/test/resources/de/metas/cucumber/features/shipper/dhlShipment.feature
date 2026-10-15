@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0355_Transport_Planning_Extralogistik
 @allure.label.feature:F00355
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 Feature: Dhl Shipment
 ## F00355: Shipper
 

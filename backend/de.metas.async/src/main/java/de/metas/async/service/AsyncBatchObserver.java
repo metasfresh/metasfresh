@@ -125,6 +125,13 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	/**
 	 * Waits max. the timeout specified in {@code AD_SysConfig de.metas.async.AsyncBatchObserver.WaitTimeOutMS}
 	 * for the given AsyncBatchId to be completed.
+	 * <p>
+	 * Removes the registration made by {@link #observeOn(AsyncBatchId)} when done, also when failing.
+	 * Callers must not call {@link #removeObserver(AsyncBatchId)} afterwards: by then, another caller might have registered on the same id.
+	 * <p>
+	 * Registrations are keyed by id only. This is safe because {@link #observeOn(AsyncBatchId)} acquires the per-async-batch lock
+	 * (see {@link #lockBatch(AsyncBatchId, Duration)}), and the registration's owner holds it until its registration is removed.
+	 * So while a registration exists, no other caller can register on the same id; each caller must remove its registration exactly once.
 	 */
 	public void waitToBeProcessed(@NonNull final AsyncBatchId id)
 	{

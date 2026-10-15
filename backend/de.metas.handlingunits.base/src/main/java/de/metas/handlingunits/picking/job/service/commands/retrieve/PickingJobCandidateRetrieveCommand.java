@@ -1,15 +1,18 @@
 package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -22,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
 @Builder
@@ -32,6 +36,7 @@ public class PickingJobCandidateRetrieveCommand
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
+	@NonNull private final PickingJobLoaderSupportingServices loadingSupportingServices;
 
 	//
 	// Params
@@ -118,12 +123,27 @@ public class PickingJobCandidateRetrieveCommand
 
 	private PickingJobCandidateList aggregate()
 	{
+		// The packageables arrive in no particular order within one sales order, so the candidates order their products
+		// by sales order line (C_OrderLine.Line) - the same order an already started picking job uses.
+		// Batch-load all the line SeqNos in ONE query here, so the sorting below reads only cache hits.
+		loadingSupportingServices.warmUpSalesOrderLineSeqNosCache(getSalesOrderAndLineIds());
+		final ToIntFunction<OrderAndLineId> salesOrderLineSeqNoProvider = loadingSupportingServices::getSalesOrderLineSeqNo;
+
 		final ImmutableList.Builder<PickingJobCandidate> result = ImmutableList.builder();
-		orderBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
+		orderBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate(salesOrderLineSeqNoProvider)));
 		productBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
-		deliveryLocationBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
+		deliveryLocationBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate(salesOrderLineSeqNoProvider)));
 
 		return PickingJobCandidateList.ofList(result.build());
+	}
+
+	private ImmutableSet<OrderAndLineId> getSalesOrderAndLineIds()
+	{
+		return Stream.concat(
+						orderBasedAggregates.values().stream().map(OrderBasedAggregation::getSalesOrderAndLineIds),
+						deliveryLocationBasedAggregates.values().stream().map(DeliveryLocationBasedAggregation::getSalesOrderAndLineIds))
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private void add(@NonNull final ScheduledPackageable item)

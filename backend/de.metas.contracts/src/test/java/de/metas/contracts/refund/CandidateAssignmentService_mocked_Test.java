@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -8,6 +9,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
+import java.util.Optional;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -31,6 +34,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -125,7 +129,8 @@ public class CandidateAssignmentService_mocked_Test
 				assignableInvoiceCandidateRepository,
 				assignmentToRefundCandidateRepository,
 				refundInvoiceCandidateRepository,
-				refundConfigChangeService);
+				refundConfigChangeService,
+				new RefundPackagingFilter(new RefundConfigRepository(new InvoiceScheduleRepository()), Optional.empty()));
 	}
 
 	@Test
@@ -194,6 +199,7 @@ public class CandidateAssignmentService_mocked_Test
 
 		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(assignableCandidateId)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
@@ -306,6 +312,7 @@ public class CandidateAssignmentService_mocked_Test
 		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(assignableCandidateId)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
