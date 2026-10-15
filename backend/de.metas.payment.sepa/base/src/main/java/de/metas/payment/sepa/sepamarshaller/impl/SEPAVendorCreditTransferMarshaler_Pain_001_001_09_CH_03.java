@@ -848,23 +848,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		return c >= '0' && c <= '9';
 	}
 
+	/**
+	 * Removes all Unicode whitespace, including no-break spaces (U+00A0, U+2007, U+202F), like the .03 marshaller does for the QR reference.
+	 *
+	 * @return {@code null} if nothing remains
+	 */
 	@Nullable
 	private static String removeWhitespace(@Nullable final String text)
 	{
-		if (text == null)
-		{
-			return null;
-		}
-		final StringBuilder sb = new StringBuilder(text.length());
-		for (int i = 0; i < text.length(); i++)
-		{
-			final char c = text.charAt(i);
-			if (!Character.isWhitespace(c))
-			{
-				sb.append(c);
-			}
-		}
-		return sb.length() == 0 ? null : sb.toString();
+		return StringUtils.trimBlankToNull(StringUtils.cleanWhitespace(text));
 	}
 
 	private static boolean isQrIbanPayment(@NonNull final I_SEPA_Export_Line line, @Nullable final BankAccount bankAccount)

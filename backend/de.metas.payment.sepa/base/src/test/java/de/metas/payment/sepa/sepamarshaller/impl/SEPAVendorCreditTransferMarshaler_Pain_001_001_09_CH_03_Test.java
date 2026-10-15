@@ -351,6 +351,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void createDocument_ibanAndQrIban_qrReferenceWithNoBreakSpaces_isQrr() throws Exception
+	{
+		// QR reference as printed on a QR-bill, copied with no-break spaces (U+00A0) between the groups; like .03, all Unicode whitespace is removed
+		final String qrReferenceWithNoBreakSpaces = "21 00000 00003 13947 14300 09017";
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, CREDITOR_IBAN_CH, new BigDecimal("100"), chf, qrReferenceWithNoBreakSpaces);
+
+		final byte[] xml = exportXml(sepaExport);
+
+		assertValidAgainstXsd(xml);
+		final Document doc = parse(xml);
+		final String cdtTrfTxInf = "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf";
+		assertThat(text(doc, cdtTrfTxInf + "/CdtrAcct/Id/IBAN")).isEqualTo("CH4431999123000889012");
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry")).isEqualTo("QRR");
+		assertThat(text(doc, cdtTrfTxInf + "/RmtInf/Strd/CdtrRefInf/Ref")).isEqualTo(QR_REFERENCE);
+	}
+
+	@Test
 	public void export_qrIbanWithoutValidQrReference_fails()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
