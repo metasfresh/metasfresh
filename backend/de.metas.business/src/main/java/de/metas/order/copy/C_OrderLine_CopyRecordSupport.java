@@ -6,6 +6,7 @@ import de.metas.copy_with_details.template.CopyTemplate;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.util.Check;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -28,6 +29,11 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 	private final OrderLineDimensionFactory orderLineDimensionFactory = SpringContextHolder.instance.getBean(OrderLineDimensionFactory.class);
 
 	/**
+	 * Skips the lines that the system generates itself and the target order gets anew: packing-material lines, freight-cost lines
+	 * and the compensation (e.g. bonus discount) lines of a contract-created compensation group (one whose header carries a
+	 * {@code C_Flatrate_Term_ID}, see {@link OrderGroupRepository#createContractCreatedGroupsQueryBuilder()}); the latter are
+	 * recreated when the target order is prepared for completion.
+	 *
 	 * @return true if the record shall be copied
 	 */
 	@Override
@@ -36,7 +42,8 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(fromPO, I_C_OrderLine.class);
 
 		return !fromOrderLine.isPackagingMaterial()
-				&& !ordersFreightCostService.isFreightCostOrderLine(fromOrderLine);
+				&& !ordersFreightCostService.isFreightCostOrderLine(fromOrderLine)
+				&& !(fromOrderLine.isGroupCompensationLine() && isContractCreatedGroup(fromOrderLine.getC_Order_CompensationGroup_ID()));
 	}
 
 	@Override
@@ -72,9 +79,14 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 
 	private I_C_Order getTargetOrder() {return Check.assumeNotNull(getParentModel(I_C_Order.class), "target order is not null");}
 
+	/**
+	 * @return the target order's copy of the given compensation group (cloned on first use), or {@code -1} when the line is not grouped
+	 * or its group is contract-created: such a group is not cloned, because it is recreated, together with the regrouping of the
+	 * target order's lines, when the target order is prepared for completion.
+	 */
 	private int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)
 	{
-		if (orderCompensationGroupId <= 0)
+		if (orderCompensationGroupId <= 0 || isContractCreatedGroup(orderCompensationGroupId))
 		{
 			return -1;
 		}
@@ -90,6 +102,15 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 		final int toOrderId = toOrder.getC_Order_ID();
 		final int orderCompensationGroupIdNew = orderCompensationGroupIdsMap.computeIfAbsent(orderCompensationGroupId, k -> cloneOrderCompensationGroup(orderCompensationGroupId, toOrderId));
 		return orderCompensationGroupIdNew;
+	}
+
+	private static boolean isContractCreatedGroup(final int orderCompensationGroupId)
+	{
+		return orderCompensationGroupId > 0
+				&& OrderGroupRepository.createContractCreatedGroupsQueryBuilder()
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupId)
+				.create()
+				.anyMatch();
 	}
 
 	private static int cloneOrderCompensationGroup(final int orderCompensationGroupId, final int toOrderId)

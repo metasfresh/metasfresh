@@ -1449,6 +1449,57 @@ public class C_Order_StepDef
 		}
 	}
 
+	/**
+	 * Runs the sales order window's "void with related documents and recreate" action ({@code C_Order_VoidWithRelatedDocsAndRecreate})
+	 * on a completed order: the order is voided under a prefixed document number, and a copy carrying the original document number is
+	 * created. The copy is registered under {@code recreatedOrderIdentifier}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the completed order "order" is voided with related documents and recreated as "orderRecreated"
+	 * </pre>
+	 */
+	@When("the completed order {string} is voided with related documents and recreated as {string}")
+	public void voidWithRelatedDocsAndRecreate(@NonNull final String orderIdentifier, @NonNull final String recreatedOrderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		InterfaceWrapperHelper.refresh(order);
+		final String originalDocumentNo = order.getDocumentNo();
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("C_Order_VoidWithRelatedDocsAndRecreate");
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(ClientId.ofRepoId(order.getAD_Client_ID()))
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.setRecord(I_C_Order.Table_Name, order.getC_Order_ID())
+				.addParameter("VoidedOrderDocumentNoPrefix", "Voided")
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
+
+		InterfaceWrapperHelper.refresh(order);
+		final I_C_Order recreatedOrder = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(COLUMNNAME_DocumentNo, originalDocumentNo)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, order.getC_BPartner_ID())
+				.addNotEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.firstOnlyNotNull(I_C_Order.class);
+		orderTable.putOrReplace(recreatedOrderIdentifier, recreatedOrder);
+	}
+
 	@When("C_Order is cloned")
 	public void clone_order(@NonNull final DataTable dataTable)
 	{
