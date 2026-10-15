@@ -816,6 +816,23 @@ class ContractSettingsTakeOverServiceTest
 		}
 
 		@Test
+		void refundTakeOverNotAllowed_contractBonusStillTakenOver_noRefund()
+		{
+			// the linked sales order is reactivated (neither completed/closed nor completing): its contract bonus still reaches the PO, its refunds do not (AC7b)
+			final ProductId bonusWareId = product("Bonus Ware", null, null);
+			final ContractCompensationGroupSettings settings = createSettingsWithRefunds(null, 2, ImmutableList.of(RV_WARE_1, RV_WARE_0125), bonusWareId);
+			prepareRefund(RV_WARE_1, "RV Ware 1 % vierteljährlich", "1");
+			prepareRefund(RV_WARE_0125, "RV Ware 0,125 % jährlich", "0.125");
+			final I_C_Order salesOrder = createSalesOrderWithLines(new LineSpec(bonusWareId, "3"));
+			final OrderDropShipInfo purchaseOrder = dropShipPO(salesOrder).toBuilder().refundTakeOverAllowed(false).build();
+
+			final List<GroupTemplateCompensationLine> lines = service.applyToSchema(schema(), purchaseOrder, settings).getCompensationLines();
+
+			assertThat(lines).containsExactly(expectedOwnLine());
+			Mockito.verify(refundServiceMock, Mockito.never()).findTakenOverRefunds(any(), any(), any());
+		}
+
+		@Test
 		void vendorLine_unchanged()
 		{
 			final ProductId bonusWareId = product("Bonus Ware", null, null);
@@ -988,9 +1005,13 @@ class ContractSettingsTakeOverServiceTest
 	}
 
 	/** A drop-ship purchase order whose linked sales order is keyed by {@link #CUSTOMER_ID} and {@link #SO_DATE}. */
+	/** A drop-ship purchase order whose linked sales order is completed, so its refunds may be taken over. */
 	private static OrderDropShipInfo dropShipPO(final I_C_Order salesOrder)
 	{
-		return purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE);
+		return purchaseOrderWithFeeKey(OrderId.ofRepoId(salesOrder.getC_Order_ID()), CUSTOMER_ID, SO_DATE)
+				.toBuilder()
+				.refundTakeOverAllowed(true)
+				.build();
 	}
 
 	/**

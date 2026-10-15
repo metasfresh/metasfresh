@@ -255,8 +255,8 @@ public class ContractSettingsTakeOverService
 	}
 
 	/**
-	 * One lookup for the refund conditions of all take-overs; none when no take-over lists a refund condition
-	 * or the linked sales order's invoice partner or date is unknown.
+	 * One lookup for the refund conditions of all take-overs; none when no take-over lists a refund condition,
+	 * the linked sales order's invoice partner or date is unknown, or its refunds may not be taken over (reactivated sales order).
 	 */
 	private ImmutableListMultimap<ConditionsId, TakenOverRefund> findTakenOverRefunds(
 			@NonNull final OrderDropShipInfo order,
@@ -267,7 +267,7 @@ public class ContractSettingsTakeOverService
 		final ImmutableSet<ConditionsId> conditionsIds = takeOvers.stream()
 				.flatMap(takeOver -> takeOver.getRefundConditionsIds().stream())
 				.collect(ImmutableSet.toImmutableSet());
-		if (invoicePartnerId == null || soDate == null || conditionsIds.isEmpty())
+		if (!order.isRefundTakeOverAllowed() || invoicePartnerId == null || soDate == null || conditionsIds.isEmpty())
 		{
 			return ImmutableListMultimap.of();
 		}
