@@ -10,6 +10,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
+import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.api.SepaUtils;
@@ -75,6 +76,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	private static final String QR_REFERENCE = "210000000003139471430009017";
 	private static final String SCOR_REFERENCE_SEPA = "RF18539007547034";
 	private static final String SCOR_REFERENCE_FOREIGN = "RF4220210323103704APG0018";
+
+	/**
+	 * In unit tests, a message is rendered as its AD_Message value followed by its parameters (see PlainMsgBL).
+	 */
+	private static final String MSG_ADDRESS_INCOMPLETE = "de.metas.payment.sepa.SEPA_Export_CreditorAddressIncomplete";
+	private static final String MSG_ADDRESS_OMITTED = "de.metas.payment.sepa.SEPA_Export_CreditorAddressOmitted";
+	private static final String MSG_ADDRESS_OF_LOCATION = "de.metas.payment.sepa.SEPA_Export_AddressOfLocation";
+	private static final String MSG_ADDRESS_OF_BANK_ACCOUNT = "de.metas.payment.sepa.SEPA_Export_AddressOfBankAccount";
+	private static final String MSG_MISSING_TOWN = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartTown";
+	private static final String MSG_MISSING_COUNTRY = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartCountry";
+	private static final String MSG_MISSING_TOWN_AND_COUNTRY = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartsTownAndCountry";
+
+	/**
+	 * Partners as shown in the messages: search key and name
+	 */
+	private static final String PARTNER_TEST_CREDITOR = "TestCreditor (Test Creditor AG)";
+	private static final String PARTNER_TEST_VENDOR = "TestCreditor (Test Vendor GmbH)";
 
 	private BankRepository bankRepository;
 
@@ -622,9 +640,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		// IG 3.11: TwnNm and Ctry must always be supplied
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Creditor AG")
-				.hasMessageContaining("Test Billing Location")
-				.hasMessageContaining("town");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_CREDITOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_LOCATION + " - Test Billing Location")
+				.hasMessageContaining(MSG_MISSING_TOWN);
 	}
 
 	@Test
@@ -638,9 +657,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Vendor GmbH")
-				.hasMessageContaining("bank account")
-				.hasMessageContaining("town");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_VENDOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_DE)
+				.hasMessageContaining(MSG_MISSING_TOWN);
 	}
 
 	@Test
@@ -652,9 +672,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", "Bern", " ");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Creditor AG")
-				.hasMessageContaining("Test Billing Location")
-				.hasMessageContaining("has no country");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_CREDITOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_LOCATION + " - Test Billing Location")
+				.hasMessageContaining(MSG_MISSING_COUNTRY);
 	}
 
 	@Test
@@ -668,9 +689,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Vendor GmbH")
-				.hasMessageContaining("bank account")
-				.hasMessageContaining("has no country");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_VENDOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_DE)
+				.hasMessageContaining(MSG_MISSING_COUNTRY);
 	}
 
 	@Test
@@ -685,8 +707,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Vendor GmbH")
-				.hasMessageContaining("has no town and country");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_VENDOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_DE)
+				.hasMessageContaining(MSG_MISSING_TOWN_AND_COUNTRY);
 	}
 
 	@Test
@@ -699,9 +723,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "CH");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("Test Creditor AG")
-				.hasMessageContaining("Test Billing Location")
-				.hasMessageContaining("has no town");
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining(PARTNER_TEST_CREDITOR)
+				.hasMessageContaining(MSG_ADDRESS_OF_LOCATION + " - Test Billing Location")
+				.hasMessageContaining(MSG_MISSING_TOWN);
 	}
 
 	@Test
@@ -714,19 +739,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", " ", "CH");
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf")).isZero(); // payment type D
 		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/Nm")).isEqualTo("Test Creditor AG");
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
-		assertThat(singleWarning(warnings))
-				.contains("TestCreditor")
-				.contains("Test Creditor AG")
-				.contains("Test Billing Location")
-				.contains("has no town")
-				.contains("left out");
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_CREDITOR)
+				.contains(MSG_ADDRESS_OF_LOCATION + " - Test Billing Location")
+				.contains(MSG_MISSING_TOWN);
 	}
 
 	@Test
@@ -739,18 +764,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBillToLocation(line, "Bahnhofstrasse 5", "3000", "Bern", " ");
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(text(doc, "Document/CstmrCdtTrfInitn/PmtInf/PmtTpInf/SvcLvl/Cd")).isEqualTo("SEPA");
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
-		assertThat(singleWarning(warnings))
-				.contains("TestCreditor")
-				.contains("Test Creditor AG")
-				.contains("Test Billing Location")
-				.contains("has no country")
-				.contains("left out");
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_CREDITOR)
+				.contains(MSG_ADDRESS_OF_LOCATION + " - Test Billing Location")
+				.contains(MSG_MISSING_COUNTRY);
 	}
 
 	@Test
@@ -764,17 +789,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH");
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
-		assertThat(singleWarning(warnings))
-				.contains("TestCreditor")
-				.contains("Test Vendor GmbH")
-				.contains("bank account")
-				.contains("has no town")
-				.contains("left out");
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_VENDOR)
+				.contains(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_CH)
+				.contains(MSG_MISSING_TOWN);
 	}
 
 	@Test
@@ -789,15 +814,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH");
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
-		assertThat(singleWarning(warnings))
-				.contains("Test Vendor GmbH")
-				.contains("bank account")
-				.contains("has no town and country");
+		assertThat(singleWarning(result, warnings))
+				.contains(MSG_ADDRESS_OMITTED)
+				.contains(PARTNER_TEST_VENDOR)
+				.contains(MSG_ADDRESS_OF_BANK_ACCOUNT + " - " + CREDITOR_IBAN_DE)
+				.contains(MSG_MISSING_TOWN_AND_COUNTRY);
 	}
 
 	@Test
@@ -813,13 +840,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		save(line2);
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf")).isEqualTo(2);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
 		assertThat(warnings.getSingleMessages()).hasSize(1);
+		assertThat(result.getWarnings()).hasSize(1);
 	}
 
 	@Test
@@ -831,12 +860,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		setBPartner(line, "Test Vendor GmbH"); // no bill-to location
 
 		final PlainStringLoggable warnings = Loggables.newPlainStringLoggable();
-		final byte[] xml = exportXml(sepaExport, warnings);
+		final SEPACreditTransferXML result = exportXml(sepaExport, warnings);
+		final byte[] xml = result.getContent();
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
 		assertThat(count(doc, "Document/CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr/PstlAdr")).isZero();
 		assertThat(warnings.isEmpty()).isTrue();
+		assertThat(result.getWarnings()).isEmpty();
 	}
 
 	@Test
@@ -1026,18 +1057,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	/**
 	 * Exports with the given loggable as the thread's loggable, like the SEPA export process does (JavaProcess registers itself as the thread's loggable).
 	 */
-	private static byte[] exportXml(@NonNull final I_SEPA_Export sepaExport, @NonNull final PlainStringLoggable processLog)
+	private static SEPACreditTransferXML exportXml(@NonNull final I_SEPA_Export sepaExport, @NonNull final PlainStringLoggable processLog)
 	{
 		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(processLog))
 		{
-			return exportXml(sepaExport);
+			final SEPAExportContext exportContext = SEPAExportContext.builder().referenceAsEndToEndId(false).build();
+			return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(sepaExport, exportContext);
 		}
 	}
 
-	private static String singleWarning(@NonNull final PlainStringLoggable processLog)
+	/**
+	 * @return the single warning of the export result (which the export process shows as its summary); it is also in the process log
+	 */
+	private static String singleWarning(@NonNull final SEPACreditTransferXML result, @NonNull final PlainStringLoggable processLog)
 	{
-		assertThat(processLog.getSingleMessages()).hasSize(1);
-		return processLog.getSingleMessages().get(0);
+		assertThat(result.getWarnings()).hasSize(1);
+		final String warning = result.getWarnings().get(0).translate("de_CH");
+		assertThat(processLog.getSingleMessages()).containsExactly(warning);
+		return warning;
 	}
 
 	private static I_C_BP_BankAccount bankAccountOf(@NonNull final I_SEPA_Export_Line line)

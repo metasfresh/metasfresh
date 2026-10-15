@@ -2,6 +2,8 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -16,6 +18,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -73,6 +78,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -89,6 +95,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -221,6 +228,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private static final int MAX_LENGTH_POST_CODE = 16;
 	private static final int MAX_LENGTH_TOWN_NAME = 35;
 
+	/**
+	 * Incomplete creditor address (IG 3.11: TwnNm and Ctry are mandatory in a postal address); parameters: partner, address source, missing parts.
+	 * "X" fails ({@link #MSG_CreditorAddressIncomplete}), "D" and "S" leave the address out with a warning ({@link #MSG_CreditorAddressOmitted}).
+	 */
+	private static final AdMessageKey MSG_CreditorAddressIncomplete = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_CreditorAddressIncomplete");
+	private static final AdMessageKey MSG_CreditorAddressOmitted = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_CreditorAddressOmitted");
+	/**
+	 * The address source; parameter: location name resp. IBAN or account number of the bank account
+	 */
+	private static final AdMessageKey MSG_AddressOfLocation = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_AddressOfLocation");
+	private static final AdMessageKey MSG_AddressOfBankAccount = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_AddressOfBankAccount");
+	/**
+	 * The missing address parts
+	 */
+	private static final AdMessageKey MSG_MissingAddressPartTown = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_MissingAddressPartTown");
+	private static final AdMessageKey MSG_MissingAddressPartCountry = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_MissingAddressPartCountry");
+	private static final AdMessageKey MSG_MissingAddressPartsTownAndCountry = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_MissingAddressPartsTownAndCountry");
+
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
 	@NonNull private final BankRepository bankRepository;
@@ -232,6 +257,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final Logger logger = LogManager.getLogger(SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03.class);
 
@@ -241,6 +267,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private int pmtInfCounter = 0;
 	private final Map<PaymentInstruction30, Integer> pmtInfNumbers = new IdentityHashMap<>();
 	private final Set<ArrayKey> omittedAddressWarnings = new HashSet<>();
+	private final List<ITranslatableString> warnings = new ArrayList<>();
 
 	public SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(
 			@NonNull final BankRepository bankRepository,
@@ -899,11 +926,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final boolean useBankAccount = bankAccount != null && !bankAccount.isAddressEmpty();
 
 		final I_C_Location location;
-		final String addressSource;
+		final AdMessageKey addressSourceMessage;
+		final String addressSourceName;
 		if (useBankAccount)
 		{
 			location = null;
-			addressSource = "address of the bank account " + CoalesceUtil.coalesce(bankAccount.getIBAN(), bankAccount.getQR_IBAN(), bankAccount.getAccountNo());
+			addressSourceMessage = MSG_AddressOfBankAccount;
+			addressSourceName = CoalesceUtil.coalesce(bankAccount.getIBAN(), bankAccount.getQR_IBAN(), bankAccount.getAccountNo());
 		}
 		else
 		{
@@ -914,30 +943,34 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				return cdtr; // IG 4.3: Cdtr/PstlAdr is optional
 			}
 			location = locationDAO.getById(LocationId.ofRepoId(billToLocation.getC_Location_ID()));
-			addressSource = "location " + billToLocation.getName();
+			addressSourceMessage = MSG_AddressOfLocation;
+			addressSourceName = billToLocation.getName();
 		}
 
 		// IG 3.11: structured addresses for all payment types (.03 used AdrLine-only addresses for SEPA, which is no longer accepted)
 		final PostalAddress24 pstlAdr = createPstlAdr(bankAccount, location);
-		final String missingAddressParts = getMissingAddressPartsOrNull(pstlAdr);
+		final AdMessageKey missingAddressParts = getMissingAddressPartsOrNull(pstlAdr);
 		if (missingAddressParts == null)
 		{
 			cdtr.setPstlAdr(pstlAdr);
+			return cdtr;
 		}
-		else if (PAYMENT_TYPE_6.equals(paymentType))
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
+		final ITranslatableString addressSource = msgBL.getTranslatableMsgText(addressSourceMessage, Strings.nullToEmpty(addressSourceName));
+		if (PAYMENT_TYPE_6.equals(paymentType))
 		{
-			throw new AdempiereException("The address of business partner " + SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()) + " (" + addressSource + ") has no " + missingAddressParts + "."
-					+ " " + PAIN_001_001_09_CH_03 + " requires town and country; please complete the address.")
+			// X: the export fails, so that the address is completed before a foreign payment is sent.
+			throw new AdempiereException(MSG_CreditorAddressIncomplete, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts))
 					.appendParametersToMessage()
 					.setParameter("SEPA_Export_Line", line);
 		}
-		else
-		{
-			// D and S: Cdtr/PstlAdr is optional (IG 4.3), so we leave out the incomplete address instead of sending an invalid one and warn the user.
-			// X (above): the export fails, so that the address is completed before a foreign payment is sent.
-			warnIncompleteAddressOmitted(line, addressSource, missingAddressParts);
-		}
 
+		// D and S: Cdtr/PstlAdr is optional (IG 4.3), so we leave out the incomplete address instead of sending an invalid one and warn the user.
+		if (omittedAddressWarnings.add(ArrayKey.of(bpartnerId, addressSourceMessage, addressSourceName, missingAddressParts)))
+		{
+			addWarning(msgBL.getTranslatableMsgText(MSG_CreditorAddressOmitted, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts)));
+		}
 		return cdtr;
 	}
 
@@ -945,24 +978,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	 * IG 3.11: if a postal address is sent, the sub-elements TwnNm and Ctry "must always be supplied".
 	 * This is the single place where the completeness of the creditor address is decided.
 	 *
-	 * @return the missing parts ("town", "country" or "town and country"), or {@code null} if the address is complete
+	 * @return the message that names the missing parts (town, country or both), or {@code null} if the address is complete
 	 */
 	@Nullable
-	private static String getMissingAddressPartsOrNull(@NonNull final PostalAddress24 pstlAdr)
+	private static AdMessageKey getMissingAddressPartsOrNull(@NonNull final PostalAddress24 pstlAdr)
 	{
 		final boolean townMissing = Check.isBlank(pstlAdr.getTwnNm());
 		final boolean countryMissing = Check.isBlank(pstlAdr.getCtry());
 		if (townMissing && countryMissing)
 		{
-			return "town and country";
+			return MSG_MissingAddressPartsTownAndCountry;
 		}
 		else if (townMissing)
 		{
-			return "town";
+			return MSG_MissingAddressPartTown;
 		}
 		else if (countryMissing)
 		{
-			return "country";
+			return MSG_MissingAddressPartCountry;
 		}
 		return null;
 	}
@@ -973,23 +1006,30 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	}
 
 	/**
-	 * Tells the user (in the log of the export process) that a payment was exported without the creditor address; once per partner and address.
+	 * @return the partner's search key and name, as "value (name)"; empty if there is no partner
 	 */
-	private void warnIncompleteAddressOmitted(
-			@NonNull final I_SEPA_Export_Line line,
-			@NonNull final String addressSource,
-			@NonNull final String missingAddressParts)
+	private String getBPartnerValueAndName(@Nullable final BPartnerId bpartnerId)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
-		if (!omittedAddressWarnings.add(ArrayKey.of(bpartnerId, addressSource, missingAddressParts)))
+		if (bpartnerId == null)
 		{
-			return;
+			return "";
 		}
+		return bpartnerBL.getBPartnerValue(bpartnerId) + " (" + bpartnerBL.getBPartnerName(bpartnerId) + ")";
+	}
 
-		Loggables.withLogger(logger, Level.WARN).addLog(
-				"Business partner {} ({}): the {} has no {}. The address was left out of the payment file, because " + PAIN_001_001_09_CH_03 + " only allows an address with town and country."
-						+ " Please complete the address.",
-				bpartnerBL.getBPartnerValue(bpartnerId), bpartnerBL.getBPartnerName(bpartnerId), addressSource, missingAddressParts);
+	/**
+	 * Adds the given warning to {@link #getWarnings()} and logs it to the current loggable.
+	 */
+	private void addWarning(@NonNull final ITranslatableString warning)
+	{
+		warnings.add(warning);
+		Loggables.withLogger(logger, Level.WARN).addLog("{}", warning.translate(Env.getADLanguageOrBaseLanguage()));
+	}
+
+	@Override
+	public ImmutableList<ITranslatableString> getWarnings()
+	{
+		return ImmutableList.copyOf(warnings);
 	}
 
 	/**

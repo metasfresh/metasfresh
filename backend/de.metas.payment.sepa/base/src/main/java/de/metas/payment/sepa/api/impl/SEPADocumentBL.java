@@ -79,6 +79,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
+				.warnings(marshaler.getWarnings())
 				.build();
 	}
 
