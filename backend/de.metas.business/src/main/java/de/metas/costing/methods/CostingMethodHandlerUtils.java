@@ -168,6 +168,12 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	/** Narrower than an emptiness check: a distribution reversal persists its 3 legs via separate same-document calls, so a sibling leg's row must not be mistaken for this one's. */
+	public boolean containsAmtType(@NonNull final List<CostDetail> costDetails, @NonNull final CostAmountType amtType)
+	{
+		return costDetails.stream().anyMatch(costDetail -> costDetail.getAmtType() == amtType);
+	}
+
 	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
