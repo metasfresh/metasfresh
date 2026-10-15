@@ -100,8 +100,13 @@ public class C_OrderLine_CopyRecordSupport extends GeneralCopyRecordSupport
 
 		final OrderId toOrderId = OrderId.ofRepoId(toOrder.getC_Order_ID());
 		// -1 is remembered for a contract-created group, so that its check runs once per group, not once per line
-		return orderCompensationGroupIdsMap.computeIfAbsent(
-				orderCompensationGroupId,
-				k -> orderGroupRepository.isContractCreatedGroup(orderCompensationGroupId) ? -1 : orderGroupRepository.createCopyOfGroupHeader(orderCompensationGroupId, toOrderId));
+		return orderCompensationGroupIdsMap.computeIfAbsent(orderCompensationGroupId, k -> copyGroupHeaderUnlessContractCreated(orderCompensationGroupId, toOrderId));
+	}
+
+	private int copyGroupHeaderUnlessContractCreated(final int orderCompensationGroupId, final OrderId toOrderId)
+	{
+		return orderGroupRepository.isContractCreatedGroup(orderCompensationGroupId)
+				? -1
+				: orderGroupRepository.createCopyOfGroupHeader(orderCompensationGroupId, toOrderId);
 	}
 }
