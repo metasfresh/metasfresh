@@ -47,7 +47,7 @@ public class CiiValidationResult
 
 	/**
 	 * Returns a newline-separated, human-readable detail of all FATAL/ERROR-level failed assertions,
-	 * each rendered as {@code ruleId — message (location)}. A null ruleId or location is omitted.
+	 * each rendered as {@code ruleId — message (location)}. A null ruleId, message or location is omitted.
 	 */
 	@NonNull
 	public String getFatalAndErrorDetails()

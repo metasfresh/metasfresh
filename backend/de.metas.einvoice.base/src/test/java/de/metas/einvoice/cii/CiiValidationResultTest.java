@@ -47,4 +47,34 @@ class CiiValidationResultTest
 				.doesNotContain("null");
 		assertThat(details.split("\n")).hasSize(3);
 	}
+
+	@Test
+	void getFatalAndErrorDetails_nullLocation_rendersWithoutParenthesis()
+	{
+		final CiiValidationResult result = CiiValidationResult.builder()
+				.failedAssertion(FailedAssertion.builder()
+						.ruleId("BR-6")
+						.message("Seller name missing")
+						.severity("fatal_error")
+						.build())
+				.build();
+
+		assertThat(result.getFatalAndErrorDetails()).isEqualTo("BR-6 — Seller name missing");
+	}
+
+	@Test
+	void getFatalAndErrorDetails_noFatalOrError_returnsEmptyString()
+	{
+		final CiiValidationResult onlyWarning = CiiValidationResult.builder()
+				.failedAssertion(FailedAssertion.builder()
+						.ruleId("BR-W-1")
+						.message("Just a warning text")
+						.location("/warning/location")
+						.severity("warning")
+						.build())
+				.build();
+
+		assertThat(onlyWarning.getFatalAndErrorDetails()).isEmpty();
+		assertThat(CiiValidationResult.builder().build().getFatalAndErrorDetails()).isEmpty();
+	}
 }
