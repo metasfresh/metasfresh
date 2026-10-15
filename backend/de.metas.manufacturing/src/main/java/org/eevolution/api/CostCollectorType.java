@@ -43,7 +43,8 @@ public enum CostCollectorType
 	MethodChangeVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance), //
 	RateVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance), //
 	MixVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance), //
-	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl) //
+	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl), //
+	CostDifferenceDistribution(X_PP_Cost_Collector.COSTCOLLECTORTYPE_CostDifferenceDistribution) //
 	;
 
 	@Getter
@@ -151,5 +152,11 @@ public enum CostCollectorType
 	public boolean isMaterialMethodChangeVariance(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		return this == MethodChangeVariance && orderBOMLineId != null;
+	}
+
+	/** WIP cost-difference distribution: capitalizes the on-hand share of the residual and spills the rest to COGS. */
+	public boolean isCostDifferenceDistribution()
+	{
+		return this == CostDifferenceDistribution;
 	}
 }

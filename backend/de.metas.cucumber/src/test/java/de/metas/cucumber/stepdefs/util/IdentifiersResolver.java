@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.dunning.DunningDocId;
@@ -58,6 +59,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -79,6 +81,7 @@ public class IdentifiersResolver
 	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
 	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
+	@NonNull private final PP_Order_StepDefData ppOrderTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -136,6 +139,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		shipperTransportationTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_M_ShipperTransportation.Table_Name, id))
+				.ifPresent(result::add);
+		ppOrderTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_PP_Order.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())
