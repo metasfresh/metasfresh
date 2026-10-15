@@ -50,7 +50,7 @@ public interface I_C_CompensationGroup_ContractSettings_TakeOver
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Compensation group contract settings.
+	 * Set Compensation Group Contract Settings.
 	 * Reference to a compensation group contract settings record (schema and document types).
 	 *
 	 * <br>Type: Search
@@ -60,7 +60,7 @@ public interface I_C_CompensationGroup_ContractSettings_TakeOver
 	void setC_CompensationGroup_ContractSettings_ID (int C_CompensationGroup_ContractSettings_ID);
 
 	/**
-	 * Get Compensation group contract settings.
+	 * Get Compensation Group Contract Settings.
 	 * Reference to a compensation group contract settings record (schema and document types).
 	 *
 	 * <br>Type: Search
@@ -187,6 +187,29 @@ public interface I_C_CompensationGroup_ContractSettings_TakeOver
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Decimals of the summed percentage.
+	 * Number of decimals to which the summed percentage of the take-over line is rounded half up.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPercentagePrecision (int PercentagePrecision);
+
+	/**
+	 * Get Decimals of the summed percentage.
+	 * Number of decimals to which the summed percentage of the take-over line is rounded half up.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPercentagePrecision();
+
+	ModelColumn<I_C_CompensationGroup_ContractSettings_TakeOver, Object> COLUMN_PercentagePrecision = new ModelColumn<>(I_C_CompensationGroup_ContractSettings_TakeOver.class, "PercentagePrecision", null);
+	String COLUMNNAME_PercentagePrecision = "PercentagePrecision";
 
 	/**
 	 * Get Updated.
