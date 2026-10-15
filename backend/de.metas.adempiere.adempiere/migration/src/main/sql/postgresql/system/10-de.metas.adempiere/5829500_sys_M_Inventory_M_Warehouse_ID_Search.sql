@@ -1,5 +1,5 @@
 -- M_Inventory.M_Warehouse_ID: show the warehouse as a search field (type to find) instead of a dropdown,
--- in every inventory window (Inventur, Eigenverbrauch, Materialentnahme)
+-- in every window showing it (Inventur, Eigenverbrauch, Materialentnahme, their LEGACY windows and customer override windows)
 
 -- Column: M_Inventory.M_Warehouse_ID
 -- 2026-10-15T10:00:00
