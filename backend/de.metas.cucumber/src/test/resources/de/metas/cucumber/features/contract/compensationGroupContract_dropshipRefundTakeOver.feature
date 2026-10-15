@@ -299,3 +299,186 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
       | P_Expense_Acct        | -64.66 EUR  |             | discountExpenseAcct | vendorDropship | invPO     | bonusVendorDropship | discountTax | purchase7_N   |
       | P_Expense_Acct        | -89.01 EUR  |             | discountExpenseAcct | vendorDropship | invPO     | bonusVendorDropship | discountTax | purchase7_N   |
       | *                     |             |             |                     |                | invPO     |                     |             |               |
+
+
+  # ##############################################################################################
+  # As TS1, but the take-over record keeps 3 decimals: the take-over line's 3 + 1 + 0.125 = 4.125% is not rounded
+  # -> 4.125% of 2155.20 = 88.902 -> -88.90; together with the vendor's own 3% line -153.56 on 2155.20 goods.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32357_TS1b
+  Scenario: A take-over record with 3 decimals keeps the take-over line's summed 4.125% unrounded
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
+    And documents are accounted immediately
+
+    # categories unique per run: the discount product's accounts are copied from its category only at
+    # product creation, so the override must be applied to a fresh category before the product exists
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | pfandCategory    |
+      | discountCategory |
+    And metasfresh contains C_ElementValues:
+      | Identifier          | Value |
+      | discountRevenueAcct | 4750  |
+      | discountExpenseAcct | 5751  |
+    And metasfresh contains M_Product_Category_Acct overrides:
+      | M_Product_Category_ID | OPT.P_Revenue_Acct  | OPT.P_Expense_Acct  |
+      | discountCategory      | discountRevenueAcct | discountExpenseAcct |
+
+    And metasfresh contains M_Products:
+      | Identifier          | Name          | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1             | Elstar 1      | goodsCategory                        | Y      | Y           |
+      | elstar2             | Elstar 2      | goodsCategory                        | Y      | Y           |
+      | gala                | Gala          | goodsCategory                        | Y      | Y           |
+      | pfand1              | Pfand 1       | pfandCategory                        | Y      | Y           |
+      | pfand2              | Pfand 2       | pfandCategory                        | Y      | Y           |
+      | bonusWare           | Bonus Ware    | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor  | discountCategory                     | Y      | Y           |
+      | bonusRvWare         | Bonus RV Ware | discountCategory                     | Y      | Y           |
+      | bonusRvPack         | Bonus RV Pack | discountCategory                     | Y      | Y           |
+
+    # purchase price = sales price
+    And metasfresh contains M_ProductPrices
+      | Identifier          | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1       | soPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_so_elstar2       | soPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_so_gala          | soPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_so_pfand1        | soPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_so_pfand2        | soPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_so_bonusWare     | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendor   | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusRvWare   | soPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusRvPack   | soPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1       | poPLV                             | elstar1                 | 921.60   | PCE               | contractTaxCategory |
+      | pp_po_elstar2       | poPLV                             | elstar2                 | 672.00   | PCE               | contractTaxCategory |
+      | pp_po_gala          | poPLV                             | gala                    | 561.60   | PCE               | contractTaxCategory |
+      | pp_po_pfand1        | poPLV                             | pfand1                  | 416.88   | PCE               | contractTaxCategory |
+      | pp_po_pfand2        | poPLV                             | pfand2                  | 185.28   | PCE               | contractTaxCategory |
+      | pp_po_bonusWare     | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendor   | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusRvWare   | poPLV                             | bonusRvWare             | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusRvPack   | poPLV                             | bonusRvPack             | 1        | PCE               | discountTaxCategory |
+
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name         | OPT.IsAdditive |
+      | customerSchema | Bonus Ware   | true           |
+      | vendorSchema   | Bonus Vendor | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
+      | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
+      | customerSettings | Customer settings | customerSchema                           |
+      | vendorSettings   | Vendor settings   | vendorSchema                             |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | customerSettings                                   | docTypeSalesOrder       |
+      | vendorSettings                                     | docTypePurchaseOrder    |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
+      | vendorConditions   | Vendor conditions   | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
+    # open-ended vendor term: the auto-created PO's DateOrdered is the real wall clock, not the simulated date
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | vendorTerm   | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by customerTerm is completed
+    And the C_Flatrate_Term identified by vendorTerm is completed
+
+    # the head office's periodic bonuses: one refund contract per bonus, each with one untiered percentage setting on the goods category
+    # (names unique per scenario: conditions are upserted by name)
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier | Name                                            | Type_Conditions |
+      | rvWare1    | RV Ware 1 % vierteljährlich S32357_TS1b         | Refund          |
+      | rvWare0125 | RV Ware 0,125 % jährlich S32357_TS1b            | Refund          |
+      | rvPack03   | RV Verpackung 0,3 % vierteljährlich S32357_TS1b | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier  | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID |
+      | cfgWare1    | rvWare1                  | quarterlySchedule    | 1             | goodsCategory         | bonusRvWare      |
+      | cfgWare0125 | rvWare0125               | yearlySchedule       | 0.125         | goodsCategory         | bonusRvWare      |
+      | cfgPack03   | rvPack03                 | quarterlySchedule    | 0.3           | goodsCategory         | bonusRvPack      |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | termWare1    | rvWare1                             | customerHeadOffice          | 2026-07-01 | 2027-06-30 | DR            | false         |
+      | termWare0125 | rvWare0125                          | customerHeadOffice          | 2026-07-01 | 2027-06-30 | DR            | false         |
+      | termPack03   | rvPack03                            | customerHeadOffice          | 2026-07-01 | 2027-06-30 | DR            | false         |
+    And the C_Flatrate_Term identified by termWare1 is completed
+    And the C_Flatrate_Term identified by termWare0125 is completed
+    And the C_Flatrate_Term identified by termPack03 is completed
+
+    # VendorDropship takes over the head office's "Bonus Ware" and its two goods refund conditions on the goods category
+    # (never the packaging refund condition); the take-over line uses the vendor's own discount product "Bonus Vendor"
+    # the take-over record rounds its summed percentage to 3 decimals
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        | OPT.PercentagePrecision |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship | 3                       |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
+      | takeOver                                         | bonusWare    |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
+      | takeOver                                         | rvWare1                  |
+      | takeOver                                         | rvWare0125               |
+
+    And metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | dropshipWarehouse | Y                   |
+
+    # SO: 3 goods lines (2155.20) + 2 Pfand lines, as on the sample invoice
+    When metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
+      | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
+      | ol_elstar1 | orderDropship         | elstar1                 | 1          | vendorDropship                  |
+      | ol_elstar2 | orderDropship         | elstar2                 | 1          | vendorDropship                  |
+      | ol_gala    | orderDropship         | gala                    | 1          | vendorDropship                  |
+      | ol_pfand1  | orderDropship         | pfand1                  | 1          | vendorDropship                  |
+      | ol_pfand2  | orderDropship         | pfand2                  | 1          | vendorDropship                  |
+    And the order identified by orderDropship is completed
+
+    # SO side: only the head office's on-invoice 3% "Bonus Ware" on the goods: 3% of 2155.20 = 64.656 -> -64.66
+    # (the periodic refund bonuses are settled later by the refund contracts, not on the sales order)
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_soBonusWare            | orderDropship         | bonusWare               | 1          | true                        | 3                               | -64.66 | customerTerm                      |
+    And the order identified by orderDropship has 6 order lines
+
+    # drop-ship PO for VendorDropship
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | poDropship     | orderDropship            | false   | POO         | CO            | true           |
+    And validate the created orders
+      | C_Order_ID | C_BPartner_ID  |
+      | poDropship | vendorDropship |
+
+    # PO lines: the vendor's own line (no base category) and the take-over line (base category "Ware"), both with "Bonus Vendor";
+    # nothing is discounted on the Pfand lines
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.C_Flatrate_Term_ID.Identifier | OPT.GroupCompensation_Product_Category_ID |
+      | ol_poElstar1              | poDropship            | elstar1                 | 1          | false                       |                                   |                                           |
+      | ol_poElstar2              | poDropship            | elstar2                 | 1          | false                       |                                   |                                           |
+      | ol_poGala                 | poDropship            | gala                    | 1          | false                       |                                   |                                           |
+      | ol_poPfand1               | poDropship            | pfand1                  | 1          | false                       |                                   |                                           |
+      | ol_poPfand2               | poDropship            | pfand2                  | 1          | false                       |                                   |                                           |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | vendorTerm                        | null                                      |
+      | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | vendorTerm                        | goodsCategory                             |
+    # exactly 7 lines (3 goods + 2 Pfand + the vendor's own discount line + the take-over line)
+    And the order identified by poDropship has 7 order lines
+
+    # the vendor's own line stays 3% (-64.66); the take-over line carries 3% "Bonus Ware" + 1% + 0.125% of the listed goods refund contracts
+    # = 4.125%, kept at 3 decimals -> 4.125% of 2155.20 = 88.902 -> -88.90; together -153.56
+    And validate C_OrderLine:
+      | C_OrderLine_ID           | OPT.GroupCompensationPercentage | OPT.LineNetAmt | OPT.Description                                                                                        |
+      | ol_poBonusVendorDropship | 3                               | -64.66         | 3% Bonus Vendor                                                                                        |
+      | ol_poTakeOver            | 4.125                           | -88.90         | 3% Bonus Ware + 1% RV Ware 1 % vierteljährlich S32357_TS1b + 0.125% RV Ware 0,125 % jährlich S32357_TS1b |
+    # PO total: goods + Pfand 2757.36 - 153.56 = 2603.80 net; tax 19% of 2757.36 = 523.90, 7% of -153.56 = -10.75 -> 3116.95
+    And validate the created orders
+      | C_Order_ID | GrandTotal |
+      | poDropship | 3116.95    |

@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  */
 
 /**
- * Repository Tables: C_CompensationGroup_ContractSettings_TakeOver, C_CompensationGroup_ContractSettings_TakeOver_Product
+ * Repository Tables: C_CompensationGroup_ContractSettings_TakeOver, C_CompensationGroup_ContractSettings_TakeOver_Product, C_CompensationGroup_ContractSettings_TakeOver_RefundCond
  * <p>
  * Repository Cluster: ContractSettingsTakeOverRepository
  */
@@ -59,6 +59,7 @@ public class ContractSettingsTakeOverRepository
 	private final CCache<ContractCompensationGroupSettingsId, ImmutableList<ContractSettingsTakeOver>> takeOversBySettingsId = CCache.<ContractCompensationGroupSettingsId, ImmutableList<ContractSettingsTakeOver>>builder()
 			.tableName(I_C_CompensationGroup_ContractSettings_TakeOver.Table_Name)
 			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_TakeOver_Product.Table_Name)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.Table_Name)
 			.initialCapacity(10)
 			.maximumSize(100)
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -133,7 +134,7 @@ public class ContractSettingsTakeOverRepository
 		return queryBuilder.create().anyMatch();
 	}
 
-	/** @return the settings' active take-overs, each with its active customer discount products */
+	/** @return the settings' active take-overs, each with its active customer discount products and active refund conditions */
 	public ImmutableList<ContractSettingsTakeOver> getBySettingsId(@NonNull final ContractCompensationGroupSettingsId settingsId)
 	{
 		return takeOversBySettingsId.getOrLoad(settingsId, this::retrieveBySettingsId);
@@ -163,6 +164,14 @@ public class ContractSettingsTakeOverRepository
 				.collect(Collectors.groupingBy(
 						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
 						Collectors.mapping(record -> ProductId.ofRepoId(record.getM_Product_ID()), ImmutableSet.toImmutableSet())));
+		final Map<ContractSettingsTakeOverId, ImmutableSet<ConditionsId>> refundConditionsIdsByTakeOverId = queryBL.createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.COLUMNNAME_C_CompensationGroup_ContractSettings_TakeOver_ID, takeOverIds)
+				.create()
+				.stream()
+				.collect(Collectors.groupingBy(
+						record -> ContractSettingsTakeOverId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_ID()),
+						Collectors.mapping(record -> ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()), ImmutableSet.toImmutableSet())));
 
 		return takeOverRecords.stream()
 				.map(record -> ContractSettingsTakeOver.builder()
@@ -170,6 +179,8 @@ public class ContractSettingsTakeOverRepository
 						.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 						.ownLineProductId(ProductId.ofRepoId(record.getM_Product_ID()))
 						.customerDiscountProductIds(customerDiscountProductIdsByTakeOverId.getOrDefault(extractTakeOverId(record), ImmutableSet.of()))
+						.percentagePrecision(record.getPercentagePrecision())
+						.refundConditionsIds(refundConditionsIdsByTakeOverId.getOrDefault(extractTakeOverId(record), ImmutableSet.of()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}

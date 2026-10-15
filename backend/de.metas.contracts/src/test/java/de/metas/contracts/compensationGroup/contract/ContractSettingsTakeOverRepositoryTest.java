@@ -5,9 +5,11 @@ import de.metas.cache.CCache;
 import de.metas.cache.CCacheConfig;
 import de.metas.cache.CCacheStatsPredicate;
 import de.metas.cache.CacheMgt;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver;
 import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_Product;
+import de.metas.contracts.model.I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -47,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-/** Reads of the settings' take-overs and their customer discount products. */
+/** Reads of the settings' take-overs, their customer discount products and their refund conditions. */
 class ContractSettingsTakeOverRepositoryTest
 {
 	private static final ProductCategoryId CATEGORY_ID = ProductCategoryId.ofRepoId(101);
@@ -55,6 +57,9 @@ class ContractSettingsTakeOverRepositoryTest
 	private static final ProductId PRODUCT_Q_ID = ProductId.ofRepoId(202); // customer discount product of the take-over
 	private static final ProductId PRODUCT_R_ID = ProductId.ofRepoId(203); // not a customer discount product of the take-over
 	private static final ProductCategoryId OTHER_CATEGORY_ID = ProductCategoryId.ofRepoId(102);
+	private static final ConditionsId REFUND_CONDITIONS_1_ID = ConditionsId.ofRepoId(301);
+	private static final ConditionsId REFUND_CONDITIONS_2_ID = ConditionsId.ofRepoId(302);
+	private static final ConditionsId REFUND_CONDITIONS_3_ID = ConditionsId.ofRepoId(303); // listed inactive
 
 	private IQueryBL queryBLSpy;
 	private ContractSettingsTakeOverRepository takeOverRepository;
@@ -100,6 +105,7 @@ class ContractSettingsTakeOverRepositoryTest
 		assertThat(secondRead).isEqualTo(firstRead);
 		Mockito.verify(queryBLSpy, Mockito.never()).createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver.class);
 		Mockito.verify(queryBLSpy, Mockito.never()).createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_Product.class);
+		Mockito.verify(queryBLSpy, Mockito.never()).createQueryBuilder(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.class);
 	}
 
 	@Test
@@ -117,6 +123,50 @@ class ContractSettingsTakeOverRepositoryTest
 
 		createCustomerDiscountProduct(takeOverId, PRODUCT_R_ID, true);
 		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getCustomerDiscountProductIds).containsExactly(ImmutableSet.of(PRODUCT_Q_ID, PRODUCT_R_ID));
+	}
+
+	@Test
+	void getBySettingsId_readsPercentagePrecisionAndRefundConditions()
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettings();
+		final ContractSettingsTakeOverId takeOverId1 = createTakeOver(settingsId, true);
+		setPercentagePrecision(takeOverId1, 3);
+		createRefundCondition(takeOverId1, REFUND_CONDITIONS_1_ID, true);
+		createRefundCondition(takeOverId1, REFUND_CONDITIONS_2_ID, true);
+		createRefundCondition(takeOverId1, REFUND_CONDITIONS_3_ID, false); // inactive -> not a refund condition of the take-over
+		final ContractSettingsTakeOverId takeOverId2 = createTakeOver(settingsId, true);
+		setPercentagePrecision(takeOverId2, 2); // no refund conditions listed
+
+		final List<ContractSettingsTakeOver> records = takeOverRepository.getBySettingsId(settingsId);
+
+		assertThat(records).containsExactly(
+				ContractSettingsTakeOver.builder()
+						.id(takeOverId1)
+						.productCategoryId(CATEGORY_ID)
+						.ownLineProductId(PRODUCT_P_ID)
+						.percentagePrecision(3)
+						.refundConditionsIds(ImmutableSet.of(REFUND_CONDITIONS_1_ID, REFUND_CONDITIONS_2_ID))
+						.build(),
+				ContractSettingsTakeOver.builder()
+						.id(takeOverId2)
+						.productCategoryId(CATEGORY_ID)
+						.ownLineProductId(PRODUCT_P_ID)
+						.percentagePrecision(2)
+						.build());
+	}
+
+	@Test
+	void refundConditionAdded_isSeenAfterCacheReset()
+	{
+		final ContractCompensationGroupSettingsId settingsId = createSettings();
+		final ContractSettingsTakeOverId takeOverId = createTakeOver(settingsId, true);
+		createRefundCondition(takeOverId, REFUND_CONDITIONS_1_ID, true);
+		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getRefundConditionsIds).containsExactly(ImmutableSet.of(REFUND_CONDITIONS_1_ID));
+
+		// saving a refund-condition record resets the cache (its table is an additional reset table of the cache)
+		createRefundCondition(takeOverId, REFUND_CONDITIONS_2_ID, true);
+
+		assertThat(takeOverRepository.getBySettingsId(settingsId)).extracting(ContractSettingsTakeOver::getRefundConditionsIds).containsExactly(ImmutableSet.of(REFUND_CONDITIONS_1_ID, REFUND_CONDITIONS_2_ID));
 	}
 
 	@Test
@@ -180,6 +230,22 @@ class ContractSettingsTakeOverRepositoryTest
 		record.setIsActive(isActive);
 		saveRecord(record);
 		return ContractSettingsTakeOverProductId.ofRepoId(record.getC_CompensationGroup_ContractSettings_TakeOver_Product_ID());
+	}
+
+	private static void setPercentagePrecision(final ContractSettingsTakeOverId takeOverId, final int percentagePrecision)
+	{
+		final I_C_CompensationGroup_ContractSettings_TakeOver record = load(takeOverId, I_C_CompensationGroup_ContractSettings_TakeOver.class);
+		record.setPercentagePrecision(percentagePrecision);
+		saveRecord(record);
+	}
+
+	private static void createRefundCondition(final ContractSettingsTakeOverId takeOverId, final ConditionsId conditionsId, final boolean isActive)
+	{
+		final I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond record = newInstance(I_C_CompensationGroup_ContractSettings_TakeOver_RefundCond.class);
+		record.setC_CompensationGroup_ContractSettings_TakeOver_ID(takeOverId.getRepoId());
+		record.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+		record.setIsActive(isActive);
+		saveRecord(record);
 	}
 
 	@Test
