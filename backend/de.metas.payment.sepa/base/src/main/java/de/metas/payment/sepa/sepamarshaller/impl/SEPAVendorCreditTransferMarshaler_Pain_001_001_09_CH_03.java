@@ -758,7 +758,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			}
 			cdOrPrtry.setPrtry(CREDITOR_REFERENCE_TYPE_QRR);
 		}
-		else if (bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN()) && isQrReferenceShaped(structuredReference))
+		else if (bankAccount != null && Check.isNotBlank(bankAccount.getQR_IBAN()) && SepaUtils.isQrReferenceShaped(structuredReference))
 		{
 			// IBAN + QR-IBAN account and a reference that looks like a QR reference, but fails the check digit: most likely a typo of the QR-bill reference.
 			// Sending it to the normal IBAN as Ustrd would break the creditor's automatic matching, so we stop here.
@@ -789,27 +789,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				.appendParametersToMessage()
 				.setParameter("structuredReference", structuredReference != null ? structuredReference : "no structured reference")
 				.setParameter("reason", reason);
-	}
-
-	/**
-	 * IG 3.14.2: the QR reference has 26 digits plus one check digit.
-	 *
-	 * @return {@code true} if the given text has the format of a QR reference (27 digits), regardless of its check digit
-	 */
-	private static boolean isQrReferenceShaped(@Nullable final String reference)
-	{
-		if (reference == null || reference.length() != SepaUtils.QR_REFERENCE_LENGTH)
-		{
-			return false;
-		}
-		for (int i = 0; i < SepaUtils.QR_REFERENCE_LENGTH; i++)
-		{
-			if (!isDigit(reference.charAt(i)))
-			{
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**

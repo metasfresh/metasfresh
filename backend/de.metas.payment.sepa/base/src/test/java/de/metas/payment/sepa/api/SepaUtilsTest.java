@@ -46,6 +46,17 @@ class SepaUtilsTest
 	}
 
 	@Test
+	void isQrReferenceShaped()
+	{
+		assertThat(SepaUtils.isQrReferenceShaped("210000000003139471430009017")).isTrue();
+		assertThat(SepaUtils.isQrReferenceShaped("210000000003139471430009018")).isTrue(); // the check digit does not matter
+		assertThat(SepaUtils.isQrReferenceShaped("21000000000313947143000901")).isFalse(); // length
+		assertThat(SepaUtils.isQrReferenceShaped("21000000000313947143000901A")).isFalse(); // not a digit
+		assertThat(SepaUtils.isQrReferenceShaped("2100000000031394714300090١" + "7")).isFalse(); // non-ASCII digit
+		assertThat(SepaUtils.isQrReferenceShaped(null)).isFalse();
+	}
+
+	@Test
 	void getFirstNonEmpty()
 	{
 		assertThat(SepaUtils.getFirstNonEmpty(() -> null, () -> " ", () -> " name ", () -> "other")).isEqualTo("name");

@@ -217,10 +217,27 @@ public class SepaUtils
 
 	/**
 	 * Swiss QR reference: 26 digits plus one check digit (modulo 10, recursive; the same algorithm as the ESR reference number, see {@link ESRCheckDigitBuilder}).
+	 * <p>
+	 * The check digit is computed with {@link ESRCheckDigitBuilder} directly rather than through {@code IESRImportBL.calculateESRCheckDigit}, which only delegates to it:
+	 * the builder is a stateless pure function, while the {@code ESRImportBL} implementation needs Spring beans and services, which would make this check depend on them.
 	 *
-	 * @return {@code false} if the given reference is {@code null}, does not have 27 characters, contains anything else than the ASCII digits {@code 0-9}, or has a wrong check digit
+	 * @return {@code false} if the given reference is not {@link #isQrReferenceShaped(String) shaped like a QR reference}, or has a wrong check digit
 	 */
 	public static boolean isValidQrReference(@Nullable final String reference)
+	{
+		if (!isQrReferenceShaped(reference))
+		{
+			return false;
+		}
+
+		final int expectedCheckDigit = new ESRCheckDigitBuilder().calculateESRCheckDigit(reference.substring(0, QR_REFERENCE_LENGTH - 1));
+		return reference.charAt(QR_REFERENCE_LENGTH - 1) - '0' == expectedCheckDigit;
+	}
+
+	/**
+	 * @return {@code true} if the given text has the format of a QR reference, i.e. exactly 27 ASCII digits {@code 0-9}, regardless of its check digit
+	 */
+	public static boolean isQrReferenceShaped(@Nullable final String reference)
 	{
 		if (reference == null || reference.length() != QR_REFERENCE_LENGTH)
 		{
@@ -234,9 +251,7 @@ public class SepaUtils
 				return false;
 			}
 		}
-
-		final int expectedCheckDigit = new ESRCheckDigitBuilder().calculateESRCheckDigit(reference.substring(0, QR_REFERENCE_LENGTH - 1));
-		return reference.charAt(QR_REFERENCE_LENGTH - 1) - '0' == expectedCheckDigit;
+		return true;
 	}
 
 	/**
@@ -275,7 +290,7 @@ public class SepaUtils
 	}
 
 	/**
-	 * @return the date part (yyyy-MM-dd, without time and timezone) of the given date, as needed e.g. for the requested execution date
+	 * @return the date part (yyyy-MM-dd, in the JVM's default timezone) of the given date, as an XML date without time and timezone
 	 */
 	public static XMLGregorianCalendar toXMLGregorianCalendarDate(@NonNull final DatatypeFactory datatypeFactory, @NonNull final Date date)
 	{

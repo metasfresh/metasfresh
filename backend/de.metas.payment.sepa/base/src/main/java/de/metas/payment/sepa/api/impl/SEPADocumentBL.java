@@ -84,22 +84,13 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 	private SEPAMarshaler newSEPAMarshaler(@NonNull final SEPAProtocol protocol, @NonNull final SEPAExportContext exportContext)
 	{
-		if (protocol.isCreditTransfer())
+		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
 		{
-			// looked up only here, because getDueDate() & co. don't need it
-			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-			if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
-			{
-				return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
-			}
-			else if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.equals(protocol))
-			{
-				return new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(bankRepository, exportContext, bankAccountService);
-			}
-			else
-			{
-				throw new AdempiereException("Unknown SEPA credit transfer protocol: " + protocol);
-			}
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(getBankRepository(), exportContext, bankAccountService);
+		}
+		else if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.equals(protocol))
+		{
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(getBankRepository(), exportContext, bankAccountService);
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{
@@ -109,5 +100,13 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		{
 			throw new AdempiereException("Unknown SEPA protocol: " + protocol);
 		}
+	}
+
+	/**
+	 * Looked up on demand rather than held as a field, because only the credit transfer marshallers need it.
+	 */
+	private static BankRepository getBankRepository()
+	{
+		return SpringContextHolder.instance.getBean(BankRepository.class);
 	}
 }
